@@ -131,14 +131,23 @@ export default function CountdownPage() {
       {/* Header Bar */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/[0.07]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <Lock className="w-4 h-4" />
+          <div className="relative h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0">
+            <img
+              src="/assets/logo.png"
+              alt="Zenvitra Logo"
+              className="h-full w-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+            />
           </div>
           <div>
-            <div className="font-display font-semibold tracking-wider text-sm text-white">
+            <div 
+              className="tracking-[0.14em] text-sm sm:text-base font-bold text-[#f5f1ea] uppercase leading-none"
+              style={{
+                fontFamily: 'Clash Display, var(--font-space), sans-serif',
+              }}
+            >
               ZENVITRA
             </div>
-            <div className="font-mono text-[9px] tracking-widest text-amber-400/80 uppercase">
+            <div className="font-mono text-[9px] tracking-widest text-amber-400/90 uppercase mt-1">
               SYSTEM CONCURRENCY HARDENING
             </div>
           </div>
@@ -175,9 +184,12 @@ export default function CountdownPage() {
 
         {/* Hero Title */}
         <div className="space-y-4 max-w-2xl">
-          <h1 className="font-display font-medium text-4xl sm:text-6xl text-white tracking-tight leading-[1.1]">
+          <h1 
+            className="text-4xl sm:text-6xl text-white tracking-tight leading-[1.1] font-semibold"
+            style={{ fontFamily: 'Clash Display, var(--font-space), sans-serif' }}
+          >
             Calibrating the <br />
-            <span className="font-serif italic font-normal text-amber-200">Sovereign Ecosystem.</span>
+            <span className="font-serif italic font-normal text-amber-200">ZENVITRA</span> Ecosystem.
           </h1>
           <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed">
             Following our initial deployment, our engineering &amp; secretariat council has initiated a temporary systemic freeze to eradicate anomalies, harden protocols, and scale our core infrastructure.

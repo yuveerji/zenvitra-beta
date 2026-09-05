@@ -170,14 +170,23 @@ export default function JoinCoreTeamPage() {
       <header className="sticky top-0 z-50 w-full bg-[#030405]/80 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/countdown" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition">
-              <Shield className="w-4 h-4" />
+            <div className="relative h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
+              <img
+                src="/assets/logo.png"
+                alt="Zenvitra Logo"
+                className="h-full w-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]"
+              />
             </div>
             <div>
-              <div className="font-display font-semibold tracking-wider text-sm text-white">
+              <div 
+                className="tracking-[0.14em] text-sm sm:text-base font-bold text-[#f5f1ea] uppercase leading-none group-hover:text-white transition-colors"
+                style={{
+                  fontFamily: 'Clash Display, var(--font-space), sans-serif',
+                }}
+              >
                 ZENVITRA
               </div>
-              <div className="font-mono text-[9px] tracking-widest text-amber-400/80 uppercase">
+              <div className="font-mono text-[9px] tracking-widest text-amber-400/80 uppercase mt-1">
                 GENESIS COUNCIL INGESTION
               </div>
             </div>
