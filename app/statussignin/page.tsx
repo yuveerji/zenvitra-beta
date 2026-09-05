@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 import { sheetSync } from '@/lib/googleSheets';
+import { recordSavedSession } from '@/context/AuthContext';
+import { signIn as nextAuthSignIn } from 'next-auth/react';
 
 export default function StatusSignInPage() {
   const [email, setEmail] = useState('');
@@ -44,20 +46,42 @@ export default function StatusSignInPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail) {
+      setErrorMessage('Please provide your registered email address.');
+      return;
+    }
+    if (!cleanPassword) {
+      setErrorMessage('Security Passphrase / Master PIN is required.');
+      return;
+    }
 
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      // 1. Check live clearance & approval in Google Sheets and Database
+      // 1. Check live clearance & approval in Google Sheets and Database with credentials
       const verifyRes = await fetch('/api/access/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
       });
 
       const verifyData = await verifyRes.json();
+
+      if (verifyRes.status === 401 || verifyData.status === 'INVALID_CREDENTIALS') {
+        setErrorMessage(verifyData.message || 'Invalid Access Key or Master PIN. Please verify your credentials.');
+        sheetSync.login({
+          userId: `fail_${Date.now().toString(36)}`,
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
+          authProvider: 'STATUS_CLEARANCE_PASSWORD_FAILED',
+          loginStatus: 'FAILED',
+        }).catch(() => {});
+        return;
+      }
 
       if (verifyData.unlocked || verifyData.isApproved || verifyData.status === 'APPROVED') {
         setIsSuccess(true);
@@ -66,56 +90,86 @@ export default function StatusSignInPage() {
 
         // Telemetry: Log successful pre-login clearance to Google Sheets 'Login Data Core'
         sheetSync.login({
-          userId: `usr_${Date.now().toString(36)}`,
-          fullName: verifyData.fullName || email.split('@')[0],
-          email: email.trim().toLowerCase(),
+          userId: verifyData.user?.id || `usr_${Date.now().toString(36)}`,
+          fullName: verifyData.user?.name || verifyData.fullName || cleanEmail.split('@')[0],
+          email: cleanEmail,
           authProvider: 'PRE_LAUNCH_CLEARANCE',
           loginStatus: 'SUCCESS',
         }).catch(() => {});
 
-        // Persist email
+        // 2. Establish genuine sovereign session across the entire app
         if (typeof window !== 'undefined') {
-          localStorage.setItem('zenvitra_applicant_email', email.trim().toLowerCase());
+          const userSession = {
+            id: verifyData.user?.id || `zen_user_${cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, '')}`,
+            username: verifyData.user?.username || cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, ''),
+            display_name: verifyData.user?.name || verifyData.fullName || cleanEmail.split('@')[0],
+            name: verifyData.user?.name || verifyData.fullName || cleanEmail.split('@')[0],
+            email: cleanEmail,
+            role: (verifyData.role || 'delegate').toLowerCase(),
+            roleBadge: verifyData.roleBadge || 'DELEGATE',
+            impact_score: 500,
+            followers_count: 0,
+            following_count: 0,
+            is_verified: true,
+            is_onboarded: true,
+            created_at: new Date().toISOString(),
+          };
+
+          localStorage.setItem('zenvitra_session_user', JSON.stringify(userSession));
+          localStorage.setItem('zenvitra_applicant_email', cleanEmail);
+          recordSavedSession(userSession);
+          window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
+        }
+
+        // 3. Establish NextAuth session simultaneously so server components & middleware recognize login
+        try {
+          await nextAuthSignIn('credentials', {
+            redirect: false,
+            identifier: cleanEmail,
+            password: cleanPassword,
+          });
+        } catch (nextAuthErr) {
+          console.warn('[NEXTAUTH-SIGNIN-FALLBACK]', nextAuthErr);
         }
 
         setTimeout(() => {
           window.location.href = '/';
-        }, 1800);
-      } else if (verifyData.status === 'PENDING' || verifyData.status === 'QUEUED') {
+        }, 1600);
+      } else if (verifyData.status === 'PENDING' || verifyData.status === 'QUEUED' || verifyData.status === 'PENDING_REVIEW') {
         // Telemetry: Log challenged attempt to 'Login Data Core'
         sheetSync.login({
           userId: `att_${Date.now().toString(36)}`,
-          fullName: email.split('@')[0],
-          email: email.trim().toLowerCase(),
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
           authProvider: 'PRE_LAUNCH_CHALLENGE',
           loginStatus: '2FA_CHALLENGE',
         }).catch(() => {});
 
         setErrorMessage(
-          'Your application is still PENDING review in the Sovereign Ledger. An administrator must set your status to CONFIRM before sign-in unlocks.'
+          'Your application is still PENDING review in the Sovereign Ledger. An administrator must set your status to CONFIRM before clearance unlocks.'
         );
       } else if (verifyData.status === 'DENIED') {
         // Telemetry: Log failed attempt to 'Login Data Core'
         sheetSync.login({
           userId: `fail_${Date.now().toString(36)}`,
-          fullName: email.split('@')[0],
-          email: email.trim().toLowerCase(),
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
           authProvider: 'PRE_LAUNCH_DENIED',
           loginStatus: 'FAILED',
         }).catch(() => {});
 
-        setErrorMessage('Security clearance was not approved for this account.');
+        setErrorMessage('Security clearance was not approved for this dossier.');
       } else {
         // Telemetry: Log unknown attempt
         sheetSync.login({
           userId: `unrec_${Date.now().toString(36)}`,
-          fullName: email.split('@')[0],
-          email: email.trim().toLowerCase(),
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
           authProvider: 'PRE_LAUNCH_UNREGISTERED',
           loginStatus: 'FAILED',
         }).catch(() => {});
 
-        setErrorMessage('No application or clearance credentials found for this email address.');
+        setErrorMessage(verifyData.message || 'No approved application or clearance credentials found for this email address.');
       }
     } catch (err: any) {
       setErrorMessage('Ledger connectivity error. Please check your network and try again.');
@@ -233,13 +287,15 @@ export default function StatusSignInPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase block font-medium">
-                  Access Key / PIN <span className="text-neutral-500">(Optional)</span>
+                  Access Key / Master PIN <span className="text-amber-400">*</span>
                 </label>
               </div>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Master PIN or Password"
+                  required
+                  minLength={4}
+                  placeholder="Master PIN or Password (Required)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-amber-400/50 transition shadow-inner pr-12"
@@ -252,11 +308,12 @@ export default function StatusSignInPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              <span className="text-[10px] font-mono text-neutral-500">Security PIN created during pre-registration or Founder PIN.</span>
             </div>
 
             <button
               type="submit"
-              disabled={isLoading || !email}
+              disabled={isLoading || !email || !password}
               className="w-full py-4 rounded-2xl bg-white text-black font-mono text-xs font-bold hover:bg-neutral-200 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.2)] cursor-pointer"
             >
               {isLoading ? (

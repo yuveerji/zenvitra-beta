@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -7,6 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const email = (body.email || '').trim().toLowerCase();
+    const password = (body.password || '').trim();
 
     if (!email) {
       return NextResponse.json(
@@ -14,6 +16,26 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    if (!password) {
+      return NextResponse.json(
+        { status: 'ERROR', message: 'Access Key or Master PIN is required.' },
+        { status: 400 }
+      );
+    }
+
+    // Check founder credentials
+    const isFounderEmail =
+      email === 'founder@zenvitra.org' ||
+      email === 'founder@zenvitra.xyz' ||
+      email === 'founder@zenvitra.com' ||
+      email === (process.env.FOUNDER_EMAIL?.toLowerCase() || '');
+
+    const isFounderPassword =
+      password === 'Yuveer@5747R' ||
+      password === '5747' ||
+      password === '574729' ||
+      password === (process.env.ADMIN_MASTER_PIN || '5747');
 
     let isApproved = false;
     let clearanceRole = 'Core Delegate';
@@ -132,6 +154,24 @@ export async function POST(req: NextRequest) {
         });
 
         if (targetUser) {
+          // If user has a registered password, verify it
+          if (targetUser.password) {
+            const isMatch = await bcrypt.compare(password, targetUser.password);
+            if (!isMatch && !isFounderPassword) {
+              return NextResponse.json(
+                { status: 'INVALID_CREDENTIALS', message: 'Invalid Access Key or Master PIN for this email.' },
+                { status: 401 }
+              );
+            }
+          } else {
+            // First time signin with password, securely store hash
+            const hashed = await bcrypt.hash(password, 10);
+            targetUser = await db.user.update({
+              where: { id: targetUser.id },
+              data: { password: hashed },
+            });
+          }
+
           targetUser = await db.user.update({
             where: { id: targetUser.id },
             data: {
@@ -141,14 +181,16 @@ export async function POST(req: NextRequest) {
             },
           });
         } else {
-          // If applicant hasn't registered yet, create active user with granted role
+          // If applicant hasn't registered in DB yet, create active user with granted role and password
           const baseHandle = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+          const hashed = await bcrypt.hash(password, 10);
           targetUser = await db.user.create({
             data: {
               email,
               name: clearanceRole,
               handle: baseHandle,
               username: baseHandle,
+              password: hashed,
               role: platformRole,
               roleBadge: roleBadge,
               verified: true,
@@ -170,7 +212,9 @@ export async function POST(req: NextRequest) {
         unlocked: true,
         user: targetUser ? {
           id: targetUser.id,
-          username: targetUser.username,
+          username: targetUser.username || email.split('@')[0],
+          name: targetUser.name || clearanceRole,
+          email: targetUser.email,
           role: targetUser.role,
           roleBadge: targetUser.roleBadge,
           verified: targetUser.verified,

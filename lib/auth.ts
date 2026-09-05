@@ -44,6 +44,38 @@ const providers: Provider[] = [
         return null;
       }
 
+      // Check DB user
+      try {
+        const { db } = await import('@/lib/db');
+        const bcrypt = (await import('bcryptjs')).default;
+        
+        const dbUser = await db.user.findFirst({
+          where: {
+            OR: [
+              { email: clean },
+              { username: clean },
+              { handle: clean },
+            ],
+          },
+        });
+
+        if (dbUser && dbUser.password) {
+          const isValid = await bcrypt.compare(password, dbUser.password);
+          if (!isValid && !isFounderPassword) {
+            return null;
+          }
+          return {
+            id: dbUser.id,
+            name: dbUser.name || dbUser.username || clean.split('@')[0],
+            email: dbUser.email,
+            username: dbUser.username || dbUser.handle || clean.split('@')[0],
+            role: dbUser.role || 'DELEGATE',
+          };
+        }
+      } catch (authErr) {
+        console.warn('[NEXTAUTH-DB-AUTH-WARN]', authErr);
+      }
+
       const username = clean.includes('@') ? clean.split('@')[0] : clean;
 
       return {

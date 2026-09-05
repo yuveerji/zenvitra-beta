@@ -167,24 +167,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     // 1. Check for real authenticated session in local storage first
-    try {
-      const storedUser = localStorage.getItem('zenvitra_session_user');
-      if (storedUser) {
-        const parsedProf = JSON.parse(storedUser);
-        if (parsedProf && parsedProf.id) {
-          // Purge any old seeded stock unsplash photos from previous test sessions
-          if (parsedProf.avatar_url && typeof parsedProf.avatar_url === 'string' && parsedProf.avatar_url.includes('images.unsplash.com')) {
-            parsedProf.avatar_url = undefined;
-            localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
+    const syncSessionFromStorage = () => {
+      try {
+        const storedUser = localStorage.getItem('zenvitra_session_user');
+        if (storedUser) {
+          const parsedProf = JSON.parse(storedUser);
+          if (parsedProf && parsedProf.id) {
+            if (parsedProf.avatar_url && typeof parsedProf.avatar_url === 'string' && parsedProf.avatar_url.includes('images.unsplash.com')) {
+              parsedProf.avatar_url = undefined;
+              localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
+            }
+            recordSavedSession(parsedProf);
+            setUser({ id: parsedProf.id, email: parsedProf.email });
+            setProfile(parsedProf);
+            setIsLoading(false);
+            return true;
           }
-          recordSavedSession(parsedProf);
-          setUser({ id: parsedProf.id, email: parsedProf.email });
-          setProfile(parsedProf);
-          setIsLoading(false);
-          return;
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+      return false;
+    };
+
+    if (syncSessionFromStorage()) {
+      // Session restored from storage
+    }
+
+    const handleAuthChange = () => {
+      syncSessionFromStorage();
+    };
+
+    window.addEventListener('zenvitra_auth_change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
 
     // 2. Check live Supabase session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
@@ -225,6 +238,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      window.removeEventListener('zenvitra_auth_change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
       subscription.unsubscribe();
     };
   }, [loadProfile]);

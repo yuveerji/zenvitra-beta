@@ -29,7 +29,9 @@ import {
   Calendar,
   Layers,
   HelpCircle,
-  ExternalLink
+  ExternalLink,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { sheetSync } from '@/lib/googleSheets';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
@@ -128,12 +130,15 @@ export default function StatusRegisterPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Registration Form State
   const [formData, setFormData] = useState({
-    // Step 1: Core Identity
+    // Step 1: Core Identity & Security Credentials
     fullName: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     phoneNumber: '',
     preferredHandle: '',
     countryCity: '',
@@ -189,9 +194,11 @@ export default function StatusRegisterPage() {
     return (
       formData.fullName.trim().length >= 3 &&
       validateEmail(formData.email) &&
+      formData.password.length >= 6 &&
+      formData.password === formData.confirmPassword &&
       formData.institutionOrSchool.trim().length >= 2
     );
-  }, [formData.fullName, formData.email, formData.institutionOrSchool]);
+  }, [formData.fullName, formData.email, formData.password, formData.confirmPassword, formData.institutionOrSchool]);
 
   const isStep2Valid = useMemo(() => {
     return (
@@ -245,6 +252,27 @@ export default function StatusRegisterPage() {
         authProvider: 'DIRECT_ENROLL',
         accountStatus: 'PENDING_VERIFICATION',
       });
+
+      // 1b. Create User in SQLite Database with hashed password for immediate and future login
+      try {
+        const cleanHandle = (formData.preferredHandle || formData.email.split('@')[0])
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, '');
+
+        await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.fullName.trim(),
+            username: cleanHandle,
+            email: formData.email.trim().toLowerCase(),
+            password: formData.password,
+            initialRole: `${formData.roleInterest} | ${primaryTrackObj?.abbreviation || 'DELEGATE'}`,
+          }),
+        });
+      } catch (regErr) {
+        console.warn('[DB-REGISTRATION-WARN]', regErr);
+      }
 
       // 2. Also register in Events Tab for seamless dais allocation
       try {
@@ -597,6 +625,69 @@ export default function StatusRegisterPage() {
                           className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/15 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40 transition shadow-inner"
                         />
                         <span className="text-[10px] font-mono text-neutral-500">Used for clearance verification & chamber access keys.</span>
+                      </div>
+
+                      {/* Security PIN / Passphrase */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="font-mono text-xs tracking-wider text-neutral-300 uppercase block font-semibold">
+                            Create Master PIN / Passphrase <span className="text-amber-400">*</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="text-[11px] font-mono text-neutral-400 hover:text-white flex items-center gap-1"
+                          >
+                            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5 text-amber-400" />}
+                            <span>{showPassword ? 'Hide' : 'Show'}</span>
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            required
+                            minLength={6}
+                            placeholder="Min. 6 alphanumeric characters"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/15 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40 transition shadow-inner"
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono text-neutral-500">
+                          {formData.password.length > 0 && formData.password.length < 6 ? (
+                            <span className="text-rose-400">Must be at least 6 characters</span>
+                          ) : (
+                            'Required to authenticate into Status Sign-In and Chamber sessions.'
+                          )}
+                        </span>
+                      </div>
+
+                      {/* Confirm Passphrase */}
+                      <div className="space-y-2">
+                        <label className="font-mono text-xs tracking-wider text-neutral-300 uppercase block font-semibold">
+                          Confirm Passphrase <span className="text-amber-400">*</span>
+                        </label>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          placeholder="Re-enter Passphrase"
+                          value={formData.confirmPassword}
+                          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                          className={`w-full px-5 py-4 rounded-2xl bg-black/80 border text-white placeholder-neutral-600 text-sm font-mono focus:outline-none transition shadow-inner ${
+                            formData.confirmPassword && formData.password !== formData.confirmPassword
+                              ? 'border-rose-500/80 focus:border-rose-500'
+                              : 'border-white/15 focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40'
+                          }`}
+                        />
+                        <span className="text-[10px] font-mono text-neutral-500">
+                          {formData.confirmPassword && formData.password !== formData.confirmPassword ? (
+                            <span className="text-rose-400 font-bold">Passwords do not match</span>
+                          ) : formData.confirmPassword && formData.password === formData.confirmPassword ? (
+                            <span className="text-emerald-400 font-bold">Passwords match</span>
+                          ) : (
+                            'Re-type to ensure cryptographic accuracy.'
+                          )}
+                        </span>
                       </div>
 
                       {/* Contact Phone */}
