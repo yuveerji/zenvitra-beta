@@ -21,8 +21,13 @@ export function middleware(request: NextRequest) {
   }
 
   // SYSTEM-WIDE LOCKDOWN UNTIL 18TH SEPTEMBER 5:00 PM IST
-  // Whitelist: /join-core-team, /countdown, /api/core-team, /api/sheets, static files, and admin secret enclave
+  // Check if visitor has approved security clearance cookie (granted when status = APPROVED in Google Sheet)
+  const clearanceCookie = request.cookies.get('zenvitra_clearance')?.value;
+  const isClearanceGranted = clearanceCookie === 'SOVEREIGN_GRANTED';
+
+  // Whitelist: /join-core-team, /countdown, /api routes, static files, and admin secret enclave
   const isAllowedPath = 
+    isClearanceGranted ||
     pathname === '/countdown' ||
     pathname.startsWith('/join-core-team') ||
     pathname.startsWith('/api') ||
