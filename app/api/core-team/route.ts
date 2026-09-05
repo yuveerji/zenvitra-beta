@@ -41,15 +41,27 @@ export async function POST(req: NextRequest) {
       await dispatchToGoogleSheets({
         tab: 'Core Team Applications',
         data: {
+          // Standard Apps Script Column Mapping:
+          fullName,
+          email,
+          phoneNumber: phone || body.contactChannel || 'N/A',
+          roleAppliedFor: department || body.roleAppliedFor || 'Core Team',
+          department: department || 'CORE',
+          linkedinProfile: portfolioLink || body.proofOfWorkUrl || 'N/A',
+          portfolioUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
+          cvResumeLink: body.dossier || body.technicalOrDiplomaticDossier || 'N/A',
+          coverNote: motivation || body.motivationStatement || 'N/A',
+          applicationStatus: 'UNDER_COUNCIL_REVIEW',
+          reviewerInfo: 'Genesis Executive Council',
+
+          // Additional context fields:
           candidateName: fullName,
           emailAddress: email,
-          phoneNumber: phone || 'N/A',
+          handle: body.handle || 'N/A',
           cityLocation: city || 'N/A',
           institution: institution || 'Independent',
-          departmentPreferred: department || 'General Secretariat',
-          portfolioUrl: portfolioLink || 'N/A',
-          statementMotivation: motivation || 'N/A',
-          weeklyCommitment: hoursPerWeek || '10-15 hrs',
+          statementMotivation: motivation || body.motivationStatement || 'N/A',
+          weeklyCommitment: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
           ipAddress: ip,
           deviceBrowserInfo: userAgent,
           submittedAt: new Date().toISOString(),

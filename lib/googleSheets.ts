@@ -177,14 +177,32 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
     return true;
   }
 
+  // Normalize tab string to match Apps Script expected targetTab
+  const rawTab = (payload.tab || '').toUpperCase();
+  let targetTab = 'CORE_TEAM';
+  if (rawTab.includes('LOGIN')) targetTab = 'LOGIN_CORE';
+  else if (rawTab.includes('REGISTER')) targetTab = 'REGISTER_CORE';
+  else if (rawTab.includes('CONTACT')) targetTab = 'CONTACT';
+  else if (rawTab.includes('NEWSLETTER')) targetTab = 'NEWSLETTER';
+  else if (rawTab.includes('COLLAB') || rawTab.includes('PARTNER')) targetTab = 'COLLAB';
+  else if (rawTab.includes('CORE') || rawTab.includes('TEAM') || rawTab.includes('CAREER')) targetTab = 'CORE_TEAM';
+  else if (rawTab.includes('COMMUNITY')) targetTab = 'COMMUNITY';
+  else if (rawTab.includes('AMBASSADOR') || rawTab.includes('CAMPUS')) targetTab = 'CAMPUS_AMBASSADOR';
+  else if (rawTab.includes('EVENT')) targetTab = 'EVENTS';
+  else if (rawTab.includes('IMPACT') || rawTab.includes('DONAT') || rawTab.includes('LEDGER')) targetTab = 'IMPACT_LEDGER';
+  else if (rawTab.includes('FEEDBACK') || rawTab.includes('GRIEVANCE')) targetTab = 'FEEDBACK';
+  else if (rawTab.includes('PULSE') || rawTab.includes('POST')) targetTab = 'PULSE_POSTS';
+
+  const outgoingPayload = {
+    targetTab,
+    ...enrichedData,
+  };
+
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tab: payload.tab,
-        data: enrichedData,
-      }),
+      body: JSON.stringify(outgoingPayload),
     });
     return response.ok;
   } catch (error) {

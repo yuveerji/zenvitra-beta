@@ -36,6 +36,7 @@ export default function JoinCoreTeamPage() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -129,6 +130,8 @@ export default function JoinCoreTeamPage() {
 
     setIsSubmitting(true);
 
+    setSubmitError(null);
+
     try {
       // 1. Post to API route which writes to database AND Google Sheets
       const res = await fetch('/api/core-team', {
@@ -154,13 +157,16 @@ export default function JoinCoreTeamPage() {
       });
 
       if (!res.ok) {
-        console.warn('API submission failed with status:', res.status);
+        const errJson = await res.json().catch(() => null);
+        throw new Error(errJson?.message || `Server responded with status ${res.status}`);
       }
-    } catch (err) {
+
+      setIsSuccess(true);
+    } catch (err: any) {
       console.error('Submission error:', err);
+      setSubmitError(err?.message || 'Submission failed. Please check your network and try again.');
     } finally {
       setIsSubmitting(false);
-      setIsSuccess(true);
     }
   };
 
@@ -643,6 +649,13 @@ export default function JoinCoreTeamPage() {
                             </div>
                           </label>
                         </div>
+
+                        {submitError && (
+                          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-xs text-left space-y-1">
+                            <span className="font-bold block uppercase tracking-wider">Submission Alert</span>
+                            <span>{submitError}</span>
+                          </div>
+                        )}
 
                         <div className="pt-5 flex items-center justify-between">
                           <button
