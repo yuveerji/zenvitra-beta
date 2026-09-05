@@ -12,13 +12,27 @@ model User {
   name          String?
   email         String         @unique
   handle        String?        @unique
+  username      String?        @unique
+  password      String?
+  role          String         @default("USER")
   roleBadge     String         @default("DELEGATE")
+  bio           String?
   verified      Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   posts         Post[]
   applications  Application[]
   donations     DonationRecord[]
+}
+
+model SystemProtocolState {
+  id              String   @id @default("GLOBAL_CONFIG")
+  pulseActive     Boolean  @default(true)
+  chatActive      Boolean  @default(true)
+  eventsActive    Boolean  @default(true)
+  pressActive     Boolean  @default(true)
+  broadcastNotice String?
+  updatedAt       DateTime @updatedAt
 }
 
 model Post {
