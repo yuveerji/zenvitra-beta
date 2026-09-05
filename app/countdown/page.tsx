@@ -16,7 +16,9 @@ import {
   AlertCircle,
   Loader2,
   X,
-  Bell
+  Bell,
+  Quote,
+  Shield
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 
@@ -445,6 +447,82 @@ export default function CountdownPage() {
             <div className="text-[11px] font-mono text-neutral-500 flex items-center justify-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-ping" />
               <span>Tick-tock telemetry active. Tap anywhere to toggle audio.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Founder's Note / Sovereign Communiqué */}
+        <div className="w-full max-w-3xl text-left">
+          <div className="relative rounded-[2.5rem] bg-[#07090e]/95 border border-white/15 p-8 sm:p-10 space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.9)] overflow-hidden">
+            {/* Ambient Corner Accent */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-500/[0.08] to-transparent blur-2xl pointer-events-none" />
+            
+            {/* Note Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400/[0.08] border border-amber-400/30 flex items-center justify-center text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.15)]">
+                  <Quote className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-mono tracking-widest text-amber-400 uppercase">
+                    GENESIS COMMUNIQUÉ // ARCHIVE NO. 01
+                  </div>
+                  <h2 
+                    className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5"
+                    style={{ fontFamily: 'Clash Display, sans-serif' }}
+                  >
+                    A Note From The Founders
+                  </h2>
+                </div>
+              </div>
+
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/10 font-mono text-[10px] text-neutral-400 self-start sm:self-auto">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span>SEPTEMBER INGESTION CYCLE</span>
+              </div>
+            </div>
+
+            {/* Note Prose */}
+            <div className="space-y-4 text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
+              <p>
+                When we set out to build <span className="text-white font-medium">Zenvitra</span>, we didn&apos;t want to build another bureaucratic simulator or superficial conferencing tool. We envisioned an uncompromising, sovereign operating system for the next generation of global statesmen, jurists, and policy architects.
+              </p>
+
+              <p>
+                During our initial closed deployments, the demand exceeded our telemetry thresholds by over <span className="text-amber-300 font-mono font-medium">400%</span>. We witnessed extraordinary working papers drafted in real-time, high-stakes crisis caucuses, and debates that matched the intellectual rigor of real sovereign chambers.
+              </p>
+
+              <blockquote className="my-3 pl-4 border-l-2 border-amber-400/60 font-serif italic text-sm sm:text-base text-amber-100/90 py-1">
+                &ldquo;Great institutions are not manufactured overnight. They are carved through discipline, architectural integrity, and absolute fidelity to the civic trust.&rdquo;
+              </blockquote>
+
+              <p>
+                That is why we initiated this temporary systemic pause until <span className="text-white font-medium">September 18, 5:00 PM IST</span>. Our engineering and dais councils are currently hardening our distributed infrastructure, integrating SHA-256 cryptographic resolution sealing, and refining our real-time Rules of Procedure engine.
+              </p>
+
+              <p>
+                While the main floor remains locked, our doors are wide open for those ready to lead. If you are a diplomat, chair, designer, or builder who demands excellence, we welcome you to our Executive Council.
+              </p>
+            </div>
+
+            {/* Signature & Seal */}
+            <div className="pt-4 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-mono text-xs">
+              <div className="space-y-1">
+                <div 
+                  className="text-base text-white tracking-wide font-bold"
+                  style={{ fontFamily: 'Clash Display, sans-serif' }}
+                >
+                  The Directorate &amp; Founding Council
+                </div>
+                <div className="text-[11px] text-neutral-500 tracking-wider uppercase">
+                  Zenvitra Foundation &bull; New Delhi // Global Dais
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 text-amber-300 text-[10px] tracking-widest uppercase">
+                <Shield className="w-3.5 h-3.5 text-amber-400" />
+                <span>CRYPTOGRAPHICALLY RATIFIED</span>
+              </div>
             </div>
           </div>
         </div>
