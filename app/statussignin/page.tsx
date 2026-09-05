@@ -157,7 +157,7 @@ export default function StatusSignInPage() {
                 onClick={() => setIsNotificationModalOpen(true)}
                 className="text-[11px] text-amber-300 hover:text-amber-200 underline pt-1 block"
               >
-                Check live status in Google Sheets →
+                Check live status in Sovereign Ledger →
               </button>
             </div>
           )}

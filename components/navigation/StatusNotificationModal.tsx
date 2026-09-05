@@ -222,7 +222,7 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
                     </div>
                   </div>
                   <p className="text-xs text-neutral-400 font-light leading-relaxed">
-                    Your application is queued in the Google Sheets ledger. As soon as an administrator sets your status to <span className="text-emerald-400 font-mono font-bold">CONFIRM</span>, this notification will grant your instant clearance.
+                    Your application is queued in the Sovereign Review ledger. As soon as the Directorate affirms your clearance, this notification will grant your instant platform entry.
                   </p>
                 </div>
               )}
@@ -260,7 +260,7 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
           {/* Quick Notice */}
           <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-3 text-[11px] font-mono text-neutral-500">
             <Sparkles className="w-4 h-4 text-amber-400/80 shrink-0" />
-            <span>Updates in real-time when administrators approve in Google Sheets.</span>
+            <span>Updates in real-time once administrators approve your clearance.</span>
           </div>
         </motion.div>
       </div>

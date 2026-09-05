@@ -363,7 +363,7 @@ export default function StatusRegisterPage() {
                   Candidate Record Synchronized
                 </h1>
                 <p className="text-sm text-neutral-400 leading-relaxed max-w-lg mx-auto">
-                  Your diplomatic dossier and launch whitelist slot have been committed to the Zenvitra Sovereign Database & Google Sheets Master Ledger.
+                  Your diplomatic dossier and launch whitelist slot have been committed to the Zenvitra Sovereign Ledger.
                 </p>
               </div>
             </div>
@@ -1082,7 +1082,7 @@ export default function StatusRegisterPage() {
                         />
                         <label htmlFor="consentCheck" className="text-xs text-neutral-300 leading-relaxed cursor-pointer select-none">
                           <span className="font-bold text-white">Sovereign Data Storage & Telemetry Consent: </span>
-                          I consent to the ingestion of my registration metadata into the Zenvitra Sovereign Database and Google Sheets Master Ledger for the exclusive purposes of summit operations.
+                          I consent to the ingestion of my registration metadata into the Zenvitra Sovereign Database and Immutable Ledger for the exclusive purposes of summit operations.
                         </label>
                       </div>
                     </div>
