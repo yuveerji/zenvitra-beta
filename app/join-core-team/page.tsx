@@ -129,29 +129,69 @@ export default function JoinCoreTeamPage() {
 
     setIsSubmitting(true);
 
-    // Dispatch to Google Sheets (Core Team Applications tab)
-    sheetSync.coreTeam({
-      fullName: formData.fullName,
-      email: formData.email,
-      phoneNumber: formData.contactChannel || 'N/A',
-      roleAppliedFor: selectedTrack === 'other' ? formData.customTrackTitle || 'Custom' : activeTrackData.title,
-      department: selectedTrack.toUpperCase(),
-      linkedinProfile: formData.proofOfWorkUrl,
-      portfolioUrl: formData.proofOfWorkUrl,
-      cvResumeLink: formData.technicalOrDiplomaticDossier,
-      coverNote: formData.motivationStatement,
-      applicationStatus: 'UNDER_COUNCIL_REVIEW',
-      reviewerInfo: 'Genesis Executive Council',
-    });
+    try {
+      // 1. Post to API route which writes to database AND Google Sheets
+      const res = await fetch('/api/core-team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          handle: formData.handle,
+          email: formData.email,
+          phone: formData.contactChannel || 'N/A',
+          city: formData.locationTimezone || 'N/A',
+          department: selectedTrack === 'other' ? formData.customTrackTitle || 'Custom' : activeTrackData.title,
+          roleAppliedFor: selectedTrack === 'other' ? formData.customTrackTitle || 'Custom' : activeTrackData.title,
+          portfolioLink: formData.proofOfWorkUrl,
+          proofOfWorkUrl: formData.proofOfWorkUrl,
+          hoursPerWeek: formData.weeklyBandwidth,
+          weeklyBandwidth: formData.weeklyBandwidth,
+          motivation: formData.motivationStatement,
+          motivationStatement: formData.motivationStatement,
+          dossier: formData.technicalOrDiplomaticDossier,
+          pastExperience: formData.pastExperience,
+        }),
+      });
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setIsSuccess(true);
+      if (!res.ok) {
+        console.warn('API submission failed with status:', res.status);
+      }
+    } catch (err) {
+      console.error('Submission error:', err);
+    } finally {
+      setIsSubmitting(false);
+      setIsSuccess(true);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#030405] text-white selection:bg-white selection:text-black font-sans relative overflow-x-hidden pt-16 sm:pt-20">
-      <Navbar />
+    <div className="min-h-screen bg-[#030405] text-white selection:bg-white selection:text-black font-sans relative overflow-x-hidden">
+      {/* Lockdown Focused Navigation Header */}
+      <header className="sticky top-0 z-50 w-full bg-[#030405]/80 backdrop-blur-md border-b border-white/[0.06]">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/countdown" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition">
+              <Shield className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="font-display font-semibold tracking-wider text-sm text-white">
+                ZENVITRA
+              </div>
+              <div className="font-mono text-[9px] tracking-widest text-amber-400/80 uppercase">
+                GENESIS COUNCIL INGESTION
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/countdown"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-mono text-neutral-300 transition"
+          >
+            <span>Launch Countdown</span>
+            <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+        </div>
+      </header>
 
       {/* Background Ambient Grid */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:32px_32px] opacity-40 z-0" />
@@ -194,10 +234,10 @@ export default function JoinCoreTeamPage() {
               </div>
 
               <Link
-                href="/"
+                href="/countdown"
                 className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition shadow-[0_0_25px_rgba(255,255,255,0.15)]"
               >
-                Return to Sovereign Platform
+                View Launch Protocol & Countdown
               </Link>
             </div>
           ) : (
