@@ -58,6 +58,11 @@ export async function POST(req: NextRequest) {
         if (res.ok) {
           const json = await res.json().catch(() => null);
           const sheetStatus = String(json?.userStatus || json?.status || '').toUpperCase().trim();
+          
+          if (json?.role) {
+            clearanceRole = json.role;
+          }
+
           if (
             json && (
               json.isApproved === true || 
@@ -65,8 +70,7 @@ export async function POST(req: NextRequest) {
             )
           ) {
             isApproved = true;
-            statusText = sheetStatus || 'CONFIRM';
-            if (json.role) clearanceRole = json.role;
+            statusText = 'APPROVED';
 
             // Sync database status if sheet was approved
             try {
@@ -75,6 +79,12 @@ export async function POST(req: NextRequest) {
                 data: { status: 'APPROVED' },
               });
             } catch {}
+          } else if (['DENIED', 'REJECTED', 'DECLINED', 'FAILED'].includes(sheetStatus)) {
+            statusText = 'DENIED';
+          } else if (json?.found === false || sheetStatus === 'NOT_FOUND') {
+            statusText = 'NOT_FOUND';
+          } else if (sheetStatus) {
+            statusText = sheetStatus;
           }
         }
       } catch (sheetErr: any) {
@@ -196,9 +206,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       status: statusText,
+      email,
+      role: clearanceRole || 'Core Team Candidate',
       isApproved: false,
       unlocked: false,
-      message: statusText === 'QUEUED' || statusText === 'PENDING_REVIEW'
+      message: statusText === 'DENIED'
+        ? 'Security clearance was not approved for this dossier.'
+        : statusText === 'QUEUED' || statusText === 'PENDING' || statusText === 'PENDING_REVIEW'
         ? 'Your dossier is currently under Genesis Council review. Once your status changes to APPROVED in the ledger, clearance will be granted automatically.'
         : `Current dossier status: ${statusText}. Clearance has not been unlocked yet.`,
     });
