@@ -75,7 +75,7 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
 
       if (data.unlocked || data.isApproved || data.status === 'APPROVED') {
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = '/login';
         }, 1800);
       }
     } catch (err: any) {
@@ -194,7 +194,7 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
                     </div>
                   </div>
                   <p className="text-xs text-emerald-400 font-mono animate-pulse">
-                    Redirecting to unlock full platform...
+                    Redirecting to login portal...
                   </p>
                 </div>
               )}

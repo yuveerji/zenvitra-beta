@@ -65,7 +65,7 @@ export default function StatusSignInPage() {
         }
 
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = '/login';
         }, 1800);
       } else if (verifyData.status === 'PENDING' || verifyData.status === 'QUEUED') {
         // Telemetry: Log challenged attempt to 'Login Data Core'

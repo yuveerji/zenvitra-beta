@@ -96,9 +96,9 @@ export default function CountdownPage() {
       setClearanceResult(data);
 
       if (data.unlocked || data.isApproved || data.status === 'APPROVED') {
-        // Reload page to enter unlocked site
+        // Redirect to login page
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = '/login';
         }, 1500);
       }
     } catch (err: any) {

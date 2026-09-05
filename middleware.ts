@@ -32,6 +32,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/join-core-team') ||
     pathname.startsWith('/statussignin') ||
     pathname.startsWith('/statusregister') ||
+    pathname.startsWith('/login') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/icons') ||
