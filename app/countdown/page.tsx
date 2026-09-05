@@ -236,7 +236,22 @@ export default function CountdownPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Sign In & Register Navigation */}
+          <Link
+            href="/statussignin"
+            className="hidden md:inline-flex items-center px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition"
+          >
+            Sign In
+          </Link>
+
+          <Link
+            href="/statusregister"
+            className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-full bg-amber-500/[0.1] hover:bg-amber-500/[0.2] border border-amber-500/30 text-xs font-mono text-amber-300 hover:text-amber-200 transition"
+          >
+            Pre-Register
+          </Link>
+
           {/* Real-time Status Notification Bell */}
           <button
             onClick={() => setIsClearanceModalOpen(true)}

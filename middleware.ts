@@ -30,6 +30,8 @@ export function middleware(request: NextRequest) {
     isClearanceGranted ||
     pathname === '/countdown' ||
     pathname.startsWith('/join-core-team') ||
+    pathname.startsWith('/statussignin') ||
+    pathname.startsWith('/statusregister') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/icons') ||
