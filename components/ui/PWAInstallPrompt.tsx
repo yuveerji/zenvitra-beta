@@ -16,9 +16,15 @@ export function PWAInstallPrompt() {
     setIsStandalone(Boolean(isRunningStandalone));
     if (isRunningStandalone) return;
 
-    // Check if user previously dismissed
-    const dismissed = localStorage.getItem('zenvitra_pwa_prompt_dismissed');
-    if (dismissed) return;
+    // 1.5 days dismissal duration = 36 hours in milliseconds
+    const COOLDOWN_MS = 1.5 * 24 * 60 * 60 * 1000; // 129,600,000 ms (36 hours)
+    const dismissedAt = localStorage.getItem('zenvitra_pwa_prompt_dismissed_at');
+    if (dismissedAt) {
+      const timeElapsed = Date.now() - parseInt(dismissedAt, 10);
+      if (!isNaN(timeElapsed) && timeElapsed < COOLDOWN_MS) {
+        return; // Still in cooldown period (less than 1.5 days elapsed)
+      }
+    }
 
     // Detect iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
@@ -49,12 +55,14 @@ export function PWAInstallPrompt() {
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
       setShowPrompt(false);
+      localStorage.setItem('zenvitra_pwa_installed', 'true');
     }
   };
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('zenvitra_pwa_prompt_dismissed', 'true');
+    // Store current timestamp; prompt will only reappear after 1.5 days (36 hours)
+    localStorage.setItem('zenvitra_pwa_prompt_dismissed_at', Date.now().toString());
   };
 
   if (!showPrompt || isStandalone) return null;
