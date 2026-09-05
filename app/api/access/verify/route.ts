@@ -75,13 +75,88 @@ export async function POST(req: NextRequest) {
     }
 
     if (isApproved) {
+      // Map requested role to PlatformRole & badge
+      let platformRole = 'DELEGATE';
+      let roleBadge = 'GOLD';
+      const roleUpper = clearanceRole.toUpperCase();
+
+      if (roleUpper.includes('COFOUNDER') || roleUpper.includes('CO-FOUNDER') || roleUpper.includes('EXECUTIVE')) {
+        platformRole = 'CO_FOUNDER';
+        roleBadge = 'GOLD';
+      } else if (roleUpper.includes('SECRETARIAT') || roleUpper.includes('SEC TEAM')) {
+        platformRole = 'SECRETARY_GENERAL';
+        roleBadge = 'SECRETARIAT';
+      } else if (roleUpper.includes('ENGINEERING') || roleUpper.includes('CTO') || roleUpper.includes('TECH')) {
+        platformRole = 'TECH_LEAD';
+        roleBadge = 'GOLD';
+      } else if (roleUpper.includes('DESIGN')) {
+        platformRole = 'DESIGN_LEAD';
+        roleBadge = 'BLUE';
+      } else if (roleUpper.includes('PRESS')) {
+        platformRole = 'PRESS_CORPS';
+        roleBadge = 'PRESS';
+      } else if (roleUpper.includes('OPS') || roleUpper.includes('OPERATIONS')) {
+        platformRole = 'OPERATIONS_LEAD';
+        roleBadge = 'BLUE';
+      } else if (roleUpper.includes('AMBASSADOR') || roleUpper.includes('CAMPUS')) {
+        platformRole = 'CAMPUS_AMBASSADOR';
+        roleBadge = 'AMBASSADOR';
+      } else {
+        platformRole = 'CORE_TEAM';
+        roleBadge = 'GOLD';
+      }
+
+      // Automatically upgrade or create User record with requested permissions in database
+      let targetUser = null;
+      try {
+        targetUser = await db.user.findFirst({
+          where: { email: { equals: email } },
+        });
+
+        if (targetUser) {
+          targetUser = await db.user.update({
+            where: { id: targetUser.id },
+            data: {
+              role: platformRole,
+              roleBadge: roleBadge,
+              verified: true,
+            },
+          });
+        } else {
+          // If applicant hasn't registered yet, create active user with granted role
+          const baseHandle = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+          targetUser = await db.user.create({
+            data: {
+              email,
+              name: clearanceRole,
+              handle: baseHandle,
+              username: baseHandle,
+              role: platformRole,
+              roleBadge: roleBadge,
+              verified: true,
+            },
+          });
+        }
+      } catch (userDbErr: any) {
+        console.warn('[VERIFY-USER-ROLE-UPDATE-WARN]', userDbErr?.message);
+      }
+
       // Create response and set clearance cookie (accessible by middleware for 30 days)
       const response = NextResponse.json({
         status: 'APPROVED',
-        message: 'Security clearance granted. Welcome to Zenvitra.',
+        message: `Security clearance granted. You have been assigned the role: ${platformRole} with verified badge.`,
         email,
-        role: clearanceRole,
+        role: platformRole,
+        roleBadge,
+        clearanceRole,
         unlocked: true,
+        user: targetUser ? {
+          id: targetUser.id,
+          username: targetUser.username,
+          role: targetUser.role,
+          roleBadge: targetUser.roleBadge,
+          verified: targetUser.verified,
+        } : null,
       });
 
       response.cookies.set('zenvitra_clearance', 'SOVEREIGN_GRANTED', {
@@ -93,6 +168,14 @@ export async function POST(req: NextRequest) {
       });
 
       response.cookies.set('zenvitra_clearance_email', email, {
+        path: '/',
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+      });
+
+      response.cookies.set('zenvitra_clearance_role', platformRole, {
         path: '/',
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
