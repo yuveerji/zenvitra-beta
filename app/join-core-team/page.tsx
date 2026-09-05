@@ -15,7 +15,13 @@ import {
   ChevronRight,
   Crown,
   Users,
-  PlusCircle
+  PlusCircle,
+  UploadCloud,
+  Link as LinkIcon,
+  FileText,
+  AlertCircle,
+  X,
+  Check
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { sheetSync } from '@/lib/googleSheets';
@@ -43,17 +49,46 @@ export default function JoinCoreTeamPage() {
     fullName: '',
     handle: '',
     email: '',
+    phoneNumber: '',
     contactChannel: '', 
     locationTimezone: '',
     primaryFocus: 'Co-Founder / Executive Leadership',
     customTrackTitle: '', // Used if "Other" is selected
+    submissionMode: 'link' as 'link' | 'file' | 'both',
     proofOfWorkUrl: '', 
+    uploadedFileName: '',
+    uploadedFileSize: '',
+    uploadedFileBase64: '',
     pastExperience: '',
     technicalOrDiplomaticDossier: '',
     weeklyBandwidth: '25+ hrs (Core)',
     motivationStatement: '',
     constitutionalAccordAccepted: false,
   });
+
+  // Validation errors state
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Real-time validation checkers
+  const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+  const validatePhone = (val: string) => {
+    if (!val.trim()) return false;
+    const clean = val.replace(/[\s\-\(\)\+]/g, '');
+    return clean.length >= 7 && /^\d+$/.test(clean);
+  };
+  const validateUrl = (val: string) => {
+    if (!val.trim()) return false;
+    try {
+      const u = new URL(val);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const isEmailInvalid = touched.email && formData.email.length > 0 && !validateEmail(formData.email);
+  const isPhoneInvalid = touched.phoneNumber && formData.phoneNumber.length > 0 && !validatePhone(formData.phoneNumber);
+  const isUrlInvalid = touched.proofOfWorkUrl && formData.proofOfWorkUrl.length > 0 && !validateUrl(formData.proofOfWorkUrl);
 
   const tracks: Track[] = [
     {
@@ -141,7 +176,8 @@ export default function JoinCoreTeamPage() {
           fullName: formData.fullName,
           handle: formData.handle,
           email: formData.email,
-          phone: formData.contactChannel || 'N/A',
+          phoneNumber: formData.phoneNumber || 'N/A',
+          phone: formData.phoneNumber || formData.contactChannel || 'N/A',
           contactChannel: formData.contactChannel || 'N/A',
           city: formData.locationTimezone || 'N/A',
           locationTimezone: formData.locationTimezone || 'N/A',
@@ -149,6 +185,8 @@ export default function JoinCoreTeamPage() {
           roleAppliedFor: selectedTrack === 'other' ? formData.customTrackTitle || 'Custom' : activeTrackData.title,
           portfolioLink: formData.proofOfWorkUrl,
           proofOfWorkUrl: formData.proofOfWorkUrl,
+          dossierUploadUrl: formData.uploadedFileName ? `Document: ${formData.uploadedFileName} (${formData.uploadedFileSize})` : formData.proofOfWorkUrl,
+          uploadedDocumentName: formData.uploadedFileName || '',
           hoursPerWeek: formData.weeklyBandwidth,
           weeklyBandwidth: formData.weeklyBandwidth,
           motivation: formData.motivationStatement,
@@ -420,10 +458,12 @@ export default function JoinCoreTeamPage() {
                         )}
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                          <div className="space-y-2">
-                            <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                              Full Legal Name <span className="text-amber-400">*</span>
-                            </label>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
+                                Full Legal Name <span className="text-amber-400">*</span>
+                              </label>
+                            </div>
                             <input
                               type="text"
                               required
@@ -434,10 +474,12 @@ export default function JoinCoreTeamPage() {
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                              Desired ZEN Handle <span className="text-amber-400">*</span>
-                            </label>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
+                                Desired ZEN Handle <span className="text-amber-400">*</span>
+                              </label>
+                            </div>
                             <div className="relative">
                               <span className="absolute left-4 top-4 text-neutral-500 font-mono text-sm">@</span>
                               <input
@@ -458,47 +500,95 @@ export default function JoinCoreTeamPage() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                          <div className="space-y-2">
-                            <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                              Primary Email <span className="text-amber-400">*</span>
-                            </label>
+                          {/* Primary Email with Validation Warning */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
+                                Primary Email <span className="text-amber-400">*</span>
+                              </label>
+                              {isEmailInvalid && (
+                                <span className="text-[10px] font-mono text-rose-400 flex items-center gap-1 animate-in fade-in">
+                                  <AlertCircle className="w-3 h-3 inline" /> Invalid email format
+                                </span>
+                              )}
+                            </div>
                             <input
                               type="email"
                               required
                               placeholder="your.email@domain.com"
                               value={formData.email}
+                              onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
                               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                              className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-white/30 transition shadow-inner"
+                              className={`w-full px-5 py-4 rounded-2xl bg-black/80 border text-white placeholder-neutral-600 text-sm font-mono focus:outline-none transition shadow-inner ${
+                                isEmailInvalid
+                                  ? 'border-rose-500/70 focus:border-rose-400 bg-rose-950/10'
+                                  : 'border-white/10 focus:border-white/30'
+                              }`}
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                              Telegram/Discord <span className="text-amber-400">*</span>
-                            </label>
+                          {/* Contact Phone Number with Validation Warning */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
+                                Phone Number <span className="text-amber-400">*</span>
+                              </label>
+                              {isPhoneInvalid && (
+                                <span className="text-[10px] font-mono text-rose-400 flex items-center gap-1 animate-in fade-in">
+                                  <AlertCircle className="w-3 h-3 inline" /> Invalid phone number
+                                </span>
+                              )}
+                            </div>
+                            <input
+                              type="tel"
+                              required
+                              placeholder="+91 98765 43210"
+                              value={formData.phoneNumber}
+                              onBlur={() => setTouched((prev) => ({ ...prev, phoneNumber: true }))}
+                              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                              className={`w-full px-5 py-4 rounded-2xl bg-black/80 border text-white placeholder-neutral-600 text-sm font-mono focus:outline-none transition shadow-inner ${
+                                isPhoneInvalid
+                                  ? 'border-rose-500/70 focus:border-rose-400 bg-rose-950/10'
+                                  : 'border-white/10 focus:border-white/30'
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          {/* Telegram / Discord Channel */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
+                                Telegram / Discord Handle <span className="text-amber-400">*</span>
+                              </label>
+                            </div>
                             <input
                               type="text"
                               required
-                              placeholder="t.me/handle"
+                              placeholder="t.me/handle or username#0000"
                               value={formData.contactChannel}
                               onChange={(e) => setFormData({ ...formData, contactChannel: e.target.value })}
                               className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-white/30 transition shadow-inner"
                             />
                           </div>
-                        </div>
 
-                        <div className="space-y-2">
-                          <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                            Location & Primary Timezone <span className="text-amber-400">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. New Delhi, IST (UTC+5:30)"
-                            value={formData.locationTimezone}
-                            onChange={(e) => setFormData({ ...formData, locationTimezone: e.target.value })}
-                            className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-white/30 transition shadow-inner"
-                          />
+                          {/* Location & Timezone */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
+                                Location & Primary Timezone <span className="text-amber-400">*</span>
+                              </label>
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. New Delhi, IST (UTC+5:30)"
+                              value={formData.locationTimezone}
+                              onChange={(e) => setFormData({ ...formData, locationTimezone: e.target.value })}
+                              className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-white/30 transition shadow-inner"
+                            />
+                          </div>
                         </div>
 
                         <div className="pt-5 flex justify-end">
@@ -508,6 +598,9 @@ export default function JoinCoreTeamPage() {
                               !formData.fullName ||
                               !formData.handle ||
                               !formData.email ||
+                              !validateEmail(formData.email) ||
+                              !formData.phoneNumber ||
+                              !validatePhone(formData.phoneNumber) ||
                               !formData.contactChannel ||
                               (selectedTrack === 'other' && !formData.customTrackTitle)
                             }
@@ -524,18 +617,137 @@ export default function JoinCoreTeamPage() {
                     {/* STEP 2 */}
                     {currentStep === 2 && (
                       <div className="space-y-6 animate-in fade-in duration-300">
-                        <div className="space-y-2">
-                          <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                            Portfolio / GitHub / Previous Leadership Link <span className="text-amber-400">*</span>
-                          </label>
-                          <input
-                            type="url"
-                            required
-                            placeholder="https://portfolio.xyz or https://github.com/handle"
-                            value={formData.proofOfWorkUrl}
-                            onChange={(e) => setFormData({ ...formData, proofOfWorkUrl: e.target.value })}
-                            className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-white/30 transition shadow-inner"
-                          />
+                        {/* Portfolio & CV Upload / Link Section */}
+                        <div className="space-y-3 p-5 rounded-2xl bg-[#06070a] border border-white/10 shadow-inner">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+                            <div>
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-200 uppercase font-medium block">
+                                Portfolio / CV / Leadership Record <span className="text-amber-400">*</span>
+                              </label>
+                              <span className="text-[11px] text-neutral-400 font-light">
+                                Provide an online link or upload your PDF/DOC document
+                              </span>
+                            </div>
+
+                            {/* Link vs File Mode Selector */}
+                            <div className="inline-flex p-1 rounded-xl bg-black border border-white/10 self-start sm:self-auto">
+                              <button
+                                type="button"
+                                onClick={() => setFormData((prev) => ({ ...prev, submissionMode: 'link' }))}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition ${
+                                  formData.submissionMode === 'link'
+                                    ? 'bg-white text-black font-semibold shadow-sm'
+                                    : 'text-neutral-400 hover:text-white'
+                                }`}
+                              >
+                                <LinkIcon className="w-3.5 h-3.5" />
+                                <span>Web Link</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setFormData((prev) => ({ ...prev, submissionMode: 'file' }))}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition ${
+                                  formData.submissionMode === 'file'
+                                    ? 'bg-white text-black font-semibold shadow-sm'
+                                    : 'text-neutral-400 hover:text-white'
+                                }`}
+                              >
+                                <UploadCloud className="w-3.5 h-3.5" />
+                                <span>PDF / DOC Upload</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Mode: Web Link */}
+                          {formData.submissionMode === 'link' && (
+                            <div className="space-y-1.5 pt-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-mono text-neutral-400 uppercase">
+                                  Profile / Portfolio / GitHub URL
+                                </span>
+                                {isUrlInvalid && (
+                                  <span className="text-[10px] font-mono text-rose-400 flex items-center gap-1 animate-in fade-in">
+                                    <AlertCircle className="w-3 h-3 inline" /> Invalid link URL (must include https://)
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative">
+                                <LinkIcon className="absolute left-4 top-4 w-4 h-4 text-neutral-500" />
+                                <input
+                                  type="url"
+                                  placeholder="https://portfolio.xyz or https://github.com/handle"
+                                  value={formData.proofOfWorkUrl}
+                                  onBlur={() => setTouched((prev) => ({ ...prev, proofOfWorkUrl: true }))}
+                                  onChange={(e) => setFormData({ ...formData, proofOfWorkUrl: e.target.value })}
+                                  className={`w-full pl-11 pr-5 py-3.5 rounded-xl bg-black border text-white placeholder-neutral-600 text-sm font-mono focus:outline-none transition shadow-inner ${
+                                    isUrlInvalid
+                                      ? 'border-rose-500/70 focus:border-rose-400 bg-rose-950/10'
+                                      : 'border-white/10 focus:border-white/30'
+                                  }`}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Mode: PDF / DOC Upload */}
+                          {formData.submissionMode === 'file' && (
+                            <div className="space-y-2 pt-1">
+                              <label className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-white/15 hover:border-white/30 rounded-2xl bg-black/60 cursor-pointer transition group">
+                                <input
+                                  type="file"
+                                  accept=".pdf,.doc,.docx,.txt"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onload = () => {
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          uploadedFileName: file.name,
+                                          uploadedFileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+                                          uploadedFileBase64: (reader.result as string) || '',
+                                          proofOfWorkUrl: prev.proofOfWorkUrl || file.name,
+                                        }));
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                />
+                                <UploadCloud className="w-8 h-8 text-neutral-400 group-hover:text-white transition group-hover:scale-110 mb-2" />
+                                <span className="font-mono text-xs text-white group-hover:text-amber-300 transition">
+                                  {formData.uploadedFileName ? 'Click to change file' : 'Click or Drag & Drop CV / Portfolio (.PDF, .DOC, .DOCX)'}
+                                </span>
+                                <span className="font-mono text-[10px] text-neutral-500 mt-1">
+                                  Maximum dossier file size: 15MB
+                                </span>
+                              </label>
+
+                              {formData.uploadedFileName && (
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-xs animate-in fade-in">
+                                  <div className="flex items-center gap-2 truncate">
+                                    <FileText className="w-4 h-4 shrink-0 text-emerald-400" />
+                                    <span className="truncate">{formData.uploadedFileName}</span>
+                                    <span className="text-neutral-500 text-[10px]">({formData.uploadedFileSize})</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        uploadedFileName: '',
+                                        uploadedFileSize: '',
+                                        uploadedFileBase64: '',
+                                      }))
+                                    }
+                                    className="p-1 hover:text-white text-neutral-400 transition"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="space-y-2">
@@ -579,7 +791,7 @@ export default function JoinCoreTeamPage() {
                           <button
                             type="button"
                             disabled={
-                              !formData.proofOfWorkUrl ||
+                              !(formData.submissionMode === 'file' ? Boolean(formData.uploadedFileName) : (Boolean(formData.proofOfWorkUrl) && validateUrl(formData.proofOfWorkUrl))) ||
                               !formData.pastExperience ||
                               !formData.technicalOrDiplomaticDossier
                             }

@@ -77,11 +77,13 @@ export interface CoreTeamApplicationRecord {
   fullName: string;
   handle?: string;
   email: string;
+  phoneNumber?: string;
   contactChannel?: string;
   locationTimezone?: string;
   roleAppliedFor: string;
   department: string;
   portfolioUrl?: string;
+  dossierUploadUrl?: string;
   leadershipAccomplishments?: string;
   strategicVision?: string;
   weeklyBandwidth?: string;

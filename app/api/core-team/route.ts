@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { fullName, email, phone, city, institution, department, portfolioLink, motivation, hoursPerWeek } = body;
+    const { fullName, email, phone, phoneNumber, city, locationTimezone, institution, department, portfolioLink, motivation, hoursPerWeek } = body;
 
     if (!email || !fullName) {
       return NextResponse.json(
@@ -13,6 +13,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    const resolvedPhone = phoneNumber || phone || body.contactPhone || 'N/A';
+    const resolvedContactChannel = body.contactChannel || 'N/A';
+    const resolvedLocation = locationTimezone || city || body.location || 'N/A';
+    const resolvedPortfolio = body.portfolioUrl || portfolioLink || body.proofOfWorkUrl || 'N/A';
+    const resolvedDossierDoc = body.dossierUploadUrl || body.uploadedDocumentUrl || (body.uploadedDocumentName ? `Uploaded File: ${body.uploadedDocumentName}` : 'N/A');
 
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || 'Browser Client';
@@ -26,7 +32,7 @@ export async function POST(req: NextRequest) {
           email,
           handle: body.handle || null,
           roleRequested: department || body.roleAppliedFor || 'Core Team',
-          proofUrl: portfolioLink || body.proofOfWorkUrl || null,
+          proofUrl: resolvedPortfolio !== 'N/A' ? resolvedPortfolio : (resolvedDossierDoc !== 'N/A' ? resolvedDossierDoc : null),
           weeklyHours: hoursPerWeek || body.weeklyBandwidth || null,
           statement: motivation || body.motivationStatement || null,
           status: 'QUEUED',
@@ -45,10 +51,11 @@ export async function POST(req: NextRequest) {
           fullName,
           handle: body.handle ? (body.handle.startsWith('@') ? body.handle : `@${body.handle}`) : 'N/A',
           email,
-          contactChannel: body.contactChannel || phone || 'N/A',
-          phone: body.contactChannel || phone || 'N/A',
-          locationTimezone: body.locationTimezone || city || 'N/A',
-          city: body.locationTimezone || city || 'N/A',
+          phoneNumber: resolvedPhone,
+          phone: resolvedPhone,
+          contactChannel: resolvedContactChannel,
+          locationTimezone: resolvedLocation,
+          city: resolvedLocation,
 
           // --- Role & Department ---
           roleApplied: department || body.roleAppliedFor || 'Core Team',
@@ -56,9 +63,10 @@ export async function POST(req: NextRequest) {
           department: department || 'CORE',
 
           // --- STAGE 2: Leadership Dossier & Track Record ---
-          portfolioUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
-          proofOfWorkUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
-          linkedinProfile: portfolioLink || body.proofOfWorkUrl || 'N/A',
+          portfolioUrl: resolvedPortfolio,
+          proofOfWorkUrl: resolvedPortfolio,
+          dossierUploadUrl: resolvedDossierDoc,
+          uploadedDocumentName: body.uploadedDocumentName || 'N/A',
           pastExperience: body.pastExperience || 'N/A',
           leadershipAccomplishments: body.pastExperience || 'N/A',
           technicalOrDiplomaticDossier: body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
