@@ -21,8 +21,10 @@ import {
   FileText,
   AlertCircle,
   X,
-  Check
+  Check,
+  Bell
 } from 'lucide-react';
+import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 import { Navbar } from '@/components/layout/Navbar';
 import { sheetSync } from '@/lib/googleSheets';
 
@@ -43,6 +45,7 @@ export default function JoinCoreTeamPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -240,15 +243,35 @@ export default function JoinCoreTeamPage() {
             </div>
           </Link>
 
-          <Link
-            href="/countdown"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-mono text-neutral-300 transition"
-          >
-            <span>Launch Countdown</span>
-            <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
-          </Link>
+          <div className="flex items-center gap-3">
+            {/* Status Notification Bell */}
+            <button
+              onClick={() => setIsStatusModalOpen(true)}
+              className="relative flex items-center justify-center p-2 rounded-full bg-amber-400/[0.08] hover:bg-amber-400/[0.18] border border-amber-400/30 text-amber-300 transition cursor-pointer group shadow-[0_0_15px_rgba(251,191,36,0.15)]"
+              title="Check Application Status"
+            >
+              <Bell className="w-4 h-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400" />
+            </button>
+
+            <Link
+              href="/countdown"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-mono text-neutral-300 transition"
+            >
+              <span>Launch Countdown</span>
+              <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+            </Link>
+          </div>
         </div>
       </header>
+
+      {/* Status Notification Modal */}
+      <StatusNotificationModal
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        initialEmail={formData.email}
+      />
 
       {/* Background Ambient Grid */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:32px_32px] opacity-40 z-0" />

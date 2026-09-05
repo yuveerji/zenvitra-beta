@@ -15,8 +15,10 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  X
+  X,
+  Bell
 } from 'lucide-react';
+import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 
 export default function CountdownPage() {
   // Target: September 18, 2026, 17:00:00 IST (UTC+05:30)
@@ -235,6 +237,17 @@ export default function CountdownPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Real-time Status Notification Bell */}
+          <button
+            onClick={() => setIsClearanceModalOpen(true)}
+            className="relative flex items-center justify-center p-2 rounded-full bg-amber-400/[0.08] hover:bg-amber-400/[0.18] border border-amber-400/30 text-amber-300 transition cursor-pointer group shadow-[0_0_15px_rgba(251,191,36,0.15)]"
+            title="Check Your Application Status"
+          >
+            <Bell className="w-4 h-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400" />
+          </button>
+
           <button
             onClick={() => setIsClearanceModalOpen(true)}
             className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/[0.08] hover:bg-amber-500/[0.15] border border-amber-500/30 text-xs font-mono text-amber-300 transition cursor-pointer"
@@ -262,6 +275,12 @@ export default function CountdownPage() {
           </button>
         </div>
       </header>
+
+      {/* Reusable Status Notification Modal */}
+      <StatusNotificationModal
+        isOpen={isClearanceModalOpen}
+        onClose={() => setIsClearanceModalOpen(false)}
+      />
 
       {/* Main Center Content */}
       <main className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex-1 flex flex-col items-center justify-center text-center space-y-10">
@@ -449,101 +468,6 @@ export default function CountdownPage() {
             </button>
           </div>
         </div>
-
-        {/* Clearance Verification Modal */}
-        {isClearanceModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md rounded-[2.2rem] bg-[#07090e] border border-white/15 p-7 sm:p-9 space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.95)] text-left">
-              {/* Modal Close Button */}
-              <button
-                onClick={() => {
-                  setIsClearanceModalOpen(false);
-                  setClearanceResult(null);
-                }}
-                className="absolute top-6 right-6 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/[0.08] border border-amber-400/30 text-[10px] font-mono tracking-widest text-amber-300 uppercase">
-                  <KeyRound className="w-3 h-3" />
-                  <span>CLEARANCE VERIFICATION</span>
-                </div>
-                <h3 
-                  className="text-xl sm:text-2xl text-white font-semibold tracking-tight"
-                  style={{ fontFamily: 'Clash Display, sans-serif' }}
-                >
-                  Verify Application Clearance
-                </h3>
-                <p className="text-xs text-neutral-400 leading-relaxed">
-                  Enter your registered application email. If your dossier status has been updated to <span className="text-white font-mono">APPROVED</span> in the Google Sheet / Ledger, security clearance will unlock the platform instantly.
-                </p>
-              </div>
-
-              <form onSubmit={handleVerifyAccess} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="font-mono text-[10px] tracking-wider text-neutral-300 uppercase block font-medium">
-                    Registered Applicant Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="name@zenvitra.xyz"
-                    value={clearanceEmail}
-                    onChange={(e) => setClearanceEmail(e.target.value)}
-                    className="w-full px-5 py-3.5 rounded-xl bg-black border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-amber-400/50 transition shadow-inner"
-                  />
-                </div>
-
-                {clearanceResult && (
-                  <div className={`p-4 rounded-xl font-mono text-xs space-y-1 ${
-                    clearanceResult.unlocked || clearanceResult.isApproved || clearanceResult.status === 'APPROVED'
-                      ? 'bg-emerald-400/10 border border-emerald-400/30 text-emerald-300'
-                      : 'bg-amber-400/10 border border-amber-400/30 text-amber-300'
-                  }`}>
-                    <div className="flex items-center gap-2 font-bold uppercase">
-                      {clearanceResult.unlocked || clearanceResult.isApproved || clearanceResult.status === 'APPROVED' ? (
-                        <>
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                          <span>Clearance Granted</span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="w-4 h-4 text-amber-400" />
-                          <span>Status: {clearanceResult.status}</span>
-                        </>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-neutral-300 leading-relaxed pt-1">
-                      {clearanceResult.message}
-                    </p>
-                    {(clearanceResult.unlocked || clearanceResult.isApproved || clearanceResult.status === 'APPROVED') && (
-                      <p className="text-[11px] text-emerald-400 font-bold pt-1 animate-pulse">
-                        Redirecting to Sovereign Platform...
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isVerifying || !clearanceEmail}
-                  className="w-full py-4 rounded-xl bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-                >
-                  {isVerifying ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Checking Sovereign Ledger...</span>
-                    </>
-                  ) : (
-                    <span>Check Clearance &amp; Unlock</span>
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
       </main>
 
       {/* Footer */}
