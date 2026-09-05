@@ -44,14 +44,18 @@ export async function POST(req: NextRequest) {
           // Standard Apps Script Column Mapping:
           fullName,
           email,
+          phone: phone || body.contactChannel || 'N/A',
           phoneNumber: phone || body.contactChannel || 'N/A',
+          roleApplied: department || body.roleAppliedFor || 'Core Team',
           roleAppliedFor: department || body.roleAppliedFor || 'Core Team',
           department: department || 'CORE',
+          linkedinUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
           linkedinProfile: portfolioLink || body.proofOfWorkUrl || 'N/A',
           portfolioUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
+          resumeLink: body.dossier || body.technicalOrDiplomaticDossier || 'N/A',
           cvResumeLink: body.dossier || body.technicalOrDiplomaticDossier || 'N/A',
           coverNote: motivation || body.motivationStatement || 'N/A',
-          applicationStatus: 'UNDER_COUNCIL_REVIEW',
+          applicationStatus: 'PENDING',
           reviewerInfo: 'Genesis Executive Council',
 
           // Additional context fields:

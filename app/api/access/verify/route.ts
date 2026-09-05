@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
           statusText === 'APPROVED' || 
           statusText === 'ACCEPTED' || 
           statusText === 'VERIFIED' ||
-          statusText === 'ACTIVE'
+          statusText === 'ACTIVE' ||
+          statusText === 'CONFIRM' ||
+          statusText === 'CONFIRMED'
         ) {
           isApproved = true;
         }
@@ -55,9 +57,15 @@ export async function POST(req: NextRequest) {
 
         if (res.ok) {
           const json = await res.json().catch(() => null);
-          if (json && (json.isApproved === true || ['APPROVED', 'ACCEPTED', 'VERIFIED'].includes(String(json.userStatus || '').toUpperCase()))) {
+          const sheetStatus = String(json?.userStatus || json?.status || '').toUpperCase().trim();
+          if (
+            json && (
+              json.isApproved === true || 
+              ['APPROVED', 'ACCEPTED', 'VERIFIED', 'ACTIVE', 'CONFIRM', 'CONFIRMED'].includes(sheetStatus)
+            )
+          ) {
             isApproved = true;
-            statusText = json.userStatus || 'APPROVED';
+            statusText = sheetStatus || 'CONFIRM';
             if (json.role) clearanceRole = json.role;
 
             // Sync database status if sheet was approved
