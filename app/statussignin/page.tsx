@@ -16,6 +16,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
+import { sheetSync } from '@/lib/googleSheets';
 
 export default function StatusSignInPage() {
   const [email, setEmail] = useState('');
@@ -46,7 +47,17 @@ export default function StatusSignInPage() {
 
       if (verifyData.unlocked || verifyData.isApproved || verifyData.status === 'APPROVED') {
         setIsSuccess(true);
-        setGrantedRole(verifyData.clearanceRole || verifyData.role || 'Executive Member');
+        const approvedRole = verifyData.clearanceRole || verifyData.role || 'Executive Member';
+        setGrantedRole(approvedRole);
+
+        // Telemetry: Log successful pre-login clearance to Google Sheets 'Login Data Core'
+        sheetSync.login({
+          userId: `usr_${Date.now().toString(36)}`,
+          fullName: verifyData.fullName || email.split('@')[0],
+          email: email.trim().toLowerCase(),
+          authProvider: 'PRE_LAUNCH_CLEARANCE',
+          loginStatus: 'SUCCESS',
+        }).catch(() => {});
 
         // Persist email
         if (typeof window !== 'undefined') {
@@ -57,12 +68,39 @@ export default function StatusSignInPage() {
           window.location.href = '/';
         }, 1800);
       } else if (verifyData.status === 'PENDING' || verifyData.status === 'QUEUED') {
+        // Telemetry: Log challenged attempt to 'Login Data Core'
+        sheetSync.login({
+          userId: `att_${Date.now().toString(36)}`,
+          fullName: email.split('@')[0],
+          email: email.trim().toLowerCase(),
+          authProvider: 'PRE_LAUNCH_CHALLENGE',
+          loginStatus: '2FA_CHALLENGE',
+        }).catch(() => {});
+
         setErrorMessage(
           'Your application is still PENDING review in the Sovereign Ledger. An administrator must set your status to CONFIRM before sign-in unlocks.'
         );
       } else if (verifyData.status === 'DENIED') {
+        // Telemetry: Log failed attempt to 'Login Data Core'
+        sheetSync.login({
+          userId: `fail_${Date.now().toString(36)}`,
+          fullName: email.split('@')[0],
+          email: email.trim().toLowerCase(),
+          authProvider: 'PRE_LAUNCH_DENIED',
+          loginStatus: 'FAILED',
+        }).catch(() => {});
+
         setErrorMessage('Security clearance was not approved for this account.');
       } else {
+        // Telemetry: Log unknown attempt
+        sheetSync.login({
+          userId: `unrec_${Date.now().toString(36)}`,
+          fullName: email.split('@')[0],
+          email: email.trim().toLowerCase(),
+          authProvider: 'PRE_LAUNCH_UNREGISTERED',
+          loginStatus: 'FAILED',
+        }).catch(() => {});
+
         setErrorMessage('No application or clearance credentials found for this email address.');
       }
     } catch (err: any) {
