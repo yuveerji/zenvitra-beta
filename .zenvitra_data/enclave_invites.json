@@ -1,0 +1,24 @@
+[
+  {
+    "id": "INV-MASTER-ADMIN-01",
+    "adminName": "Lead Staff Administrator",
+    "passcode": "ZEN-ADMIN-PASS-2026",
+    "role": "ADMIN",
+    "singleUse": false,
+    "isClaimed": false,
+    "createdAt": "2026-09-02T16:24:20.808Z",
+    "createdBy": "@yuveer (Founder)",
+    "active": true
+  },
+  {
+    "id": "INV-OPERATOR-777",
+    "adminName": "Technical Operations Chair",
+    "passcode": "ZEN-OPERATOR-ACCESS-777",
+    "role": "ADMIN",
+    "singleUse": false,
+    "isClaimed": false,
+    "createdAt": "2026-09-02T16:24:20.808Z",
+    "createdBy": "@yuveer (Founder)",
+    "active": true
+  }
+]

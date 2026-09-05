@@ -1,0 +1,57 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  handle        String?        @unique
+  roleBadge     String         @default("DELEGATE")
+  verified      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  posts         Post[]
+  applications  Application[]
+  donations     DonationRecord[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  likes     Int      @default(0)
+  reposts   Int      @default(0)
+}
+
+model Application {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName       String
+  roleRequested  String
+  proofUrl       String
+  weeklyHours    String
+  status         String   @default("QUEUED") // QUEUED, CONFIRMED, CANCELLED
+  appliedAt      DateTime @default(now())
+}
+
+model DonationRecord {
+  id             String   @id @default(cuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  donorName      String
+  donorEmail     String
+  amount         String
+  utrOrTxnId     String   @unique
+  projectStream  String
+  status         String   @default("PENDING_AUDIT")
+  createdAt      DateTime @default(now())
+}

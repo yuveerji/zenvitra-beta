@@ -1,0 +1,312 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, ArrowRight, Shield, Heart, Sparkles, UploadCloud, CheckCircle2 } from 'lucide-react';
+
+export default function InvestDonatePage() {
+  const [activeTab, setActiveTab] = useState<'invest' | 'donate'>('invest');
+  const [submitted, setSubmitted] = useState(false);
+
+  // Investment State
+  const [investData, setInvestData] = useState({
+    name: '',
+    email: '',
+    amount: '',
+    tier: 'Seed Allocation',
+    intent: '',
+  });
+
+  // Donation State
+  const [donateData, setDonateData] = useState({
+    name: '',
+    email: '',
+    foundation: 'Youth Literacy & Education Trust',
+    amount: '',
+    screenshot: null as File | null,
+  });
+
+  const handleInvestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
+  const handleDonateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would upload the payment screenshot to your storage bucket/API
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#030405] text-white selection:bg-white selection:text-black font-sans relative overflow-x-hidden">
+      {/* Background Grid */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:32px_32px] opacity-40 z-0" />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-6 sm:px-12 py-8 min-h-screen flex flex-col justify-between">
+        {/* Top Header */}
+        <header className="flex items-center justify-between pb-8 border-b border-white/[0.08]">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2.5 text-xs font-mono text-neutral-400 hover:text-white transition group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 transform group-hover:-translate-x-1 transition" />
+            <span>Return Home</span>
+          </Link>
+          <span className="font-display font-medium text-sm tracking-[0.25em] text-white">
+            ZENVITRA CAPITAL & IMPACT
+          </span>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="py-12 flex-1">
+          {submitted ? (
+            <div className="rounded-[2.8rem] bg-[#07080b] border border-white/[0.1] p-10 sm:p-14 text-center space-y-6 shadow-[0_30px_90px_rgba(0,0,0,0.95)] max-w-xl mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-400/10 border border-emerald-400/35 mx-auto flex items-center justify-center text-emerald-400">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h2 className="font-display font-medium text-3xl text-white">
+                {activeTab === 'invest' ? 'Investment Dossier Logged' : 'Donation Screenshot Received'}
+              </h2>
+              <p className="text-sm text-neutral-400 font-light leading-relaxed">
+                {activeTab === 'invest'
+                  ? 'Our capital deployment committee will review your inquiry and reach out securely.'
+                  : 'Thank you for supporting verified charity foundations. Your payment screenshot is queued for audit under the 25% Impact Principle.'}
+              </p>
+              <button
+                onClick={() => {
+                  setSubmitted(false);
+                  setInvestData({ name: '', email: '', amount: '', tier: 'Seed Allocation', intent: '' });
+                  setDonateData({ name: '', email: '', foundation: 'Youth Literacy & Education Trust', amount: '', screenshot: null });
+                }}
+                className="px-8 py-3.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition"
+              >
+                Submit Another Record
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Heading */}
+              <div className="text-center space-y-3 max-w-xl mx-auto">
+                <h1 className="font-display font-medium text-3xl sm:text-5xl text-white tracking-tight">
+                  Capital & Charitable Impact
+                </h1>
+                <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">
+                  Choose between direct investment into Zenvitra’s sovereign infrastructure or contributing to verified partner charities via payment screenshot verification.
+                </p>
+
+                {/* Subpage Tabs Switcher */}
+                <div className="flex items-center justify-center gap-2 pt-4">
+                  <button
+                    onClick={() => setActiveTab('invest')}
+                    className={`px-6 py-3 rounded-full font-mono text-xs tracking-wider transition-all flex items-center gap-2 ${
+                      activeTab === 'invest'
+                        ? 'bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                        : 'bg-black/60 text-neutral-400 border border-white/10 hover:border-white/30'
+                    }`}
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>Invest in Zenvitra</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('donate')}
+                    className={`px-6 py-3 rounded-full font-mono text-xs tracking-wider transition-all flex items-center gap-2 ${
+                      activeTab === 'donate'
+                        ? 'bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                        : 'bg-black/60 text-neutral-400 border border-white/10 hover:border-white/30'
+                    }`}
+                  >
+                    <Heart className="w-3.5 h-3.5" />
+                    <span>Donate to Charities</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Form Container */}
+              <div className="max-w-xl mx-auto rounded-[2.8rem] bg-[#07080b] border border-white/[0.09] p-8 sm:p-12 shadow-[0_25px_80px_rgba(0,0,0,0.95)]">
+                {activeTab === 'invest' ? (
+                  /* --- INVEST FORM --- */
+                  <form onSubmit={handleInvestSubmit} className="space-y-6">
+                    <div className="space-y-1.5">
+                      <span className="font-mono text-[10px] text-amber-300 uppercase tracking-widest">INFRASTRUCTURE ALLOCATION</span>
+                      <h3 className="font-display font-medium text-xl text-white">Zenvitra Capital Syndicate</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Full Name / Entity *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Vertex Ventures"
+                            value={investData.name}
+                            onChange={(e) => setInvestData({ ...investData, name: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black/80 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-white/30"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Secure Email *</label>
+                          <input
+                            type="email"
+                            required
+                            placeholder="investor@domain.com"
+                            value={investData.email}
+                            onChange={(e) => setInvestData({ ...investData, email: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black/80 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-white/30"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Investment Tier *</label>
+                          <select
+                            value={investData.tier}
+                            onChange={(e) => setInvestData({ ...investData, tier: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black border border-white/10 text-white text-xs font-mono focus:outline-none"
+                          >
+                            <option>Seed Allocation</option>
+                            <option>Strategic Syndicate</option>
+                            <option>Institutional Anchor</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Committed Amount ($USD) *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. $25,000"
+                            value={investData.amount}
+                            onChange={(e) => setInvestData({ ...investData, amount: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black/80 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-white/30"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="font-mono text-[11px] text-neutral-300 uppercase">Strategic Intent & Value Add *</label>
+                        <textarea
+                          rows={3}
+                          required
+                          placeholder="How can your capital or network accelerate Zenvitra's sovereign ecosystem?"
+                          value={investData.intent}
+                          onChange={(e) => setInvestData({ ...investData, intent: e.target.value })}
+                          className="w-full px-4 py-3.5 rounded-xl bg-black/80 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-white/30 resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-4 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.18)]"
+                    >
+                      <span>Submit Investment Inquiry</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                ) : (
+                  /* --- DONATE FORM WITH SS UPLOAD --- */
+                  <form onSubmit={handleDonateSubmit} className="space-y-6">
+                    <div className="space-y-1.5">
+                      <span className="font-mono text-[10px] text-rose-400 uppercase tracking-widest">VERIFIED CHARITY NETWORK</span>
+                      <h3 className="font-display font-medium text-xl text-white">Foundation Donation & SS Audit</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Donor Full Name *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Sarah Jenkins"
+                            value={donateData.name}
+                            onChange={(e) => setDonateData({ ...donateData, name: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black/80 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-white/30"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Email for Receipt *</label>
+                          <input
+                            type="email"
+                            required
+                            placeholder="sarah@domain.com"
+                            value={donateData.email}
+                            onChange={(e) => setDonateData({ ...donateData, email: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black/80 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-white/30"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Select Foundation *</label>
+                          <select
+                            value={donateData.foundation}
+                            onChange={(e) => setDonateData({ ...donateData, foundation: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black border border-white/10 text-white text-xs font-mono focus:outline-none"
+                          >
+                            <option>Youth Literacy & Education Trust</option>
+                            <option>Global Youth Climate Action Fund</option>
+                            <option>Underprivileged Tech Access Initiative</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="font-mono text-[11px] text-neutral-300 uppercase">Donation Amount *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. $100 / ₹5,000"
+                            value={donateData.amount}
+                            onChange={(e) => setDonateData({ ...donateData, amount: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl bg-black/80 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-white/30"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Payment Screenshot Upload Box */}
+                      <div className="space-y-1.5">
+                        <label className="font-mono text-[11px] text-neutral-300 uppercase">Upload Payment Screenshot (SS) *</label>
+                        <div className="relative border-2 border-dashed border-white/15 rounded-2xl p-6 text-center bg-black/40 hover:border-white/30 transition">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            required
+                            onChange={(e) => setDonateData({ ...donateData, screenshot: e.target.files?.[0] || null })}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                          <div className="flex flex-col items-center space-y-2 pointer-events-none">
+                            <UploadCloud className="w-8 h-8 text-neutral-400" />
+                            <span className="font-mono text-xs text-white">
+                              {donateData.screenshot ? donateData.screenshot.name : 'Click to upload or drag & drop payment SS'}
+                            </span>
+                            <span className="font-mono text-[10px] text-neutral-500">PNG, JPG, WEBP up to 10MB</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-4 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.18)]"
+                    >
+                      <span>Submit Donation Proof (SS)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Footer */}
+        <footer className="pt-8 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-neutral-500">
+          <span>ZENVITRA &copy; 2026 // CAPITAL & CHARITY LEDGER</span>
+          <span className="uppercase tracking-widest text-neutral-400">VERIFIED COMPLIANCE</span>
+        </footer>
+      </div>
+    </div>
+  );
+}
