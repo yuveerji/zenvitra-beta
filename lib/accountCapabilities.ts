@@ -21,13 +21,25 @@ export function checkIsProfessionalAccountEnabled(profile?: UserProfile | null):
   if (checkIsAdmin(userIdentifier, profile.role)) return true;
 
   const role = (profile.role || '').toLowerCase();
-  if (role === 'admin' || role === 'core_team' || role === 'organizer') return true;
+  // Professional roles include organization, company, pro, business, creator, journalist, etc.
+  if (
+    role === 'professional' ||
+    role === 'pro' ||
+    role === 'organization' ||
+    role === 'org' ||
+    role === 'creator' ||
+    role === 'journalist' ||
+    role === 'admin' ||
+    role === 'core_team' ||
+    role === 'organizer' ||
+    role === 'secretariat'
+  ) return true;
 
   const email = (profile.email || '').toLowerCase();
-  if (email.includes('founder') || email.includes('admin') || email.includes('org')) return true;
+  if (email.includes('founder') || email.includes('admin') || email.includes('org') || email.includes('pro')) return true;
 
   const username = (profile.username || '').replace(/^@/, '').toLowerCase();
-  if (username === 'yuveer' || username === 'founder' || username.includes('org')) return true;
+  if (username === 'yuveer' || username === 'founder' || username.includes('org') || username.includes('pro')) return true;
 
   return false;
 }
@@ -49,13 +61,21 @@ export function checkIsEventAccountEnabled(profile?: UserProfile | null): boolea
   if (checkIsAdmin(eventUserIdentifier, profile.role)) return true;
 
   const role = (profile.role || '').toLowerCase();
-  if (role === 'admin' || role === 'organizer' || role === 'secretariat' || role === 'core_team') return true;
+  // Event roles include organizer, eventer, events, secretariat, admin, core_team
+  if (
+    role === 'organizer' ||
+    role === 'eventer' ||
+    role === 'events' ||
+    role === 'secretariat' ||
+    role === 'admin' ||
+    role === 'core_team'
+  ) return true;
 
   const email = (profile.email || '').toLowerCase();
   if (email.includes('founder') || email.includes('admin') || email.includes('mun') || email.includes('event')) return true;
 
   const username = (profile.username || '').replace(/^@/, '').toLowerCase();
-  if (username === 'yuveer' || username === 'founder' || username.includes('mun') || username.includes('event')) return true;
+  if (username === 'yuveer' || username === 'founder' || username.includes('mun') || username.includes('event') || username.includes('organizer')) return true;
 
   return false;
 }

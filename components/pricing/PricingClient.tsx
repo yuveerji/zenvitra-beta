@@ -97,6 +97,19 @@ export function PricingClient() {
   const [userAge, setUserAge] = useState<number>(17);
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
 
+  // Safety: reset audience if current audience is not accessible for the user's account tier
+  React.useEffect(() => {
+    if (!isEventEnabled && (audience === 'events' || audience === 'organizer')) {
+      if (isProfessionalEnabled) {
+        setAudience('professional');
+      } else {
+        setAudience('people');
+      }
+    } else if (!isProfessionalEnabled && !isEventEnabled && audience === 'professional') {
+      setAudience('people');
+    }
+  }, [isProfessionalEnabled, isEventEnabled, audience]);
+
   /* ── 1. PLANS DATA (Direct from the Bible) ── */
   const peoplePlans: Plan[] = [
     {
@@ -770,8 +783,15 @@ export function PricingClient() {
             </div>
           )}
 
-          {/* Audience Category Selector */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 p-1.5 bg-[#080911]/90 backdrop-blur-2xl rounded-2xl border border-white/10 max-w-4xl mx-auto shadow-2xl">
+          {/* Audience Category Selector (Role-Gated Visibility) */}
+          <div className={`grid gap-2 p-1.5 bg-[#080911]/90 backdrop-blur-2xl rounded-2xl border border-white/10 max-w-4xl mx-auto shadow-2xl ${
+            isEventEnabled
+              ? 'grid-cols-2 lg:grid-cols-4'
+              : isProfessionalEnabled
+              ? 'grid-cols-1 sm:grid-cols-2 max-w-xl'
+              : 'grid-cols-1 max-w-md'
+          }`}>
+            {/* 1. People (Individuals) - Visible to everyone */}
             <button
               type="button"
               onClick={() => setAudience('people')}
@@ -785,59 +805,53 @@ export function PricingClient() {
               <span className="truncate">People (Individuals)</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setAudience('professional')}
-              className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
-                audience === 'professional'
-                  ? 'bg-purple-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.45)]'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <Briefcase className="w-4 h-4 shrink-0" />
-              <span className="truncate">Professional (Orgs)</span>
-              {!isProfessionalEnabled && (
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/10 text-neutral-400 border border-white/10 shrink-0">
-                  🔒 Gated
-                </span>
-              )}
-            </button>
+            {/* 2. Professional (Orgs) - Visible to Professional Accounts & Eventers */}
+            {(isProfessionalEnabled || isEventEnabled) && (
+              <button
+                type="button"
+                onClick={() => setAudience('professional')}
+                className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
+                  audience === 'professional'
+                    ? 'bg-purple-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.45)]'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                <Briefcase className="w-4 h-4 shrink-0" />
+                <span className="truncate">Professional (Orgs)</span>
+              </button>
+            )}
 
-            <button
-              type="button"
-              onClick={() => setAudience('events')}
-              className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
-                audience === 'events'
-                  ? 'bg-rose-500 text-white shadow-[0_0_25px_rgba(244,63,94,0.45)]'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <Calendar className="w-4 h-4 shrink-0" />
-              <span className="truncate">ZEN.EVENTS</span>
-              {!isEventEnabled && (
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/10 text-neutral-400 border border-white/10 shrink-0">
-                  🔒 Gated
-                </span>
-              )}
-            </button>
+            {/* 3. ZEN.EVENTS - Visible only to Eventers / Organizers */}
+            {isEventEnabled && (
+              <button
+                type="button"
+                onClick={() => setAudience('events')}
+                className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
+                  audience === 'events'
+                    ? 'bg-rose-500 text-white shadow-[0_0_25px_rgba(244,63,94,0.45)]'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span className="truncate">ZEN.EVENTS</span>
+              </button>
+            )}
 
-            <button
-              type="button"
-              onClick={() => setAudience('organizer')}
-              className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
-                audience === 'organizer'
-                  ? 'bg-amber-500 text-black shadow-[0_0_25px_rgba(245,158,11,0.45)]'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              <Crown className="w-4 h-4 shrink-0" />
-              <span className="truncate">Organizers</span>
-              {!isEventEnabled && (
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/10 text-neutral-400 border border-white/10 shrink-0">
-                  🔒 Gated
-                </span>
-              )}
-            </button>
+            {/* 4. Organizers - Visible only to Eventers / Organizers */}
+            {isEventEnabled && (
+              <button
+                type="button"
+                onClick={() => setAudience('organizer')}
+                className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
+                  audience === 'organizer'
+                    ? 'bg-amber-500 text-black shadow-[0_0_25px_rgba(245,158,11,0.45)]'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                <Crown className="w-4 h-4 shrink-0" />
+                <span className="truncate">Organizers</span>
+              </button>
+            )}
           </div>
 
           {/* Sub-bar: Billing Toggle + Launch View Mode + Currency */}
