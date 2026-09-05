@@ -319,47 +319,6 @@ export default function CountdownPage() {
           </p>
         </div>
 
-        {/* Countdown Grid */}
-        <div className="w-full max-w-3xl">
-          <div className="p-8 sm:p-10 rounded-[2.5rem] bg-[#07090f]/90 border border-white/[0.1] shadow-[0_30px_100px_rgba(0,0,0,0.95)] backdrop-blur-xl space-y-8">
-            <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-              <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.25em] text-neutral-400 uppercase">
-                TARGET PROTOCOL UNLOCK
-              </span>
-              <span className="font-mono text-[10px] sm:text-[11px] text-amber-400 tracking-wider">
-                18 SEPT 2026 // 17:00 IST
-              </span>
-            </div>
-
-            <div className="grid grid-cols-4 gap-3 sm:gap-6">
-              {[
-                { label: 'DAYS', value: timeLeft.days },
-                { label: 'HOURS', value: timeLeft.hours },
-                { label: 'MINUTES', value: timeLeft.minutes },
-                { label: 'SECONDS', value: timeLeft.seconds },
-              ].map((item, index) => (
-                <div 
-                  key={index}
-                  className="flex flex-col items-center justify-center p-4 sm:p-6 rounded-2xl bg-black/60 border border-white/[0.06] shadow-inner"
-                >
-                  <span className="font-mono text-3xl sm:text-6xl font-bold text-white tracking-tight tabular-nums">
-                    {String(item.value).padStart(2, '0')}
-                  </span>
-                  <span className="font-mono text-[9px] sm:text-[11px] text-neutral-500 tracking-[0.2em] uppercase mt-2">
-                    {item.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Sound Indicator Notice */}
-            <div className="text-[11px] font-mono text-neutral-500 flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-ping" />
-              <span>Tick-tock telemetry active. Tap anywhere to toggle audio.</span>
-            </div>
-          </div>
-        </div>
-
         {/* Hero Monolith Interactive 3D Card with Mouse Cursor Effect */}
         <div className="w-full max-w-xs sm:max-w-sm mx-auto my-2">
           <div
@@ -445,6 +404,47 @@ export default function CountdownPage() {
                   <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
                 </h3>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Countdown Grid */}
+        <div className="w-full max-w-3xl">
+          <div className="p-8 sm:p-10 rounded-[2.5rem] bg-[#07090f]/90 border border-white/[0.1] shadow-[0_30px_100px_rgba(0,0,0,0.95)] backdrop-blur-xl space-y-8">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+              <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.25em] text-neutral-400 uppercase">
+                TARGET PROTOCOL UNLOCK
+              </span>
+              <span className="font-mono text-[10px] sm:text-[11px] text-amber-400 tracking-wider">
+                18 SEPT 2026 // 17:00 IST
+              </span>
+            </div>
+
+            <div className="grid grid-cols-4 gap-3 sm:gap-6">
+              {[
+                { label: 'DAYS', value: timeLeft.days },
+                { label: 'HOURS', value: timeLeft.hours },
+                { label: 'MINUTES', value: timeLeft.minutes },
+                { label: 'SECONDS', value: timeLeft.seconds },
+              ].map((item, index) => (
+                <div 
+                  key={index}
+                  className="flex flex-col items-center justify-center p-4 sm:p-6 rounded-2xl bg-black/60 border border-white/[0.06] shadow-inner"
+                >
+                  <span className="font-mono text-3xl sm:text-6xl font-bold text-white tracking-tight tabular-nums">
+                    {String(item.value).padStart(2, '0')}
+                  </span>
+                  <span className="font-mono text-[9px] sm:text-[11px] text-neutral-500 tracking-[0.2em] uppercase mt-2">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Sound Indicator Notice */}
+            <div className="text-[11px] font-mono text-neutral-500 flex items-center justify-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-ping" />
+              <span>Tick-tock telemetry active. Tap anywhere to toggle audio.</span>
             </div>
           </div>
         </div>
