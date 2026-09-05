@@ -210,8 +210,12 @@ export async function POST(req: NextRequest) {
       role: clearanceRole || 'Core Team Candidate',
       isApproved: false,
       unlocked: false,
+      found: statusText !== 'NOT_FOUND',
+      isRegistered: statusText !== 'NOT_FOUND',
       message: statusText === 'DENIED'
         ? 'Security clearance was not approved for this dossier.'
+        : statusText === 'NOT_FOUND'
+        ? 'No record found. Please pre-register to join the launch whitelist.'
         : statusText === 'QUEUED' || statusText === 'PENDING' || statusText === 'PENDING_REVIEW'
         ? 'Your dossier is currently under Genesis Council review. Once your status changes to APPROVED in the ledger, clearance will be granted automatically.'
         : `Current dossier status: ${statusText}. Clearance has not been unlocked yet.`,

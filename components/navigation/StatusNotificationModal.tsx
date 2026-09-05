@@ -63,23 +63,33 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
       });
 
       const data = await res.json();
+      const isFound = data.status !== 'NOT_FOUND' && data.found !== false;
+      const isApprovedClean = data.unlocked || data.isApproved || data.status === 'APPROVED';
+
       setResult({
-        found: data.status !== 'NOT_FOUND',
+        found: isFound,
         status: data.status,
-        isApproved: data.unlocked || data.isApproved || data.status === 'APPROVED',
+        isApproved: isApprovedClean,
         role: data.clearanceRole || data.role || 'Core Team Candidate',
         message: data.message,
         email: cleanEmail,
         checkedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       });
 
-      if (data.unlocked || data.isApproved || data.status === 'APPROVED') {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('zenvitra_applicant_email', cleanEmail);
-        }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('zenvitra_applicant_email', cleanEmail);
+      }
+
+      // If approved, proceed directly to /statussignin
+      if (isApprovedClean) {
         setTimeout(() => {
           window.location.href = `/statussignin?email=${encodeURIComponent(cleanEmail)}`;
         }, 1600);
+      } else if (!isFound) {
+        // If not registered in the ledger, auto-redirect to /statusregister
+        setTimeout(() => {
+          window.location.href = `/statusregister?email=${encodeURIComponent(cleanEmail)}`;
+        }, 2200);
       }
     } catch (err: any) {
       setResult({
@@ -245,16 +255,28 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
               )}
 
               {isNotFound && (
-                <div className="p-5 rounded-2xl bg-neutral-900 border border-white/10 text-neutral-300 space-y-2">
-                  <div className="flex items-center gap-2.5 text-neutral-400">
+                <div className="p-5 rounded-2xl bg-neutral-900 border border-amber-500/20 text-neutral-300 space-y-3">
+                  <div className="flex items-center gap-2.5 text-amber-400">
                     <ShieldAlert className="w-5 h-5 shrink-0" />
                     <span className="font-display font-medium text-sm text-white">
-                      No Application Found
+                      Not Registered On Whitelist
                     </span>
                   </div>
                   <p className="text-xs text-neutral-400 font-light leading-relaxed">
-                    We could not find an application for <span className="text-white font-mono">{result.email}</span> in the Core Team ledger. Please make sure you used the same email address.
+                    We could not find an account for <span className="text-white font-mono">{result.email}</span> in the Sovereign Ledger.
                   </p>
+                  <div className="pt-1 space-y-2">
+                    <a
+                      href={`/statusregister?email=${encodeURIComponent(result.email || '')}`}
+                      className="w-full py-2.5 px-4 rounded-xl bg-amber-400 text-black font-mono text-xs font-bold hover:bg-amber-300 transition flex items-center justify-center gap-2 text-center"
+                    >
+                      <span>Complete Pre-Registration Now</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </a>
+                    <p className="text-[10px] text-amber-300/80 font-mono text-center animate-pulse">
+                      Redirecting you to the Pre-Registration desk...
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

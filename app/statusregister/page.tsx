@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Sparkles, 
@@ -160,6 +160,22 @@ export default function StatusRegisterPage() {
     codeOfConductAccepted: true,
     dataProcessingConsent: true,
   });
+
+  // Auto-populate email from URL parameter or localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const emailParam = urlParams.get('email');
+      if (emailParam) {
+        setFormData((prev) => ({ ...prev, email: emailParam }));
+      } else {
+        const savedEmail = localStorage.getItem('zenvitra_applicant_email');
+        if (savedEmail) {
+          setFormData((prev) => ({ ...prev, email: savedEmail }));
+        }
+      }
+    }
+  }, []);
 
   // Auto-generate candidate ID
   const candidateRefId = useMemo(() => {

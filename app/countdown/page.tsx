@@ -102,6 +102,13 @@ export default function CountdownPage() {
         setTimeout(() => {
           window.location.href = `/statussignin?email=${encodeURIComponent(clearanceEmail)}`;
         }, 1500);
+      } else if (data.status === 'NOT_FOUND' || data.found === false) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('zenvitra_applicant_email', clearanceEmail);
+        }
+        setTimeout(() => {
+          window.location.href = `/statusregister?email=${encodeURIComponent(clearanceEmail)}`;
+        }, 2000);
       }
     } catch (err: any) {
       setClearanceResult({
