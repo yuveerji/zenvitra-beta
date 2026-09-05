@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Volume2, 
   VolumeX, 
   ArrowRight, 
   Lock, 
   Users, 
-  Radio
+  Radio,
+  Sparkles
 } from 'lucide-react';
 
 export default function CountdownPage() {
@@ -25,6 +27,36 @@ export default function CountdownPage() {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const isMutedRef = useRef(false);
+
+  // Monolith card 3D tilt & mouse cursor effect
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
+  const [glow, setGlow] = useState({ x: 50, y: 50, opacity: 0 });
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * -9;
+    const rotateY = ((x - centerX) / centerX) * 9;
+
+    setRotate({ x: rotateX, y: rotateY });
+    setGlow({
+      x: (x / rect.width) * 100,
+      y: (y / rect.height) * 100,
+      opacity: 1,
+    });
+  };
+
+  const handleCardMouseLeave = () => {
+    setRotate({ x: 0, y: 0 });
+    setGlow((prev) => ({ ...prev, opacity: 0 }));
+  };
 
   const playTickSound = (isTick: boolean) => {
     if (isMutedRef.current) return;
@@ -233,6 +265,95 @@ export default function CountdownPage() {
             <div className="text-[11px] font-mono text-neutral-500 flex items-center justify-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-ping" />
               <span>Tick-tock telemetry active. Tap anywhere to toggle audio.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Monolith Interactive 3D Card with Mouse Cursor Effect */}
+        <div className="w-full max-w-xs sm:max-w-sm mx-auto my-2">
+          <div
+            style={{ perspective: 1200 }}
+            className="relative w-full aspect-[4/5.2] select-none py-2"
+          >
+            <div
+              ref={cardRef}
+              onMouseMove={handleCardMouseMove}
+              onMouseLeave={handleCardMouseLeave}
+              style={{
+                transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
+                transition: 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
+                transformStyle: 'preserve-3d',
+              }}
+              className="relative w-full h-full rounded-[2.2rem] bg-[#050608] border border-white/15 p-6 sm:p-7 flex flex-col justify-between overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.95)] hover:shadow-[0_0_50px_rgba(251,191,36,0.15)] transition-shadow duration-300 group cursor-pointer"
+            >
+              {/* Dynamic Cursor Spotlight Radial Glow Sheen */}
+              <div
+                className="pointer-events-none absolute inset-0 transition-opacity duration-300 z-20"
+                style={{
+                  opacity: glow.opacity,
+                  background: `radial-gradient(380px circle at ${glow.x}% ${glow.y}%, rgba(251, 191, 36, 0.18), transparent 75%)`,
+                }}
+              />
+
+              {/* Full-Bleed Monolith Artwork */}
+              <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                <Image
+                  src="/assets/hero-monolith.png"
+                  alt="Zenvitra Monolith Portal"
+                  fill
+                  priority
+                  className="object-cover object-center brightness-[0.92] contrast-[1.08] group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+                {/* Obsidian Gradient Vignettes */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/80" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/90" />
+              </div>
+
+              {/* Monolith Card Header */}
+              <div 
+                style={{ transform: 'translateZ(25px)' }}
+                className="relative z-10 flex items-start justify-between pointer-events-none"
+              >
+                <div className="space-y-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <span 
+                      className="font-bold text-xs tracking-[0.2em] text-white uppercase"
+                      style={{ fontFamily: 'Clash Display, sans-serif' }}
+                    >
+                      ZENVITRA
+                    </span>
+                  </div>
+                  <div className="font-mono text-[8px] sm:text-[9px] tracking-[0.25em] text-amber-200/80 uppercase">
+                    SOVEREIGN INVARIANT
+                  </div>
+                </div>
+
+                <div className="px-3 py-1 rounded-full border border-white/15 bg-black/70 backdrop-blur-md shadow-sm">
+                  <span className="text-[8px] font-mono tracking-[0.22em] text-neutral-300 uppercase font-medium">
+                    ARCHETYPE 01
+                  </span>
+                </div>
+              </div>
+
+              {/* Monolith Card Bottom: STATUS PORTAL OPENING SOON */}
+              <div 
+                style={{ transform: 'translateZ(25px)' }}
+                className="relative z-10 flex flex-col items-start gap-2 text-left pb-1 pointer-events-none"
+              >
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/85 border border-amber-400/30 backdrop-blur-md shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#fbbf24]" />
+                  <span className="text-[9px] font-mono tracking-[0.22em] text-amber-300 uppercase font-semibold">
+                    STATUS
+                  </span>
+                </div>
+
+                <h3 
+                  className="font-mono font-bold text-xs sm:text-sm tracking-[0.22em] text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] flex items-center gap-2"
+                >
+                  <span>PORTAL OPENING SOON</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                </h3>
+              </div>
             </div>
           </div>
         </div>
