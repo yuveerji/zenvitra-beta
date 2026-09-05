@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   KeyRound, 
@@ -10,10 +10,10 @@ import {
   Loader2, 
   ShieldCheck, 
   Lock, 
-  Sparkles,
-  ArrowLeft,
-  Eye,
-  EyeOff
+  Sparkles, 
+  ArrowLeft, 
+  Eye, 
+  EyeOff 
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 import { sheetSync } from '@/lib/googleSheets';
@@ -27,6 +27,20 @@ export default function StatusSignInPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [grantedRole, setGrantedRole] = useState<string>('');
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+
+  // Auto-populate email from URL parameter or localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const emailParam = urlParams.get('email');
+      if (emailParam) {
+        setEmail(emailParam);
+      } else {
+        const savedEmail = localStorage.getItem('zenvitra_applicant_email');
+        if (savedEmail) setEmail(savedEmail);
+      }
+    }
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +79,7 @@ export default function StatusSignInPage() {
         }
 
         setTimeout(() => {
-          window.location.href = '/login';
+          window.location.href = '/';
         }, 1800);
       } else if (verifyData.status === 'PENDING' || verifyData.status === 'QUEUED') {
         // Telemetry: Log challenged attempt to 'Login Data Core'

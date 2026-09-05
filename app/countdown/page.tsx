@@ -96,9 +96,11 @@ export default function CountdownPage() {
       setClearanceResult(data);
 
       if (data.unlocked || data.isApproved || data.status === 'APPROVED') {
-        // Redirect to login page
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('zenvitra_applicant_email', clearanceEmail);
+        }
         setTimeout(() => {
-          window.location.href = '/login';
+          window.location.href = `/statussignin?email=${encodeURIComponent(clearanceEmail)}`;
         }, 1500);
       }
     } catch (err: any) {

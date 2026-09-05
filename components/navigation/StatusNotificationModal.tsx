@@ -74,9 +74,12 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
       });
 
       if (data.unlocked || data.isApproved || data.status === 'APPROVED') {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('zenvitra_applicant_email', cleanEmail);
+        }
         setTimeout(() => {
-          window.location.href = '/login';
-        }, 1800);
+          window.location.href = `/statussignin?email=${encodeURIComponent(cleanEmail)}`;
+        }, 1600);
       }
     } catch (err: any) {
       setResult({
@@ -194,7 +197,7 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
                     </div>
                   </div>
                   <p className="text-xs text-emerald-400 font-mono animate-pulse">
-                    Redirecting to login portal...
+                    Clearance verified. Redirecting to Status Sign-In...
                   </p>
                 </div>
               )}
