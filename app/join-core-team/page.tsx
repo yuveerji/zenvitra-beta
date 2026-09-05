@@ -142,7 +142,9 @@ export default function JoinCoreTeamPage() {
           handle: formData.handle,
           email: formData.email,
           phone: formData.contactChannel || 'N/A',
+          contactChannel: formData.contactChannel || 'N/A',
           city: formData.locationTimezone || 'N/A',
+          locationTimezone: formData.locationTimezone || 'N/A',
           department: selectedTrack === 'other' ? formData.customTrackTitle || 'Custom' : activeTrackData.title,
           roleAppliedFor: selectedTrack === 'other' ? formData.customTrackTitle || 'Custom' : activeTrackData.title,
           portfolioLink: formData.proofOfWorkUrl,
@@ -152,7 +154,9 @@ export default function JoinCoreTeamPage() {
           motivation: formData.motivationStatement,
           motivationStatement: formData.motivationStatement,
           dossier: formData.technicalOrDiplomaticDossier,
+          technicalOrDiplomaticDossier: formData.technicalOrDiplomaticDossier,
           pastExperience: formData.pastExperience,
+          constitutionalAccordAccepted: formData.constitutionalAccordAccepted ? 'RATIFIED' : 'DECLINED',
         }),
       });
 

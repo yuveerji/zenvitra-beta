@@ -41,31 +41,42 @@ export async function POST(req: NextRequest) {
       await dispatchToGoogleSheets({
         tab: 'Core Team Applications',
         data: {
-          // Standard Apps Script Column Mapping:
+          // --- STAGE 1: Identity & Executive Clearance ---
           fullName,
+          handle: body.handle ? (body.handle.startsWith('@') ? body.handle : `@${body.handle}`) : 'N/A',
           email,
-          phone: phone || body.contactChannel || 'N/A',
-          phoneNumber: phone || body.contactChannel || 'N/A',
+          contactChannel: body.contactChannel || phone || 'N/A',
+          phone: body.contactChannel || phone || 'N/A',
+          locationTimezone: body.locationTimezone || city || 'N/A',
+          city: body.locationTimezone || city || 'N/A',
+
+          // --- Role & Department ---
           roleApplied: department || body.roleAppliedFor || 'Core Team',
           roleAppliedFor: department || body.roleAppliedFor || 'Core Team',
           department: department || 'CORE',
-          linkedinUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
-          linkedinProfile: portfolioLink || body.proofOfWorkUrl || 'N/A',
+
+          // --- STAGE 2: Leadership Dossier & Track Record ---
           portfolioUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
-          resumeLink: body.dossier || body.technicalOrDiplomaticDossier || 'N/A',
-          cvResumeLink: body.dossier || body.technicalOrDiplomaticDossier || 'N/A',
+          proofOfWorkUrl: portfolioLink || body.proofOfWorkUrl || 'N/A',
+          linkedinProfile: portfolioLink || body.proofOfWorkUrl || 'N/A',
+          pastExperience: body.pastExperience || 'N/A',
+          leadershipAccomplishments: body.pastExperience || 'N/A',
+          technicalOrDiplomaticDossier: body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
+          strategicVision: body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
+
+          // --- STAGE 3: Bandwidth & Constitutional Accord ---
+          weeklyBandwidth: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
+          hoursPerWeek: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
+          motivationStatement: motivation || body.motivationStatement || 'N/A',
           coverNote: motivation || body.motivationStatement || 'N/A',
+          constitutionalAccord: body.constitutionalAccordAccepted || 'RATIFIED',
+          constitutionalAccordAccepted: body.constitutionalAccordAccepted || 'RATIFIED',
+
+          // --- Review Status ---
           applicationStatus: 'PENDING',
           reviewerInfo: 'Genesis Executive Council',
 
-          // Additional context fields:
-          candidateName: fullName,
-          emailAddress: email,
-          handle: body.handle || 'N/A',
-          cityLocation: city || 'N/A',
-          institution: institution || 'Independent',
-          statementMotivation: motivation || body.motivationStatement || 'N/A',
-          weeklyCommitment: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
+          // Telemetry
           ipAddress: ip,
           deviceBrowserInfo: userAgent,
           submittedAt: new Date().toISOString(),

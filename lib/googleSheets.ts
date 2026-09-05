@@ -75,14 +75,18 @@ export interface CollabRecord {
 
 export interface CoreTeamApplicationRecord {
   fullName: string;
+  handle?: string;
   email: string;
-  phoneNumber: string;
+  contactChannel?: string;
+  locationTimezone?: string;
   roleAppliedFor: string;
   department: string;
-  linkedinProfile?: string;
   portfolioUrl?: string;
-  cvResumeLink?: string;
-  coverNote?: string;
+  leadershipAccomplishments?: string;
+  strategicVision?: string;
+  weeklyBandwidth?: string;
+  motivationStatement?: string;
+  constitutionalAccord?: string;
   applicationStatus?: string;
   reviewerInfo?: string;
 }
