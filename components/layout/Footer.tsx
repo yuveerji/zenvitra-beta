@@ -313,9 +313,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/donate/nepal" className="text-red-400 hover:text-red-300 font-bold transition flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  <span>Nepal Relief (PMDRF)</span>
+                <Link href="/donate/govt-schools" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
+                  <span>Govt Schools Direct Giving</span>
                 </Link>
               </li>
               <li>

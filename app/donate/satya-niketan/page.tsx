@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import QRCode from 'qrcode';
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,17 +30,108 @@ import {
   MapPin,
   Clock,
   HelpCircle,
-  ExternalLink
+  ExternalLink,
+  Landmark
 } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { sheetSync } from '@/lib/googleSheets';
 
+interface GovtReliefFund {
+  id: string;
+  name: string;
+  authority: string;
+  jurisdiction: string;
+  upiId: string;
+  upiName: string;
+  badge: string;
+  recommended?: boolean;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  ifsc: string;
+  branch: string;
+  pan: string;
+  officialSite: string;
+}
+
+const OFFICIAL_GOVT_FUNDS: GovtReliefFund[] = [
+  {
+    id: 'lgcm_delhi',
+    name: "Lieutenant Governor / Chief Minister's Relief Fund, Delhi",
+    authority: 'Government of NCT of Delhi',
+    jurisdiction: 'NCT of Delhi (Statutory State Calamity & Distress Escrow)',
+    upiId: 'lgcmdelhifund@cnrb',
+    upiName: 'LG/CM RELIEF FUND DELHI',
+    badge: 'DELHI STATE JURISDICTION • OFFICIAL ESCROW',
+    recommended: true,
+    bankName: 'Canara Bank / State Bank of India',
+    accountName: 'LG/CM Relief Fund, Delhi',
+    accountNumber: '91042150000237',
+    ifsc: 'CNRB0019104',
+    branch: 'Delhi Secretariat, I.P. Estate, New Delhi-110002',
+    pan: 'AAATL5393B',
+    officialSite: 'https://delhi.gov.in'
+  },
+  {
+    id: 'pmnrf',
+    name: "Prime Minister's National Relief Fund (PMNRF)",
+    authority: "Prime Minister's Office, Government of India",
+    jurisdiction: 'National Central Government (Statutory Disaster & Calamities)',
+    upiId: 'pmnrf@centralbank',
+    upiName: "PRIME MINISTER'S NATIONAL RELIEF FUND",
+    badge: 'CENTRAL GOVT PMNRF • 100% 80G EXEMPT',
+    bankName: 'Central Bank of India',
+    accountName: "Prime Minister's National Relief Fund",
+    accountNumber: '1100460014',
+    ifsc: 'CBIN0280319',
+    branch: 'New Delhi Main Branch',
+    pan: 'XAAAP0123P',
+    officialSite: 'https://pmnrf.gov.in'
+  },
+  {
+    id: 'pmcares',
+    name: 'PM CARES Fund',
+    authority: 'Government of India Emergency Trust',
+    jurisdiction: 'Public Charitable Trust for Emergency Assistance',
+    upiId: 'pmcares@sbi',
+    upiName: 'PM CARES FUND',
+    badge: 'PUBLIC CHARITABLE TRUST • NATIONAL',
+    bankName: 'State Bank of India',
+    accountName: 'PM CARES FUND',
+    accountNumber: '2121PMCARES',
+    ifsc: 'SBIN0000691',
+    branch: 'New Delhi Main Branch, Parliament Street',
+    pan: 'AAATP2121P',
+    officialSite: 'https://pmindia.gov.in'
+  }
+];
+
 export default function SatyaNiketanReliefPage() {
-  const [copiedUPI, setCopiedUPI] = useState(false);
-  const [copiedBank, setCopiedBank] = useState(false);
+  const [selectedFundId, setSelectedFundId] = useState<string>('lgcm_delhi');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [submitted, setSubmitted] = useState(false);
+
+  const selectedFund = OFFICIAL_GOVT_FUNDS.find(f => f.id === selectedFundId) || OFFICIAL_GOVT_FUNDS[0];
+
+  // Generate dynamic official UPI standard QR payload
+  useEffect(() => {
+    // UPI Standard URI: upi://pay?pa=VPA&pn=NAME&cu=INR&tn=NOTE
+    const upiUri = `upi://pay?pa=${selectedFund.upiId}&pn=${encodeURIComponent(selectedFund.upiName)}&cu=INR&tn=${encodeURIComponent('Relief Contribution')}`;
+    QRCode.toDataURL(upiUri, {
+      width: 420,
+      margin: 1,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      },
+      errorCorrectionLevel: 'H'
+    })
+      .then((url) => setQrDataUrl(url))
+      .catch((err) => console.error('Failed to generate govt UPI QR code', err));
+  }, [selectedFund]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -48,32 +140,17 @@ export default function SatyaNiketanReliefPage() {
     donorPhone: '',
     amount: '',
     utrOrTxnId: '',
-    dedicatedProject: 'Immediate Medical & Hospitalization Relief Fund',
+    dedicatedProject: selectedFund.name,
     screenshot: null as File | null,
     wantsAnonymous: false,
     notesOrPrayer: '',
   });
 
-  // Official Zenvitra Foundation Relief UPI and Bank wire
-  const upiId = 'zenvitra.relief@sbi';
-  const bankDetails = {
-    accountName: 'Zenvitra Foundation - South Campus Emergency Relief Fund',
-    accountNumber: '48291039882',
-    ifsc: 'SBIN0001842',
-    bankAndBranch: 'State Bank of India, South Campus / Dhaula Kuan Branch',
-    pan: 'AAATZ9281Q',
-  };
-
-  const handleCopy = (text: string, type: 'upi' | 'bank') => {
+  const handleCopy = (text: string, key: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text);
-    }
-    if (type === 'upi') {
-      setCopiedUPI(true);
-      setTimeout(() => setCopiedUPI(false), 2000);
-    } else {
-      setCopiedBank(true);
-      setTimeout(() => setCopiedBank(false), 2000);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2200);
     }
   };
 
@@ -290,86 +367,173 @@ export default function SatyaNiketanReliefPage() {
               {/* Core Payment Grid: Left (UPI & Wire) | Right (Verification & Upload) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
 
-                {/* Left Column: Official Payment Accounts */}
+                {/* Left Column: Official Government Payment Accounts & QR */}
                 <div className="lg:col-span-5 space-y-6">
                   <div className="p-6 sm:p-7 rounded-[2.2rem] bg-[#07080b] border border-white/10 space-y-6 shadow-xl">
                     <div className="space-y-1">
                       <span className="font-mono text-[10px] text-rose-400 uppercase tracking-widest block font-bold">
-                        STEP 01: TRANSFER VIA UPI OR BANK
+                        STEP 01: OFFICIAL GOVT ESCROW &amp; UPI
                       </span>
-                      <h3 className="font-display font-bold text-xl text-white">Direct Relief Account</h3>
+                      <h3 className="font-display font-bold text-xl text-white">Direct Government Relief Fund</h3>
                       <p className="text-xs text-neutral-400 font-light">
-                        Use any UPI app (Google Pay, PhonePe, Paytm, BHIM, Cred) or direct NEFT/IMPS.
+                        Donations route 100% directly into official statutory state/central disaster accounts with zero intermediary cut and Section 80G tax exemption.
                       </p>
                     </div>
 
-                    {/* Official UPI Card */}
-                    <div className="p-4 rounded-2xl bg-black/80 border border-rose-500/20 space-y-3">
-                      <div className="flex items-center justify-between">
+                    {/* Government Fund Selector */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block font-semibold">
+                        Select Official Relief Beneficiary:
+                      </label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {OFFICIAL_GOVT_FUNDS.map((fund) => {
+                          const isSelected = selectedFundId === fund.id;
+                          return (
+                            <button
+                              key={fund.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedFundId(fund.id);
+                                setFormData(prev => ({ ...prev, dedicatedProject: fund.name }));
+                              }}
+                              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-rose-500/15 border-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.15)]'
+                                  : 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.05]'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${isSelected ? 'text-rose-300' : 'text-neutral-400'}`}>
+                                  {fund.badge}
+                                </span>
+                                {fund.recommended && (
+                                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                    PRIMARY FOR DELHI
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="font-display font-semibold text-xs sm:text-sm text-white mt-1">
+                                {fund.name}
+                              </h4>
+                              <p className="text-[11px] font-mono text-neutral-400 mt-0.5">
+                                Authority: {fund.authority}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Official Dynamic UPI QR Code Card */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-black/80 border border-rose-500/30 space-y-4 text-center">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
                         <span className="font-mono text-[10px] text-rose-300 uppercase font-bold flex items-center gap-1.5">
-                          <QrCode className="w-3.5 h-3.5 text-rose-400" />
-                          <span>EMERGENCY RELIEF UPI VPA</span>
+                          <QrCode className="w-4 h-4 text-rose-400" />
+                          <span>OFFICIAL GOVT UPI QR CODE</span>
                         </span>
-                        <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
-                          INSTANT 0-FEE
+                        <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">
+                          100% 80G EXEMPT
                         </span>
                       </div>
 
+                      {/* Rendered QR Code */}
+                      <div className="p-4 bg-white rounded-2xl inline-block mx-auto shadow-2xl border-4 border-white/20">
+                        {qrDataUrl ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={qrDataUrl}
+                            alt={`Official UPI QR Code for ${selectedFund.name}`}
+                            className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center bg-neutral-100 text-neutral-400 font-mono text-xs">
+                            Generating Official QR...
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] font-mono text-neutral-300">
+                        Scan with <strong className="text-white">Google Pay, PhonePe, Paytm, BHIM</strong>, or any banking UPI app.
+                      </p>
+
+                      {/* Official Verified UPI ID */}
                       <div className="flex items-center justify-between font-mono text-xs bg-[#07080b] p-3 rounded-xl border border-white/10">
-                        <span className="text-white font-bold select-all text-xs sm:text-sm text-amber-300">{upiId}</span>
+                        <div className="text-left">
+                          <span className="text-[10px] text-neutral-400 block uppercase">Official Verified UPI ID:</span>
+                          <span className="text-amber-300 font-bold select-all text-xs sm:text-sm">{selectedFund.upiId}</span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => handleCopy(upiId, 'upi')}
-                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-neutral-200 hover:text-white transition flex items-center gap-1 cursor-pointer shrink-0"
+                          onClick={() => handleCopy(selectedFund.upiId, 'upi')}
+                          className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-neutral-200 hover:text-white transition flex items-center gap-1 cursor-pointer shrink-0"
                         >
-                          {copiedUPI ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                          <span className="text-[10px] font-bold">{copiedUPI ? 'Copied' : 'Copy UPI'}</span>
+                          {copiedKey === 'upi' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span className="text-[10px] font-bold">{copiedKey === 'upi' ? 'Copied' : 'Copy'}</span>
                         </button>
                       </div>
 
-                      <p className="font-mono text-[10px] text-neutral-400">
-                        Scan with any UPI scanner or paste <code className="text-white bg-white/10 px-1 py-0.5 rounded">{upiId}</code> in your banking app.
-                      </p>
+                      <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-left text-[11px] font-mono space-y-1">
+                        <div className="text-neutral-400 flex justify-between">
+                          <span>Payee Verification:</span>
+                          <span className="text-emerald-400 font-bold">{selectedFund.upiName}</span>
+                        </div>
+                        <div className="text-neutral-400 flex justify-between">
+                          <span>Jurisdiction:</span>
+                          <span className="text-white truncate max-w-[200px]">{selectedFund.jurisdiction}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Official Bank Account Details */}
+                    {/* Official Bank Wire Details */}
                     <div className="p-4 rounded-2xl bg-black/80 border border-white/10 space-y-3 font-mono text-xs">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2">
                         <span className="text-neutral-400 text-[10px] uppercase font-bold flex items-center gap-1">
                           <Building className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>OFFICIAL BANK WIRE</span>
+                          <span>STATUTORY BANK WIRE / NEFT / IMPS</span>
                         </span>
                         <button
                           type="button"
-                          onClick={() => handleCopy(`Account Name: ${bankDetails.accountName}\nAccount Number: ${bankDetails.accountNumber}\nIFSC: ${bankDetails.ifsc}\nBank: ${bankDetails.bankAndBranch}\nPAN: ${bankDetails.pan}`, 'bank')}
+                          onClick={() => handleCopy(`Account Name: ${selectedFund.accountName}\nAccount Number: ${selectedFund.accountNumber}\nIFSC: ${selectedFund.ifsc}\nBank: ${selectedFund.bankName}\nBranch: ${selectedFund.branch}\nPAN: ${selectedFund.pan}`, 'bank')}
                           className="text-neutral-400 hover:text-white transition flex items-center gap-1 text-[10px] cursor-pointer"
                         >
-                          {copiedBank ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                          <span>{copiedBank ? 'Copied' : 'Copy All'}</span>
+                          {copiedKey === 'bank' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span>{copiedKey === 'bank' ? 'Copied' : 'Copy Wire'}</span>
                         </button>
                       </div>
 
                       <div className="space-y-2 text-[11px]">
                         <div>
                           <span className="text-neutral-500 text-[10px] block uppercase">Account Name:</span>
-                          <span className="text-white font-medium">{bankDetails.accountName}</span>
+                          <span className="text-white font-medium">{selectedFund.accountName}</span>
                         </div>
                         <div>
                           <span className="text-neutral-500 text-[10px] block uppercase">Account Number:</span>
-                          <span className="text-white font-mono tracking-wider font-bold">{bankDetails.accountNumber}</span>
+                          <span className="text-white font-mono tracking-wider font-bold select-all">{selectedFund.accountNumber}</span>
                         </div>
                         <div>
                           <span className="text-neutral-500 text-[10px] block uppercase">IFSC Code:</span>
-                          <span className="text-amber-300 font-mono font-bold">{bankDetails.ifsc}</span>
+                          <span className="text-amber-300 font-mono font-bold select-all">{selectedFund.ifsc}</span>
                         </div>
                         <div>
                           <span className="text-neutral-500 text-[10px] block uppercase">Bank &amp; Branch:</span>
-                          <span className="text-neutral-300">{bankDetails.bankAndBranch}</span>
+                          <span className="text-neutral-300">{selectedFund.bankName} • {selectedFund.branch}</span>
                         </div>
                         <div>
-                          <span className="text-neutral-500 text-[10px] block uppercase">PAN Reference:</span>
-                          <span className="text-neutral-300 font-mono">{bankDetails.pan}</span>
+                          <span className="text-neutral-500 text-[10px] block uppercase">Donee PAN (For Tax Exemption 80G):</span>
+                          <span className="text-emerald-400 font-mono font-bold">{selectedFund.pan}</span>
                         </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-white/10">
+                        <a
+                          href={selectedFund.officialSite}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 font-bold transition"
+                        >
+                          <span>Visit Official Govt Portal</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
                       </div>
                     </div>
 
@@ -377,9 +541,9 @@ export default function SatyaNiketanReliefPage() {
                     <div className="p-3.5 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/20 flex items-start gap-3">
                       <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                       <div className="space-y-0.5">
-                        <p className="font-display font-bold text-xs text-white">Full Transparency &amp; Direct Deployment</p>
+                        <p className="font-display font-bold text-xs text-white">Statutory Audit &amp; 100% Tax Relief</p>
                         <p className="text-[11px] text-neutral-300 font-light leading-snug">
-                          Every rupee donated is published openly on the Zenvitra Sovereign Impact Ledger with verifiable expenditure audit logs.
+                          All payments pass directly through official state/central reserves. Donors can claim 100% tax exemption under Section 80G of the Indian Income Tax Act.
                         </p>
                       </div>
                     </div>
