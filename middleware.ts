@@ -29,6 +29,7 @@ export function middleware(request: NextRequest) {
   const isAllowedPath = 
     isClearanceGranted ||
     pathname === '/countdown' ||
+    pathname.startsWith('/donate') ||
     pathname.startsWith('/join-core-team') ||
     pathname.startsWith('/statussignin') ||
     pathname.startsWith('/statusregister') ||

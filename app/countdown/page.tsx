@@ -18,7 +18,9 @@ import {
   X,
   Bell,
   Quote,
-  Shield
+  Shield,
+  Heart,
+  Flame
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 
@@ -248,6 +250,17 @@ export default function CountdownPage() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Emergency Relief Link */}
+          <Link
+            href="/donate/satya-niketan"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-xs font-mono text-rose-300 hover:text-rose-200 transition shadow-[0_0_15px_rgba(244,63,94,0.2)] font-bold"
+          >
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <Heart className="w-3.5 h-3.5 text-rose-400 fill-current" />
+            <span className="hidden sm:inline">Satya Niketan Relief</span>
+            <span className="sm:hidden">Relief</span>
+          </Link>
+
           {/* Sign In & Register Navigation */}
           <Link
             href="/statussignin"
@@ -310,6 +323,31 @@ export default function CountdownPage() {
 
       {/* Main Center Content */}
       <main className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex-1 flex flex-col items-center justify-center text-center space-y-10">
+        {/* Emergency Incident Alert Banner */}
+        <div className="w-full max-w-3xl p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-950/40 via-[#0a0a10] to-rose-950/30 border border-rose-500/40 shadow-[0_10px_40px_rgba(244,63,94,0.18)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="space-y-1.5 relative z-10">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-rose-500/30">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <span>EMERGENCY HUMANITARIAN DISPATCH</span>
+            </div>
+            <h2 className="font-display font-bold text-base sm:text-lg text-white">
+              Satya Niketan Building Collapse: Student &amp; Victim Relief
+            </h2>
+            <p className="text-xs text-neutral-300 font-sans leading-relaxed max-w-xl">
+              While general platform access is calibrating, our emergency response rail is live 24/7. 100% of contributions route directly to official Government of Delhi &amp; PMNRF disaster escrow with zero platform deduction.
+            </p>
+          </div>
+          <Link
+            href="/donate/satya-niketan"
+            className="shrink-0 px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_20px_rgba(244,63,94,0.4)] flex items-center gap-2 cursor-pointer relative z-10"
+          >
+            <Heart className="w-4 h-4 fill-current" />
+            <span>Donate Directly</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
         {/* Status Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/[0.07] border border-amber-400/30 text-xs font-mono tracking-widest text-amber-300 uppercase shadow-[0_0_20px_rgba(251,191,36,0.15)]">
           <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
@@ -576,6 +614,11 @@ export default function CountdownPage() {
       <footer className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-neutral-500">
         <span>ZENVITRA PROTOCOL &copy; 2026</span>
         <div className="flex items-center gap-6">
+          <Link href="/donate/satya-niketan" className="text-rose-400 hover:text-rose-300 font-bold transition flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+            <span>Satya Niketan Relief</span>
+          </Link>
+          <span className="text-neutral-700">//</span>
           <Link href="/join-core-team" className="hover:text-white transition">
             Join Core Team
           </Link>
