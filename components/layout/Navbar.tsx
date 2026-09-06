@@ -373,17 +373,9 @@ export function Navbar() {
               <SocialHoverMenu onOpenFullModal={() => setSocialMindMapOpen(true)} />
             </div>
 
-            {/* 2. Platform & Chat Link Buttons (Primary CTAs) */}
+            {/* 2. Platform & Feed Link Button (Primary CTA) */}
             {hasActiveSession ? (
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <Link
-                  href="/chat"
-                  className="hidden md:inline-flex items-center gap-1.5 h-7 sm:h-8.5 px-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white font-display font-semibold text-[10px] sm:text-xs tracking-wider transition-all duration-200 hover:scale-[1.02] whitespace-nowrap shrink-0"
-                  title="Open ZenChat Mesh"
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>ZenChat</span>
-                </Link>
                 <Link
                   href="/pulse"
                   className="group relative inline-flex items-center gap-1 sm:gap-1.5 h-7 sm:h-8.5 px-2.5 sm:px-4 rounded-full bg-white hover:bg-neutral-200 text-black font-display font-bold text-[10px] sm:text-xs tracking-wider uppercase transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] active:scale-[0.98] whitespace-nowrap shrink-0 border border-white"
@@ -517,7 +509,7 @@ export function Navbar() {
                             className="w-full px-3 py-2 rounded-xl hover:bg-white/10 hover:text-white transition flex items-center gap-2"
                           >
                             <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>ZenChat Mesh</span>
+                            <span>ZEN.CHAT</span>
                           </Link>
                           <Link
                             href={`/profile/${userHandle}`}
@@ -645,7 +637,7 @@ export function Navbar() {
                     >
                       <div className="flex items-center gap-2 font-display uppercase tracking-wider">
                         <MessageSquare className="w-4 h-4 text-purple-400" />
-                        <span>Open ZenChat Mesh</span>
+                        <span>ZEN.CHAT</span>
                       </div>
                       <ArrowRight className="w-4 h-4" />
                     </Link>

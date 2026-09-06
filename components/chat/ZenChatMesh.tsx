@@ -1055,7 +1055,7 @@ export function ZenChatMesh() {
               <button
                 onClick={() => setShowSettingsModal(true)}
                 className="font-display font-bold text-sm text-white flex items-center gap-1.5 cursor-pointer hover:text-purple-300 transition text-left truncate"
-                title="ZenChat Settings & Profile"
+                title="ZEN.CHAT Settings & Profile"
               >
                 <span className="truncate">@{currentUserUsername}</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block ml-0.5 animate-pulse flex-shrink-0" />
@@ -1710,7 +1710,7 @@ export function ZenChatMesh() {
             <button
               onClick={() => setShowSettingsModal(true)}
               className="p-1.5 hover:text-white hover:bg-white/[0.04] rounded-lg transition cursor-pointer"
-              title="ZenChat Settings & Profile"
+              title="ZEN.CHAT Settings & Profile"
             >
               <Settings className="w-3.5 h-3.5" />
             </button>
@@ -2634,7 +2634,7 @@ export function ZenChatMesh() {
                   }}
                   className="flex-1 py-2.5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] text-white font-medium text-xs transition cursor-pointer text-center"
                 >
-                  Send link via ZenChat
+                  Send link via ZEN.CHAT
                 </button>
                 <button
                   type="button"

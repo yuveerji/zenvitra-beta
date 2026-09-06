@@ -233,7 +233,7 @@ export function FloatingChatDrawer() {
                   type="button"
                   onClick={handleExpandToFullScreen}
                   className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition cursor-pointer group"
-                  title="Expand to Fullscreen ZenChat Hub"
+                  title="Expand to Fullscreen ZEN.CHAT Hub"
                 >
                   <Maximize2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                 </button>
