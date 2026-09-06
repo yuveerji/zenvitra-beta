@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', '@tabler/icons-react'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@tabler/icons-react', 'qrcode'],
   },
   images: {
     formats: ['image/avif', 'image/webp'],
