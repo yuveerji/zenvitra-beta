@@ -508,14 +508,14 @@ export function ConferenceCommandCenter() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold font-display text-white">Resolutions &amp; Legislative Bills</h3>
                   <Link
-                    href="/docs"
+                    href="/committee"
                     className="px-4 py-2 rounded-xl bg-cyan-500 text-black font-mono text-xs font-bold hover:bg-cyan-400 transition"
                   >
-                    Open Sovereign Document Studio
+                    Open Committee Chamber
                   </Link>
                 </div>
                 <p className="text-xs text-neutral-400 font-mono">
-                  52 total documents currently tabled across chambers, powered directly by <strong>ZEN.DOCS</strong>.
+                  52 total documents currently tabled across chambers.
                 </p>
               </div>
             )}

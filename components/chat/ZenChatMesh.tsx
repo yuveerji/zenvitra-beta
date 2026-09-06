@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { 
   Phone, 
+  PhoneCall,
   Video, 
   Search, 
   MoreVertical, 
@@ -22,6 +23,7 @@ import {
   Settings, 
   Plus, 
   UserPlus, 
+  LogOut, 
   Sparkles, 
   X, 
   Radio, 
@@ -267,10 +269,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         description: 'Live floor microphone & speaking delegates',
         userLimit: 10,
         isLocked: false,
-        activeVoiceUsers: [
-          { id: 'u_yuveer', name: 'Yuveer', username: 'yuveer', isSpeaking: true, isMuted: false, activityText: 'Live Stream' },
-          { id: 'u_diwakar', name: 'Diwakar V', username: 'diwakar', isSpeaking: false, isMuted: true, isStreaming: true, activityText: 'LIVE' }
-        ] 
+        activeVoiceUsers: [] 
       },
       { 
         id: 'ch-voice-duo1', 
@@ -280,9 +279,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         description: 'Bilateral unmoderated consultation',
         userLimit: 2,
         isLocked: false,
-        activeVoiceUsers: [
-          { id: 'u_sec', name: 'Darky', username: 'darky_admin', isSpeaking: false, isMuted: false, activityText: 'USD' }
-        ] 
+        activeVoiceUsers: [] 
       },
       { 
         id: 'ch-voice-warroom', 
@@ -448,6 +445,8 @@ export function ZenChatMesh() {
     currentUser,
     currentUserName,
     currentUserUsername,
+    toggleMuteConversation,
+    deleteConversation,
   } = useZenChat();
 
   const { profiles } = useZenPulse();
@@ -485,23 +484,7 @@ export function ZenChatMesh() {
   const [scheduleEndDate, setScheduleEndDate] = useState('');
   const [scheduleEndTime, setScheduleEndTime] = useState('16:00');
   const [hasEndTime, setHasEndTime] = useState(true);
-  const [scheduledCalls, setScheduledCalls] = useState<ScheduledCall[]>([
-    {
-      id: 'sched-1',
-      title: 'Multilateral Draft Consultation',
-      description: 'Reviewing clause amendments with G-77 and Secretariat',
-      startDate: '2026-09-06',
-      startTime: '17:30',
-      endDate: '2026-09-06',
-      endTime: '18:30',
-      callType: 'video',
-      requireApproval: true,
-      link: 'https://zenvitra.gov/call/video/conf-sec-77a',
-      creatorName: 'Yuveer',
-      creatorHandle: 'yuveer',
-      createdAt: '2026-09-05'
-    }
-  ]);
+  const [scheduledCalls, setScheduledCalls] = useState<ScheduledCall[]>([]);
   const [mediaGalleryTab, setMediaGalleryTab] = useState<'media' | 'docs' | 'links'>('media');
 
   /* Modals */
@@ -1034,15 +1017,6 @@ export function ZenChatMesh() {
                 </button>
               );
             })}
-
-            {/* Add Caucus / Server Button */}
-            <button
-              onClick={() => setShowCreateCaucusModal(true)}
-              title="Establish New Caucus / Chamber"
-              className="w-10 h-10 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-purple-500/40 text-neutral-400 hover:text-purple-300 flex items-center justify-center transition-all cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
           </div>
         </div>
 
@@ -1103,35 +1077,25 @@ export function ZenChatMesh() {
           </div>
 
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            {/* If in caucus/community, show Add Channel and Server Roles button; if in DMs, show New Message button */}
-            {selectedCommunityId === 'comm-direct' ? (
+            {/* Server Roles button if permitted in caucus */}
+            {selectedCommunityId !== 'comm-direct' && canManageCurrentRoles && (
               <button
-                onClick={() => setShowNewChatActionModal(true)}
-                className="p-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white transition shadow-sm cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
-                title="New Message or Group"
+                onClick={() => setShowRoleSettingsModal(true)}
+                className="p-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 transition shadow-sm cursor-pointer flex items-center justify-center"
+                title="Configure Server Roles & Permissions"
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <Sliders className="w-4 h-4" />
               </button>
-            ) : (
-              <>
-                {canManageCurrentRoles && (
-                  <button
-                    onClick={() => setShowRoleSettingsModal(true)}
-                    className="p-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 transition shadow-sm cursor-pointer flex items-center justify-center"
-                    title="Configure Server Roles & Permissions"
-                  >
-                    <Sliders className="w-4 h-4" />
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowCreateChannelModal(true)}
-                  className="p-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.1] text-neutral-300 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
-                  title="Create Channel"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5]" />
-                </button>
-              </>
             )}
+
+            {/* Single primary compose + button in sidebar header */}
+            <button
+              onClick={() => setShowNewChatActionModal(true)}
+              className="p-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white transition shadow-sm cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
+              title="New Message, Group, Caucus or Channel"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+            </button>
           </div>
         </div>
 
@@ -1147,9 +1111,9 @@ export function ZenChatMesh() {
               <button
                 onClick={() => setShowDirectCallModal(true)}
                 className="p-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white transition cursor-pointer"
-                title="Dial Pad"
+                title="Direct Dial"
               >
-                <Plus className="w-4 h-4" />
+                <PhoneCall className="w-4 h-4 text-neutral-400 hover:text-emerald-400" />
               </button>
             </div>
 
@@ -1410,18 +1374,31 @@ export function ZenChatMesh() {
 
             {/* 3. Conversation List */}
             <div className="flex-1 overflow-y-auto divide-y divide-white/[0.02] p-2 space-y-1">
-              {filteredConversations.map((conv) => {
-                const isActive = activeConversationId === conv.id;
-                return (
-                  <div
-                    key={conv.id}
-                    onClick={() => setActiveConversationId(conv.id)}
-                    className={`flex items-center gap-3 p-2.5 rounded-2xl cursor-pointer transition-all duration-200 ${
-                      isActive 
-                        ? 'bg-white/[0.08] border border-white/10 shadow-sm' 
-                        : 'hover:bg-white/[0.03] border border-transparent'
-                    }`}
-                  >
+              {filteredConversations.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-center p-4 space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-neutral-400">
+                    <MessageSquare className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div>
+                    <h5 className="font-display font-semibold text-xs text-white">No Conversations</h5>
+                    <p className="font-sans text-[11px] text-neutral-400 mt-1 max-w-[200px]">
+                      Tap the <span className="text-purple-400 font-bold">+</span> button above to start a secure direct message or group chat.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                filteredConversations.map((conv) => {
+                  const isActive = activeConversationId === conv.id;
+                  return (
+                    <div
+                      key={conv.id}
+                      onClick={() => setActiveConversationId(conv.id)}
+                      className={`flex items-center gap-3 p-2.5 rounded-2xl cursor-pointer transition-all duration-200 ${
+                        isActive 
+                          ? 'bg-white/[0.08] border border-white/10 shadow-sm' 
+                          : 'hover:bg-white/[0.03] border border-transparent'
+                      }`}
+                    >
                     {/* Avatar with Story / Online Ring */}
                     <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
                       <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-xs font-bold text-white uppercase overflow-hidden">
@@ -1452,9 +1429,10 @@ export function ZenChatMesh() {
                     </div>
                   </div>
                 );
-              })}
-            </div>
+              })
+            )}
           </div>
+        </div>
         ) : (
           /* Discord-Style Channel Hierarchy with Collapsible Categories */
           <div className="flex-1 flex flex-col overflow-y-auto p-2.5 space-y-4">
@@ -1901,70 +1879,130 @@ export function ZenChatMesh() {
               </button>
 
               {showGroupSettingsMenu && (
-                <div className="absolute right-0 top-11 w-56 p-1.5 rounded-2xl bg-[#0e1017] border border-white/10 shadow-2xl z-50 space-y-1 text-xs font-sans">
+                <div className="absolute right-0 top-11 w-64 p-1.5 rounded-2xl bg-[#0e1017]/95 backdrop-blur-xl border border-white/10 shadow-2xl z-50 space-y-1 text-xs font-sans">
                   <div className="px-3 py-2 border-b border-white/[0.06]">
                     <p className="font-semibold text-white truncate">
-                      {activeCommunityGroup?.name || (activeChannel ? `#${activeChannel.name}` : activeConversation?.name || 'Chat')}
+                      {activeCommunityGroup?.name || (activeChannel ? `#${activeChannel.name}` : activeConversation?.name || 'Chat Room')}
                     </p>
-                    <p className="font-mono text-[9px] text-neutral-400">Settings & Permissions</p>
+                    <p className="font-mono text-[9px] text-neutral-400">
+                      {activeConversation?.type === 'group' ? 'Group Settings & Controls' : 'Room Settings & Options'}
+                    </p>
                   </div>
 
+                  {/* Group / Room Info */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
-                      showToast('Channel / Group details copied to clipboard');
+                      const infoDesc = activeConversation?.description || activeChannel?.description || 'Encrypted sovereign communication room';
+                      showToast(`ℹ️ ${infoDesc}`);
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
-                    <Info className="w-3.5 h-3.5 text-neutral-400" />
-                    <span>Group / Channel Info</span>
+                    <Info className="w-4 h-4 text-cyan-400" />
+                    <span>Group / Room Info</span>
                   </button>
 
+                  {/* View Member Roster */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
                       setShowMembersDrawer(true);
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
-                    <Users className="w-3.5 h-3.5 text-purple-400" />
-                    <span>View Member Roster</span>
+                    <Users className="w-4 h-4 text-purple-400" />
+                    <span>View Participants ({activeConversation?.members?.length || (currentCommunity.members?.length ?? 1)})</span>
                   </button>
 
+                  {/* Add / Invite Members */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
-                      setShowRoleSettingsModal(true);
+                      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                      }
+                      showToast('🔗 Room invite link copied to clipboard');
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Server Roles & Permissions</span>
+                    <UserPlus className="w-4 h-4 text-emerald-400" />
+                    <span>Invite / Add Members</span>
                   </button>
 
+                  {/* Copy Link */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
-                      showToast('🔔 Notifications muted for this room');
+                      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                      }
+                      showToast('📋 Link copied to clipboard');
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
-                    <VolumeX className="w-3.5 h-3.5 text-neutral-400" />
+                    <Copy className="w-4 h-4 text-blue-400" />
+                    <span>Copy Room Link</span>
+                  </button>
+
+                  {/* Server Roles (if in caucus) */}
+                  {selectedCommunityId !== 'comm-direct' && canManageCurrentRoles && (
+                    <button
+                      onClick={() => {
+                        setShowGroupSettingsMenu(false);
+                        setShowRoleSettingsModal(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>Roles & Permissions</span>
+                    </button>
+                  )}
+
+                  {/* Mute Notifications */}
+                  <button
+                    onClick={() => {
+                      setShowGroupSettingsMenu(false);
+                      if (activeConversationId) {
+                        toggleMuteConversation(activeConversationId);
+                      }
+                      showToast('🔔 Notification settings updated');
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
+                  >
+                    <VolumeX className="w-4 h-4 text-neutral-400" />
                     <span>Mute Notifications</span>
                   </button>
 
                   <div className="h-px bg-white/[0.06] my-1" />
 
+                  {/* Clear Chat History */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
                       showToast('🧹 Room message cache cleared');
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-amber-400 hover:bg-amber-500/10 transition text-left cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-amber-400 hover:bg-amber-500/10 transition text-left cursor-pointer"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                     <span>Clear Chat History</span>
                   </button>
+
+                  {/* Leave Group / Delete Conversation */}
+                  {activeConversation && (
+                    <button
+                      onClick={() => {
+                        setShowGroupSettingsMenu(false);
+                        if (confirm(`Are you sure you want to leave or delete "${activeConversation.name}"?`)) {
+                          deleteConversation(activeConversation.id);
+                          showToast('🚪 Left conversation');
+                        }
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 transition text-left cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>{activeConversation.type === 'group' ? 'Leave Group' : 'Delete Chat'}</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>

@@ -229,12 +229,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/docs" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-cyan-400 group-hover:scale-150 transition-transform" />
-                  <span>ZEN.DOCS Studio</span>
-                </Link>
-              </li>
-              <li>
                 <Link href="/payments" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
                   <span className="w-1 h-1 rounded-full bg-emerald-400 group-hover:scale-150 transition-transform" />
                   <span>ZEN.PAYMENTS Hub</span>

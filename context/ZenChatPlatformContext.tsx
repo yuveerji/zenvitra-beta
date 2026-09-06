@@ -98,13 +98,13 @@ interface ZenChatContextType {
 
 const ZenChatContext = createContext<ZenChatContextType | undefined>(undefined);
 
-const LS_CONVERSATIONS = 'zenvitra_chat_conversations_v10_noai';
-const LS_MESSAGES = 'zenvitra_chat_messages_v10_noai';
-const LS_CALLS = 'zenvitra_chat_calls_v10_noai';
-const LS_STATUSES = 'zenvitra_chat_statuses_v10_noai';
-const LS_NOTES = 'zenvitra_chat_zen_notes_v10_noai';
-const LS_GLIMPSE_SCORE = 'zenvitra_glimpse_score_v10_noai';
-const LS_STICKERS = 'zenvitra_custom_stickers_v10_noai';
+const LS_CONVERSATIONS = 'zenvitra_chat_conversations_v11_clean';
+const LS_MESSAGES = 'zenvitra_chat_messages_v11_clean';
+const LS_CALLS = 'zenvitra_chat_calls_v11_clean';
+const LS_STATUSES = 'zenvitra_chat_statuses_v11_clean';
+const LS_NOTES = 'zenvitra_chat_zen_notes_v11_clean';
+const LS_GLIMPSE_SCORE = 'zenvitra_glimpse_score_v11_clean';
+const LS_STICKERS = 'zenvitra_custom_stickers_v11_clean';
 
 /* Default system sticker library */
 const DEFAULT_STICKERS: CustomSticker[] = [
@@ -127,11 +127,11 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
 
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>({});
-  const [activeConversationId, setActiveConversationId] = useState<string | null>('conv-zenvitra-hq');
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [calls, setCalls] = useState<ChatCall[]>([]);
   const [statuses, setStatuses] = useState<ChatStatus[]>([]);
   const [zenNotes, setZenNotes] = useState<ZenNote[]>([]);
-  const [glimpseScore, setGlimpseScore] = useState<GlimpseScore>({ sent: 48, received: 64, streak: 7 });
+  const [glimpseScore, setGlimpseScore] = useState<GlimpseScore>({ sent: 0, received: 0, streak: 0 });
   const [customStickers, setCustomStickers] = useState<CustomSticker[]>(DEFAULT_STICKERS);
 
   /* UI state */
@@ -158,123 +158,23 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
         try { return JSON.parse(val); } catch (_) { return fallback; }
       };
 
-      const defaultHumanConversation: ChatConversation[] = [
-        {
-          id: 'conv-zenvitra-hq',
-          type: 'group',
-          name: '🏛️ Zenvitra Sovereign Assembly',
-          handle: 'zenvitra_hq',
-          avatar: '',
-          isAi: false,
-          unreadCount: 0,
-          isPinned: true,
-          lastMessage: {
-            text: 'Welcome to Zenvitra Chat. Connect with peer delegates, caucus, and dispatch secure communications.',
-            timestamp: 'Just now',
-            senderName: 'Zenvitra Secretariat',
-          },
-          members: [
-            { id: 'sec-1', name: 'Zenvitra Secretariat', username: 'zenvitra_sec', role: 'Plenary Lead', isAi: false, status: 'online' }
-          ],
-          createdAt: new Date().toISOString(),
-          description: 'Official delegate dispatch network. Sovereign encrypted peer messaging.'
-        }
-      ];
-
       const sc = localStorage.getItem(LS_CONVERSATIONS);
       const parsedConvs: ChatConversation[] = safeParse(sc, null);
-      if (parsedConvs && Array.isArray(parsedConvs) && parsedConvs.length > 0) {
+      if (parsedConvs && Array.isArray(parsedConvs)) {
         setConversations(parsedConvs);
+        if (parsedConvs.length > 0) {
+          setActiveConversationId(parsedConvs[0].id);
+        }
       } else {
-        setConversations(defaultHumanConversation);
-        localStorage.setItem(LS_CONVERSATIONS, JSON.stringify(defaultHumanConversation));
+        setConversations([]);
       }
 
       const sm = localStorage.getItem(LS_MESSAGES);
       const parsedMsgs = safeParse(sm, null);
-      if (parsedMsgs && typeof parsedMsgs === 'object' && Object.keys(parsedMsgs).length > 0) {
-        // Ensure channels also have default messages if missing
-        const merged = { ...parsedMsgs };
-        if (!merged['chan_ch-general']) {
-          merged['chan_ch-general'] = [
-            {
-              id: 'msg-gen-1',
-              conversationId: 'chan_ch-general',
-              senderId: 'sec-1',
-              senderName: 'Zenvitra Secretariat',
-              senderUsername: 'zenvitra_sec',
-              senderRole: '👑 FOUNDER',
-              content: 'The Plenary Assembly is formally in session. Delegates may now request the floor or table draft working papers.',
-              timestamp: '10:00 AM',
-              isSelf: false,
-              reactions: [{ emoji: '🏛️', count: 3, users: ['sec-1'] }]
-            }
-          ];
-        }
-        if (!merged['chan_ch-briefs']) {
-          merged['chan_ch-briefs'] = [
-            {
-              id: 'msg-brf-1',
-              conversationId: 'chan_ch-briefs',
-              senderId: 'sec-press',
-              senderName: 'Elena Rostova (Reuters)',
-              senderUsername: 'elena_press',
-              senderRole: '📰 PRESS',
-              content: 'Breaking diplomatic wire: Sovereign delegations agree on preliminary draft terms for multilateral digital identity standards.',
-              timestamp: '10:15 AM',
-              isSelf: false,
-              reactions: [{ emoji: '⚡', count: 2, users: ['sec-press'] }]
-            }
-          ];
-        }
-        setMessagesMap(merged);
+      if (parsedMsgs && typeof parsedMsgs === 'object') {
+        setMessagesMap(parsedMsgs);
       } else {
-        const initialMsgs = {
-          'conv-zenvitra-hq': [
-            {
-              id: 'msg-sec-welcome',
-              conversationId: 'conv-zenvitra-hq',
-              senderId: 'sec-1',
-              senderName: 'Zenvitra Secretariat',
-              senderUsername: 'zenvitra_sec',
-              senderRole: '🏛️ SECRETARIAT',
-              content: 'Welcome to your sovereign diplomatic channel. You can caucus with delegates, share real-time notes, exchange high-priority dispatches, and coordinate committee resolutions.',
-              timestamp: 'Just now',
-              isSelf: false,
-              reactions: []
-            }
-          ],
-          'chan_ch-general': [
-            {
-              id: 'msg-gen-1',
-              conversationId: 'chan_ch-general',
-              senderId: 'sec-1',
-              senderName: 'Zenvitra Secretariat',
-              senderUsername: 'zenvitra_sec',
-              senderRole: '👑 FOUNDER',
-              content: 'The Plenary Assembly is formally in session. Delegates may now request the floor or table draft working papers.',
-              timestamp: '10:00 AM',
-              isSelf: false,
-              reactions: [{ emoji: '🏛️', count: 3, users: ['sec-1'] }]
-            }
-          ],
-          'chan_ch-briefs': [
-            {
-              id: 'msg-brf-1',
-              conversationId: 'chan_ch-briefs',
-              senderId: 'sec-press',
-              senderName: 'Elena Rostova (Reuters)',
-              senderUsername: 'elena_press',
-              senderRole: '📰 PRESS',
-              content: 'Breaking diplomatic wire: Sovereign delegations agree on preliminary draft terms for multilateral digital identity standards.',
-              timestamp: '10:15 AM',
-              isSelf: false,
-              reactions: [{ emoji: '⚡', count: 2, users: ['sec-press'] }]
-            }
-          ]
-        };
-        setMessagesMap(initialMsgs);
-        localStorage.setItem(LS_MESSAGES, JSON.stringify(initialMsgs));
+        setMessagesMap({});
       }
 
       const scl = localStorage.getItem(LS_CALLS);

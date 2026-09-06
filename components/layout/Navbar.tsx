@@ -55,7 +55,6 @@ export function Navbar() {
     { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Encrypted', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
     { name: 'ZEN.MUN', href: '/mun', icon: Crown, tag: 'OS', desc: 'Complete Model United Nations Operating System' },
     { name: 'Chamber', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
-    { name: 'ZEN.DOCS', href: '/docs', icon: Scale, tag: 'Drafting Studio', desc: 'Co-Author UN Resolutions, Parliamentary Bills & Charters' },
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },
     { name: 'Conference OS', href: '/mun/conference', icon: Layers, tag: 'Secretariat', desc: 'Secretariat Command Center & Liveboard' },
     { name: 'Manifesto', href: '/manifesto', icon: Flame, tag: 'Declaration', desc: 'Declaration of Youth Digital Sovereignty' },

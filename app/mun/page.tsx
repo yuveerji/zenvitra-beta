@@ -173,7 +173,7 @@ export default function ZenMunPortalPage() {
             </Link>
 
             <Link
-              href="/docs"
+              href="/committee"
               className="p-5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-left space-y-2.5 transition group cursor-pointer"
             >
               <div className="flex items-center justify-between">
@@ -181,7 +181,7 @@ export default function ZenMunPortalPage() {
                   <Scale className="w-5 h-5 text-black" />
                 </div>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
-                  ZEN.DOCS &amp; LEGISLATE
+                  CHAMBER &amp; LEGISLATE
                 </span>
               </div>
               <div>
@@ -348,11 +348,11 @@ export default function ZenMunPortalPage() {
               </div>
 
               <Link
-                href="/docs"
+                href="/committee"
                 className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-bold transition flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.3)]"
               >
                 <Scale className="w-3.5 h-3.5 text-black" />
-                <span>Launch Legislative Studio</span>
+                <span>Launch Chamber Floor</span>
                 <ArrowRight className="w-3.5 h-3.5 text-black" />
               </Link>
             </div>
