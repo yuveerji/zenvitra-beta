@@ -41,6 +41,7 @@ import { useAuth } from '@/context/AuthContext';
 import { sheetSync } from '@/lib/googleSheets';
 import { recordSuccessfulAuth } from '@/lib/securityShield';
 import { UsernameAvailabilityButton } from '@/components/auth/UsernameAvailabilityButton';
+import { PasswordStrengthIndicator, evaluatePasswordStrength } from '@/components/auth/PasswordStrengthIndicator';
 
 interface SovereignTrack {
   id: string;
@@ -221,8 +222,13 @@ export default function RegisterPage() {
       setErrorMessage('Please complete all sovereign identity fields.');
       return;
     }
-    if (password.length < 6) {
-      setErrorMessage('Master Passphrase must be at least 6 characters.');
+    if (password.length < 8) {
+      setErrorMessage('Master Passphrase must be at least 8 characters long.');
+      return;
+    }
+    const analysis = evaluatePasswordStrength(password);
+    if (!analysis.isStrongEnough) {
+      setErrorMessage('Master Passphrase is too weak. Please include uppercase, lowercase, numbers, or special characters, or click Auto-Generate.');
       return;
     }
     setErrorMessage(null);
@@ -540,7 +546,10 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-mono font-semibold text-neutral-300">MASTER PASSPHRASE</label>
+                    <label className="text-xs font-mono font-semibold text-neutral-300 flex items-center justify-between">
+                      <span>MASTER PASSPHRASE <span className="text-amber-400">*</span></span>
+                      <span className="text-[10px] font-mono text-neutral-500 font-normal">Min. 8 chars, high-entropy</span>
+                    </label>
                     <div className="relative">
                       <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                       <input
@@ -559,6 +568,15 @@ export default function RegisterPage() {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+
+                    {/* Sovereign Strong Password Indicator & Auto-Generator */}
+                    <PasswordStrengthIndicator
+                      password={password}
+                      onAutoGenerate={(generated) => {
+                        setPassword(generated);
+                        setShowPassword(true);
+                      }}
+                    />
                   </div>
 
                   <div className="flex items-center gap-3 pt-2">

@@ -8,7 +8,8 @@ export type DiscussionCategory =
   | 'ENVIRONMENT'
   | 'YOUTH'
   | 'HUMAN_RIGHTS'
-  | 'GLOBAL_AFFAIRS';
+  | 'GLOBAL_AFFAIRS'
+  | 'MARVEL';
 
 export type ArgumentStance = 'PRO' | 'CON' | 'NEUTRAL' | 'EVIDENCE';
 

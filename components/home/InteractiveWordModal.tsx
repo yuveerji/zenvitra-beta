@@ -250,7 +250,7 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     term: 'ZenChat Sovereign Mesh',
     tag: 'ENCRYPTED COMMUNICATOR',
     icon: Shield,
-    definition: 'A hyper-fast end-to-end encrypted messaging suite supporting ephemeral Thought Bubbles (Zen Notes), 1-view Instants, Glimpse snap scores, broadcast channels, and Discord-style civic chambers.',
+    definition: 'A hyper-fast end-to-end encrypted messaging suite supporting ephemeral Thought Bubbles (Zen Notes), 1-view Instants, Glimpse snap scores, broadcast channels, and sovereign committee chambers.',
     platformRelation: 'Empowers student organizers and parliamentary delegations to coordinate private discussions, committee caucuses, and real-time dispatches with zero data harvesting.',
     protocolBadge: 'ZEN.CHAT // ZERO KNOWLEDGE MESH',
     ctaText: 'Open ZenChat Mesh',

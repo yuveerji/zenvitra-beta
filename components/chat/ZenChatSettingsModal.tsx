@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { 
@@ -273,18 +273,49 @@ export function ZenChatSettingsModal({ isOpen, onClose }: ZenChatSettingsModalPr
                   </div>
                 </div>
 
-                {/* Avatar URL / Image */}
-                <div className="space-y-1.5">
+                {/* Avatar Image Selection & Upload */}
+                <div className="space-y-2">
                   <label className="block font-mono text-[10px] tracking-wider text-neutral-400 uppercase font-semibold">
-                    Avatar Image URL (Optional)
+                    Profile Avatar
                   </label>
-                  <input
-                    type="url"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full px-4 py-2 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-purple-500/50 text-xs text-white focus:outline-none transition"
-                  />
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <label className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.06] hover:bg-white/10 border border-white/15 text-xs text-neutral-200 cursor-pointer transition font-medium hover:text-white">
+                      <Camera className="w-4 h-4 text-purple-400" />
+                      <span>Upload Avatar Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setAvatarUrl(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+
+                    {avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setAvatarUrl('')}
+                        className="px-3 py-2 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-mono transition flex items-center justify-center gap-1.5"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Remove Photo</span>
+                      </button>
+                    )}
+                  </div>
+                  {avatarUrl && (
+                    <p className="font-mono text-[9px] text-emerald-400 flex items-center gap-1">
+                      <Check className="w-3 h-3" />
+                      <span>Custom avatar image loaded</span>
+                    </p>
+                  )}
                 </div>
 
                 {saveError && (

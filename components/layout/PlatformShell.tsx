@@ -121,7 +121,11 @@ export function PlatformShell({
 
       if (!fallbackAvatar) {
         try {
-          const profiles = JSON.parse(localStorage.getItem('zenvitra_pulse_profiles_v8_sovereign') || '[]');
+          const profiles = JSON.parse(
+            localStorage.getItem('zenvitra_pulse_profiles_v9_clean') || 
+            localStorage.getItem('zenvitra_pulse_profiles_v8_sovereign') || 
+            '[]'
+          );
           const cleanUser = (stored.username || stored.handle || pulseProfile.username || '').toLowerCase().trim().replace(/^@/, '');
           const myP = profiles.find((p: any) => (p.username && p.username.toLowerCase().trim().replace(/^@/, '') === cleanUser) || p.username === 'yuveer');
           if (myP?.avatar) fallbackAvatar = myP.avatar;
@@ -690,19 +694,23 @@ export function PlatformShell({
           </div>
         )}
 
-        {/* Viewport Content with Mobile Bottom Nav Padding */}
-        <div className={`flex-1 p-3 sm:p-6 pb-24 md:pb-6 overflow-y-auto relative ${
-          !(
-            pathname === '/pulse' || 
-            pathname?.startsWith('/pulse') || 
-            pathname === '/chat' || 
-            pathname?.startsWith('/chat')
-          ) ? 'pt-20 sm:pt-24' : ''
-        }`}>
-          <div className="relative z-10 max-w-6xl mx-auto">
+        {/* Viewport Content */}
+        {pathname === '/chat' || pathname?.startsWith('/chat') ? (
+          <div className="flex-1 w-full h-[100dvh] min-h-[100dvh] overflow-hidden relative">
             {children}
           </div>
-        </div>
+        ) : (
+          <div className={`flex-1 p-3 sm:p-6 pb-24 md:pb-6 overflow-y-auto relative ${
+            !(
+              pathname === '/pulse' || 
+              pathname?.startsWith('/pulse')
+            ) ? 'pt-20 sm:pt-24' : ''
+          }`}>
+            <div className="relative z-10 max-w-6xl mx-auto">
+              {children}
+            </div>
+          </div>
+        )}
 
         {/* ─── NATIVE MOBILE BOTTOM NAVIGATION (Instagram/Threads Style) ─── */}
         <MobileBottomNav />

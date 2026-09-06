@@ -196,7 +196,13 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
 
   useEffect(() => {
     if (isOpen) {
-      setDirective(getFounderDirective());
+      const d = getFounderDirective();
+      setDirective(d);
+      setDirectiveTitle(d.title);
+      setDirectiveBody(d.body);
+      setDirectiveAuthor(d.author);
+      setDirectivePriority(d.priority);
+      setDirectiveActive(d.isActive);
       setProtocols(getProtocolControls());
       setSubscriptionsList(getAllSubscriptions());
       setUserOverridesList(getAllUserOverrides());

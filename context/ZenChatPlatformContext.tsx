@@ -31,16 +31,17 @@ interface ZenChatContextType {
   setActiveConversationId: (id: string | null) => void;
 
   /* Messages */
-  sendMessage: (content: string, attachments?: any[], replyTo?: any) => void;
-  sendVoiceNote: (durationOrUrl: number | string, durationSeconds?: number) => void;
+  messagesMap: Record<string, ChatMessage[]>;
+  sendMessage: (content: string, attachments?: any[], replyTo?: any, targetConvId?: string, senderRole?: string) => void;
+  sendVoiceNote: (durationOrUrl: number | string, durationSeconds?: number, targetConvId?: string) => void;
   sendSnap: (snapData: { mediaUrl: string; caption?: string; stickers?: string[]; isOneView?: boolean; audience?: 'all' | 'followers' | 'close_friends' }, targetConvId?: string) => void;
-  openSnap: (messageId: string) => void;
-  sendSticker: (stickerUrl: string, name?: string) => void;
-  editMessage: (messageId: string, newContent: string) => void;
-  deleteMessage: (messageId: string) => void;
-  reactToMessage: (messageId: string, emoji: string) => void;
-  addReaction: (messageId: string, emoji: string) => void;
-  pinMessage: (messageId: string) => void;
+  openSnap: (messageId: string, targetConvId?: string) => void;
+  sendSticker: (stickerUrl: string, name?: string, targetConvId?: string) => void;
+  editMessage: (messageId: string, newContent: string, targetConvId?: string) => void;
+  deleteMessage: (messageId: string, targetConvId?: string) => void;
+  reactToMessage: (messageId: string, emoji: string, targetConvId?: string) => void;
+  addReaction: (messageId: string, emoji: string, targetConvId?: string) => void;
+  pinMessage: (messageId: string, targetConvId?: string) => void;
 
   /* Conversations & Groups & Broadcasts */
   createDirectChat: (memberOrHandle: ChatMember | string, contactName?: string) => string;
@@ -97,13 +98,13 @@ interface ZenChatContextType {
 
 const ZenChatContext = createContext<ZenChatContextType | undefined>(undefined);
 
-const LS_CONVERSATIONS = 'zenvitra_chat_conversations_v9_clean';
-const LS_MESSAGES = 'zenvitra_chat_messages_v9_clean';
-const LS_CALLS = 'zenvitra_chat_calls_v9_clean';
-const LS_STATUSES = 'zenvitra_chat_statuses_v9_clean';
-const LS_NOTES = 'zenvitra_chat_zen_notes_v9_clean';
-const LS_GLIMPSE_SCORE = 'zenvitra_glimpse_score_v9_clean';
-const LS_STICKERS = 'zenvitra_custom_stickers_v9_clean';
+const LS_CONVERSATIONS = 'zenvitra_chat_conversations_v10_noai';
+const LS_MESSAGES = 'zenvitra_chat_messages_v10_noai';
+const LS_CALLS = 'zenvitra_chat_calls_v10_noai';
+const LS_STATUSES = 'zenvitra_chat_statuses_v10_noai';
+const LS_NOTES = 'zenvitra_chat_zen_notes_v10_noai';
+const LS_GLIMPSE_SCORE = 'zenvitra_glimpse_score_v10_noai';
+const LS_STICKERS = 'zenvitra_custom_stickers_v10_noai';
 
 /* Default system sticker library */
 const DEFAULT_STICKERS: CustomSticker[] = [
@@ -126,7 +127,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
 
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>({});
-  const [activeConversationId, setActiveConversationId] = useState<string | null>('conv-zen-ai');
+  const [activeConversationId, setActiveConversationId] = useState<string | null>('conv-zenvitra-hq');
   const [calls, setCalls] = useState<ChatCall[]>([]);
   const [statuses, setStatuses] = useState<ChatStatus[]>([]);
   const [zenNotes, setZenNotes] = useState<ZenNote[]>([]);
@@ -157,26 +158,26 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
         try { return JSON.parse(val); } catch (_) { return fallback; }
       };
 
-      const cleanAiOnlyConversation: ChatConversation[] = [
+      const defaultHumanConversation: ChatConversation[] = [
         {
-          id: 'conv-zen-ai',
-          type: 'dm',
-          name: '🤖 Zen AI Diplomatic Co-Delegate',
-          handle: 'zen_ai',
+          id: 'conv-zenvitra-hq',
+          type: 'group',
+          name: '🏛️ Zenvitra Sovereign Assembly',
+          handle: 'zenvitra_hq',
           avatar: '',
-          isAi: true,
+          isAi: false,
           unreadCount: 0,
           isPinned: true,
           lastMessage: {
-            text: 'Greetings Delegate. How can I assist with your treaty clauses, resolutions, or citations today?',
+            text: 'Welcome to Zenvitra Chat. Connect with peer delegates, caucus, and dispatch secure communications.',
             timestamp: 'Just now',
-            senderName: 'Zen AI Co-Delegate',
+            senderName: 'Zenvitra Secretariat',
           },
           members: [
-            { id: 'ai-1', name: 'Zen AI Diplomatic Co-Delegate', username: 'zen_ai', role: 'Diplomatic Co-Pilot', isAi: true, status: 'online' }
+            { id: 'sec-1', name: 'Zenvitra Secretariat', username: 'zenvitra_sec', role: 'Plenary Lead', isAi: false, status: 'online' }
           ],
           createdAt: new Date().toISOString(),
-          description: 'Instant parliamentary procedure co-pilot, treaty clause generator, and citation auditor.'
+          description: 'Official delegate dispatch network. Sovereign encrypted peer messaging.'
         }
       ];
 
@@ -185,27 +186,90 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       if (parsedConvs && Array.isArray(parsedConvs) && parsedConvs.length > 0) {
         setConversations(parsedConvs);
       } else {
-        setConversations(cleanAiOnlyConversation);
-        localStorage.setItem(LS_CONVERSATIONS, JSON.stringify(cleanAiOnlyConversation));
+        setConversations(defaultHumanConversation);
+        localStorage.setItem(LS_CONVERSATIONS, JSON.stringify(defaultHumanConversation));
       }
 
       const sm = localStorage.getItem(LS_MESSAGES);
       const parsedMsgs = safeParse(sm, null);
       if (parsedMsgs && typeof parsedMsgs === 'object' && Object.keys(parsedMsgs).length > 0) {
-        setMessagesMap(parsedMsgs);
+        // Ensure channels also have default messages if missing
+        const merged = { ...parsedMsgs };
+        if (!merged['chan_ch-general']) {
+          merged['chan_ch-general'] = [
+            {
+              id: 'msg-gen-1',
+              conversationId: 'chan_ch-general',
+              senderId: 'sec-1',
+              senderName: 'Zenvitra Secretariat',
+              senderUsername: 'zenvitra_sec',
+              senderRole: '👑 FOUNDER',
+              content: 'The Plenary Assembly is formally in session. Delegates may now request the floor or table draft working papers.',
+              timestamp: '10:00 AM',
+              isSelf: false,
+              reactions: [{ emoji: '🏛️', count: 3, users: ['sec-1'] }]
+            }
+          ];
+        }
+        if (!merged['chan_ch-briefs']) {
+          merged['chan_ch-briefs'] = [
+            {
+              id: 'msg-brf-1',
+              conversationId: 'chan_ch-briefs',
+              senderId: 'sec-press',
+              senderName: 'Elena Rostova (Reuters)',
+              senderUsername: 'elena_press',
+              senderRole: '📰 PRESS',
+              content: 'Breaking diplomatic wire: Sovereign delegations agree on preliminary draft terms for multilateral digital identity standards.',
+              timestamp: '10:15 AM',
+              isSelf: false,
+              reactions: [{ emoji: '⚡', count: 2, users: ['sec-press'] }]
+            }
+          ];
+        }
+        setMessagesMap(merged);
       } else {
         const initialMsgs = {
-          'conv-zen-ai': [
+          'conv-zenvitra-hq': [
             {
-              id: 'msg-ai-welcome',
-              conversationId: 'conv-zen-ai',
-              senderId: 'ai-1',
-              senderName: 'Zen AI Diplomatic Co-Delegate',
-              senderUsername: 'zen_ai',
-              content: 'Welcome to your sovereign diplomatic channel. You can draft treaties, ask for legal precedents, request Point of Order guidance, or send editable Snaps and voice notes.',
+              id: 'msg-sec-welcome',
+              conversationId: 'conv-zenvitra-hq',
+              senderId: 'sec-1',
+              senderName: 'Zenvitra Secretariat',
+              senderUsername: 'zenvitra_sec',
+              senderRole: '🏛️ SECRETARIAT',
+              content: 'Welcome to your sovereign diplomatic channel. You can caucus with delegates, share real-time notes, exchange high-priority dispatches, and coordinate committee resolutions.',
               timestamp: 'Just now',
               isSelf: false,
               reactions: []
+            }
+          ],
+          'chan_ch-general': [
+            {
+              id: 'msg-gen-1',
+              conversationId: 'chan_ch-general',
+              senderId: 'sec-1',
+              senderName: 'Zenvitra Secretariat',
+              senderUsername: 'zenvitra_sec',
+              senderRole: '👑 FOUNDER',
+              content: 'The Plenary Assembly is formally in session. Delegates may now request the floor or table draft working papers.',
+              timestamp: '10:00 AM',
+              isSelf: false,
+              reactions: [{ emoji: '🏛️', count: 3, users: ['sec-1'] }]
+            }
+          ],
+          'chan_ch-briefs': [
+            {
+              id: 'msg-brf-1',
+              conversationId: 'chan_ch-briefs',
+              senderId: 'sec-press',
+              senderName: 'Elena Rostova (Reuters)',
+              senderUsername: 'elena_press',
+              senderRole: '📰 PRESS',
+              content: 'Breaking diplomatic wire: Sovereign delegations agree on preliminary draft terms for multilateral digital identity standards.',
+              timestamp: '10:15 AM',
+              isSelf: false,
+              reactions: [{ emoji: '⚡', count: 2, users: ['sec-press'] }]
             }
           ]
         };
@@ -290,16 +354,18 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
   );
 
   /* Send Message */
-  const sendMessage = useCallback((content: string, attachments?: any[], replyTo?: any) => {
-    if (!activeConversationId || (!content.trim() && (!attachments || attachments.length === 0))) return;
+  const sendMessage = useCallback((content: string, attachments?: any[], replyTo?: any, targetConvId?: string, senderRole?: string) => {
+    const convId = targetConvId || activeConversationId;
+    if (!convId || (!content.trim() && (!attachments || attachments.length === 0))) return;
 
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newMsg: ChatMessage = {
       id: 'msg_' + Date.now(),
-      conversationId: activeConversationId,
+      conversationId: convId,
       senderId: currentUserId,
       senderName: currentUserName,
       senderUsername: currentUserUsername,
+      senderRole: senderRole || 'DELEGATE',
       isSelf: true,
       content: content.trim(),
       timestamp: timeStr,
@@ -309,13 +375,13 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       status: 'delivered',
     };
 
-    const currentList = messagesMap[activeConversationId] || [];
+    const currentList = messagesMap[convId] || [];
     const nextList = [...currentList, newMsg];
-    saveMessages({ ...messagesMap, [activeConversationId]: nextList });
+    saveMessages({ ...messagesMap, [convId]: nextList });
 
-    // Update conversation last message
+    // Update conversation last message if it's a conversation
     const updatedConvs = conversations.map((c) => {
-      if (c.id === activeConversationId) {
+      if (c.id === convId) {
         return {
           ...c,
           lastMessage: {
@@ -329,12 +395,12 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
     });
     saveConversations(updatedConvs);
 
-    // Call Backend API for database sync & AI Co-Pilot auto response
+    // Call Backend API for database sync
     fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        conversationId: activeConversationId,
+        conversationId: convId,
         senderId: currentUserId,
         senderName: currentUserName,
         senderUsername: currentUserUsername,
@@ -342,19 +408,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
         attachments,
         replyTo,
       })
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.aiResponse) {
-          setTimeout(() => {
-            setMessagesMap((prev) => {
-              const list = prev[activeConversationId] || [];
-              return { ...prev, [activeConversationId]: [...list, data.aiResponse] };
-            });
-          }, 600);
-        }
-      })
-      .catch(() => {});
+    }).catch(() => {});
   }, [activeConversationId, currentUserId, currentUserName, currentUserUsername, messagesMap, conversations, saveMessages, saveConversations]);
 
   /* Send Snap (Glimpses in ZenChat) */
@@ -854,6 +908,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       conversations,
       activeConversationId,
       activeConversation,
+      messagesMap,
       activeMessages,
       messages: activeMessages,
       activeCall,

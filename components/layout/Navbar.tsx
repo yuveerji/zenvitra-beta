@@ -25,7 +25,8 @@ import {
   CreditCard,
   ChevronDown,
   Layers,
-  Gavel
+  Gavel,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { SocialMindMapModal } from '@/components/home/SocialMindMapModal';
@@ -51,6 +52,7 @@ export function Navbar() {
   ];
 
   const secondaryNavLinks = [
+    { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Encrypted', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
     { name: 'ZEN.MUN', href: '/mun', icon: Crown, tag: 'OS', desc: 'Complete Model United Nations Operating System' },
     { name: 'Chamber', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
     { name: 'ZEN.DOCS', href: '/docs', icon: Scale, tag: 'Drafting Studio', desc: 'Co-Author UN Resolutions, Parliamentary Bills & Charters' },
@@ -372,16 +374,26 @@ export function Navbar() {
               <SocialHoverMenu onOpenFullModal={() => setSocialMindMapOpen(true)} />
             </div>
 
-            {/* 2. Platform Feed Link Button (Primary CTA) */}
+            {/* 2. Platform & Chat Link Buttons (Primary CTAs) */}
             {hasActiveSession ? (
-              <Link
-                href="/pulse"
-                className="group relative inline-flex items-center gap-1 sm:gap-1.5 h-7 sm:h-8.5 px-2.5 sm:px-4 rounded-full bg-white hover:bg-neutral-200 text-black font-display font-bold text-[10px] sm:text-xs tracking-wider uppercase transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] active:scale-[0.98] whitespace-nowrap shrink-0 border border-white"
-              >
-                <span className="hidden xs:inline sm:inline">Platform</span>
-                <span className="xs:hidden sm:hidden">Feed</span>
-                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
-              </Link>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Link
+                  href="/chat"
+                  className="hidden md:inline-flex items-center gap-1.5 h-7 sm:h-8.5 px-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white font-display font-semibold text-[10px] sm:text-xs tracking-wider transition-all duration-200 hover:scale-[1.02] whitespace-nowrap shrink-0"
+                  title="Open ZenChat Mesh"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>ZenChat</span>
+                </Link>
+                <Link
+                  href="/pulse"
+                  className="group relative inline-flex items-center gap-1 sm:gap-1.5 h-7 sm:h-8.5 px-2.5 sm:px-4 rounded-full bg-white hover:bg-neutral-200 text-black font-display font-bold text-[10px] sm:text-xs tracking-wider uppercase transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] active:scale-[0.98] whitespace-nowrap shrink-0 border border-white"
+                >
+                  <span className="hidden xs:inline sm:inline">Platform</span>
+                  <span className="xs:hidden sm:hidden">Feed</span>
+                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
             ) : (
               <Link
                 href="/login"
@@ -501,6 +513,14 @@ export function Navbar() {
                             <span>Platform Feed</span>
                           </Link>
                           <Link
+                            href="/chat"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="w-full px-3 py-2 rounded-xl hover:bg-white/10 hover:text-white transition flex items-center gap-2"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>ZenChat Mesh</span>
+                          </Link>
+                          <Link
                             href={`/profile/${userHandle}`}
                             onClick={() => setUserDropdownOpen(false)}
                             className="w-full px-3 py-2 rounded-xl hover:bg-white/10 hover:text-white transition flex items-center gap-2"
@@ -616,6 +636,17 @@ export function Navbar() {
                       <div className="flex items-center gap-2 font-display uppercase tracking-wider">
                         <Radio className="w-4 h-4 text-black" />
                         <span>Enter Platform Feed</span>
+                      </div>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                    <Link
+                      href="/chat"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full p-3 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-200 flex items-center justify-between font-bold"
+                    >
+                      <div className="flex items-center gap-2 font-display uppercase tracking-wider">
+                        <MessageSquare className="w-4 h-4 text-purple-400" />
+                        <span>Open ZenChat Mesh</span>
                       </div>
                       <ArrowRight className="w-4 h-4" />
                     </Link>

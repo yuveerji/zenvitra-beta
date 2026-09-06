@@ -94,7 +94,7 @@ export default function JoinCoreTeamSection() {
               <input
                 type="text"
                 required
-                placeholder="Email or Telegram / Discord Handle"
+                placeholder="Email or Telegram / Social Handle"
                 value={formData.contact}
                 onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl bg-black/60 border border-white/10 text-white placeholder-neutral-600 text-xs font-mono focus:outline-none focus:border-white/30 transition"

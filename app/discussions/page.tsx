@@ -47,51 +47,14 @@ const INITIAL_DISCUSSIONS: OpenDiscussion[] = [
     authorUsername: 'yuveer',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    viewCount: 1420,
-    participantCount: 148,
-    proCount: 84,
-    conCount: 52,
-    evidenceCount: 12,
+    viewCount: 0,
+    participantCount: 0,
+    proCount: 0,
+    conCount: 0,
+    evidenceCount: 0,
     isFeatured: true,
     status: 'ACTIVE',
-    arguments: [
-      {
-        id: 'arg-su-1',
-        discussionId: 'disc-standup-free-speech',
-        authorId: 'auth-user-101',
-        authorName: 'Kabir Verma',
-        authorUsername: 'kabirv',
-        authorRole: 'Legal Jurisprudence Scholar',
-        stance: 'PRO',
-        title: 'Article 19(1)(a) protects uncomfortable satire; FIRs are state intimidation',
-        content: 'Satirical comedy has historically functioned as the final democratic safety valve against authoritarian conformity. Weaponizing Section 295A and IPC/BNS provisions over comedic exaggerations on YouTube shows like Pretty Good Roast or podcast banter creates an unbearable chilling effect where creators self-censor.',
-        evidenceLinks: [
-          { title: 'Supreme Court on Free Speech & Artistic Liberty (S. Rangarajan Case)', url: 'https://indiankanoon.org', sourceName: 'Supreme Court of India' }
-        ],
-        upvotes: 48,
-        downvotes: 3,
-        upvotedBy: [],
-        createdAt: new Date().toISOString(),
-        replies: []
-      },
-      {
-        id: 'arg-su-2',
-        discussionId: 'disc-standup-free-speech',
-        authorId: 'auth-user-102',
-        authorName: 'Aarav Singhania',
-        authorUsername: 'aarav_civic',
-        authorRole: 'Media Ethics Researcher',
-        stance: 'CON',
-        title: 'Monetized shock-jock culture crosses into targeted public defamation',
-        content: 'While broad state censorship is dangerous, digital platforms have incentivized toxic punchlines aimed at individual dignity without accountability. Creators monetize millions of views through boundary-pushing roasts and cannot claim total immunity when public sentiment reacts.',
-        evidenceLinks: [],
-        upvotes: 21,
-        downvotes: 14,
-        upvotedBy: [],
-        createdAt: new Date().toISOString(),
-        replies: []
-      }
-    ]
+    arguments: []
   },
   {
     id: 'disc-neet-paper-leaks',
@@ -106,51 +69,14 @@ const INITIAL_DISCUSSIONS: OpenDiscussion[] = [
     authorUsername: 'yuveer',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    viewCount: 3180,
-    participantCount: 234,
-    proCount: 168,
-    conCount: 42,
-    evidenceCount: 24,
+    viewCount: 0,
+    participantCount: 0,
+    proCount: 0,
+    conCount: 0,
+    evidenceCount: 0,
     isFeatured: true,
     status: 'ACTIVE',
-    arguments: [
-      {
-        id: 'arg-neet-1',
-        discussionId: 'disc-neet-paper-leaks',
-        authorId: 'auth-user-201',
-        authorName: 'Dr. Priya Nair',
-        authorUsername: 'priya_med',
-        authorRole: 'Resident Physician & Education Reformer',
-        stance: 'EVIDENCE',
-        title: 'CBI Evidence & Burnt Question Papers confirm systemic institutional breach',
-        content: 'The CBI arrests in Patna and Hazaribagh confirmed that master question booklets were leaked hours before the examination. The normalization of coaching syndicates collaborating with NTA insiders strips meritocracy of all legitimacy.',
-        evidenceLinks: [
-          { title: 'CBI Chargesheet & Evidence Record in NEET-UG Paper Leak', url: 'https://cbi.gov.in', sourceName: 'Central Bureau of Investigation' }
-        ],
-        upvotes: 92,
-        downvotes: 2,
-        upvotedBy: [],
-        createdAt: new Date().toISOString(),
-        replies: []
-      },
-      {
-        id: 'arg-neet-2',
-        discussionId: 'disc-neet-paper-leaks',
-        authorId: 'auth-user-202',
-        authorName: 'Rohan Deshmukh',
-        authorUsername: 'rohand_aspirant',
-        authorRole: 'NEET Aspirant & Youth Delegate',
-        stance: 'PRO',
-        title: 'Single-Window centralized testing creates an existential single point of failure',
-        content: 'Forcing 24 lakh students through a single centralized exam overseen by a non-autonomous body like NTA guarantees catastrophic incentives for black-market syndicates. We need decentralized multi-stage testing and total biometric blockchain chain-of-custody.',
-        evidenceLinks: [],
-        upvotes: 67,
-        downvotes: 5,
-        upvotedBy: [],
-        createdAt: new Date().toISOString(),
-        replies: []
-      }
-    ]
+    arguments: []
   },
   {
     id: 'disc-godi-media-collapse',
@@ -165,55 +91,41 @@ const INITIAL_DISCUSSIONS: OpenDiscussion[] = [
     authorUsername: 'yuveer',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    viewCount: 2240,
-    participantCount: 189,
-    proCount: 142,
-    conCount: 31,
-    evidenceCount: 16,
+    viewCount: 0,
+    participantCount: 0,
+    proCount: 0,
+    conCount: 0,
+    evidenceCount: 0,
     isFeatured: true,
     status: 'ACTIVE',
-    arguments: [
-      {
-        id: 'arg-media-1',
-        discussionId: 'disc-godi-media-collapse',
-        authorId: 'auth-user-301',
-        authorName: 'Tanvi Sen',
-        authorUsername: 'tanvisen_press',
-        authorRole: 'Independent Investigative Journalist',
-        stance: 'PRO',
-        title: 'Corporate ad-dependency and regulatory capture made critical journalism impossible',
-        content: 'When 80% of prime-time news channel revenues come from government tenders and state-aligned conglomerate sponsors, journalism ceases to be a public utility. The resulting studio circus manufactures consent while real structural collapse is blacked out.',
-        evidenceLinks: [
-          { title: 'World Press Freedom Index: India Country Report', url: 'https://rsf.org', sourceName: 'Reporters Without Borders' }
-        ],
-        upvotes: 79,
-        downvotes: 4,
-        upvotedBy: [],
-        createdAt: new Date().toISOString(),
-        replies: []
-      },
-      {
-        id: 'arg-media-2',
-        discussionId: 'disc-godi-media-collapse',
-        authorId: 'auth-user-302',
-        authorName: 'Vikramaditya Roy',
-        authorUsername: 'vikram_roy',
-        authorRole: 'Digital Media Analyst',
-        stance: 'EVIDENCE',
-        title: 'Youth viewership has migrated completely to independent creators & decentralized wires',
-        content: 'Television TRP ratings among under-30 demographics have fallen by over 60% in the last 4 years. Indian youth obtain ground reporting from grassroots YouTube channels, digital newsletters, and civic platforms like Zenvitra because prime-time news has forfeited all credibility.',
-        evidenceLinks: [],
-        upvotes: 56,
-        downvotes: 6,
-        upvotedBy: [],
-        createdAt: new Date().toISOString(),
-        replies: []
-      }
-    ]
+    arguments: []
+  },
+  {
+    id: 'disc-marvel-doctor-doom-geopolitics',
+    title: 'Doctor Doom, Latverian Sovereignty & Multiverse Incursions: Is authoritarian order justified when global systems fail?',
+    slug: 'doctor-doom-latveria-secret-wars-geopolitics',
+    question: 'When international multilateralism collapses and crises become existential, does Victor von Doom’s absolute authoritarian technocracy represent the only viable path to planetary survival, or is freedom non-negotiable even in the face of annihilation?',
+    contextSummary: 'From Marvel Secret Wars to Latveria’s isolationist welfare state, Doctor Doom presents the ultimate philosophical paradox: zero poverty, zero crime, supreme technological advancement, yet absolute denial of democratic liberty. As young thinkers witness democratic gridlock on global issues, can Doom’s realpolitik doctrine be critiqued through real-world political theory and international law?',
+    category: 'MARVEL',
+    tags: ['Marvel', 'DoctorDoom', 'Latveria', 'SecretWars', 'MCU', 'Geopolitics', 'PoliticalTheory', 'Authoritarianism'],
+    authorId: 'auth-citizen-yuveer',
+    authorName: 'Yuveer Chhatwani',
+    authorUsername: 'yuveer',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    viewCount: 0,
+    participantCount: 0,
+    proCount: 0,
+    conCount: 0,
+    evidenceCount: 0,
+    isFeatured: true,
+    status: 'ACTIVE',
+    arguments: []
   }
 ];
 
 const CATEGORIES: DiscussionCategory[] = [
+  'MARVEL',
   'EDUCATION',
   'AI',
   'JUSTICE',
@@ -226,15 +138,52 @@ const CATEGORIES: DiscussionCategory[] = [
   'HUMAN_RIGHTS'
 ];
 
-const LS_DISCUSSIONS = 'zenvitra_discussions_v2_clean';
+const LS_DISCUSSIONS = 'zenvitra_discussions_v4_clean';
+
+// Helper to sanitize discussions and ensure no legacy fake arguments remain
+function sanitizeDiscussions(discs: OpenDiscussion[]): OpenDiscussion[] {
+  return discs.map(d => {
+    // Filter out fake seeded arguments (Priya Nair, Rohan Deshmukh, Kavita Krishnan, or legacy seed IDs)
+    const cleanArgs = (d.arguments || []).filter(arg => {
+      const isFakeAuthor = ['priya_med', 'rohand_aspirant', 'kavita_krishnan'].includes(arg.authorUsername);
+      const isFakeId = arg.id.startsWith('arg-neet-') || arg.id.startsWith('arg-standup-') || arg.id.startsWith('arg-godi-');
+      return !isFakeAuthor && !isFakeId;
+    });
+
+    const pro = cleanArgs.filter(a => a.stance === 'PRO').length;
+    const con = cleanArgs.filter(a => a.stance === 'CON').length;
+    const evi = cleanArgs.filter(a => a.stance === 'EVIDENCE').length;
+    const debatersCount = new Set(cleanArgs.map(a => a.authorUsername || a.authorName)).size;
+
+    return {
+      ...d,
+      arguments: cleanArgs,
+      proCount: pro,
+      conCount: con,
+      evidenceCount: evi,
+      participantCount: debatersCount
+    };
+  });
+}
 
 export default function OpenDiscussionsPage() {
   const { profile } = useAuth();
   const [discussions, setDiscussions] = useState<OpenDiscussion[]>(() => {
     if (typeof window === 'undefined') return INITIAL_DISCUSSIONS;
     try {
+      // Clear legacy storage keys containing fake arguments
+      ['zenvitra_discussions_v1', 'zenvitra_discussions_v2_clean', 'zenvitra_discussions_v3_zero'].forEach(k => {
+        try { localStorage.removeItem(k); } catch {}
+      });
+
       const stored = localStorage.getItem(LS_DISCUSSIONS);
-      return stored ? JSON.parse(stored) : INITIAL_DISCUSSIONS;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return sanitizeDiscussions(parsed);
+        }
+      }
+      return INITIAL_DISCUSSIONS;
     } catch {
       return INITIAL_DISCUSSIONS;
     }
@@ -487,11 +436,15 @@ export default function OpenDiscussionsPage() {
                       </p>
 
                       <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400 border-t border-white/5 pt-2.5">
-                        <div className="flex items-center gap-3">
-                          <span className="text-emerald-400">PRO: {disc.proCount}</span>
-                          <span className="text-rose-400">CON: {disc.conCount}</span>
-                          <span className="text-cyan-400">EVI: {disc.evidenceCount}</span>
-                        </div>
+                        {disc.arguments.length > 0 ? (
+                          <div className="flex items-center gap-3">
+                            <span className="text-emerald-400">PRO: {disc.proCount}</span>
+                            <span className="text-rose-400">CON: {disc.conCount}</span>
+                            <span className="text-cyan-400">EVI: {disc.evidenceCount}</span>
+                          </div>
+                        ) : (
+                          <span className="text-neutral-500 italic">No arguments yet</span>
+                        )}
                         <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-purple-400 translate-x-1' : 'text-neutral-600'}`} />
                       </div>
                     </div>

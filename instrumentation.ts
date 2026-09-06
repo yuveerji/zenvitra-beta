@@ -15,7 +15,7 @@ export async function register() {
       { name: 'Auth Health', path: '/auth/v1/health' },
       { name: 'Auth Settings', path: '/auth/v1/settings' },
       { name: 'Storage Buckets', path: '/storage/v1/bucket' },
-      { name: 'PostgREST DB Query', path: '/rest/v1/profiles?limit=1' }
+      { name: 'PostgREST Schema Pulse', path: '/rest/v1/' }
     ];
 
     const pingSupabase = () => {

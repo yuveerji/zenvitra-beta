@@ -184,13 +184,13 @@ interface ZenPulseContextType {
 
 const ZenPulseContext = createContext<ZenPulseContextType | undefined>(undefined);
 
-const LS_POSTS = 'zenvitra_pulse_posts_v8_sovereign';
-const LS_REPLIES = 'zenvitra_pulse_replies_v8_sovereign';
-const LS_FLUXES = 'zenvitra_pulse_fluxes_v8_sovereign';
-const LS_FLUX_COMMENTS = 'zenvitra_pulse_flux_comments_v8_sovereign';
-const LS_PROFILES = 'zenvitra_pulse_profiles_v8_sovereign';
-const LS_STORIES = 'zenvitra_pulse_stories_v8_sovereign';
-const LS_SAVED = 'zenvitra_pulse_saved_v8_sovereign';
+const LS_POSTS = 'zenvitra_pulse_posts_v9_clean';
+const LS_REPLIES = 'zenvitra_pulse_replies_v9_clean';
+const LS_FLUXES = 'zenvitra_pulse_fluxes_v9_clean';
+const LS_FLUX_COMMENTS = 'zenvitra_pulse_flux_comments_v9_clean';
+const LS_PROFILES = 'zenvitra_pulse_profiles_v9_clean';
+const LS_STORIES = 'zenvitra_pulse_stories_v9_clean';
+const LS_SAVED = 'zenvitra_pulse_saved_v9_clean';
 const LS_CIVIC_POINTS = 'zenvitra_pulse_civic_points_v1';
 const LS_SPEAKER_QUEUE = 'zenvitra_pulse_speaker_queue_v1';
 
@@ -361,192 +361,47 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     try { return JSON.parse(val); } catch (_) { return fallback; }
   };
 
-  /* persistence safe parse & strict zero-seeded real account rule */
+  /* persistence safe parse & clean zero-seeded rule */
   useEffect(() => {
     try {
+      // Purge legacy v8 seeded keys if present
+      const legacyKeys = [
+        'zenvitra_pulse_posts_v8_sovereign',
+        'zenvitra_pulse_posts_v8_sovereign_mock',
+        'zenvitra_pulse_fluxes_v8_sovereign',
+        'zenvitra_pulse_fluxes_v8_sovereign_mock',
+        'zenvitra_pulse_speaker_queue_v1',
+        'zenvitra_pulse_speaker_queue_v1_mock'
+      ];
+      legacyKeys.forEach((k) => {
+        try { localStorage.removeItem(k); } catch (_) {}
+      });
 
       const storagePostsKey = isMockMode ? `${LS_POSTS}_mock` : LS_POSTS;
       const storageSpeakerKey = isMockMode ? `${LS_SPEAKER_QUEUE}_mock` : LS_SPEAKER_QUEUE;
 
-      const postsRaw = safeParse(localStorage.getItem(storagePostsKey), null);
-      const defaultPoliticalPosts: PulsePost[] = [
-        {
-          id: 'pol_post_01',
-          authorId: 'prs_legislative_node',
-          authorName: 'PRS Legislative Bureau',
-          authorUsername: 'prs_india',
-          authorAvatar: '',
-          authorRole: 'INSTITUTIONAL WIRE',
-          content: '🏛️ LEGISLATIVE DISPATCH: Digital Personal Data Protection (DPDP) Act 2023 & Parliamentary Oversight.\n\nThe Joint Parliamentary Committee review affirms stringent safeguards regarding algorithmic profiling of minors and mandatory consent architecture for data fiduciaries. Cross-border transfers remain anchored to the Central Government approved notification list.\n\nKey civic takeaway: Citizens possess enforceable right to correction, erasure, and grievance redressal through the Data Protection Board.',
-          images: [
-            'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80'
-          ],
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-          likes: 68,
-          likedBy: [],
-          reposts: 24,
-          repostedBy: [],
-          replyCount: 9,
-          location: 'Parliament House, New Delhi',
-          tags: ['Politics', 'Policy', 'Parliament', 'DataPrivacy', 'Governance'],
-          sourceName: 'PRS Legislative Research',
-          sourceUrl: 'https://prsindia.org/billtrack/digital-personal-data-protection-bill-2023',
-          civicReliabilityScore: 99,
-          citations: [
-            {
-              id: 'cit_prs_01',
-              symbolOrId: 'Bill No. 113 of 2023',
-              type: 'GAZETTE',
-              title: 'Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023)',
-              institution: 'Ministry of Law & Justice / PRS Research',
-              archiveUrl: 'https://prsindia.org',
-              sha256Hash: 'a7b8e910c24d456f912e8b0a99cde3110245a90bf183428d09bc198274a1005b',
-              verifiedCount: 18,
-              verifiedBy: ['prs_india', 'civic_monitor', 'legal_bench']
-            }
-          ]
-        },
-        {
-          id: 'pol_post_02',
-          authorId: 'sci_constitutional_node',
-          authorName: 'Supreme Court Dispatch Wire',
-          authorUsername: 'supreme_court_monitor',
-          authorAvatar: '',
-          authorRole: 'CONSTITUTIONAL OBSERVER',
-          content: '⚖️ CONSTITUTIONAL BENCH RULING: Electoral Transparency & Voter Right to Know.\n\nThe 5-Judge Constitution Bench reiterates that democratic legitimacy requires uncompromised public disclosure regarding political finance and candidate background under Article 19(1)(a).\n\n"Information is the cornerstone of participatory democracy. Voters cannot exercise genuine franchise in an asymmetric vacuum."',
-          images: [
-            'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80'
-          ],
-          createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
-          likes: 114,
-          likedBy: [],
-          reposts: 47,
-          repostedBy: [],
-          replyCount: 14,
-          location: 'Tilak Marg, Supreme Court of India',
-          tags: ['SupremeCourt', 'Constitution', 'Transparency', 'ElectionCommission', 'Politics'],
-          sourceName: 'Supreme Court of India (sci.gov.in)',
-          sourceUrl: 'https://www.sci.gov.in/judgments/',
-          civicReliabilityScore: 100,
-          citations: [
-            {
-              id: 'cit_sci_02',
-              symbolOrId: 'Writ Petition (Civil) No. 880/2017',
-              type: 'COURT_DOCKET',
-              title: 'Association for Democratic Reforms & Anr. v. Union of India',
-              institution: 'Supreme Court of India',
-              archiveUrl: 'https://main.sci.gov.in',
-              sha256Hash: 'e4d8a11b98cf982a17088921a4f009bba762d02cba018944cf92b8d002a99187',
-              verifiedCount: 32,
-              verifiedBy: ['supreme_court_monitor', 'law_commission_node', 'civic_auditor']
-            }
-          ]
-        },
-        {
-          id: 'pol_post_03',
-          authorId: 'un_geneva_node',
-          authorName: 'UN Plenary Secretariat',
-          authorUsername: 'un_plenary',
-          authorAvatar: '',
-          authorRole: 'MULTILATERAL SECRETARIAT',
-          content: '🌐 MULTILATERAL RESOLUTION: Global Governance Framework on Lethal Autonomous Systems (LAWS).\n\nPlenary assembly consensus reaches 124 cosponsors on establishing strict human command verification over autonomous cognitive targeting networks.\n\nAll High Contracting Parties mandate civilian infrastructure immunities and continuous independent treaty verification telemetry.',
-          images: [
-            'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80'
-          ],
-          createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-          likes: 89,
-          likedBy: [],
-          reposts: 31,
-          repostedBy: [],
-          replyCount: 7,
-          location: 'Palais des Nations, Geneva',
-          tags: ['UN', 'Treaty', 'Geopolitics', 'AutonomousWeapons', 'Multilateralism'],
-          isTreaty: true,
-          treatyTitle: 'Framework Protocol on Lethal Autonomous Systems & Sovereign Human Command',
-          treatyVersion: 'v2.4',
-          treatyStatus: 'debate',
-          sourceName: 'United Nations Digital Library (digitallibrary.un.org)',
-          sourceUrl: 'https://digitallibrary.un.org',
-          civicReliabilityScore: 98,
-          citations: [
-            {
-              id: 'cit_un_03',
-              symbolOrId: 'A/RES/78/241',
-              type: 'UN_DOC',
-              title: 'Lethal autonomous weapons systems - Resolution adopted by the General Assembly',
-              institution: 'United Nations General Assembly',
-              archiveUrl: 'https://digitallibrary.un.org/record/4030635',
-              sha256Hash: 'f189c4501ba9002dd378129845ba01ffbca9082341d087c093a1029487cba102',
-              verifiedCount: 45,
-              verifiedBy: ['un_plenary', 'diplomat_france', 'g77_delegate']
-            }
-          ]
-        }
-      ];
+      const postsRaw = safeParse(localStorage.getItem(storagePostsKey), []);
+      const seededAuthors = new Set(['prs_india', 'supreme_court_monitor', 'un_plenary', 'secretariat']);
+      const filteredCleanPosts = Array.isArray(postsRaw) 
+        ? postsRaw.filter((p: PulsePost) => 
+            !p.id.startsWith('pol_post_') && 
+            !seededAuthors.has((p.authorUsername || '').toLowerCase())
+          )
+        : [];
+      setAllPosts(filteredCleanPosts);
 
-      if (postsRaw && Array.isArray(postsRaw) && postsRaw.length > 0) {
-        // Ensure the verified political posts exist in the feed even if an older local cache was present
-        const existingIds = new Set(postsRaw.map((p: PulsePost) => p.id));
-        const missingPolitics = defaultPoliticalPosts.filter(p => !existingIds.has(p.id));
-        const combined = [...missingPolitics, ...postsRaw];
-        setAllPosts(combined);
-      } else {
-        setAllPosts(defaultPoliticalPosts);
-        try { localStorage.setItem(storagePostsKey, JSON.stringify(defaultPoliticalPosts)); } catch (_) {}
-      }
-
-      // Initialize political reels if empty
-      const fluxesRaw = safeParse(localStorage.getItem(LS_FLUXES), null);
-      if (fluxesRaw && Array.isArray(fluxesRaw) && fluxesRaw.length > 0) {
-        setAllFluxVideos(fluxesRaw);
-      } else {
-        const defaultPoliticalFluxes: FluxVideo[] = [
-          {
-            id: 'flux_pol_01',
-            authorId: 'ipu_youth_node',
-            authorName: 'Inter-Parliamentary Union',
-            authorUsername: 'ipu_parliament',
-            caption: '🏛️ Parliamentary youth quota reform: How youth representation in national parliaments crossed 10% for the first time across 38 sovereign jurisdictions. Full empirical index breakdown.',
-            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-people-holding-flags-in-a-crowd-41712-large.mp4',
-            thumbnailUrl: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80',
-            sourceName: 'Inter-Parliamentary Union (IPU)',
-            sourceUrl: 'https://www.ipu.org/youth-in-parliament',
-            musicTitle: 'Parliamentary Sovereign Anthem',
-            likes: 184,
-            likedBy: [],
-            commentsCount: 22,
-            sharesCount: 39,
-            tags: ['Parliament', 'YouthQuota', 'Politics', 'Democracy'],
-            createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
-          },
-          {
-            id: 'flux_pol_02',
-            authorId: 'un_climate_action',
-            authorName: 'COP30 Youth Diplomatic Taskforce',
-            authorUsername: 'cop_youth',
-            caption: '🌍 Loss & Damage Fund operationalization: Delegate plenary deliberations on direct disbursement channels for vulnerable island states. Verified multilateral quorum report.',
-            videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-globe-projection-with-networking-nodes-42525-large.mp4',
-            thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
-            sourceName: 'UNFCCC Loss and Damage Mechanism',
-            sourceUrl: 'https://unfccc.int/loss-and-damage-fund',
-            musicTitle: 'Global Diplomatic Grid',
-            likes: 215,
-            likedBy: [],
-            commentsCount: 34,
-            sharesCount: 68,
-            tags: ['ClimateDiplomacy', 'COP30', 'LossAndDamage', 'Policy'],
-            createdAt: new Date(Date.now() - 3600000 * 10).toISOString()
-          }
-        ];
-        setAllFluxVideos(defaultPoliticalFluxes);
-        try { localStorage.setItem(LS_FLUXES, JSON.stringify(defaultPoliticalFluxes)); } catch (_) {}
-      }
+      // Flux reels - purely user created
+      const fluxesRaw = safeParse(localStorage.getItem(LS_FLUXES), []);
+      const seededFluxAuthors = new Set(['ipu_parliament', 'cop_youth']);
+      const filteredCleanFluxes = Array.isArray(fluxesRaw)
+        ? fluxesRaw.filter((f: FluxVideo) => 
+            !f.id.startsWith('flux_pol_') && 
+            !seededFluxAuthors.has((f.authorUsername || '').toLowerCase())
+          )
+        : [];
+      setAllFluxVideos(filteredCleanFluxes);
 
       setAllReplies(safeParse(localStorage.getItem(LS_REPLIES), {}));
-      const loadedFluxes = safeParse(localStorage.getItem(LS_FLUXES), []);
-      if (loadedFluxes.length > 0) {
-        setAllFluxVideos(loadedFluxes);
-      }
       setAllFluxComments(safeParse(localStorage.getItem(LS_FLUX_COMMENTS), {}));
       setAllStories(safeParse(localStorage.getItem(LS_STORIES), []));
 
@@ -565,36 +420,12 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       }
       
       setCivicPointsBalance(safeParse(localStorage.getItem(LS_CIVIC_POINTS), 350));
-      
-      const tutorialSpeakerQueue = [
-        {
-          id: 'spk_01',
-          delegateName: 'Delegation of France',
-          delegateUsername: 'diplomat_france',
-          delegationOrCaucus: 'Security Council Permanent',
-          topic: 'Article IV Corridor Verification Protocols',
-          status: 'speaking' as const,
-          allocatedSeconds: 60,
-          requestedAt: new Date().toISOString()
-        },
-        {
-          id: 'spk_02',
-          delegateName: 'G-77 Coordinator',
-          delegateUsername: 'g77_delegate',
-          delegationOrCaucus: 'G-77 Coalition',
-          topic: 'Budgetary Appropriations for Independent Civic Monitors',
-          status: 'queued' as const,
-          allocatedSeconds: 60,
-          requestedAt: new Date().toISOString()
-        }
-      ];
-
-      setSpeakerQueue(safeParse(localStorage.getItem(storageSpeakerKey), isMockMode ? tutorialSpeakerQueue : []));
+      setSpeakerQueue(safeParse(localStorage.getItem(storageSpeakerKey), []));
 
       const rawProfiles = safeParse(localStorage.getItem(LS_PROFILES), []);
       setAllProfiles(sanitizeProfilesList(rawProfiles));
     } catch (_) {}
-  }, [isMockMode]);
+  }, [isMockMode, currentUserUsername, currentUserId]);
 
   const savePosts = useCallback((next: PulsePost[]) => {
     setAllPosts(next);

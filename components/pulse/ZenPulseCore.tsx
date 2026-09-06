@@ -1016,7 +1016,30 @@ export function ZenPulseCore() {
 
                 {/* ── Sovereign Monolith Posts Feed ── */}
                 <div className="space-y-6">
-                  {filteredPosts.map((post) => {
+                  {filteredPosts.length === 0 ? (
+                    <div className="p-10 rounded-3xl bg-[#090a0f] border border-white/10 text-center space-y-4 shadow-xl flex flex-col items-center justify-center">
+                      <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shadow-inner">
+                        <Radio className="w-7 h-7 animate-pulse" />
+                      </div>
+                      <div className="space-y-1.5 max-w-md">
+                        <h3 className="font-display font-bold text-lg text-white tracking-wide">
+                          No Dispatches on Wire Yet
+                        </h3>
+                        <p className="text-xs text-neutral-400 leading-relaxed font-sans">
+                          Be the first delegate to broadcast a sovereign policy dispatch, research brief, or floor deliberation to the chamber.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPostComposerModal(true)}
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold font-mono tracking-wider shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 cursor-pointer flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>TRANSMIT FIRST DISPATCH</span>
+                      </button>
+                    </div>
+                  ) : (
+                    filteredPosts.map((post) => {
                     const hasLiked = post.likedBy.includes(currentUserId);
                     const isHeartBursting = doubleTapHearts[post.id];
                     const hasSaved = isSaved(post.id);
@@ -1744,7 +1767,8 @@ export function ZenPulseCore() {
                         </div>
                       </article>
                     );
-                  })}
+                  })
+                )}
                 </div>
               </div>
             )}

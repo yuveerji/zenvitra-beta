@@ -245,7 +245,7 @@ export function InterestForm() {
               </div>
             </div>
 
-            {/* 2. City & Phone / WhatsApp */}
+            {/* 2. City & Contact Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label className="block text-[11px] font-mono uppercase tracking-wider text-neutral-400 mb-2 font-medium">

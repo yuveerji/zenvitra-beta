@@ -50,6 +50,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
+import { getFounderDirective, FounderDirective } from '@/lib/founderControl';
 
 interface HomeClientProps {
   session: any;
@@ -74,6 +75,24 @@ export default function HomeClient({ session }: HomeClientProps) {
     return () => {
       window.removeEventListener('storage', checkSession);
       window.removeEventListener('zenvitra_auth_change', checkSession);
+    };
+  }, []);
+
+  const [founderDirective, setFounderDirective] = useState<FounderDirective>(() => getFounderDirective());
+
+  useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e?.detail) {
+        setFounderDirective(e.detail);
+      } else {
+        setFounderDirective(getFounderDirective());
+      }
+    };
+    window.addEventListener('zenvitra_founder_update', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('zenvitra_founder_update', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
     };
   }, []);
 
@@ -365,89 +384,78 @@ export default function HomeClient({ session }: HomeClientProps) {
         </AnimatedSection>
 
         {/* 4.5 FOUNDER'S NOTE & SOVEREIGN DIRECTIVE */}
-        <section className="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-8 text-left">
-          <AnimatedSection>
-            <SpotlightCard 
-              className="bg-[#070709] border border-white/[0.08] hover:border-white/20 shadow-2xl"
-              paddingClassName="p-8 sm:p-12"
-              glowMode="blue-purple"
-            >
-              <div className="space-y-7">
-                {/* Header Tag */}
-                <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-3.5">
-                    <div className="relative w-10 h-10 rounded-2xl overflow-hidden border border-white/15 bg-white/5 shadow-md flex-shrink-0">
-                      <Image
-                        src="/assets/founder.png"
-                        alt="Yuveer - Founder"
-                        fill
-                        className="object-cover"
-                      />
+        {founderDirective.isActive && (
+          <section className="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-8 text-left">
+            <AnimatedSection>
+              <SpotlightCard 
+                className="bg-[#070709] border border-white/[0.08] hover:border-white/20 shadow-2xl"
+                paddingClassName="p-8 sm:p-12"
+                glowMode="blue-purple"
+              >
+                <div className="space-y-7">
+                  {/* Header Tag */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-white/[0.06]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="relative w-10 h-10 rounded-2xl overflow-hidden border border-white/15 bg-white/5 shadow-md flex-shrink-0">
+                        <Image
+                          src="/assets/founder.png"
+                          alt="Yuveer - Founder"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <span className="font-mono text-[10px] tracking-[0.25em] text-cyan-400 uppercase font-semibold block">
+                          {founderDirective.tag || 'FOUNDER\'S DIRECTIVE'} &bull; {founderDirective.priority}
+                        </span>
+                        <h3 className="font-display font-medium text-base text-white">
+                          {founderDirective.title || 'A Note from the Founder'}
+                        </h3>
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-mono text-[10px] tracking-[0.25em] text-neutral-400 uppercase font-semibold block">
-                        FOUNDER&apos;S DIRECTIVE &bull; DISPATCH #001
-                      </span>
-                      <h3 className="font-display font-medium text-base text-white">
-                        A Note from the Founder
-                      </h3>
-                    </div>
-                  </div>
 
-                  <span className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-neutral-400 font-mono text-[10px] tracking-wider uppercase">
-                    VERIFIED DIRECTIVE
-                  </span>
-                </div>
-
-                {/* Body Content */}
-                <div className="space-y-4 text-sm sm:text-base text-neutral-300 font-sans leading-relaxed">
-                  <p className="font-display font-medium text-lg sm:text-xl text-white leading-snug">
-                    &ldquo;The modern internet was supposed to give our generation a voice. Instead, it gave us algorithms engineered for outrage, fleeting attention spans, and ephemeral feeds that erase thought within 24 hours.&rdquo;
-                  </p>
-
-                  <p className="font-light text-neutral-300">
-                    When we set out to build <strong className="text-white font-medium">ZENVITRA</strong>, the intention was clear: to reclaim digital sovereignty for youth thinkers, writers, delegates, and builders. We did not want another sterile social network where ideas are trapped in echo chambers or monetized by ad surveillance.
-                  </p>
-
-                  <p className="font-light text-neutral-300">
-                    We built Zenvitra as an interconnected civic mesh: an ecosystem where debates demand <strong className="text-white font-medium">verifiable sources</strong>, where Model UN assemblies and youth councils produce permanent legislative records, and where dialogue directly powers grassroots change.
-                  </p>
-
-                  <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/[0.08] text-neutral-300 font-mono text-xs sm:text-sm leading-relaxed space-y-1.5">
-                    <span className="text-neutral-200 font-bold text-xs uppercase tracking-wider block">
-                      &bull; Our Constitutional Pledge:
+                    <span className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] tracking-wider uppercase">
+                      VERIFIED DIRECTIVE
                     </span>
-                    <p className="text-neutral-400">
-                      Words mean little without structural action. That is why <strong className="text-white">25% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 4 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
-                    </p>
                   </div>
 
-                  <p className="font-light text-neutral-300">
-                    Zenvitra belongs to every student who refuses to accept that digital discourse has to be shallow. Read deeply, publish fearlessly, debate rigorously, and help us build a lasting public memory.
-                  </p>
-                </div>
+                  {/* Body Content */}
+                  <div className="space-y-4 text-sm sm:text-base text-neutral-300 font-sans leading-relaxed">
+                    <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/[0.08] text-neutral-200 font-sans text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+                      {founderDirective.body}
+                    </div>
 
-                {/* Footer Signature & Actions */}
-                <div className="pt-5 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-                  <div className="space-y-0.5">
-                    <h4 className="font-display font-medium text-base text-white">
-                      Yuveer Chhatwani
-                    </h4>
-                    <p className="font-mono text-xs text-neutral-400">
-                      Founder &amp; System Architect, Zenvitra &bull; <span className="text-neutral-300">@yuveer</span>
-                    </p>
+                    <div className="p-4 sm:p-5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 text-neutral-300 font-mono text-xs sm:text-sm leading-relaxed space-y-1.5">
+                      <span className="text-cyan-300 font-bold text-xs uppercase tracking-wider block">
+                        &bull; Our Constitutional Pledge:
+                      </span>
+                      <p className="text-neutral-400">
+                        Words mean little without structural action. That is why <strong className="text-white">25% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 4 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href="/manifesto"
-                      className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white font-mono text-xs font-medium transition flex items-center gap-2 cursor-pointer"
-                    >
-                      <span>Read Full Manifesto</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                  {/* Footer Signature & Actions */}
+                  <div className="pt-5 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                    <div className="space-y-0.5">
+                      <h4 className="font-display font-medium text-base text-white">
+                        {founderDirective.author || 'Yuveer Chhatwani'}
+                      </h4>
+                      <p className="font-mono text-xs text-neutral-400">
+                        Founder &amp; System Architect, Zenvitra &bull; <span className="text-neutral-300">@yuveer</span>
+                      </p>
+                    </div>
 
-                    <Link
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href="/manifesto"
+                        className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white font-mono text-xs font-medium transition flex items-center gap-2 cursor-pointer"
+                      >
+                        <span>Read Full Manifesto</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+
+                      <Link
                       href={isUserLoggedIn ? '/pulse?user=yuveer' : `/login?redirect=${encodeURIComponent('/pulse?user=yuveer')}`}
                       className="px-4 py-2 rounded-xl bg-white text-black hover:bg-neutral-200 font-mono text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer"
                     >
@@ -460,6 +468,7 @@ export default function HomeClient({ session }: HomeClientProps) {
             </SpotlightCard>
           </AnimatedSection>
         </section>
+        )}
 
         {/* 5. "WHY ZENVITRA?" */}
         <section className="max-w-6xl mx-auto px-6 sm:px-12 py-20 space-y-12 text-center">
@@ -725,97 +734,94 @@ export default function HomeClient({ session }: HomeClientProps) {
             </div>
           </AnimatedSection>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Link href="/discussions" className="block group">
-              <SpotlightCard paddingClassName="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10px] uppercase tracking-wider font-semibold">
-                      POLITICS & FREE SPEECH
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-mono">148 replies</span>
-                  </div>
-                  <h3 className="font-display font-medium text-sm text-white group-hover:text-amber-200 transition-colors leading-snug">
-                    Samay Raina, Ranveer &amp; Ashish Solanki: Is comedy &amp; podcasting becoming a political crime?
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 font-sans line-clamp-2 leading-relaxed">
-                    FIRs, police notices, and algorithmic mob boycotts: where does satirical free expression end and political intimidation begin?
-                  </p>
-                  <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-mono pt-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
-                    <span>Free Speech Crisis</span>
-                  </div>
+          {/* Clean Desktop-Style Discussion Wall Rows */}
+          <div className="border-y border-white/10 divide-y divide-white/10">
+            {[
+              {
+                category: 'MARVEL & GEOPOLITICS',
+                badgeColor: 'text-amber-400 border-amber-400/30 bg-amber-400/10',
+                title: 'Doctor Doom, Latverian Sovereignty & Multiverse Incursions: Is authoritarian order justified when global systems fail?',
+                meta: '0 Replies • Be The First To Deliberate',
+                badgeText: '0 Replies',
+                tag: 'Marvel & Theory'
+              },
+              {
+                category: 'POLITICS & FREE SPEECH',
+                badgeColor: 'text-amber-400 border-amber-400/30 bg-amber-400/10',
+                title: 'Samay Raina, Ranveer & Ashish Solanki: Is comedy & podcasting becoming a political crime?',
+                meta: '0 Replies • Open Debate',
+                badgeText: '0 Replies',
+                tag: 'Free Speech'
+              },
+              {
+                category: 'EDUCATION & INTEGRITY',
+                badgeColor: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/10',
+                title: 'The NEET-UG Paper Leak Scandal: 2.4 Million students betrayed by systemic corruption.',
+                meta: '0 Replies • Academic Justice',
+                badgeText: '0 Replies',
+                tag: 'Paper Leak'
+              },
+              {
+                category: 'MEDIA & DEMOCRACY',
+                badgeColor: 'text-purple-400 border-purple-400/30 bg-purple-400/10',
+                title: 'The \'Godi Media\' Surrender: Has Indian prime-time television traded truth for state theatrics?',
+                meta: '0 Replies • Fourth Pillar',
+                badgeText: '0 Replies',
+                tag: 'Press Freedom'
+              },
+              {
+                category: 'TECHNOLOGY & RIGHTS',
+                badgeColor: 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10',
+                title: 'Algorithmic Surveillance, Deepfakes & DPDP: Are youth sleepwalking into a digital panopticon?',
+                meta: '0 Replies • Digital Privacy',
+                badgeText: '0 Replies',
+                tag: 'Digital Rights'
+              }
+            ].map((d) => (
+              <Link
+                key={d.title}
+                href="/discussions"
+                className="group relative grid grid-cols-1 lg:grid-cols-[0.25fr_1fr_auto] gap-4 sm:gap-6 items-center p-6 sm:p-8 transition-all duration-300 hover:bg-white/[0.025]"
+              >
+                {/* Category badge */}
+                <div>
+                  <span className={`inline-block font-mono text-[10px] tracking-widest uppercase px-3 py-1 rounded-full border ${d.badgeColor}`}>
+                    {d.category}
+                  </span>
                 </div>
-              </SpotlightCard>
-            </Link>
 
-            <Link href="/discussions" className="block group">
-              <SpotlightCard paddingClassName="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] uppercase tracking-wider font-semibold">
-                      EDUCATION & INTEGRITY
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-mono">234 replies</span>
-                  </div>
-                  <h3 className="font-display font-medium text-sm text-white group-hover:text-cyan-200 transition-colors leading-snug">
-                    The NEET-UG Paper Leak Scandal: 2.4 Million students betrayed by systemic corruption.
+                {/* Title and meta */}
+                <div className="space-y-2">
+                  <h3 className="font-display font-medium text-lg sm:text-xl text-white group-hover:text-cyan-200 transition-colors leading-snug">
+                    {d.title}
                   </h3>
-                  <p className="text-[11px] text-zinc-400 font-sans line-clamp-2 leading-relaxed">
-                    From Telegram paper leaks to NTA institutional failures — how do youth dismantle the coaching syndicate and compromised meritocracy?
-                  </p>
-                  <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-mono pt-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.6)]" />
-                    <span>National Paper Leak Crisis</span>
+                  <div className="flex items-center gap-3 font-mono text-xs text-neutral-400">
+                    <span className="text-emerald-400 font-semibold">{d.meta}</span>
+                    <span>•</span>
+                    <span className="text-neutral-500">{d.tag}</span>
                   </div>
                 </div>
-              </SpotlightCard>
-            </Link>
 
-            <Link href="/discussions" className="block group">
-              <SpotlightCard paddingClassName="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono text-[10px] uppercase tracking-wider font-semibold">
-                      MEDIA & DEMOCRACY
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-mono">189 replies</span>
-                  </div>
-                  <h3 className="font-display font-medium text-sm text-white group-hover:text-purple-200 transition-colors leading-snug">
-                    The &apos;Godi Media&apos; Surrender: Has Indian prime-time television traded truth for state propaganda?
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 font-sans line-clamp-2 leading-relaxed">
-                    Manufactured communal shouting matches, zero accountability on jobs, and corporate subservience: why youth demand decentralized civic press.
-                  </p>
-                  <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-mono pt-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_6px_rgba(168,85,247,0.6)]" />
-                    <span>Fourth Pillar Collapse</span>
+                {/* Arrow */}
+                <div className="flex items-center justify-end">
+                  <div className="w-10 h-10 rounded-2xl bg-white/[0.03] group-hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                    <ArrowUpRight className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors" />
                   </div>
                 </div>
-              </SpotlightCard>
-            </Link>
+              </Link>
+            ))}
+          </div>
 
-            <Link href="/discussions" className="block group">
-              <SpotlightCard paddingClassName="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] uppercase tracking-wider font-semibold">
-                      TECHNOLOGY & RIGHTS
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-mono">116 replies</span>
-                  </div>
-                  <h3 className="font-display font-medium text-sm text-white group-hover:text-emerald-200 transition-colors leading-snug">
-                    Algorithmic Surveillance, Deepfakes &amp; DPDP: Are youth sleepwalking into a digital panopticon?
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 font-sans line-clamp-2 leading-relaxed">
-                    Unchecked facial recognition, AI-driven content takedowns, and data profiling: reclaiming privacy in the age of authoritarian tech.
-                  </p>
-                  <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-mono pt-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
-                    <span>Digital Sovereignty</span>
-                  </div>
-                </div>
-              </SpotlightCard>
+          <div className="flex items-center justify-between pt-2">
+            <span className="font-mono text-xs text-neutral-500 uppercase tracking-wider">
+              0 Mock Counts • Verified Grassroots Dialogue
+            </span>
+            <Link
+              href="/discussions"
+              className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-white hover:text-cyan-300 transition-colors"
+            >
+              <span>Explore All Discussions</span>
+              <ArrowUpRight className="w-4 h-4" />
             </Link>
           </div>
         </section>

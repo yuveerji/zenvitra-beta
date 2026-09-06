@@ -34,6 +34,10 @@ function MobileBottomNavInner() {
   const isChatActive = pathname?.startsWith('/chat');
   const isProfileActive = pathname?.startsWith('/profile');
 
+  if (isChatActive) {
+    return null;
+  }
+
   return (
     <>
       {/* ─── NATIVE MOBILE BOTTOM BAR (Instagram / Threads App Style) ─── */}

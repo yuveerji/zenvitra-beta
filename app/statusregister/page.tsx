@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { sheetSync } from '@/lib/googleSheets';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
+import { PasswordStrengthIndicator, evaluatePasswordStrength } from '@/components/auth/PasswordStrengthIndicator';
 
 interface CommitteeTrack {
   id: string;
@@ -191,10 +192,12 @@ export default function StatusRegisterPage() {
   const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
 
   const isStep1Valid = useMemo(() => {
+    const strength = evaluatePasswordStrength(formData.password);
     return (
       formData.fullName.trim().length >= 3 &&
       validateEmail(formData.email) &&
-      formData.password.length >= 6 &&
+      formData.password.length >= 8 &&
+      strength.isStrongEnough &&
       formData.password === formData.confirmPassword &&
       formData.institutionOrSchool.trim().length >= 2
     );
@@ -646,16 +649,30 @@ export default function StatusRegisterPage() {
                           <input
                             type={showPassword ? 'text' : 'password'}
                             required
-                            minLength={6}
-                            placeholder="Min. 6 alphanumeric characters"
+                            minLength={8}
+                            placeholder="Min. 8 characters (mixed case, number, symbol)"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/15 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40 transition shadow-inner"
                           />
                         </div>
-                        <span className="text-[10px] font-mono text-neutral-500">
-                          {formData.password.length > 0 && formData.password.length < 6 ? (
-                            <span className="text-rose-400">Must be at least 6 characters</span>
+
+                        {/* Sovereign Strong Password Indicator & Auto-Generator */}
+                        <PasswordStrengthIndicator
+                          password={formData.password}
+                          onAutoGenerate={(generated) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              password: generated,
+                              confirmPassword: generated
+                            }));
+                            setShowPassword(true);
+                          }}
+                        />
+
+                        <span className="text-[10px] font-mono text-neutral-500 block">
+                          {formData.password.length > 0 && formData.password.length < 8 ? (
+                            <span className="text-rose-400">Must be at least 8 characters</span>
                           ) : (
                             'Required to authenticate into Status Sign-In and Chamber sessions.'
                           )}
@@ -693,7 +710,7 @@ export default function StatusRegisterPage() {
                       {/* Contact Phone */}
                       <div className="space-y-2">
                         <label className="font-mono text-xs tracking-wider text-neutral-300 uppercase block font-semibold">
-                          WhatsApp / Contact Phone <span className="text-neutral-500">(Recommended)</span>
+                          Contact / Mobile Phone <span className="text-neutral-500">(Recommended)</span>
                         </label>
                         <input
                           type="tel"

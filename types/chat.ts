@@ -123,13 +123,86 @@ export interface ActiveCallState {
   durationSeconds: number;
 }
 
+export interface DiscordRolePermissions {
+  manageServer: boolean;
+  manageRoles: boolean;
+  manageChannels: boolean;
+  kickMembers: boolean;
+  banMembers: boolean;
+  sendMessages: boolean;
+  embedLinks: boolean;
+  attachFiles: boolean;
+  connectVoice: boolean;
+  speakVoice: boolean;
+  prioritySpeaker: boolean;
+}
+
+export interface DiscordRole {
+  id: string;
+  name: string;
+  color: string; // e.g. '#f59e0b', '#a855f7', '#06b6d4'
+  icon?: string;
+  hoist: boolean; // Display role members separately from online members (like Discord)
+  position: number; // Order/hierarchy of role
+  permissions: DiscordRolePermissions;
+  isDefault?: boolean;
+}
+
+export interface ChannelCategory {
+  id: string;
+  name: string; // e.g. '[ENTRANCE]', '[ALERTS]', '[COMMUNITY]', '[VOICE AREA]'
+  isCollapsed?: boolean;
+}
+
 export interface ChatChannel {
   id: string;
   name: string;
-  type: 'text' | 'voice';
+  type: 'text' | 'voice' | 'announcement';
   description?: string;
+  categoryId?: string;
   isLocked?: boolean;
-  activeVoiceUsers?: string[];
+  unreadCount?: number;
+  userLimit?: number; // e.g. 02, 05 or undefined for voice
+  activeVoiceUsers?: Array<{
+    id: string;
+    name: string;
+    username: string;
+    avatar?: string;
+    banner?: string;
+    isSpeaking?: boolean;
+    isMuted?: boolean;
+    isDeafened?: boolean;
+    isStreaming?: boolean;
+    activityText?: string; // e.g. "Valorant Tracker App", "Live on kick.com", "USD"
+  }>;
+  allowedRoles?: string[];
+}
+
+export interface CommunityMember {
+  id: string;
+  name: string;
+  username: string;
+  avatar?: string;
+  banner?: string;
+  status: 'online' | 'idle' | 'dnd' | 'offline';
+  roleIds: string[]; // List of role IDs assigned to this member
+  activity?: {
+    type: 'playing' | 'streaming' | 'listening' | 'watching' | 'custom';
+    name: string;
+    details?: string;
+    badge?: string; // e.g. "LIVE", "EXP", "ROBLOX", "USD"
+  };
+  customStatus?: string;
+}
+
+export interface ChatCommunityGroup {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  membersCount?: number;
+  unreadCount?: number;
+  isLocked?: boolean;
 }
 
 export interface ChatCommunity {
@@ -137,8 +210,13 @@ export interface ChatCommunity {
   name: string;
   icon: string;
   badge?: string;
+  description?: string;
   unreadCount?: number;
+  categories?: ChannelCategory[];
   channels: ChatChannel[];
+  groups?: ChatCommunityGroup[];
+  roles: DiscordRole[];
+  members?: CommunityMember[];
 }
 
 export interface ZenNoteSong {
@@ -177,4 +255,39 @@ export interface CustomSticker {
   name: string;
   url: string;
   category: string;
+}
+
+export interface ScheduledCall {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: string;
+  startTime: string;
+  endDate?: string;
+  endTime?: string;
+  callType: 'video' | 'voice';
+  requireApproval: boolean;
+  link: string;
+  creatorName: string;
+  creatorHandle: string;
+  createdAt: string;
+}
+
+export interface CallLink {
+  id: string;
+  url: string;
+  callType: 'video' | 'voice';
+  requireApproval: boolean;
+  createdAt: string;
+}
+
+export interface SharedMediaItem {
+  id: string;
+  type: 'media' | 'doc' | 'link';
+  title: string;
+  url: string;
+  previewUrl?: string;
+  senderName: string;
+  date: string;
+  size?: string;
 }

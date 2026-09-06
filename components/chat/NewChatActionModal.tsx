@@ -178,7 +178,7 @@ export function NewChatActionModal({
                     New Broadcast List (1-to-Many)
                   </h4>
                   <p className="text-[11px] text-neutral-400 font-light">
-                    WhatsApp-style announcement channel to multiple delegates
+                    Sovereign announcement channel to multiple delegates
                   </p>
                 </div>
               </button>

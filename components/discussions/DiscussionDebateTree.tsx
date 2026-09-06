@@ -274,11 +274,24 @@ export function DiscussionDebateTree({
           </span>
         </div>
 
-        {argumentsList.map((arg) => (
-          <div
-            key={arg.id}
-            className="p-5 sm:p-6 rounded-3xl bg-[#07080d] border border-white/10 hover:border-white/20 transition-all space-y-4 shadow-sm"
-          >
+        {argumentsList.length === 0 ? (
+          <div className="p-8 sm:p-10 rounded-3xl bg-[#07080d]/60 border border-dashed border-white/15 text-center space-y-3">
+            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto text-purple-400">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <h4 className="font-display font-bold text-sm sm:text-base text-white">
+              No Debate Nodes Published Yet
+            </h4>
+            <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed font-sans">
+              Be the first delegate to take the floor. Click &quot;Take Floor / Submit Argument&quot; above to submit an Affirmative Proposal, Rebuttal, or Empirical Evidence citation.
+            </p>
+          </div>
+        ) : (
+          argumentsList.map((arg) => (
+            <div
+              key={arg.id}
+              className="p-5 sm:p-6 rounded-3xl bg-[#07080d] border border-white/10 hover:border-white/20 transition-all space-y-4 shadow-sm"
+            >
             {/* Comment Header */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -498,7 +511,7 @@ export function DiscussionDebateTree({
               </div>
             )}
           </div>
-        ))}
+        )))}
       </div>
     </div>
   );

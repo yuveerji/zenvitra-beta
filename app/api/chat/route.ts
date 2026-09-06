@@ -129,57 +129,9 @@ export async function POST(req: NextRequest) {
       });
     } catch (_) {}
 
-    // 2. If message is directed to AI Co-Delegate or mentions @zen_ai or contains AI prompts
-    let aiResponse = null;
-    const isAiTargeted = 
-      body.conversationId === 'conv-zen-ai' || 
-      body.isAiPrompt || 
-      body.content.toLowerCase().includes('@zen_ai') || 
-      body.content.toLowerCase().includes('/ai') ||
-      body.content.toLowerCase().includes('@ai');
-
-    if (isAiTargeted) {
-      const query = body.content.replace(/@zen_ai|@ai|\/ai/gi, '').trim();
-      let aiText = '';
-
-      if (query.toLowerCase().includes('treaty') || query.toLowerCase().includes('clause') || query.toLowerCase().includes('draft')) {
-        aiText = `📜 **Proposed Sovereign Treaty Clause (Standard Format)**:\n\n**Article 7.1 (Open Civic Access Guarantee):**\n"The plenary delegations hereby resolve that all accredited youth delegates shall have cryptographically verified access to open parliamentary archives, sovereign take-rate protections (0.5% + ₹19 settlement standard), and decentralized consensus voting."\n\n*Click 'Copy Clause' below to embed this directly into your draft resolution.*`;
-      } else if (query.toLowerCase().includes('poi') || query.toLowerCase().includes('point of information')) {
-        aiText = `🎙️ **Suggested Point of Information (POI)**:\n\n*"Honorable Delegate, is the delegation aware that under Article 4.2 of the Geneva Accord, 25% of all platform proceeds are constitutionally dedicated to rural computer labs, thus rendering concerns regarding treasury opacity moot?"*`;
-      } else if (query.toLowerCase().includes('take rate') || query.toLowerCase().includes('fee') || query.toLowerCase().includes('settlement')) {
-        aiText = `💎 **Sovereign Take-Rate Breakdown**:\n\n• Attendee Convenience Fee: **0.5% + ₹19**\n• Organizer Pro Platform Rate: **2.9%**\n• Rural School Computer Lab Allocation: **25% of gross fee revenue**\n\nAll settlements are cryptographically logged with zero broker skimming.`;
-      } else {
-        aiText = `⚡ **Zen AI Diplomatic Co-Pilot Dispatch**:\n\nI have analyzed your inquiry: *"${query || 'General Plenary Briefing'}"*.\n\nKey Insights for Delegate @${body.senderUsername}:\n1. **Quorum Status**: Active Multilateral Session verified.\n2. **Citation Confidence**: 99.4% cross-referenced with UN Digital Archives.\n3. **Recommended Next Step**: You may submit a motion for a 60-second floor speech relay or initiate a live voice chamber caucus.`;
-      }
-
-      aiResponse = {
-        id: `ai-reply-${Date.now()}`,
-        conversationId: body.conversationId,
-        senderId: 'ai-1',
-        senderName: 'Zen AI Diplomatic Co-Delegate',
-        senderUsername: 'zen_ai',
-        content: aiText,
-        timestamp: timeFormatted,
-        isSelf: false,
-        reactions: [{ emoji: '⚡', count: 1, users: ['zen_ai'] }],
-        status: 'delivered'
-      };
-
-      // Persist AI response to DB
-      try {
-        await supabase.from('chat_messages').insert({
-          sender_name: 'Zen AI Diplomatic Co-Delegate',
-          sender_username: 'zen_ai',
-          content: aiText,
-          reactions: [{ emoji: '⚡', count: 1, users: ['zen_ai'] }]
-        });
-      } catch (_) {}
-    }
-
     return NextResponse.json({
       success: true,
       message: newMsg,
-      aiResponse: aiResponse
     });
   } catch (error: any) {
     return NextResponse.json(

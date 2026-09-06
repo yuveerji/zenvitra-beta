@@ -13,6 +13,7 @@ interface CreateDiscussionModalProps {
 }
 
 const CATEGORY_OPTIONS: { cat: DiscussionCategory; label: string }[] = [
+  { cat: 'MARVEL', label: 'Marvel, Multiverse & Pop Culture Geopolitics' },
   { cat: 'EDUCATION', label: 'Education & Academic Reform' },
   { cat: 'AI', label: 'Artificial Intelligence & Ethics' },
   { cat: 'ENVIRONMENT', label: 'Climate Crisis & Energy Transition' },

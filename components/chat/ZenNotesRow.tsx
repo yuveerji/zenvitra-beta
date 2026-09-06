@@ -100,7 +100,7 @@ export function ZenNotesRow() {
   const [noteText, setNoteText] = useState('');
   const [selectedMood, setSelectedMood] = useState('✨');
   const [selectedLocation, setSelectedLocation] = useState('Location off');
-  const [selectedColor, setSelectedColor] = useState<ZenNoteColor>('yellow');
+  const [selectedColor, setSelectedColor] = useState<ZenNoteColor>('cyan');
   const [selectedSong, setSelectedSong] = useState<ZenNoteSong | null>(null);
   const [isSongPickerOpen, setIsSongPickerOpen] = useState(false);
   const [songSearchQuery, setSongSearchQuery] = useState('');
@@ -181,73 +181,53 @@ export function ZenNotesRow() {
     <div className="w-full px-3 py-3 border-b border-white/[0.06] bg-[#06070a]/90 backdrop-blur-md">
       <div className="flex items-center gap-4 overflow-x-auto scrollbar-none py-1">
         
-        {/* 1. My Note Bubble */}
-        <div className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group relative">
-          {/* Floating Thought Bubble */}
-          {(() => {
-            const config = getColorConfig(myNote?.colorTheme);
-            return (
-              <div 
-                onClick={handleOpenComposer}
-                className={`relative px-2.5 py-1.5 rounded-2xl text-[11px] font-sans max-w-[125px] text-center cursor-pointer hover:scale-105 transition-all flex flex-col items-center justify-center ${
-                  myNote ? config.bubbleClass : 'bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border border-purple-500/40 text-purple-200'
-                }`}
-                title={myNote ? myNote.text : 'Share a Sovereign Note'}
-              >
-                {myNote ? (
-                  <>
-                    <div className="flex items-center gap-1 truncate max-w-full">
-                      <span>{myNote.moodEmoji}</span>
-                      <span className="truncate">{myNote.text}</span>
-                    </div>
-                    {/* Song Pill */}
-                    {myNote.song && (
-                      <div 
-                        onClick={(e) => toggleAudioPlay(myNote.song!, e)}
-                        className="mt-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/20 hover:bg-black/40 text-[9px] truncate max-w-full font-sans cursor-pointer transition"
-                      >
-                        <Music className="w-2.5 h-2.5 shrink-0 animate-pulse" />
-                        <span className="truncate">{myNote.song.title}</span>
-                        {playingSongId === (myNote.song.id || myNote.song.title) ? (
-                          <Pause className="w-2.5 h-2.5 shrink-0" />
-                        ) : (
-                          <Play className="w-2.5 h-2.5 shrink-0 fill-current" />
-                        )}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-neutral-400 flex items-center gap-1 font-mono text-[10px]">
-                    <Plus className="w-3 h-3 text-purple-400" />
-                    <span>Your note</span>
-                  </span>
-                )}
-                {/* Speech bubble tail pointer */}
-                <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 border-r border-b ${
-                  myNote ? config.tailClass : 'bg-indigo-900 border-purple-500/40'
-                }`} />
-              </div>
-            );
-          })()}
-
-          {/* Avatar with Plus Badge */}
-          <div 
-            onClick={handleOpenComposer}
-            className="relative w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 flex items-center justify-center cursor-pointer shadow-md group-hover:scale-105 transition-transform"
-          >
-            <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-sm text-white uppercase overflow-hidden">
+        {/* 1. My Note Button (Single Unified Clickable Component) */}
+        <button
+          type="button"
+          onClick={handleOpenComposer}
+          className="group relative flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/50 hover:border-cyan-400 text-left transition-all duration-200 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] flex-shrink-0"
+          title={myNote ? myNote.text : 'Write a sovereign note'}
+        >
+          {/* Avatar with status indicator */}
+          <div className="relative w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-cyan-500 via-sky-400 to-blue-600 flex-shrink-0 flex items-center justify-center">
+            <div className="w-full h-full rounded-full bg-[#06070a] flex items-center justify-center font-bold text-xs text-cyan-200 uppercase overflow-hidden">
               {currentUser.name.charAt(0)}
             </div>
-            
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-600 border-2 border-black flex items-center justify-center text-white text-[10px] font-bold">
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-cyan-500 border-2 border-black flex items-center justify-center text-black text-[9px] font-black">
               +
             </div>
           </div>
 
-          <span className="font-mono text-[10px] text-neutral-400 truncate max-w-[75px]">
-            {myNote?.locationBadge || 'Your note'}
-          </span>
-        </div>
+          {/* Note Details inside the unified button */}
+          <div className="flex flex-col min-w-0 max-w-[130px]">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider font-semibold">
+                {myNote ? 'Your Note' : 'Add Note'}
+              </span>
+              {myNote && <span className="text-xs">{myNote.moodEmoji || '✨'}</span>}
+            </div>
+            <p className="text-xs text-neutral-200 font-sans truncate font-medium group-hover:text-cyan-100 transition">
+              {myNote ? myNote.text : 'Share a thought...'}
+            </p>
+            {myNote?.song && (
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleAudioPlay(myNote.song!, e);
+                }}
+                className="mt-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-cyan-900/60 hover:bg-cyan-800 text-[9px] text-cyan-200 truncate cursor-pointer transition"
+              >
+                <Music className="w-2.5 h-2.5 shrink-0 animate-pulse text-cyan-400" />
+                <span className="truncate">{myNote.song.title}</span>
+                {playingSongId === (myNote.song.id || myNote.song.title) ? (
+                  <Pause className="w-2.5 h-2.5 shrink-0" />
+                ) : (
+                  <Play className="w-2.5 h-2.5 shrink-0 fill-current" />
+                )}
+              </div>
+            )}
+          </div>
+        </button>
 
         {/* 2. Other Delegates' Active Notes */}
         {otherNotes.map((note) => {
@@ -311,44 +291,48 @@ export function ZenNotesRow() {
       <AnimatePresence>
         {isComposerOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop: deep solid opacity with blur to block background bleed */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsComposerOpen(false)}
-              className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+              className="absolute inset-0 bg-black/85 backdrop-blur-md"
             />
 
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              initial={{ scale: 0.95, opacity: 0, y: 8 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-sm rounded-[2.5rem] bg-[#0c0d14] border border-white/15 p-6 shadow-2xl space-y-4 text-white z-10 max-h-[92vh] overflow-y-auto scrollbar-none"
+              exit={{ scale: 0.95, opacity: 0, y: 8 }}
+              className="relative w-full max-w-md rounded-3xl bg-[#090b10] border border-white/10 p-6 shadow-2xl space-y-5 text-white z-10 max-h-[90vh] overflow-y-auto"
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  <h3 className="font-display font-medium text-sm text-white">
-                    Share a Thought Note
-                  </h3>
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-semibold text-sm text-white">
+                      Sovereign Note
+                    </h3>
+                    <p className="font-mono text-[10px] text-neutral-400">Share with your delegates for 24h</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setIsComposerOpen(false)}
-                  className="p-1.5 rounded-xl bg-white/[0.06] text-neutral-400 hover:text-white hover:bg-white/10 transition"
+                  className="p-1.5 rounded-xl bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/10 transition"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Dynamic Note Preview Visual */}
-              <div className="flex flex-col items-center justify-center gap-2 py-3 bg-[#050608]/80 rounded-2xl border border-white/5">
+              <div className="flex flex-col items-center justify-center gap-2.5 py-4 bg-white/[0.02] rounded-2xl border border-white/[0.06]">
                 {(() => {
                   const previewConfig = getColorConfig(selectedColor);
                   return (
                     <div className="relative">
-                      <div className={`px-4 py-2.5 rounded-2xl text-xs max-w-[220px] text-center transition-all ${previewConfig.bubbleClass}`}>
+                      <div className={`px-4 py-2.5 rounded-2xl text-xs max-w-[240px] text-center transition-all ${previewConfig.bubbleClass}`}>
                         <div className="flex items-center justify-center gap-1.5">
                           <span>{selectedMood}</span>
                           <span className="font-medium truncate">
@@ -360,7 +344,7 @@ export function ZenNotesRow() {
                         {selectedSong && (
                           <div 
                             onClick={(e) => toggleAudioPlay(selectedSong, e)}
-                            className="mt-1.5 flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full bg-black/25 text-[10px] font-sans hover:bg-black/35 cursor-pointer transition"
+                            className="mt-2 flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 text-[10px] font-sans hover:bg-black/45 cursor-pointer transition"
                           >
                             <Music className="w-3 h-3 text-current animate-pulse shrink-0" />
                             <span className="truncate font-semibold">{selectedSong.title}</span>
@@ -379,8 +363,8 @@ export function ZenNotesRow() {
                 })()}
 
                 {/* Avatar Preview */}
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600 p-[2px] mt-1 shadow-md">
-                  <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-[2px] mt-1 shadow-md">
+                  <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-white font-bold text-xs">
                     {currentUser.name.charAt(0)}
                   </div>
                 </div>
@@ -395,7 +379,7 @@ export function ZenNotesRow() {
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
                     placeholder="Share a thought (up to 60 characters)..."
-                    className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400"
                   />
                   <div className="flex justify-between items-center px-1 pt-1 font-mono text-[10px] text-neutral-500">
                     <span>Visible to friends for 24 hours</span>
@@ -440,41 +424,31 @@ export function ZenNotesRow() {
                         onClick={() => toggleAudioPlay(selectedSong)}
                         className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
                       >
-                        <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-cyan-400/20 text-cyan-300 flex items-center justify-center shrink-0">
                           {playingSongId === (selectedSong.id || selectedSong.title) ? (
-                            <Pause className="w-4 h-4 text-amber-300" />
+                            <Pause className="w-4 h-4 text-cyan-300" />
                           ) : (
-                            <Play className="w-4 h-4 text-amber-300 fill-amber-300" />
+                            <Play className="w-4 h-4 text-cyan-300 fill-cyan-300" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-sans font-semibold text-xs text-white truncate">
-                            {selectedSong.title}
-                          </p>
-                          <p className="font-mono text-[10px] text-neutral-400 truncate">
-                            {selectedSong.artist}
-                          </p>
+                          <p className="text-xs font-semibold text-white truncate">{selectedSong.title}</p>
+                          <p className="text-[10px] text-neutral-400 truncate">{selectedSong.artist}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           type="button"
                           onClick={() => setIsSongPickerOpen(true)}
-                          className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-mono text-white transition"
+                          className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-[10px] text-neutral-300 transition"
                         >
                           Change
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            if (playingSongId === (selectedSong.id || selectedSong.title)) {
-                              audioPlayerRef.current?.pause();
-                              setPlayingSongId(null);
-                            }
-                            setSelectedSong(null);
-                          }}
-                          className="p-1 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition"
+                          onClick={() => setSelectedSong(null)}
+                          className="p-1 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-red-400 transition"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -484,9 +458,9 @@ export function ZenNotesRow() {
                     <button
                       type="button"
                       onClick={() => setIsSongPickerOpen(true)}
-                      className="w-full py-2.5 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-dashed border-white/20 text-neutral-300 hover:text-white flex items-center justify-center gap-2 text-xs transition cursor-pointer"
+                      className="w-full py-2.5 px-3 rounded-2xl bg-white/[0.03] hover:bg-cyan-950/40 border border-white/10 hover:border-cyan-500/30 text-neutral-400 hover:text-cyan-200 text-xs flex items-center justify-center gap-2 transition cursor-pointer"
                     >
-                      <Music className="w-4 h-4 text-amber-400" />
+                      <Music className="w-3.5 h-3.5 text-cyan-400" />
                       <span>Select a Song (SugarCrash, Na Ho Tum...)</span>
                     </button>
                   )}
@@ -528,7 +502,7 @@ export function ZenNotesRow() {
                         onClick={() => setSelectedLocation(loc)}
                         className={`px-2.5 py-1 rounded-xl font-mono text-[10px] transition ${
                           selectedLocation === loc
-                            ? 'bg-amber-400/25 border border-amber-400 text-amber-200'
+                            ? 'bg-cyan-500/25 border border-cyan-400 text-cyan-200'
                             : 'bg-white/[0.03] text-neutral-400 hover:bg-white/[0.06]'
                         }`}
                       >
@@ -557,7 +531,7 @@ export function ZenNotesRow() {
                   <button
                     type="submit"
                     disabled={!noteText.trim() && !selectedSong}
-                    className="ml-auto px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 hover:opacity-90 disabled:opacity-30 text-white font-semibold text-xs shadow-lg transition cursor-pointer"
+                    className="ml-auto px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 hover:opacity-95 disabled:opacity-30 text-black font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.3)] transition cursor-pointer"
                   >
                     Share Note
                   </button>
