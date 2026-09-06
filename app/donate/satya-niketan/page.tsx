@@ -34,8 +34,6 @@ import {
   Landmark
 } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
 import { sheetSync } from '@/lib/googleSheets';
 
 interface GovtReliefFund {
@@ -196,31 +194,37 @@ export default function SatyaNiketanReliefPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#030405] text-white selection:bg-rose-500 selection:text-white font-sans relative overflow-x-hidden pt-16 sm:pt-20">
-      <Navbar />
-
+    <div className="min-h-screen bg-[#020305] text-white selection:bg-rose-500 selection:text-white font-sans relative overflow-x-hidden">
       {/* Background Grids & Emergency Red/Amber Ambient Glow */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:32px_32px] opacity-40 z-0" />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[450px] bg-gradient-to-b from-rose-600/[0.12] via-amber-500/[0.04] to-transparent blur-[140px] pointer-events-none z-0" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 lg:px-12 py-8 min-h-screen flex flex-col justify-between">
-        <main className="py-6 flex-1 space-y-10">
+      {/* Standalone Emergency Header */}
+      <header className="relative z-20 w-full max-w-6xl mx-auto px-4 sm:px-8 lg:px-12 py-5 flex items-center justify-between border-b border-white/[0.08]">
+        <Link
+          href="/countdown"
+          className="inline-flex items-center gap-2 text-xs font-mono text-neutral-300 hover:text-white transition group px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform text-rose-400" />
+          <span>Back to Countdown Page</span>
+        </Link>
 
-          {/* Navigation Breadcrumb */}
-          <div className="flex items-center justify-between">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-white transition group"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-              <span>Back to Zenvitra Sovereign</span>
-            </Link>
-
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 font-mono text-[10px] text-rose-400 font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-              <span>Active Emergency Response</span>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 font-mono text-[10px] text-rose-300 font-bold uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span>24/7 Rapid Emergency Response</span>
           </div>
+
+          <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
+            <span className="font-bold text-white tracking-widest uppercase">ZENVITRA</span>
+            <span className="text-neutral-600">//</span>
+            <span className="text-rose-400 text-[10px] uppercase font-bold">RELIEF PROTOCOL</span>
+          </div>
+        </div>
+      </header>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 lg:px-12 py-8 min-h-[calc(100vh-140px)] flex flex-col justify-between">
+        <main className="py-6 flex-1 space-y-10">
 
           {submitted ? (
             /* Success / Audit Recorded View */
@@ -268,11 +272,11 @@ export default function SatyaNiketanReliefPage() {
                   Log Another Contribution
                 </button>
                 <Link
-                  href="/impact"
+                  href="/countdown"
                   className="px-6 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white font-mono text-xs transition flex items-center justify-center gap-1.5"
                 >
-                  <span>View Public Impact Ledger</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>Return to Countdown</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
@@ -726,7 +730,20 @@ export default function SatyaNiketanReliefPage() {
         </main>
       </div>
 
-      <Footer />
+      {/* Clean Minimal Emergency Footer */}
+      <footer className="relative z-20 w-full max-w-6xl mx-auto px-4 sm:px-8 lg:px-12 py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-neutral-500">
+        <div className="flex items-center gap-2">
+          <Link href="/countdown" className="text-neutral-400 hover:text-white transition">
+            Back to Countdown Page
+          </Link>
+          <span>&bull;</span>
+          <span>ZENVITRA PROTOCOL &copy; 2026</span>
+        </div>
+        <div className="text-[11px] text-neutral-500 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>Statutory Government Escrow &bull; 100% Tax Deductible (80G)</span>
+        </div>
+      </footer>
     </div>
   );
 }
