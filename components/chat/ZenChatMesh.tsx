@@ -60,7 +60,9 @@ import {
   Link2,
   Calendar,
   Clock,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
@@ -463,6 +465,7 @@ export function ZenChatMesh() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'primary' | 'requests' | 'general' | 'broadcasts'>('primary');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [mobileActiveView, setMobileActiveView] = useState<'list' | 'chat'>('list');
   const [showMembersDrawer, setShowMembersDrawer] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showStickerDrawer, setShowStickerDrawer] = useState(false);
@@ -910,7 +913,9 @@ export function ZenChatMesh() {
       {/* ══════════════════════════════════════════════════════════════
           1. WHATSAPP & SOVEREIGN CAUCUS RAIL (FAR-LEFT)
           ══════════════════════════════════════════════════════════════ */}
-      <div className="w-16 sm:w-18 bg-[#030406] border-r border-white/[0.06] flex flex-col items-center py-4 justify-between z-30 flex-shrink-0">
+      <div className={`${
+        mobileActiveView === 'chat' ? 'hidden md:flex' : 'flex'
+      } w-16 sm:w-18 bg-[#030406] border-r border-white/[0.06] flex-col items-center py-4 justify-between z-30 flex-shrink-0`}>
         
         {/* Top App Tabs (WhatsApp Desktop style) */}
         <div className="flex flex-col items-center gap-2.5 w-full">
@@ -1045,7 +1050,11 @@ export function ZenChatMesh() {
       {/* ══════════════════════════════════════════════════════════════
           2. SECONDARY SIDEBAR: INSTAGRAM DMs & DISCORD CHANNELS
           ══════════════════════════════════════════════════════════════ */}
-      <div className={`${isSidebarCollapsed ? 'w-0 hidden md:w-0' : 'w-72 sm:w-84'} bg-[#070709] border-r border-white/[0.06] flex flex-col transition-all duration-300 flex-shrink-0 relative z-20`}>
+      <div className={`${
+        isSidebarCollapsed ? 'w-0 hidden md:w-0' : 'w-full md:w-72 lg:w-84'
+      } ${
+        mobileActiveView === 'chat' ? 'hidden md:flex' : 'flex'
+      } bg-[#070709] border-r border-white/[0.06] flex-col transition-all duration-300 flex-shrink-0 relative z-20 h-full`}>
         
         {/* Top Header: Username + GlimpseScore + New Chat Compose Button */}
         {/* Top Header: Community Name or @Username + Actions */}
@@ -1300,6 +1309,7 @@ export function ZenChatMesh() {
                       onClick={() => {
                         setSelectedCommunityId(comm.id);
                         if (comm.channels.length > 0) setActiveChannelId(comm.channels[0].id);
+                        setMobileActiveView('chat');
                       }}
                       className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-white/[0.04] text-xs text-neutral-300 text-left transition"
                     >
@@ -1314,6 +1324,7 @@ export function ZenChatMesh() {
                         onClick={() => {
                           setSelectedCommunityId(comm.id);
                           setActiveCommunityGroupId(grp.id);
+                          setMobileActiveView('chat');
                         }}
                         className="w-full flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-white/[0.04] text-xs text-neutral-300 text-left transition"
                       >
@@ -1392,7 +1403,10 @@ export function ZenChatMesh() {
                   return (
                     <div
                       key={conv.id}
-                      onClick={() => setActiveConversationId(conv.id)}
+                      onClick={() => {
+                        setActiveConversationId(conv.id);
+                        setMobileActiveView('chat');
+                      }}
                       className={`flex items-center gap-3 p-2.5 rounded-2xl cursor-pointer transition-all duration-200 ${
                         isActive 
                           ? 'bg-white/[0.08] border border-white/10 shadow-sm' 
@@ -1553,6 +1567,7 @@ export function ZenChatMesh() {
                               onClick={() => {
                                 setActiveCommunityGroupId(null);
                                 setActiveChannelId(ch.id);
+                                setMobileActiveView('chat');
                               }}
                               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition text-left cursor-pointer ${
                                 isActive
@@ -1596,6 +1611,7 @@ export function ZenChatMesh() {
                     onClick={() => {
                       setActiveCommunityGroupId(null);
                       setActiveChannelId(ch.id);
+                      setMobileActiveView('chat');
                     }}
                     className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition text-left cursor-pointer ${
                       activeChannelId === ch.id
@@ -1625,6 +1641,7 @@ export function ZenChatMesh() {
                       key={group.id}
                       onClick={() => {
                         setActiveCommunityGroupId(group.id);
+                        setMobileActiveView('chat');
                       }}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition text-left cursor-pointer ${
                         isActive
@@ -1721,14 +1738,26 @@ export function ZenChatMesh() {
       {/* ══════════════════════════════════════════════════════════════
           3. MAIN STAGE: CONVERSATION WIRE & CALLING STAGE
           ══════════════════════════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col bg-[#050608] relative z-10 overflow-hidden">
+      <div className={`flex-1 flex-col bg-[#050608] relative z-10 overflow-hidden h-full ${
+        mobileActiveView === 'list' ? 'hidden md:flex' : 'flex'
+      }`}>
         
         {/* Chat Stage Header */}
-        <div className="h-14 border-b border-white/[0.06] px-4 flex items-center justify-between bg-[#070709]/80 backdrop-blur-md">
-          <div className="flex items-center gap-3">
+        <div className="h-14 border-b border-white/[0.06] px-3 sm:px-4 flex items-center justify-between bg-[#070709]/80 backdrop-blur-md">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Mobile Back Button: Returns to conversations list */}
+            <button
+              onClick={() => setMobileActiveView('list')}
+              className="md:hidden p-2 rounded-xl bg-white/[0.06] hover:bg-white/10 text-neutral-300 hover:text-white transition cursor-pointer flex-shrink-0"
+              title="Back to Conversations"
+            >
+              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+            </button>
+
+            {/* Desktop Sidebar Toggle */}
             <button
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="p-1.5 rounded-lg bg-white/[0.04] text-neutral-400 hover:text-white transition"
+              className="hidden md:flex p-1.5 rounded-lg bg-white/[0.04] text-neutral-400 hover:text-white transition"
             >
               {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
             </button>
@@ -2236,12 +2265,18 @@ export function ZenChatMesh() {
       {/* ── Discord-Style Members & Roles Drawer ── */}
       <AnimatePresence>
         {showMembersDrawer && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 260, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            className="h-full bg-[#08090d] border-l border-white/[0.06] flex flex-col z-20 overflow-hidden flex-shrink-0"
-          >
+          <>
+            {/* Mobile Backdrop */}
+            <div 
+              onClick={() => setShowMembersDrawer(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden"
+            />
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 260, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              className="fixed right-0 top-0 bottom-0 md:relative h-full bg-[#08090d] border-l border-white/[0.06] flex flex-col z-50 md:z-20 overflow-hidden flex-shrink-0 shadow-2xl md:shadow-none"
+            >
             <div className="p-3.5 border-b border-white/[0.06] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-purple-400" />
@@ -2363,6 +2398,7 @@ export function ZenChatMesh() {
               </div>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
 
