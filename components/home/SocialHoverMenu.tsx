@@ -5,7 +5,7 @@ import {
   Instagram, 
   Twitter, 
   Youtube, 
-  Linkedin,
+  MessageCircle,
   ExternalLink,
   Sparkles,
   Layers,
@@ -76,14 +76,14 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
       tagline: 'Full symposium keynotes, open panels & docuseries',
     },
     {
-      id: 'linkedin',
-      name: 'LinkedIn',
-      category: 'GOVERNANCE & CAREERS',
-      handle: 'Zenvitra Foundation',
-      url: 'https://linkedin.com/company/zenvitra',
-      icon: Linkedin,
-      accentBadge: 'text-blue-300 bg-blue-500/10 border-blue-500/30',
-      tagline: 'Institutional partnerships, youth governance & leadership dossiers',
+      id: 'whatsapp',
+      name: 'WhatsApp',
+      category: 'COMMUNITY CHAT',
+      handle: 'Official Community',
+      url: 'https://chat.whatsapp.com/Cmn9ihpEbRs7kLO1G83Fez',
+      icon: MessageCircle,
+      accentBadge: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30',
+      tagline: 'Official delegate updates, announcements & community groups',
     },
     {
       id: 'twitter',
@@ -113,7 +113,7 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
             onOpenFullModal();
           }
         }}
-        title="Click to open full Social & Ecosystem Directory (LinkedIn, Telegram, GitHub & more)"
+        title="Click to open full Social & Ecosystem Directory (Telegram, GitHub & more)"
         className={`h-8.5 xl:h-9 px-3 xl:px-4 rounded-full border text-[11px] xl:text-xs font-mono transition-all duration-200 flex items-center gap-1.5 xl:gap-2 cursor-pointer select-none shrink-0 whitespace-nowrap ${
           isOpen
             ? 'border-white/40 bg-white/15 text-white shadow-[0_0_15px_rgba(255,255,255,0.15)]'
@@ -124,14 +124,14 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
         <span className="font-mono font-semibold tracking-tight text-[11px] xl:text-xs">@zenvitra</span>
       </button>
 
-      {/* Centered Pop-Out Flowchart Dropdown */}
+      {/* Pop-Out Flowchart Dropdown (Anchored to right edge so it opens cleanly towards the left) */}
       <div
-        className={`absolute top-full left-1/2 -translate-x-1/2 mt-2.5 z-[150] transition-all duration-200 ease-out origin-top ${
+        className={`absolute top-full right-0 sm:-right-6 md:-right-12 mt-2.5 z-[150] transition-all duration-200 ease-out origin-top-right ${
           isOpen
             ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
         }`}
-        style={{ width: '560px', maxWidth: 'calc(100vw - 32px)' }}
+        style={{ width: '560px', maxWidth: 'calc(100vw - 40px)' }}
       >
         <div className="w-full rounded-3xl bg-[#08080c]/98 border border-white/15 backdrop-blur-2xl shadow-[0_30px_90px_rgba(0,0,0,0.98)] p-4 text-left">
           {/* Header with directory modal link & close button */}
@@ -168,7 +168,7 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
           {/* Horizontal Tree Distribution Rail & Vertical Drop Lines */}
           <div className="relative mb-3 px-4">
             {/* Top Horizontal Rail */}
-            <div className="w-full h-px bg-gradient-to-r from-pink-500/40 via-blue-500/40 to-sky-500/40" />
+            <div className="w-full h-px bg-gradient-to-r from-pink-500/40 via-emerald-500/40 to-sky-500/40" />
             
             {/* 4 Branch Drop Nodes with Vertical Connecting Lines */}
             <div className="grid grid-cols-4 px-3 -mt-1">
@@ -181,8 +181,8 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
                 <div className="w-px h-3 bg-gradient-to-b from-red-400/80 to-transparent" />
               </div>
               <div className="flex flex-col items-center">
-                <div className="w-2 h-2 rounded-full bg-black border-2 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                <div className="w-px h-3 bg-gradient-to-b from-blue-400/80 to-transparent" />
+                <div className="w-2 h-2 rounded-full bg-black border-2 border-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                <div className="w-px h-3 bg-gradient-to-b from-emerald-400/80 to-transparent" />
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-2 h-2 rounded-full bg-black border-2 border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
@@ -198,7 +198,7 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
               const iconColors: Record<string, string> = {
                 instagram: 'text-pink-400 bg-pink-500/10 border-pink-500/20 group-hover:border-pink-500/40',
                 youtube: 'text-red-400 bg-red-500/10 border-red-500/20 group-hover:border-red-500/40',
-                linkedin: 'text-blue-400 bg-blue-500/10 border-blue-500/20 group-hover:border-blue-500/40',
+                whatsapp: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 group-hover:border-emerald-500/40',
                 twitter: 'text-sky-400 bg-sky-500/10 border-sky-500/20 group-hover:border-sky-500/40',
               };
               return (
