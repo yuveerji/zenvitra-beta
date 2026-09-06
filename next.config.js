@@ -12,12 +12,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = {
-        type: 'memory',
-      };
-    }
+  webpack: (config) => {
     config.module.rules.push({
       test: /\.svg$/,
       use: ['@svgr/webpack'],
