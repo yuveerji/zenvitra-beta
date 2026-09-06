@@ -309,7 +309,7 @@ export function Footer() {
               <li>
                 <Link href="/donate/satya-niketan" className="text-rose-400 hover:text-rose-300 font-bold transition flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-                  <span>Satya Niketan Relief (DU)</span>
+                  <span>Satya Niketan Building Collapse Relief</span>
                 </Link>
               </li>
               <li>

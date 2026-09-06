@@ -282,28 +282,28 @@ export default function SatyaNiketanReliefPage() {
               <div className="text-center space-y-4 max-w-3xl mx-auto">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 font-mono text-[10px] text-rose-300 uppercase tracking-widest">
                   <Flame className="w-3.5 h-3.5 text-rose-400" />
-                  <span>DELHI UNIVERSITY • SOUTH CAMPUS EMERGENCY RELIEF</span>
+                  <span>DELHI UNIVERSITY • SOUTH CAMPUS EMERGENCY DISASTER RELIEF</span>
                 </div>
 
                 <h1 className="font-display font-bold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.08]">
                   South Campus, DU <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-white">
-                    Satya Niketan Incident Relief Fund
+                    Satya Niketan Building Collapse Relief Fund
                   </span>
                 </h1>
 
                 <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed max-w-2xl mx-auto">
-                  Providing immediate emergency medical care, rehabilitation, food, emergency housing, and legal assistance to affected Delhi University students, local residents, and families in Satya Niketan.
+                  Providing urgent disaster relief, emergency trauma surgery, debris evacuation support, temporary student rehabilitation, and essential supplies following the tragic <strong>Satya Niketan building collapse incident</strong> near Delhi University South Campus.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-4 pt-2 font-mono text-[11px] text-neutral-400">
                   <div className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-rose-400" />
-                    <span>Satya Niketan, South Campus (Near Venkateswara &amp; ARSD Colleges)</span>
+                    <span>Satya Niketan Collapse Site (Near Sri Venkateswara &amp; ARSD Colleges)</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>24/7 Immediate Deployment</span>
+                    <span>24/7 Rapid Emergency Response</span>
                   </div>
                 </div>
               </div>
@@ -316,16 +316,16 @@ export default function SatyaNiketanReliefPage() {
                   </div>
                   <div>
                     <h4 className="font-display font-bold text-sm text-white flex items-center gap-2">
-                      <span>100% Direct Emergency Transfer • Zero Platform Fee</span>
+                      <span>Direct Official Government &amp; Disaster Escrow • Zero Commission</span>
                     </h4>
                     <p className="font-sans text-xs text-neutral-300 mt-0.5">
-                      No sign-up or registration is required. Transfer any voluntary amount directly via UPI or Bank IMPS, and optionally log your UTR screenshot below.
+                      Contribute directly via official Government of NCT of Delhi / PMNRF UPI or Bank NEFT. 100% tax exempt under Section 80G. No third-party deductions.
                     </p>
                   </div>
                 </div>
 
                 <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wider font-semibold shrink-0">
-                  Verified Sovereign Rail
+                  Verified Govt Escrow
                 </span>
               </div>
 

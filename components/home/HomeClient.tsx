@@ -992,10 +992,10 @@ export default function HomeClient({ session }: HomeClientProps) {
 
                   <div className="space-y-1.5">
                     <h4 className="font-display font-bold text-lg text-white">
-                      Satya Niketan DU Relief
+                      Satya Niketan Building Collapse Relief
                     </h4>
                     <p className="text-xs text-neutral-300 font-light font-sans leading-relaxed">
-                      Emergency trauma care, lodging &amp; hospitalization for affected Delhi University students and residents. 100% direct to official Government of Delhi &amp; PMNRF escrow.
+                      Emergency trauma surgical care, debris rescue aid, student rehabilitation, and food support for victims of the South Campus Satya Niketan building collapse. 100% direct to official Government of Delhi &amp; PMNRF disaster escrow.
                     </p>
                   </div>
                 </div>
