@@ -314,7 +314,7 @@ And we built anyway.
 
 THIS IS WHAT I WANT ZENVITRA TO BECOME.
 
-Not the loudest company.
+To become the loudest company.
 Not the company with the most features.
 Not a company that measures its success only in numbers.
 
