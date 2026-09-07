@@ -29,6 +29,7 @@ import {
 } from '@/lib/notificationStorage';
 import { subscribeToActivitySync } from '@/lib/reactiveActivityHub';
 import { getFounderDirective, type FounderDirective } from '@/lib/founderControl';
+import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
 
 type FilterCategory = 'all' | 'directive' | 'event' | 'refund' | 'pulse' | 'mun' | 'security';
 
@@ -321,26 +322,28 @@ export default function NotificationBell() {
                           {n.title}
                         </h4>
 
-                        {/* Body - Full detailed message when expanded */}
-                        <p className={`text-[11px] leading-relaxed font-sans text-neutral-300/90 font-light ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-3'}`}>
-                          {n.message}
-                        </p>
+                        {/* Body - Rich formatted message */}
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <FounderNoteRenderer
+                            body={n.message}
+                            size="compact"
+                            collapsible={true}
+                            isExpanded={isExpanded}
+                            onToggleExpanded={(next) => {
+                              setExpandedDirectiveId(next ? n.id : null);
+                              handleNotificationClick(n);
+                            }}
+                          />
+                        </div>
 
-                        {/* Signature & Status / Read Button */}
+                        {/* Signature & Status */}
                         <div className="flex items-center justify-between pt-2 border-t border-rose-500/20 text-[10px] font-mono">
                           <span className="text-neutral-400">
                             SIGNATURE: <span className="text-rose-300 font-bold">{n.author || '@yuveer (Founder & CEO)'}</span>
                           </span>
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 font-bold tracking-wider text-rose-400 group-hover:text-rose-300 transition">
-                              <span>{isExpanded ? 'COLLAPSE' : 'READ'}</span>
-                              {isExpanded ? (
-                                <ChevronUp className="w-3 h-3 text-rose-400" />
-                              ) : (
-                                <ArrowRight className="w-3 h-3 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
-                              )}
-                            </span>
-                          </div>
+                          <span className="inline-flex items-center gap-1 font-bold tracking-wider text-rose-400">
+                            {isExpanded ? 'EXPANDED' : 'DIRECTIVE ACTIVE'}
+                          </span>
                         </div>
                       </div>
                     );

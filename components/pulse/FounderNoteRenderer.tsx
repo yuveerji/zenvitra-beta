@@ -8,6 +8,9 @@ interface FounderNoteRendererProps {
   defaultExpanded?: boolean;
   collapsible?: boolean;
   className?: string;
+  size?: 'compact' | 'standard';
+  isExpanded?: boolean;
+  onToggleExpanded?: (expanded: boolean) => void;
 }
 
 export function FounderNoteRenderer({
@@ -15,8 +18,19 @@ export function FounderNoteRenderer({
   defaultExpanded = false,
   collapsible = true,
   className = '',
+  size = 'standard',
+  isExpanded: controlledExpanded,
+  onToggleExpanded,
 }: FounderNoteRendererProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const isExpanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
+
+  const handleToggle = (val: boolean) => {
+    if (controlledExpanded === undefined) {
+      setInternalExpanded(val);
+    }
+    onToggleExpanded?.(val);
+  };
 
   if (!body) return null;
 
@@ -51,7 +65,9 @@ export function FounderNoteRenderer({
         return (
           <h4
             key={idx}
-            className="pt-2 pb-1 font-display font-bold text-sm sm:text-base text-rose-200 tracking-wide flex items-center gap-2"
+            className={`pt-2 pb-1 font-display font-bold text-rose-200 tracking-wide flex items-center gap-2 ${
+              size === 'compact' ? 'text-xs sm:text-[13px]' : 'text-sm sm:text-base'
+            }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
             <span>{trimmed}</span>
@@ -65,7 +81,9 @@ export function FounderNoteRenderer({
         return (
           <blockquote
             key={idx}
-            className="my-2 pl-3 py-1 border-l-2 border-rose-500/40 text-amber-200/90 font-mono text-xs sm:text-sm italic"
+            className={`my-2 pl-3 py-1 border-l-2 border-rose-500/40 text-amber-200/90 font-mono italic ${
+              size === 'compact' ? 'text-[11px]' : 'text-xs sm:text-sm'
+            }`}
           >
             {trimmed}
           </blockquote>
@@ -77,7 +95,9 @@ export function FounderNoteRenderer({
       return (
         <p
           key={idx}
-          className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans font-light"
+          className={`text-zinc-300 leading-relaxed font-sans font-light ${
+            size === 'compact' ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm'
+          }`}
         >
           {lines.map((line, lIdx) => (
             <React.Fragment key={lIdx}>
@@ -93,14 +113,14 @@ export function FounderNoteRenderer({
   return (
     <div className={`space-y-3 ${className}`}>
       <div
-        className={`space-y-3 transition-all duration-300 relative ${
-          collapsible && !isExpanded ? 'max-h-56 overflow-hidden' : ''
+        className={`space-y-2.5 transition-all duration-300 relative ${
+          collapsible && !isExpanded ? (size === 'compact' ? 'max-h-36 overflow-hidden' : 'max-h-56 overflow-hidden') : ''
         }`}
       >
         {renderContent()}
 
         {collapsible && !isExpanded && (
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0d0914] via-[#0d0914]/80 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-t from-[#0d0914] via-[#0d0914]/90 to-transparent pointer-events-none" />
         )}
       </div>
 
@@ -108,8 +128,11 @@ export function FounderNoteRenderer({
         <div className="pt-1">
           <button
             type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-rose-300 hover:text-rose-200 transition-colors bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 px-3 py-1.5 rounded-xl cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggle(!isExpanded);
+            }}
+            className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono font-bold text-rose-300 hover:text-rose-200 transition-colors bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl cursor-pointer"
           >
             {isExpanded ? (
               <>
