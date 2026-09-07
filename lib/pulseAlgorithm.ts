@@ -11,10 +11,10 @@
 
 import { PulsePost } from '@/types/pulse';
 
-export type FeedAlgorithmTab = 'foryou' | 'following' | 'latest' | 'trending' | 'politics' | 'media' | 'liked' | 'myposts';
+export type FeedAlgorithmTab = 'foryou' | 'following' | 'latest' | 'trending' | 'noise' | 'politics' | 'media' | 'liked' | 'myposts';
 
 export interface RankedPulsePost extends PulsePost {
-  feedReason?: 'following' | 'fresh' | 'trending' | 'own' | 'foryou';
+  feedReason?: 'following' | 'fresh' | 'trending' | 'own' | 'foryou' | 'noise';
   rankScore?: number;
 }
 
@@ -142,6 +142,32 @@ export function rankPulseFeed({
           ...p,
           feedReason: 'trending' as const,
           rankScore: eng
+        };
+      })
+      .sort((a, b) => (b.rankScore || 0) - (a.rankScore || 0));
+  }
+
+  // ─── TAB: ALGORITHMIC NOISE (Entropy & Wildcard Exploration) ───
+  // Deliberately breaks echo chambers and popularity bias:
+  // Randomizes feed order with an entropy seed, pulling grassroots dispatches,
+  // uncategorized viewpoints, and low-visibility gems to the top.
+  if (tab === 'noise') {
+    return [...posts]
+      .map((p, idx) => {
+        // Deterministic pseudorandom noise per session minute + post ID hash
+        const minuteBlock = Math.floor(now / (1000 * 60 * 3)); // New entropy shuffle every 3 minutes
+        let hash = 0;
+        const seedStr = `${p.id}-${minuteBlock}-${idx}`;
+        for (let i = 0; i < seedStr.length; i++) {
+          hash = (hash << 5) - hash + seedStr.charCodeAt(i);
+          hash |= 0;
+        }
+        const entropyScore = Math.abs(hash % 1000);
+
+        return {
+          ...p,
+          feedReason: 'noise' as const,
+          rankScore: entropyScore,
         };
       })
       .sort((a, b) => (b.rankScore || 0) - (a.rankScore || 0));

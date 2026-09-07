@@ -22,7 +22,9 @@ import {
   Clock,
   Zap,
   ArrowUp,
-  Landmark
+  Landmark,
+  Shuffle,
+  Radio
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { PostCard } from './PostCard';
@@ -46,7 +48,7 @@ export function PulseFeed() {
     currentUserId,
   } = useZenPulse();
 
-  type FeedTab = 'foryou' | 'following' | 'latest' | 'trending' | 'politics' | 'media' | 'liked' | 'myposts';
+  type FeedTab = 'foryou' | 'following' | 'latest' | 'trending' | 'noise' | 'politics' | 'media' | 'liked' | 'myposts';
   const [tab, setTab] = useState<FeedTab>('foryou');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [prevPostCount, setPrevPostCount] = useState(feedPosts.length);
@@ -137,6 +139,7 @@ export function PulseFeed() {
                 { id: 'following', label: 'Following', icon: Users },
                 { id: 'latest', label: 'Latest', icon: Clock },
                 { id: 'trending', label: 'Trending', icon: Flame },
+                { id: 'noise', label: '⚡ Algorithmic Noise', icon: Shuffle },
                 { id: 'politics', label: 'Politics & Policy', icon: Landmark },
                 { id: 'media', label: 'Media Wire', icon: ImageIcon },
                 { id: 'liked', label: 'Applauded', icon: Heart },
@@ -193,6 +196,20 @@ export function PulseFeed() {
                   <Clock className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Real-time chronological timeline &bull; Clean newest-first</span>
                 </div>
+              </div>
+            )}
+
+            {tab === 'noise' && (
+              <div className="px-4 py-2 bg-gradient-to-r from-fuchsia-950/40 via-rose-950/30 to-black border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-fuchsia-300">
+                <div className="flex items-center gap-2">
+                  <Shuffle className="w-3.5 h-3.5 text-fuchsia-400 animate-spin" style={{ animationDuration: '4s' }} />
+                  <span>
+                    <strong>Algorithmic Noise Mode:</strong> Echo-chamber breaker active &bull; Entropy shuffled exploration
+                  </span>
+                </div>
+                <span className="hidden sm:inline-block text-fuchsia-400/80 text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20">
+                  ANTI-BUBBLE MATRIX
+                </span>
               </div>
             )}
           </div>

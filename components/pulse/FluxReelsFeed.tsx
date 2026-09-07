@@ -26,7 +26,8 @@ import {
   Zap,
   BookOpen,
   Film,
-  Landmark
+  Landmark,
+  Shuffle
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { FluxVideo } from '@/types/pulse';
@@ -58,7 +59,7 @@ export function FluxReelsFeed() {
   const [showCommentsDrawer, setShowCommentsDrawer] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('Religious Forward / Devotional Clickbait');
-  const [reelCategory, setReelCategory] = useState<'all' | 'politics'>('all');
+  const [reelCategory, setReelCategory] = useState<'all' | 'politics' | 'noise'>('all');
   const [commentInput, setCommentInput] = useState('');
   const [copiedToast, setCopiedToast] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -79,6 +80,16 @@ export function FluxReelsFeed() {
         return matchesTag || matchesCaption || matchesSource;
       });
     }
+
+    if (reelCategory === 'noise') {
+      // Algorithmic Noise: Pseudo-random entropy shuffle over the full reel library
+      return [...fluxVideos].sort((a, b) => {
+        const hashA = (a.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) * 17) % 100;
+        const hashB = (b.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) * 17) % 100;
+        return hashB - hashA;
+      });
+    }
+
     return fluxVideos;
   }, [fluxVideos, reelCategory]);
 
@@ -254,9 +265,9 @@ export function FluxReelsFeed() {
 
       {/* Floating Scroll Gesture Hint */}
       <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-zinc-400">
-        <span className="text-cyan-400 font-bold">{currentIndex + 1} / {fluxVideos.length}</span>
+        <span className="text-cyan-400 font-bold">{currentIndex + 1} / {filteredFluxVideos.length}</span>
         <span className="text-zinc-600">•</span>
-        <span>Scroll or swipe to flip reel</span>
+        <span>{reelCategory === 'noise' ? '⚡ Algorithmic Noise active' : 'Scroll or swipe to flip reel'}</span>
       </div>
 
       {/* Toast Notification */}
@@ -335,6 +346,23 @@ export function FluxReelsFeed() {
             >
               <Landmark className="w-3 h-3 text-cyan-400" />
               <span>{reelCategory === 'politics' ? '🏛️ Politics: Active' : '🏛️ Politics'}</span>
+            </button>
+
+            {/* Algorithmic Noise Mode Pill */}
+            <button
+              onClick={() => {
+                setCurrentIndex(0);
+                setReelCategory(reelCategory === 'noise' ? 'all' : 'noise');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold transition shadow-sm cursor-pointer backdrop-blur-md border ${
+                reelCategory === 'noise'
+                  ? 'bg-fuchsia-500/30 border-fuchsia-400 text-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.5)]'
+                  : 'bg-black/50 border-white/10 text-zinc-300 hover:text-white'
+              }`}
+              title="Toggle Algorithmic Noise (Entropy-driven exploration)"
+            >
+              <Shuffle className={`w-3 h-3 ${reelCategory === 'noise' ? 'text-fuchsia-400 animate-spin' : 'text-zinc-400'}`} style={{ animationDuration: '3s' }} />
+              <span>{reelCategory === 'noise' ? '⚡ Noise: Active' : '⚡ Noise'}</span>
             </button>
 
             {/* Quick-Access 5-Minute Sparks Drawer Toggle */}
