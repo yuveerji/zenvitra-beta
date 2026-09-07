@@ -115,7 +115,7 @@ const USER_OVERRIDES_STORAGE_KEY = 'zenvitra_admin_user_overrides_v1';
 const SITE_OVERRIDES_STORAGE_KEY = 'zenvitra_admin_site_overrides_v1';
 
 export const DEFAULT_FOUNDER_DIRECTIVE: FounderDirective = {
-  id: 'genesis-directive-02',
+  id: 'genesis-directive-03',
   title: 'A NOTE FROM THE FOUNDER',
   body: `Every generation inherits a world.
 
@@ -434,7 +434,7 @@ export function getFounderDirective(): FounderDirective {
     const raw = localStorage.getItem(DIRECTIVE_STORAGE_KEY);
     if (!raw) return DEFAULT_FOUNDER_DIRECTIVE;
     const parsed = JSON.parse(raw);
-    if (!parsed || parsed.id === 'genesis-directive-01') {
+    if (!parsed || parsed.id === 'genesis-directive-01' || parsed.id === 'genesis-directive-02') {
       localStorage.setItem(DIRECTIVE_STORAGE_KEY, JSON.stringify(DEFAULT_FOUNDER_DIRECTIVE));
       return DEFAULT_FOUNDER_DIRECTIVE;
     }

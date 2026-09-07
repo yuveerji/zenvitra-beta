@@ -59,6 +59,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getFounderDirective, FounderDirective, isFounder, isAdmin } from '@/lib/founderControl';
 import { AdminOmniModal } from '@/components/founder/AdminOmniModal';
 import { FounderOmniModal } from '@/components/founder/FounderOmniModal';
+import { FounderNoteRenderer } from './FounderNoteRenderer';
 import { 
   ArrowRight, 
   Zap,
@@ -811,9 +812,11 @@ export function ZenPulseCore() {
                       {founderDirective.title}
                     </h3>
 
-                    <p className="text-xs text-zinc-300 leading-relaxed font-sans font-light">
-                      {founderDirective.body}
-                    </p>
+                    <FounderNoteRenderer
+                      body={founderDirective.body}
+                      defaultExpanded={false}
+                      collapsible={true}
+                    />
 
                     <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-zinc-500">
                       <span>SIGNATURE: <strong className="text-zinc-300">{founderDirective.author}</strong></span>
