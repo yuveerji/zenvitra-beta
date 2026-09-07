@@ -1,5 +1,5 @@
 /**
- * Zenvitra Universal 11-Tab Google Sheets Telemetry & Ingestion Engine
+ * Zenvitra Universal 12-Tab Google Sheets Telemetry & Ingestion Engine
  * Handles real-time event routing to corresponding tabs in a single master Google Sheet.
  */
 
@@ -14,6 +14,8 @@ export type GoogleSheetTab =
   | 'Campus Ambassadors'
   | 'Event Registrations'
   | 'Impact Ledger'
+  | 'Donations'
+  | 'Donations & Relief'
   | 'Feedback & Grievance';
 
 export interface SheetDispatchPayload {
@@ -21,7 +23,7 @@ export interface SheetDispatchPayload {
   data: Record<string, any>;
 }
 
-// ─── 11 TYPE-SAFE SCHEMAS ───
+// ─── 12 TYPE-SAFE SCHEMAS ───
 
 export interface LoginRecord {
   userId: string;
@@ -135,7 +137,13 @@ export interface ImpactLedgerRecord {
   paymentScreenshotPreview?: string;
   auditStatus?: string;
   verificationDetails?: string;
+  donorPhone?: string;
+  paymentMode?: string;
+  notesOrPrayer?: string;
+  wantsAnonymous?: boolean;
 }
+
+export type DonationRecord = ImpactLedgerRecord;
 
 export interface FeedbackGrievanceRecord {
   submitterName: string;
@@ -195,7 +203,8 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   else if (rawTab.includes('COMMUNITY')) targetTab = 'COMMUNITY';
   else if (rawTab.includes('AMBASSADOR') || rawTab.includes('CAMPUS')) targetTab = 'CAMPUS_AMBASSADOR';
   else if (rawTab.includes('EVENT')) targetTab = 'EVENTS';
-  else if (rawTab.includes('IMPACT') || rawTab.includes('DONAT') || rawTab.includes('LEDGER')) targetTab = 'IMPACT_LEDGER';
+  else if (rawTab.includes('DONAT')) targetTab = 'DONATIONS';
+  else if (rawTab.includes('IMPACT') || rawTab.includes('LEDGER')) targetTab = 'IMPACT_LEDGER';
   else if (rawTab.includes('FEEDBACK') || rawTab.includes('GRIEVANCE')) targetTab = 'FEEDBACK';
   else if (rawTab.includes('PULSE') || rawTab.includes('POST')) targetTab = 'PULSE_POSTS';
 
@@ -249,6 +258,12 @@ export const sheetSync = {
 
   impactLedger: (record: ImpactLedgerRecord) =>
     dispatchToGoogleSheets({ tab: 'Impact Ledger', data: record }),
+
+  donation: (record: DonationRecord) =>
+    dispatchToGoogleSheets({ tab: 'Donations', data: record }),
+
+  donations: (record: DonationRecord) =>
+    dispatchToGoogleSheets({ tab: 'Donations', data: record }),
 
   feedback: (record: FeedbackGrievanceRecord) =>
     dispatchToGoogleSheets({ tab: 'Feedback & Grievance', data: record }),

@@ -16,7 +16,8 @@ function mapTabToTarget(rawTab: string): string {
   if (upper.includes('COMMUNITY')) return 'COMMUNITY';
   if (upper.includes('AMBASSADOR') || upper.includes('CAMPUS')) return 'CAMPUS_AMBASSADOR';
   if (upper.includes('EVENT')) return 'EVENTS';
-  if (upper.includes('IMPACT') || upper.includes('DONAT') || upper.includes('LEDGER')) return 'IMPACT_LEDGER';
+  if (upper.includes('DONAT')) return 'DONATIONS';
+  if (upper.includes('IMPACT') || upper.includes('LEDGER')) return 'IMPACT_LEDGER';
   if (upper.includes('FEEDBACK') || upper.includes('GRIEVANCE')) return 'FEEDBACK';
   if (upper.includes('PULSE') || upper.includes('POST')) return 'PULSE_POSTS';
   return upper || 'REGISTER_CORE';

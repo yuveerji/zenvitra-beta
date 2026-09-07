@@ -61,7 +61,7 @@ export default function InvestDonatePage() {
 
   const handleDonateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    sheetSync.impactLedger({
+    const donationRecord = {
       donorName: donateData.name,
       donorEmail: donateData.email,
       voluntaryAmountInr: donateData.amount,
@@ -69,7 +69,10 @@ export default function InvestDonatePage() {
       targetProjectStream: donateData.foundation,
       auditStatus: 'QUEUED_FOR_AUDIT',
       verificationDetails: '25% Profit Civic Endowment Allocation',
-    });
+      paymentMode: 'DIRECT_FOUNDATION_ESCROW',
+    };
+    sheetSync.impactLedger(donationRecord);
+    sheetSync.donation(donationRecord);
     setSubmitted(true);
   };
 

@@ -155,8 +155,8 @@ export default function SatyaNiketanReliefPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Dispatch directly to Google Sheets (Impact Ledger tab)
-    sheetSync.impactLedger({
+    // Dispatch to Google Sheets (Impact Ledger & Donations tab)
+    const donationRecord = {
       donorName: formData.donorName || (formData.wantsAnonymous ? 'Anonymous DU Ally' : 'South Campus Supporter'),
       donorEmail: formData.donorEmail || 'anonymous.relief@zenvitra.xyz',
       voluntaryAmountInr: formData.amount || '0',
@@ -164,7 +164,14 @@ export default function SatyaNiketanReliefPage() {
       targetProjectStream: `[Satya Niketan DU Relief] ${formData.dedicatedProject}`,
       auditStatus: 'PRIORITY_EMERGENCY_RECONCILIATION',
       verificationDetails: `Direct Student Crisis Relief | Phone: ${formData.donorPhone || 'N/A'} | Note: ${formData.notesOrPrayer || 'N/A'}`,
-    });
+      donorPhone: formData.donorPhone,
+      notesOrPrayer: formData.notesOrPrayer,
+      wantsAnonymous: formData.wantsAnonymous,
+      paymentMode: 'UPI_DIRECT_GOVT_FUND',
+    };
+
+    sheetSync.impactLedger(donationRecord);
+    sheetSync.donation(donationRecord);
 
     setSubmitted(true);
   };

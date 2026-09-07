@@ -68,8 +68,8 @@ export default function GovtSchoolsDonationPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Dispatch to Google Sheets (Impact Ledger tab)
-    sheetSync.impactLedger({
+    // Dispatch to Google Sheets (Impact Ledger & Donations tab)
+    const donationRecord = {
       donorName: formData.donorName || (formData.wantsAnonymous ? 'Anonymous Patron' : 'Public Donor'),
       donorEmail: formData.donorEmail || 'anonymous@patron.zenvitra',
       voluntaryAmountInr: formData.amount || '0',
@@ -77,7 +77,12 @@ export default function GovtSchoolsDonationPage() {
       targetProjectStream: formData.dedicatedProject || 'Govt School Solar & Lab Fund',
       auditStatus: 'PENDING_BANK_RECONCILIATION',
       verificationDetails: '25% Civic Escrow Direct Public Education Allocation',
-    });
+      paymentMode: 'UPI_DIRECT_GOVT_FUND',
+      wantsAnonymous: formData.wantsAnonymous,
+    };
+
+    sheetSync.impactLedger(donationRecord);
+    sheetSync.donation(donationRecord);
 
     setSubmitted(true);
   };

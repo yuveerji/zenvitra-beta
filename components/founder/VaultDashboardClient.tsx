@@ -1597,6 +1597,90 @@ export function VaultDashboardClient({
               </p>
             </div>
           </div>
+
+          {/* Master Google Sheets Architecture & Tab Schemas */}
+          <div className="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-4 font-mono">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="space-y-0.5">
+                <span className="text-xs uppercase text-white font-bold tracking-wider flex items-center gap-2">
+                  <span>📑 Master Google Sheet Tab Schemas (12 Sovereign Streams)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-semibold border border-emerald-500/30">Active</span>
+                </span>
+                <p className="text-[11px] text-neutral-400">
+                  Ensure your Google Sheets document contains the following sheet tab names with their corresponding column headers:
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs">
+              {/* Highlighted Donations Tab */}
+              <div className="p-3.5 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-amber-300 text-xs flex items-center gap-1.5">
+                    <span>💳 Tab:</span>
+                    <code className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-200">Donations</code>
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">Primary Relief</span>
+                </div>
+                <p className="text-[11px] text-neutral-300 leading-relaxed">
+                  <strong>Expected Headers (A-L):</strong><br />
+                  <code className="text-[10px] text-amber-200/90 break-all bg-black/40 p-1.5 rounded block mt-1">
+                    Timestamp | Donor Name | Donor Email | Phone | Amount (INR) | UTR / Txn ID | Target Relief Stream | Payment Mode | Anonymous | Notes / Prayer | Audit Status | Verification Details
+                  </code>
+                </p>
+              </div>
+
+              {/* Impact Ledger Tab */}
+              <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-cyan-300 text-xs flex items-center gap-1.5">
+                    <span>📜 Tab:</span>
+                    <code className="bg-cyan-500/20 px-2 py-0.5 rounded text-cyan-200">Impact Ledger</code>
+                  </span>
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30">Transparency Ledger</span>
+                </div>
+                <p className="text-[11px] text-neutral-300 leading-relaxed">
+                  <strong>Expected Headers (A-J):</strong><br />
+                  <code className="text-[10px] text-cyan-200/90 break-all bg-black/40 p-1.5 rounded block mt-1">
+                    Timestamp | Donor Name | Donor Email | Amount (INR) | UTR / Txn ID | Target Stream | Verification Status | Notes | IP Address | Device Info
+                  </code>
+                </p>
+              </div>
+
+              {/* Other Key Tabs */}
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
+                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
+                  <span>👥 Tab:</span>
+                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Register Data Core</code>
+                </span>
+                <p className="text-[10px] text-neutral-400">Timestamp | User ID | Full Name | Email | Role | Access Level | Provider | Status | IP Address | Device</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
+                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
+                  <span>🔐 Tab:</span>
+                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Login Data Core</code>
+                </span>
+                <p className="text-[10px] text-neutral-400">Timestamp | User ID | Full Name | Email | Provider | Login Status | IP Address | Browser Info</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
+                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
+                  <span>🎓 Tab:</span>
+                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Campus Ambassadors</code>
+                </span>
+                <p className="text-[10px] text-neutral-400">Timestamp | Full Name | College / School | Email | WhatsApp | City | State | Year | Bio | Status</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
+                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
+                  <span>💼 Tab:</span>
+                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Core Team Applications</code>
+                </span>
+                <p className="text-[10px] text-neutral-400">Timestamp | Full Name | Email | Phone | Target Wing | Portfolio URL | Statement of Intent | Status</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
