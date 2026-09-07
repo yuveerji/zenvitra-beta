@@ -11,7 +11,7 @@ import { Navbar } from '@/components/layout/Navbar';
 
 export default function ImpactPage() {
   const grantDeployments = [
-    { title: 'Rural School Digital & Solar Labs', location: 'Rajasthan & Odisha Focus', status: 'Cycle 1 Scheduled', metric: 'Next 4-Month Cycle Allocation', icon: Sun },
+    { title: 'Rural School Digital & Solar Labs', location: 'India Focus', status: 'Cycle 1 Scheduled', metric: 'Next 4-Month Cycle Allocation', icon: Sun },
     { title: 'Youth Media & Open Press Fellowships', location: 'Pan-India & Global Cohort', status: 'Applications Open', metric: 'Direct Sovereign Stipends', icon: BookOpen },
     { title: 'Model UN & Global Summit Scholarships', location: 'Verified Need-Based Candidates', status: 'Escrow Allocated', metric: '100% Fee Waivers & Travel Aid', icon: Users },
     { title: 'Civic Innovation & Hardware Grants', location: 'Open Grassroots Prototypes', status: 'Review in Progress', metric: 'Milestone Disbursals', icon: HeartHandshake },
