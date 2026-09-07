@@ -115,11 +115,292 @@ const USER_OVERRIDES_STORAGE_KEY = 'zenvitra_admin_user_overrides_v1';
 const SITE_OVERRIDES_STORAGE_KEY = 'zenvitra_admin_site_overrides_v1';
 
 export const DEFAULT_FOUNDER_DIRECTIVE: FounderDirective = {
-  id: 'genesis-directive-01',
-  title: 'CONSTITUTIONAL DECREE: GENESIS OF SOVEREIGN MESH',
-  body: 'To all delegates, writers, and sovereign nodes: Zenvitra operates under zero commercial surveillance and a hardcoded 25% educational endowment. Discourse is strictly evaluated on verifiable sources and empirical rigor.',
-  author: '@yuveer (Founder & CEO)',
-  tag: 'EXECUTIVE DIRECTIVE',
+  id: 'genesis-directive-02',
+  title: 'A NOTE FROM THE FOUNDER',
+  body: `Every generation inherits a world.
+
+And every once in a while—
+
+someone decides to rebuild it.
+
+Not because the old world has completely failed.
+
+But because they can see what it could become.
+
+———
+
+We grew up in a world of applications.
+
+One for messaging.
+One for sharing.
+One for creating.
+One for reading.
+One for communities.
+One for events.
+One for work.
+One for everything.
+
+And somehow—
+despite being more connected than any generation before us—
+we became scattered.
+
+Our conversations lived in one place.
+Our ideas in another.
+Our communities somewhere else.
+
+Our voices were divided between platforms we didn't own, systems we couldn't understand, and algorithms we couldn't control.
+
+The internet connected the world.
+But it also fragmented it.
+
+And we started asking a question:
+
+WHAT IF THERE WAS ANOTHER WAY?
+
+Not another application.
+Not another feature.
+Not another company trying to capture attention.
+
+Something bigger.
+Something connected.
+Something built around people.
+
+———
+
+THAT IS WHERE ZENVITRA BEGAN.
+
+Not in a boardroom.
+Not with billions of dollars.
+Not with a finished product.
+
+But with an idea.
+
+A belief that technology could feel different.
+
+That the future did not have to be built only by the people who had already been given permission to build it.
+
+That young people could look at the systems around them and say—
+WE CAN DO BETTER.
+
+And then actually try.
+
+———
+
+ZENVITRA IS A BET ON POSSIBILITY.
+
+A bet that communication can be more meaningful.
+That communities can be stronger.
+That creators can have more freedom.
+That information can travel without losing its humanity.
+That independent voices deserve space.
+That events can be easier to build.
+That technology can connect experiences instead of separating them.
+
+We are building ZEN.chat because conversations matter.
+We are building ZEN.PULSE because ideas deserve movement.
+We are building ZEN.FLUX because creativity should have a stage.
+We are building ZENVITRA International Press because voices and stories deserve the freedom to exist.
+We are building the systems that connect communities, organizations, conferences, and events because people have always built extraordinary things when they come together.
+
+Different products.
+Different purposes.
+One ecosystem.
+
+ONE ZENVITRA.
+
+———
+
+BUT HERE IS WHAT MATTERS MOST:
+
+Technology is not the story.
+PEOPLE ARE.
+
+Every message begins with someone wanting to be understood.
+Every post begins with someone wanting to say something.
+Every article begins with someone believing a story matters.
+Every community begins with people deciding they belong together.
+Every event begins with an idea.
+
+And every great movement begins when someone refuses to believe that the world must remain exactly the way it is.
+
+ZENVITRA exists for those people.
+The curious.
+The ambitious.
+The creators.
+The builders.
+The organizers.
+The writers.
+The dreamers.
+
+And especially—
+the people who have been told:
+"You're too young."
+
+———
+
+WE DON'T BELIEVE THAT.
+
+History has never asked permission before changing.
+Ideas don't wait until you are old enough.
+Curiosity doesn't require experience.
+And ambition doesn't need an invitation.
+
+You can be young and still see something that the world has missed.
+You can be inexperienced and still ask the right question.
+You can start with nothing but an idea—
+and still begin something that matters.
+
+That belief is part of ZENVITRA's DNA.
+
+The future should not be something young people simply inherit.
+IT SHOULD BE SOMETHING THEY HELP CREATE.
+
+———
+
+WE ARE NOT HERE TO BE ANOTHER COMPANY.
+
+We are here to build something worth remembering.
+
+That doesn't mean everything we create will succeed immediately.
+It doesn't mean every idea will survive.
+It doesn't mean we won't make mistakes.
+
+We will.
+
+We will build things that need to be rebuilt.
+We will make decisions that need to be reconsidered.
+We will discover that some of our biggest assumptions were wrong.
+
+And when that happens—
+we will learn.
+
+Because perfection has never built the future.
+ITERATION HAS.
+
+The willingness to try again.
+The courage to admit when something isn't good enough.
+The obsession to make it better.
+Again. And again. And again.
+Until something ordinary becomes something extraordinary.
+
+———
+
+WE ARE AT THE BEGINNING.
+
+That is the most exciting part.
+There are no limits written yet.
+No final chapter.
+No complete map.
+Just a direction. Forward.
+
+There are products that haven't been imagined yet.
+Technologies that haven't been created yet.
+Communities we haven't met yet.
+Stories we haven't heard yet.
+And people who have no idea that one day, their lives might intersect with this journey.
+
+Right now, ZENVITRA is still becoming.
+And perhaps that is exactly what makes this moment important.
+
+Because someday, people may see what ZENVITRA becomes.
+But very few will understand what it felt like at the beginning.
+When it was still an idea.
+When everything was uncertain.
+When the impossible still looked impossible.
+When we had more questions than answers.
+And we built anyway.
+
+———
+
+THIS IS WHAT I WANT ZENVITRA TO BECOME.
+
+Not the loudest company.
+Not the company with the most features.
+Not a company that measures its success only in numbers.
+
+I want ZENVITRA to become something people trust.
+Something people feel proud to build with.
+Something creators can call home.
+Something communities can depend on.
+Something that gives people more power—not less.
+A company that remembers that behind every screen—
+is a human being.
+
+BECAUSE THE BEST TECHNOLOGY DOESN'T MAKE PEOPLE FEEL SMALL.
+IT MAKES THEM FEEL CAPABLE.
+
+Capable of speaking.
+Capable of creating.
+Capable of connecting.
+Capable of building.
+Capable of changing something.
+
+That is the kind of technology we want to build.
+
+———
+
+TO EVERYONE WHO IS HERE BEFORE THE WORLD IS WATCHING—
+
+Thank you.
+Thank you for believing before there was proof.
+Thank you for supporting before there was certainty.
+Thank you for seeing possibility where others saw risk.
+
+One day, ZENVITRA will have users who never knew how difficult the beginning was.
+They will see the products.
+The technology.
+The ecosystem.
+The communities.
+They may see something polished.
+Something finished.
+Something that looks inevitable.
+
+But nothing meaningful is inevitable.
+Everything begins with someone choosing to start.
+
+And this—
+THIS IS OUR START.
+
+———
+
+We don't know exactly how far this journey will go.
+But we know why it began.
+
+We began because we believed the digital world could be more connected.
+More open.
+More creative.
+More human.
+
+We began because we believed that people deserved better tools to communicate, create, organize, and express themselves.
+We began because waiting for someone else to build the future didn't feel like an option.
+
+So we decided to try.
+
+ZENVITRA IS NOT THE FINISHED ANSWER.
+IT IS THE BEGINNING OF A QUESTION.
+
+What happens when people decide to build the world they wish existed?
+
+We're about to find out.
+
+———
+
+This is ZENVITRA.
+Built from an idea.
+Powered by people.
+Defined by possibility.
+And created for a future that has not been written yet.
+
+The world doesn't change when everyone agrees it's time.
+IT CHANGES WHEN SOMEONE BEGINS.
+
+We have begun.
+
+WELCOME TO ZENVITRA.
+The future isn't waiting.
+Neither are we.`,
+  author: 'Yuveer Chhatwani (Founder & System Architect, ZENVITRA)',
+  tag: 'FOUNDER\'S NOTE • SEPTEMBER 2026',
   priority: 'CONSTITUTIONAL',
   isActive: true,
   updatedAt: new Date().toISOString(),
@@ -147,13 +428,17 @@ export const DEFAULT_SITE_OVERRIDES: GlobalSiteOverrides = {
   subheadlineOverride: '',
 };
 
-/* ── Founder Directive Get / Set / Reset ── */
 export function getFounderDirective(): FounderDirective {
   if (typeof window === 'undefined') return DEFAULT_FOUNDER_DIRECTIVE;
   try {
     const raw = localStorage.getItem(DIRECTIVE_STORAGE_KEY);
     if (!raw) return DEFAULT_FOUNDER_DIRECTIVE;
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed || parsed.id === 'genesis-directive-01') {
+      localStorage.setItem(DIRECTIVE_STORAGE_KEY, JSON.stringify(DEFAULT_FOUNDER_DIRECTIVE));
+      return DEFAULT_FOUNDER_DIRECTIVE;
+    }
+    return parsed;
   } catch {
     return DEFAULT_FOUNDER_DIRECTIVE;
   }
