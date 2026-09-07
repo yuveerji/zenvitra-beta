@@ -42,6 +42,8 @@ import {
   BookOpen,
   X
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { isFounder, isAdmin } from '@/lib/founderControl';
 import { useMun } from '@/context/MunContext';
 import { MotionType, PointType, MunSessionMode, StagePerformer } from '@/types/mun';
 import { LiveVotingModal } from './LiveVotingModal';
@@ -58,6 +60,7 @@ import { EditChamberDetailsModal } from './EditChamberDetailsModal';
 import { OfficialSourcesModal } from './OfficialSourcesModal';
 
 export function CommitteeChamber() {
+  const { user, profile } = useAuth();
   const {
     committees,
     activeCommitteeId,
@@ -224,33 +227,47 @@ export function CommitteeChamber() {
     setShowDraftResolutionModal(false);
   };
 
+  const cleanUsername = (profile?.username || (user as any)?.user_metadata?.username || user?.email?.split('@')[0] || '').toLowerCase().trim().replace(/^@/, '');
+  const userRole = (((profile as any)?.role) || ((user as any)?.role) || '').toLowerCase().trim();
+  const isSecTeam = Boolean(
+    cleanUsername === 'yuveer' ||
+    cleanUsername === 'founder' ||
+    cleanUsername.includes('founder') ||
+    isFounder(cleanUsername, profile?.role as any) ||
+    isAdmin(cleanUsername, profile?.role as any) ||
+    userRole === 'secretariat' ||
+    userRole === 'secretariat_chair' ||
+    userRole === 'organizer' ||
+    userRole === 'admin'
+  );
+
   return (
-    <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-white select-none space-y-6 pb-12">
+    <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-neutral-100 select-none space-y-6 pb-12">
       
       {/* ─────────────────────────────────────────────────────────────
           1. TOP DAIS BANNER & COMMITTEE SELECTOR
       ───────────────────────────────────────────────────────────── */}
-      <div className="relative p-5 sm:p-7 rounded-3xl bg-[#07080b]/95 border border-white/15 shadow-[0_20px_70px_rgba(0,0,0,0.85)] backdrop-blur-3xl flex flex-col lg:flex-row lg:items-center justify-between gap-6 overflow-hidden">
-        {/* Ambient Top Glow */}
-        <div className="absolute -top-16 left-1/4 w-96 h-32 bg-amber-500/10 blur-[90px] rounded-full pointer-events-none" />
+      <div className="relative p-5 sm:p-7 rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl backdrop-blur-3xl flex flex-col lg:flex-row lg:items-center justify-between gap-6 overflow-hidden">
+        {/* Subtle Ambient Light */}
+        <div className="absolute -top-16 left-1/4 w-96 h-32 bg-white/[0.02] blur-[90px] rounded-full pointer-events-none" />
 
         <div className="space-y-3 relative z-10">
           {/* Back & Breadcrumb & Format Tags */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Link
               href="/events"
-              className="p-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition flex items-center gap-1.5 text-xs font-mono"
+              className="p-1.5 px-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white transition flex items-center gap-1.5 text-xs font-mono"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Events</span>
             </Link>
-            <span className="text-neutral-600">&bull;</span>
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-bold">
+            <span className="text-neutral-700">&bull;</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono text-emerald-400 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              IN FORMAL SESSION &bull; #{sessionState.sessionNumber}
+              SESSION #{sessionState.sessionNumber} &bull; IN ORDER
             </div>
             {/* Format Badge */}
-            <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-mono text-cyan-300 font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono text-neutral-300 font-medium">
               {committee.type || 'PARLIAMENTARY'}
             </span>
           </div>
@@ -261,12 +278,12 @@ export function CommitteeChamber() {
               <select
                 value={activeCommitteeId}
                 onChange={(e) => setActiveCommitteeId(e.target.value)}
-                className="appearance-none max-w-full bg-[#0d1017] border border-white/20 hover:border-amber-400/50 text-white font-display font-bold text-base sm:text-2xl px-3.5 sm:px-4 py-2 pr-9 sm:pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
+                className="appearance-none max-w-full bg-[#111319] border border-white/15 hover:border-white/30 text-white font-display font-semibold text-base sm:text-2xl px-3.5 sm:px-4 py-2 pr-9 sm:pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
               >
                 {committees.map((c) => {
                   const isOther = c.id === 'custom-chamber-other' || c.type === 'OTHER';
                   const displayName = isOther
-                    ? `Other / Custom Committee / Event Name${c.name && c.name !== 'Universal Youth Assembly & Multidisciplinary Forum' ? `: ${c.name}` : ''}`
+                    ? `Other / Custom Forum${c.name && c.name !== 'Universal Youth Assembly & Multidisciplinary Forum' ? `: ${c.name}` : ''}`
                     : `${c.name} (${c.shortName})`;
                   return (
                     <option key={c.id} value={c.id} className="bg-black text-white font-sans text-sm">
@@ -280,13 +297,13 @@ export function CommitteeChamber() {
 
             {/* Delegate Passport Badge */}
             {userAcceptedInvite ? (
-              <div className="px-3.5 py-1.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold flex items-center gap-2 shadow-sm">
+              <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-200 font-mono text-xs font-medium flex items-center gap-2 shadow-sm">
                 <span>{userAcceptedInvite.flagEmoji}</span>
                 <span>{userAcceptedInvite.portfolio} (You)</span>
               </div>
             ) : (
-              <div className="px-3.5 py-1.5 rounded-2xl bg-white/5 border border-white/10 text-neutral-400 font-mono text-xs flex items-center gap-1.5">
-                <Globe2 className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-400 font-mono text-xs flex items-center gap-1.5">
+                <Globe2 className="w-3.5 h-3.5 text-neutral-400" />
                 <span>Observer Node</span>
               </div>
             )}
@@ -295,37 +312,52 @@ export function CommitteeChamber() {
             <button
               type="button"
               onClick={playGavelSound}
-              className={`p-2 px-3.5 rounded-2xl border font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
+              className={`p-2 px-3.5 rounded-2xl border font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
                 gavelActive
-                  ? 'bg-amber-400 text-black border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)] animate-bounce'
-                  : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-300 hover:border-amber-400/60'
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-neutral-300 hover:border-white/20'
               }`}
               title="Strike Dais Gavel (Call Floor to Order)"
             >
-              <Gavel className={`w-3.5 h-3.5 ${gavelActive ? 'rotate-[-20deg]' : ''} transition-transform`} />
-              <span>{gavelActive ? 'DECORUM CALLED!' : 'Dais Gavel'}</span>
+              {gavelActive ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                  </span>
+                  <Gavel className="w-3.5 h-3.5 text-emerald-300 rotate-[-15deg] transition-transform" />
+                  <span>In Order</span>
+                </div>
+              ) : (
+                <>
+                  <Gavel className="w-3.5 h-3.5 text-neutral-400 transition-transform" />
+                  <span>Dais Gavel</span>
+                </>
+              )}
             </button>
 
             {/* Customize Committee, Agenda & Portfolios Button */}
             <button
               type="button"
               onClick={() => setShowEditChamberModal(true)}
-              className="p-2 px-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+              className="p-2 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs font-medium transition flex items-center gap-1.5 cursor-pointer shadow-sm"
               title="Customize Committee Name, Set Agenda & Define Portfolios"
             >
-              <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+              <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
               <span>Edit Details</span>
             </button>
 
-            {/* Direct Connect to Secretariat Command Center */}
-            <Link
-              href="/mun/conference"
-              className="p-2 px-3 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-              title="Return to Secretariat Conference Command Center"
-            >
-              <Crown className="w-3.5 h-3.5 text-purple-400" />
-              <span>Secretariat</span>
-            </Link>
+            {/* Direct Connect to Secretariat Command Center (Restricted to verified Secretariat team only) */}
+            {isSecTeam && (
+              <Link
+                href="/mun/conference"
+                className="p-2 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                title="Return to Secretariat Conference Command Center"
+              >
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                <span>Secretariat</span>
+              </Link>
+            )}
           </div>
 
           {/* Quick Custom Committee / Event Name Placeholder & Save Preset Bar */}
@@ -333,18 +365,18 @@ export function CommitteeChamber() {
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-cyan-500/10 border border-amber-500/30 backdrop-blur-md space-y-2.5 max-w-3xl shadow-lg"
+              className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md space-y-2.5 max-w-3xl shadow-lg"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" />
+                  <span className="w-2 h-2 rounded-full bg-neutral-400" />
+                  <span className="text-[11px] font-mono font-medium uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
                     Custom Committee / Event Builder
                   </span>
                 </div>
                 {presetSavedNotice && (
-                  <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1 font-bold animate-pulse">
+                  <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1 font-medium">
                     <BookmarkCheck className="w-3.5 h-3.5" />
                     Preset Saved to Chamber!
                   </span>
@@ -357,14 +389,14 @@ export function CommitteeChamber() {
                   value={customCommitteeInput}
                   onChange={(e) => setCustomCommitteeInput(e.target.value)}
                   placeholder="Enter custom committee or event name (e.g. Oxford Union Debate, COP31 Youth Caucus)"
-                  className="sm:col-span-6 bg-black/70 border border-white/20 hover:border-amber-400/50 focus:border-amber-400 px-3.5 py-2 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none font-sans"
+                  className="sm:col-span-6 bg-black/60 border border-white/15 hover:border-white/30 focus:border-white/50 px-3.5 py-2 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none font-sans"
                 />
                 <input
                   type="text"
                   value={customAgendaInput}
                   onChange={(e) => setCustomAgendaInput(e.target.value)}
                   placeholder="Enter debate agenda / mandate (e.g. AI Governance & Climate Action)"
-                  className="sm:col-span-4 bg-black/70 border border-white/20 hover:border-amber-400/50 focus:border-amber-400 px-3.5 py-2 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none font-mono"
+                  className="sm:col-span-4 bg-black/60 border border-white/15 hover:border-white/30 focus:border-white/50 px-3.5 py-2 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none font-mono"
                 />
                 <button
                   type="button"
@@ -382,10 +414,10 @@ export function CommitteeChamber() {
                     setPresetSavedNotice(true);
                     setTimeout(() => setPresetSavedNotice(false), 3500);
                   }}
-                  className="sm:col-span-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-display font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shrink-0"
+                  className="sm:col-span-2 px-3.5 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-display font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shrink-0"
                   title="Save as reusable committee preset"
                 >
-                  <Bookmark className="w-3.5 h-3.5 fill-black/20" />
+                  <Bookmark className="w-3.5 h-3.5" />
                   <span>Save Preset</span>
                 </button>
               </div>
@@ -395,7 +427,7 @@ export function CommitteeChamber() {
           {/* Agenda Mandate */}
           <div className="flex items-start gap-2 max-w-3xl">
             <p className="text-xs sm:text-sm text-neutral-300 font-mono flex items-start gap-2">
-              <strong className="text-amber-400 uppercase shrink-0 font-bold">AGENDA:</strong>
+              <strong className="text-neutral-400 uppercase shrink-0 font-semibold">AGENDA:</strong>
               <span className="text-neutral-200 leading-snug">{committee.agenda}</span>
             </p>
           </div>
@@ -407,14 +439,14 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowRollCallModal(true)}
-            className="p-2.5 px-3.5 rounded-2xl bg-white/[0.04] hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/30 text-left transition cursor-pointer group flex flex-col justify-center"
+            className="p-2.5 px-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-left transition cursor-pointer group flex flex-col justify-center"
             title="Open Roll Call & Quorum Intelligence"
           >
-            <span className="text-[9px] font-mono text-neutral-400 group-hover:text-cyan-300 uppercase font-bold block">
-              QUORUM SUITE
+            <span className="text-[9px] font-mono text-neutral-400 uppercase font-semibold block">
+              QUORUM
             </span>
-            <div className="flex items-center gap-1 font-mono font-bold text-xs text-emerald-400">
-              <Users className="w-3.5 h-3.5 shrink-0" />
+            <div className="flex items-center gap-1 font-mono font-semibold text-xs text-neutral-200">
+              <Users className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
               <span className="truncate">{committee.presentCount}/{committee.totalDelegates} Present</span>
             </div>
           </button>
@@ -423,10 +455,10 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowCustomTimerModal(true)}
-            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/15 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-bold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
+            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
             title="Configure Custom Caucus Time (MM:SS)"
           >
-            <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+            <Clock className="w-4 h-4 text-neutral-400 shrink-0" />
             <span>Timer</span>
           </button>
 
@@ -434,10 +466,10 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowFullscreenView(true)}
-            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/15 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-bold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
-            title="Big-Screen Projector Mode (ESC to exit)"
+            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
+            title="Stage Projector Mode (ESC to exit)"
           >
-            <Maximize2 className="w-4 h-4 text-purple-400 shrink-0" />
+            <Maximize2 className="w-4 h-4 text-neutral-400 shrink-0" />
             <span>Stage</span>
           </button>
 
@@ -445,10 +477,10 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowDiplomaticChitsModal(true)}
-            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/15 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-bold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
+            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
             title="Diplomatic Chits & Page Messenger"
           >
-            <Mail className="w-4 h-4 text-cyan-400 shrink-0" />
+            <Mail className="w-4 h-4 text-neutral-400 shrink-0" />
             <span>Chits</span>
           </button>
 
@@ -456,10 +488,10 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowOfficialSourcesModal(true)}
-            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-amber-500/10 text-neutral-300 hover:text-amber-300 border border-white/10 hover:border-amber-500/30 font-mono text-xs font-bold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
-            title="Official Sources, News Dailies & CAD Reference Material"
+            className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
+            title="Official Sources & Reference Material"
           >
-            <BookOpen className="w-4 h-4 text-amber-400 shrink-0" />
+            <BookOpen className="w-4 h-4 text-neutral-400 shrink-0" />
             <span>Sources</span>
           </button>
 
@@ -467,7 +499,7 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowLiveVotingModal(true)}
-            className="px-3.5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-display font-bold text-xs shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            className="px-3.5 py-2.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-semibold text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
           >
             <Vote className="w-4 h-4 shrink-0" />
             <span>+ Vote</span>
@@ -477,9 +509,9 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowCreateEventModal(true)}
-            className="px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 hover:opacity-90 text-white font-display font-bold text-xs shadow-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            className="px-3.5 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white font-display font-semibold text-xs border border-neutral-700 transition-all cursor-pointer flex items-center justify-center gap-1.5"
           >
-            <Sparkles className="w-4 h-4 text-amber-200 shrink-0" />
+            <Sparkles className="w-4 h-4 text-neutral-300 shrink-0" />
             <span>+ Host</span>
           </button>
         </div>
@@ -489,24 +521,26 @@ export function CommitteeChamber() {
       <AnimatePresence>
         {gavelActive && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            initial={{ opacity: 0, y: -8, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/30 via-rose-500/20 to-amber-500/30 border-2 border-amber-400 shadow-[0_0_40px_rgba(245,158,11,0.35)] flex items-center justify-between gap-4 text-amber-200"
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shadow-lg flex items-center justify-between gap-4 text-emerald-300"
           >
             <div className="flex items-center gap-3">
-              <Gavel className="w-6 h-6 text-amber-300 animate-bounce" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                <Gavel className="w-4 h-4 text-emerald-300 rotate-[-15deg]" />
+              </div>
               <div>
-                <p className="font-display font-bold text-sm text-white tracking-wide">
-                  CHAMBER CALLED TO ORDER &bull; EXECUTIVE BOARD GAVEL STRUCK
+                <p className="font-display font-semibold text-sm text-white tracking-wide">
+                  CHAMBER IN ORDER &bull; EXECUTIVE BOARD GAVEL STRUCK
                 </p>
-                <p className="font-mono text-xs text-amber-300/90">
-                  All delegates are requested to maintain sovereign decorum and suspend informal cross-talk.
+                <p className="font-mono text-xs text-neutral-300">
+                  Floor is called to order. Delegates are requested to observe sovereign parliamentary decorum.
                 </p>
               </div>
             </div>
-            <span className="px-3 py-1 rounded-xl bg-amber-400 text-black font-mono font-bold text-xs shrink-0">
-              FORMAL DECORUM
+            <span className="px-3 py-1 rounded-xl bg-emerald-400 text-black font-mono font-semibold text-xs shrink-0">
+              IN ORDER
             </span>
           </motion.div>
         )}
@@ -515,29 +549,29 @@ export function CommitteeChamber() {
       {/* ── AMBIENT LIVE VOTE ACTIVE CALLOUT BANNER ── */}
       {activeVotingSession && activeVotingSession.status === 'active' && activeTab !== 'voting' && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
+          initial={{ opacity: 0, scale: 0.99 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setActiveTab('voting')}
-          className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20 border-2 border-amber-400/50 shadow-[0_0_30px_rgba(245,158,11,0.25)] flex items-center justify-between gap-4 cursor-pointer hover:border-amber-300 transition group"
+          className="p-4 rounded-2xl bg-white/[0.04] border border-white/15 shadow-md flex items-center justify-between gap-4 cursor-pointer hover:border-white/30 transition group"
         >
           <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-amber-300 uppercase">
-                  🔴 LIVE VOTE IN SESSION
+                <span className="font-mono text-xs font-semibold text-emerald-400 uppercase">
+                  LIVE VOTE IN SESSION
                 </span>
-                <span className="text-xs text-neutral-300">&bull;</span>
-                <span className="text-xs text-white font-bold">{activeVotingSession.title}</span>
+                <span className="text-xs text-neutral-500">&bull;</span>
+                <span className="text-xs text-white font-medium">{activeVotingSession.title}</span>
               </div>
               <p className="text-[11px] font-mono text-neutral-400">
-                Floor ballot is currently open for delegates and attendees. Click to cast your vote.
+                Floor ballot is currently open for delegates. Click to cast your vote.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 font-display font-bold text-xs text-amber-300 group-hover:translate-x-1 transition">
-            <span>Cast Ballot Now</span>
+          <div className="flex items-center gap-1.5 shrink-0 font-display font-semibold text-xs text-neutral-200 group-hover:translate-x-0.5 transition">
+            <span>Cast Ballot</span>
             <ArrowRight className="w-4 h-4" />
           </div>
         </motion.div>
@@ -549,17 +583,16 @@ export function CommitteeChamber() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column: Live Synchronous Timer (5 cols) */}
-        <div className="lg:col-span-5 rounded-3xl bg-[#080a10] border border-white/15 p-6 sm:p-7 shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between space-y-6 relative overflow-hidden group">
-          {/* Ambient Glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full pointer-events-none group-hover:bg-amber-500/15 transition-all" />
-          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-cyan-500/5 blur-[80px] rounded-full pointer-events-none" />
+        <div className="lg:col-span-5 rounded-3xl bg-[#0a0c10] border border-white/10 p-6 sm:p-7 shadow-xl flex flex-col justify-between space-y-6 relative overflow-hidden group">
+          {/* Ambient Subtle Glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/[0.02] blur-[90px] rounded-full pointer-events-none" />
 
           <div className="space-y-3 relative z-10">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold tracking-widest text-amber-300 uppercase px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30">
+              <span className="text-[10px] font-mono font-medium tracking-widest text-neutral-300 uppercase px-3 py-1 rounded-full bg-white/[0.04] border border-white/10">
                 {sessionState.sessionMode.replace('_', ' ')}
               </span>
-              <span className="text-xs font-mono text-neutral-400 truncate max-w-[200px] bg-white/5 px-2.5 py-1 rounded-xl border border-white/10">
+              <span className="text-xs font-mono text-neutral-400 truncate max-w-[200px] bg-white/[0.03] px-2.5 py-1 rounded-xl border border-white/[0.08]">
                 {sessionState.timer.label}
               </span>
             </div>
@@ -568,14 +601,14 @@ export function CommitteeChamber() {
             <div className="py-5 flex flex-col items-center justify-center relative">
               <div className="relative flex items-center justify-center">
                 {/* SVG Progress Ring */}
-                <svg className="w-60 h-60 transform -rotate-90 filter drop-shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                <svg className="w-60 h-60 transform -rotate-90">
                   <circle
                     cx="120"
                     cy="120"
                     r="104"
                     stroke="currentColor"
-                    strokeWidth="8"
-                    className="text-white/10"
+                    strokeWidth="6"
+                    className="text-white/[0.06]"
                     fill="transparent"
                   />
                   <circle
@@ -583,23 +616,23 @@ export function CommitteeChamber() {
                     cy="120"
                     r="104"
                     stroke="currentColor"
-                    strokeWidth="8"
+                    strokeWidth="6"
                     strokeDasharray={2 * Math.PI * 104}
                     strokeDashoffset={2 * Math.PI * 104 * (1 - timerPercentage / 100)}
                     strokeLinecap="round"
-                    className="text-amber-400 transition-all duration-1000 ease-linear"
+                    className="text-neutral-200 transition-all duration-1000 ease-linear drop-shadow-[0_0_10px_rgba(255,255,255,0.15)]"
                     fill="transparent"
                   />
                 </svg>
 
                 {/* Digital Clock Display */}
                 <div className="absolute flex flex-col items-center text-center">
-                  <span className="font-mono font-bold text-5xl sm:text-6xl text-white tracking-tight drop-shadow-md">
+                  <span className="font-mono font-bold text-5xl sm:text-6xl text-white tracking-tight">
                     {formatTime(sessionState.timer.remainingSeconds)}
                   </span>
-                  <div className="flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
                     <span className={`w-2 h-2 rounded-full ${sessionState.timer.isRunning ? 'bg-emerald-400 animate-ping' : 'bg-neutral-500'}`} />
-                    <span className="text-[10px] font-mono text-neutral-300 uppercase tracking-wider font-semibold">
+                    <span className="text-[10px] font-mono text-neutral-300 uppercase tracking-wider font-medium">
                       {sessionState.timer.isRunning ? 'Clock Running' : 'Clock Paused'}
                     </span>
                   </div>
@@ -698,18 +731,18 @@ export function CommitteeChamber() {
                 <button
                   type="button"
                   onClick={() => setShowCustomTimerModal(true)}
-                  className="py-2.5 px-3 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  className="py-2.5 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white border border-white/10 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
-                  <Clock className="w-3.5 h-3.5" />
+                  <Clock className="w-3.5 h-3.5 text-neutral-400" />
                   <span>+ Custom MM:SS</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowFullscreenView(true)}
-                  className="py-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/15 text-neutral-200 hover:text-white border border-white/10 font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  className="py-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/15 text-neutral-200 hover:text-white border border-white/10 font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
-                  <Maximize2 className="w-3.5 h-3.5 text-purple-400" />
+                  <Maximize2 className="w-3.5 h-3.5 text-neutral-400" />
                   <span>Projector Stage</span>
                 </button>
               </div>
@@ -721,18 +754,16 @@ export function CommitteeChamber() {
         <div className="lg:col-span-7 space-y-6 flex flex-col justify-between">
           
           {/* Current Running Motion Spotlight */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#080a10] border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.8)] space-y-4 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 blur-[80px] rounded-full pointer-events-none" />
-
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 relative z-10">
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl space-y-4 relative overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] relative z-10">
               <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
-                <span className="text-xs font-mono font-bold tracking-widest text-cyan-400 uppercase">
+                <span className="w-2 h-2 rounded-full bg-neutral-400" />
+                <span className="text-xs font-mono font-medium tracking-widest text-neutral-400 uppercase">
                   ACTIVE FLOOR MOTION
                 </span>
               </div>
               {sessionState.currentMotion && (
-                <span className="text-xs font-mono text-neutral-400 bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10">
+                <span className="text-xs font-mono text-neutral-400 bg-white/[0.04] px-2.5 py-0.5 rounded-lg border border-white/[0.08]">
                   Total: {sessionState.currentMotion.totalMinutes}m &bull; Speaker: {sessionState.currentMotion.individualSpeakerSeconds}s
                 </span>
               )}
@@ -740,15 +771,15 @@ export function CommitteeChamber() {
 
             {sessionState.currentMotion ? (
               <div className="space-y-3 relative z-10">
-                <h3 className="font-display font-bold text-lg sm:text-xl text-white leading-snug">
+                <h3 className="font-display font-semibold text-lg sm:text-xl text-white leading-snug">
                   &ldquo;{sessionState.currentMotion.topic}&rdquo;
                 </h3>
                 <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-neutral-400">
-                  <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-2 bg-white/[0.04] px-3 py-1 rounded-xl border border-white/[0.08]">
                     <span className="text-lg">{sessionState.currentMotion.proposedBy.flagEmoji}</span>
-                    <span className="text-white font-semibold">{sessionState.currentMotion.proposedBy.portfolio}</span>
+                    <span className="text-white font-medium">{sessionState.currentMotion.proposedBy.portfolio}</span>
                   </div>
-                  <span className="text-emerald-400 font-semibold">&bull; Passed with {sessionState.currentMotion.votesFor} For votes</span>
+                  <span className="text-emerald-400 font-medium">&bull; Passed with {sessionState.currentMotion.votesFor} For votes</span>
                 </div>
               </div>
             ) : (
@@ -757,9 +788,9 @@ export function CommitteeChamber() {
                 <button
                   type="button"
                   onClick={() => setShowRaiseMotionModal(true)}
-                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold transition inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-neutral-200 border border-white/10 text-xs font-mono font-medium transition inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 text-neutral-400" />
                   <span>Raise Motion to Floor</span>
                 </button>
               </div>
@@ -767,16 +798,17 @@ export function CommitteeChamber() {
           </div>
 
           {/* Current Active Speaker Spotlight */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-amber-500/[0.1] via-[#0b0e17] to-[#07080b] border border-amber-500/30 shadow-[0_20px_60px_rgba(245,158,11,0.12)] space-y-5 relative overflow-hidden">
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl space-y-5 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold tracking-widest text-amber-300 uppercase px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30">
+              <span className="text-[10px] font-mono font-medium tracking-widest text-emerald-400 uppercase px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 CURRENT SPEAKER HOLDING THE FLOOR
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={advanceSpeaker}
-                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold transition cursor-pointer shadow-md active:scale-95 flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-semibold transition cursor-pointer shadow-sm active:scale-95 flex items-center gap-1.5"
                 >
                   <span>Advance Speaker</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -787,15 +819,15 @@ export function CommitteeChamber() {
             {sessionState.currentSpeaker ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/15 flex items-center justify-center text-4xl sm:text-5xl shrink-0 shadow-inner">
+                  <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-4xl sm:text-5xl shrink-0 shadow-inner">
                     {sessionState.currentSpeaker.flagEmoji}
                   </div>
                   <div className="min-w-0">
-                    <h2 className="font-display font-bold text-xl sm:text-2xl text-white truncate">
+                    <h2 className="font-display font-semibold text-xl sm:text-2xl text-white truncate">
                       {sessionState.currentSpeaker.portfolio}
                     </h2>
-                    <p className="font-mono text-xs text-neutral-300 mt-0.5">
-                      Accredited Delegate: <strong className="text-amber-300">{sessionState.currentSpeaker.delegateName}</strong>
+                    <p className="font-mono text-xs text-neutral-400 mt-0.5">
+                      Accredited Delegate: <strong className="text-neutral-200 font-medium">{sessionState.currentSpeaker.delegateName}</strong>
                     </p>
                   </div>
                 </div>
@@ -846,20 +878,17 @@ export function CommitteeChamber() {
       {/* ─────────────────────────────────────────────────────────────
           3. COMMITTEE OS TABS: MOTIONS QUEUE | SPEAKERS | POINTS | RESOLUTIONS
       ───────────────────────────────────────────────────────────── */}
-      <div className="rounded-3xl bg-[#080a10] border border-white/15 shadow-[0_20px_70px_rgba(0,0,0,0.85)] p-6 sm:p-8 space-y-6 relative overflow-hidden">
-        {/* Ambient background blur */}
-        <div className="absolute top-0 left-1/3 w-96 h-40 bg-purple-500/5 blur-[100px] rounded-full pointer-events-none" />
-
+      <div className="rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
         {/* Navigation Switcher */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08] relative z-10">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar w-full sm:w-auto max-w-full">
             <button
               type="button"
               onClick={() => setActiveTab('motions')}
-              className={`px-4 py-2.5 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                 activeTab === 'motions'
-                  ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]'
-                  : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -869,25 +898,25 @@ export function CommitteeChamber() {
             <button
               type="button"
               onClick={() => setActiveTab('voting')}
-              className={`px-4 py-2.5 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                 activeTab === 'voting'
-                  ? 'bg-amber-400 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]'
+                  ? 'bg-white text-black shadow-sm'
                   : activeVotingSession && activeVotingSession.status === 'active'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
-                  : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               <Vote className="w-3.5 h-3.5" />
-              <span>Live Voting {activeVotingSession && activeVotingSession.status === 'active' && '🔴'}</span>
+              <span>Live Voting {activeVotingSession && activeVotingSession.status === 'active' && '•'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('open_mic')}
-              className={`px-4 py-2.5 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                 activeTab === 'open_mic'
-                  ? 'bg-purple-400 text-black shadow-[0_0_20px_rgba(168,85,247,0.4)]'
-                  : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               <Mic className="w-3.5 h-3.5" />
@@ -897,10 +926,10 @@ export function CommitteeChamber() {
             <button
               type="button"
               onClick={() => setActiveTab('speakers')}
-              className={`px-4 py-2.5 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                 activeTab === 'speakers'
-                  ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]'
-                  : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -910,10 +939,10 @@ export function CommitteeChamber() {
             <button
               type="button"
               onClick={() => setActiveTab('resolutions')}
-              className={`px-4 py-2.5 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                 activeTab === 'resolutions'
-                  ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]'
-                  : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -923,10 +952,10 @@ export function CommitteeChamber() {
             <button
               type="button"
               onClick={() => setActiveTab('points')}
-              className={`px-4 py-2.5 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                 activeTab === 'points'
-                  ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]'
-                  : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -939,7 +968,7 @@ export function CommitteeChamber() {
             <button
               type="button"
               onClick={() => setShowRaiseMotionModal(true)}
-              className="px-4 py-2.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-md active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-display font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-sm active:scale-95"
             >
               <Plus className="w-4 h-4 text-black" />
               <span>Raise New Motion</span>
@@ -950,7 +979,7 @@ export function CommitteeChamber() {
             <button
               type="button"
               onClick={() => setShowLiveVotingModal(true)}
-              className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-display font-bold text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer shrink-0 active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-display font-semibold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer shrink-0 active:scale-95"
             >
               <Vote className="w-4 h-4 text-black" />
               <span>Open Live Ballot</span>

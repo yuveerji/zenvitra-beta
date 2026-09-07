@@ -11,10 +11,10 @@ import { Navbar } from '@/components/layout/Navbar';
 
 export default function ImpactPage() {
   const grantDeployments = [
-    { title: 'Rural School Solar Grids', location: 'Rajasthan & Odisha', allocated: '₹14,50,000', metric: '6 Schools Powered', icon: Sun },
-    { title: 'Youth Media Fellowships', location: 'Pan-India & Global', allocated: '₹8,20,000', metric: '42 Student Reporters', icon: BookOpen },
-    { title: 'Model UN & Summit Passes', location: 'Global Delegations', allocated: '₹6,40,000', metric: '280 Passes Sponsored', icon: Users },
-    { title: 'Civic Innovation Grants', location: 'Grassroots Labs', allocated: '₹11,00,000', metric: '18 Youth Projects', icon: HeartHandshake },
+    { title: 'Rural School Digital & Solar Labs', location: 'Rajasthan & Odisha Focus', status: 'Cycle 1 Scheduled', metric: 'Next 4-Month Cycle Allocation', icon: Sun },
+    { title: 'Youth Media & Open Press Fellowships', location: 'Pan-India & Global Cohort', status: 'Applications Open', metric: 'Direct Sovereign Stipends', icon: BookOpen },
+    { title: 'Model UN & Global Summit Scholarships', location: 'Verified Need-Based Candidates', status: 'Escrow Allocated', metric: '100% Fee Waivers & Travel Aid', icon: Users },
+    { title: 'Civic Innovation & Hardware Grants', location: 'Open Grassroots Prototypes', status: 'Review in Progress', metric: 'Milestone Disbursals', icon: HeartHandshake },
   ];
 
   return (
