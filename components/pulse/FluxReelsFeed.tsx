@@ -82,7 +82,7 @@ export function FluxReelsFeed() {
     }
 
     if (reelCategory === 'noise') {
-      // Algorithmic Noise: Pseudo-random entropy shuffle over the full reel library
+      // Serendipity / Wildcard Discovery: Pseudo-random entropy shuffle over the full reel library
       return [...fluxVideos].sort((a, b) => {
         const hashA = (a.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) * 17) % 100;
         const hashB = (b.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) * 17) % 100;
@@ -267,7 +267,7 @@ export function FluxReelsFeed() {
       <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-zinc-400">
         <span className="text-cyan-400 font-bold">{currentIndex + 1} / {filteredFluxVideos.length}</span>
         <span className="text-zinc-600">•</span>
-        <span>{reelCategory === 'noise' ? '⚡ Algorithmic Noise active' : 'Scroll or swipe to flip reel'}</span>
+        <span>{reelCategory === 'noise' ? '⚡ Wildcard Discovery active' : 'Scroll or swipe to flip reel'}</span>
       </div>
 
       {/* Toast Notification */}
@@ -348,7 +348,7 @@ export function FluxReelsFeed() {
               <span>{reelCategory === 'politics' ? '🏛️ Politics: Active' : '🏛️ Politics'}</span>
             </button>
 
-            {/* Algorithmic Noise Mode Pill */}
+            {/* Serendipity / Wildcard Discovery Mode Pill */}
             <button
               onClick={() => {
                 setCurrentIndex(0);
@@ -359,10 +359,10 @@ export function FluxReelsFeed() {
                   ? 'bg-fuchsia-500/30 border-fuchsia-400 text-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.5)]'
                   : 'bg-black/50 border-white/10 text-zinc-300 hover:text-white'
               }`}
-              title="Toggle Algorithmic Noise (Entropy-driven exploration)"
+              title="Toggle Wildcard Discovery (Entropy-driven exploration)"
             >
               <Shuffle className={`w-3 h-3 ${reelCategory === 'noise' ? 'text-fuchsia-400 animate-spin' : 'text-zinc-400'}`} style={{ animationDuration: '3s' }} />
-              <span>{reelCategory === 'noise' ? '⚡ Noise: Active' : '⚡ Noise'}</span>
+              <span>{reelCategory === 'noise' ? '⚡ Wildcard: Active' : '⚡ Wildcard'}</span>
             </button>
 
             {/* Quick-Access 5-Minute Sparks Drawer Toggle */}

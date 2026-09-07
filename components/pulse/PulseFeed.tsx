@@ -139,7 +139,7 @@ export function PulseFeed() {
                 { id: 'following', label: 'Following', icon: Users },
                 { id: 'latest', label: 'Latest', icon: Clock },
                 { id: 'trending', label: 'Trending', icon: Flame },
-                { id: 'noise', label: '⚡ Algorithmic Noise', icon: Shuffle },
+                { id: 'noise', label: '⚡ Wildcard / Serendipity', icon: Shuffle },
                 { id: 'politics', label: 'Politics & Policy', icon: Landmark },
                 { id: 'media', label: 'Media Wire', icon: ImageIcon },
                 { id: 'liked', label: 'Applauded', icon: Heart },
@@ -204,7 +204,7 @@ export function PulseFeed() {
                 <div className="flex items-center gap-2">
                   <Shuffle className="w-3.5 h-3.5 text-fuchsia-400 animate-spin" style={{ animationDuration: '4s' }} />
                   <span>
-                    <strong>Algorithmic Noise Mode:</strong> Echo-chamber breaker active &bull; Entropy shuffled exploration
+                    <strong>Wildcard Discovery Mode:</strong> Echo-chamber breaker active &bull; Entropy-shuffled exploration
                   </span>
                 </div>
                 <span className="hidden sm:inline-block text-fuchsia-400/80 text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20">

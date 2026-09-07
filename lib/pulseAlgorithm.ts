@@ -147,7 +147,7 @@ export function rankPulseFeed({
       .sort((a, b) => (b.rankScore || 0) - (a.rankScore || 0));
   }
 
-  // ─── TAB: ALGORITHMIC NOISE (Entropy & Wildcard Exploration) ───
+  // ─── TAB: SERENDIPITY & WILDCARD (Entropy-Driven Discovery) ───
   // Deliberately breaks echo chambers and popularity bias:
   // Randomizes feed order with an entropy seed, pulling grassroots dispatches,
   // uncategorized viewpoints, and low-visibility gems to the top.

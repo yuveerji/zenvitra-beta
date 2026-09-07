@@ -77,7 +77,7 @@ export default function ManifestoPage() {
             <div className="lg:col-span-4 space-y-4 font-light">
               <div>
                 Most platforms reward outrage, polarization, and{' '}
-                <InteractiveWordHover termKey="zero-surveillance">
+                <InteractiveWordHover termKey="surveillance-algorithms">
                   <span className="underline decoration-purple-400/50 underline-offset-4 hover:decoration-purple-300 cursor-pointer transition">
                     algorithmic noise
                   </span>

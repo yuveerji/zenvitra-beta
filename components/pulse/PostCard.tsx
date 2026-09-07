@@ -154,7 +154,7 @@ export function PostCard({ post }: PostCardProps) {
                 )}
                 {(post as any).feedReason === 'noise' && (
                   <span className="px-2 py-0.5 rounded-full bg-fuchsia-500/15 border border-fuchsia-500/30 text-[9px] font-mono text-fuchsia-300 font-bold flex items-center gap-1 shadow-[0_0_8px_rgba(217,70,239,0.3)]">
-                    ⚡ Algorithmic Noise
+                    ⚡ Wildcard Discovery
                   </span>
                 )}
               </div>
