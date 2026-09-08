@@ -1,14 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import {
-  ArrowLeft,
-  ArrowRight,
   Target,
-  ShieldCheck,
-  CheckCircle2,
-  BookOpen,
   Scale,
   Award,
   Zap
@@ -60,7 +54,7 @@ export default function MissionPage() {
       {/* Main Body */}
       <main className="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-16 space-y-20 flex-1">
         {/* Title */}
-        <div className="text-center space-y-6 max-w-3xl mx-auto">
+        <div className="text-center space-y-6 max-w-3xl mx-auto relative z-20">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-400/30 bg-amber-400/[0.03] font-mono text-[10px] text-amber-300 uppercase tracking-widest">
             <Target className="w-3 h-3" />
             <span>OPERATIONAL CHARTER</span>
@@ -123,11 +117,7 @@ export default function MissionPage() {
                   </div>
                   <div className="space-y-2">
                     <h3 className="font-display font-medium text-base text-white">
-                      <InteractiveWordHover termKey={obj.termKey}>
-                        <span className="underline decoration-white/30 underline-offset-4 hover:decoration-white cursor-pointer transition">
-                          {obj.title}
-                        </span>
-                      </InteractiveWordHover>
+                      {obj.title}
                     </h3>
                     <p className="text-xs text-neutral-400 font-light leading-relaxed font-sans">
                       {obj.desc}
