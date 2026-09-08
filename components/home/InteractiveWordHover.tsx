@@ -68,7 +68,7 @@ interface InteractiveWordHoverProps {
   children: React.ReactNode;
   className?: string;
   align?: 'left' | 'center' | 'right';
-  side?: 'top' | 'bottom';
+  side?: 'top' | 'bottom' | 'auto';
 }
 
 export function InteractiveWordHover({
@@ -76,11 +76,15 @@ export function InteractiveWordHover({
   children,
   className = '',
   align = 'center',
-  side = 'top',
+  side = 'bottom',
 }: InteractiveWordHoverProps) {
   const context = useContext(InteractiveWordContext);
   const [fallbackActiveKey, setFallbackActiveKey] = useState<string | null>(globalActiveKey);
   const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const triggerRef = useRef<HTMLSpanElement>(null);
+
+  const [effectiveSide, setEffectiveSide] = useState<'top' | 'bottom'>('bottom');
+  const [effectiveAlign, setEffectiveAlign] = useState<'left' | 'center' | 'right'>(align);
 
   useEffect(() => {
     if (!context) {
@@ -97,6 +101,49 @@ export function InteractiveWordHover({
 
   const isOpen = activeKey === termKey;
   const data = GLOSSARY_TERMS[termKey];
+
+  // Dynamic collision detection to ensure popover never flies up into the sky or off-screen
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const popoverEstimatedHeight = 360;
+
+      // Vertical placement
+      if (side === 'top') {
+        // Only stay on top if there is plenty of room above (> 420px)
+        if (spaceAbove >= popoverEstimatedHeight + 80) {
+          setEffectiveSide('top');
+        } else {
+          setEffectiveSide('bottom');
+        }
+      } else if (side === 'bottom') {
+        // Stay bottom unless no room below AND lots of room above
+        if (spaceBelow < popoverEstimatedHeight + 20 && spaceAbove >= popoverEstimatedHeight + 80) {
+          setEffectiveSide('top');
+        } else {
+          setEffectiveSide('bottom');
+        }
+      } else {
+        // Auto: Prefer bottom (natural reading direction), only use top if constrained below
+        if (spaceBelow < popoverEstimatedHeight + 20 && spaceAbove >= popoverEstimatedHeight + 80) {
+          setEffectiveSide('top');
+        } else {
+          setEffectiveSide('bottom');
+        }
+      }
+
+      // Horizontal edge protection: avoid overflowing screen edges on desktop
+      if (rect.left < 220) {
+        setEffectiveAlign('left');
+      } else if (window.innerWidth - rect.right < 220) {
+        setEffectiveAlign('right');
+      } else {
+        setEffectiveAlign(align);
+      }
+    }
+  }, [isOpen, side, align]);
 
   const handleMouseEnter = () => {
     if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
@@ -132,7 +179,7 @@ export function InteractiveWordHover({
   }
 
   const getAlignmentClasses = () => {
-    switch (align) {
+    switch (effectiveAlign) {
       case 'left':
         return 'left-0';
       case 'right':
@@ -144,21 +191,22 @@ export function InteractiveWordHover({
   };
 
   const getArrowClasses = () => {
-    switch (align) {
+    switch (effectiveAlign) {
       case 'left':
-        return 'left-8';
+        return 'left-6 sm:left-8';
       case 'right':
-        return 'right-8';
+        return 'right-6 sm:right-8';
       case 'center':
       default:
         return 'left-1/2 -translate-x-1/2';
     }
   };
 
-  const isBottom = side === 'bottom';
+  const isBottom = effectiveSide === 'bottom';
 
   return (
     <span
+      ref={triggerRef}
       data-interactive-word={termKey}
       className="relative inline-block z-30"
       onMouseEnter={handleMouseEnter}

@@ -67,25 +67,25 @@ export default function MissionPage() {
 
           <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed">
             To construct, defend, and democratize a{' '}
-            <InteractiveWordHover termKey="sovereignty">
+            <InteractiveWordHover termKey="sovereignty" side="bottom">
               <span className="text-white font-medium underline decoration-amber-400/50 underline-offset-4 hover:decoration-amber-300 cursor-pointer transition">
                 sovereign digital and civic ecosystem
               </span>
             </InteractiveWordHover>{' '}
             where{' '}
-            <InteractiveWordHover termKey="youth">
+            <InteractiveWordHover termKey="youth" side="bottom">
               <span className="text-white font-medium underline decoration-cyan-400/50 underline-offset-4 hover:decoration-cyan-300 cursor-pointer transition">
                 youth transform critical thinking
               </span>
             </InteractiveWordHover>{' '}
             with{' '}
-            <InteractiveWordHover termKey="sources-and-senses">
+            <InteractiveWordHover termKey="sources-and-senses" side="bottom">
               <span className="text-white font-medium underline decoration-emerald-400/50 underline-offset-4 hover:decoration-emerald-300 cursor-pointer transition">
                 senses and verifiable sources
               </span>
             </InteractiveWordHover>{' '}
             into{' '}
-            <InteractiveWordHover termKey="meaningful-change">
+            <InteractiveWordHover termKey="meaningful-change" side="bottom">
               <span className="text-white font-medium underline decoration-purple-400/50 underline-offset-4 hover:decoration-purple-300 cursor-pointer transition">
                 meaningful societal reform
               </span>

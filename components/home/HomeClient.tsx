@@ -287,37 +287,37 @@ export default function HomeClient({ session }: HomeClientProps) {
               <InteractiveWordGroup>
                 <div className="text-sm sm:text-base text-neutral-400 font-light max-w-lg leading-relaxed">
                   A sovereign platform for{' '}
-                  <InteractiveWordHover termKey="youth" side="top" align="left">
+                  <InteractiveWordHover termKey="youth" side="bottom" align="left">
                     <span className="text-white font-medium underline decoration-amber-400/70 decoration-2 underline-offset-4 hover:decoration-amber-300 hover:text-amber-200 transition cursor-pointer">
                       Youth
                     </span>
                   </InteractiveWordHover>{' '}
                   —{' '}
-                  <InteractiveWordHover termKey="leaders" side="top" align="left">
+                  <InteractiveWordHover termKey="leaders" side="bottom" align="left">
                     <span className="text-white font-medium underline decoration-amber-400/70 decoration-2 underline-offset-4 hover:decoration-amber-300 hover:text-amber-200 transition cursor-pointer">
                       thinkers
                     </span>
                   </InteractiveWordHover>
                   ,{' '}
-                  <InteractiveWordHover termKey="creators" side="top" align="left">
+                  <InteractiveWordHover termKey="creators" side="bottom" align="left">
                     <span className="text-white font-medium underline decoration-cyan-400/70 decoration-2 underline-offset-4 hover:decoration-cyan-300 hover:text-cyan-200 transition cursor-pointer">
                       writers
                     </span>
                   </InteractiveWordHover>{' '}
                   &amp;{' '}
-                  <InteractiveWordHover termKey="innovators" side="top" align="left">
+                  <InteractiveWordHover termKey="innovators" side="bottom" align="left">
                     <span className="text-white font-medium underline decoration-emerald-400/70 decoration-2 underline-offset-4 hover:decoration-emerald-300 hover:text-emerald-200 transition cursor-pointer">
                       creators
                     </span>
                   </InteractiveWordHover>{' '}
                   with{' '}
-                  <InteractiveWordHover termKey="sources-and-senses" side="top" align="left">
+                  <InteractiveWordHover termKey="sources-and-senses" side="bottom" align="left">
                     <span className="text-white font-medium underline decoration-cyan-400/70 decoration-2 underline-offset-4 hover:decoration-cyan-300 hover:text-cyan-200 transition cursor-pointer">
                       senses and sources
                     </span>
                   </InteractiveWordHover>{' '}
                   to write, speak, connect, and drive{' '}
-                  <InteractiveWordHover termKey="escrow" side="top" align="left">
+                  <InteractiveWordHover termKey="escrow" side="bottom" align="left">
                     <span className="text-white font-medium underline decoration-emerald-400/70 decoration-2 underline-offset-4 hover:decoration-emerald-300 hover:text-emerald-200 transition cursor-pointer">
                       real-world impact
                     </span>
