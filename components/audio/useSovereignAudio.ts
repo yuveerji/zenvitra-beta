@@ -23,6 +23,18 @@ export function useSovereignAudio(): SovereignAudioState {
   const [isMuted, setIsMuted] = useState(true);
   const [frequencyData, setFrequencyData] = useState<Uint8Array>(new Uint8Array(16));
 
+  const isMutedRef = useRef(true);
+  const soundscapeRef = useRef<AmbientSoundscape>('OFF');
+
+  // Keep refs immediately synchronized
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
+  useEffect(() => {
+    soundscapeRef.current = soundscape;
+  }, [soundscape]);
+
   const audioCtxRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -174,7 +186,19 @@ export function useSovereignAudio(): SovereignAudioState {
       else if (prev === 'DEEP_VOID') next = 'QUANTUM_PULSE';
       else next = 'OFF';
 
-      setIsMuted(next === 'OFF');
+      const nextMuted = next === 'OFF';
+      isMutedRef.current = nextMuted;
+      soundscapeRef.current = next;
+      setIsMuted(nextMuted);
+
+      if (masterGainRef.current && ctx) {
+        if (nextMuted) {
+          masterGainRef.current.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.05);
+        } else {
+          masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.05);
+        }
+      }
+
       startDrone(next);
       return next;
     });
@@ -186,29 +210,42 @@ export function useSovereignAudio(): SovereignAudioState {
 
     setIsMuted((prevMuted) => {
       const nextMuted = !prevMuted;
+      isMutedRef.current = nextMuted;
+
       if (nextMuted) {
         if (masterGainRef.current && ctx) {
-          masterGainRef.current.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.1);
+          masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, ctx.currentTime);
+          masterGainRef.current.gain.setTargetAtTime(0.00001, ctx.currentTime, 0.02);
         }
       } else {
         if (masterGainRef.current && ctx) {
-          masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.1);
+          masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, ctx.currentTime);
+          masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.05);
         }
-        if (soundscape === 'OFF') {
+        if (soundscapeRef.current === 'OFF') {
+          soundscapeRef.current = 'TICKING';
           setSoundscape('TICKING');
         }
       }
       return nextMuted;
     });
-  }, [initAudio, soundscape]);
+  }, [initAudio]);
 
   const setExplicitSoundscape = useCallback(
     (mode: AmbientSoundscape) => {
       const ctx = initAudio();
       if (ctx && ctx.state === 'suspended') ctx.resume();
 
+      const muted = mode === 'OFF';
+      isMutedRef.current = muted;
+      soundscapeRef.current = mode;
       setSoundscape(mode);
-      setIsMuted(mode === 'OFF');
+      setIsMuted(muted);
+
+      if (masterGainRef.current && ctx) {
+        masterGainRef.current.gain.setTargetAtTime(muted ? 0.00001 : 1.0, ctx.currentTime, 0.05);
+      }
+
       startDrone(mode);
     },
     [initAudio, startDrone]
@@ -216,8 +253,11 @@ export function useSovereignAudio(): SovereignAudioState {
 
   // User-provided ticking sound player with synthesized fallback
   const playTickSound = useCallback(() => {
+    // Instant synchronous check against current ref states
+    if (isMutedRef.current || soundscapeRef.current === 'OFF') return;
+
     const ctx = initAudio();
-    if (!ctx || isMuted || soundscape === 'OFF') return;
+    if (!ctx || !masterGainRef.current) return;
 
     if (tickAudioBufferRef.current) {
       try {
@@ -228,11 +268,8 @@ export function useSovereignAudio(): SovereignAudioState {
         gainNode.gain.setValueAtTime(0.75, ctx.currentTime);
 
         source.connect(gainNode);
-        if (analyserRef.current) {
-          gainNode.connect(analyserRef.current);
-        } else {
-          gainNode.connect(ctx.destination);
-        }
+        // Connect to masterGainRef so muting instantly silences this sound
+        gainNode.connect(masterGainRef.current);
 
         source.start(ctx.currentTime);
       } catch {
@@ -251,11 +288,7 @@ export function useSovereignAudio(): SovereignAudioState {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
 
         osc.connect(gain);
-        if (analyserRef.current) {
-          gain.connect(analyserRef.current);
-        } else {
-          gain.connect(ctx.destination);
-        }
+        gain.connect(masterGainRef.current);
 
         osc.start(ctx.currentTime);
         osc.stop(ctx.currentTime + 0.06);
@@ -263,12 +296,13 @@ export function useSovereignAudio(): SovereignAudioState {
         // Ignore
       }
     }
-  }, [initAudio, isMuted, soundscape]);
+  }, [initAudio]);
 
   // SFX Synthesizers
   const playTactileClick = useCallback(() => {
+    if (isMutedRef.current || soundscapeRef.current === 'OFF') return;
     const ctx = initAudio();
-    if (!ctx || isMuted || soundscape === 'OFF') return;
+    if (!ctx || !masterGainRef.current) return;
 
     try {
       const osc = ctx.createOscillator();
@@ -281,18 +315,19 @@ export function useSovereignAudio(): SovereignAudioState {
       gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGainRef.current);
 
       osc.start();
       osc.stop(ctx.currentTime + 0.05);
     } catch {
       // AudioContext failure recovery
     }
-  }, [initAudio, isMuted, soundscape]);
+  }, [initAudio]);
 
   const playKeystroke = useCallback(() => {
+    if (isMutedRef.current || soundscapeRef.current === 'OFF') return;
     const ctx = initAudio();
-    if (!ctx || isMuted || soundscape === 'OFF') return;
+    if (!ctx || !masterGainRef.current) return;
 
     try {
       const osc = ctx.createOscillator();
@@ -306,14 +341,14 @@ export function useSovereignAudio(): SovereignAudioState {
       gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.025);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGainRef.current);
 
       osc.start();
       osc.stop(ctx.currentTime + 0.03);
     } catch {
       // Non-critical SFX failure
     }
-  }, [initAudio, isMuted, soundscape]);
+  }, [initAudio]);
 
   const playAccessGranted = useCallback(() => {
     const ctx = initAudio();

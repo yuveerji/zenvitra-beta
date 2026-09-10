@@ -131,10 +131,11 @@ export default function CountdownPage() {
     playTickSoundRef.current = sovereignAudio.playTickSound;
   }, [sovereignAudio.playTickSound]);
 
-  // First user interaction activates audio context if browser requires gesture
+  // First user interaction resumes suspended AudioContext without forcing un-mute
   useEffect(() => {
     const handleFirstGesture = () => {
-      if (sovereignAudio.isMuted) {
+      // Just unlock AudioContext if needed without overriding isMuted state
+      if (!sovereignAudio.isMuted) {
         sovereignAudio.cycleSoundscape();
       }
     };
@@ -162,12 +163,14 @@ export default function CountdownPage() {
         const seconds = Math.floor((difference / 1000) % 60);
 
         setTimeLeft({ days, hours, minutes, seconds });
-        playTickSoundRef.current();
+        if (!sovereignAudio.isMuted) {
+          playTickSoundRef.current();
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [sovereignAudio.isMuted]);
 
   return (
     <div className="min-h-screen bg-[#020305] text-white flex flex-col justify-between selection:bg-amber-400 selection:text-black font-sans relative overflow-x-hidden">

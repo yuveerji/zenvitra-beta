@@ -28,10 +28,10 @@ export function AudioSpectrumVisualizer({
         title={`Audio Engine: ${soundscape} (Click to switch soundscape)`}
       >
         {/* Bars visualizer */}
-        <div className="flex items-end gap-[2px] h-3.5 w-9 justify-center">
+        <div className="flex items-center gap-[2px] h-3.5 w-9 justify-center overflow-hidden">
           {Array.from({ length: 6 }).map((_, i) => {
-            const val = isMuted ? 2 : (frequencyData[i * 2] || 0) / 255;
-            const heightPx = Math.max(3, Math.round(val * 14));
+            const raw = (frequencyData[i * 2] || 0) / 255;
+            const heightPx = isMuted ? 3 : Math.min(12, Math.max(3, Math.round(raw * 12)));
             return (
               <span
                 key={i}
