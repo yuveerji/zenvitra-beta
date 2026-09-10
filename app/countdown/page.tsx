@@ -490,7 +490,7 @@ export default function CountdownPage() {
             </div>
 
             {/* Note Prose */}
-            <div className="space-y-4 text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
+            <div className="space-y-4 text-xs sm:text-sm text-neutral-300 font-outfit font-normal tracking-wide leading-relaxed">
               <p>
                 When we set out to build <span className="text-white font-medium">Zenvitra</span>, we didn&apos;t want to build another bureaucratic simulator or superficial conferencing tool. We envisioned an uncompromising, sovereign operating system for the next generation of global statesmen, jurists, and policy architects.
               </p>

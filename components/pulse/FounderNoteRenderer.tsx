@@ -95,7 +95,7 @@ export function FounderNoteRenderer({
       return (
         <p
           key={idx}
-          className={`text-zinc-300 leading-relaxed font-sans font-light ${
+          className={`text-zinc-300 leading-relaxed font-outfit font-normal tracking-wide ${
             size === 'compact' ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm'
           }`}
         >

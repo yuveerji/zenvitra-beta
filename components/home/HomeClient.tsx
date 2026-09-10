@@ -429,7 +429,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                   </div>
 
                   {/* Body Content */}
-                  <div className="space-y-4 text-sm sm:text-base text-neutral-300 font-sans leading-relaxed">
+                  <div className="space-y-4 text-sm sm:text-base text-neutral-300 font-outfit leading-relaxed">
                     <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/[0.08] text-neutral-200">
                       <FounderNoteRenderer
                         body={founderDirective.body}
