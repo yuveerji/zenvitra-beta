@@ -856,7 +856,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                     Documentation Archive
                   </span>
                   <h3 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight uppercase">
-                    Discussions matter more when they leave behind public records.
+                    Sovereign archives preserve what transitory words forget.
                   </h3>
                 </div>
                 <Link
