@@ -12,7 +12,7 @@ interface DiplomaticNode {
 }
 
 const NODES: DiplomaticNode[] = [
-  { name: 'DELHI [HQ]', lat: 28.6139, lng: 77.209, status: 'PRIMARY', ping: '4ms' },
+  { name: 'UDAIPUR [HQ]', lat: 24.5854, lng: 73.7125, status: 'PRIMARY', ping: '4ms' },
   { name: 'GENEVA', lat: 46.2044, lng: 6.1432, status: 'SYNCHRONIZED', ping: '28ms' },
   { name: 'LONDON', lat: 51.5074, lng: -0.1278, status: 'ACTIVE', ping: '34ms' },
   { name: 'SINGAPORE', lat: 1.3521, lng: 103.8198, status: 'ACTIVE', ping: '18ms' },

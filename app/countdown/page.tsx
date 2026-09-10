@@ -25,7 +25,6 @@ import { StatusNotificationModal } from '@/components/navigation/StatusNotificat
 import { useSovereignAudio } from '@/components/audio/useSovereignAudio';
 import { AudioSpectrumVisualizer } from '@/components/audio/AudioSpectrumVisualizer';
 import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
-import { SovereignTerminal } from '@/components/visuals/SovereignTerminal';
 import { HolographicPassport } from '@/components/visuals/HolographicPassport';
 
 export default function CountdownPage() {
@@ -40,20 +39,6 @@ export default function CountdownPage() {
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   const sovereignAudio = useSovereignAudio();
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const [activeTelemetryNode, setActiveTelemetryNode] = useState(0);
-
-  // Global keyboard shortcut: Backtick/Tilde opens terminal
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '`' || e.key === '~') {
-        e.preventDefault();
-        setIsTerminalOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   // Monolith card 3D tilt & mouse cursor effect
   const cardRef = useRef<HTMLDivElement>(null);
@@ -220,20 +205,6 @@ export default function CountdownPage() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Sovereign Terminal Trigger */}
-          <button
-            onClick={() => {
-              sovereignAudio.playTactileClick();
-              setIsTerminalOpen(true);
-            }}
-            type="button"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-amber-500/30 text-amber-300 font-mono text-[11px] transition shadow-sm"
-            title="Open Sovereign CLI Terminal (Press ` or ~)"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="font-semibold">CLI [~]</span>
-          </button>
-
           {/* Sign In & Register Navigation */}
           <Link
             href="/statussignin"
@@ -268,12 +239,13 @@ export default function CountdownPage() {
             <span className="hidden sm:inline">Check Clearance</span>
           </button>
 
-          {/* Sovereign Audio Spectrum Visualizer */}
+          {/* Sovereign Audio Spectrum Visualizer with dedicated mute control */}
           <AudioSpectrumVisualizer
             frequencyData={sovereignAudio.frequencyData}
             isMuted={sovereignAudio.isMuted}
             soundscape={sovereignAudio.soundscape}
             onClick={() => sovereignAudio.cycleSoundscape()}
+            onToggleMute={() => sovereignAudio.toggleMute()}
           />
         </div>
       </header>
@@ -428,52 +400,22 @@ export default function CountdownPage() {
               ))}
             </div>
 
-            {/* Live Global Node Telemetry Matrix Bar */}
-            <div className="pt-4 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-[10px]">
-              <div className="flex items-center gap-2 text-neutral-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="uppercase tracking-wider">SOVEREIGN TELEMETRY RELAYS:</span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {[
-                  { city: 'DELHI [HQ]', ping: '4ms', status: 'PRIMARY' },
-                  { city: 'GENEVA', ping: '28ms', status: 'SYNC' },
-                  { city: 'LONDON', ping: '34ms', status: 'ACTIVE' },
-                  { city: 'SINGAPORE', ping: '18ms', status: 'ACTIVE' },
-                  { city: 'NEW YORK', ping: '45ms', status: 'STANDBY' },
-                ].map((node, i) => (
-                  <button
-                    key={node.city}
-                    onClick={() => {
-                      setActiveTelemetryNode(i);
-                      sovereignAudio.playTactileClick();
-                    }}
-                    type="button"
-                    className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
-                      activeTelemetryNode === i
-                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-[0_0_10px_rgba(217,119,6,0.2)]'
-                        : 'bg-white/[0.03] border-white/10 text-neutral-400 hover:text-neutral-200'
-                    }`}
-                  >
-                    <span className="font-bold">{node.city}</span>{' '}
-                    <span className="text-emerald-400">{node.ping}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Sound & Terminal Guidance Notice */}
-            <div className="text-[11px] font-mono text-neutral-500 flex flex-wrap items-center justify-center gap-3">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-ping" />
-                <span>Synthesized spatial soundscape active.</span>
+            {/* Ticking Audio Indicator Notice */}
+            <div className="pt-4 border-t border-white/[0.06] text-[11px] font-mono text-neutral-400 flex flex-wrap items-center justify-center gap-3">
+              <span className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${sovereignAudio.isMuted ? 'bg-neutral-600' : 'bg-amber-400 animate-ping'}`} />
+                <span>
+                  {sovereignAudio.isMuted
+                    ? 'Audio muted • Click the sound button in header to unmute'
+                    : `Ticking telemetry active [${sovereignAudio.soundscape}]`}
+                </span>
               </span>
               <span className="text-neutral-700">//</span>
               <button
-                onClick={() => setIsTerminalOpen(true)}
-                className="text-amber-400/80 hover:text-amber-300 underline underline-offset-4 cursor-pointer"
+                onClick={() => sovereignAudio.toggleMute()}
+                className="text-amber-400 hover:text-amber-300 underline underline-offset-4 cursor-pointer font-semibold"
               >
-                Press ` or click CLI for command bridge
+                {sovereignAudio.isMuted ? 'Unmute Audio' : 'Mute Audio'}
               </button>
             </div>
           </div>
@@ -581,7 +523,7 @@ export default function CountdownPage() {
                   The Directorate &amp; Founding Council
                 </div>
                 <div className="text-[11px] text-neutral-500 tracking-wider uppercase">
-                  Zenvitra Foundation &bull; New Delhi // Global Dais
+                  Zenvitra Foundation &bull; Udaipur // Global Dais
                 </div>
               </div>
 
@@ -642,14 +584,6 @@ export default function CountdownPage() {
           </span>
         </div>
       </footer>
-
-      {/* Sovereign Command Console CLI */}
-      <SovereignTerminal
-        isOpen={isTerminalOpen}
-        onClose={() => setIsTerminalOpen(false)}
-        onKeystroke={() => sovereignAudio.playKeystroke()}
-        onAccessGranted={() => sovereignAudio.playAccessGranted()}
-      />
     </div>
   );
 }

@@ -9,6 +9,8 @@ export interface SovereignAudioState {
   isMuted: boolean;
   frequencyData: Uint8Array;
   cycleSoundscape: () => void;
+  toggleMute: () => void;
+  setSoundscape: (soundscape: AmbientSoundscape) => void;
   playTickSound: () => void;
   playTactileClick: () => void;
   playAccessGranted: () => void;
@@ -178,6 +180,40 @@ export function useSovereignAudio(): SovereignAudioState {
     });
   }, [initAudio, startDrone]);
 
+  const toggleMute = useCallback(() => {
+    const ctx = initAudio();
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+
+    setIsMuted((prevMuted) => {
+      const nextMuted = !prevMuted;
+      if (nextMuted) {
+        if (masterGainRef.current && ctx) {
+          masterGainRef.current.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.1);
+        }
+      } else {
+        if (masterGainRef.current && ctx) {
+          masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.1);
+        }
+        if (soundscape === 'OFF') {
+          setSoundscape('TICKING');
+        }
+      }
+      return nextMuted;
+    });
+  }, [initAudio, soundscape]);
+
+  const setExplicitSoundscape = useCallback(
+    (mode: AmbientSoundscape) => {
+      const ctx = initAudio();
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+
+      setSoundscape(mode);
+      setIsMuted(mode === 'OFF');
+      startDrone(mode);
+    },
+    [initAudio, startDrone]
+  );
+
   // User-provided ticking sound player with synthesized fallback
   const playTickSound = useCallback(() => {
     const ctx = initAudio();
@@ -337,6 +373,8 @@ export function useSovereignAudio(): SovereignAudioState {
     isMuted,
     frequencyData,
     cycleSoundscape,
+    toggleMute,
+    setSoundscape: setExplicitSoundscape,
     playTickSound,
     playTactileClick,
     playAccessGranted,
