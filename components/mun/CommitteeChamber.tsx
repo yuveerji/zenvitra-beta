@@ -58,6 +58,9 @@ import { RollCallManagementModal } from './RollCallManagementModal';
 import { DiplomaticChitsModal } from './DiplomaticChitsModal';
 import { EditChamberDetailsModal } from './EditChamberDetailsModal';
 import { OfficialSourcesModal } from './OfficialSourcesModal';
+import { ConversationMemory } from './ConversationMemory';
+import { LiveSpeakerQueue } from './LiveSpeakerQueue';
+import { DelegatePerformanceRadar } from './DelegatePerformanceRadar';
 
 export function CommitteeChamber() {
   const { user, profile } = useAuth();
@@ -117,7 +120,7 @@ export function CommitteeChamber() {
 
   const hasActiveEvent = userInvites.some((i) => i.status === 'accepted') || (registrations && registrations.length > 0) || Boolean(userAcceptedInvite);
 
-  const [activeTab, setActiveTab] = useState<'motions' | 'voting' | 'open_mic' | 'speakers' | 'points' | 'resolutions'>('motions');
+  const [activeTab, setActiveTab] = useState<'motions' | 'voting' | 'open_mic' | 'speakers' | 'points' | 'resolutions' | 'memory' | 'analytics'>('motions');
   const [showRaiseMotionModal, setShowRaiseMotionModal] = useState(false);
   const [showRaisePointModal, setShowRaisePointModal] = useState(false);
   const [showDraftResolutionModal, setShowDraftResolutionModal] = useState(false);
@@ -961,6 +964,32 @@ export function CommitteeChamber() {
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Points ({sessionState.parliamentaryPoints.length})</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('memory')}
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+                activeTab === 'memory'
+                  ? 'bg-purple-400 text-black shadow-sm font-bold'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-purple-300 hover:bg-white/[0.08]'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Memory</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('analytics')}
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+                activeTab === 'analytics'
+                  ? 'bg-amber-400 text-black shadow-sm font-bold'
+                  : 'bg-white/[0.04] text-neutral-400 hover:text-amber-300 hover:bg-white/[0.08]'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span>Vectors</span>
+            </button>
           </div>
 
           {/* Action Trigger based on active tab */}
@@ -1274,6 +1303,21 @@ export function CommitteeChamber() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── TAB CONTENT: CONVERSATION MEMORY ── */}
+        {activeTab === 'memory' && (
+          <div className="space-y-6">
+            <ConversationMemory />
+          </div>
+        )}
+
+        {/* ── TAB CONTENT: DELEGATE PERFORMANCE VECTORS ── */}
+        {activeTab === 'analytics' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <LiveSpeakerQueue />
+            <DelegatePerformanceRadar />
           </div>
         )}
       </div>

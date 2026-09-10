@@ -57,6 +57,7 @@ import { getFounderDirective, FounderDirective } from '@/lib/founderControl';
 import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
 import { DiplomaticGlobe } from '@/components/visuals/DiplomaticGlobe';
 import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
+import { CinematicPortal } from '@/components/experience/CinematicPortal';
 
 interface HomeClientProps {
   session: any;
@@ -253,6 +254,9 @@ export default function HomeClient({ session }: HomeClientProps) {
 
         {/* 1. Global Luxury Navigation */}
         <Navbar />
+
+        {/* 1.5 Cinematic Portal Experience Acts */}
+        <CinematicPortal />
 
         {/* 2. Hero Section (Comfortable spacing & bidirectional entrance) */}
         <section className="max-w-7xl mx-auto px-6 sm:px-12 pt-28 sm:pt-36 lg:pt-40 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">

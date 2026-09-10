@@ -43,6 +43,9 @@ import { DiscoverProfiles } from './DiscoverProfiles';
 import { PostComposer } from './PostComposer';
 import { FluxComposer } from './FluxComposer';
 import { ZenSparkCard } from './ZenSparkCard';
+import { PulseMap } from './PulseMap';
+import { WhatsMovingTicker } from './WhatsMovingTicker';
+import { SpatialPostComposer } from './SpatialPostComposer';
 import { INITIAL_SPARKS, ZenSpark } from '@/types/sparks';
 import { ZenFlexReaderModal, FlexReaderItem } from './ZenFlexReaderModal';
 import { SwitchAccountModal } from './SwitchAccountModal';
@@ -752,11 +755,37 @@ export function ZenPulseCore() {
             {(navTab === 'feed' || navTab === 'saved') && (
               <div className="space-y-6 w-full">
               
-                {/* ── Orbital Wire Capsules (Stories Tray) ── */}
+                {/* ── Spatial Living Feed Elements ── */}
                 {navTab === 'feed' && (
-                  <div className="p-4 sm:p-5 rounded-3xl bg-[#090b12]/90 border border-white/10 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)]">
-                    <StoriesTray />
-                  </div>
+                  <>
+                    {/* The Pulse Map Constellation */}
+                    <PulseMap
+                      onSelectTopic={(topic) => {
+                        if (topic) setSearchQuery(topic);
+                        else setSearchQuery('');
+                      }}
+                    />
+
+                    {/* What's Moving Live Velocity Ticker */}
+                    <WhatsMovingTicker />
+
+                    {/* Multi-Mode Spatial Post Composer */}
+                    <SpatialPostComposer
+                      onPublish={({ mode, title, content }) => {
+                        createPost(
+                          title ? `${title}\n\n${content}` : content,
+                          [],
+                          mode === 'DEBATE' ? 'Parliamentary Chamber' : 'Universal Mesh',
+                          mode === 'DEBATE' ? ['#debate', '#resolution'] : ['#pulse']
+                        );
+                      }}
+                    />
+
+                    {/* ── Orbital Wire Capsules (Stories Tray) ── */}
+                    <div className="p-4 sm:p-5 rounded-3xl bg-[#090b12]/90 border border-white/10 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)]">
+                      <StoriesTray />
+                    </div>
+                  </>
                 )}
 
                 {/* ── Private Saved Vault Banner ── */}
