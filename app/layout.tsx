@@ -66,7 +66,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable} ${spaceGrotesk.variable} ${playfair.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${outfit.variable} ${spaceGrotesk.variable} ${playfair.variable} ${jetbrainsMono.variable}`}
+    >
       <head>
         {/* Mobile & PWA Meta */}
         <meta name="mobile-web-app-capable" content="yes" />
@@ -91,7 +95,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#030405] text-white antialiased grain-overlay">
+      <body suppressHydrationWarning className="bg-[#030405] text-white antialiased grain-overlay">
         <AppProviders>
           {children}
         </AppProviders>

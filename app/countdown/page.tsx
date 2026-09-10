@@ -428,7 +428,7 @@ export default function CountdownPage() {
                 TARGET PROTOCOL UNLOCK
               </span>
               <span className="font-mono text-[10px] sm:text-[11px] text-amber-400 tracking-wider">
-                18 SEPT 2026 // 17:00 IST
+                02 OCT 2026 // 14:00 IST
               </span>
             </div>
 
