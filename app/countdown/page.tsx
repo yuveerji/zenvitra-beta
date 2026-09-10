@@ -19,14 +19,13 @@ import {
   Bell,
   Quote,
   Shield,
-  Heart,
-  Flame
+  Clock
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 
 export default function CountdownPage() {
-  // Target: September 18, 2026, 17:00:00 IST (UTC+05:30)
-  const targetDate = new Date('2026-09-18T17:00:00+05:30').getTime();
+  // Target: October 2, 2026, 14:00:00 IST (UTC+05:30)
+  const targetDate = new Date('2026-10-02T14:00:00+05:30').getTime();
 
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -250,17 +249,6 @@ export default function CountdownPage() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Emergency Relief Link */}
-          <Link
-            href="/donate/satya-niketan"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-xs font-mono text-rose-300 hover:text-rose-200 transition shadow-[0_0_15px_rgba(244,63,94,0.2)] font-bold"
-          >
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-            <Heart className="w-3.5 h-3.5 text-rose-400 fill-current" />
-            <span className="hidden sm:inline">Satya Niketan Relief</span>
-            <span className="sm:hidden">Relief</span>
-          </Link>
-
           {/* Sign In & Register Navigation */}
           <Link
             href="/statussignin"
@@ -323,31 +311,6 @@ export default function CountdownPage() {
 
       {/* Main Center Content */}
       <main className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex-1 flex flex-col items-center justify-center text-center space-y-10">
-        {/* Emergency Incident Alert Banner */}
-        <div className="w-full max-w-3xl p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-950/40 via-[#0a0a10] to-rose-950/30 border border-rose-500/40 shadow-[0_10px_40px_rgba(244,63,94,0.18)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="space-y-1.5 relative z-10">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-rose-500/30">
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-              <span>EMERGENCY HUMANITARIAN DISPATCH</span>
-            </div>
-            <h2 className="font-display font-bold text-base sm:text-lg text-white">
-              Satya Niketan Building Collapse: Student &amp; Victim Relief
-            </h2>
-            <p className="text-xs text-neutral-300 font-sans leading-relaxed max-w-xl">
-              While general platform access is calibrating, our emergency response rail is live 24/7. 100% of contributions route directly to official Government of Delhi &amp; PMNRF disaster escrow with zero platform deduction.
-            </p>
-          </div>
-          <Link
-            href="/donate/satya-niketan"
-            className="shrink-0 px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_20px_rgba(244,63,94,0.4)] flex items-center gap-2 cursor-pointer relative z-10"
-          >
-            <Heart className="w-4 h-4 fill-current" />
-            <span>Donate Directly</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
         {/* Status Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/[0.07] border border-amber-400/30 text-xs font-mono tracking-widest text-amber-300 uppercase shadow-[0_0_20px_rgba(251,191,36,0.15)]">
           <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
@@ -523,10 +486,29 @@ export default function CountdownPage() {
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/10 font-mono text-[10px] text-neutral-400 self-start sm:self-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/[0.08] border border-amber-400/20 font-mono text-[10px] text-amber-300 self-start sm:self-auto">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span>SEPTEMBER INGESTION CYCLE</span>
+                <span>SCHEDULE UPDATE • 2ND OCT 2026</span>
               </div>
+            </div>
+
+            {/* Delay Notification Banner */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 space-y-2 relative overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/20 pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                  SYSTEM SCHEDULE UPDATE // DELAY NOTIFICATION
+                </span>
+                <span className="text-[10px] font-mono text-amber-400/90 font-bold">
+                  OCTOBER 2, 2026 • 2:00 PM IST
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                Public Platform Ignition Rescheduled to 2nd October 2026, 2:00 PM IST
+              </h3>
+              <p className="text-xs text-neutral-300 font-sans leading-relaxed">
+                To guarantee zero latency under peak multilateral caucuses, complete SHA-256 cryptographic verification of delegate resolutions, and verify the offline video proof distribution rails for our 25% civic profit mandate, the Founding Directorate has re-calibrated our launch window. All pre-registered delegates, study guides, and matrix assignments remain securely locked and reserved.
+              </p>
             </div>
 
             {/* Note Prose */}
@@ -544,7 +526,7 @@ export default function CountdownPage() {
               </blockquote>
 
               <p>
-                That is why we initiated this temporary systemic pause until <span className="text-white font-medium">September 18, 5:00 PM IST</span>. Our engineering and dais councils are currently hardening our distributed infrastructure, integrating SHA-256 cryptographic resolution sealing, and refining our real-time Rules of Procedure engine.
+                That is why we initiated this temporary systemic pause and rescheduled platform ignition to <span className="text-amber-300 font-semibold">October 2, 2026, at 2:00 PM IST</span>. Our engineering and dais councils are currently hardening our distributed infrastructure, integrating SHA-256 cryptographic resolution sealing, and refining our real-time Rules of Procedure engine.
               </p>
 
               <p>
@@ -614,11 +596,6 @@ export default function CountdownPage() {
       <footer className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-neutral-500">
         <span>ZENVITRA PROTOCOL &copy; 2026</span>
         <div className="flex items-center gap-6">
-          <Link href="/donate/satya-niketan" className="text-rose-400 hover:text-rose-300 font-bold transition flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-            <span>Satya Niketan Relief</span>
-          </Link>
-          <span className="text-neutral-700">//</span>
           <Link href="/join-core-team" className="hover:text-white transition">
             Join Core Team
           </Link>

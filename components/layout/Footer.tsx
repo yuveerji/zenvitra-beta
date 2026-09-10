@@ -307,12 +307,6 @@ export function Footer() {
             </p>
             <ul className="space-y-2.5 text-xs font-mono text-neutral-400">
               <li>
-                <Link href="/donate/satya-niketan" className="text-rose-400 hover:text-rose-300 font-bold transition flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-                  <span>Satya Niketan Building Collapse Relief</span>
-                </Link>
-              </li>
-              <li>
                 <Link href="/donate/govt-schools" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
                   <span>Govt Schools Direct Giving</span>
                 </Link>

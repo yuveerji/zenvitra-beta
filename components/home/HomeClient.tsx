@@ -958,20 +958,13 @@ export default function HomeClient({ session }: HomeClientProps) {
                 <p className="text-[11px] text-neutral-400 font-mono leading-tight">
                   Transform a government school or back a grassroots civic grant today.
                 </p>
-                <div className="space-y-2 pt-2">
-                  <Link
-                    href="/donate/satya-niketan"
-                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2 group cursor-pointer animate-pulse"
-                  >
-                    <span>Emergency Relief: Satya Niketan (DU)</span>
-                    <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                <div className="pt-2">
                   <Link
                     href="/donate/govt-schools"
-                    className="w-full py-2.5 px-4 rounded-xl bg-white/[0.06] hover:bg-white/10 border border-white/15 text-neutral-300 hover:text-white font-mono text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-xl bg-white text-black hover:bg-neutral-200 font-mono text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
                   >
                     <span>Govt Schools Giving</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
@@ -980,38 +973,36 @@ export default function HomeClient({ session }: HomeClientProps) {
 
           {/* 3 Impact Channels Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: Satya Niketan DU Emergency Incident Relief */}
+            {/* Card 1: Library & Science Kit Upgrade */}
             <SpotlightCard paddingClassName="p-6">
-              <div className="flex flex-col justify-between h-full space-y-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
-                <div className="space-y-4 relative z-10">
+              <div className="flex flex-col justify-between h-full space-y-6">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
-                      <Flame className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                      <BookOpen className="w-5 h-5" />
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-rose-300 bg-rose-500/15 border border-rose-500/30 px-2.5 py-0.5 rounded-full uppercase flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-                      CRISIS RELIEF • OFFICIAL GOVT
+                    <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 rounded-full uppercase">
+                      TIER 1 • ₹3,500
                     </span>
                   </div>
 
                   <div className="space-y-1.5">
                     <h4 className="font-display font-bold text-lg text-white">
-                      Satya Niketan Building Collapse Relief
+                      Library &amp; Science Kits
                     </h4>
-                    <p className="text-xs text-neutral-300 font-light font-sans leading-relaxed">
-                      Emergency trauma surgical care, debris rescue aid, student rehabilitation, and food support for victims of the South Campus Satya Niketan building collapse. 100% direct to official Government of Delhi &amp; PMNRF disaster escrow.
+                    <p className="text-xs text-neutral-400 font-light font-sans leading-relaxed">
+                      Provides 25 curriculum-aligned science experiment kits and storybooks for rural public school libraries.
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between relative z-10">
-                  <span className="text-[11px] font-mono text-rose-300 font-semibold">Zero Fee • 80G Exempt</span>
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-neutral-400">Equips 1 Classroom</span>
                   <Link
-                    href="/donate/satya-niketan"
-                    className="text-xs font-mono text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1 group"
+                    href="/donate/govt-schools"
+                    className="text-xs font-mono text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 group"
                   >
-                    <span>Donate Directly</span>
+                    <span>Sponsor Kits</span>
                     <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>

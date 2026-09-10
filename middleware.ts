@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, { status: 307 });
   }
 
-  // SYSTEM-WIDE LOCKDOWN UNTIL 18TH SEPTEMBER 5:00 PM IST
+  // SYSTEM-WIDE LOCKDOWN UNTIL 2ND OCTOBER 2026 2:00 PM IST
   // Check if visitor has approved security clearance cookie (granted when status = APPROVED in Google Sheet)
   const clearanceCookie = request.cookies.get('zenvitra_clearance')?.value;
   const isClearanceGranted = clearanceCookie === 'SOVEREIGN_GRANTED';

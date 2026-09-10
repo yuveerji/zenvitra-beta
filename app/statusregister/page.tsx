@@ -475,7 +475,7 @@ export default function StatusRegisterPage() {
               <p className="text-neutral-400 leading-relaxed">
                 1. Our Dais Allocation Board reviews committee balance and draft allocations based on your conference tier.
                 <br />
-                2. On <span className="text-white font-semibold">September 18 at 5:00 PM IST</span>, when the countdown lock disengages, you can navigate directly to <span className="text-amber-300">/statussignin</span> to authenticate and access your chamber study guides and resolution workspaces.
+                2. On <span className="text-white font-semibold">October 2, 2026 at 2:00 PM IST</span>, when the countdown lock disengages, you can navigate directly to <span className="text-amber-300">/statussignin</span> to authenticate and access your chamber study guides and resolution workspaces.
               </p>
             </div>
 
@@ -517,7 +517,7 @@ export default function StatusRegisterPage() {
               </h1>
 
               <p className="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl mx-auto">
-                Secure early entry credentials, lodge your multilateral committee preferences, and gain priority country matrix allocation prior to public platform ignition on September 18.
+                Secure early entry credentials, lodge your multilateral committee preferences, and gain priority country matrix allocation prior to public platform ignition on October 2, 2026 at 2:00 PM IST.
               </p>
 
               {/* Live Step Progress Indicator */}
@@ -1307,7 +1307,7 @@ export default function StatusRegisterPage() {
           <span>ZENVITRA PRE-LAUNCH WHITELIST PORTAL &copy; 2026</span>
         </div>
         <div className="flex items-center gap-4">
-          <span>PUBLIC IGNITION: SEPT 18, 5:00 PM IST</span>
+          <span>PUBLIC IGNITION: OCT 2, 2:00 PM IST</span>
           <span>•</span>
           <Link href="/countdown" className="hover:text-white transition flex items-center gap-1">
             <ArrowLeft className="w-3 h-3" /> Back to Launch Countdown
