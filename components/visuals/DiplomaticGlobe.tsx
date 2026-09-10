@@ -1,320 +1,381 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Globe, Radio, Shield, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { Globe, Radio } from 'lucide-react';
+import { WorldMapPaths } from '@/components/visuals/WorldMapPaths';
 
-interface DiplomaticNode {
+export interface DiplomaticNode {
   name: string;
+  code: string;
   lat: number;
   lng: number;
+  mapX: number;
+  mapY: number;
   status: 'PRIMARY' | 'ACTIVE' | 'SYNCHRONIZED' | 'COLD STANDBY';
   ping: string;
+  region: string;
+  role: string;
 }
 
 const NODES: DiplomaticNode[] = [
-  { name: 'UDAIPUR [HQ]', lat: 24.5854, lng: 73.7125, status: 'PRIMARY', ping: '4ms' },
-  { name: 'GENEVA', lat: 46.2044, lng: 6.1432, status: 'SYNCHRONIZED', ping: '28ms' },
-  { name: 'LONDON', lat: 51.5074, lng: -0.1278, status: 'ACTIVE', ping: '34ms' },
-  { name: 'SINGAPORE', lat: 1.3521, lng: 103.8198, status: 'ACTIVE', ping: '18ms' },
-  { name: 'NEW YORK', lat: 40.7128, lng: -74.006, status: 'COLD STANDBY', ping: '45ms' },
-  { name: 'TOKYO', lat: 35.6762, lng: 139.6503, status: 'ACTIVE', ping: '32ms' },
+  {
+    name: 'UDAIPUR [HQ]',
+    code: 'IN-UDR',
+    lat: 24.5854,
+    lng: 73.7125,
+    mapX: 582,
+    mapY: 458,
+    status: 'PRIMARY',
+    ping: '4ms',
+    region: 'Rajasthan, India',
+    role: 'Root Sovereign Anchor & Genesis Core'
+  },
+  {
+    name: 'GENEVA',
+    code: 'CH-GVA',
+    lat: 46.2044,
+    lng: 6.1432,
+    mapX: 423,
+    mapY: 405,
+    status: 'SYNCHRONIZED',
+    ping: '28ms',
+    region: 'Switzerland, Europe',
+    role: 'UN Diplomatic Consensus Dais'
+  },
+  {
+    name: 'LONDON',
+    code: 'GB-LON',
+    lat: 51.5074,
+    lng: -0.1278,
+    mapX: 405,
+    mapY: 388,
+    status: 'ACTIVE',
+    ping: '34ms',
+    region: 'United Kingdom, Europe',
+    role: 'Westminster Procedure Invariant'
+  },
+  {
+    name: 'SINGAPORE',
+    code: 'SG-SIN',
+    lat: 1.3521,
+    lng: 103.8198,
+    mapX: 659,
+    mapY: 527,
+    status: 'ACTIVE',
+    ping: '18ms',
+    region: 'Southeast Asia Hub',
+    role: 'Pan-Pacific High-Speed Gateway'
+  },
+  {
+    name: 'NEW YORK',
+    code: 'US-NYC',
+    lat: 40.7128,
+    lng: -74.0060,
+    mapX: 248,
+    mapY: 398,
+    status: 'COLD STANDBY',
+    ping: '45ms',
+    region: 'North America Wire',
+    role: 'Assembly Redundancy Mirror'
+  },
+  {
+    name: 'TOKYO',
+    code: 'JP-TYO',
+    lat: 35.6762,
+    lng: 139.6503,
+    mapX: 722,
+    mapY: 416,
+    status: 'ACTIVE',
+    ping: '32ms',
+    region: 'East Asia Nexus',
+    role: 'Cryptographic Ledger Quorum'
+  }
 ];
 
 export function DiplomaticGlobe() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedNode, setSelectedNode] = useState<DiplomaticNode>(NODES[0]);
-  const rotationRef = useRef({ x: 0.3, y: 1.2 });
-  const isDraggingRef = useRef(false);
-  const lastMouseRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animId: number;
-    const size = (canvas.width = canvas.height = 420);
-    const radius = size * 0.38;
-    const cx = size / 2;
-    const cy = size / 2;
-
-    const render = () => {
-      if (!isDraggingRef.current) {
-        rotationRef.current.y += 0.004; // smooth slow rotation
-      }
-
-      ctx.clearRect(0, 0, size, size);
-
-      // Globe ambient glow atmosphere
-      const atmGrad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.25);
-      atmGrad.addColorStop(0, 'rgba(217, 119, 6, 0.08)');
-      atmGrad.addColorStop(0.7, 'rgba(16, 185, 129, 0.04)');
-      atmGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = atmGrad;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius * 1.25, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Outer globe boundary
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(217, 119, 6, 0.3)';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // Longitude meridians (circles)
-      const rotY = rotationRef.current.y;
-      const rotX = rotationRef.current.x;
-
-      for (let lon = 0; lon < Math.PI * 2; lon += Math.PI / 6) {
-        ctx.beginPath();
-        const pts: { x: number; y: number; z: number }[] = [];
-        for (let lat = -Math.PI / 2; lat <= Math.PI / 2; lat += 0.15) {
-          // 3D sphere coordinate
-          const x = radius * Math.cos(lat) * Math.sin(lon + rotY);
-          const y = radius * Math.sin(lat);
-          const z = radius * Math.cos(lat) * Math.cos(lon + rotY);
-
-          // Rotate by rotX (tilt)
-          const rxY = y * Math.cos(rotX) - z * Math.sin(rotX);
-          const rxZ = y * Math.sin(rotX) + z * Math.cos(rotX);
-
-          pts.push({ x: cx + x, y: cy + rxY, z: rxZ });
-        }
-
-        ctx.beginPath();
-        let first = true;
-        for (const pt of pts) {
-          if (pt.z > -radius * 0.2) {
-            // Front hemisphere
-            if (first) {
-              ctx.moveTo(pt.x, pt.y);
-              first = false;
-            } else {
-              ctx.lineTo(pt.x, pt.y);
-            }
-          } else {
-            first = true;
-          }
-        }
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-        ctx.lineWidth = 0.75;
-        ctx.stroke();
-      }
-
-      // Latitude parallels
-      for (let latDeg = -60; latDeg <= 60; latDeg += 30) {
-        const latRad = (latDeg * Math.PI) / 180;
-        const rParallel = radius * Math.cos(latRad);
-        const yBase = radius * Math.sin(latRad);
-
-        ctx.beginPath();
-        let first = true;
-        for (let a = 0; a <= Math.PI * 2 + 0.1; a += 0.1) {
-          const x = rParallel * Math.sin(a + rotY);
-          const y = yBase;
-          const z = rParallel * Math.cos(a + rotY);
-
-          const rxY = y * Math.cos(rotX) - z * Math.sin(rotX);
-          const rxZ = y * Math.sin(rotX) + z * Math.cos(rotX);
-
-          if (rxZ > -radius * 0.2) {
-            if (first) {
-              ctx.moveTo(cx + x, cy + rxY);
-              first = false;
-            } else {
-              ctx.lineTo(cx + x, cy + rxY);
-            }
-          } else {
-            first = true;
-          }
-        }
-        ctx.strokeStyle = 'rgba(217, 119, 6, 0.12)';
-        ctx.lineWidth = 0.65;
-        ctx.stroke();
-      }
-
-      // Draw and connect diplomatic nodes
-      const projectedNodes: { node: DiplomaticNode; x: number; y: number; z: number }[] = [];
-
-      NODES.forEach((n) => {
-        const latRad = (n.lat * Math.PI) / 180;
-        const lngRad = (n.lng * Math.PI) / 180;
-
-        const x = radius * Math.cos(latRad) * Math.sin(lngRad + rotY);
-        const y = radius * -Math.sin(latRad); // Invert latitude for canvas Y
-        const z = radius * Math.cos(latRad) * Math.cos(lngRad + rotY);
-
-        const rxY = y * Math.cos(rotX) - z * Math.sin(rotX);
-        const rxZ = y * Math.sin(rotX) + z * Math.cos(rotX);
-
-        if (rxZ > -20) {
-          projectedNodes.push({ node: n, x: cx + x, y: cy + rxY, z: rxZ });
-        }
-      });
-
-      // Connecting chords
-      for (let i = 0; i < projectedNodes.length; i++) {
-        for (let j = i + 1; j < projectedNodes.length; j++) {
-          const n1 = projectedNodes[i];
-          const n2 = projectedNodes[j];
-          ctx.beginPath();
-          ctx.moveTo(n1.x, n1.y);
-          ctx.lineTo(n2.x, n2.y);
-          ctx.strokeStyle = 'rgba(251, 191, 36, 0.18)';
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-      }
-
-      // Draw node beacons
-      projectedNodes.forEach(({ node, x, y }) => {
-        const isSel = selectedNode.name === node.name;
-        // Pulse outer ring
-        ctx.beginPath();
-        ctx.arc(x, y, isSel ? 7 : 4, 0, Math.PI * 2);
-        ctx.fillStyle = isSel ? 'rgba(245, 158, 11, 0.4)' : 'rgba(16, 185, 129, 0.25)';
-        ctx.fill();
-
-        // Solid beacon
-        ctx.beginPath();
-        ctx.arc(x, y, isSel ? 3.5 : 2, 0, Math.PI * 2);
-        ctx.fillStyle = isSel ? '#fbbf24' : '#10b981';
-        ctx.fill();
-
-        // Text label
-        ctx.font = '9px monospace';
-        ctx.fillStyle = isSel ? '#fef3c7' : 'rgba(226, 232, 240, 0.6)';
-        ctx.fillText(node.name.split(' ')[0], x + 6, y + 3);
-      });
-
-      animId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    // Mouse drag rotation controls
-    const onMouseDown = (e: MouseEvent) => {
-      isDraggingRef.current = true;
-      lastMouseRef.current = { x: e.clientX, y: e.clientY };
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDraggingRef.current) return;
-      const dx = e.clientX - lastMouseRef.current.x;
-      const dy = e.clientY - lastMouseRef.current.y;
-      rotationRef.current.y += dx * 0.007;
-      rotationRef.current.x += dy * 0.007;
-      lastMouseRef.current = { x: e.clientX, y: e.clientY };
-    };
-
-    const onMouseUp = () => {
-      isDraggingRef.current = false;
-    };
-
-    canvas.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      canvas.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-  }, [selectedNode]);
+  const hq = NODES[0];
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto rounded-3xl bg-gradient-to-b from-[#090c14] to-[#04060a] border border-amber-500/20 p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-0 right-1/4 w-72 h-72 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+    <div className="relative w-full max-w-5xl mx-auto rounded-3xl bg-gradient-to-b from-[#080b13] via-[#04060a] to-[#020306] border border-amber-500/25 p-6 sm:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header */}
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
             <Globe className="h-5 w-5" />
           </div>
-          <div>
-            <h3 className="text-base font-bold text-white tracking-wide">
+          <div className="space-y-0.5">
+            <h3 className="text-lg font-bold text-white tracking-wide font-display">
               Global Sovereign Relay Network
             </h3>
-            <p className="text-xs text-neutral-400 font-mono">
-              REAL-TIME CRYPTOGRAPHIC NODE TELEMETRY & CONSENSUS
+            <p className="text-xs text-neutral-400 font-mono tracking-wider">
+              REAL-TIME CRYPTOGRAPHIC NODE TELEMETRY &bull; EXACT GEOGRAPHIC LOCATIONS
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+          <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            6 / 6 NODES ONLINE
+            <span>6 / 6 NODES ONLINE</span>
           </span>
         </div>
       </div>
 
-      {/* Main Interactive Stage: Canvas Globe + Node Selector Cards */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mt-6">
-        {/* 3D Canvas Sphere */}
-        <div className="lg:col-span-7 flex flex-col items-center justify-center">
-          <div className="relative">
-            <canvas
-              ref={canvasRef}
-              className="cursor-grab active:cursor-grabbing rounded-full select-none"
-            />
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-mono text-neutral-500 bg-black/60 px-3 py-1 rounded-full border border-white/5 pointer-events-none">
-              DRAG GLOBE TO ROTATE
+      {/* Main Interactive Stage: Real World Map + Node Selector Cards */}
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-6">
+        
+        {/* Left: Genuine Real World Map Vector */}
+        <div className="lg:col-span-7 flex flex-col space-y-3">
+          <div className="relative rounded-2xl bg-[#05070d]/90 border border-white/[0.08] p-3 sm:p-4 shadow-inner overflow-hidden">
+            {/* Coordinate Grid / Graticule Lines */}
+            <div className="absolute inset-0 pointer-events-none opacity-40">
+              <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="world-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#world-grid)" />
+              </svg>
             </div>
+
+            {/* The SVG Real World Map */}
+            <svg
+              viewBox="30.767 241.591 784.077 458.627"
+              className="w-full h-auto select-none relative z-10"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Actual Continents & Country Outlines */}
+              <WorldMapPaths selectedId={selectedNode.name} />
+
+              {/* Equator & Meridians */}
+              <line x1="30" y1="470" x2="814" y2="470" stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="3 4" strokeWidth="0.75" />
+              <line x1="422" y1="241" x2="422" y2="700" stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="3 4" strokeWidth="0.75" />
+
+              {/* Cryptographic Bezier Transmission Arcs from UDAIPUR [HQ] */}
+              <g className="transmission-arcs">
+                {NODES.filter((n) => n.name !== hq.name).map((node) => {
+                  const isSelected = selectedNode.name === node.name;
+                  const dx = node.mapX - hq.mapX;
+                  const midX = (hq.mapX + node.mapX) / 2;
+                  // Dynamic arc curvature based on distance
+                  const lift = Math.min(60, Math.max(25, Math.abs(dx) * 0.15));
+                  const midY = (hq.mapY + node.mapY) / 2 - lift;
+                  const pathD = `M ${hq.mapX} ${hq.mapY} Q ${midX} ${midY} ${node.mapX} ${node.mapY}`;
+
+                  return (
+                    <g key={node.name}>
+                      {/* Outer Glow Arc */}
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={isSelected ? 'rgba(245, 158, 11, 0.4)' : 'rgba(251, 191, 36, 0.15)'}
+                        strokeWidth={isSelected ? 2.5 : 1.2}
+                      />
+                      {/* Animated Dashed Fiber Line */}
+                      <path
+                        d={pathD}
+                        fill="none"
+                        stroke={isSelected ? '#fbbf24' : 'rgba(52, 211, 153, 0.35)'}
+                        strokeWidth={isSelected ? 1.2 : 0.8}
+                        strokeDasharray="4 6"
+                        className="animate-pulse"
+                      />
+                      {/* Traveling Data Packet Photon */}
+                      <circle r={isSelected ? 2.5 : 1.8} fill={isSelected ? '#fbbf24' : '#34d399'}>
+                        <animateMotion
+                          dur={node.name === 'NEW YORK' ? '3s' : '2s'}
+                          repeatCount="indefinite"
+                          path={pathD}
+                        />
+                      </circle>
+                    </g>
+                  );
+                })}
+              </g>
+
+              {/* Geographic Nodes */}
+              {NODES.map((node) => {
+                const isHQ = node.status === 'PRIMARY';
+                const isSelected = selectedNode.name === node.name;
+
+                return (
+                  <g
+                    key={node.name}
+                    className="cursor-pointer group"
+                    onClick={() => setSelectedNode(node)}
+                  >
+                    {/* Expanding Radar Ripple for HQ or Selected */}
+                    {(isHQ || isSelected) && (
+                      <>
+                        <circle
+                          cx={node.mapX}
+                          cy={node.mapY}
+                          r="14"
+                          fill="none"
+                          stroke={isHQ ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}
+                          strokeWidth="1"
+                          className="animate-ping"
+                          style={{ transformOrigin: `${node.mapX}px ${node.mapY}px` }}
+                        />
+                        <circle
+                          cx={node.mapX}
+                          cy={node.mapY}
+                          r="22"
+                          fill="none"
+                          stroke={isHQ ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)'}
+                          strokeWidth="0.75"
+                        />
+                      </>
+                    )}
+
+                    {/* Outer Node Halo */}
+                    <circle
+                      cx={node.mapX}
+                      cy={node.mapY}
+                      r={isHQ ? 6.5 : isSelected ? 5.5 : 4}
+                      fill={isHQ ? 'rgba(245, 158, 11, 0.4)' : isSelected ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.2)'}
+                    />
+
+                    {/* Center Core Dot */}
+                    <circle
+                      cx={node.mapX}
+                      cy={node.mapY}
+                      r={isHQ ? 3.5 : isSelected ? 3 : 2}
+                      fill={isHQ ? '#fbbf24' : node.status === 'COLD STANDBY' ? '#38bdf8' : '#10b981'}
+                      stroke="#06080e"
+                      strokeWidth="0.75"
+                    />
+
+                    {/* On-Map City Label */}
+                    <g transform={`translate(${node.mapX + (node.name === 'TOKYO' ? -42 : node.name === 'SINGAPORE' ? 8 : 8)}, ${node.mapY + (node.name === 'SINGAPORE' ? 12 : node.name === 'LONDON' ? -8 : -5)})`}>
+                      <rect
+                        x="-3"
+                        y="-8"
+                        width={node.name.length * 5.6 + 6}
+                        height="12"
+                        rx="3"
+                        fill="rgba(5, 8, 15, 0.85)"
+                        stroke={isSelected ? (isHQ ? 'rgba(245, 158, 11, 0.5)' : 'rgba(16, 185, 129, 0.5)') : 'rgba(255, 255, 255, 0.1)'}
+                        strokeWidth="0.5"
+                      />
+                      <text
+                        x="0"
+                        y="1"
+                        fontSize="7.5"
+                        fontFamily="var(--font-mono), monospace"
+                        fontWeight={isSelected ? 'bold' : 'normal'}
+                        fill={isHQ ? '#fef3c7' : isSelected ? '#ffffff' : '#cbd5e1'}
+                        letterSpacing="0.05em"
+                      >
+                        {node.name.split(' ')[0]}
+                      </text>
+                    </g>
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Bottom Map Status Bar */}
+            <div className="mt-2 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[10px] font-mono text-neutral-400">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-400 font-bold">&bull; FOCUSED:</span>
+                <span className="text-white font-semibold">{selectedNode.name}</span>
+                <span className="text-neutral-500">[{selectedNode.region}]</span>
+              </div>
+              <div className="text-neutral-400">
+                <span>COORD: {selectedNode.lat.toFixed(2)}°N, {selectedNode.lng.toFixed(2)}°E</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between px-2 text-[10px] font-mono text-neutral-500">
+            <span>&bull; PROJECTION: EQUIRECTANGULAR VERIFIED</span>
+            <span>DATA CHANNELS: 100% HARDWARE ENCRYPTED</span>
           </div>
         </div>
 
-        {/* Node Telemetry Grid */}
+        {/* Right: Node Telemetry Grid */}
         <div className="lg:col-span-5 space-y-2.5">
-          <div className="text-[11px] font-mono uppercase tracking-wider text-amber-400/80 mb-2 flex items-center gap-1.5">
-            <Radio className="h-3.5 w-3.5" />
-            ACTIVE SOVEREIGN RELAYS
+          <div className="text-[11px] font-mono uppercase tracking-wider text-amber-400/90 mb-2 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <Radio className="h-3.5 w-3.5" />
+              <span>ACTIVE SOVEREIGN RELAYS</span>
+            </span>
+            <span className="text-[10px] text-neutral-500">CLICK TO LOCATE</span>
           </div>
 
           {NODES.map((n) => {
             const isSelected = selectedNode.name === n.name;
+            const isHQ = n.status === 'PRIMARY';
+
             return (
               <button
                 key={n.name}
                 type="button"
                 onClick={() => setSelectedNode(n)}
-                className={`w-full text-left p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+                className={`w-full text-left p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? 'bg-amber-500/10 border-amber-500/50 shadow-[0_0_20px_rgba(217,119,6,0.15)]'
+                    ? isHQ
+                      ? 'bg-amber-500/10 border-amber-500/60 shadow-[0_0_25px_rgba(217,119,6,0.18)] scale-[1.01]'
+                      : 'bg-emerald-500/10 border-emerald-500/60 shadow-[0_0_25px_rgba(16,185,129,0.18)] scale-[1.01]'
                     : 'bg-white/[0.02] border-white/10 hover:bg-white/[0.05] hover:border-white/20'
                 }`}
               >
                 <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        isHQ
+                          ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24]'
+                          : n.status === 'COLD STANDBY'
+                          ? 'bg-sky-400'
+                          : 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
+                      }`}
+                    />
+                    <span
+                      className={`font-mono text-xs font-bold tracking-wide ${
+                        isSelected ? (isHQ ? 'text-amber-300' : 'text-emerald-300') : 'text-neutral-200'
+                      }`}
+                    >
+                      {n.name}
+                    </span>
+                  </div>
+
                   <span
-                    className={`font-mono text-xs font-bold ${
-                      isSelected ? 'text-amber-300' : 'text-neutral-200'
-                    }`}
-                  >
-                    {n.name}
-                  </span>
-                  <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold ${
-                      n.status === 'PRIMARY'
+                    className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ${
+                      isHQ
                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        : n.status === 'COLD STANDBY'
+                        ? 'bg-sky-500/10 text-sky-300 border border-sky-500/30'
                         : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
                     }`}
                   >
                     {n.status}
                   </span>
                 </div>
-                <div className="flex items-center justify-between mt-1 text-[10px] font-mono text-neutral-400">
+
+                <div className="flex items-center justify-between mt-2 text-[10px] font-mono text-neutral-400">
+                  <span className="text-neutral-500">{n.region}</span>
+                  <span className={isHQ ? 'text-amber-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                    {n.ping}
+                  </span>
+                </div>
+
+                <div className="mt-1 flex items-center justify-between text-[9px] font-mono text-neutral-500 border-t border-white/[0.04] pt-1.5">
                   <span>LAT: {n.lat}° | LNG: {n.lng}°</span>
-                  <span className="text-emerald-400 font-semibold">{n.ping}</span>
+                  <span className="text-neutral-400 italic truncate max-w-[170px]">{n.role}</span>
                 </div>
               </button>
             );
           })}
         </div>
+
       </div>
     </div>
   );
