@@ -22,6 +22,11 @@ import {
   Clock
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
+import { useSovereignAudio } from '@/components/audio/useSovereignAudio';
+import { AudioSpectrumVisualizer } from '@/components/audio/AudioSpectrumVisualizer';
+import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
+import { SovereignTerminal } from '@/components/visuals/SovereignTerminal';
+import { HolographicPassport } from '@/components/visuals/HolographicPassport';
 
 export default function CountdownPage() {
   // Target: October 2, 2026, 14:00:00 IST (UTC+05:30)
@@ -34,9 +39,21 @@ export default function CountdownPage() {
     seconds: number;
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
-  const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const isMutedRef = useRef(false);
+  const sovereignAudio = useSovereignAudio();
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [activeTelemetryNode, setActiveTelemetryNode] = useState(0);
+
+  // Global keyboard shortcut: Backtick/Tilde opens terminal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '`' || e.key === '~') {
+        e.preventDefault();
+        setIsTerminalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Monolith card 3D tilt & mouse cursor effect
   const cardRef = useRef<HTMLDivElement>(null);
@@ -97,6 +114,7 @@ export default function CountdownPage() {
       setClearanceResult(data);
 
       if (data.unlocked || data.isApproved || data.status === 'APPROVED') {
+        sovereignAudio.playAccessGranted();
         if (typeof window !== 'undefined') {
           localStorage.setItem('zenvitra_applicant_email', clearanceEmail);
         }
@@ -104,6 +122,7 @@ export default function CountdownPage() {
           window.location.href = `/statussignin?email=${encodeURIComponent(clearanceEmail)}`;
         }, 1500);
       } else if (data.status === 'NOT_FOUND' || data.found === false) {
+        sovereignAudio.playWarningChime();
         if (typeof window !== 'undefined') {
           localStorage.setItem('zenvitra_applicant_email', clearanceEmail);
         }
@@ -112,6 +131,7 @@ export default function CountdownPage() {
         }, 2000);
       }
     } catch (err: any) {
+      sovereignAudio.playWarningChime();
       setClearanceResult({
         status: 'ERROR',
         message: 'Network verification failed. Please check your internet connection.',
@@ -121,57 +141,7 @@ export default function CountdownPage() {
     }
   };
 
-  const playTickSound = (isTick: boolean) => {
-    if (isMutedRef.current) return;
-    try {
-      const ctx = audioContextRef.current;
-      if (!ctx || ctx.state === 'suspended') return;
-
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      const freq = isTick ? 1600 : 1100;
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-      osc.frequency.exponentialRampToValueAtTime(120, now + 0.04);
-
-      gain.gain.setValueAtTime(0.35, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.06);
-    } catch {
-      // Audio context might not be active yet
-    }
-  };
-
   useEffect(() => {
-    isMutedRef.current = isAudioMuted;
-  }, [isAudioMuted]);
-
-  useEffect(() => {
-    const initAudio = () => {
-      if (!audioContextRef.current) {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        if (AudioCtx) {
-          audioContextRef.current = new AudioCtx();
-        }
-      }
-      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume();
-      }
-    };
-
-    window.addEventListener('click', initAudio, { once: true });
-    window.addEventListener('keydown', initAudio, { once: true });
-    window.addEventListener('touchstart', initAudio, { once: true });
-
-    let tickToggle = true;
-
     const interval = setInterval(() => {
       const now = Date.now();
       const difference = targetDate - now;
@@ -185,39 +155,17 @@ export default function CountdownPage() {
         const seconds = Math.floor((difference / 1000) % 60);
 
         setTimeLeft({ days, hours, minutes, seconds });
-        playTickSound(tickToggle);
-        tickToggle = !tickToggle;
       }
     }, 1000);
 
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('click', initAudio);
-      window.removeEventListener('keydown', initAudio);
-      window.removeEventListener('touchstart', initAudio);
-      if (audioContextRef.current) {
-        try {
-          audioContextRef.current.close();
-        } catch {}
-      }
-    };
+    return () => clearInterval(interval);
   }, []);
-
-  const toggleSound = () => {
-    if (!audioContextRef.current) {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioCtx) {
-        audioContextRef.current = new AudioCtx();
-      }
-    }
-    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume();
-    }
-    setIsAudioMuted((prev) => !prev);
-  };
 
   return (
     <div className="min-h-screen bg-[#020305] text-white flex flex-col justify-between selection:bg-amber-400 selection:text-black font-sans relative overflow-x-hidden">
+      {/* Interactive Constellation Network Canvas */}
+      <ConstellationCanvas />
+
       {/* Background Ambient Glows & Grid */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:28px_28px] opacity-60 z-0" />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[450px] bg-gradient-to-b from-amber-500/[0.08] via-rose-500/[0.04] to-transparent blur-[140px] pointer-events-none z-0" />
@@ -249,6 +197,20 @@ export default function CountdownPage() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Sovereign Terminal Trigger */}
+          <button
+            onClick={() => {
+              sovereignAudio.playTactileClick();
+              setIsTerminalOpen(true);
+            }}
+            type="button"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-amber-500/30 text-amber-300 font-mono text-[11px] transition shadow-sm"
+            title="Open Sovereign CLI Terminal (Press ` or ~)"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+            <span className="font-semibold">CLI [~]</span>
+          </button>
+
           {/* Sign In & Register Navigation */}
           <Link
             href="/statussignin"
@@ -283,23 +245,13 @@ export default function CountdownPage() {
             <span className="hidden sm:inline">Check Clearance</span>
           </button>
 
-          <button
-            onClick={toggleSound}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-mono text-neutral-300 transition cursor-pointer"
-            title={isAudioMuted ? 'Unmute Clock Audio' : 'Mute Clock Audio'}
-          >
-            {isAudioMuted ? (
-              <>
-                <VolumeX className="w-3.5 h-3.5 text-neutral-400" />
-                <span className="hidden sm:inline text-neutral-400">Audio Muted</span>
-              </>
-            ) : (
-              <>
-                <Volume2 className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                <span className="hidden sm:inline text-amber-300">Ticking Active</span>
-              </>
-            )}
-          </button>
+          {/* Sovereign Audio Spectrum Visualizer */}
+          <AudioSpectrumVisualizer
+            frequencyData={sovereignAudio.frequencyData}
+            isMuted={sovereignAudio.isMuted}
+            soundscape={sovereignAudio.soundscape}
+            onClick={() => sovereignAudio.cycleSoundscape()}
+          />
         </div>
       </header>
 
@@ -453,13 +405,71 @@ export default function CountdownPage() {
               ))}
             </div>
 
-            {/* Sound Indicator Notice */}
-            <div className="text-[11px] font-mono text-neutral-500 flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-ping" />
-              <span>Tick-tock telemetry active. Tap anywhere to toggle audio.</span>
+            {/* Live Global Node Telemetry Matrix Bar */}
+            <div className="pt-4 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-[10px]">
+              <div className="flex items-center gap-2 text-neutral-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="uppercase tracking-wider">SOVEREIGN TELEMETRY RELAYS:</span>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {[
+                  { city: 'DELHI [HQ]', ping: '4ms', status: 'PRIMARY' },
+                  { city: 'GENEVA', ping: '28ms', status: 'SYNC' },
+                  { city: 'LONDON', ping: '34ms', status: 'ACTIVE' },
+                  { city: 'SINGAPORE', ping: '18ms', status: 'ACTIVE' },
+                  { city: 'NEW YORK', ping: '45ms', status: 'STANDBY' },
+                ].map((node, i) => (
+                  <button
+                    key={node.city}
+                    onClick={() => {
+                      setActiveTelemetryNode(i);
+                      sovereignAudio.playTactileClick();
+                    }}
+                    type="button"
+                    className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                      activeTelemetryNode === i
+                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-[0_0_10px_rgba(217,119,6,0.2)]'
+                        : 'bg-white/[0.03] border-white/10 text-neutral-400 hover:text-neutral-200'
+                    }`}
+                  >
+                    <span className="font-bold">{node.city}</span>{' '}
+                    <span className="text-emerald-400">{node.ping}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sound & Terminal Guidance Notice */}
+            <div className="text-[11px] font-mono text-neutral-500 flex flex-wrap items-center justify-center gap-3">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400/80 animate-ping" />
+                <span>Synthesized spatial soundscape active.</span>
+              </span>
+              <span className="text-neutral-700">//</span>
+              <button
+                onClick={() => setIsTerminalOpen(true)}
+                className="text-amber-400/80 hover:text-amber-300 underline underline-offset-4 cursor-pointer"
+              >
+                Press ` or click CLI for command bridge
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Dynamic Holographic Passport (if email has been verified/entered) */}
+        {clearanceEmail && (
+          <div className="w-full max-w-sm mx-auto my-2 animate-in fade-in zoom-in duration-300">
+            <HolographicPassport
+              delegateEmail={clearanceEmail}
+              authCode={
+                clearanceResult?.unlocked || clearanceResult?.isApproved
+                  ? 'AUTH_GRANTED'
+                  : 'PROV_CLEARANCE'
+              }
+              onFlip={() => sovereignAudio.playTactileClick()}
+            />
+          </div>
+        )}
 
         {/* Founder's Note / Sovereign Communiqué */}
         <div className="w-full max-w-3xl text-left">
@@ -609,6 +619,14 @@ export default function CountdownPage() {
           </span>
         </div>
       </footer>
+
+      {/* Sovereign Command Console CLI */}
+      <SovereignTerminal
+        isOpen={isTerminalOpen}
+        onClose={() => setIsTerminalOpen(false)}
+        onKeystroke={() => sovereignAudio.playKeystroke()}
+        onAccessGranted={() => sovereignAudio.playAccessGranted()}
+      />
     </div>
   );
 }

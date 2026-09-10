@@ -55,6 +55,8 @@ import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import { getFounderDirective, FounderDirective } from '@/lib/founderControl';
 import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
+import { DiplomaticGlobe } from '@/components/visuals/DiplomaticGlobe';
+import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 
 interface HomeClientProps {
   session: any;
@@ -242,6 +244,9 @@ export default function HomeClient({ session }: HomeClientProps) {
     <div className="min-h-screen bg-[#030405] text-white overflow-x-hidden font-sans relative">
       {/* Ambient Aurora Background */}
       <AuroraBackground />
+
+      {/* Interactive Constellation Network Canvas */}
+      <ConstellationCanvas enableMouseInteraction={true} />
 
       {/* All content above aurora */}
       <div className="relative z-10">
@@ -722,6 +727,13 @@ export default function HomeClient({ session }: HomeClientProps) {
               );
             })}
           </StaggerChildren>
+        </section>
+
+        {/* Interactive Global Diplomatic Network Globe Showcase */}
+        <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-16">
+          <AnimatedSection>
+            <DiplomaticGlobe />
+          </AnimatedSection>
         </section>
 
         {/* 7.5 DISCUSSIONS THAT DON'T DISAPPEAR */}
