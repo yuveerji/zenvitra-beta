@@ -33,6 +33,10 @@ import {
   LegalSubsection
 } from '@/lib/legalData';
 
+// Helper to generate consistent element ID for each part
+const getPartId = (partNumber: string) =>
+  `part-${partNumber.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-')}`;
+
 export default function PrivacyPolicyPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activePart, setActivePart] = useState<string>('PART I');
@@ -74,43 +78,49 @@ export default function PrivacyPolicyPage() {
   const sidebarNavRef = useRef<HTMLElement | null>(null);
   const isClickScrollingRef = useRef(false);
 
-  // Sync active part on scroll using IntersectionObserver
+  // Sync active part on scroll
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isClickScrollingRef.current) return;
+    const handleScroll = () => {
+      if (isClickScrollingRef.current) return;
 
-        const visibleEntries = entries.filter((e) => e.isIntersecting);
-        if (visibleEntries.length > 0) {
-          visibleEntries.sort((a, b) => {
-            return Math.abs(a.boundingClientRect.top - 120) - Math.abs(b.boundingClientRect.top - 120);
-          });
-          const targetId = visibleEntries[0].target.id;
-          if (targetId) {
-            // Find corresponding part in privacyPolicyParts
-            const matched = privacyPolicyParts.find(
-              (p) => p.partNumber.toLowerCase().replace(/\s+/g, '-') === targetId
-            );
-            if (matched) {
-              setActivePart(matched.partNumber);
-            }
-          }
+      const headerOffset = 140; // Navbar height + breathing room
+      const partElements = privacyPolicyParts
+        .map((p) => ({
+          partNumber: p.partNumber,
+          el: document.getElementById(getPartId(p.partNumber))
+        }))
+        .filter((item): item is { partNumber: string; el: HTMLElement } => item.el !== null);
+
+      if (partElements.length === 0) return;
+
+      // Find the last section whose top has scrolled past the headerOffset
+      let currentPart = partElements[0].partNumber;
+      for (const item of partElements) {
+        const rect = item.el.getBoundingClientRect();
+        if (rect.top <= headerOffset) {
+          currentPart = item.partNumber;
+        } else {
+          break;
         }
-      },
-      {
-        rootMargin: '-10% 0px -70% 0px',
-        threshold: [0, 0.1, 0.25, 0.5]
       }
-    );
 
-    privacyPolicyParts.forEach((p) => {
-      const el = document.getElementById(p.partNumber.toLowerCase().replace(/\s+/g, '-'));
-      if (el) observer.observe(el);
-    });
+      // Check if user is scrolled near bottom of page
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60) {
+        currentPart = partElements[partElements.length - 1].partNumber;
+      }
 
-    return () => observer.disconnect();
+      setActivePart((prev) => (prev !== currentPart ? currentPart : prev));
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Run once on mount / update
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [filteredParts]);
 
   // Auto-scroll the sidebar item into view inside the sticky container when activePart changes
@@ -314,7 +324,7 @@ export default function PrivacyPolicyPage() {
                 return (
                   <a
                     key={p.partNumber}
-                    href={`#${p.partNumber.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`#${getPartId(p.partNumber)}`}
                     data-part-number={p.partNumber}
                     onClick={() => {
                       isClickScrollingRef.current = true;
@@ -353,7 +363,7 @@ export default function PrivacyPolicyPage() {
               filteredParts.map((part: LegalPart) => (
                 <section
                   key={part.partNumber}
-                  id={part.partNumber.toLowerCase().replace(/\\s+/g, '-')}
+                  id={getPartId(part.partNumber)}
                   className="space-y-6 pt-4 scroll-mt-28"
                 >
                   {/* Part Header */}
