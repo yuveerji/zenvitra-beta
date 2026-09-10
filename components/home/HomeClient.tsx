@@ -37,7 +37,8 @@ import {
   ArrowUpRight,
   Flame,
   Stethoscope,
-  AlertTriangle
+  AlertTriangle,
+  Gavel
 } from 'lucide-react';
 import MonolithCard from '@/components/home/MonolithCard';
 import LiveTelemetryBanner from '@/components/home/LiveTelemetryBanner';
@@ -57,7 +58,7 @@ import { getFounderDirective, FounderDirective } from '@/lib/founderControl';
 import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
 import { DiplomaticGlobe } from '@/components/visuals/DiplomaticGlobe';
 import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
-import { CinematicPortal } from '@/components/experience/CinematicPortal';
+import { ZenSpatialCard } from '@/components/experience/ZenSpatialCard';
 
 interface HomeClientProps {
   session: any;
@@ -107,11 +108,20 @@ export default function HomeClient({ session }: HomeClientProps) {
   const platformTargetHref = isUserLoggedIn ? '/pulse' : '/login?redirect=/pulse';
 
   const getProtocolTargetHref = (href: string) => {
-    if (href.startsWith('/pulse') || href.startsWith('/press') || href.startsWith('/events')) {
+    if (
+      href.startsWith('/pulse') ||
+      href.startsWith('/press') ||
+      href.startsWith('/events') ||
+      href.startsWith('/committee') ||
+      href.startsWith('/mun') ||
+      href.startsWith('/chat') ||
+      href.startsWith('/docs')
+    ) {
       return isUserLoggedIn ? href : `/login?redirect=${encodeURIComponent(href)}`;
     }
     return href;
   };
+
   const ethosCards = [
     {
       icon: User,
@@ -139,71 +149,108 @@ export default function HomeClient({ session }: HomeClientProps) {
     { title: 'Social Good', desc: '25% of all profits directly fund student education & civic kits every 4 months.', icon: Heart },
   ];
 
-  const coreProtocols = [
+  const sovereignWorlds = [
     {
       title: 'ZEN.PULSE',
-      subtitle: 'Sovereign Social Protocol & FLUX',
-      description: 'Zero-ad, chronological social engine featuring vertical FLUX reels, Sparks dispatches, multimedia feeds, and instant direct comms.',
+      subtitle: 'The Living World & Social Nerve',
+      worldNumber: 'WORLD 01',
+      category: 'LIVING SOCIAL CANVAS',
+      description: 'Zero-ad chronological discourse, real-time pulse map, vertical FLUX media reels, and decentralized spark dispatches.',
       icon: Radio,
-      badge: 'SOCIAL PROTOCOL',
-      accentColor: 'text-rose-400 bg-rose-500/10 border-rose-500/25 shadow-[0_0_15px_rgba(244,63,94,0.15)]',
-      badgeColor: 'text-rose-300 border-rose-500/30 bg-rose-500/10 group-hover:border-rose-400/50',
-      arrowColor: 'group-hover:text-rose-300',
+      badge: 'LIVE FREQUENCY',
+      accentColor: 'text-rose-400 bg-rose-500/10 border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.15)]',
+      glowColor: 'rgba(244, 63, 94, 0.2)',
+      tagColor: 'text-rose-300/80 bg-rose-500/10 border-rose-500/20',
+      actionText: 'Enter Pulse World',
       href: '/pulse',
+      tags: ['Pulse Map', 'FLUX Reels', 'Zero Algorithms', 'Direct Comms'],
     },
     {
-      title: 'ZEN.DISCUSSIONS',
-      subtitle: 'Open Civic Debate Trees',
-      description: 'Structured argumentation trees, empirical source verification, counter-argument forks, and high-signal youth debates that outlast 24-hour cycles.',
+      title: 'ZEN.CHAMBER',
+      subtitle: 'The Deliberation Sanctuary',
+      worldNumber: 'WORLD 02',
+      category: 'PARLIAMENTARY ORDER',
+      description: 'Procedural rules of order, live General Speakers List clock, unmoderated caucus collaboration, and auditable roll calls.',
+      icon: Gavel,
+      badge: 'QUORUM READY',
+      accentColor: 'text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)]',
+      glowColor: 'rgba(245, 158, 11, 0.2)',
+      tagColor: 'text-amber-300/80 bg-amber-500/10 border-amber-500/20',
+      actionText: 'Enter Chamber',
+      href: '/committee',
+      tags: ['GSL Timers', 'Motion Queue', 'Caucus Engine', 'Roll Calls'],
+    },
+    {
+      title: 'ZEN.MUN',
+      subtitle: 'Global Model UN Arena',
+      worldNumber: 'WORLD 03',
+      category: 'MULTILATERAL DIPLOMACY',
+      description: 'Conference command center, dynamic country portfolio matrices, live delegate performance radar, and resolution voting.',
+      icon: Crown,
+      badge: 'GENERAL ASSEMBLY',
+      accentColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)]',
+      glowColor: 'rgba(6, 182, 212, 0.2)',
+      tagColor: 'text-cyan-300/80 bg-cyan-500/10 border-cyan-500/20',
+      actionText: 'Enter MUN Arena',
+      href: '/mun',
+      tags: ['Performance Radar', 'Country Matrix', 'Resolution Dais', 'Crisis Flow'],
+    },
+  ];
+
+  const platformEngines = [
+    {
+      title: 'ZEN.CHAT',
+      subtitle: 'Diplomatic Comms & Channels',
+      description: 'Real-time encrypted messaging, bilateral caucus sidebars, and rapid committee correspondence.',
       icon: MessageSquare,
-      badge: 'DEBATE PROTOCOL',
-      accentColor: 'text-amber-400 bg-amber-500/10 border-amber-500/25 shadow-[0_0_15px_rgba(245,158,11,0.15)]',
-      badgeColor: 'text-amber-300 border-amber-500/30 bg-amber-500/10 group-hover:border-amber-400/50',
-      arrowColor: 'group-hover:text-amber-300',
-      href: '/discussions',
+      badge: 'COMMS',
+      accentColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25',
+      badgeColor: 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10',
+      arrowColor: 'group-hover:text-emerald-300',
+      href: '/chat',
     },
     {
-      title: 'ZEN.SOLUTIONS',
-      subtitle: 'Open Policy & Whitepaper Vault',
-      description: 'Collaborative policy chamber where youth and researchers co-author actionable policy drafts, tabling resolutions, and community solutions.',
-      icon: Lightbulb,
-      badge: 'POLICY ENGINE',
-      accentColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/25 shadow-[0_0_15px_rgba(34,211,238,0.15)]',
-      badgeColor: 'text-cyan-300 border-cyan-500/30 bg-cyan-500/10 group-hover:border-cyan-400/50',
-      arrowColor: 'group-hover:text-cyan-300',
-      href: '/solutions',
-    },
-    {
-      title: 'ZEN.PRESS',
-      subtitle: 'Independent Investigative Newsroom',
-      description: 'Open journalism wire publishing permanent investigative reports, essays, photojournalism, and verified editorial dossiers free of ad incentives.',
-      icon: Newspaper,
-      badge: 'MEDIA PROTOCOL',
-      accentColor: 'text-purple-400 bg-purple-500/10 border-purple-500/25 shadow-[0_0_15px_rgba(168,85,247,0.15)]',
-      badgeColor: 'text-purple-300 border-purple-500/30 bg-purple-500/10 group-hover:border-purple-400/50',
-      arrowColor: 'group-hover:text-purple-300',
-      href: '/press',
-    },
-    {
-      title: 'ZEN.EVENTS & CHAMBERS',
-      subtitle: 'Assembly & Summit Operating System',
-      description: 'Comprehensive assembly OS with live parliamentary speaker lists, real-time caucus voting, crisis flashes, and permanent participation dossiers.',
+      title: 'ZEN.EVENTS',
+      subtitle: 'Assembly & Summit Registry',
+      description: 'Digital conference passes, country matrix allocation, QR check-in terminal, and live schedules.',
       icon: Calendar,
-      badge: 'ASSEMBLY OS',
-      accentColor: 'text-blue-400 bg-blue-500/10 border-blue-500/25 shadow-[0_0_15px_rgba(59,130,246,0.15)]',
-      badgeColor: 'text-blue-300 border-blue-500/30 bg-blue-500/10 group-hover:border-blue-400/50',
+      badge: 'SUMMITS',
+      accentColor: 'text-blue-400 bg-blue-500/10 border-blue-500/25',
+      badgeColor: 'text-blue-300 border-blue-500/30 bg-blue-500/10',
       arrowColor: 'group-hover:text-blue-300',
       href: '/events',
     },
     {
+      title: 'ZEN.PRESS',
+      subtitle: 'Independent Youth Newsroom',
+      description: 'Open journalism wire publishing investigative reports, photojournalism, and verified editorial dossiers.',
+      icon: Newspaper,
+      badge: 'MEDIA WIRE',
+      accentColor: 'text-purple-400 bg-purple-500/10 border-purple-500/25',
+      badgeColor: 'text-purple-300 border-purple-500/30 bg-purple-500/10',
+      arrowColor: 'group-hover:text-purple-300',
+      href: '/press',
+    },
+    {
+      title: 'ZEN.DOCS',
+      subtitle: 'Diplomatic Treaty Studio',
+      description: 'Collaborative resolution drafting studio with UN operative clause templates, bilateral treaty stamps, and dais export.',
+      icon: FileText,
+      badge: 'DRAFTING',
+      accentColor: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/25',
+      badgeColor: 'text-indigo-300 border-indigo-500/30 bg-indigo-500/10',
+      arrowColor: 'group-hover:text-indigo-300',
+      href: '/docs',
+    },
+    {
       title: 'ZEN.IMPACT',
-      subtitle: '25% Profit Endowment & Grants Ledger',
-      description: 'Hardcoded constitutional treasury allocating 25% of all profits every 4 months, verified by offline handover videos on ZEN.FLUX and public receipts.',
+      subtitle: '25% Profit Escrow & Ledger',
+      description: 'Hardcoded constitutional treasury allocating 25% of all profits every 4 months with public video proof.',
       icon: Heart,
-      badge: '25% PROFIT ESCROW',
-      accentColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25 shadow-[0_0_15px_rgba(52,211,153,0.15)]',
-      badgeColor: 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10 group-hover:border-emerald-400/50',
-      arrowColor: 'group-hover:text-emerald-300',
+      badge: '25% ESCROW',
+      accentColor: 'text-teal-400 bg-teal-500/10 border-teal-500/25',
+      badgeColor: 'text-teal-300 border-teal-500/30 bg-teal-500/10',
+      arrowColor: 'group-hover:text-teal-300',
       href: '/impact',
     },
   ];
@@ -254,9 +301,6 @@ export default function HomeClient({ session }: HomeClientProps) {
 
         {/* 1. Global Luxury Navigation */}
         <Navbar />
-
-        {/* 1.5 Cinematic Portal Experience Acts */}
-        <CinematicPortal />
 
         {/* 2. Hero Section (Comfortable spacing & bidirectional entrance) */}
         <section className="max-w-7xl mx-auto px-6 sm:px-12 pt-28 sm:pt-36 lg:pt-40 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -672,65 +716,157 @@ export default function HomeClient({ session }: HomeClientProps) {
           </StaggerChildren>
         </section>
 
-        {/* 7. The Sovereign Subsystems Matrix */}
-        <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-20 space-y-12">
+        {/* 7. The Sovereign Universe Matrix: Three Worlds & Platform Ecosystem */}
+        <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-24 space-y-16">
           <AnimatedSection>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-white/10">
               <div className="space-y-2 text-left">
-                <span className="font-mono text-[10px] tracking-[0.3em] text-neutral-400 uppercase">
-                  SOVEREIGN NETWORK PROTOCOLS
-                </span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                  <span className="font-mono text-[10px] tracking-[0.25em] text-neutral-400 uppercase">
+                    ZENVITRA ARCHITECTURAL TOPOLOGY
+                  </span>
+                </div>
                 <h2 className="font-display font-medium text-3xl sm:text-4xl text-white tracking-tight">
-                  The Core Subsystems Matrix
+                  One Universe. Three Sovereign Worlds.
                 </h2>
               </div>
               <p className="font-mono text-xs text-neutral-400 max-w-sm text-left sm:text-right">
-                Six active modular engines powering youth discourse, policy drafting, journalism, assembly governance, and direct impact.
+                One coherent visual universe branching into three immersive spatial experiences, anchored by a sovereign platform foundation.
               </p>
             </div>
           </AnimatedSection>
 
-          <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left" staggerDelay={0.1}>
-            {coreProtocols.map((protocol) => {
-              const Icon = protocol.icon;
-              return (
-                <StaggerItem key={protocol.title}>
-                  <Link href={getProtocolTargetHref(protocol.href)} className="block group h-full">
-                    <SpotlightCard className="h-full flex flex-col justify-between">
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                          <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${protocol.accentColor}`}>
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <span className={`font-mono text-[9px] tracking-widest px-3 py-1 rounded-full border uppercase transition ${protocol.badgeColor}`}>
-                            {protocol.badge}
-                          </span>
-                        </div>
+          {/* Tier 1: The Three Flagship Worlds */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[11px] tracking-[0.2em] text-neutral-400 uppercase font-semibold">
+                THE EXPERIENCES // FLAGSHIP SPATIAL WORLDS
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/15 via-white/5 to-transparent" />
+            </div>
 
-                        <div className="space-y-1.5">
-                          <h3 className="font-display font-medium text-xl text-white group-hover:text-neutral-100 transition-colors">
-                            {protocol.title}
-                          </h3>
-                          <p className="text-xs font-mono text-neutral-400 font-medium">
-                            {protocol.subtitle}
+            <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left" staggerDelay={0.12}>
+              {sovereignWorlds.map((world) => {
+                const Icon = world.icon;
+                return (
+                  <StaggerItem key={world.title}>
+                    <Link href={getProtocolTargetHref(world.href)} className="block group h-full">
+                      <ZenSpatialCard
+                        glowColor={world.glowColor}
+                        className="h-full transform transition duration-300 group-hover:-translate-y-1"
+                      >
+                        <div className="p-6 sm:p-7 flex flex-col justify-between h-full space-y-6">
+                          <div className="space-y-5">
+                            {/* Card Top Header */}
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-[10px] tracking-widest text-neutral-400 uppercase font-semibold">
+                                {world.worldNumber}
+                              </span>
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-white/10 bg-white/[0.03] text-[9px] font-mono tracking-wider text-neutral-300 uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                {world.badge}
+                              </span>
+                            </div>
+
+                            {/* Icon & Title */}
+                            <div className="flex items-start gap-4">
+                              <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300 ${world.accentColor}`}>
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <div className="space-y-1">
+                                <h3 className="font-display font-medium text-2xl text-white tracking-tight group-hover:text-white transition-colors">
+                                  {world.title}
+                                </h3>
+                                <p className="text-xs font-mono text-neutral-400">
+                                  {world.subtitle}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Description */}
+                            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-sans font-light">
+                              {world.description}
+                            </p>
+
+                            {/* Feature Chips */}
+                            <div className="flex flex-wrap gap-1.5 pt-2">
+                              {world.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className={`font-mono text-[10px] px-2.5 py-1 rounded-lg border ${world.tagColor}`}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Action Footer */}
+                          <div className="pt-5 border-t border-white/[0.08] flex items-center justify-between font-mono text-xs text-neutral-300 group-hover:text-white transition">
+                            <span className="font-medium tracking-wide">{world.actionText}</span>
+                            <ArrowRight className="w-4 h-4 transform group-hover:translate-x-2 transition-transform duration-300" />
+                          </div>
+                        </div>
+                      </ZenSpatialCard>
+                    </Link>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerChildren>
+          </div>
+
+          {/* Tier 2: The Supporting Platform Ecosystem */}
+          <div className="space-y-6 pt-4">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[11px] tracking-[0.2em] text-neutral-400 uppercase font-semibold">
+                THE PLATFORM // INTEGRATED PROTOCOLS
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/15 via-white/5 to-transparent" />
+            </div>
+
+            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-left" staggerDelay={0.08}>
+              {platformEngines.map((engine) => {
+                const Icon = engine.icon;
+                return (
+                  <StaggerItem key={engine.title}>
+                    <Link href={getProtocolTargetHref(engine.href)} className="block group h-full">
+                      <SpotlightCard className="h-full flex flex-col justify-between p-5">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${engine.accentColor}`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <span className={`font-mono text-[8px] tracking-widest px-2 py-0.5 rounded-full border uppercase transition ${engine.badgeColor}`}>
+                              {engine.badge}
+                            </span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <h4 className="font-display font-medium text-base text-white group-hover:text-neutral-100 transition-colors">
+                              {engine.title}
+                            </h4>
+                            <p className="text-[11px] font-mono text-neutral-400 font-normal">
+                              {engine.subtitle}
+                            </p>
+                          </div>
+
+                          <p className="text-[11px] text-neutral-400 leading-relaxed font-light font-sans line-clamp-3">
+                            {engine.description}
                           </p>
                         </div>
 
-                        <p className="text-xs text-neutral-400 leading-relaxed font-light font-sans">
-                          {protocol.description}
-                        </p>
-                      </div>
-
-                      <div className={`pt-6 border-t border-white/5 flex items-center justify-between font-mono text-xs text-neutral-400 transition mt-6 ${protocol.arrowColor}`}>
-                        <span>Initialize Protocol</span>
-                        <ArrowRight className="w-4 h-4 transform group-hover:translate-x-2 transition-transform duration-300" />
-                      </div>
-                    </SpotlightCard>
-                  </Link>
-                </StaggerItem>
-              );
-            })}
-          </StaggerChildren>
+                        <div className={`pt-4 border-t border-white/5 flex items-center justify-between font-mono text-[11px] text-neutral-400 transition mt-4 ${engine.arrowColor}`}>
+                          <span>Launch</span>
+                          <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1.5 transition-transform duration-300" />
+                        </div>
+                      </SpotlightCard>
+                    </Link>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerChildren>
+          </div>
         </section>
 
         {/* Interactive Global Diplomatic Network Globe Showcase */}
