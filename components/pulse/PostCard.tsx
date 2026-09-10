@@ -21,12 +21,14 @@ import {
   Radio,
   Zap,
   CheckCircle2,
-  Crown
+  Crown,
+  MessageSquareShare
 } from 'lucide-react';
 import { PulsePost } from '@/types/pulse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { ImageGrid } from './ImageGrid';
 import { getStoryFontStyle } from '@/lib/storyFonts';
+import { ShareToChatModal } from './ShareToChatModal';
 
 interface PostCardProps {
   post: PulsePost;
@@ -43,6 +45,7 @@ export function PostCard({ post }: PostCardProps) {
   const [bookmarked, setBookmarked] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [showShareToChat, setShowShareToChat] = useState(false);
 
   const hasLiked = post.likedBy.includes(currentUserId);
   const hasReposted = post.repostedBy.includes(currentUserId);
@@ -293,6 +296,19 @@ export function PostCard({ post }: PostCardProps) {
             </div>
 
             <div className="flex items-center gap-1.5">
+              {/* Send to ZEN.CHAT */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowShareToChat(true);
+                }}
+                className="p-2 rounded-xl text-neutral-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer"
+                title="Send to ZEN.CHAT"
+              >
+                <MessageSquareShare className="w-3.5 h-3.5" />
+              </button>
+
               {/* Bookmark */}
               <button
                 onClick={() => setBookmarked(!bookmarked)}
@@ -316,6 +332,12 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         </div>
       </div>
+
+      <ShareToChatModal
+        isOpen={showShareToChat}
+        onClose={() => setShowShareToChat(false)}
+        post={post}
+      />
     </article>
   );
 }

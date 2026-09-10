@@ -62,7 +62,8 @@ import {
   Clock,
   ExternalLink,
   ChevronLeft,
-  ArrowLeft
+  ArrowLeft,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
@@ -76,8 +77,11 @@ import { NewChatActionModal } from '@/components/chat/NewChatActionModal';
 import { StickersDrawer } from '@/components/chat/StickersDrawer';
 import { ZenChatSettingsModal } from '@/components/chat/ZenChatSettingsModal';
 import { DiscordRoleSettingsModal } from '@/components/chat/DiscordRoleSettingsModal';
+import { ZenChatCommandBar } from '@/components/chat/ZenChatCommandBar';
+import { ZenIdentityCardModal } from '@/components/chat/ZenIdentityCardModal';
+import { ZenNativeMessageCard } from '@/components/chat/ZenNativeMessageCard';
 
-/* ── Seeded Sovereign Communities (Discord + WhatsApp style) ── */
+/* ── Seeded Sovereign Communities (Horizon MUN, RISMUN, Plenary) ── */
 const DEFAULT_COMMUNITIES: ChatCommunity[] = [
   {
     id: 'comm-direct',
@@ -86,6 +90,241 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
     badge: 'DMs',
     roles: [],
     channels: []
+  },
+  {
+    id: 'comm-horizon-mun',
+    name: 'Horizon MUN',
+    icon: '🌐',
+    badge: 'HORIZON',
+    description: 'Premier Model UN Conference — Official Ecosystem Space',
+    categories: [
+      { id: 'cat-horizon-bulletins', name: '[BULLETINS]' },
+      { id: 'cat-horizon-committees', name: '[CHAMBERS]' },
+      { id: 'cat-horizon-press', name: '[PRESS CORPS]' },
+      { id: 'cat-horizon-voice', name: '[DAIS VOICE]' },
+    ],
+    roles: [
+      {
+        id: 'role-sec-gen',
+        name: '🏛️ | Secretary General',
+        color: '#f59e0b',
+        hoist: true,
+        position: 1,
+        permissions: {
+          manageServer: true,
+          manageRoles: true,
+          manageChannels: true,
+          kickMembers: true,
+          banMembers: true,
+          sendMessages: true,
+          embedLinks: true,
+          attachFiles: true,
+          connectVoice: true,
+          speakVoice: true,
+          prioritySpeaker: true
+        }
+      },
+      {
+        id: 'role-eb',
+        name: '⚖️ | Executive Board (EB)',
+        color: '#a855f7',
+        hoist: true,
+        position: 2,
+        permissions: {
+          manageServer: false,
+          manageRoles: false,
+          manageChannels: true,
+          kickMembers: true,
+          banMembers: false,
+          sendMessages: true,
+          embedLinks: true,
+          attachFiles: true,
+          connectVoice: true,
+          speakVoice: true,
+          prioritySpeaker: true
+        }
+      },
+      {
+        id: 'role-press-officer',
+        name: '📰 | International Press',
+        color: '#06b6d4',
+        hoist: true,
+        position: 3,
+        permissions: {
+          manageServer: false,
+          manageRoles: false,
+          manageChannels: false,
+          kickMembers: false,
+          banMembers: false,
+          sendMessages: true,
+          embedLinks: true,
+          attachFiles: true,
+          connectVoice: true,
+          speakVoice: true,
+          prioritySpeaker: false
+        }
+      },
+      {
+        id: 'role-delegate',
+        name: 'Delegate',
+        color: '#94a3b8',
+        hoist: false,
+        position: 4,
+        isDefault: true,
+        permissions: {
+          manageServer: false,
+          manageRoles: false,
+          manageChannels: false,
+          kickMembers: false,
+          banMembers: false,
+          sendMessages: true,
+          embedLinks: true,
+          attachFiles: true,
+          connectVoice: true,
+          speakVoice: true,
+          prioritySpeaker: false
+        }
+      }
+    ],
+    members: [
+      {
+        id: 'u_yuveer',
+        name: 'Yuveer',
+        username: 'yuveer',
+        status: 'online',
+        roleIds: ['role-sec-gen'],
+        activity: { type: 'custom', name: 'Presiding Plenary', badge: 'DAIS' },
+        customStatus: 'Horizon MUN Secretariat'
+      },
+      {
+        id: 'u_aarav',
+        name: 'Aarav Sharma',
+        username: 'aarav_in',
+        status: 'online',
+        roleIds: ['role-eb'],
+        customStatus: 'Chair — UNGA DISEC'
+      },
+      {
+        id: 'u_riya',
+        name: 'Riya Patel',
+        username: 'riya_un',
+        status: 'online',
+        roleIds: ['role-delegate'],
+        customStatus: 'Delegate of Japan'
+      },
+      {
+        id: 'u_press',
+        name: 'Elena Rostova',
+        username: 'elena_press',
+        status: 'online',
+        roleIds: ['role-press-officer'],
+        customStatus: 'Reuters Press Bureau'
+      }
+    ],
+    channels: [
+      { id: 'ch-hor-announcements', name: 'announcements', type: 'announcement', categoryId: 'cat-horizon-bulletins', description: 'Secretariat dispatches and schedule alerts' },
+      { id: 'ch-hor-secretariat', name: 'secretariat-eb', type: 'text', categoryId: 'cat-horizon-bulletins', description: 'Dais coordination & crisis directives' },
+      { id: 'ch-hor-delegates', name: 'delegates-assembly', type: 'text', categoryId: 'cat-horizon-committees', description: 'Plenary chamber and caucus debate' },
+      { id: 'ch-hor-press', name: 'international-press', type: 'text', categoryId: 'cat-horizon-press', description: 'Press communiqués and interview requests' },
+      { id: 'ch-hor-eb', name: 'eb-caucus', type: 'text', categoryId: 'cat-horizon-committees', description: 'Executive Board procedural consultations' },
+      { id: 'ch-hor-general', name: 'general-lounge', type: 'text', categoryId: 'cat-horizon-committees', description: 'Informal delegate lounge' },
+      { 
+        id: 'ch-hor-voice-main', 
+        name: 'Floor Mic [Plenary]', 
+        type: 'voice', 
+        categoryId: 'cat-horizon-voice', 
+        description: 'Live floor microphone & speeches',
+        userLimit: 25,
+        activeVoiceUsers: []
+      }
+    ],
+    groups: [
+      { id: 'grp-hor-g77', name: 'G-77 Sovereign Coalition', description: 'Bloc treaty coordination', icon: '🌐', membersCount: 16 },
+      { id: 'grp-hor-drafting', name: 'Drafting Working Group Alpha', description: 'Resolution clause crafting', icon: '📝', membersCount: 9 }
+    ]
+  },
+  {
+    id: 'comm-rismun-2027',
+    name: 'RISMUN 2027',
+    icon: '🏛️',
+    badge: 'RISMUN',
+    description: 'International Parliamentary & Diplomatic Simulation',
+    categories: [
+      { id: 'cat-ris-alerts', name: '[DISPATCHES]' },
+      { id: 'cat-ris-chambers', name: '[COMMITTEES]' },
+      { id: 'cat-ris-voice', name: '[LIVE AUDIO]' },
+    ],
+    roles: [
+      {
+        id: 'role-ris-chair',
+        name: '🏛️ | Dais Chair',
+        color: '#f59e0b',
+        hoist: true,
+        position: 1,
+        permissions: {
+          manageServer: true,
+          manageRoles: true,
+          manageChannels: true,
+          kickMembers: true,
+          banMembers: true,
+          sendMessages: true,
+          embedLinks: true,
+          attachFiles: true,
+          connectVoice: true,
+          speakVoice: true,
+          prioritySpeaker: true
+        }
+      },
+      {
+        id: 'role-ris-delegate',
+        name: 'Delegate',
+        color: '#94a3b8',
+        hoist: false,
+        position: 2,
+        isDefault: true,
+        permissions: {
+          manageServer: false,
+          manageRoles: false,
+          manageChannels: false,
+          kickMembers: false,
+          banMembers: false,
+          sendMessages: true,
+          embedLinks: true,
+          attachFiles: true,
+          connectVoice: true,
+          speakVoice: true,
+          prioritySpeaker: false
+        }
+      }
+    ],
+    members: [
+      {
+        id: 'u_yuveer',
+        name: 'Yuveer',
+        username: 'yuveer',
+        status: 'online',
+        roleIds: ['role-ris-chair'],
+        customStatus: 'Chief Dais Moderator'
+      }
+    ],
+    channels: [
+      { id: 'ch-ris-bulletins', name: 'bulletins', type: 'announcement', categoryId: 'cat-ris-alerts', description: 'Official RISMUN announcements' },
+      { id: 'ch-ris-unga', name: 'unga-committee', type: 'text', categoryId: 'cat-ris-chambers', description: 'United Nations General Assembly debates' },
+      { id: 'ch-ris-unsc', name: 'unsc-crisis', type: 'text', categoryId: 'cat-ris-chambers', description: 'Security Council rapid emergency response' },
+      { id: 'ch-ris-press', name: 'press-wire', type: 'text', categoryId: 'cat-ris-alerts', description: 'Official international press releases' },
+      { 
+        id: 'ch-ris-voice-dais', 
+        name: 'Chamber Audio Stage', 
+        type: 'voice', 
+        categoryId: 'cat-ris-voice', 
+        description: 'Speakers list audio floor',
+        userLimit: 15,
+        activeVoiceUsers: []
+      }
+    ],
+    groups: [
+      { id: 'grp-ris-secretariat', name: 'Secretariat Ops', description: 'Dais operations', icon: '⚡', membersCount: 6 }
+    ]
   },
   {
     id: 'comm-un-plenary',
@@ -447,6 +686,8 @@ export function ZenChatMesh() {
     currentUser,
     currentUserName,
     currentUserUsername,
+    sendNativeObjectMessage,
+    votePoll,
     toggleMuteConversation,
     deleteConversation,
   } = useZenChat();
@@ -500,6 +741,8 @@ export function ZenChatMesh() {
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showManageMembersModal, setShowManageMembersModal] = useState(false);
   const [showRoleSettingsModal, setShowRoleSettingsModal] = useState(false);
+  const [showCommandBar, setShowCommandBar] = useState(false);
+  const [identityCardUser, setIdentityCardUser] = useState<any | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
 
   /* Dialer & Creation Forms */
@@ -609,44 +852,8 @@ export function ZenChatMesh() {
 
   /* Messages displayed in current view */
   const displayedMessages = useMemo(() => {
-    const list = messagesMap[currentChatContextId] || [];
-    if (list.length > 0) return list;
-
-    // Fallbacks if channel or group has no messages yet
-    if (activeCommunityGroup) {
-      return [
-        {
-          id: `seed_grp_${activeCommunityGroup.id}`,
-          conversationId: currentChatContextId,
-          senderId: 'sys-group',
-          senderName: activeCommunityGroup.name,
-          senderUsername: 'group_system',
-          senderRole: '🏛️ GROUP',
-          content: `Welcome to ${activeCommunityGroup.name}. Direct group chat for coordinating without sub-channels.`,
-          timestamp: 'Today',
-          isSelf: false,
-          reactions: []
-        }
-      ];
-    }
-    if (activeChannel) {
-      return [
-        {
-          id: `seed_chan_${activeChannel.id}`,
-          conversationId: currentChatContextId,
-          senderId: 'sys-chan',
-          senderName: `#${activeChannel.name}`,
-          senderUsername: 'channel_wire',
-          senderRole: '👑 SECRETARIAT',
-          content: `Welcome to #${activeChannel.name}. ${activeChannel.description || 'Channel discussion is live.'}`,
-          timestamp: 'Today',
-          isSelf: false,
-          reactions: []
-        }
-      ];
-    }
-    return [];
-  }, [messagesMap, currentChatContextId, activeCommunityGroup, activeChannel]);
+    return messagesMap[currentChatContextId] || [];
+  }, [messagesMap, currentChatContextId]);
 
   // Scroll to bottom on message change
   useEffect(() => {
@@ -2040,7 +2247,35 @@ export function ZenChatMesh() {
 
         {/* ── Messages Feed ── */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {displayedMessages.map((msg) => {
+          {displayedMessages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center p-6 space-y-3 select-none">
+              <div className="w-14 h-14 rounded-3xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-cyan-400/80 shadow-inner">
+                {activeChannel ? (
+                  <Hash className="w-7 h-7 text-cyan-400/70" />
+                ) : activeCommunityGroup ? (
+                  <Users className="w-7 h-7 text-purple-400/70" />
+                ) : (
+                  <MessageSquare className="w-7 h-7 text-cyan-400/70" />
+                )}
+              </div>
+              <div className="max-w-xs space-y-1">
+                <h4 className="font-display font-bold text-sm text-white">
+                  {activeChannel
+                    ? `Welcome to #${activeChannel.name}`
+                    : activeCommunityGroup
+                    ? `Welcome to ${activeCommunityGroup.name}`
+                    : activeConversation
+                    ? `Direct Channel with ${activeConversation.name}`
+                    : 'Encrypted Sovereign Channel'}
+                </h4>
+                <p className="font-sans text-xs text-neutral-400 leading-relaxed">
+                  {activeChannel?.description ||
+                    'Zero telemetry. Send the first dispatch, proposal, or launch a poll with ⌘K.'}
+                </p>
+              </div>
+            </div>
+          ) : (
+            displayedMessages.map((msg) => {
             const isSelf = msg.isSelf;
             const isSnap = Boolean(msg.snap);
             const isSticker = Boolean(msg.stickerUrl);
@@ -2059,10 +2294,36 @@ export function ZenChatMesh() {
                   isSelf ? 'ml-auto flex-row-reverse' : 'mr-auto'
                 }`}
               >
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center font-bold text-xs shrink-0">
+                {/* Avatar (Clickable to open ZENVITRA Identity Card) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const matchedProfile = profiles.find(
+                      (p) => p.username.toLowerCase() === msg.senderUsername.toLowerCase()
+                    );
+                    setIdentityCardUser({
+                      id: msg.senderId,
+                      name: msg.senderName,
+                      username: msg.senderUsername,
+                      avatar: msg.senderAvatar || matchedProfile?.avatar,
+                      role: roleLabel || 'DELEGATE',
+                      status: 'online',
+                      bio: matchedProfile?.bio || 'Sovereign Diplomatic Delegate on ZENVITRA.',
+                      isVerified: matchedProfile?.isVerified || isSelf,
+                      stats: {
+                        muns: 12,
+                        articles: 8,
+                        pulse: 143,
+                        chambers: 5,
+                        events: 9,
+                      }
+                    });
+                  }}
+                  className="w-8 h-8 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center font-bold text-xs shrink-0 hover:ring-2 hover:ring-cyan-400 transition cursor-pointer"
+                  title={`View ${msg.senderName}'s Diplomatic Identity`}
+                >
                   {msg.senderName?.charAt(0) || 'D'}
-                </div>
+                </button>
 
                 <div className="space-y-1">
                   {/* Sender Name & Discord Role & Timestamp */}
@@ -2076,7 +2337,7 @@ export function ZenChatMesh() {
                       <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-bold tracking-wider ${
                         roleLabel.includes('FOUNDER')
                           ? 'bg-amber-400/10 border border-amber-400/30 text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.15)]'
-                          : roleLabel.includes('SECRETARIAT') || roleLabel.includes('GROUP')
+                          : roleLabel.includes('SECRETARIAT') || roleLabel.includes('GROUP') || roleLabel.includes('EB')
                           ? 'bg-purple-500/10 border border-purple-500/30 text-purple-300'
                           : roleLabel.includes('CHAIR')
                           ? 'bg-cyan-400/10 border border-cyan-400/30 text-cyan-300'
@@ -2091,12 +2352,23 @@ export function ZenChatMesh() {
                   </div>
 
                   {/* Message Bubble */}
-                  <div className={`p-3.5 rounded-3xl text-xs sm:text-sm font-sans space-y-2 ${
+                  <div className={`p-3.5 rounded-3xl text-xs sm:text-sm font-sans space-y-2.5 ${
                     isSelf 
                       ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
                       : 'bg-[#0e0f14] border border-white/10 text-neutral-200'
                   }`}>
                     
+                    {/* 0. Native ZENVITRA Message Object (Doc, MUN, Chamber, Pulse, Poll, Event) */}
+                    {msg.nativeObject && (
+                      <ZenNativeMessageCard
+                        nativeObject={msg.nativeObject}
+                        messageId={msg.id}
+                        isSelf={isSelf}
+                        currentUserId={currentUserUsername || 'you'}
+                        onVotePoll={(mid, optId) => votePoll(mid, optId, currentChatContextId)}
+                      />
+                    )}
+
                     {/* 1. Glimpse Snap Card */}
                     {isSnap && msg.snap && (
                       <div className="space-y-2">
@@ -2139,7 +2411,7 @@ export function ZenChatMesh() {
                     )}
 
                     {/* 3. Text Message Content */}
-                    {!isSnap && !isSticker && (
+                    {!isSnap && !isSticker && msg.content && (
                       <p className="leading-relaxed whitespace-pre-wrap font-sans">
                         {msg.content}
                       </p>
@@ -2156,7 +2428,8 @@ export function ZenChatMesh() {
                 </div>
               </div>
             );
-          })}
+          })
+          )}
           <div ref={messagesEndRef} />
         </div>
 
@@ -2170,8 +2443,18 @@ export function ZenChatMesh() {
           />
 
           <form onSubmit={handleSendMessage} className="max-w-5xl mx-auto flex items-center gap-2">
-            {/* Action Group: Snap + Sticker */}
+            {/* Action Group: ⌘K Command Bar + Snap + Sticker */}
             <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowCommandBar(true)}
+                className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:to-purple-500/30 border border-cyan-500/40 text-cyan-300 font-mono text-xs flex items-center gap-1.5 transition-all duration-150 cursor-pointer shadow-sm"
+                title="Universal Command Palette (⌘K)"
+              >
+                <Zap className="w-4 h-4 text-cyan-400" />
+                <span className="hidden md:inline font-bold">⌘K</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setShowGlimpseSnapModal(true)}
@@ -3066,6 +3349,121 @@ export function ZenChatMesh() {
           showToast('Member role assignments updated');
         }}
         onToast={showToast}
+      />
+
+      {/* ── Universal ⌘K Command Palette ── */}
+      <ZenChatCommandBar
+        isOpen={showCommandBar}
+        onClose={() => setShowCommandBar(false)}
+        onTriggerSlashAction={(action) => {
+          if (action === 'poll') {
+            sendNativeObjectMessage(
+              {
+                type: 'poll',
+                id: `poll_${Date.now()}`,
+                title: 'Caucus Quorum Poll',
+                actionLabel: 'Vote',
+                actionUrl: '#',
+                pollData: {
+                  id: `polldata_${Date.now()}`,
+                  question: 'Should we introduce the Sovereign AI Governance draft clause now?',
+                  options: [
+                    { id: 'opt-1', text: 'Yes, table immediately', votes: [] },
+                    { id: 'opt-2', text: 'Require bilateral review first', votes: [] },
+                    { id: 'opt-3', text: 'Abstain', votes: [] }
+                  ],
+                  totalVotes: 0,
+                  allowMultiple: false
+                }
+              },
+              '📊 New Caucus Poll Dispatched',
+              currentChatContextId
+            );
+            showToast('📊 Poll dispatched to conversation');
+          } else if (action === 'doc') {
+            sendNativeObjectMessage(
+              {
+                type: 'doc',
+                id: `doc_${Date.now()}`,
+                title: 'RISMUN 2027 — UNGA Draft Resolution #04',
+                subtitle: 'Sovereign Digital Commons and Multilateral Protocol Covenant',
+                badge: 'UN-DRAFT',
+                actionLabel: 'Open in ZEN.DOCS',
+                actionUrl: '/docs',
+                metadata: {
+                  clausesCount: 14,
+                  docCode: 'RES/2027/04'
+                }
+              },
+              '📄 Shared Document Workspace',
+              currentChatContextId
+            );
+            showToast('📄 Document card dispatched to conversation');
+          } else if (action === 'mun') {
+            sendNativeObjectMessage(
+              {
+                type: 'mun',
+                id: `mun_${Date.now()}`,
+                title: 'Horizon MUN — UNGA DISEC Committee',
+                subtitle: 'Debate resumes tomorrow at 09:00 AM CET in Plenary Hall',
+                badge: 'DISEC',
+                actionLabel: 'Enter Committee Dais',
+                actionUrl: '/committee',
+                metadata: {
+                  schedule: 'Tomorrow • 09:00 AM CET'
+                }
+              },
+              '🏛️ Committee Chamber Alert',
+              currentChatContextId
+            );
+            showToast('🏛️ MUN Committee card dispatched');
+          } else if (action === 'chamber') {
+            sendNativeObjectMessage(
+              {
+                type: 'chamber',
+                id: `chamb_${Date.now()}`,
+                title: 'Youth Policy Reform Deliberation Stage',
+                subtitle: 'Live structured debate with active speakers list and recorded decisions',
+                badge: 'POLICY',
+                actionLabel: 'Join Stage',
+                actionUrl: '/chamber'
+              },
+              '🧭 Chamber Session Invitation',
+              currentChatContextId
+            );
+            showToast('🧭 Chamber stage card dispatched');
+          } else if (action === 'pulse') {
+            sendNativeObjectMessage(
+              {
+                type: 'pulse',
+                id: `pulse_${Date.now()}`,
+                title: 'Should India change its education system for the AI age?',
+                subtitle: 'Civic pulse signal by @yuveer with 143 signals and 28 verified citations',
+                badge: 'CIVIC',
+                actionLabel: 'Open in Pulse',
+                actionUrl: '/pulse'
+              },
+              '📡 Shared Civic Signal',
+              currentChatContextId
+            );
+            showToast('📡 Pulse post card dispatched');
+          }
+        }}
+      />
+
+      {/* ── ZENVITRA Diplomatic Identity Card Modal ── */}
+      <ZenIdentityCardModal
+        isOpen={Boolean(identityCardUser)}
+        user={identityCardUser}
+        onClose={() => setIdentityCardUser(null)}
+        onDirectMessage={(username, name) => {
+          const convId = createDirectChat(username, name);
+          setActiveConversationId(convId);
+          showToast(`💬 Opened direct chat with ${name}`);
+        }}
+        onStartCall={(username, callType) => {
+          handleInitiateDirectCall(username, callType);
+        }}
       />
     </div>
   );

@@ -18,11 +18,13 @@ import {
   MoreHorizontal,
   Sparkles,
   ExternalLink,
-  Award
+  Award,
+  MessageSquareShare
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { ImageGrid } from './ImageGrid';
 import { getStoryFontStyle } from '@/lib/storyFonts';
+import { ShareToChatModal } from './ShareToChatModal';
 
 export function PostDetail() {
   const {
@@ -37,6 +39,7 @@ export function PostDetail() {
   const [copied, setCopied] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [showShareToChat, setShowShareToChat] = useState(false);
 
   const post = activePostId ? getPostById(activePostId) : undefined;
 
@@ -178,6 +181,18 @@ export function PostDetail() {
                       <span>Post Options</span>
                       <span className="text-[9px] text-zinc-500">#{post.id.slice(-4)}</span>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowShareToChat(true);
+                        setShowSettingsMenu(false);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-2.5 text-cyan-300 hover:text-white hover:bg-cyan-500/15 transition cursor-pointer"
+                    >
+                      <MessageSquareShare className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <span>Forward to ZEN.CHAT</span>
+                    </button>
 
                     <button
                       type="button"
@@ -489,6 +504,14 @@ export function PostDetail() {
           })
         )}
       </div>
+
+      {post && (
+        <ShareToChatModal
+          isOpen={showShareToChat}
+          onClose={() => setShowShareToChat(false)}
+          post={post}
+        />
+      )}
     </div>
   );
 }

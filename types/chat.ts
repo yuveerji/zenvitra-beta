@@ -39,6 +39,35 @@ export interface GlimpseSnap {
   createdAt: string;
 }
 
+export type ZenMessageObjectType = 'doc' | 'mun' | 'chamber' | 'pulse' | 'poll' | 'event';
+
+export interface ZenPollOption {
+  id: string;
+  text: string;
+  votes: string[]; // user IDs or usernames
+}
+
+export interface ZenPollData {
+  id: string;
+  question: string;
+  options: ZenPollOption[];
+  totalVotes: number;
+  closed?: boolean;
+  allowMultiple?: boolean;
+}
+
+export interface ZenMessageObject {
+  type: ZenMessageObjectType;
+  id: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  actionLabel: string;
+  actionUrl: string;
+  metadata?: Record<string, any>;
+  pollData?: ZenPollData;
+}
+
 export interface ChatMessage {
   id: string;
   conversationId: string;
@@ -56,6 +85,7 @@ export interface ChatMessage {
   voiceDurationSeconds?: number;
   snap?: GlimpseSnap;
   stickerUrl?: string;
+  nativeObject?: ZenMessageObject;
   replyTo?: {
     id: string;
     senderName: string;

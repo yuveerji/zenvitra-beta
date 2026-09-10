@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Globe, Copy, Check, Users, UserPlus, Shield } from 'lucide-react';
+import { X, Globe, Copy, Check, Users, UserPlus, Shield, MessageSquare, Send } from 'lucide-react';
 import { ZenDocument, ZenDocCollaborator } from '@/types/docs';
+import { useZenChat } from '@/context/ZenChatPlatformContext';
 
 export interface ShareModalProps {
   isOpen: boolean;
@@ -13,10 +14,34 @@ export interface ShareModalProps {
 }
 
 export function ShareModal({ isOpen, onClose, activeDoc, onToast }: ShareModalProps) {
+  const { sendNativeObjectMessage, activeConversationId } = useZenChat();
   const [inviteInput, setInviteInput] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<'EDITOR' | 'COMMENTER' | 'VIEWER'>('EDITOR');
   const [copied, setCopied] = useState<boolean>(false);
   const [collaborators, setCollaborators] = useState<ZenDocCollaborator[]>(activeDoc.collaborators || []);
+
+  const handleSendToChat = () => {
+    sendNativeObjectMessage(
+      {
+        type: 'doc',
+        id: activeDoc.id,
+        title: activeDoc.title,
+        subtitle: `${activeDoc.docCode || 'UN-DRAFT'} • ${activeDoc.committeeOrChamber || 'Plenary'}`,
+        badge: 'LIVE RESOLUTION',
+        actionLabel: 'Open in ZEN.DOCS',
+        actionUrl: `/docs?doc=${activeDoc.id}`,
+        metadata: {
+          docCode: activeDoc.docCode,
+          status: activeDoc.status,
+          committee: activeDoc.committeeOrChamber,
+        }
+      },
+      `Shared sovereign resolution draft: ${activeDoc.title}`,
+      activeConversationId || undefined
+    );
+    onToast('Transmitted document card to ZEN.CHAT');
+    onClose();
+  };
 
   useEffect(() => {
     if (activeDoc.collaborators) {
@@ -224,10 +249,34 @@ export function ShareModal({ isOpen, onClose, activeDoc, onToast }: ShareModalPr
                 </div>
               </div>
 
-              {/* General Access Link Section */}
-              <div className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between gap-3 text-xs">
+              {/* Transmit to ZEN.CHAT */}
+              <div className="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 shrink-0">
+                    <MessageSquare className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-white font-medium block truncate">Transmit to ZEN.CHAT</span>
+                    <span className="text-[11px] text-neutral-400 block truncate">
+                      Forward live resolution card into your conversations
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSendToChat}
+                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm"
+                >
+                  <Send className="w-3 h-3" />
+                  <span>Send to Chat</span>
+                </button>
+              </div>
+
+              {/* General Access Link Section */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-1.5 rounded-lg bg-white/10 text-white shrink-0">
                     <Globe className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">

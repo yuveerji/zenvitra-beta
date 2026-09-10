@@ -32,7 +32,9 @@ interface ZenChatContextType {
 
   /* Messages */
   messagesMap: Record<string, ChatMessage[]>;
-  sendMessage: (content: string, attachments?: any[], replyTo?: any, targetConvId?: string, senderRole?: string) => void;
+  sendMessage: (content: string, attachments?: any[], replyTo?: any, targetConvId?: string, senderRole?: string, nativeObject?: any) => void;
+  sendNativeObjectMessage: (nativeObject: any, content?: string, targetConvId?: string) => void;
+  votePoll: (messageId: string, optionId: string, targetConvId?: string) => void;
   sendVoiceNote: (durationOrUrl: number | string, durationSeconds?: number, targetConvId?: string) => void;
   sendSnap: (snapData: { mediaUrl: string; caption?: string; stickers?: string[]; isOneView?: boolean; audience?: 'all' | 'followers' | 'close_friends' }, targetConvId?: string) => void;
   openSnap: (messageId: string, targetConvId?: string) => void;
@@ -190,7 +192,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       setZenNotes(validNotes);
 
       const sgs = localStorage.getItem(LS_GLIMPSE_SCORE);
-      setGlimpseScore(safeParse(sgs, { sent: 48, received: 64, streak: 7 }));
+      setGlimpseScore(safeParse(sgs, { sent: 0, received: 0, streak: 0 }));
 
       const sstk = localStorage.getItem(LS_STICKERS);
       setCustomStickers(safeParse(sstk, DEFAULT_STICKERS));
@@ -254,9 +256,9 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
   );
 
   /* Send Message */
-  const sendMessage = useCallback((content: string, attachments?: any[], replyTo?: any, targetConvId?: string, senderRole?: string) => {
+  const sendMessage = useCallback((content: string, attachments?: any[], replyTo?: any, targetConvId?: string, senderRole?: string, nativeObject?: any) => {
     const convId = targetConvId || activeConversationId;
-    if (!convId || (!content.trim() && (!attachments || attachments.length === 0))) return;
+    if (!convId || (!content.trim() && (!attachments || attachments.length === 0) && !nativeObject)) return;
 
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newMsg: ChatMessage = {
@@ -272,6 +274,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       reactions: [],
       attachments,
       replyTo,
+      nativeObject,
       status: 'delivered',
     };
 
@@ -280,12 +283,16 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
     saveMessages({ ...messagesMap, [convId]: nextList });
 
     // Update conversation last message if it's a conversation
+    const snippetText = nativeObject 
+      ? `[${nativeObject.type.toUpperCase()}]: ${nativeObject.title}`
+      : (content.trim() || '📎 Media attachment');
+
     const updatedConvs = conversations.map((c) => {
       if (c.id === convId) {
         return {
           ...c,
           lastMessage: {
-            text: content.trim() || '📎 Media attachment',
+            text: snippetText,
             timestamp: timeStr,
             senderName: currentUserName,
           }
@@ -307,9 +314,60 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
         content: content.trim(),
         attachments,
         replyTo,
+        nativeObject,
       })
     }).catch(() => {});
   }, [activeConversationId, currentUserId, currentUserName, currentUserUsername, messagesMap, conversations, saveMessages, saveConversations]);
+
+  /* Send Native ZENVITRA Object Message (Doc, MUN, Chamber, Pulse, Poll) */
+  const sendNativeObjectMessage = useCallback((nativeObject: any, content = '', targetConvId?: string) => {
+    sendMessage(content, undefined, undefined, targetConvId, undefined, nativeObject);
+  }, [sendMessage]);
+
+  /* Vote on In-Chat Poll */
+  const votePoll = useCallback((messageId: string, optionId: string, targetConvId?: string) => {
+    const convId = targetConvId || activeConversationId;
+    if (!convId) return;
+
+    const currentList = messagesMap[convId] || [];
+    const nextList = currentList.map((m) => {
+      if (m.id === messageId && m.nativeObject?.pollData) {
+        const poll = m.nativeObject.pollData;
+        const voter = currentUserUsername || currentUserId;
+        
+        // Remove previous votes if not multiple
+        const updatedOptions = poll.options.map((opt) => {
+          const hasVoted = opt.votes.includes(voter);
+          if (opt.id === optionId) {
+            return hasVoted 
+              ? { ...opt, votes: opt.votes.filter((v) => v !== voter) }
+              : { ...opt, votes: [...opt.votes, voter] };
+          } else {
+            return poll.allowMultiple 
+              ? opt 
+              : { ...opt, votes: opt.votes.filter((v) => v !== voter) };
+          }
+        });
+
+        const totalVotes = updatedOptions.reduce((acc, opt) => acc + opt.votes.length, 0);
+
+        return {
+          ...m,
+          nativeObject: {
+            ...m.nativeObject,
+            pollData: {
+              ...poll,
+              options: updatedOptions,
+              totalVotes,
+            }
+          }
+        };
+      }
+      return m;
+    });
+
+    saveMessages({ ...messagesMap, [convId]: nextList });
+  }, [activeConversationId, currentUserId, currentUserUsername, messagesMap, saveMessages]);
 
   /* Send Snap (Glimpses in ZenChat) */
   const sendSnap = useCallback((snapData: { mediaUrl: string; caption?: string; stickers?: string[]; isOneView?: boolean; audience?: 'all' | 'followers' | 'close_friends' }, targetConvId?: string) => {
@@ -816,6 +874,8 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       statuses,
       setActiveConversationId,
       sendMessage,
+      sendNativeObjectMessage,
+      votePoll,
       sendVoiceNote,
       sendSnap,
       openSnap,
@@ -872,6 +932,8 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       statuses,
       setActiveConversationId,
       sendMessage,
+      sendNativeObjectMessage,
+      votePoll,
       sendVoiceNote,
       sendSnap,
       openSnap,
