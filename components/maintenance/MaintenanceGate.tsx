@@ -93,10 +93,12 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
         if (res.ok) {
           const data = await res.json();
           setMaintenanceActive(Boolean(data.maintenanceMode));
-          // Update local mirror as well
+          // Update local mirror only if value changed to avoid redundant event loops
           if (typeof window !== 'undefined' && data) {
             const currentLocal = getProtocolControls();
-            localStorage.setItem('zenvitra_protocol_controls_v1', JSON.stringify({ ...currentLocal, ...data }));
+            if (JSON.stringify(currentLocal) !== JSON.stringify({ ...currentLocal, ...data })) {
+              localStorage.setItem('zenvitra_protocol_controls_v1', JSON.stringify({ ...currentLocal, ...data }));
+            }
           }
         } else {
           const p = getProtocolControls();
@@ -111,24 +113,24 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
 
     syncServerProtocols();
 
-    // Relaxed 60s heartbeat only when tab is visible
+    // Relaxed 5-minute heartbeat only when tab is visible
     const interval = setInterval(() => {
       if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
         syncServerProtocols().catch(() => {});
       }
-    }, 60000);
+    }, 5 * 60 * 1000);
 
     let syncTimeout: any = null;
     const debouncedSync = () => {
       if (syncTimeout) clearTimeout(syncTimeout);
       syncTimeout = setTimeout(() => {
         syncServerProtocols().catch(() => {});
-      }, 500);
+      }, 1000);
     };
 
     const onStorage = (e: StorageEvent) => {
-      // Only sync if related to protocol or founder credentials
-      if (!e.key || e.key.includes('protocol') || e.key.includes('founder') || e.key.includes('vault')) {
+      // Only sync if related to protocol or founder credentials changed from another window
+      if (e.key && (e.key === 'zenvitra_protocol_controls_v1' || e.key.includes('founder') || e.key.includes('vault'))) {
         debouncedSync();
       }
     };
@@ -142,7 +144,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('zenvitra_protocol_update', debouncedSync);
     };
-  }, [user, profile]);
+  }, [user?.id, profile?.username, profile?.role]);
 
   const handleUnlockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
