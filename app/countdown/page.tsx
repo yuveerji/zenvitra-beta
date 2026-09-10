@@ -526,6 +526,10 @@ export default function CountdownPage() {
               </blockquote>
 
               <p>
+                Just as Bhagat Singh, Chandrashekhar Azad, and Veer Savarkar forged their revolution through unyielding defiance, intellectual grit, and uncompromising sacrifice, we too are bringing a revolution. This is not a passive plea for change; it is an active, sovereign uprising to break institutional monopolies and hand real power, discourse, and technology back to the youth.
+              </p>
+
+              <p>
                 That is why we initiated this temporary systemic pause and rescheduled platform ignition to <span className="text-amber-300 font-semibold">October 2, 2026, at 2:00 PM IST</span>. Our engineering and dais councils are currently hardening our distributed infrastructure, integrating SHA-256 cryptographic resolution sealing, and refining our real-time Rules of Procedure engine.
               </p>
 

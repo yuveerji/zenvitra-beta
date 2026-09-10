@@ -257,6 +257,18 @@ IT SHOULD BE SOMETHING THEY HELP CREATE.
 
 ———
 
+REVOLUTIONS ARE NEVER WON BY ASKING FOR PERMISSION.
+
+Just as Bhagat Singh, Chandrashekhar Azad, and Veer Savarkar sparked their revolution through unyielding defiance, fiery conviction, and uncompromising sacrifice, we too are bringing a revolution.
+
+Not a quiet compromise.
+Not waiting for established gatekeepers to approve our vision.
+Not settling for comfortable mediocrity.
+
+True revolutions happen when people decide to act with absolute courage, ideological depth, and sovereign agency. That is the spirit that fuels ZENVITRA.
+
+———
+
 WE ARE NOT HERE TO BE ANOTHER COMPANY.
 
 We are here to build something worth remembering.
@@ -400,7 +412,7 @@ WELCOME TO ZENVITRA.
 The future isn't waiting.
 Neither are we.`,
   author: 'Yuveer Chhatwani (Founder & System Architect, ZENVITRA)',
-  tag: 'FOUNDER\'S NOTE • SEPTEMBER 2026',
+  tag: 'FOUNDER\'S NOTE • OCTOBER 2026',
   priority: 'CONSTITUTIONAL',
   isActive: true,
   updatedAt: new Date().toISOString(),
