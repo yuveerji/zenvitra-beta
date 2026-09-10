@@ -141,6 +141,28 @@ export default function CountdownPage() {
     }
   };
 
+  const playTickSoundRef = useRef(sovereignAudio.playTickSound);
+  useEffect(() => {
+    playTickSoundRef.current = sovereignAudio.playTickSound;
+  }, [sovereignAudio.playTickSound]);
+
+  // First user interaction activates audio context if browser requires gesture
+  useEffect(() => {
+    const handleFirstGesture = () => {
+      if (sovereignAudio.isMuted) {
+        sovereignAudio.cycleSoundscape();
+      }
+    };
+    window.addEventListener('click', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
+    window.addEventListener('touchstart', handleFirstGesture, { once: true });
+    return () => {
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+      window.removeEventListener('touchstart', handleFirstGesture);
+    };
+  }, [sovereignAudio]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -155,6 +177,7 @@ export default function CountdownPage() {
         const seconds = Math.floor((difference / 1000) % 60);
 
         setTimeLeft({ days, hours, minutes, seconds });
+        playTickSoundRef.current();
       }
     }, 1000);
 

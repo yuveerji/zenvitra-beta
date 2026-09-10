@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-export type AmbientSoundscape = 'DEEP_VOID' | 'QUANTUM_PULSE' | 'OFF';
+export type AmbientSoundscape = 'TICKING' | 'DEEP_VOID' | 'QUANTUM_PULSE' | 'OFF';
 
 export interface SovereignAudioState {
   soundscape: AmbientSoundscape;
   isMuted: boolean;
   frequencyData: Uint8Array;
   cycleSoundscape: () => void;
+  playTickSound: () => void;
   playTactileClick: () => void;
   playAccessGranted: () => void;
   playWarningChime: () => void;
@@ -28,6 +29,7 @@ export function useSovereignAudio(): SovereignAudioState {
     biquad: BiquadFilterNode;
     gain: GainNode;
   } | null>(null);
+  const tickAudioBufferRef = useRef<AudioBuffer | null>(null);
 
   const rafRef = useRef<number | null>(null);
 
@@ -56,6 +58,19 @@ export function useSovereignAudio(): SovereignAudioState {
       audioCtxRef.current = ctx;
       masterGainRef.current = master;
       analyserRef.current = analyser;
+
+      // Preload user's ticking audio file
+      if (!tickAudioBufferRef.current) {
+        fetch('/assets/ticking.mp3')
+          .then((res) => res.arrayBuffer())
+          .then((arrayBuffer) => ctx.decodeAudioData(arrayBuffer))
+          .then((decoded) => {
+            tickAudioBufferRef.current = decoded;
+          })
+          .catch(() => {
+            // Fallback handled if network/file unavailable
+          });
+      }
 
       return ctx;
     } catch {
@@ -104,7 +119,7 @@ export function useSovereignAudio(): SovereignAudioState {
       droneNodesRef.current = null;
     }
 
-    if (mode === 'OFF') {
+    if (mode === 'OFF' || mode === 'TICKING') {
       if (masterGainRef.current) {
         masterGainRef.current.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.2);
       }
@@ -151,8 +166,9 @@ export function useSovereignAudio(): SovereignAudioState {
     if (ctx && ctx.state === 'suspended') ctx.resume();
 
     setSoundscape((prev) => {
-      let next: AmbientSoundscape = 'DEEP_VOID';
-      if (prev === 'OFF') next = 'DEEP_VOID';
+      let next: AmbientSoundscape = 'TICKING';
+      if (prev === 'OFF') next = 'TICKING';
+      else if (prev === 'TICKING') next = 'DEEP_VOID';
       else if (prev === 'DEEP_VOID') next = 'QUANTUM_PULSE';
       else next = 'OFF';
 
@@ -161,6 +177,57 @@ export function useSovereignAudio(): SovereignAudioState {
       return next;
     });
   }, [initAudio, startDrone]);
+
+  // User-provided ticking sound player with synthesized fallback
+  const playTickSound = useCallback(() => {
+    const ctx = initAudio();
+    if (!ctx || isMuted || soundscape === 'OFF') return;
+
+    if (tickAudioBufferRef.current) {
+      try {
+        const source = ctx.createBufferSource();
+        source.buffer = tickAudioBufferRef.current;
+
+        const gainNode = ctx.createGain();
+        gainNode.gain.setValueAtTime(0.75, ctx.currentTime);
+
+        source.connect(gainNode);
+        if (analyserRef.current) {
+          gainNode.connect(analyserRef.current);
+        } else {
+          gainNode.connect(ctx.destination);
+        }
+
+        source.start(ctx.currentTime);
+      } catch {
+        // Fallback below
+      }
+    } else {
+      // Procedural fallback until buffer finishes loading
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1400, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.04);
+
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+        osc.connect(gain);
+        if (analyserRef.current) {
+          gain.connect(analyserRef.current);
+        } else {
+          gain.connect(ctx.destination);
+        }
+
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.06);
+      } catch {
+        // Ignore
+      }
+    }
+  }, [initAudio, isMuted, soundscape]);
 
   // SFX Synthesizers
   const playTactileClick = useCallback(() => {
@@ -270,6 +337,7 @@ export function useSovereignAudio(): SovereignAudioState {
     isMuted,
     frequencyData,
     cycleSoundscape,
+    playTickSound,
     playTactileClick,
     playAccessGranted,
     playWarningChime,
