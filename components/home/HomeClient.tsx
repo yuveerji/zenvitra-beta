@@ -115,7 +115,8 @@ export default function HomeClient({ session }: HomeClientProps) {
       href.startsWith('/committee') ||
       href.startsWith('/mun') ||
       href.startsWith('/chat') ||
-      href.startsWith('/docs')
+      href.startsWith('/docs') ||
+      href.startsWith('/solutions')
     ) {
       return isUserLoggedIn ? href : `/login?redirect=${encodeURIComponent(href)}`;
     }
@@ -241,6 +242,17 @@ export default function HomeClient({ session }: HomeClientProps) {
       badgeColor: 'text-indigo-300 border-indigo-500/30 bg-indigo-500/10',
       arrowColor: 'group-hover:text-indigo-300',
       href: '/docs',
+    },
+    {
+      title: 'ZEN.SOLUTIONS',
+      subtitle: 'Open Policy & Whitepaper Vault',
+      description: 'Collaborative policy chamber where youth and researchers co-author actionable policy drafts, tabling resolutions, and community solutions.',
+      icon: Lightbulb,
+      badge: 'POLICY ENGINE',
+      accentColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/25',
+      badgeColor: 'text-cyan-300 border-cyan-500/30 bg-cyan-500/10',
+      arrowColor: 'group-hover:text-cyan-300',
+      href: '/solutions',
     },
     {
       title: 'ZEN.IMPACT',
@@ -719,7 +731,7 @@ export default function HomeClient({ session }: HomeClientProps) {
         {/* 7. The Sovereign Universe Matrix: Three Worlds & Platform Ecosystem */}
         <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-24 space-y-16">
           <AnimatedSection>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-white/10">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-white/10">
               <div className="space-y-2 text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
@@ -731,7 +743,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                   One Universe. Three Sovereign Worlds.
                 </h2>
               </div>
-              <p className="font-mono text-xs text-neutral-400 max-w-sm text-left sm:text-right">
+              <p className="font-mono text-xs text-neutral-400 max-w-md text-left lg:text-right leading-relaxed">
                 One coherent visual universe branching into three immersive spatial experiences, anchored by a sovereign platform foundation.
               </p>
             </div>
@@ -825,40 +837,40 @@ export default function HomeClient({ session }: HomeClientProps) {
               <div className="h-px flex-1 bg-gradient-to-r from-white/15 via-white/5 to-transparent" />
             </div>
 
-            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-left" staggerDelay={0.08}>
+            <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left" staggerDelay={0.08}>
               {platformEngines.map((engine) => {
                 const Icon = engine.icon;
                 return (
                   <StaggerItem key={engine.title}>
                     <Link href={getProtocolTargetHref(engine.href)} className="block group h-full">
-                      <SpotlightCard className="h-full flex flex-col justify-between p-5">
-                        <div className="space-y-4">
+                      <SpotlightCard className="h-full flex flex-col justify-between p-6 sm:p-7 rounded-2xl border border-white/[0.08] hover:border-white/20 transition-all duration-300">
+                        <div className="space-y-5">
                           <div className="flex items-center justify-between">
-                            <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${engine.accentColor}`}>
-                              <Icon className="w-4 h-4" />
+                            <div className={`w-11 h-11 rounded-xl border flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${engine.accentColor}`}>
+                              <Icon className="w-5 h-5" />
                             </div>
-                            <span className={`font-mono text-[8px] tracking-widest px-2 py-0.5 rounded-full border uppercase transition ${engine.badgeColor}`}>
+                            <span className={`font-mono text-[9px] tracking-widest px-3 py-1 rounded-full border uppercase transition ${engine.badgeColor}`}>
                               {engine.badge}
                             </span>
                           </div>
 
-                          <div className="space-y-1">
-                            <h4 className="font-display font-medium text-base text-white group-hover:text-neutral-100 transition-colors">
+                          <div className="space-y-1.5">
+                            <h4 className="font-display font-medium text-xl text-white group-hover:text-neutral-100 transition-colors">
                               {engine.title}
                             </h4>
-                            <p className="text-[11px] font-mono text-neutral-400 font-normal">
+                            <p className="text-xs font-mono text-neutral-400 font-normal">
                               {engine.subtitle}
                             </p>
                           </div>
 
-                          <p className="text-[11px] text-neutral-400 leading-relaxed font-light font-sans line-clamp-3">
+                          <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-light font-sans">
                             {engine.description}
                           </p>
                         </div>
 
-                        <div className={`pt-4 border-t border-white/5 flex items-center justify-between font-mono text-[11px] text-neutral-400 transition mt-4 ${engine.arrowColor}`}>
-                          <span>Launch</span>
-                          <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1.5 transition-transform duration-300" />
+                        <div className={`pt-5 border-t border-white/5 flex items-center justify-between font-mono text-xs text-neutral-400 transition mt-6 ${engine.arrowColor}`}>
+                          <span>Launch Protocol</span>
+                          <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1.5 transition-transform duration-300" />
                         </div>
                       </SpotlightCard>
                     </Link>
