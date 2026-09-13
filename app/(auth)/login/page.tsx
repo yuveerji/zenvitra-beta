@@ -283,7 +283,7 @@ function LoginForm() {
     setErrorMessage(null);
     setLoading(true);
     try {
-      const result = await nextAuthSignIn(provider, { callbackUrl: targetDestination, redirect: true });
+      const result = (await nextAuthSignIn(provider, { callbackUrl: targetDestination, redirect: true })) as any;
       if (result?.error) {
         throw new Error(result.error);
       }
