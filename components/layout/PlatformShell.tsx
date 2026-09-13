@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -195,6 +195,40 @@ export function PlatformShell({
 
   const isExpanded = isPinned || isHovered || isMobileOpen;
 
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (isPinned) return;
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+      setIsMoreMenuOpen(false);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
+
+  // Collapse navigation on route transition
+  useEffect(() => {
+    setIsHovered(false);
+    setIsMobileOpen(false);
+    setIsMoreMenuOpen(false);
+  }, [pathname]);
+
   // Auto-dismiss More menu when cursor leaves sidebar or sidebar collapses
   useEffect(() => {
     if (!isHovered && !isPinned && !isMobileOpen) {
@@ -227,88 +261,113 @@ export function PlatformShell({
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col md:flex-row font-sans relative selection:bg-white/20 selection:text-white">
-      {/* ─── DESKTOP STATIC PLACEHOLDER RAIL (PREVENTS MAIN CONTENT JITTER) ─── */}
-      <div className="hidden md:block w-[72px] shrink-0 pointer-events-none" />
-
-      {/* ─── MOBILE BACKDROP ─── */}
-      {isMobileOpen && (
-        <div
-          onClick={() => setIsMobileOpen(false)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 md:hidden"
-        />
-      )}
-
-      {/* ─── INSTAGRAM-STYLE LEFT SIDEBAR (COLLAPSED DEFAULT, EXPANDS ON HOVER) ─── */}
-      <motion.aside
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          setIsMoreMenuOpen(false);
+      {/* ─── THREE LINES HAMBURGER TRIGGER BUTTON (COLLAPSED DEFAULT) ─── */}
+      <button
+        type="button"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => {
+          if (isExpanded) {
+            setIsHovered(false);
+            setIsPinned(false);
+            setIsMobileOpen(false);
+          } else {
+            setIsHovered(true);
+            setIsMobileOpen(true);
+          }
         }}
+        className={`fixed top-3.5 left-3.5 z-[105] h-10 w-10 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-xl ${
+          isExpanded
+            ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105'
+            : 'bg-[#080a10]/90 hover:bg-zinc-800/90 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105'
+        }`}
+        title="Navigation Menu (Hover or click to open)"
+        aria-label="Toggle Navigation Menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* ─── BACKDROP (WHEN EXPANDED ON DESKTOP HOVER OR MOBILE) ─── */}
+      <AnimatePresence>
+        {isExpanded && !isPinned && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={() => {
+              setIsHovered(false);
+              setIsMobileOpen(false);
+            }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[108]"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ─── SIDEBAR DRAWER (COLLAPSED TO 3-LINES BUTTON BY DEFAULT, EXPANDS ON HOVER) ─── */}
+      <motion.aside
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        initial={false}
         animate={{
-          width: isMobileOpen ? 280 : isExpanded ? 244 : 72,
-          x: 0,
+          x: isExpanded ? 0 : -320,
+          opacity: isExpanded ? 1 : 0,
+          pointerEvents: isExpanded ? 'auto' : 'none',
         }}
         transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-        className={`bg-black/95 backdrop-blur-2xl border-r border-zinc-800/80 p-3.5 flex flex-col justify-between shrink-0 select-none z-40 fixed top-0 left-0 h-screen max-h-screen overflow-y-auto no-scrollbar shadow-[10px_0_40px_rgba(0,0,0,0.8)] ${
-          isMobileOpen ? 'flex w-[280px] max-w-[85vw]' : 'hidden md:flex'
-        }`}
+        className="bg-[#05070d]/98 backdrop-blur-3xl border-r border-zinc-800/90 p-3.5 flex flex-col justify-between shrink-0 select-none z-[110] fixed top-0 left-0 h-screen max-h-screen overflow-y-auto no-scrollbar shadow-[25px_0_70px_rgba(0,0,0,0.95)] w-[275px] max-w-[85vw]"
       >
         <div className="space-y-6">
           {/* Brand Logo & Pin/Lock / Close Toggle */}
           <div className="flex items-center justify-between px-1.5 pt-1.5">
             <Link
               href="/"
-              onClick={() => setIsMobileOpen(false)}
+              onClick={() => {
+                setIsHovered(false);
+                setIsMobileOpen(false);
+              }}
               className="flex items-center gap-3 group min-w-0"
-              title={!isExpanded && !isMobileOpen ? 'Zenvitra' : undefined}
             >
               <div className="w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                 <img src="/assets/logo.png" alt="Zenvitra Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]" />
               </div>
 
-              <AnimatePresence>
-                {(isExpanded || isMobileOpen) && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -6 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex flex-col min-w-0"
-                  >
-                    <span 
-                      className="uppercase text-[#f5f1ea] font-bold group-hover:text-white transition-colors tracking-[0.14em] truncate text-base leading-none"
-                      style={{
-                        fontFamily: 'Clash Display, var(--font-space), sans-serif',
-                        fontWeight: 700,
-                      }}
-                    >
-                      ZENVITRA
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="flex flex-col min-w-0">
+                <span 
+                  className="uppercase text-[#f5f1ea] font-bold group-hover:text-white transition-colors tracking-[0.14em] truncate text-base leading-none"
+                  style={{
+                    fontFamily: 'Clash Display, var(--font-space), sans-serif',
+                    fontWeight: 700,
+                  }}
+                >
+                  ZENVITRA
+                </span>
+              </div>
             </Link>
 
-            {/* Desktop Pin / Mobile Close Button */}
-            {isMobileOpen ? (
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => setIsMobileOpen(false)}
-                className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
-                title="Close Navigation"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            ) : isExpanded ? (
-              <button
                 onClick={() => setIsPinned(!isPinned)}
-                className="hidden md:flex p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition cursor-pointer"
+                className="hidden md:flex p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition cursor-pointer"
                 title={isPinned ? 'Unpin Sidebar (Auto-collapse on mouse leave)' : 'Pin Sidebar Open'}
               >
                 {isPinned ? <PanelLeftClose className="w-4 h-4 text-cyan-400" /> : <PanelLeftOpen className="w-4 h-4" />}
               </button>
-            ) : null}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsHovered(false);
+                  setIsMobileOpen(false);
+                  setIsPinned(false);
+                }}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition cursor-pointer"
+                title="Collapse Sidebar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Navigation Links */}
@@ -321,45 +380,34 @@ export function PlatformShell({
                   key={item.label}
                   href={item.href}
                   onClick={() => {
+                    setIsHovered(false);
                     setIsMobileOpen(false);
                     if (item.label === 'Home' && typeof window !== 'undefined') {
                       window.dispatchEvent(new CustomEvent('zenvitra-nav-feed'));
                     }
                   }}
-                  className={`flex items-center rounded-xl transition-all duration-150 group relative ${
-                    !isExpanded ? 'justify-center p-3' : 'justify-start gap-3.5 px-3 py-2.5'
-                  } ${
+                  className={`flex items-center justify-start gap-3.5 px-3 py-2.5 rounded-xl transition-all duration-150 group relative ${
                     active
                       ? 'bg-zinc-900 text-white font-semibold shadow-inner'
                       : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
                   }`}
-                  title={!isExpanded ? item.label : undefined}
+                  title={item.description}
                 >
                   <Icon
                     className={`w-5 h-5 shrink-0 transition-transform ${
                       active ? 'text-white scale-105' : 'text-zinc-400 group-hover:text-white'
                     }`}
                   />
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, x: -4 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -4 }}
-                        transition={{ duration: 0.12 }}
-                        className="flex items-center justify-between flex-1 min-w-0"
-                      >
-                        <span className="text-xs tracking-tight truncate">
-                          {item.label}
-                        </span>
-                        {(item as any).tag && (
-                          <span className="px-1.5 py-0.2 bg-pink-500/20 text-pink-300 border border-pink-500/30 rounded text-[9px] font-mono font-bold">
-                            {(item as any).tag}
-                          </span>
-                        )}
-                      </motion.div>
+                  <div className="flex items-center justify-between flex-1 min-w-0">
+                    <span className="text-xs tracking-tight truncate">
+                      {item.label}
+                    </span>
+                    {(item as any).tag && (
+                      <span className="px-1.5 py-0.2 bg-pink-500/20 text-pink-300 border border-pink-500/30 rounded text-[9px] font-mono font-bold">
+                        {(item as any).tag}
+                      </span>
                     )}
-                  </AnimatePresence>
+                  </div>
                 </Link>
               );
             })}
@@ -373,87 +421,53 @@ export function PlatformShell({
             <button
               type="button"
               onClick={() => {
+                setIsHovered(false);
                 setIsMobileOpen(false);
                 setSettingsModalOpen(true);
               }}
-              className={`w-full flex items-center rounded-xl transition-all duration-150 group cursor-pointer ${
-                !isExpanded ? 'justify-center p-3' : 'justify-start gap-3.5 px-3 py-2.5'
-              } text-zinc-400 hover:text-white hover:bg-zinc-900/60`}
-              title={!isExpanded ? 'Settings' : undefined}
+              className="w-full flex items-center justify-start gap-3.5 px-3 py-2.5 rounded-xl transition-all duration-150 group cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-900/60"
             >
               <Settings className="w-5 h-5 text-zinc-400 group-hover:text-white transition-transform shrink-0" />
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -4 }}
-                    transition={{ duration: 0.12 }}
-                    className="text-xs tracking-tight truncate"
-                  >
-                    Settings / More
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              <span className="text-xs tracking-tight truncate">
+                Settings / More
+              </span>
             </button>
 
             {/* Sovereign Security & Anti-Theft Shield */}
             <button
               type="button"
               onClick={() => {
+                setIsHovered(false);
                 setIsMobileOpen(false);
                 setSecurityModalOpen(true);
               }}
-              className={`w-full flex items-center rounded-xl transition-all duration-150 group cursor-pointer ${
-                !isExpanded ? 'justify-center p-3' : 'justify-start gap-3.5 px-3 py-2.5'
-              } text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20`}
-              title={!isExpanded ? 'Security & Anti-Theft' : undefined}
+              className="w-full flex items-center justify-start gap-3.5 px-3 py-2.5 rounded-xl transition-all duration-150 group cursor-pointer text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20"
             >
               <ShieldCheck className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform shrink-0" />
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -4 }}
-                    transition={{ duration: 0.12 }}
-                    className="text-xs font-semibold tracking-tight truncate text-cyan-300"
-                  >
-                    Security Shield
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              <span className="text-xs font-semibold tracking-tight truncate text-cyan-300">
+                Security Shield
+              </span>
             </button>
 
             {/* Founders Hub — STRICTLY VISIBLE ONLY TO founder@zenvitra.org */}
             {hasFounderPrivileges && (
               <Link
                 href="/zen-vault-root"
-                onClick={() => setIsMobileOpen(false)}
-                className={`w-full flex items-center rounded-xl transition-all duration-150 group cursor-pointer ${
-                  !isExpanded ? 'justify-center p-3' : 'justify-start gap-3.5 px-3 py-2.5'
-                } bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 hover:border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]`}
-                title={!isExpanded ? 'Founders Hub' : undefined}
+                onClick={() => {
+                  setIsHovered(false);
+                  setIsMobileOpen(false);
+                }}
+                className="w-full flex items-center justify-start gap-3.5 px-3 py-2.5 rounded-xl transition-all duration-150 group cursor-pointer bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 hover:border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
               >
                 <Crown className="w-5 h-5 text-rose-400 group-hover:scale-110 transition-transform shrink-0" />
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -4 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -4 }}
-                      transition={{ duration: 0.12 }}
-                      className="flex items-center justify-between flex-1 min-w-0"
-                    >
-                      <span className="text-xs font-bold tracking-tight truncate text-rose-200 uppercase">
-                        Founders Hub
-                      </span>
-                      <span className="px-1.5 py-0.5 bg-rose-500/30 text-rose-200 border border-rose-500/40 rounded text-[9px] font-mono font-bold">
-                        ROOT
-                      </span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <span className="text-xs font-bold tracking-tight truncate text-rose-200 uppercase">
+                    Founders Hub
+                  </span>
+                  <span className="px-1.5 py-0.5 bg-rose-500/30 text-rose-200 border border-rose-500/40 rounded text-[9px] font-mono font-bold">
+                    ROOT
+                  </span>
+                </div>
               </Link>
             )}
           </nav>
@@ -595,42 +609,30 @@ export function PlatformShell({
             )}
           </AnimatePresence>
 
-          {/* ── ☰ MORE BUTTON (EXACT INSTAGRAM POSITIONING) ── */}
+          {/* ── ☰ MORE BUTTON ── */}
           <button
             type="button"
             onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-            className={`w-full flex items-center rounded-2xl transition-all duration-200 group cursor-pointer ${
-              !isExpanded ? 'justify-center p-3' : 'justify-start gap-3.5 px-3.5 py-3'
-            } ${
+            className={`w-full flex items-center justify-start gap-3.5 px-3.5 py-3 rounded-2xl transition-all duration-200 group cursor-pointer ${
               isMoreMenuOpen
                 ? 'bg-white text-black font-bold shadow-[0_0_20px_rgba(255,255,255,0.3)]'
                 : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
             }`}
-            title={!isExpanded ? 'More' : undefined}
           >
             <Menu className={`w-5 h-5 shrink-0 transition-transform ${isMoreMenuOpen ? 'text-black' : 'text-zinc-300 group-hover:text-white'}`} />
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.span
-                  initial={{ opacity: 0, x: -4 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -4 }}
-                  transition={{ duration: 0.12 }}
-                  className="text-xs tracking-tight truncate font-bold"
-                >
-                  More
-                </motion.span>
-              )}
-            </AnimatePresence>
+            <span className="text-xs tracking-tight truncate font-bold">
+              More
+            </span>
           </button>
 
           {/* User Profile Snippet */}
           <Link
             href="/pulse?tab=profile"
-            onClick={() => setIsMobileOpen(false)}
-            className={`flex items-center rounded-2xl transition cursor-pointer group ${
-              !isExpanded ? 'justify-center p-2.5' : 'p-2.5 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 gap-3'
-            }`}
+            onClick={() => {
+              setIsHovered(false);
+              setIsMobileOpen(false);
+            }}
+            className="flex items-center rounded-2xl transition cursor-pointer group p-2.5 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 gap-3"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px] shrink-0 group-hover:scale-105 transition-transform shadow-md">
               <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white uppercase overflow-hidden" suppressHydrationWarning>
@@ -641,19 +643,17 @@ export function PlatformShell({
                 )}
               </div>
             </div>
-            {isExpanded && (
-              <div className="overflow-hidden min-w-0 flex-1 text-left" suppressHydrationWarning>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-semibold text-white group-hover:underline truncate" suppressHydrationWarning>{currentDisplayName}</p>
-                  {isGuest && (
-                    <span className="px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-mono text-[9px] font-bold shrink-0">
-                      GUEST
-                    </span>
-                  )}
-                </div>
-                <p className="text-[10px] text-zinc-500 truncate font-mono" suppressHydrationWarning>@{currentUsername}</p>
+            <div className="overflow-hidden min-w-0 flex-1 text-left" suppressHydrationWarning>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-semibold text-white group-hover:underline truncate" suppressHydrationWarning>{currentDisplayName}</p>
+                {isGuest && (
+                  <span className="px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-mono text-[9px] font-bold shrink-0">
+                    GUEST
+                  </span>
+                )}
               </div>
-            )}
+              <p className="text-[10px] text-zinc-500 truncate font-mono" suppressHydrationWarning>@{currentUsername}</p>
+            </div>
           </Link>
         </div>
       </motion.aside>
@@ -692,7 +692,7 @@ export function PlatformShell({
           pathname?.startsWith('/chat')
         ) && (
           <div className="shrink-0 z-40">
-            <Navbar />
+            <Navbar hasPlatformSidebar={true} />
           </div>
         )}
 

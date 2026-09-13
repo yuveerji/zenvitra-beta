@@ -40,7 +40,7 @@ import { FounderOmniModal } from '@/components/founder/FounderOmniModal';
 import { isFounder as checkIsFounder, isAdmin as checkIsAdmin } from '@/lib/founderControl';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function Navbar() {
+export function Navbar({ hasPlatformSidebar = false }: { hasPlatformSidebar?: boolean } = {}) {
   const pathname = usePathname();
   const { profile, isAuthenticated, isMockMode, exitMockMode, signOut } = useAuth();
 
@@ -220,7 +220,9 @@ export function Navbar() {
         <div className="absolute bottom-0 left-0 h-[1px] w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
         {/* Navbar Container */}
-        <nav className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
+        <nav className={`relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3.5 sm:px-6 lg:px-8 ${
+          hasPlatformSidebar ? 'pl-14 sm:pl-16' : ''
+        }`}>
 
           {/* LEFT: Brand Logo & Wordmark */}
           <div className="flex items-center shrink-0 mr-3 sm:mr-4 lg:mr-6">

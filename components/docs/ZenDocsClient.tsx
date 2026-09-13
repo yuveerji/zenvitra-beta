@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Scale, CheckCircle2 } from 'lucide-react';
 import { useDocumentEditor } from './hooks/useDocumentEditor';
@@ -185,10 +184,7 @@ export function ZenDocsClient() {
   // Render SSR Loading Shell until mounted
   if (!editor.isMounted) {
     return (
-      <div className="min-h-screen bg-[#06080e] text-neutral-200 flex flex-col justify-between font-sans pt-20 sm:pt-24">
-        <div className="print:hidden">
-          <Navbar />
-        </div>
+      <div className="min-h-screen bg-[#06080e] text-neutral-200 flex flex-col justify-between font-sans">
         <div className="flex-1 flex flex-col items-center justify-center space-y-4 py-32">
           <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.2)]">
             <Scale className="w-6 h-6 text-cyan-400 animate-pulse" />
@@ -208,11 +204,7 @@ export function ZenDocsClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[#06080e] text-neutral-200 flex flex-col justify-between font-sans selection:bg-cyan-500/30 pt-20 sm:pt-24 print:pt-0 print:bg-white print:text-black">
-      <div className="print:hidden">
-        <Navbar />
-      </div>
-
+    <div className="min-h-screen bg-[#06080e] text-neutral-200 flex flex-col justify-between font-sans selection:bg-cyan-500/30 print:pt-0 print:bg-white print:text-black">
       {/* Floating Toast Notification */}
       {editor.toastMessage && (
         <div className="fixed top-24 right-6 z-50 px-4 py-2.5 rounded-2xl bg-cyan-500 text-black font-mono text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce border border-white/20">

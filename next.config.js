@@ -6,6 +6,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion', '@tabler/icons-react', 'qrcode'],
   },
+  turbopack: {},
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

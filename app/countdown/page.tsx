@@ -24,7 +24,6 @@ import {
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 import { useSovereignAudio } from '@/components/audio/useSovereignAudio';
 import { AudioSpectrumVisualizer } from '@/components/audio/AudioSpectrumVisualizer';
-import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 import { HolographicPassport } from '@/components/visuals/HolographicPassport';
 
 export default function CountdownPage() {
@@ -174,8 +173,6 @@ export default function CountdownPage() {
 
   return (
     <div className="min-h-screen bg-[#020305] text-white flex flex-col justify-between selection:bg-amber-400 selection:text-black font-sans relative overflow-x-hidden">
-      {/* Interactive Constellation Network Canvas */}
-      <ConstellationCanvas />
 
       {/* Background Ambient Glows & Grid */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:28px_28px] opacity-60 z-0" />
