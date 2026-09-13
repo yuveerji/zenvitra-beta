@@ -657,71 +657,74 @@ export function ZenPulseCore() {
               })}
             </div>
 
-            {/* Quick Action Triggers (Scrollable on Mobile) */}
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5 max-w-full">
+            {/* Quick Action Triggers (Scrollable on Mobile with Cyber Styling) */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 max-w-full select-none">
               <button
                 onClick={() => setShowFloorSpeechModal(true)}
-                className="px-3.5 py-1.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-md shadow-sm whitespace-nowrap shrink-0"
+                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-rose-500/10 via-rose-600/5 to-transparent hover:from-rose-500/25 hover:to-rose-500/10 border border-rose-500/30 hover:border-rose-400/60 text-xs font-semibold text-rose-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_12px_rgba(244,63,94,0.12)] hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
                 title="60s Guillotine Clock Floor Audio Relays"
               >
-                <Radio className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-                <span>Floor Relay</span>
+                <div className="relative flex items-center justify-center">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute opacity-75" />
+                  <Radio className="w-3.5 h-3.5 text-rose-400" />
+                </div>
+                <span className="font-mono tracking-tight">Floor Relay</span>
               </button>
 
               <button
                 onClick={() => setShowPassportModal(true)}
-                className="px-3.5 py-1.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-md shadow-sm whitespace-nowrap shrink-0"
+                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-transparent hover:from-amber-500/25 hover:to-amber-500/10 border border-amber-500/30 hover:border-amber-400/60 text-xs font-semibold text-amber-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_12px_rgba(245,158,11,0.12)] hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
                 title="Sovereign Civic Passport & Clearance"
               >
-                <Award className="w-3.5 h-3.5 text-amber-400" />
-                <span>Passport ({civicPointsBalance} PTS)</span>
+                <Award className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform duration-200" />
+                <span className="font-mono tracking-tight">Passport ({civicPointsBalance} PTS)</span>
               </button>
 
               <button
                 onClick={() => setShowStoryModal(true)}
-                className="px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-400/20 via-rose-500/20 to-fuchsia-600/20 hover:from-amber-400/30 hover:via-rose-500/30 hover:to-fuchsia-600/30 border border-rose-500/30 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md shadow-sm whitespace-nowrap shrink-0"
+                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-400/20 via-rose-500/20 to-fuchsia-600/20 hover:from-amber-400/30 hover:via-rose-500/35 hover:to-fuchsia-600/35 border border-rose-500/40 hover:border-rose-400 text-rose-200 hover:text-white text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_15px_rgba(244,63,94,0.2)] hover:shadow-[0_0_25px_rgba(244,63,94,0.4)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>New Story</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                <span className="font-mono tracking-tight">New Story</span>
               </button>
 
               <button
                 onClick={() => setShowFluxComposerModal(true)}
-                className="px-3.5 py-1.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/50 text-xs font-bold text-rose-300 transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-md shadow-sm whitespace-nowrap shrink-0"
+                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-fuchsia-500/15 to-rose-500/10 hover:from-fuchsia-500/25 hover:to-rose-500/20 border border-fuchsia-500/30 hover:border-fuchsia-400/60 text-xs font-bold text-fuchsia-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_12px_rgba(217,70,239,0.15)] hover:shadow-[0_0_20px_rgba(217,70,239,0.3)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
                 title="Create FLUX Video Reel"
               >
-                <Film className="w-3.5 h-3.5 text-rose-400" />
-                <span>FLUX</span>
+                <Film className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span className="font-mono tracking-tight">FLUX</span>
               </button>
 
               {isFounderUser && (
                 <button
                   onClick={() => setShowFounderModal(true)}
-                  className="px-3.5 py-1.5 rounded-2xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-xs font-bold text-amber-300 transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-md shadow-[0_0_15px_rgba(251,191,36,0.3)] whitespace-nowrap shrink-0"
+                  className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-400/25 via-yellow-500/20 to-amber-600/15 hover:from-amber-400/35 hover:to-yellow-500/30 border border-amber-400/50 hover:border-amber-300 text-xs font-bold text-amber-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_20px_rgba(251,191,36,0.35)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
                   title="Open Supreme Founder Sovereignty Suite"
                 >
-                  <Crown className="w-3.5 h-3.5 text-amber-400" />
-                  <span>👑 Founder Menu</span>
+                  <Crown className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform" />
+                  <span className="font-mono tracking-tight">👑 Founder Menu</span>
                 </button>
               )}
 
               {isAdminUser && (
                 <button
                   onClick={() => setShowAdminModal(true)}
-                  className="px-3.5 py-1.5 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-xs font-bold text-cyan-300 transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-md shadow-sm whitespace-nowrap shrink-0"
+                  className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 via-blue-600/15 to-transparent hover:from-cyan-500/30 hover:to-blue-600/25 border border-cyan-500/40 hover:border-cyan-400 text-xs font-bold text-cyan-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_25px_rgba(6,182,212,0.45)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
                   title="Open Admin & Committee Operational Console"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>🛡️ Admin Menu</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-300" />
+                  <span className="font-mono tracking-tight">🛡️ Admin Menu</span>
                 </button>
               )}
 
               <button
                 onClick={() => setShowPostComposerModal(true)}
-                className="px-4 py-1.5 rounded-2xl bg-white hover:bg-zinc-200 text-black text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md whitespace-nowrap shrink-0"
+                className="group relative px-4 py-1.5 rounded-2xl bg-gradient-to-r from-white via-zinc-100 to-zinc-200 hover:from-white hover:to-white text-black text-xs font-black transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_28px_rgba(255,255,255,0.7)] whitespace-nowrap shrink-0 hover:scale-[1.03] active:scale-[0.97]"
               >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>New Dispatch</span>
+                <Plus className="w-4 h-4 stroke-[3] group-hover:rotate-90 transition-transform duration-200" />
+                <span className="font-mono tracking-tight uppercase">+ New Dispatch</span>
               </button>
             </div>
           </div>
@@ -758,18 +761,12 @@ export function ZenPulseCore() {
                 {/* ── Spatial Living Feed Elements ── */}
                 {navTab === 'feed' && (
                   <>
-                    {/* The Pulse Map Constellation */}
-                    <PulseMap
-                      onSelectTopic={(topic) => {
-                        if (topic) setSearchQuery(topic);
-                        else setSearchQuery('');
-                      }}
-                    />
+                    {/* 1. Orbital Wire Capsules (Stories Tray) */}
+                    <div className="p-4 sm:p-5 rounded-3xl bg-[#090b12]/90 border border-white/10 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)]">
+                      <StoriesTray />
+                    </div>
 
-                    {/* What's Moving Live Velocity Ticker */}
-                    <WhatsMovingTicker />
-
-                    {/* Multi-Mode Spatial Post Composer */}
+                    {/* 2. Multi-Mode Spatial Post Composer (The Primary Dispatch Studio) */}
                     <SpatialPostComposer
                       onPublish={({ mode, title, content }) => {
                         createPost(
@@ -781,10 +778,42 @@ export function ZenPulseCore() {
                       }}
                     />
 
-                    {/* ── Orbital Wire Capsules (Stories Tray) ── */}
-                    <div className="p-4 sm:p-5 rounded-3xl bg-[#090b12]/90 border border-white/10 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)]">
-                      <StoriesTray />
+                    {/* 3. What's Moving Live Velocity Ticker */}
+                    <WhatsMovingTicker />
+
+                    {/* 4. Global Chamber Filter Bar */}
+                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 select-none">
+                      {[
+                        { id: 'all', label: '🌐 All Wire' },
+                        { id: 'plenary', label: '🏛️ Plenary UN' },
+                        { id: 'treaties', label: '⚡ Treaties' },
+                        { id: 'audio', label: '🎙️ Floor Audio' },
+                        { id: 'summits', label: '🚀 Summits & Hacks' },
+                      ].map((tab) => {
+                        const active = chamberFilter === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => setChamberFilter(tab.id as any)}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition whitespace-nowrap cursor-pointer border ${
+                              active
+                                ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+                                : 'bg-[#090b12] border-white/10 text-zinc-400 hover:text-white hover:border-white/20'
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        );
+                      })}
                     </div>
+
+                    {/* 5. The Pulse Map Constellation // Living Signal Network */}
+                    <PulseMap
+                      onSelectTopic={(topic) => {
+                        if (topic) setSearchQuery(topic);
+                        else setSearchQuery('');
+                      }}
+                    />
                   </>
                 )}
 
@@ -850,154 +879,6 @@ export function ZenPulseCore() {
                     <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-zinc-500">
                       <span>SIGNATURE: <strong className="text-zinc-300">{founderDirective.author}</strong></span>
                       <span>BROADCAST ACTIVE</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Global Chamber Filter Bar ── */}
-                {navTab === 'feed' && (
-                  <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 select-none">
-                    {[
-                      { id: 'all', label: '🌐 All Wire' },
-                      { id: 'plenary', label: '🏛️ Plenary UN' },
-                      { id: 'treaties', label: '⚡ Treaties' },
-                      { id: 'audio', label: '🎙️ Floor Audio' },
-                      { id: 'summits', label: '🚀 Summits & Hacks' },
-                    ].map((tab) => {
-                      const active = chamberFilter === tab.id;
-                      return (
-                        <button
-                          key={tab.id}
-                          onClick={() => setChamberFilter(tab.id as any)}
-                          className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition whitespace-nowrap cursor-pointer border ${
-                            active
-                              ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                              : 'bg-[#090b12] border-white/10 text-zinc-400 hover:text-white hover:border-white/20'
-                          }`}
-                        >
-                          {tab.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* ── Sovereign Dispatch Terminal (Quick Share Composer) ── */}
-                {navTab === 'feed' && (
-                  <div className="p-5 rounded-3xl bg-[#090b12] border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.7)] space-y-4 backdrop-blur-xl">
-                    {/* Mode Switcher */}
-                    <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                      <div className="flex items-center gap-2">
-                        {[
-                          { id: 'dispatch', label: 'Dispatch', icon: Zap },
-                          { id: 'treaty', label: 'Treaty Draft', icon: Vote },
-                        ].map((m) => {
-                          const Icon = m.icon;
-                          const active = composerMode === m.id;
-                          return (
-                            <button
-                              key={m.id}
-                              type="button"
-                              onClick={() => setComposerMode(m.id as any)}
-                              className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-bold transition cursor-pointer ${
-                                active
-                                  ? 'bg-cyan-500/20 border border-cyan-500/40 text-cyan-300'
-                                  : 'text-zinc-400 hover:text-white'
-                              }`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                              <span>{m.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <span className="text-[10px] font-mono text-zinc-500">
-                        Node @{activeUsername}
-                      </span>
-                    </div>
-
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-[1.5px] shrink-0 shadow-md">
-                        <div className="w-full h-full rounded-[14px] bg-black flex items-center justify-center font-bold text-sm text-white uppercase">
-                          {(currentUserName || 'U')[0]?.toUpperCase() || 'U'}
-                        </div>
-                      </div>
-                      <textarea
-                        rows={2}
-                        value={inlineContent}
-                        onChange={(e) => setInlineContent(e.target.value)}
-                        placeholder={
-                          composerMode === 'treaty'
-                            ? 'Draft a treaty clause or redline resolution for the Plenary Assembly...'
-                            : 'Broadcast a sovereign thought, research finding, or chamber dispatch...'
-                        }
-                        className="flex-1 bg-transparent border-none text-sm text-white placeholder:text-zinc-500 focus:outline-none font-normal resize-none leading-relaxed"
-                      />
-                    </div>
-
-                    <input
-                      type="file"
-                      ref={inlineFileInputRef}
-                      accept="image/*,video/*"
-                      multiple
-                      onChange={handleInlineFileUpload}
-                      className="hidden"
-                    />
-
-                    {inlineMediaUrls.length > 0 && (
-                      <div className="pt-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-                        {inlineMediaUrls.map((mediaUrl, idx) => {
-                          const isItemVideo = mediaUrl.startsWith('data:video') || mediaUrl.includes('.mp4') || mediaUrl.includes('.webm') || mediaUrl.includes('.mov');
-                          return (
-                            <div key={idx} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-white/20 shadow-md shrink-0 bg-zinc-900">
-                              {isItemVideo ? (
-                                <div className="w-full h-full flex items-center justify-center text-[10px] font-mono text-zinc-300">▶ VID</div>
-                              ) : (
-                                <img src={mediaUrl} alt="Preview" className="w-full h-full object-cover" />
-                              )}
-                              <span className="absolute bottom-1 left-1 px-1 text-[8px] bg-black/80 font-mono text-white rounded">{idx + 1}</span>
-                              <button
-                                type="button"
-                                onClick={() => setInlineMediaUrls((prev) => prev.filter((_, i) => i !== idx))}
-                                className="absolute top-1 right-1 p-1 rounded-full bg-black/80 text-white hover:bg-rose-600 transition cursor-pointer shadow"
-                                title="Remove media"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                        <button
-                          type="button"
-                          onClick={() => inlineFileInputRef.current?.click()}
-                          className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/20 hover:border-white text-zinc-400 hover:text-white flex flex-col items-center justify-center gap-1 transition shrink-0 cursor-pointer bg-white/5"
-                          title="Attach another photo/video"
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span className="text-[9px] font-mono">Add Slide</span>
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => inlineFileInputRef.current?.click()}
-                          className="flex items-center gap-1.5 text-zinc-300 hover:text-white transition cursor-pointer px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10"
-                        >
-                          <ImageIcon className="w-4 h-4 text-emerald-400" />
-                          <span>Attach Media</span>
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={handlePublishInlinePost}
-                        disabled={!inlineContent.trim() && inlineMediaUrls.length === 0}
-                        className="px-5 py-2 rounded-xl bg-white hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed text-black text-xs font-bold transition cursor-pointer shadow-md"
-                      >
-                        Broadcast Wire
-                      </button>
                     </div>
                   </div>
                 )}

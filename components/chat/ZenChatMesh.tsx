@@ -498,7 +498,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
     channels: [
       { id: 'ch-welcome', name: 'welcome-chamber', type: 'text', categoryId: 'cat-entrance', description: 'Welcome hub & charter overview' },
       { id: 'ch-rules', name: 'assembly-rules', type: 'text', categoryId: 'cat-entrance', description: 'Rules of procedure & diplomatic decorum' },
-      { id: 'ch-briefs', name: 'yt-alerts', type: 'announcement', categoryId: 'cat-alerts', description: 'Breaking news and crisis broadcasts', unreadCount: 3 },
+      { id: 'ch-briefs', name: 'yt-alerts', type: 'announcement', categoryId: 'cat-alerts', description: 'Breaking news and crisis broadcasts' },
       { id: 'ch-general', name: 'general-assembly', type: 'text', categoryId: 'cat-community', description: 'Multilateral sovereign debates & floor speeches' },
       { id: 'ch-resolutions', name: 'policy-drafts', type: 'text', categoryId: 'cat-community', description: 'Collaborative treaty and draft resolution workbench' },
       { id: 'ch-unfiltered', name: 'unfiltered-baatein', type: 'text', categoryId: 'cat-community', description: 'Informal delegate lounge and caucus coffee' },
@@ -2286,6 +2286,7 @@ export function ZenChatMesh() {
                 ? '👑 FOUNDER' 
                 : msg.senderRole || null
             );
+            const isUnread = !isSelf && msg.status !== 'read';
 
             return (
               <div
@@ -2349,12 +2350,21 @@ export function ZenChatMesh() {
 
                     <span>•</span>
                     <span>{msg.timestamp}</span>
+
+                    {isUnread && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-[8px] font-mono font-bold uppercase tracking-wider">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                        Unread
+                      </span>
+                    )}
                   </div>
 
                   {/* Message Bubble */}
-                  <div className={`p-3.5 rounded-3xl text-xs sm:text-sm font-sans space-y-2.5 ${
+                  <div className={`p-3.5 rounded-3xl text-xs sm:text-sm font-sans space-y-2.5 transition-colors ${
                     isSelf 
                       ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
+                      : isUnread
+                      ? 'bg-cyan-950/25 border border-cyan-500/30 text-neutral-100 shadow-[0_0_20px_rgba(6,182,212,0.08)] ring-1 ring-cyan-500/20'
                       : 'bg-[#0e0f14] border border-white/10 text-neutral-200'
                   }`}>
                     
