@@ -1047,7 +1047,11 @@ function LoginForm() {
                 <p className="text-xs text-neutral-400 font-mono">
                   Don't have a sovereign key?{' '}
                   <Link href="/register" className="text-white font-bold hover:underline">
-                    Mint New ZEN.ID &rarr;
+                    Mint New ZEN.ID
+                  </Link>
+                  {' '}or{' '}
+                  <Link href="/register" className="text-purple-400 hover:text-purple-300 font-bold hover:underline">
+                    Guest Node Access &rarr;
                   </Link>
                 </p>
 

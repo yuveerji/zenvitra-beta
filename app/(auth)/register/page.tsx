@@ -40,7 +40,7 @@ import { LegalGateModal } from '@/components/auth/LegalGateModal';
 import { useAuth } from '@/context/AuthContext';
 import { sheetSync } from '@/lib/googleSheets';
 import { recordSuccessfulAuth } from '@/lib/securityShield';
-import { UsernameAvailabilityButton } from '@/components/auth/UsernameAvailabilityButton';
+import { UsernameAvailabilityButton, AvailabilityStatus } from '@/components/auth/UsernameAvailabilityButton';
 import { PasswordStrengthIndicator, evaluatePasswordStrength } from '@/components/auth/PasswordStrengthIndicator';
 
 interface SovereignTrack {
@@ -127,16 +127,22 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   // Sovereign Guest Node State
-  const [isGuestExpanded, setIsGuestExpanded] = useState(false);
   const [customGuestHandle, setCustomGuestHandle] = useState('');
+  const [guestHandleStatus, setGuestHandleStatus] = useState<AvailabilityStatus>('idle');
+  const [guestHandleReason, setGuestHandleReason] = useState<string | null>(null);
   const [guestLoading, setGuestLoading] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
 
   const handleGuestEntry = async (handleToUse?: string) => {
+    const cleanHandle = handleToUse?.trim().replace(/^@/, '');
+    if (cleanHandle && guestHandleStatus === 'unavailable') {
+      setGuestError(guestHandleReason || 'This handle is taken or reserved. Please choose another.');
+      return;
+    }
     setGuestLoading(true);
     setGuestError(null);
     try {
-      await continueAsGuest(handleToUse?.trim() || undefined);
+      await continueAsGuest(cleanHandle || undefined);
       const redirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
       const target = redirect && redirect.startsWith('/') ? redirect : '/pulse';
       router.push(target);
@@ -762,88 +768,89 @@ export default function RegisterPage() {
                     <p className="text-xs font-mono text-rose-400">{guestError}</p>
                   )}
 
-                  {isGuestExpanded ? (
-                    <div className="space-y-2.5 pt-1">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase block">
-                          Choose Custom Guest Handle (Optional)
+                  <div className="space-y-2.5 pt-1">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-mono font-semibold text-neutral-300 uppercase flex items-center gap-1.5">
+                          <AtSign className="w-3 h-3 text-purple-400" />
+                          <span>GUEST CALLSIGN / @HANDLE</span>
+                          <span className="text-neutral-500 font-normal">(Optional)</span>
                         </label>
-                        <div className="relative flex items-center">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 font-mono text-xs pointer-events-none">@</span>
-                          <input
-                            type="text"
-                            value={customGuestHandle}
-                            onChange={(e) => setCustomGuestHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                            placeholder="guest_node"
-                            maxLength={20}
-                            className="w-full pl-7 pr-28 py-2 rounded-xl bg-black/80 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-purple-400/50"
+                        <span className="text-[9px] font-mono text-purple-300/70">
+                          {customGuestHandle.trim() ? 'Real-time namespace audit' : 'Leave empty for auto-generated ID'}
+                        </span>
+                      </div>
+
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 font-mono text-xs pointer-events-none">@</span>
+                        <input
+                          type="text"
+                          value={customGuestHandle}
+                          onChange={(e) => {
+                            setCustomGuestHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+                            setGuestError(null);
+                          }}
+                          placeholder="e.g. guest_observer (or leave empty)"
+                          maxLength={20}
+                          className="w-full pl-8 pr-32 py-2.5 rounded-xl bg-black/80 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-purple-400/50 transition placeholder:text-neutral-600"
+                        />
+                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                          <UsernameAvailabilityButton
+                            username={customGuestHandle}
+                            showText={true}
+                            onStatusChange={(status, reason) => {
+                              setGuestHandleStatus(status);
+                              setGuestHandleReason(reason || null);
+                            }}
                           />
-                          <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
-                            <UsernameAvailabilityButton username={customGuestHandle} showText={false} />
-                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleGuestEntry(customGuestHandle)}
-                          disabled={guestLoading}
-                          className="flex-1 py-2.5 rounded-xl bg-purple-400 hover:bg-purple-300 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50"
-                        >
-                          {guestLoading ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              <span>Initializing...</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>Enter As @{customGuestHandle || 'guest_node'}</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </>
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsGuestExpanded(false)}
-                          className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 text-xs font-mono transition cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                      {customGuestHandle.trim() && guestHandleStatus === 'unavailable' && (
+                        <p className="text-[10px] font-mono text-rose-400 pl-1 flex items-center gap-1.5 animate-fadeIn">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{guestHandleReason || 'This handle is taken or reserved. Please choose another.'}</span>
+                        </p>
+                      )}
+
+                      {customGuestHandle.trim() && guestHandleStatus === 'available' && (
+                        <p className="text-[10px] font-mono text-emerald-400 pl-1 flex items-center gap-1.5 animate-fadeIn">
+                          <CheckCircle2 className="w-3 h-3 shrink-0" />
+                          <span>Handle is available! You can enter as Guest Node @{customGuestHandle.trim()}.</span>
+                        </p>
+                      )}
                     </div>
-                  ) : (
+
                     <div className="flex items-center gap-2 pt-1">
                       <button
                         type="button"
-                        onClick={() => handleGuestEntry()}
-                        disabled={guestLoading}
-                        className="flex-1 py-2.5 rounded-xl bg-purple-400 hover:bg-purple-300 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50"
+                        onClick={() => handleGuestEntry(customGuestHandle)}
+                        disabled={
+                          guestLoading ||
+                          (Boolean(customGuestHandle.trim()) && (guestHandleStatus === 'unavailable' || guestHandleStatus === 'checking'))
+                        }
+                        className="flex-1 py-2.5 rounded-xl bg-purple-400 hover:bg-purple-300 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         {guestLoading ? (
                           <>
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Entering...</span>
+                            <span>Initializing Guest Session...</span>
+                          </>
+                        ) : customGuestHandle.trim() ? (
+                          <>
+                            <span>Enter As Guest @{customGuestHandle.trim()}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </>
                         ) : (
                           <>
                             <Sparkles className="w-3.5 h-3.5" />
-                            <span>Instant Guest Access</span>
+                            <span>Instant Anonymous Guest Access</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </>
                         )}
                       </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsGuestExpanded(true)}
-                        className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 font-mono text-xs transition cursor-pointer"
-                        title="Set Custom Guest Handle"
-                      >
-                        Custom @
-                      </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
