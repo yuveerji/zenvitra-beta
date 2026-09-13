@@ -319,7 +319,7 @@ export function Navbar({ hasPlatformSidebar = false }: { hasPlatformSidebar?: bo
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.98 }}
                     transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute left-0 lg:-left-12 xl:-left-20 top-full mt-3 w-[660px] max-w-[calc(100vw-2rem)] rounded-3xl border border-white/15 bg-[#06080e]/95 backdrop-blur-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.06)] p-5 z-50 text-left overflow-hidden"
+                    className="absolute right-0 sm:-right-6 md:-right-12 lg:-right-16 top-full mt-3 w-[650px] max-w-[calc(100vw-2rem)] rounded-3xl border border-white/15 bg-[#06080e]/95 backdrop-blur-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.06)] p-5 z-50 text-left overflow-hidden"
                   >
                     {/* Background Subtle Ambience Glow */}
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
