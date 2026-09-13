@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 export type SubscriptionTier = 
   | 'FREE' 
   | 'PULSE_PASS' 
@@ -675,6 +677,21 @@ export function saveProtocolControls(controls: Partial<ProtocolControls>): Proto
   } catch (_) {}
 
   return updated;
+}
+
+export function useProtocolControls(): ProtocolControls {
+  const [controls, setControls] = useState<ProtocolControls>(() => getProtocolControls());
+
+  useEffect(() => {
+    setControls(getProtocolControls());
+    const handler = (e: any) => {
+      setControls(e.detail || getProtocolControls());
+    };
+    window.addEventListener('zenvitra_protocol_update', handler);
+    return () => window.removeEventListener('zenvitra_protocol_update', handler);
+  }, []);
+
+  return controls;
 }
 
 /* ── Audit Trail ── */

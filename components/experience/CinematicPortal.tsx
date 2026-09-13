@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -7,8 +7,10 @@ import { Radio, Gavel, Crown, ArrowRight, Sparkles, Shield, ChevronDown } from '
 import { ZenParticleField } from '@/components/experience/ZenParticleField';
 import { ParticleMorphState } from '@/components/experience/ExperienceContext';
 import { ZenSpatialCard } from '@/components/experience/ZenSpatialCard';
+import { useProtocolControls } from '@/lib/founderControl';
 
 export function CinematicPortal() {
+  const { escrowMandateActive } = useProtocolControls();
   const containerRef = useRef<HTMLDivElement>(null);
   const [particleState, setParticleState] = useState<ParticleMorphState>('VOID');
   const [activeAct, setActiveAct] = useState(0);
@@ -218,21 +220,23 @@ export function CinematicPortal() {
       {/* ACT 05: THE CONSTITUTIONAL MANDATE & GATE */}
       <section className="min-h-screen flex flex-col items-center justify-center relative px-6 text-center z-10 py-20">
         <div className="max-w-2xl space-y-8">
-          <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4 shadow-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[10px] tracking-widest uppercase">
-              <Shield className="w-3 h-3" />
-              <span>THE 25% CONSTITUTIONAL ESCROW</span>
+          {escrowMandateActive && (
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4 shadow-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[10px] tracking-widest uppercase">
+                <Shield className="w-3 h-3" />
+                <span>THE 25% CONSTITUTIONAL ESCROW</span>
+              </div>
+              <h3
+                className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
+                style={{ fontFamily: 'Clash Display, sans-serif' }}
+              >
+                Technology Rooted in Civic Trust
+              </h3>
+              <p className="font-outfit text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                25% of all net platform profits are permanently bound to student scholarships, classroom kits, and computer labs every four months—backed by public receipts and verifiable video proofs.
+              </p>
             </div>
-            <h3
-              className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
-              style={{ fontFamily: 'Clash Display, sans-serif' }}
-            >
-              Technology Rooted in Civic Trust
-            </h3>
-            <p className="font-outfit text-xs sm:text-sm text-neutral-300 leading-relaxed">
-              25% of all net platform profits are permanently bound to student scholarships, classroom kits, and computer labs every four months—backed by public receipts and verifiable video proofs.
-            </p>
-          </div>
+          )}
 
           <div className="space-y-4">
             <Link

@@ -173,7 +173,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
       } catch (_) {}
     }
     return [
-      { text: 'ZENVITRA SUPREME SOVEREIGN COMMAND CLI v6.8', type: 'info' },
+      { text: 'ZENVITRA SUPREME SOVEREIGN COMMAND CLI v1.0.0', type: 'info' },
       { text: 'Authenticated Level 0 Root Operator: @yuveer (100% Access)', type: 'success' },
       { text: 'Type "help" for a full list of executive master commands.', type: 'info' },
     ];

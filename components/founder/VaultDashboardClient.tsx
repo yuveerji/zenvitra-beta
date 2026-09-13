@@ -372,7 +372,8 @@ import {
   FileCode,
   Layers,
   Database,
-  Unlock
+  Unlock,
+  Eye
 } from 'lucide-react';
 import { 
   ADMIN_BYPASS_KEYS,
@@ -520,6 +521,17 @@ export function VaultDashboardClient({
   const [escrowPercentage, setEscrowPercentage] = useState(siteOverrides.escrowPercentage);
   const [targetLaunchDate, setTargetLaunchDate] = useState(siteOverrides.targetLaunchDate);
 
+  /* Founder Note Studio Effects State */
+  const [noteEffectTheme, setNoteEffectTheme] = useState<'SOVEREIGN_GOLD' | 'MATRIX_EMERALD' | 'CYBER_NEON' | 'DEEP_VOID' | 'CRIMSON_DECREE'>('SOVEREIGN_GOLD');
+  const [noteTypography, setNoteTypography] = useState<'SERIF' | 'MONO' | 'SANS'>('SERIF');
+  const [noteGlowEffect, setNoteGlowEffect] = useState(true);
+  const [noteScanlines, setNoteScanlines] = useState(false);
+  const [noteStampSeal, setNoteStampSeal] = useState(true);
+
+  /* Audit Ledger Calendar Filter State */
+  const [selectedAuditDate, setSelectedAuditDate] = useState<string | null>(null);
+  const [auditTypeFilter, setAuditTypeFilter] = useState<string>('ALL');
+
   /* Quick Post Dispatch */
   const [quickPostContent, setQuickPostContent] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -537,7 +549,7 @@ export function VaultDashboardClient({
       } catch (_) {}
     }
     return [
-      { text: 'ZENVITRA SOVEREIGN ROOT TERMINAL v6.8.0-PROD', type: 'info' },
+      { text: 'ZENVITRA SOVEREIGN ROOT TERMINAL v1.0.0-PROD', type: 'info' },
       { text: 'Level 0 Root Access Authenticated for Operator @yuveer', type: 'success' },
       { text: 'Type "help" to list all available master commands.', type: 'info' },
     ];
@@ -1226,115 +1238,281 @@ export function VaultDashboardClient({
         </div>
       )}
 
-      {/* ── TAB 4: FOUNDER'S NOTE & DIRECTIVE EDITOR ── */}
+      {/* ── TAB 4: FOUNDER'S NOTE & DIRECTIVE STUDIO (RICH EFFECTS) ── */}
       {activeTab === 'directive' && (
-        <form onSubmit={handleSaveDirective} className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-amber-500/30 shadow-2xl space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <div className="space-y-1">
-              <h2 className="font-mono font-bold text-lg text-white uppercase">
-                Founder Note &amp; Live Directive Studio
-              </h2>
-              <p className="text-xs text-neutral-400 font-mono">
-                Mutate the global statement rendered across the home page and feed in real time.
-              </p>
+        <div className="space-y-6">
+          <form onSubmit={handleSaveDirective} className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-amber-500/30 shadow-2xl space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-400/30">
+                    MASTER NOTE STUDIO
+                  </span>
+                  <span className="text-xs text-neutral-400 font-mono">// REAL-TIME CYBER AESTHETICS</span>
+                </div>
+                <h2 className="font-mono font-bold text-xl text-white uppercase tracking-wide">
+                  Founder Note &amp; Sovereign Directive Studio
+                </h2>
+                <p className="text-xs text-neutral-400 font-mono">
+                  Craft and broadcast executive decrees rendered across the platform with customizable visual effects.
+                </p>
+              </div>
+
+              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer bg-black/60 px-4 py-2.5 rounded-2xl border border-white/10 hover:border-amber-400/40 transition">
+                <input
+                  type="checkbox"
+                  checked={directiveActive}
+                  onChange={(e) => setDirectiveActive(e.target.checked)}
+                  className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
+                />
+                <span className={directiveActive ? 'text-amber-400 font-bold' : 'text-zinc-500'}>
+                  {directiveActive ? 'BROADCAST ACTIVE' : 'BROADCAST MUTED'}
+                </span>
+              </label>
             </div>
 
-            <label className="flex items-center gap-2 text-xs font-mono cursor-pointer bg-black/60 px-4 py-2 rounded-2xl border border-white/10">
-              <input
-                type="checkbox"
-                checked={directiveActive}
-                onChange={(e) => setDirectiveActive(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
-              />
-              <span className={directiveActive ? 'text-amber-400 font-bold' : 'text-zinc-500'}>
-                {directiveActive ? 'BROADCAST ACTIVE' : 'BROADCAST MUTED'}
-              </span>
-            </label>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-mono text-neutral-400 uppercase">Priority Level</label>
-              <div className="flex items-center gap-2">
-                {(['NORMAL', 'URGENT', 'CONSTITUTIONAL'] as const).map((p) => (
+            {/* Visual Effect Theme Presets */}
+            <div className="space-y-2">
+              <label className="text-[11px] font-mono text-amber-300 uppercase font-bold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Select Visual Aura &amp; Theme Effect</span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 font-mono text-xs">
+                {[
+                  { id: 'SOVEREIGN_GOLD', label: '👑 Sovereign Gold', desc: 'Royal amber glow & gold borders' },
+                  { id: 'MATRIX_EMERALD', label: '💻 Matrix Emerald', desc: 'Phosphor green CRT terminal' },
+                  { id: 'CYBER_NEON', label: '⚡ Cyber Neon', desc: 'Cyan / violet frequency pulse' },
+                  { id: 'DEEP_VOID', label: '🌌 Deep Void', desc: 'Obsidian monochrome & starfield' },
+                  { id: 'CRIMSON_DECREE', label: '🚨 Crimson Decree', desc: 'High-alert emergency pulse' },
+                ].map((t) => (
                   <button
-                    key={p}
+                    key={t.id}
                     type="button"
-                    onClick={() => setDirectivePriority(p)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-mono font-bold transition cursor-pointer border ${
-                      directivePriority === p
-                        ? p === 'CONSTITUTIONAL'
-                          ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow'
-                          : p === 'URGENT'
-                          ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow'
-                          : 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow'
-                        : 'bg-black border-white/10 text-neutral-400'
+                    onClick={() => setNoteEffectTheme(t.id as any)}
+                    className={`p-3 rounded-2xl text-left transition cursor-pointer border ${
+                      noteEffectTheme === t.id
+                        ? 'bg-amber-400/20 border-amber-400 text-white shadow-[0_0_15px_rgba(251,191,36,0.3)]'
+                        : 'bg-black/60 border-white/10 text-neutral-400 hover:text-white hover:border-white/20'
                     }`}
                   >
-                    {p}
+                    <p className="font-bold text-xs">{t.label}</p>
+                    <p className="text-[10px] text-neutral-400 pt-0.5">{t.desc}</p>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-mono text-neutral-400 uppercase">Sign-off Signature</label>
+            {/* Typography & FX Modifiers */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+              <div className="space-y-1.5">
+                <label className="text-[11px] text-neutral-400 uppercase font-bold">Typography Mode</label>
+                <div className="flex gap-1.5">
+                  {[
+                    { id: 'SERIF', label: 'Serif' },
+                    { id: 'MONO', label: 'Monospace' },
+                    { id: 'SANS', label: 'Modern Sans' },
+                  ].map((font) => (
+                    <button
+                      key={font.id}
+                      type="button"
+                      onClick={() => setNoteTypography(font.id as any)}
+                      className={`flex-1 py-2 rounded-xl font-bold transition cursor-pointer border text-xs ${
+                        noteTypography === font.id
+                          ? 'bg-white/20 border-white text-white'
+                          : 'bg-black border-white/10 text-neutral-400'
+                      }`}
+                    >
+                      {font.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] text-neutral-400 uppercase font-bold">Priority Level</label>
+                <div className="flex items-center gap-1.5">
+                  {(['NORMAL', 'URGENT', 'CONSTITUTIONAL'] as const).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setDirectivePriority(p)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                        directivePriority === p
+                          ? p === 'CONSTITUTIONAL'
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                            : p === 'URGENT'
+                            ? 'bg-rose-500/20 border-rose-500 text-rose-300'
+                            : 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
+                          : 'bg-black border-white/10 text-neutral-400'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] text-neutral-400 uppercase font-bold">Visual FX Toggles</label>
+                <div className="flex items-center gap-2 pt-1">
+                  <label className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={noteScanlines}
+                      onChange={(e) => setNoteScanlines(e.target.checked)}
+                      className="rounded accent-amber-400"
+                    />
+                    <span>Scanlines</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={noteGlowEffect}
+                      onChange={(e) => setNoteGlowEffect(e.target.checked)}
+                      className="rounded accent-amber-400"
+                    />
+                    <span>Bloom</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={noteStampSeal}
+                      onChange={(e) => setNoteStampSeal(e.target.checked)}
+                      className="rounded accent-amber-400"
+                    />
+                    <span>Gold Seal</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[11px] text-neutral-400 uppercase font-bold">Sign-off Signature</label>
+                <input
+                  type="text"
+                  value={directiveAuthor}
+                  onChange={(e) => setDirectiveAuthor(e.target.value)}
+                  placeholder="e.g. @yuveer // Sovereign Founder"
+                  className="w-full px-3.5 py-2 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            {/* Note Content Inputs */}
+            <div className="space-y-1.5 font-mono text-xs">
+              <label className="text-[11px] text-neutral-400 uppercase font-bold">Directive / Note Headline</label>
               <input
                 type="text"
-                value={directiveAuthor}
-                onChange={(e) => setDirectiveAuthor(e.target.value)}
-                placeholder="Enter author signature"
-                className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                required
+                value={directiveTitle}
+                onChange={(e) => setDirectiveTitle(e.target.value)}
+                placeholder="e.g. CONSTITUTIONAL MANDATE: REJECTION OF AD-SURVEILLANCE"
+                className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 font-bold"
               />
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-neutral-400 uppercase">Directive / Note Headline</label>
-            <input
-              type="text"
-              required
-              value={directiveTitle}
-              onChange={(e) => setDirectiveTitle(e.target.value)}
-              placeholder="e.g. CONSTITUTIONAL MANDATE: REJECTION OF AD-SURVEILLANCE"
-              className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 font-bold"
-            />
-          </div>
+            <div className="space-y-1.5 font-mono text-xs">
+              <label className="text-[11px] text-neutral-400 uppercase font-bold">Directive Full Body &amp; Decrees</label>
+              <textarea
+                rows={5}
+                required
+                value={directiveBody}
+                onChange={(e) => setDirectiveBody(e.target.value)}
+                placeholder="Write the executive announcement or founder message..."
+                className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 leading-relaxed"
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-neutral-400 uppercase">Directive Full Body &amp; Decrees</label>
-            <textarea
-              rows={5}
-              required
-              value={directiveBody}
-              onChange={(e) => setDirectiveBody(e.target.value)}
-              placeholder="Write the executive announcement or founder message..."
-              className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 leading-relaxed"
-            />
-          </div>
+            <div className="flex items-center justify-between pt-4 border-t border-white/10 font-mono text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  clearFounderDirective();
+                  setDirectiveActive(false);
+                  notify('Founder directive cleared.');
+                }}
+                className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-bold transition cursor-pointer"
+              >
+                Clear Active Note
+              </button>
 
-          <div className="flex items-center justify-between pt-4 border-t border-white/10">
-            <button
-              type="button"
-              onClick={() => {
-                clearFounderDirective();
-                setDirectiveActive(false);
-                notify('Founder directive cleared.');
-              }}
-              className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-mono font-bold transition cursor-pointer"
+              <button
+                type="submit"
+                className="px-8 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold transition cursor-pointer shadow-[0_0_25px_rgba(251,191,36,0.4)] flex items-center gap-2"
+              >
+                <Save className="w-4 h-4 fill-black" />
+                <span>Broadcast Live Directive</span>
+              </button>
+            </div>
+          </form>
+
+          {/* ── REAL-TIME LIVE VISUAL PREVIEW CARD ── */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#05070e] border border-white/10 space-y-4 font-mono">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                <Eye className="w-4 h-4 text-cyan-400" />
+                <span>LIVE DIRECTIVE PREVIEW (EXACT RENDER)</span>
+              </span>
+              <span className="text-[10px] text-emerald-400 font-bold">
+                {noteEffectTheme.replace('_', ' ')}
+              </span>
+            </div>
+
+            <div
+              className={`p-6 sm:p-8 rounded-3xl relative overflow-hidden transition-all duration-300 ${
+                noteEffectTheme === 'SOVEREIGN_GOLD'
+                  ? 'bg-gradient-to-br from-amber-950/40 via-black to-[#0d0903] border border-amber-500/50 shadow-[0_0_50px_rgba(251,191,36,0.15)] text-amber-50'
+                  : noteEffectTheme === 'MATRIX_EMERALD'
+                  ? 'bg-gradient-to-br from-emerald-950/40 via-black to-[#020d06] border border-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.15)] text-emerald-100'
+                  : noteEffectTheme === 'CYBER_NEON'
+                  ? 'bg-gradient-to-br from-cyan-950/40 via-black to-[#0e0214] border border-cyan-500/50 shadow-[0_0_50px_rgba(6,182,212,0.15)] text-cyan-50'
+                  : noteEffectTheme === 'DEEP_VOID'
+                  ? 'bg-black border border-white/20 shadow-2xl text-neutral-200'
+                  : 'bg-gradient-to-br from-rose-950/40 via-black to-[#120205] border border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.2)] text-rose-50'
+              }`}
             >
-              Clear Active Note
-            </button>
+              {/* Optional Scanlines Effect */}
+              {noteScanlines && (
+                <div 
+                  className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.5)_50%)]"
+                  style={{ backgroundSize: '100% 4px' }}
+                />
+              )}
 
-            <button
-              type="submit"
-              className="px-8 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold transition cursor-pointer shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center gap-2"
-            >
-              <Save className="w-4 h-4 fill-black" />
-              <span>Broadcast Live Directive</span>
-            </button>
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-300">
+                      OFFICIAL FOUNDER NOTE // {directivePriority}
+                    </span>
+                  </div>
+                  {noteStampSeal && (
+                    <span className="px-3 py-1 rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-300 font-bold text-[10px] uppercase tracking-widest shadow">
+                      👑 CERTIFIED IMMUTABLE SEAL
+                    </span>
+                  )}
+                </div>
+
+                <h3 className={`text-xl sm:text-2xl font-bold tracking-wide uppercase ${
+                  noteTypography === 'SERIF' ? 'font-serif' : noteTypography === 'MONO' ? 'font-mono' : 'font-sans'
+                }`}>
+                  {directiveTitle || 'Executive Directive Headline'}
+                </h3>
+
+                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                  noteTypography === 'SERIF' ? 'font-serif text-neutral-200' : noteTypography === 'MONO' ? 'font-mono text-neutral-300' : 'font-sans text-neutral-200'
+                }`}>
+                  {directiveBody || 'Decree statement content will render here with full formatting.'}
+                </p>
+
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
+                  <span>Sign-off: <strong className="text-white">{directiveAuthor || '@yuveer'}</strong></span>
+                  <span>Issued: {new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
+        </div>
       )}
 
       {/* ── TAB 4.5: FOUNDER PRESS STUDIO & BUREAU ── */}
@@ -1876,43 +2054,180 @@ export function VaultDashboardClient({
         </div>
       )}
 
-      {/* ── TAB 10: AUDIT TRAIL ── */}
-      {activeTab === 'audit' && (
-        <div className="p-6 rounded-3xl bg-[#080a10] border border-white/10 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <span className="font-mono text-xs font-bold text-neutral-400 uppercase block">
-              IMMUTABLE TRANSACTION &amp; MUTATION LEDGER
-            </span>
-            <button
-              type="button"
-              onClick={handleExportDatabaseJSON}
-              className="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition cursor-pointer flex items-center gap-1.5"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download Ledger</span>
-            </button>
-          </div>
+      {/* ── TAB 10: IMMUTABLE AUDIT TRAIL & CALENDAR LEDGER ── */}
+      {activeTab === 'audit' && (() => {
+        const allLogs = getAuditLogs();
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-          <div className="space-y-2 max-h-80 overflow-y-auto pr-1 font-mono text-xs">
-            {getAuditLogs().map((log) => (
-              <div
-                key={log.id}
-                className="p-3.5 rounded-xl bg-black border border-white/10 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-bold">
-                    {log.type}
+        // Calculate count of logs per day
+        const logsByDate: Record<string, number> = {};
+        allLogs.forEach((l) => {
+          const d = new Date(l.timestamp).toISOString().split('T')[0];
+          logsByDate[d] = (logsByDate[d] || 0) + 1;
+        });
+
+        // Filtered logs
+        const filteredLogs = allLogs.filter((log) => {
+          if (auditTypeFilter !== 'ALL' && log.type !== auditTypeFilter) return false;
+          if (selectedAuditDate) {
+            const d = new Date(log.timestamp).toISOString().split('T')[0];
+            if (d !== selectedAuditDate) return false;
+          }
+          return true;
+        });
+
+        return (
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-white/10 space-y-6 font-mono">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] font-bold border border-cyan-400/30">
+                    MUTATION TIME-MACHINE
                   </span>
-                  <span className="text-neutral-200">{log.action}</span>
+                  <span className="text-xs text-neutral-400">// CRYPTOGRAPHIC AUDIT</span>
                 </div>
-                <span className="text-neutral-500 text-[10px]">
-                  {new Date(log.timestamp).toLocaleTimeString()}
+                <h3 className="font-bold text-lg text-white uppercase tracking-wide pt-1">
+                  Immutable Transaction &amp; Mutation Ledger
+                </h3>
+                <p className="text-xs text-neutral-400 font-sans">
+                  Browse mutations by calendar date or filter by system event classification.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {selectedAuditDate && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAuditDate(null)}
+                    className="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold transition cursor-pointer"
+                  >
+                    Clear Filter ({selectedAuditDate})
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleExportDatabaseJSON}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Ledger</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ── INTERACTIVE CALENDAR VIEW ── */}
+            <div className="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-amber-300 uppercase flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-amber-400" />
+                  <span>{monthName} Calendar Matrix</span>
+                </span>
+                <span className="text-[11px] text-neutral-400">
+                  Select a date cell to filter ledger entries
                 </span>
               </div>
-            ))}
+
+              <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-xs">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <span key={day} className="text-[10px] text-neutral-500 uppercase font-bold py-1">
+                    {day}
+                  </span>
+                ))}
+
+                {Array.from({ length: daysInMonth }).map((_, idx) => {
+                  const dayNum = idx + 1;
+                  const dayStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                  const count = logsByDate[dayStr] || 0;
+                  const isSelected = selectedAuditDate === dayStr;
+                  const isToday = now.getDate() === dayNum;
+
+                  return (
+                    <button
+                      key={dayNum}
+                      type="button"
+                      onClick={() => setSelectedAuditDate(isSelected ? null : dayStr)}
+                      className={`p-2 rounded-xl transition flex flex-col items-center justify-center gap-1 cursor-pointer border ${
+                        isSelected
+                          ? 'bg-amber-400 text-black border-amber-300 font-bold shadow-[0_0_15px_rgba(251,191,36,0.4)]'
+                          : count > 0
+                          ? 'bg-white/10 border-amber-500/40 text-amber-300 hover:bg-white/20'
+                          : isToday
+                          ? 'bg-white/5 border-cyan-500/40 text-white'
+                          : 'bg-black/40 border-white/5 text-neutral-500 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-xs font-mono">{dayNum}</span>
+                      {count > 0 && (
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                          isSelected ? 'bg-black text-amber-300' : 'bg-amber-400/20 text-amber-300'
+                        }`}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Type Filters */}
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              {(['ALL', 'DIRECTIVE', 'NODE', 'CONTENT', 'PROTOCOL', 'SUBSCRIPTION', 'SITE'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setAuditTypeFilter(t)}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer border text-[11px] ${
+                    auditTypeFilter === t
+                      ? 'bg-white text-black border-white'
+                      : 'bg-black border-white/10 text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {/* Ledger Entries List */}
+            <div className="space-y-2 max-h-96 overflow-y-auto pr-1 text-xs">
+              {filteredLogs.length === 0 ? (
+                <div className="p-8 text-center text-neutral-500 text-xs border border-white/5 rounded-2xl bg-black/40">
+                  No audit mutations found for the selected date or category.
+                </div>
+              ) : (
+                filteredLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="p-3.5 rounded-2xl bg-black border border-white/10 flex items-center justify-between gap-3 hover:border-white/20 transition"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                        log.type === 'PROTOCOL'
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          : log.type === 'DIRECTIVE'
+                          ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                          : log.type === 'SUBSCRIPTION'
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      }`}>
+                        {log.type}
+                      </span>
+                      <span className="text-neutral-200 truncate">{log.action}</span>
+                    </div>
+                    <span className="text-neutral-500 text-[10px] shrink-0 font-mono">
+                      {new Date(log.timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

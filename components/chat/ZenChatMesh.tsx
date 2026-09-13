@@ -714,6 +714,15 @@ export function ZenChatMesh() {
 
   /* WhatsApp & Navigation Rail State */
   const [activeRailTab, setActiveRailTab] = useState<'chats' | 'calls' | 'communities' | 'media'>('chats');
+  const [joinedContactAlert, setJoinedContactAlert] = useState<{
+    name: string;
+    username: string;
+    phone?: string;
+  } | null>({
+    name: 'Sarah Jenkins',
+    username: 'sarah_j',
+    phone: '+1 (555) 382-9102'
+  });
   const [showCallDropdown, setShowCallDropdown] = useState(false);
   const [showNewCallLinkModal, setShowNewCallLinkModal] = useState(false);
   const [showScheduleCallModal, setShowScheduleCallModal] = useState(false);
@@ -1589,6 +1598,46 @@ export function ZenChatMesh() {
                 ))}
               </div>
             </div>
+
+            {/* ── Contact Joined Flash Alert Banner ── */}
+            {joinedContactAlert && (
+              <div className="mx-2 mb-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-transparent border border-emerald-500/40 space-y-2 text-left relative animate-slide-down">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">✨</span>
+                    <div>
+                      <p className="font-display font-bold text-xs text-white">
+                        {joinedContactAlert.name} joined ZenChat!
+                      </p>
+                      <p className="text-[10px] text-emerald-300 font-mono">
+                        From your phone contacts &bull; @{joinedContactAlert.username}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setJoinedContactAlert(null)}
+                    className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      createDirectChat(joinedContactAlert.username, joinedContactAlert.name);
+                      setJoinedContactAlert(null);
+                      showToast(`Opened chat with ${joinedContactAlert.name}!`);
+                    }}
+                    className="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5 shadow"
+                  >
+                    <MessageSquare className="w-3 h-3 text-black" />
+                    <span>Say Hello 👋</span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* 3. Conversation List */}
             <div className="flex-1 overflow-y-auto divide-y divide-white/[0.02] p-2 space-y-1">

@@ -31,6 +31,7 @@ import {
   Heart,
   MessageCircle
 } from 'lucide-react';
+import { useProtocolControls } from '@/lib/founderControl';
 import { useAuth } from '@/context/AuthContext';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { getSecurityProfile, regenerateSovereignCode } from '@/lib/securityShield';
@@ -62,6 +63,7 @@ export function SettingsModal({
   onClose,
   onOpenSecurityShield,
 }: SettingsModalProps) {
+  const { escrowMandateActive } = useProtocolControls();
   const { profile, user, updateProfile, signOut } = useAuth();
   const { myProfile, updateMyProfile, currentUserUsername, currentUserName, savedPosts, toggleSavePost } = useZenPulse();
 
@@ -950,21 +952,23 @@ export function SettingsModal({
                     </button>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-xs text-white">25% Constitutional Profit Endowment Ledger</h4>
-                      <p className="text-[11px] text-zinc-400">
-                        Review cryptographic records for the 25% profit endowment distributed every 4 months, verified with offline giveaway videos on ZEN.FLUX.
-                      </p>
+                  {escrowMandateActive && (
+                    <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-xs text-white">25% Constitutional Profit Endowment Ledger</h4>
+                        <p className="text-[11px] text-zinc-400">
+                          Review cryptographic records for the 25% profit endowment distributed every 4 months, verified with offline giveaway videos on ZEN.FLUX.
+                        </p>
+                      </div>
+                      <a
+                        href="/impact"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition"
+                      >
+                        <span>Inspect 25% Impact Vault</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
                     </div>
-                    <a
-                      href="/impact"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition"
-                    >
-                      <span>Inspect 25% Impact Vault</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
+                  )}
                 </div>
               )}
 

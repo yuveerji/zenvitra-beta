@@ -138,6 +138,11 @@ export function Navbar({ hasPlatformSidebar = false }: { hasPlatformSidebar?: bo
         setMobileMenuOpen(false);
         setEcosystemDropdownOpen(false);
       }
+      // Seeded Founder Sovereignty Shortcut (Ctrl+Shift+F or Cmd+Shift+F)
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'F' || event.key === 'f')) {
+        event.preventDefault();
+        setFounderOmniModalOpen(true);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
@@ -543,53 +548,6 @@ export function Navbar({ hasPlatformSidebar = false }: { hasPlatformSidebar?: bo
                         </div>
 
                         <div className="space-y-1 text-xs font-medium text-neutral-300 font-sans">
-                          {isFounder && (
-                            <div className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-purple-500/15 to-transparent border border-amber-400/40 text-amber-300 font-mono text-[10px] font-bold flex items-center justify-between shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                              <span className="flex items-center gap-1.5">
-                                <Crown className="w-3.5 h-3.5 text-amber-400" />
-                                <span>UNIVERSAL FOUNDER PASS</span>
-                              </span>
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-400 text-black font-extrabold tracking-wider">
-                                ALL UNLOCKED
-                              </span>
-                            </div>
-                          )}
-                          {isFounder && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setUserDropdownOpen(false);
-                                setFounderOmniModalOpen(true);
-                              }}
-                              className="w-full px-3 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 transition flex items-center gap-2 font-bold shadow-[0_0_15px_rgba(251,191,36,0.3)] text-left cursor-pointer"
-                            >
-                              <Crown className="w-3.5 h-3.5 text-amber-400" />
-                              <span>👑 Founder Sovereign Menu</span>
-                            </button>
-                          )}
-                          {isAdminUser && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setUserDropdownOpen(false);
-                                setAdminOmniModalOpen(true);
-                              }}
-                              className="w-full px-3 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 transition flex items-center gap-2 font-bold text-left cursor-pointer"
-                            >
-                              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                              <span>🛡️ Admin Operational Menu</span>
-                            </button>
-                          )}
-                          {isFounder && (
-                            <Link
-                              href="/zen-vault-root"
-                              onClick={() => setUserDropdownOpen(false)}
-                              className="w-full px-3 py-2 rounded-xl hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-2 font-mono text-[11px]"
-                            >
-                              <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-                              <span>Sovereign Vault (Root)</span>
-                            </Link>
-                          )}
                           <Link
                             href="/dashboard"
                             onClick={() => setUserDropdownOpen(false)}

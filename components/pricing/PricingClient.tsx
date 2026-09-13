@@ -1136,7 +1136,13 @@ export function PricingClient() {
                 <div className="pt-6 mt-6 border-t border-white/10">
                   <button
                     type="button"
-                    onClick={() => setSelectedPlanForModal(plan)}
+                    onClick={() => {
+                      if (plan.isCustom || plan.id.includes('enterprise') || plan.ctaText.toLowerCase().includes('contact') || formatPrice(plan).toLowerCase() === 'custom') {
+                        window.location.href = `mailto:help@zenvitra.xyz?subject=${encodeURIComponent(`Inquiry for ${plan.name} Plan`)}`;
+                        return;
+                      }
+                      setSelectedPlanForModal(plan);
+                    }}
                     className={`w-full py-3 rounded-2xl font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
                       plan.isFlagship
                         ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-[0_0_25px_rgba(168,85,247,0.4)]'

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, X } from 'lucide-react';
 import Link from 'next/link';
 import { GLOSSARY_TERMS } from './InteractiveWordModal';
+import { useProtocolControls } from '@/lib/founderControl';
 
 interface InteractiveWordContextType {
   activeKey: string | null;
@@ -98,6 +99,11 @@ export function InteractiveWordHover({
 
   const activeKey = context ? context.activeKey : fallbackActiveKey;
   const setActiveKey = context ? context.setActiveKey : setGlobalActiveKey;
+
+  const controls = useProtocolControls();
+  if (!controls.escrowMandateActive && (termKey === 'escrow' || termKey === 'educational-endowment')) {
+    return <span className={className}>{children}</span>;
+  }
 
   const isOpen = activeKey === termKey;
   const data = GLOSSARY_TERMS[termKey];
@@ -323,7 +329,11 @@ export function InteractiveWordHover({
 
                 {/* Definition */}
                 <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed relative z-10 font-sans">
-                  {data.definition}
+                  {!controls.escrowMandateActive
+                    ? data.definition
+                        .replace(/exactly 25% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
+                        .replace(/25% of net platform profits every 4 months to student study kits/gi, 'student study kits')
+                    : data.definition}
                 </p>
 
                 {/* Context Breakdown */}
@@ -332,7 +342,11 @@ export function InteractiveWordHover({
                     Sovereign Blueprint
                   </span>
                   <p className="text-xs text-neutral-200 font-light leading-snug font-sans">
-                    {data.platformRelation}
+                    {!controls.escrowMandateActive
+                      ? data.platformRelation
+                          .replace(/guaranteeing 25% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
+                          .replace(/via our 25% constitutional escrow/gi, 'via our civic grant fund')
+                      : data.platformRelation}
                   </p>
                 </div>
 

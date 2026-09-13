@@ -54,7 +54,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
-import { getFounderDirective, FounderDirective } from '@/lib/founderControl';
+import { getFounderDirective, FounderDirective, useProtocolControls } from '@/lib/founderControl';
 import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
 import { DiplomaticGlobe } from '@/components/visuals/DiplomaticGlobe';
 import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
@@ -67,6 +67,7 @@ interface HomeClientProps {
 export default function HomeClient({ session }: HomeClientProps) {
   const { profile, isAuthenticated, isMockMode } = useAuth();
   const [hasSavedSession, setHasSavedSession] = useState(false);
+  const { escrowMandateActive } = useProtocolControls();
 
   useEffect(() => {
     const checkSession = () => {
@@ -254,7 +255,7 @@ export default function HomeClient({ session }: HomeClientProps) {
       arrowColor: 'group-hover:text-cyan-300',
       href: '/solutions',
     },
-    {
+    ...(escrowMandateActive ? [{
       title: 'ZEN.IMPACT',
       subtitle: '25% Profit Escrow & Ledger',
       description: 'Hardcoded constitutional treasury allocating 25% of all profits every 4 months with public video proof.',
@@ -264,7 +265,17 @@ export default function HomeClient({ session }: HomeClientProps) {
       badgeColor: 'text-teal-300 border-teal-500/30 bg-teal-500/10',
       arrowColor: 'group-hover:text-teal-300',
       href: '/impact',
-    },
+    }] : [{
+      title: 'ZEN.IMPACT',
+      subtitle: 'Civic Grants & Ledger',
+      description: 'Transparent community treasury empowering youth initiatives and educational modernizations.',
+      icon: Heart,
+      badge: 'CIVIC IMPACT',
+      accentColor: 'text-teal-400 bg-teal-500/10 border-teal-500/25',
+      badgeColor: 'text-teal-300 border-teal-500/30 bg-teal-500/10',
+      arrowColor: 'group-hover:text-teal-300',
+      href: '/impact',
+    }]),
   ];
 
   const architecturalTenets = [
@@ -283,16 +294,16 @@ export default function HomeClient({ session }: HomeClientProps) {
       title: 'Deterministic State Verification',
       detail: 'Every resolution, article, and grant transaction is cryptographically logged.',
     },
-    {
+    ...(escrowMandateActive ? [{
       icon: Lock,
       title: 'Guaranteed 25% Profit Impact Invariant',
       detail: 'Hardcoded constitutional mandate distributing 25% of profits every 4 months with video proof.',
-    },
+    }] : []),
   ];
 
   const milestones = [
     { metric: '100%', label: 'Sovereign Codebase' },
-    { metric: '25%', label: 'Profits to Youth Grants' },
+    ...(escrowMandateActive ? [{ metric: '25%', label: 'Profits to Youth Grants' }] : []),
     { metric: '0', label: 'Algorithmic Feeds' },
     { metric: '0', label: 'Data Brokers / Trackers' },
   ];
@@ -498,14 +509,16 @@ export default function HomeClient({ session }: HomeClientProps) {
                       />
                     </div>
 
-                    <div className="p-4 sm:p-5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 text-neutral-300 font-mono text-xs sm:text-sm leading-relaxed space-y-1.5">
-                      <span className="text-cyan-300 font-bold text-xs uppercase tracking-wider block">
-                        &bull; Our Constitutional Pledge:
-                      </span>
-                      <p className="text-neutral-400">
-                        Words mean little without structural action. That is why <strong className="text-white">25% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 4 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
-                      </p>
-                    </div>
+                    {escrowMandateActive && (
+                      <div className="p-4 sm:p-5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 text-neutral-300 font-mono text-xs sm:text-sm leading-relaxed space-y-1.5">
+                        <span className="text-cyan-300 font-bold text-xs uppercase tracking-wider block">
+                          &bull; Our Constitutional Pledge:
+                        </span>
+                        <p className="text-neutral-400">
+                          Words mean little without structural action. That is why <strong className="text-white">25% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 4 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Footer Signature & Actions */}
@@ -1078,62 +1091,64 @@ export default function HomeClient({ session }: HomeClientProps) {
           </AnimatedSection>
 
           {/* Master 25% Sovereign Pledge Bento Hero */}
-          <div className="relative rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-[#1a1408] via-[#0d0d14] to-[#120a1c] border border-amber-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_50px_rgba(245,158,11,0.1)] overflow-hidden">
-            {/* Ambient Background Glow */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+          {escrowMandateActive && (
+            <div className="relative rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-[#1a1408] via-[#0d0d14] to-[#120a1c] border border-amber-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_50px_rgba(245,158,11,0.1)] overflow-hidden">
+              {/* Ambient Background Glow */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-8 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold uppercase tracking-wider">
-                  <Coins className="w-3.5 h-3.5 text-amber-400" />
-                  <span>The 25% Profit Endowment Pledge</span>
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div className="lg:col-span-8 space-y-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold uppercase tracking-wider">
+                    <Coins className="w-3.5 h-3.5 text-amber-400" />
+                    <span>The 25% Profit Endowment Pledge</span>
+                  </div>
+                  <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
+                    Every Summit. Every Community Action. Direct Educational Capital.
+                  </h3>
+                  <p className="text-xs sm:text-sm text-neutral-300 font-sans font-light leading-relaxed max-w-2xl">
+                    A guaranteed 25% of all net platform profits are distributed every 4 months into verified school laboratories, curriculum kits, and delegate grants—verified with unedited offline giveaway videos and public receipts broadcast on ZEN.FLUX and social platforms.
+                  </p>
+                  <div className="flex flex-wrap gap-4 pt-2">
+                    <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Every 4 Months Distribution</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Offline Giveaway Videos on ZEN.FLUX</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Public Itemized Receipts Ledger</span>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
-                  Every Summit. Every Community Action. Direct Educational Capital.
-                </h3>
-                <p className="text-xs sm:text-sm text-neutral-300 font-sans font-light leading-relaxed max-w-2xl">
-                  A guaranteed 25% of all net platform profits are distributed every 4 months into verified school laboratories, curriculum kits, and delegate grants—verified with unedited offline giveaway videos and public receipts broadcast on ZEN.FLUX and social platforms.
-                </p>
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Every 4 Months Distribution</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Offline Giveaway Videos on ZEN.FLUX</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Public Itemized Receipts Ledger</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Direct CTA Box */}
-              <div className="lg:col-span-4 flex flex-col gap-3 justify-center bg-black/60 backdrop-blur-xl p-6 rounded-2xl border border-white/15 text-center">
-                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
-                  Direct Citizen &amp; CSR Giving
-                </span>
-                <div className="text-xl sm:text-2xl font-display font-bold text-white">
-                  Join the Movement
-                </div>
-                <p className="text-[11px] text-neutral-400 font-mono leading-tight">
-                  Transform a government school or back a grassroots civic grant today.
-                </p>
-                <div className="pt-2">
-                  <Link
-                    href="/donate/govt-schools"
-                    className="w-full py-3 px-4 rounded-xl bg-white text-black hover:bg-neutral-200 font-mono text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-                  >
-                    <span>Govt Schools Giving</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                {/* Direct CTA Box */}
+                <div className="lg:col-span-4 flex flex-col gap-3 justify-center bg-black/60 backdrop-blur-xl p-6 rounded-2xl border border-white/15 text-center">
+                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
+                    Direct Citizen &amp; CSR Giving
+                  </span>
+                  <div className="text-xl sm:text-2xl font-display font-bold text-white">
+                    Join the Movement
+                  </div>
+                  <p className="text-[11px] text-neutral-400 font-mono leading-tight">
+                    Transform a government school or back a grassroots civic grant today.
+                  </p>
+                  <div className="pt-2">
+                    <Link
+                      href="/donate/govt-schools"
+                      className="w-full py-3 px-4 rounded-xl bg-white text-black hover:bg-neutral-200 font-mono text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                    >
+                      <span>Govt Schools Giving</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* 3 Impact Channels Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

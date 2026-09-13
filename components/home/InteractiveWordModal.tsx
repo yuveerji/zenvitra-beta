@@ -4,6 +4,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, Sparkles, Shield, Newspaper, Calendar, Heart } from 'lucide-react';
 import Link from 'next/link';
+import { useProtocolControls } from '@/lib/founderControl';
 
 export interface TermDefinition {
   id: string;
@@ -449,10 +450,30 @@ interface InteractiveWordModalProps {
 }
 
 export function InteractiveWordModal({ termKey, onClose }: InteractiveWordModalProps) {
+  const controls = useProtocolControls();
   if (!termKey || !GLOSSARY_TERMS[termKey]) return null;
+
+  // When 25% Profit/Escrow is toggled off, suppress 25% profit popups completely
+  if (!controls.escrowMandateActive && (termKey === 'escrow' || termKey === 'educational-endowment')) {
+    return null;
+  }
 
   const data = GLOSSARY_TERMS[termKey];
   const Icon = data.icon;
+
+  let displayDefinition = data.definition;
+  let displayRelation = data.platformRelation;
+  let displayBadge = data.protocolBadge;
+
+  if (!controls.escrowMandateActive) {
+    displayDefinition = displayDefinition
+      .replace(/exactly 25% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
+      .replace(/25% of net platform profits every 4 months to student study kits/gi, 'student study kits');
+    displayRelation = displayRelation
+      .replace(/guaranteeing 25% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
+      .replace(/via our 25% constitutional escrow/gi, 'via our civic grant fund');
+    displayBadge = displayBadge.replace(/\/\/ 25% PROFIT (FUND|MANDATE)/gi, '// CIVIC IMPACT FUND').replace(/\(25% PROFIT\)/gi, '');
+  }
 
   return (
     <AnimatePresence>
@@ -502,7 +523,7 @@ export function InteractiveWordModal({ termKey, onClose }: InteractiveWordModalP
           {/* Definition Box */}
           <div className="space-y-2 relative z-10 text-neutral-300 text-sm leading-relaxed font-light font-sans">
             <p className="font-medium text-white/90">
-              {data.definition}
+              {displayDefinition}
             </p>
           </div>
 
@@ -514,11 +535,11 @@ export function InteractiveWordModal({ termKey, onClose }: InteractiveWordModalP
                 <span>How this relates to Zenvitra</span>
               </span>
               <span className="text-[9px] uppercase tracking-wider text-emerald-400 font-semibold">
-                {data.protocolBadge}
+                {displayBadge}
               </span>
             </div>
             <p className="text-xs text-neutral-300 font-light leading-relaxed font-sans">
-              {data.platformRelation}
+              {displayRelation}
             </p>
           </div>
 

@@ -15,8 +15,10 @@ import { EventAccessSharingModal } from './EventAccessSharingModal';
 import { AttendeeRosterModal } from './AttendeeRosterModal';
 import { EditEventModal } from './EditEventModal';
 import { ZenPassScannerModal } from '../ZenPassScannerModal';
+import { useProtocolControls } from '@/lib/founderControl';
 
 export const EventManagementDashboard: React.FC = () => {
+  const { escrowMandateActive } = useProtocolControls();
   const {
     getOrganizerEvents,
     updateEvent,
@@ -206,16 +208,18 @@ export const EventManagementDashboard: React.FC = () => {
         </div>
 
         {/* 25% Civic Escrow Reserve */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/40 via-[#0e111d] to-[#0e111d] border border-cyan-500/30 space-y-2">
-          <div className="flex items-center justify-between text-cyan-300 text-xs font-mono uppercase">
-            <span>25% Civic Escrow</span>
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
+        {escrowMandateActive && (
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/40 via-[#0e111d] to-[#0e111d] border border-cyan-500/30 space-y-2">
+            <div className="flex items-center justify-between text-cyan-300 text-xs font-mono uppercase">
+              <span>25% Civic Escrow</span>
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-cyan-300 font-mono">
+              ₹{metrics.civicEscrow.toLocaleString('en-IN')}
+            </div>
+            <div className="text-[11px] text-cyan-400/80">Guaranteed refund & civic reserve</div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-cyan-300 font-mono">
-            ₹{metrics.civicEscrow.toLocaleString('en-IN')}
-          </div>
-          <div className="text-[11px] text-cyan-400/80">Guaranteed refund & civic reserve</div>
-        </div>
+        )}
       </div>
 
       {/* Directory Filter / Search Bar */}

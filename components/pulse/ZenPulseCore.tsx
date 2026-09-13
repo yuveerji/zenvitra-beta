@@ -697,28 +697,6 @@ export function ZenPulseCore() {
                 <span className="font-mono tracking-tight">FLUX</span>
               </button>
 
-              {isFounderUser && (
-                <button
-                  onClick={() => setShowFounderModal(true)}
-                  className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-400/25 via-yellow-500/20 to-amber-600/15 hover:from-amber-400/35 hover:to-yellow-500/30 border border-amber-400/50 hover:border-amber-300 text-xs font-bold text-amber-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_20px_rgba(251,191,36,0.35)] hover:shadow-[0_0_30px_rgba(251,191,36,0.55)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
-                  title="Open Supreme Founder Sovereignty Suite"
-                >
-                  <Crown className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform" />
-                  <span className="font-mono tracking-tight">👑 Founder Menu</span>
-                </button>
-              )}
-
-              {isAdminUser && (
-                <button
-                  onClick={() => setShowAdminModal(true)}
-                  className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 via-blue-600/15 to-transparent hover:from-cyan-500/30 hover:to-blue-600/25 border border-cyan-500/40 hover:border-cyan-400 text-xs font-bold text-cyan-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_25px_rgba(6,182,212,0.45)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
-                  title="Open Admin & Committee Operational Console"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-300" />
-                  <span className="font-mono tracking-tight">🛡️ Admin Menu</span>
-                </button>
-              )}
-
               <button
                 onClick={() => setShowPostComposerModal(true)}
                 className="group relative px-4 py-1.5 rounded-2xl bg-gradient-to-r from-white via-zinc-100 to-zinc-200 hover:from-white hover:to-white text-black text-xs font-black transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_28px_rgba(255,255,255,0.7)] whitespace-nowrap shrink-0 hover:scale-[1.03] active:scale-[0.97]"

@@ -33,12 +33,14 @@ import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { subscribeToActivitySync } from '@/lib/reactiveActivityHub';
 import { DelegateDossierView } from '@/components/mun/DelegateDossierView';
 import { MedalsRoadmapModal } from '@/components/dashboard/MedalsRoadmapModal';
+import { useProtocolControls } from '@/lib/founderControl';
 
 interface AdaptiveDashboardProps {
   initialMode?: 'user' | 'pro';
 }
 
 export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardProps) {
+  const { escrowMandateActive } = useProtocolControls();
   const { user, profile, isAuthenticated } = useAuth();
   const { currentUserName, currentUserUsername, myPosts, myFluxVideos, savedPostIds } = useZenPulse();
   const { registrations, invites } = useMun();
@@ -152,19 +154,21 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
             </div>
 
             {/* Real 25% Escrow Contribution */}
-            <div className="p-5 rounded-3xl bg-[#07080b] border border-white/10 space-y-2 relative overflow-hidden">
-              <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span className="font-mono uppercase tracking-wider text-[10px]">25% Civic Escrow</span>
-                <HeartHandshake className="w-4 h-4 text-rose-400" />
+            {escrowMandateActive && (
+              <div className="p-5 rounded-3xl bg-[#07080b] border border-white/10 space-y-2 relative overflow-hidden">
+                <div className="flex items-center justify-between text-xs text-zinc-400">
+                  <span className="font-mono uppercase tracking-wider text-[10px]">25% Civic Escrow</span>
+                  <HeartHandshake className="w-4 h-4 text-rose-400" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display font-extrabold text-3xl text-white">₹{escrowContribution}</span>
+                  <span className="text-xs text-zinc-400">directed to grants</span>
+                </div>
+                <p className="text-[11px] text-zinc-400 font-medium">
+                  {escrowContribution > 0 ? 'From your active pass allocation' : '25% allocated on each pass / ticket'}
+                </p>
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-display font-extrabold text-3xl text-white">₹{escrowContribution}</span>
-                <span className="text-xs text-zinc-400">directed to grants</span>
-              </div>
-              <p className="text-[11px] text-zinc-400 font-medium">
-                {escrowContribution > 0 ? 'From your active pass allocation' : '25% allocated on each pass / ticket'}
-              </p>
-            </div>
+            )}
 
             {/* Saved Dossiers & Treaties */}
             <div className="p-5 rounded-3xl bg-[#07080b] border border-white/10 space-y-2 relative overflow-hidden">
@@ -458,10 +462,12 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
                   <p className="text-white font-bold">Node Session Active</p>
                   <p className="text-[10px] text-emerald-400">Citizen status: {isAuthenticated ? 'Authenticated' : 'Guest'}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 space-y-1">
-                  <p className="text-white font-bold">25% Sovereign Escrow Protocol</p>
-                  <p className="text-[10px] text-zinc-500">Live Dual-Key Routing Active</p>
-                </div>
+                {escrowMandateActive && (
+                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 space-y-1">
+                    <p className="text-white font-bold">25% Sovereign Escrow Protocol</p>
+                    <p className="text-[10px] text-zinc-500">Live Dual-Key Routing Active</p>
+                  </div>
+                )}
                 <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 space-y-1">
                   <p className="text-white font-bold">Zero Tracking Baseline</p>
                   <p className="text-[10px] text-zinc-500">0 third-party trackers enabled</p>

@@ -40,6 +40,8 @@ export function NewChatActionModal({
   const [broadcastName, setBroadcastName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [recipientError, setRecipientError] = useState<string | null>(null);
+  const [copiedInvite, setCopiedInvite] = useState(false);
 
   const toggleMemberSelection = (username: string) => {
     setSelectedMembers((prev) =>
@@ -50,7 +52,28 @@ export function NewChatActionModal({
   const handleStartDm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetHandle.trim()) return;
-    createDirectChat(targetHandle.trim());
+
+    const rawInput = targetHandle.trim();
+    const clean = rawInput.toLowerCase().replace(/^@/, '');
+
+    // Verify recipient is registered on ZenChat / ZENVITRA
+    const found = profiles.find((p) =>
+      p.username.toLowerCase() === clean ||
+      p.name.toLowerCase() === clean ||
+      (p as any).phone === clean ||
+      (p as any).phone === rawInput
+    );
+
+    // Also allow founder/system handles
+    const isSystemOrFounder = clean === 'yuveer' || clean === 'zenvitra' || clean === 'founder' || clean === 'root';
+
+    if (!found && !isSystemOrFounder) {
+      setRecipientError(`Cannot message "${rawInput}": This number or profile handle is not registered on ZenChat or ZENVITRA.`);
+      return;
+    }
+
+    setRecipientError(null);
+    createDirectChat(found ? found.username : rawInput, found?.name);
     handleReset();
     onClose();
   };
@@ -223,6 +246,27 @@ export function NewChatActionModal({
                   autoFocus
                 />
               </div>
+
+              {/* Recipient Not Registered Warning */}
+              {recipientError && (
+                <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs space-y-2">
+                  <p className="font-mono text-[11px] leading-relaxed">{recipientError}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof navigator !== 'undefined') {
+                        navigator.clipboard.writeText(`${window.location.origin}/chat`);
+                        setCopiedInvite(true);
+                        setTimeout(() => setCopiedInvite(false), 2500);
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-[10px] font-bold flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>{copiedInvite ? 'Invite Link Copied!' : 'Copy ZenChat Invite Link'}</span>
+                  </button>
+                </div>
+              )}
 
               {/* Quick Contacts Pick */}
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
