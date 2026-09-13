@@ -313,53 +313,152 @@ export function Navbar() {
               <AnimatePresence>
                 {ecosystemDropdownOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 top-full mt-2 w-72 rounded-2xl border border-white/15 bg-[#08080c]/98 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] p-2 z-50 text-left"
+                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute left-0 lg:-left-12 xl:-left-20 top-full mt-3 w-[660px] max-w-[calc(100vw-2rem)] rounded-3xl border border-white/15 bg-[#06080e]/95 backdrop-blur-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.06)] p-5 z-50 text-left overflow-hidden"
                   >
-                    <div className="px-2.5 py-1.5 mb-1 border-b border-white/10 flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 font-bold">
-                        FOUNDATIONAL CIVICS &amp; ECOSYSTEM
+                    {/* Background Subtle Ambience Glow */}
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Card Header */}
+                    <div className="relative z-10 flex items-center justify-between pb-3.5 mb-4 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse" />
+                        <span className="font-mono text-[11px] uppercase tracking-[0.18em] font-bold text-neutral-200">
+                          ZENVITRA ECOSYSTEM &amp; DIPLOMACY OS
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] text-cyan-400/90 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-full font-medium">
+                        10 Nodes Active
                       </span>
                     </div>
 
-                    <div className="space-y-0.5">
-                      {secondaryNavLinks.map((item) => {
-                        const Icon = item.icon;
-                        const isCurrent = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                    {/* Multi-Column Categorized Architecture */}
+                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Column 1: Core Diplomatic OS & Workspaces */}
+                      <div className="space-y-2">
+                        <div className="px-2 flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-cyan-400/90">
+                            Workspaces &amp; Assemblies
+                          </span>
+                          <span className="text-[9px] font-mono text-neutral-500">DAIS &amp; OS</span>
+                        </div>
 
-                        return (
-                          <Link
-                            key={item.name}
-                            href={item.href}
-                            onClick={() => setEcosystemDropdownOpen(false)}
-                            className={`p-2 rounded-xl transition flex items-start gap-2.5 ${
-                              isCurrent
-                                ? 'bg-white/10 text-white font-semibold'
-                                : 'hover:bg-white/[0.06] text-neutral-300 hover:text-white'
-                            }`}
-                          >
-                            <div className="w-7 h-7 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0 mt-0.5 text-cyan-400">
-                              <Icon className="w-3.5 h-3.5" />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-semibold text-white">{item.name}</span>
-                                {item.tag && (
-                                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-neutral-300">
-                                    {item.tag}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[11px] text-neutral-400 truncate leading-tight mt-0.5 font-sans">
-                                {item.desc}
-                              </p>
-                            </div>
-                          </Link>
-                        );
-                      })}
+                        <div className="space-y-1">
+                          {secondaryNavLinks.slice(0, 5).map((item) => {
+                            const Icon = item.icon;
+                            const isCurrent = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+
+                            return (
+                              <Link
+                                key={item.name}
+                                href={item.href}
+                                onClick={() => setEcosystemDropdownOpen(false)}
+                                className={`group p-2.5 rounded-2xl transition-all duration-200 flex items-start gap-3 border ${
+                                  isCurrent
+                                    ? 'bg-white/[0.12] border-white/25 text-white shadow-[0_0_20px_rgba(255,255,255,0.06)]'
+                                    : 'bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.07] hover:border-white/15 text-neutral-300 hover:text-white'
+                                }`}
+                              >
+                                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                                  isCurrent
+                                    ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300'
+                                    : 'bg-white/[0.06] border-white/10 text-cyan-400 group-hover:bg-cyan-500/15 group-hover:border-cyan-500/30 group-hover:text-cyan-300'
+                                }`}>
+                                  <Icon className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-white tracking-wide group-hover:text-cyan-200 transition-colors">
+                                      {item.name}
+                                    </span>
+                                    {item.tag && (
+                                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-white/[0.08] border border-white/10 text-neutral-300 group-hover:border-cyan-500/30 group-hover:text-cyan-200 transition-colors">
+                                        {item.tag}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[11px] text-neutral-400 leading-snug mt-0.5 font-sans line-clamp-1 group-hover:text-neutral-300 transition-colors">
+                                    {item.desc}
+                                  </p>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Column 2: Governance, Civic Escrow & Architecture */}
+                      <div className="space-y-2">
+                        <div className="px-2 flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple-400/90">
+                            Civics, Doctrine &amp; Foundation
+                          </span>
+                          <span className="text-[9px] font-mono text-neutral-500">GOVERNANCE</span>
+                        </div>
+
+                        <div className="space-y-1">
+                          {secondaryNavLinks.slice(5).map((item) => {
+                            const Icon = item.icon;
+                            const isCurrent = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+
+                            return (
+                              <Link
+                                key={item.name}
+                                href={item.href}
+                                onClick={() => setEcosystemDropdownOpen(false)}
+                                className={`group p-2.5 rounded-2xl transition-all duration-200 flex items-start gap-3 border ${
+                                  isCurrent
+                                    ? 'bg-white/[0.12] border-white/25 text-white shadow-[0_0_20px_rgba(255,255,255,0.06)]'
+                                    : 'bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.07] hover:border-white/15 text-neutral-300 hover:text-white'
+                                }`}
+                              >
+                                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                                  isCurrent
+                                    ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
+                                    : 'bg-white/[0.06] border-white/10 text-purple-400 group-hover:bg-purple-500/15 group-hover:border-purple-500/30 group-hover:text-purple-300'
+                                }`}>
+                                  <Icon className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-white tracking-wide group-hover:text-purple-200 transition-colors">
+                                      {item.name}
+                                    </span>
+                                    {item.tag && (
+                                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-white/[0.08] border border-white/10 text-neutral-300 group-hover:border-purple-500/30 group-hover:text-purple-200 transition-colors">
+                                        {item.tag}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[11px] text-neutral-400 leading-snug mt-0.5 font-sans line-clamp-1 group-hover:text-neutral-300 transition-colors">
+                                    {item.desc}
+                                  </p>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Status Banner */}
+                    <div className="relative z-10 mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono">
+                      <div className="flex items-center gap-2 text-neutral-400">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span>100% Sovereign Protocol &bull; Zero Surveillance</span>
+                      </div>
+                      <Link
+                        href="/manifesto"
+                        onClick={() => setEcosystemDropdownOpen(false)}
+                        className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition"
+                      >
+                        <span>Read Manifesto</span>
+                        <span>&rarr;</span>
+                      </Link>
                     </div>
                   </motion.div>
                 )}
