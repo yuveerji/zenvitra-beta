@@ -424,6 +424,19 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
 
       const rawProfiles = safeParse(localStorage.getItem(LS_PROFILES), []);
       setAllProfiles(sanitizeProfilesList(rawProfiles));
+
+      const handlePulseSync = () => {
+        try {
+          const fresh = safeParse(localStorage.getItem(storagePostsKey), []);
+          if (Array.isArray(fresh)) {
+            setAllPosts(fresh);
+          }
+        } catch (_) {}
+      };
+      window.addEventListener('zenvitra_pulse_sync', handlePulseSync);
+      return () => {
+        window.removeEventListener('zenvitra_pulse_sync', handlePulseSync);
+      };
     } catch (_) {}
   }, [isMockMode, currentUserUsername, currentUserId]);
 
@@ -593,28 +606,6 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       (p) => (p.username && p.username.toLowerCase() === clean) || (p.id && p.id.toLowerCase() === clean)
     );
     if (found) {
-      if (clean === 'un_plenary' && (!found.hostedEvents || found.hostedEvents.length === 0)) {
-        return {
-          ...found,
-          isSubscribedOrganizer: true,
-          subscriptionPlan: 'ORGANIZER_PRO',
-          hostedEvents: [
-            {
-              id: 'evt_un_plenary_01',
-              title: 'Open Civic Corridors Global Treaty Forum',
-              date: 'Sept 28, 2026',
-              time: '10:00 AM CET',
-              location: 'Geneva Headquarters & Broadcast Wire',
-              category: 'SUMMIT',
-              rsvpUrl: '/events',
-              registeredCount: 310,
-              maxCapacity: 400,
-              coverImage: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80',
-              description: 'Official ratification forum for cross-border civic verification treaties and multilateral digital credentials.'
-            }
-          ]
-        };
-      }
       return found;
     }
 
@@ -629,21 +620,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       accountType: isPlenary ? 'professional' : 'personal',
       isSubscribedOrganizer: isPlenary,
       subscriptionPlan: isPlenary ? 'ORGANIZER_PRO' : 'FREE',
-      hostedEvents: isPlenary ? [
-        {
-          id: 'evt_un_plenary_01',
-          title: 'Open Civic Corridors Global Treaty Forum',
-          date: 'Sept 28, 2026',
-          time: '10:00 AM CET',
-          location: 'Geneva Headquarters & Broadcast Wire',
-          category: 'SUMMIT',
-          rsvpUrl: '/events',
-          registeredCount: 310,
-          maxCapacity: 400,
-          coverImage: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80',
-          description: 'Official ratification forum for cross-border civic verification treaties and multilateral digital credentials.'
-        }
-      ] : [],
+      hostedEvents: [],
       isVerified: true,
       isPrivate: false,
       followers: [],

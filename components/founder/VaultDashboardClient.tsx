@@ -373,8 +373,10 @@ import {
   Layers,
   Database,
   Unlock,
-  Eye
+  Eye,
+  AlertOctagon
 } from 'lucide-react';
+import { ZenAdminControlRoom } from '@/components/admin/ZenAdminControlRoom';
 import { 
   ADMIN_BYPASS_KEYS,
   generateCustomAdminKey,
@@ -385,6 +387,7 @@ import {
   getProtocolControls, 
   saveProtocolControls, 
   getAuditLogs,
+  addAuditLog,
   getAllSubscriptions,
   grantUserSubscription,
   revokeUserSubscription,
@@ -425,7 +428,23 @@ export function VaultDashboardClient({
 }: VaultDashboardClientProps) {
   const { user, profile } = useAuth();
   const { feedPosts, deletePost, createPost, currentUserUsername } = useZenPulse();
-  const [activeTab, setActiveTabState] = useState<'overview' | 'masterkey' | 'adminlinks' | 'terminal' | 'directive' | 'press' | 'subscriptions' | 'users' | 'sheets' | 'content' | 'site' | 'protocol' | 'audit'>(() => {
+  const [activeTab, setActiveTabState] = useState<
+    | 'overview'
+    | 'admin_control'
+    | 'panic_room'
+    | 'masterkey'
+    | 'adminlinks'
+    | 'terminal'
+    | 'directive'
+    | 'press'
+    | 'subscriptions'
+    | 'users'
+    | 'sheets'
+    | 'content'
+    | 'site'
+    | 'protocol'
+    | 'audit'
+  >(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = sessionStorage.getItem('zenvitra_vault_tab');
@@ -955,10 +974,71 @@ export function VaultDashboardClient({
         </div>
       </div>
 
+      {/* Sovereign Crisis & Maintenance Controller */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-red-950/40 via-black to-amber-950/30 border border-red-500/30 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+            <AlertOctagon className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <span className="font-bold text-white uppercase tracking-wider block">
+              SOVEREIGN CRISIS MITIGATION &amp; MAINTENANCE OVERRIDE
+            </span>
+            <span className="text-[11px] text-neutral-400">
+              Immediate hardware-level write freeze and system maintenance curtain controls
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          {/* Maintenance Mode Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextMaint = !protocols.maintenanceMode;
+              const updated = saveProtocolControls({ maintenanceMode: nextMaint });
+              setProtocols(updated);
+              notify(nextMaint ? '🚧 Global Maintenance Curtain ENGAGED' : '✅ Maintenance Curtain LIFTED');
+              addAuditLog(`Founder toggled Maintenance Mode: ${nextMaint}`, 'PROTOCOL');
+            }}
+            className={`px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-2 cursor-pointer border ${
+              protocols.maintenanceMode
+                ? 'bg-amber-500 text-black border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.4)]'
+                : 'bg-white/5 text-neutral-300 border-white/10 hover:bg-white/10'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Maintenance: {protocols.maintenanceMode ? 'ACTIVE (ON)' : 'OFF'}</span>
+          </button>
+
+          {/* Panic Mode Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextPanic = !protocols.readOnlyMode;
+              const updated = saveProtocolControls({ readOnlyMode: nextPanic, maintenanceMode: nextPanic });
+              setProtocols(updated);
+              notify(nextPanic ? '🚨 CRISIS PANIC MODE ACTIVATED: Platform Locked Read-Only!' : '✅ Panic Mode Disengaged: Normal Read/Write Resumed');
+              addAuditLog(`Founder toggled Crisis Panic Mode: ${nextPanic}`, 'PROTOCOL');
+            }}
+            className={`px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-2 cursor-pointer border ${
+              protocols.readOnlyMode
+                ? 'bg-red-600 text-white border-red-400 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.6)]'
+                : 'bg-red-500/20 text-red-300 border-red-500/40 hover:bg-red-500/30'
+            }`}
+          >
+            <AlertOctagon className="w-3.5 h-3.5" />
+            <span>Panic Mode: {protocols.readOnlyMode ? 'ENGAGED (LOCKED)' : 'DISARMED'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Global Tab Navigation */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-white/10 font-mono text-xs w-full max-w-full">
         {[
           { id: 'overview', label: '📊 System Telemetry', icon: Cpu },
+          { id: 'admin_control', label: '🛡️ Admin Mission Control (28 Modules)', icon: ShieldCheck },
+          { id: 'panic_room', label: '🚨 Panic Mode (Level 0 Override)', icon: AlertOctagon },
           { id: 'masterkey', label: '🔑 Personal Master Key', icon: KeyRound },
           { id: 'adminlinks', label: '🔗 Admin Bypass Links', icon: ShieldCheck },
           { id: 'terminal', label: '💻 Root Terminal (CLI)', icon: Terminal },
@@ -995,6 +1075,85 @@ export function VaultDashboardClient({
         <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono flex items-center gap-2.5 shadow-lg">
           <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
           <span>{feedback}</span>
+        </div>
+      )}
+
+      {/* ── TAB: ADMIN MISSION CONTROL (EMBEDDED INSIDE VAULT) ── */}
+      {activeTab === 'admin_control' && (
+        <div className="space-y-4 w-full -mx-2 sm:-mx-4">
+          <div className="px-4 py-2 flex items-center justify-between bg-amber-500/10 border-y border-amber-500/30 text-amber-300 font-mono text-xs rounded-xl">
+            <span className="flex items-center gap-2 font-bold">
+              <Crown className="w-4 h-4 text-amber-400" />
+              <span>FOUNDER EMBEDDED OMNI-CONTROL // ALL 28 ADMINISTRATIVE MODULES ACTIVE</span>
+            </span>
+            <span className="text-[10px] text-neutral-400 hidden sm:inline">PASSTHROUGH HARDWARE CLEARANCE</span>
+          </div>
+          <ZenAdminControlRoom />
+        </div>
+      )}
+
+      {/* ── TAB: SOVEREIGN PANIC ROOM & CRISIS OVERRIDE ── */}
+      {activeTab === 'panic_room' && (
+        <div className="p-6 sm:p-10 rounded-3xl bg-gradient-to-b from-rose-950/40 via-[#0a070a] to-[#040205] border border-rose-500/50 space-y-6 font-mono text-xs">
+          <div className="border-b border-rose-500/30 pb-4">
+            <span className="text-[11px] font-mono text-rose-400 uppercase font-bold tracking-wider">
+              PANIC ROOM // LEVEL 0 SOVEREIGN CRISIS MITIGATION
+            </span>
+            <h2 className="text-2xl font-bold text-white pt-1">Supreme Emergency Override Console</h2>
+            <p className="text-xs text-neutral-400 font-sans pt-1">
+              Extreme interventions reserved strictly for @yuveer (Founder). Instant hardware-level freeze of all platform mutations, database writes, and public registration curtains.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-4">
+            <div className="flex items-center gap-3 text-rose-400 font-bold text-sm">
+              <AlertOctagon className="w-6 h-6" />
+              <span>PLATFORM READ-ONLY EMERGENCY WRITE CURTAIN</span>
+            </div>
+            <p className="text-neutral-300 leading-relaxed font-sans text-xs">
+              Activating this lock freezes all database mutations across all devices in real-time. Only operators with Level 0 master bypass can execute changes. All incoming client POST/PATCH/DELETE requests are intercepted.
+            </p>
+
+            <div className="pt-2 flex items-center gap-3">
+              <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+                protocols.readOnlyMode 
+                  ? 'bg-rose-500 text-white animate-pulse' 
+                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+              }`}>
+                CURRENT SYSTEM STATUS: {protocols.readOnlyMode ? 'EMERGENCY READ-ONLY LOCK ACTIVE' : 'NORMAL READ/WRITE OPERATIONS'}
+              </span>
+            </div>
+
+            <div className="pt-4 flex flex-wrap gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  saveProtocolControls({ readOnlyMode: true, maintenanceMode: true });
+                  setProtocols(getProtocolControls());
+                  notify('🚨 PLATFORM WRITE CURTAIN ENGAGED. READ-ONLY MODE ACTIVE.');
+                  addAuditLog('CRISIS EMERGENCY LOCK ENGAGED: Read-Only Mode Activated', 'PROTOCOL');
+                }}
+                className="px-6 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition cursor-pointer shadow-[0_0_30px_rgba(244,63,94,0.4)] flex items-center gap-2 uppercase tracking-wider"
+              >
+                <AlertOctagon className="w-4 h-4" />
+                <span>Engage Panic Mode (Lockdown)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  saveProtocolControls({ readOnlyMode: false, maintenanceMode: false });
+                  setProtocols(getProtocolControls());
+                  notify('✅ Platform unlocked. Standard read/write resumed.');
+                  addAuditLog('Crisis Lock Lifted: Resumed Standard Operations', 'PROTOCOL');
+                }}
+                className="px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition cursor-pointer flex items-center gap-2 uppercase tracking-wider"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Resume Normal Operations</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

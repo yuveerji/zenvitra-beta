@@ -260,20 +260,34 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
       const now = new Date().toISOString();
       const id = 'art_' + Date.now();
       const status = data.status || 'published';
+
+      // Auto-format into official wire structure with wire reference
+      const wireRef = `WIRE-ZNV-${id.slice(-6).toUpperCase()}`;
+      const cleanTitle = data.title.trim();
+      const wireFormattedTitle = cleanTitle.toUpperCase().startsWith('[WIRE') 
+        ? cleanTitle 
+        : `[WIRE // ${data.category.toUpperCase()}] ${cleanTitle}`;
+      
+      const wireExcerpt = data.excerpt || extractExcerpt(data.content);
+      const wireDateline = `DATELINE: GLOBAL MESH // ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      const formattedContent = data.content.startsWith('DATELINE:')
+        ? data.content
+        : `**${wireDateline}** — ${data.content}`;
+
       const article: PressArticle = {
         id,
-        title: data.title.trim(),
-        slug: generateSlug(data.title),
-        content: data.content,
-        excerpt: data.excerpt || extractExcerpt(data.content),
+        title: wireFormattedTitle,
+        slug: generateSlug(cleanTitle),
+        content: formattedContent,
+        excerpt: wireExcerpt,
         coverImage: data.coverImage?.trim() || undefined,
-        sourceName: data.sourceName.trim(),
-        sourceUrl: data.sourceUrl.trim(),
+        sourceName: data.sourceName?.trim() || 'Zenvitra Sovereign Wire',
+        sourceUrl: data.sourceUrl?.trim() || '/press',
         authorId: currentUserId,
         authorName: currentUserName,
         authorUsername: currentUserUsername,
         category: data.category,
-        tags: data.tags,
+        tags: Array.from(new Set(['#Wire', '#LiveDispatch', `#${data.category}`, ...(data.tags || [])])),
         status,
         isOfficial: data.isOfficial || false,
         createdAt: now,
@@ -286,6 +300,61 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
         commentCount: 0,
       };
       saveArticles([article, ...allArticles]);
+
+      // Automatically convert and format into live wire in ZenPulse & ZenNews
+      if (typeof window !== 'undefined' && status === 'published') {
+        try {
+          const pulseRaw = localStorage.getItem('zenvitra_pulse_posts_v9_clean');
+          const pulsePosts = pulseRaw ? JSON.parse(pulseRaw) : [];
+          const newPulseWire = {
+            id: `wire_post_${id}`,
+            authorId: currentUserId,
+            authorName: currentUserName,
+            authorUsername: currentUserUsername,
+            authorRole: 'correspondent',
+            content: `⚡ **OFFICIAL WIRE DISPATCH [${wireRef}]**\n\n### ${wireFormattedTitle}\n\n${wireExcerpt}\n\n[Read full wire report in Press & Newsroom →](/press)`,
+            images: data.coverImage ? [data.coverImage] : [],
+            tags: ['#Wire', '#LiveDispatch', `#${data.category}`],
+            createdAt: now,
+            likesCount: 0,
+            repostsCount: 0,
+            repliesCount: 0,
+            likedBy: [],
+            repostedBy: [],
+            isBookmarked: false,
+            sourceData: {
+              sourceName: data.sourceName || 'Zenvitra Press Wire',
+              sourceUrl: `/press?article=${id}`
+            }
+          };
+          localStorage.setItem('zenvitra_pulse_posts_v9_clean', JSON.stringify([newPulseWire, ...pulsePosts]));
+          window.dispatchEvent(new CustomEvent('zenvitra_pulse_sync'));
+        } catch (_) {}
+
+        try {
+          const newsRaw = localStorage.getItem('zenvitra_news_stories_v2_clean');
+          const newsList = newsRaw ? JSON.parse(newsRaw) : [];
+          const newNewsStory = {
+            id: `news_${id}`,
+            headline: wireFormattedTitle,
+            summary: wireExcerpt,
+            content: formattedContent,
+            category: (data.category as string) === 'TECH' ? 'TECHNOLOGY' : (data.category as string) === 'CLIMATE' ? 'ENVIRONMENT' : (data.category as any),
+            author: currentUserName,
+            authorRole: 'Verified Correspondent',
+            location: 'Global Wire Mesh',
+            publishedAt: now,
+            readTime: `${estimateReadingTime(data.content)} min read`,
+            tags: data.tags || ['#Wire', '#Diplomacy'],
+            isBreaking: true,
+            isFeatured: true,
+            imageUrl: data.coverImage || undefined,
+            source: data.sourceName || 'Zenvitra Press Wire'
+          };
+          localStorage.setItem('zenvitra_news_stories_v2_clean', JSON.stringify([newNewsStory, ...newsList]));
+          window.dispatchEvent(new CustomEvent('zenvitra_news_sync'));
+        } catch (_) {}
+      }
 
       if (status === 'published') {
         setActiveView('feed');

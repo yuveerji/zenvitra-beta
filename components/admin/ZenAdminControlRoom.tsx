@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Shield,
   ShieldCheck,
@@ -91,7 +91,6 @@ export type AdminModuleId =
   | '24_support'
   | '25_system_health'
   | '26_security'
-  | '27_emergency'
   | '28_ai_assistant'
   | '29_cyber_ui';
 
@@ -129,9 +128,8 @@ const ADMIN_MODULES: AdminModuleMeta[] = [
   { id: '22_rbac', code: '22', name: 'Roles & Permissions', category: 'INFRA', icon: ShieldCheck },
   { id: '23_audit_trail', code: '23', name: 'Compliance Audit', category: 'INFRA', icon: Database },
   { id: '24_support', code: '24', name: 'Helpdesk & Support', category: 'SAFETY', icon: HelpCircle },
-  { id: '25_system_health', code: '25', name: 'System Telemetry', category: 'INFRA', icon: Server, badge: '99.98%' },
+  { id: '25_system_health', code: '25', name: 'System Telemetry', category: 'INFRA', icon: Server, badge: 'LIVE' },
   { id: '26_security', code: '26', name: 'Security & Shields', category: 'INFRA', icon: Lock },
-  { id: '27_emergency', code: '27', name: 'Panic Room Override', category: 'INFRA', icon: AlertOctagon, badge: 'LEVEL 0' },
   { id: '28_ai_assistant', code: '28', name: 'Zenith Intel (AI)', category: 'CORE', icon: Bot, badge: 'AI' },
   { id: '29_cyber_ui', code: '29', name: 'Sovereign UI Setup', category: 'CORE', icon: Cpu },
 ];
@@ -189,8 +187,67 @@ export function ZenAdminControlRoom() {
   const [broadcastTarget, setBroadcastTarget] = useState<'GLOBAL' | 'STAFF' | 'DELEGATES'>('GLOBAL');
   const [cacheFlushed, setCacheFlushed] = useState(false);
 
-  // Panic Room dual-confirmation
-  const [panicConfirmation, setPanicConfirmation] = useState(false);
+  // Real-time Live Latencies & Platform Telemetry
+  const [liveTelemetryData, setLiveTelemetryData] = useState<{
+    status: string;
+    healthy: boolean;
+    timestamp: string;
+    liveMetrics: {
+      activeUsers: number;
+      postsThroughput: string;
+      zenchatSockets: number;
+      grossVol: string;
+      statsSummary: string;
+    };
+    subsystems: Array<{
+      name: string;
+      latency: string;
+      latencyValue: number;
+      status: string;
+      uptime: string;
+    }>;
+  }>({
+    status: 'OPERATIONAL',
+    healthy: true,
+    timestamp: new Date().toISOString(),
+    liveMetrics: {
+      activeUsers: 1,
+      postsThroughput: '0.0',
+      zenchatSockets: 1,
+      grossVol: '$0',
+      statsSummary: 'Live Database Telemetry'
+    },
+    subsystems: [
+      { name: 'Edge Next.js Ingress', latency: '4ms', latencyValue: 4, status: 'OPERATIONAL', uptime: '99.99%' },
+      { name: 'Prisma SQLite & Database', latency: '1ms', latencyValue: 1, status: 'OPERATIONAL', uptime: '100%' },
+      { name: 'WebSocket Mesh Cluster', latency: '6ms', latencyValue: 6, status: 'OPERATIONAL', uptime: '99.98%' },
+      { name: 'Google Sheets Ingestion', latency: '92ms', latencyValue: 92, status: 'OPERATIONAL', uptime: '99.85%' },
+      { name: 'CDN Cache & Asset Edge', latency: '3ms', latencyValue: 3, status: 'OPERATIONAL', uptime: '100%' },
+      { name: 'Audit Cryptographic Ledger', latency: '1ms', latencyValue: 1, status: 'OPERATIONAL', uptime: '100%' },
+    ]
+  });
+
+  const fetchLiveTelemetry = useCallback(async () => {
+    try {
+      const clientT0 = performance.now();
+      const res = await fetch('/api/system/health', { cache: 'no-store' });
+      const clientRtt = Math.max(1, Math.round(performance.now() - clientT0));
+      if (res.ok) {
+        const data = await res.json();
+        if (data.subsystems && data.subsystems[0]) {
+          data.subsystems[0].latency = `${clientRtt}ms`;
+          data.subsystems[0].latencyValue = clientRtt;
+        }
+        setLiveTelemetryData(data);
+      }
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    fetchLiveTelemetry();
+    const interval = setInterval(fetchLiveTelemetry, 4000);
+    return () => clearInterval(interval);
+  }, [fetchLiveTelemetry]);
 
   const notify = (msg: string) => {
     setFeedback(msg);
@@ -425,14 +482,6 @@ export function ZenAdminControlRoom() {
           </button>
 
           <button
-            onClick={() => setActiveModule('27_emergency')}
-            className="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.2)]"
-          >
-            <AlertOctagon className="w-3.5 h-3.5 text-rose-400" />
-            <span>Panic Room</span>
-          </button>
-
-          <button
             onClick={handleLockSession}
             title="Lock Control Enclave"
             className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-neutral-400 hover:text-white transition cursor-pointer"
@@ -612,23 +661,31 @@ export function ZenAdminControlRoom() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
                   <div className="p-4 rounded-2xl bg-black/60 border border-white/10">
                     <span className="text-[10px] text-neutral-400 uppercase">ACTIVE CONCURRENT USERS</span>
-                    <p className="text-2xl font-black text-white pt-1">1,482</p>
-                    <span className="text-[10px] text-emerald-400">+14% last hour</span>
+                    <p className="text-2xl font-black text-white pt-1">
+                      {liveTelemetryData.liveMetrics.activeUsers.toLocaleString()}
+                    </p>
+                    <span className="text-[10px] text-emerald-400">Live active nodes</span>
                   </div>
                   <div className="p-4 rounded-2xl bg-black/60 border border-white/10">
                     <span className="text-[10px] text-neutral-400 uppercase">THROUGHPUT (POSTS/SEC)</span>
-                    <p className="text-2xl font-black text-cyan-300 pt-1">28.4</p>
-                    <span className="text-[10px] text-cyan-400">Peak load normal</span>
+                    <p className="text-2xl font-black text-cyan-300 pt-1">
+                      {liveTelemetryData.liveMetrics.postsThroughput}
+                    </p>
+                    <span className="text-[10px] text-cyan-400">Live database rate</span>
                   </div>
                   <div className="p-4 rounded-2xl bg-black/60 border border-white/10">
                     <span className="text-[10px] text-neutral-400 uppercase">ZENCHAT SOCKETS</span>
-                    <p className="text-2xl font-black text-indigo-300 pt-1">892</p>
-                    <span className="text-[10px] text-indigo-400">Volatile mesh active</span>
+                    <p className="text-2xl font-black text-indigo-300 pt-1">
+                      {liveTelemetryData.liveMetrics.zenchatSockets.toLocaleString()}
+                    </p>
+                    <span className="text-[10px] text-indigo-400">Mesh cluster online</span>
                   </div>
                   <div className="p-4 rounded-2xl bg-black/60 border border-white/10">
                     <span className="text-[10px] text-neutral-400 uppercase">GROSS VOL (24H)</span>
-                    <p className="text-2xl font-black text-amber-300 pt-1">$24,980</p>
-                    <span className="text-[10px] text-amber-400">18 tickets, 4 MUNs</span>
+                    <p className="text-2xl font-black text-amber-300 pt-1">
+                      {liveTelemetryData.liveMetrics.grossVol}
+                    </p>
+                    <span className="text-[10px] text-amber-400">{liveTelemetryData.liveMetrics.statsSummary}</span>
                   </div>
                 </div>
 
@@ -1181,18 +1238,11 @@ export function ZenAdminControlRoom() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-xs">
-                {[
-                  { name: 'Edge Next.js Ingress', latency: '24ms', status: 'OPERATIONAL', uptime: '99.99%' },
-                  { name: 'Prisma SQLite & Database', latency: '4ms', status: 'OPERATIONAL', uptime: '100%' },
-                  { name: 'WebSocket Mesh Cluster', latency: '12ms', status: 'OPERATIONAL', uptime: '99.98%' },
-                  { name: 'Google Sheets Ingestion', latency: '180ms', status: 'OPERATIONAL', uptime: '99.85%' },
-                  { name: 'CDN Cache & Asset Edge', latency: '9ms', status: 'OPERATIONAL', uptime: '100%' },
-                  { name: 'Audit Cryptographic Ledger', latency: '1ms', status: 'OPERATIONAL', uptime: '100%' },
-                ].map((s, idx) => (
+                {liveTelemetryData.subsystems.map((s, idx) => (
                   <div key={idx} className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-white">{s.name}</span>
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className={`w-2 h-2 rounded-full ${s.status === 'OPERATIONAL' ? 'bg-emerald-400' : 'bg-amber-400'} animate-pulse`} />
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-neutral-400">
                       <span>Latency: <strong className="text-cyan-300">{s.latency}</strong></span>
@@ -1200,71 +1250,6 @@ export function ZenAdminControlRoom() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Module 27: Emergency Override (Panic Button) */}
-          {activeModule === '27_emergency' && (
-            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-rose-950/40 via-[#0a070a] to-[#040205] border border-rose-500/50 space-y-6">
-              <div className="border-b border-rose-500/30 pb-4">
-                <span className="text-[11px] font-mono text-rose-400 uppercase font-bold tracking-wider">
-                  27 &bull; PANIC ROOM // LEVEL 0 CRISIS MITIGATION
-                </span>
-                <h2 className="text-2xl font-bold text-white pt-0.5">Emergency Override Controls</h2>
-                <p className="text-xs text-neutral-400 font-mono">
-                  Extreme interventions for active attacks, rogue events, or catastrophic anomalies.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-3 font-mono text-xs">
-                <div className="flex items-center gap-2 text-rose-400 font-bold">
-                  <AlertOctagon className="w-5 h-5" />
-                  <span>PLATFORM READ-ONLY EMERGENCY FREEZE</span>
-                </div>
-                <p className="text-neutral-300 leading-relaxed font-sans">
-                  Activating this lock freezes all database mutations across all devices in real-time. Only operators with Level 0 master bypass can execute changes.
-                </p>
-
-                <div className="pt-2 flex items-center gap-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={panicConfirmation}
-                      onChange={(e) => setPanicConfirmation(e.target.checked)}
-                      className="w-4 h-4 rounded text-rose-500 accent-rose-500 cursor-pointer"
-                    />
-                    <span className="text-white font-bold">I verify this crisis intervention decree</span>
-                  </label>
-                </div>
-
-                <div className="pt-3 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    disabled={!panicConfirmation}
-                    onClick={() => {
-                      saveProtocolControls({ readOnlyMode: true, maintenanceMode: true });
-                      notify('🚨 PLATFORM WRITE CURTAIN ENGAGED. READ-ONLY MODE ACTIVE.');
-                      addAuditLog('CRISIS EMERGENCY LOCK ENGAGED: Read-Only Mode Activated', 'PROTOCOL');
-                    }}
-                    className="px-5 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 text-white font-bold transition cursor-pointer shadow-[0_0_30px_rgba(244,63,94,0.4)]"
-                  >
-                    Engage Read-Only Platform Lock
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={!panicConfirmation}
-                    onClick={() => {
-                      saveProtocolControls({ readOnlyMode: false, maintenanceMode: false });
-                      notify('✅ Platform unlocked. Standard read/write resumed.');
-                      addAuditLog('Crisis Lock Lifted: Resumed Standard Operations', 'PROTOCOL');
-                    }}
-                    className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold transition cursor-pointer"
-                  >
-                    Resume Normal Operations
-                  </button>
-                </div>
               </div>
             </div>
           )}

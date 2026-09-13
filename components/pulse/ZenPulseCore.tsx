@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -463,21 +463,35 @@ export function ZenPulseCore() {
     setExpandedComments((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  /* Live Breaking Diplomatic Ticker */
+  /* Live Breaking Dynamic Ticker - ZERO FAKE WIRES, PURE REAL DATA */
   const [tickerIndex, setTickerIndex] = useState(0);
-  const TICKER_DIRECTIVES = [
-    '🔴 LIVE WIRE • UN Plenary Session #418: Geneva Accord on Open Civic Corridors passed with 94% Supermajority',
-    '⚡ BREAKING • Youth Diplomatic Summit 2026: 1,420 Delegates Checked-in Across 48 Nations',
-    '🏛️ SECURITY COUNCIL WIRE • High-Seas Biosphere Protection Treaty Redline diff finalized by delegations',
-    '🎙️ 60S RELAY • Delegate @yuveer broadcasted floor speech on Youth Plenary Consensus Node',
-  ];
+  const dynamicTickerDirectives = useMemo(() => {
+    const realWires: string[] = [];
+    if (Array.isArray(feedPosts) && feedPosts.length > 0) {
+      feedPosts.slice(0, 6).forEach((p) => {
+        const cleanTxt = (p.content || '').replace(/[\r\n]+/g, ' ').trim();
+        if (cleanTxt) {
+          const wirePrefix = (p as any).treatyData ? '📜 TREATY WIRE' : (p as any).speechData ? '🎙️ FLOOR RELAY' : '⚡ LIVE WIRE';
+          realWires.push(`${wirePrefix} • @${p.authorUsername || 'delegate'}: ${cleanTxt.slice(0, 100)}...`);
+        }
+      });
+    }
+    if (realWires.length === 0) {
+      return [
+        '⚡ ZENVITRA MESH • Live Decentralized Diplomatic Network Active',
+        '🌐 REAL-TIME PROTOCOL • Post a dispatch or treaty to broadcast to global wires',
+      ];
+    }
+    return realWires;
+  }, [feedPosts]);
 
   useEffect(() => {
+    if (dynamicTickerDirectives.length <= 1) return;
     const timer = setInterval(() => {
-      setTickerIndex((prev) => (prev + 1) % TICKER_DIRECTIVES.length);
+      setTickerIndex((prev) => (prev + 1) % dynamicTickerDirectives.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [dynamicTickerDirectives.length]);
 
   /* Chamber & Post Category Filter */
   const [chamberFilter, setChamberFilter] = useState<'all' | 'plenary' | 'treaties' | 'audio' | 'summits' | 'delegates'>('all');
@@ -615,7 +629,7 @@ export function ZenPulseCore() {
                   transition={{ duration: 0.3 }}
                   className="text-xs font-mono text-zinc-300 group-hover:text-white truncate tracking-tight"
                 >
-                  {TICKER_DIRECTIVES[tickerIndex]}
+                  {dynamicTickerDirectives[tickerIndex] || dynamicTickerDirectives[0]}
                 </motion.p>
               </AnimatePresence>
             </div>

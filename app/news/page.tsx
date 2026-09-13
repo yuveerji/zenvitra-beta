@@ -57,12 +57,23 @@ export default function ZenNewsPage() {
     }
   });
 
-  // Persist to localStorage
+  // Persist to localStorage and listen for real-time wire dispatches
   useEffect(() => {
-    try {
-      localStorage.setItem(LS_NEWS, JSON.stringify(stories));
-    } catch {}
-  }, [stories]);
+    const handleNewsSync = () => {
+      try {
+        const stored = localStorage.getItem(LS_NEWS);
+        if (stored) {
+          setStories(JSON.parse(stored));
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('zenvitra_news_sync', handleNewsSync);
+    window.addEventListener('storage', handleNewsSync);
+    return () => {
+      window.removeEventListener('zenvitra_news_sync', handleNewsSync);
+      window.removeEventListener('storage', handleNewsSync);
+    };
+  }, []);
 
   const [selectedSector, setSelectedSector] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
