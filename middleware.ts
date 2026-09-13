@@ -25,10 +25,13 @@ export function middleware(request: NextRequest) {
   const clearanceCookie = request.cookies.get('zenvitra_clearance')?.value;
   const isClearanceGranted = clearanceCookie === 'SOVEREIGN_GRANTED';
 
-  // Whitelist: /join-core-team, /countdown, /api routes, static files, and admin secret enclave
+  // Whitelist: /join-core-team, /countdown, /api routes, static files, admin control room, vault, and admin secret enclave
   const isAllowedPath = 
     isClearanceGranted ||
     pathname === '/countdown' ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/zen-vault-root') ||
+    pathname.startsWith('/enclave') ||
     pathname.startsWith('/donate') ||
     pathname.startsWith('/join-core-team') ||
     pathname.startsWith('/statussignin') ||
