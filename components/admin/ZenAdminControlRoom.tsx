@@ -40,8 +40,13 @@ import {
   Bot,
   Layers,
   ChevronRight,
-  LogOut
+  LogOut,
+  Sparkles,
+  ArrowLeft
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   verifyAdminKey, 
@@ -51,7 +56,11 @@ import {
   addAuditLog, 
   saveProtocolControls, 
   useProtocolControls,
-  ProtocolControls 
+  ProtocolControls,
+  isAdmin,
+  isFounder,
+  isAdminSessionActive,
+  isFounderSessionActive
 } from '@/lib/founderControl';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 
@@ -128,6 +137,8 @@ const ADMIN_MODULES: AdminModuleMeta[] = [
 ];
 
 export function ZenAdminControlRoom() {
+  const { user, profile, isLoading: authLoading, isAuthenticated: userIsLoggedIn } = useAuth();
+  const router = useRouter();
   const { profiles } = useZenPulse();
   const protocols = useProtocolControls();
 
@@ -136,6 +147,32 @@ export function ZenAdminControlRoom() {
   const [accessPasscode, setAccessPasscode] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
   const [operatorIdentity, setOperatorIdentity] = useState<string>('Staff Admin');
+
+  // Check login: redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user && !profile && !userIsLoggedIn) {
+      router.push('/login?callbackUrl=/admin');
+    }
+  }, [authLoading, user, profile, userIsLoggedIn, router]);
+
+  // Determine if logged-in user has staff/admin/founder clearance
+  const hasStaffClearance = useMemo(() => {
+    if (!profile && !user) return false;
+    const username = profile?.username || user?.email || '';
+    const role = (profile?.role || (profile as any)?.badge || '').toString();
+    if (isFounder(username, role) || isAdmin(username, role)) return true;
+    if (isAdminSessionActive() || isFounderSessionActive()) return true;
+    const r = role.toUpperCase();
+    if (r === 'ADMIN' || r === 'CORE_TEAM' || r === 'FOUNDER' || r === 'SUPER_ADMIN' || r === 'SECRETARIAT_CHAIR') return true;
+    return false;
+  }, [profile, user]);
+
+  // Set stealth page title if non-staff to completely avoid leaking the admin enclave
+  useEffect(() => {
+    if (!authLoading && (user || profile || userIsLoggedIn) && !hasStaffClearance) {
+      document.title = '404: This page could not be found';
+    }
+  }, [authLoading, user, profile, userIsLoggedIn, hasStaffClearance]);
 
   // Active Module
   const [activeModule, setActiveModule] = useState<AdminModuleId>('01_command_center');
@@ -222,6 +259,45 @@ export function ZenAdminControlRoom() {
     const q = paletteQuery.toLowerCase();
     return ADMIN_MODULES.filter(m => m.name.toLowerCase().includes(q) || m.code.includes(q));
   }, [paletteQuery]);
+
+  // ── AUTH CHECK & STEALTH 404 FOR NORMAL/EVENT/PROFESSIONAL/DELEGATE USERS ──
+  if (authLoading || (!user && !profile && !userIsLoggedIn)) {
+    return (
+      <div className="min-h-screen bg-[#020408] text-neutral-400 flex items-center justify-center font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" />
+          <span>Verifying clearance...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Stealth 404: If user is normal, event, professional, delegate, or non-staff, display authentic 404 to avoid leaking admin enclave
+  if (!hasStaffClearance) {
+    return (
+      <div className="min-h-screen bg-[#030405] text-white flex flex-col items-center justify-center p-6 text-center select-none font-sans">
+        <div className="w-16 h-16 rounded-3xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-6 shadow-2xl">
+          <Sparkles className="w-8 h-8 text-neutral-400" />
+        </div>
+        <span className="font-mono text-xs text-neutral-500 tracking-widest uppercase mb-2">
+          Error 404 // Dimension Not Found
+        </span>
+        <h1 className="font-display font-medium text-4xl sm:text-5xl text-white mb-4">
+          Transmission Severed
+        </h1>
+        <p className="max-w-md text-sm text-neutral-400 font-sans mb-8">
+          The requested coordinate does not exist or has been relocated within the Zenvitra protocol mesh.
+        </p>
+        <Link
+          href="/"
+          className="px-6 py-3 rounded-2xl bg-white text-black font-mono text-xs font-bold hover:bg-neutral-200 transition flex items-center gap-2 shadow-lg cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Return to Nexus</span>
+        </Link>
+      </div>
+    );
+  }
 
   // ── GATE SCREEN: MANDATORY PASSCODE ENTRY FOR ALL VISITORS ──
   if (!isAuthenticated) {

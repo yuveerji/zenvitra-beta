@@ -94,6 +94,9 @@ export function recordSavedSession(profile: UserProfile | any) {
     }
 
     localStorage.setItem('zenvitra_saved_sessions', JSON.stringify(list));
+    if (typeof document !== 'undefined') {
+      document.cookie = 'zenvitra_session=active; path=/; max-age=2592000; SameSite=Lax';
+    }
   } catch (_) {}
 }
 

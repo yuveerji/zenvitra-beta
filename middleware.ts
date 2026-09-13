@@ -1,6 +1,83 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Public website routes accessible without login
+const PUBLIC_PREFIXES = [
+  '/_next',
+  '/api',
+  '/icons',
+  '/brand',
+  '/fonts',
+  '/assets',
+  '/images',
+  '/auth',
+  '/mun',
+  '/events',
+  '/news',
+  '/press',
+  '/docs',
+  '/solutions',
+  '/donate',
+  '/about',
+  '/campus-ambassador',
+  '/chamber',
+  '/constitution',
+  '/contact',
+  '/countdown',
+  '/discussions',
+  '/guidelines',
+  '/impact',
+  '/invest-donate',
+  '/join-core-team',
+  '/manifesto',
+  '/mission',
+  '/pricing',
+  '/privacy',
+  '/statusregister',
+  '/statussignin',
+  '/terms',
+  '/vision',
+  '/login',
+  '/register',
+  '/join',
+  '/faq',
+  '/legal',
+  '/team',
+  '/careers',
+];
+
+const PUBLIC_EXACT = new Set([
+  '/',
+  '/manifest.json',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/favicon.ico',
+]);
+
+const STATIC_EXTENSIONS = [
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.ico',
+  '.webp',
+  '.wav',
+  '.mp3',
+  '.mp4',
+  '.webm',
+  '.css',
+  '.js',
+  '.map',
+  '.txt',
+  '.xml',
+  '.json',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.eot',
+];
+
 export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const url = request.nextUrl.clone();
@@ -20,43 +97,44 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, { status: 307 });
   }
 
-  // SYSTEM-WIDE LOCKDOWN UNTIL 2ND OCTOBER 2026 2:00 PM IST
-  // Check if visitor has approved security clearance cookie (granted when status = APPROVED in Google Sheet)
-  const clearanceCookie = request.cookies.get('zenvitra_clearance')?.value;
-  const isClearanceGranted = clearanceCookie === 'SOVEREIGN_GRANTED';
-
-  // Whitelist: /join-core-team, /countdown, /api routes, static files, admin control room, vault, and admin secret enclave
-  const isAllowedPath = 
-    isClearanceGranted ||
-    pathname === '/countdown' ||
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/zen-vault-root') ||
-    pathname.startsWith('/enclave') ||
-    pathname.startsWith('/donate') ||
-    pathname.startsWith('/join-core-team') ||
-    pathname.startsWith('/statussignin') ||
-    pathname.startsWith('/statusregister') ||
-    pathname.startsWith('/api') ||
+  // Always allow static files & Next.js internals
+  if (
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/icons') ||
-    pathname.startsWith('/brand') ||
-    pathname.startsWith('/fonts') ||
-    pathname.startsWith('/assets') ||
-    pathname.startsWith('/images') ||
-    pathname.endsWith('.png') ||
-    pathname.endsWith('.jpg') ||
-    pathname.endsWith('.jpeg') ||
-    pathname.endsWith('.svg') ||
-    pathname.endsWith('.ico') ||
-    pathname.endsWith('.wav') ||
-    pathname.endsWith('.mp3') ||
-    pathname === '/manifest.json' ||
-    pathname === '/robots.txt' ||
-    pathname === '/sitemap.xml';
+    pathname.startsWith('/api') ||
+    STATIC_EXTENSIONS.some((ext) => pathname.endsWith(ext)) ||
+    PUBLIC_EXACT.has(pathname)
+  ) {
+    return NextResponse.next();
+  }
 
-  if (!isAllowedPath) {
-    url.pathname = '/countdown';
-    return NextResponse.redirect(url, { status: 307 });
+  // Check if visitor has an active authenticated session
+  const hasSession = Boolean(
+    request.cookies.get('zenvitra_session')?.value ||
+    request.cookies.get('next-auth.session-token')?.value ||
+    request.cookies.get('__Secure-next-auth.session-token')?.value ||
+    request.cookies.get('authjs.session-token')?.value ||
+    request.cookies.get('sb-access-token')?.value ||
+    request.cookies.get('zenvitra_admin_override_token')?.value ||
+    request.cookies.get('zenvitra_clearance')?.value === 'SOVEREIGN_GRANTED' ||
+    request.cookies.getAll().some((c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'))
+  );
+
+  // Check if requested path is a public website page
+  const isPublicWebsitePage = PUBLIC_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+
+  // If visitor is NOT logged in:
+  // Public website pages are accessible, but any protected page (like /admin, /dashboard, /profile, /settings, /chat, etc.)
+  // OR any arbitrary/unmapped route (e.g. /abc, /xyz, /test) redirects them to /login
+  if (!hasSession) {
+    if (isPublicWebsitePage) {
+      return NextResponse.next();
+    }
+
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl, { status: 307 });
   }
 
   return NextResponse.next();
