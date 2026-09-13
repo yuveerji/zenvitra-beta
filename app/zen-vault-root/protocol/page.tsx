@@ -37,14 +37,34 @@ export default function ProtocolMatrixPage() {
   const isFounderUser = isFounder(effectiveUser, userRole) || isFounderSessionActive();
 
   useEffect(() => {
+    // 1. Initial client read
     setControls(getProtocolControls());
+
+    // 2. Fetch server protocol state to stay 100% in sync across devices
+    fetch('/api/protocols')
+      .then((res) => res.json())
+      .then((serverState) => {
+        if (serverState && typeof serverState.registrationsOpen === 'boolean') {
+          setControls((prev) => ({ ...prev, ...serverState }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const handleToggle = (key: keyof ProtocolControls) => {
+  const handleToggle = async (key: keyof ProtocolControls) => {
     if (!isFounderUser) return;
     const updated = { ...controls, [key]: !controls[key] };
     setControls(updated);
     saveProtocolControls(updated);
+
+    try {
+      await fetch('/api/protocols', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+    } catch (_) {}
+
     setFeedback(`Protocol circuit "${key}" toggled to ${updated[key] ? 'ENABLED' : 'OFF'}`);
     setTimeout(() => setFeedback(null), 3500);
   };
@@ -153,7 +173,11 @@ export default function ProtocolMatrixPage() {
       {/* Circuit Switches */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
-          { key: 'registrationsOpen', label: 'Delegate Identity Registration', desc: 'Permit new node and delegate creations' },
+          { 
+            key: 'registrationsOpen', 
+            label: 'Delegate Identity Registration', 
+            desc: 'Permit new node and delegate creations (Scheduled to auto-activate on Oct 2, 2026, 2:00 PM IST when pre-registrations close)' 
+          },
           { key: 'chatMeshEnabled', label: 'Real-Time Chat & Plenary Relays', desc: 'Enable socket streaming and active chambers' },
           { key: 'fluxReelsEnabled', label: 'Flux Reels & Multimedia Engine', desc: 'Enable video feeds, reels, and stories' },
           { key: 'assemblyOsEnabled', label: 'Assembly OS Voting & Resolutions', desc: 'Allow binding constitutional voting rounds' },

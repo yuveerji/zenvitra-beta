@@ -110,6 +110,20 @@ export function getGlobalServerProtocols(): GlobalProtocolState {
       memoryState = { ...DEFAULT_STATE, ...JSON.parse(raw) };
     }
   } catch (_) {}
+
+  // Automatic Launch Threshold: October 2, 2026, 14:00:00 IST (UTC+05:30)
+  // When target launch time passes, Delegate Identity Registration turns ON automatically
+  const LAUNCH_TIMESTAMP = new Date('2026-10-02T14:00:00+05:30').getTime();
+  if (Date.now() >= LAUNCH_TIMESTAMP && !memoryState.registrationsOpen) {
+    memoryState.registrationsOpen = true;
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+      fs.writeFileSync(STATE_FILE, JSON.stringify(memoryState, null, 2), 'utf8');
+    } catch (_) {}
+  }
+
   return memoryState;
 }
 

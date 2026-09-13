@@ -36,6 +36,7 @@ import {
 import { sheetSync } from '@/lib/googleSheets';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 import { PasswordStrengthIndicator, evaluatePasswordStrength } from '@/components/auth/PasswordStrengthIndicator';
+import { saveUserOverride, grantUserSubscription } from '@/lib/founderControl';
 
 interface CommitteeTrack {
   id: string;
@@ -273,6 +274,27 @@ export default function StatusRegisterPage() {
             initialRole: `${formData.roleInterest} | ${primaryTrackObj?.abbreviation || 'DELEGATE'}`,
           }),
         });
+
+        // 1c. Provision Genesis Delegate Whitelist Perks
+        saveUserOverride(cleanHandle, {
+          role: 'DELEGATE',
+          verifiedBadge: 'GOLD',
+          customTitle: 'Genesis Founding Whitelist Member',
+          extraCivicPoints: 500,
+          accolades: [
+            'Genesis Whitelist Pioneer 2026',
+            `${primaryTrackObj?.abbreviation || 'MUN'} Priority Dais Matriculation`,
+            'Zero-Fee Assembly Pass',
+          ],
+        });
+
+        grantUserSubscription(cleanHandle, 'PULSE_PASS', 'LIFETIME', [
+          'ALL_VIP_ACCESS',
+          'SUMMIT_ROOMS',
+          'FLUX_PRO',
+          'GENESIS_BADGE',
+          'PRIORITY_DAIS_ALLOCATION',
+        ]);
       } catch (regErr) {
         console.warn('[DB-REGISTRATION-WARN]', regErr);
       }
@@ -519,6 +541,67 @@ export default function StatusRegisterPage() {
               <p className="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl mx-auto">
                 Secure early entry credentials, lodge your multilateral committee preferences, and gain priority country matrix allocation prior to public platform ignition on October 2, 2026 at 2:00 PM IST.
               </p>
+
+              {/* Genesis Whitelist Profile Perks Showcase */}
+              <div className="max-w-3xl mx-auto rounded-3xl bg-gradient-to-r from-amber-500/[0.08] via-purple-500/[0.05] to-cyan-500/[0.08] border border-amber-500/30 p-5 sm:p-6 text-left space-y-4 shadow-[0_10px_40px_rgba(251,191,36,0.08)]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                    <span className="font-mono text-xs font-bold tracking-wider uppercase text-amber-300">
+                      FOUNDING PRE-REGISTRATION PERKS // OCT 2 IGNITION
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold self-start sm:self-auto">
+                    AUTOMATIC PROFILE CONVERSION
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-2xl bg-black/60 border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300 font-bold block">
+                      GOLD BADGE
+                    </span>
+                    <h4 className="text-xs font-bold text-white">Genesis Whitelist Pass</h4>
+                    <p className="text-[11px] text-neutral-400 leading-snug">
+                      Permanent Gold verification shield on your public profile & forum posts.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-black/60 border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-300 font-bold block">
+                      +500 CIVIC PTS
+                    </span>
+                    <h4 className="text-xs font-bold text-white">Genesis Impact Boost</h4>
+                    <p className="text-[11px] text-neutral-400 leading-snug">
+                      Instant starting civic score boost for summit chairing & resolution sponsorship.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-black/60 border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-purple-300 font-bold block">
+                      PULSE PASS PRO
+                    </span>
+                    <h4 className="text-xs font-bold text-white">VIP Chamber Access</h4>
+                    <p className="text-[11px] text-neutral-400 leading-snug">
+                      Zero-fee summit access, unlimited video glimpses, and exclusive committee rooms.
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-black/60 border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300 font-bold block">
+                      PRIORITY MATRIX
+                    </span>
+                    <h4 className="text-xs font-bold text-white">1st Country Picks</h4>
+                    <p className="text-[11px] text-neutral-400 leading-snug">
+                      Queue precedence for high-tier UNSC delegations and Lok Sabha cabinet seats.
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-[11px] font-mono text-neutral-400 leading-relaxed pt-1">
+                  💡 On <span className="text-white font-bold">October 2, 2026</span>, pre-registration closes and public registration activates. All pre-registered applicants are instantly upgraded into full sovereign profiles with credentials ready to log in immediately.
+                </p>
+              </div>
 
               {/* Live Step Progress Indicator */}
               <div className="pt-6 max-w-xl mx-auto">
