@@ -110,6 +110,8 @@ export interface ZenDocument {
   tags?: string[];
   publishedToPress?: boolean;
   pressSlug?: string;
+  publishedToPulse?: boolean;
+  pulsePostId?: string;
   viewCount?: number;
   isTrash?: boolean;
   cryptographicHash?: string;

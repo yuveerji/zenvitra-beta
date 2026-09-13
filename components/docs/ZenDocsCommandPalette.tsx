@@ -22,6 +22,7 @@ import {
   Type,
   Quote,
   Command,
+  Newspaper,
 } from 'lucide-react';
 import { ZenDocType } from '@/types/docs';
 import { ExportFormat } from '@/lib/exportDocument';
@@ -57,6 +58,9 @@ interface ZenDocsCommandPaletteProps {
   onToggleStar: () => void;
   onShare: () => void;
   onTableToChamber: () => void;
+  onPublishToPress?: () => void;
+  onShareToPulse?: () => void;
+  onToggleReaderMode?: () => void;
   paperMode: 'light' | 'dark';
   documentNames: { id: string; title: string }[];
   onSwitchDocument: (id: string) => void;
@@ -83,6 +87,9 @@ export function ZenDocsCommandPalette({
   onToggleStar,
   onShare,
   onTableToChamber,
+  onPublishToPress,
+  onShareToPulse,
+  onToggleReaderMode,
   paperMode,
   documentNames,
   onSwitchDocument,
@@ -111,6 +118,7 @@ export function ZenDocsCommandPalette({
 
       // View
       { id: 'paper-mode', label: `Switch to ${paperMode === 'light' ? 'Dark Slate' : 'White Paper'}`, icon: paperMode === 'light' ? Moon : Sun, category: 'View', action: onTogglePaperMode },
+      { id: 'reader-mode', label: 'Toggle Zen Reader Mode (Focus View)', icon: Eye, category: 'View', action: () => onToggleReaderMode?.() },
       { id: 'ruler', label: 'Toggle Margin Ruler', icon: Eye, category: 'View', action: onToggleRuler },
       { id: 'outline', label: 'Toggle Document Outline', icon: Eye, category: 'View', action: onToggleOutline },
       { id: 'zoom-75', label: 'Zoom 75%', icon: Eye, category: 'View', action: () => onSetZoom(75) },
@@ -126,9 +134,13 @@ export function ZenDocsCommandPalette({
       { id: 'heading-3', label: 'Heading 3', icon: Type, category: 'Insert', action: () => onInsertHeading(3) },
       { id: 'blockquote', label: 'Blockquote', icon: Quote, category: 'Insert', action: onInsertBlockquote },
 
+      // Publishing & Ecosystem
+      { id: 'publish-press', label: 'Publish to ZEN.PRESS', description: 'Publish document as live journalistic article', icon: Newspaper, category: 'Publishing', action: () => onPublishToPress?.() },
+      { id: 'broadcast-pulse', label: 'Broadcast to ZEN.PULSE', description: 'Create treaty wire card on pulse feed', icon: Radio, category: 'Publishing', action: () => onShareToPulse?.() },
+      { id: 'table-chamber', label: 'Table in Chamber', description: 'Submit to live MUN Dais', icon: Radio, category: 'Publishing', action: onTableToChamber },
+
       // Tools
       { id: 'ai', label: 'AI Diplomatic Copilot', description: 'Generate clauses from policy notes', icon: Sparkles, category: 'Tools', action: onOpenAI },
-      { id: 'table-chamber', label: 'Table in Chamber', description: 'Submit to live MUN Dais', icon: Radio, category: 'Tools', action: onTableToChamber },
 
       // Documents
       ...documentNames.map((d) => ({
@@ -139,7 +151,7 @@ export function ZenDocsCommandPalette({
         action: () => onSwitchDocument(d.id),
       })),
     ],
-    [onCreateDocument, onPrint, onExportMarkdown, onExportFormat, onOpenSaveAsModal, onOpenStats, onToggleStar, onShare, onTogglePaperMode, paperMode, onToggleRuler, onToggleOutline, onSetZoom, onInsertSeal, onInsertDivider, onInsertHeading, onInsertBlockquote, onOpenAI, onTableToChamber, documentNames, onSwitchDocument]
+    [onCreateDocument, onPrint, onExportMarkdown, onExportFormat, onOpenSaveAsModal, onOpenStats, onToggleStar, onShare, onTogglePaperMode, onToggleReaderMode, paperMode, onToggleRuler, onToggleOutline, onSetZoom, onInsertSeal, onInsertDivider, onInsertHeading, onInsertBlockquote, onOpenAI, onTableToChamber, onPublishToPress, onShareToPulse, documentNames, onSwitchDocument]
   );
 
   const filtered = useMemo(() => {

@@ -15,4 +15,6 @@ export { DocVersionHistoryModal } from './DocVersionHistoryModal';
 export { PublishToPressModal } from './PublishToPressModal';
 export { SaveAsModal } from './SaveAsModal';
 export type { SaveAsModalProps } from './SaveAsModal';
+export { ShareToPulseModal } from './ShareToPulseModal';
+export type { ShareToPulseModalProps } from './ShareToPulseModal';
 

@@ -18,6 +18,7 @@ interface DocumentEditorState {
   lineSpacing: string;
   isStarred: boolean;
   showRuler: boolean;
+  isReaderMode: boolean;
   saveStatus: string;
   wordCount: number;
   charCount: number;
@@ -36,6 +37,7 @@ interface DocumentEditorActions {
   setLineSpacing: (spacing: string) => void;
   toggleStar: () => void;
   setShowRuler: (show: boolean) => void;
+  toggleReaderMode: () => void;
   createDocument: (type: ZenDocType, title?: string, initialHtml?: string) => void;
   createFromTemplate: (templateId: string) => void;
   deleteDocument: (id: string) => void;
@@ -47,6 +49,7 @@ interface DocumentEditorActions {
   resolveComment: (commentId: string) => void;
   saveVersionSnapshot: (label?: string) => void;
   publishToPress: () => void;
+  publishToPulse: (caucusTag: string, summary: string) => void;
   updateTelemetry: (text: string) => void;
   triggerToast: (msg: string) => void;
 }
@@ -66,6 +69,7 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
   const [lineSpacing, setLineSpacing] = useState('1.5');
   const [isStarred, setIsStarred] = useState(false);
   const [showRuler, setShowRuler] = useState(true);
+  const [isReaderMode, setIsReaderMode] = useState(false);
   const [saveStatus, setSaveStatus] = useState('Saved to Sovereign Storage');
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
@@ -385,13 +389,138 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
     triggerToast(`Saved Version Snapshot v${currentVer}.0`);
   }, [activeDoc, saveDocument, triggerToast]);
 
+  const toggleReaderMode = useCallback(() => {
+    setIsReaderMode((prev) => {
+      const next = !prev;
+      triggerToast(next ? 'Zen Reader Mode Activated (Focus View)' : 'Standard Editor Mode');
+      return next;
+    });
+  }, [triggerToast]);
+
   const publishToPress = useCallback(() => {
     saveDocument({
       status: 'PUBLISHED',
       publishedToPress: true,
       pressSlug: `zen-press-${activeDoc.id.toLowerCase()}`,
     });
+
+    // Mirror article directly into ZEN.PRESS persistence store
+    try {
+      const LS_ARTICLES = 'zenvitra_press_articles_v4_clean';
+      const existingRaw = localStorage.getItem(LS_ARTICLES);
+      const existingArticles = existingRaw ? JSON.parse(existingRaw) : [];
+      const newPressArticle = {
+        id: `press_${activeDoc.id.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+        title: activeDoc.title,
+        slug: `zen-press-${activeDoc.id.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        content: activeDoc.contentHtml || '',
+        excerpt: (activeDoc.plainBody || activeDoc.title).slice(0, 180) + '…',
+        sourceName: 'ZEN.DOCS Sovereign Press',
+        sourceUrl: `/docs?doc=${activeDoc.id}`,
+        authorId: 'user_yuveer',
+        authorName: 'Yuveer',
+        authorUsername: 'yuveer',
+        category: 'EDITORIAL',
+        tags: activeDoc.tags || ['Diplomacy', 'Treaty', 'Plenary'],
+        status: 'published',
+        isOfficial: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
+        readingTimeMinutes: Math.max(1, Math.ceil(wordCount / 200)),
+        upvotes: 1,
+        upvotedBy: ['user_yuveer'],
+        bookmarkedBy: [],
+        commentCount: 0,
+      };
+      const filtered = Array.isArray(existingArticles) ? existingArticles.filter((a: any) => a.id !== newPressArticle.id) : [];
+      localStorage.setItem(LS_ARTICLES, JSON.stringify([newPressArticle, ...filtered]));
+    } catch (_) {}
+
     triggerToast('Successfully published article to ZENVITRA Press!');
+  }, [activeDoc, saveDocument, wordCount, triggerToast]);
+
+  const publishToPulse = useCallback((caucusTag: string, summary: string) => {
+    const pulsePostId = `treaty_${Date.now()}`;
+    saveDocument({
+      status: 'TABLED',
+      publishedToPulse: true,
+      pulsePostId,
+    });
+
+    // Mirror treaty wire card directly into ZEN.PULSE persistence store
+    try {
+      const LS_POSTS = 'zenvitra_pulse_posts_v9_clean';
+      const existingRaw = localStorage.getItem(LS_POSTS);
+      const existingPosts = existingRaw ? JSON.parse(existingRaw) : [];
+
+      const treatyPost = {
+        id: pulsePostId,
+        authorId: 'user_yuveer',
+        authorName: 'Yuveer',
+        authorUsername: 'yuveer',
+        content: summary || `📜 ${activeDoc.title} (${activeDoc.docCode}) tabled for multilateral plenary consensus.`,
+        images: [],
+        createdAt: new Date().toISOString(),
+        likes: 1,
+        likedBy: ['user_yuveer'],
+        reposts: 0,
+        repostedBy: [],
+        replyCount: 0,
+        location: activeDoc.committeeOrChamber || 'Sovereign Plenary Chamber',
+        tags: ['TreatyDraft', caucusTag.replace(/\s+/g, ''), 'ZEN_DOCS'],
+        isTreaty: true,
+        treatyTitle: activeDoc.title,
+        treatyVersion: `v${activeDoc.version || 1}.0`,
+        treatyStatus: 'debate',
+        caucusTag: caucusTag || 'General Assembly',
+        citations: [
+          {
+            id: `cit_${Date.now()}`,
+            symbolOrId: activeDoc.docCode,
+            type: 'UN_DOC',
+            title: activeDoc.title,
+            institution: activeDoc.committeeOrChamber || 'UN General Assembly',
+            archiveUrl: `/docs?doc=${activeDoc.id}`,
+            sha256Hash: activeDoc.cryptographicHash || '0x8f3c2b1a99d45e0287cb8921a1ef4c29d00b731e847ad3e1987d6052f38ab4c1',
+            verifiedCount: 1,
+            verifiedBy: ['yuveer']
+          }
+        ],
+        rollCallVotes: {
+          ayes: ['yuveer'],
+          nays: [],
+          abstains: []
+        },
+        coSignatures: [
+          {
+            userId: 'user_yuveer',
+            name: 'Yuveer',
+            username: 'yuveer',
+            caucus: caucusTag || 'Primary Sponsor',
+            clearanceLevel: 5,
+            timestamp: new Date().toISOString()
+          }
+        ],
+        redlineDiffs: [],
+        revisions: [
+          {
+            version: `v${activeDoc.version || 1}.0`,
+            timestamp: new Date().toISOString(),
+            ratifiedByName: 'Yuveer',
+            diffSummary: 'Initial document ratified from ZEN.DOCS Studio.',
+            fullContent: activeDoc.contentHtml || ''
+          }
+        ],
+        factBounties: [],
+        civicReliabilityScore: 99
+      };
+
+      const filtered = Array.isArray(existingPosts) ? existingPosts.filter((p: any) => p.id !== treatyPost.id) : [];
+      localStorage.setItem(LS_POSTS, JSON.stringify([treatyPost, ...filtered]));
+    } catch (_) {}
+
+    triggerToast(`Broadcasted ${activeDoc.docCode} to ZEN.PULSE wire!`);
   }, [activeDoc, saveDocument, triggerToast]);
 
   const updateTelemetry = useCallback((text: string) => {
@@ -415,6 +544,7 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
     lineSpacing,
     isStarred,
     showRuler,
+    isReaderMode,
     saveStatus,
     wordCount,
     charCount,
@@ -430,6 +560,7 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
     setLineSpacing,
     toggleStar,
     setShowRuler,
+    toggleReaderMode,
     createDocument,
     createFromTemplate,
     deleteDocument,
@@ -441,6 +572,7 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
     resolveComment,
     saveVersionSnapshot,
     publishToPress,
+    publishToPulse,
     updateTelemetry,
     triggerToast,
   };

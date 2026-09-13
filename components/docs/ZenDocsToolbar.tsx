@@ -35,6 +35,8 @@ import {
   Globe2,
   Info,
   Trash2,
+  Glasses,
+  Eye,
 } from 'lucide-react';
 import { ZenDocument } from '@/types/docs';
 import { ExportFormat } from '@/lib/exportDocument';
@@ -65,9 +67,12 @@ interface ZenDocsToolbarProps {
   onOpenTasks: () => void;
   onOpenVersions: () => void;
   onPublishToPress: () => void;
+  onShareToPulse: () => void;
   onShare: () => void;
   onTableToChamber: () => void;
   onOpenCommandPalette: () => void;
+  isReaderMode?: boolean;
+  onToggleReaderMode?: () => void;
 }
 
 export function ZenDocsToolbar({
@@ -96,9 +101,12 @@ export function ZenDocsToolbar({
   onOpenTasks,
   onOpenVersions,
   onPublishToPress,
+  onShareToPulse,
   onShare,
   onTableToChamber,
   onOpenCommandPalette,
+  isReaderMode = false,
+  onToggleReaderMode,
 }: ZenDocsToolbarProps) {
   const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
   const fileMenuRef = useRef<HTMLDivElement>(null);
@@ -482,6 +490,34 @@ export function ZenDocsToolbar({
             <Newspaper className="w-3 h-3 text-pink-400" />
             <span className="hidden lg:inline">ZEN.PRESS</span>
           </button>
+
+          {/* Broadcast to ZEN.PULSE */}
+          <button
+            type="button"
+            onClick={onShareToPulse}
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold transition cursor-pointer"
+            title="Broadcast Resolution/Treaty card to ZEN.PULSE"
+          >
+            <Radio className="w-3 h-3 text-cyan-400 animate-pulse" />
+            <span className="hidden xl:inline">ZEN.PULSE</span>
+          </button>
+
+          {/* Zen Reader Mode Toggle */}
+          {onToggleReaderMode && (
+            <button
+              type="button"
+              onClick={onToggleReaderMode}
+              className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl border font-mono text-[10px] font-bold transition cursor-pointer ${
+                isReaderMode
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
+                  : 'bg-white/[0.04] hover:bg-white/10 border-white/10 text-neutral-300'
+              }`}
+              title={isReaderMode ? 'Exit Zen Reader Mode' : 'Enter Zen Reader Mode (Focus View)'}
+            >
+              <Glasses className="w-3 h-3 text-amber-400" />
+              <span className="hidden xl:inline">Reader</span>
+            </button>
+          )}
 
           {/* Table in Chamber */}
           <button

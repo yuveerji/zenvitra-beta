@@ -36,6 +36,7 @@ import {
   Repeat,
   ChevronDown,
   Globe2,
+  BookOpen,
   X
 } from 'lucide-react';
 import { FloatingChatDrawer } from '@/components/chat/FloatingChatDrawer';
@@ -217,6 +218,7 @@ export function PlatformShell({
     { label: 'Dashboard', href: '/dashboard', icon: BarChart3, description: 'Adaptive Matrix' },
     { label: 'Events', href: '/events', icon: Calendar, description: 'Summits & Gatherings' },
     { label: 'Chamber', href: '/committee', icon: Award, tag: 'Live', description: 'Assembly Chamber' },
+    { label: 'Docs', href: '/docs', icon: BookOpen, description: 'Sovereign Documents & Drafting' },
     { label: 'Press', href: '/press', icon: Newspaper, description: 'Open Newsroom' },
     { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
   ];

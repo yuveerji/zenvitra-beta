@@ -12,6 +12,7 @@ interface ZenDocsCanvasProps {
   fontSize: number;
   lineSpacing: string;
   showRuler: boolean;
+  isReaderMode?: boolean;
   onInput: () => void;
 }
 
@@ -24,6 +25,7 @@ export function ZenDocsCanvas({
   fontSize,
   lineSpacing,
   showRuler,
+  isReaderMode = false,
   onInput,
 }: ZenDocsCanvasProps) {
   const lineNumbersRef = useRef<HTMLDivElement>(null);
@@ -82,7 +84,7 @@ export function ZenDocsCanvas({
         style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
       >
         {/* Horizontal Ruler */}
-        {showRuler && (
+        {showRuler && !isReaderMode && (
           <div
             className={`w-[816px] h-5 border-b flex items-center justify-between text-[8px] font-mono select-none px-12 mb-1 print:hidden ${
               isLight
@@ -100,13 +102,21 @@ export function ZenDocsCanvas({
           </div>
         )}
 
+        {/* Reader Mode Focus Indicator */}
+        {isReaderMode && (
+          <div className="mb-4 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[11px] flex items-center gap-2 print:hidden shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span>Zen Reader Mode &bull; Distraction-free Reading &bull; Press Esc to Edit</span>
+          </div>
+        )}
+
         {/* A4 Paper Sheet */}
         <div
           className={`w-[816px] min-h-[1056px] relative transition-colors duration-300 border print:p-0 print:border-none print:shadow-none print:w-full print:bg-white print:text-black ${
             isLight
               ? 'bg-[#fcfdfe] text-[#111827] border-neutral-200/80 shadow-[0_25px_80px_-20px_rgba(0,0,0,0.5)] rounded-sm'
               : 'bg-[#111522] text-[#e5e7eb] border-white/[0.08] shadow-[0_25px_80px_-20px_rgba(6,182,212,0.06)] rounded-lg'
-          }`}
+          } ${isReaderMode ? 'ring-1 ring-amber-500/20' : ''}`}
           style={{
             fontFamily: fontFamily,
             lineHeight: lineSpacing,
@@ -133,29 +143,31 @@ export function ZenDocsCanvas({
           {/* Content Area with Gutter Line Numbers */}
           <div className="flex px-8 sm:px-10">
             {/* Gutter Line Numbers */}
-            <div
-              ref={lineNumbersRef}
-              className={`w-8 shrink-0 text-right pr-3 select-none font-mono text-[10px] print:hidden ${
-                isLight ? 'text-neutral-300' : 'text-neutral-700'
-              }`}
-              style={{
-                fontSize: `${Math.max(9, fontSize - 2)}pt`,
-                lineHeight: lineSpacing,
-              }}
-              aria-hidden="true"
-            />
+            {!isReaderMode && (
+              <div
+                ref={lineNumbersRef}
+                className={`w-8 shrink-0 text-right pr-3 select-none font-mono text-[10px] print:hidden ${
+                  isLight ? 'text-neutral-300' : 'text-neutral-700'
+                }`}
+                style={{
+                  fontSize: `${Math.max(9, fontSize - 2)}pt`,
+                  lineHeight: lineSpacing,
+                }}
+                aria-hidden="true"
+              />
+            )}
 
             {/* Editable Document Body */}
             <div
               ref={editorRef}
-              contentEditable
+              contentEditable={!isReaderMode}
               suppressContentEditableWarning
               onInput={onInput}
               className={`flex-1 outline-none min-h-[850px] leading-relaxed px-8 sm:px-10 pb-20 ${
                 isLight ? 'selection:bg-cyan-400/20' : 'selection:bg-cyan-500/20'
-              }`}
+              } ${isReaderMode ? 'cursor-default' : 'cursor-text'}`}
               style={{
-                fontSize: `${fontSize}pt`,
+                fontSize: isReaderMode ? `${Math.max(13, fontSize + 1)}pt` : `${fontSize}pt`,
               }}
             />
           </div>

@@ -26,6 +26,7 @@ import {
   DocVersionHistoryModal,
   PublishToPressModal,
   SaveAsModal,
+  ShareToPulseModal,
 } from './modals';
 
 export function ZenDocsClient() {
@@ -43,6 +44,7 @@ export function ZenDocsClient() {
   const [isTasksModalOpen, setIsTasksModalOpen] = useState<boolean>(false);
   const [isVersionsModalOpen, setIsVersionsModalOpen] = useState<boolean>(false);
   const [isPublishPressModalOpen, setIsPublishPressModalOpen] = useState<boolean>(false);
+  const [isShareToPulseModalOpen, setIsShareToPulseModalOpen] = useState<boolean>(false);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
 
@@ -103,6 +105,7 @@ export function ZenDocsClient() {
       setIsTasksModalOpen(false);
       setIsVersionsModalOpen(false);
       setIsPublishPressModalOpen(false);
+      setIsShareToPulseModalOpen(false);
       setIsSaveAsModalOpen(false);
       setIsSlashMenuOpen(false);
       setShowSidebar(false);
@@ -283,19 +286,24 @@ export function ZenDocsClient() {
             onOpenTasks={() => setIsTasksModalOpen(true)}
             onOpenVersions={() => setIsVersionsModalOpen(true)}
             onPublishToPress={() => setIsPublishPressModalOpen(true)}
+            onShareToPulse={() => setIsShareToPulseModalOpen(true)}
             onShare={() => setIsShareModalOpen(true)}
             onTableToChamber={handleTableToChamber}
             onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+            isReaderMode={editor.isReaderMode}
+            onToggleReaderMode={editor.toggleReaderMode}
           />
 
           {/* Workspace: Outline Sidebar + A4 Canvas */}
           <div className="flex-1 flex gap-4 min-h-[750px] relative">
             {/* Collapsible Document Outline Navigator */}
-            <ZenDocsOutline
-              editorRef={editorRef}
-              isVisible={showOutline}
-              onToggle={() => setShowOutline(!showOutline)}
-            />
+            {!editor.isReaderMode && (
+              <ZenDocsOutline
+                editorRef={editorRef}
+                isVisible={showOutline}
+                onToggle={() => setShowOutline(!showOutline)}
+              />
+            )}
 
             {/* Canvas Sheet */}
             <div className="flex-1 flex flex-col" onKeyDown={handleEditorKeyDown}>
@@ -308,6 +316,7 @@ export function ZenDocsClient() {
                 fontSize={editor.fontSize}
                 lineSpacing={editor.lineSpacing}
                 showRuler={editor.showRuler}
+                isReaderMode={editor.isReaderMode}
                 onInput={handleEditorInput}
               />
             </div>
@@ -437,6 +446,9 @@ export function ZenDocsClient() {
         onToggleStar={editor.toggleStar}
         onShare={() => setIsShareModalOpen(true)}
         onTableToChamber={handleTableToChamber}
+        onPublishToPress={() => setIsPublishPressModalOpen(true)}
+        onShareToPulse={() => setIsShareToPulseModalOpen(true)}
+        onToggleReaderMode={editor.toggleReaderMode}
         paperMode={editor.paperMode}
         documentNames={editor.documents.map((d) => ({ id: d.id, title: d.title }))}
         onSwitchDocument={editor.setActiveDocId}
@@ -493,6 +505,16 @@ export function ZenDocsClient() {
         onClose={() => setIsPublishPressModalOpen(false)}
         activeDoc={editor.activeDoc}
         onConfirmPublish={editor.publishToPress}
+      />
+
+      <ShareToPulseModal
+        isOpen={isShareToPulseModalOpen}
+        onClose={() => setIsShareToPulseModalOpen(false)}
+        activeDoc={editor.activeDoc}
+        onConfirmPublish={(caucusTag, summary) => {
+          editor.publishToPulse(caucusTag, summary);
+        }}
+        onToast={editor.triggerToast}
       />
 
       <SaveAsModal
