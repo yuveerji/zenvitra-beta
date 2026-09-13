@@ -2,7 +2,74 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-export type AmbientSoundscape = 'TICKING' | 'DEEP_VOID' | 'QUANTUM_PULSE' | 'OFF';
+export type AmbientSoundscape =
+  | 'NORMAL'
+  | 'DEEP_VOID'
+  | 'CYBER_HEARTBEAT'
+  | 'QUANTUM_PULSE'
+  | 'CELESTIAL_ORBIT'
+  | 'CINEMA_DRONE'
+  | 'OFF';
+
+export interface SoundscapeOption {
+  id: AmbientSoundscape;
+  label: string;
+  description: string;
+  color: string;
+  hasTick: boolean;
+}
+
+export const SOUNDSCAPE_MODES: SoundscapeOption[] = [
+  {
+    id: 'NORMAL',
+    label: 'Normal / Chrono',
+    description: 'Crisp mechanical chronometer tick with warm analog tape floor',
+    color: 'from-amber-400 to-amber-200',
+    hasTick: true,
+  },
+  {
+    id: 'DEEP_VOID',
+    label: 'Deep Void',
+    description: 'Sub-bass 55Hz cinematic drone with dark resonant reverberation',
+    color: 'from-purple-500 to-indigo-300',
+    hasTick: false,
+  },
+  {
+    id: 'CYBER_HEARTBEAT',
+    label: 'Cyber Heartbeat',
+    description: 'Low-frequency sub-kick pulse synced to biological rhythm',
+    color: 'from-rose-500 to-red-300',
+    hasTick: true,
+  },
+  {
+    id: 'QUANTUM_PULSE',
+    label: 'Quantum Pulse',
+    description: 'Lush harmonic minor synthesizer pad with shimmering octave overtones',
+    color: 'from-cyan-400 to-teal-200',
+    hasTick: false,
+  },
+  {
+    id: 'CELESTIAL_ORBIT',
+    label: 'Celestial Orbit',
+    description: 'Ethereal high-register glass chime ambience with spatial movement',
+    color: 'from-emerald-400 to-cyan-200',
+    hasTick: false,
+  },
+  {
+    id: 'CINEMA_DRONE',
+    label: 'Cinema Drone',
+    description: 'Inception-style low brass brassy synthetic swell and tactile tick',
+    color: 'from-amber-500 to-rose-400',
+    hasTick: true,
+  },
+  {
+    id: 'OFF',
+    label: 'Muted',
+    description: 'Silent telemetry mode with zero audio playback',
+    color: 'from-neutral-500 to-neutral-400',
+    hasTick: false,
+  },
+];
 
 export interface SovereignAudioState {
   soundscape: AmbientSoundscape;
@@ -26,7 +93,6 @@ export function useSovereignAudio(): SovereignAudioState {
   const isMutedRef = useRef(true);
   const soundscapeRef = useRef<AmbientSoundscape>('OFF');
 
-  // Keep refs immediately synchronized
   useEffect(() => {
     isMutedRef.current = isMuted;
   }, [isMuted]);
@@ -42,12 +108,13 @@ export function useSovereignAudio(): SovereignAudioState {
     oscs: OscillatorNode[];
     biquad: BiquadFilterNode;
     gain: GainNode;
+    lfo?: OscillatorNode;
   } | null>(null);
   const tickAudioBufferRef = useRef<AudioBuffer | null>(null);
 
   const rafRef = useRef<number | null>(null);
 
-  // Initialize Web Audio Context on first user gesture
+  // Initialize Web Audio Context
   const initAudio = useCallback(() => {
     if (audioCtxRef.current) {
       if (audioCtxRef.current.state === 'suspended') {
@@ -60,11 +127,12 @@ export function useSovereignAudio(): SovereignAudioState {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new AudioCtx();
       const master = ctx.createGain();
-      master.gain.setValueAtTime(0.0001, ctx.currentTime);
+      // Start active on master; individual gains and mute state control audibility
+      master.gain.setValueAtTime(isMutedRef.current ? 0.0001 : 1.0, ctx.currentTime);
 
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 64;
-      analyser.smoothingTimeConstant = 0.85;
+      analyser.smoothingTimeConstant = 0.82;
 
       master.connect(analyser);
       analyser.connect(ctx.destination);
@@ -82,7 +150,7 @@ export function useSovereignAudio(): SovereignAudioState {
             tickAudioBufferRef.current = decoded;
           })
           .catch(() => {
-            // Fallback handled if network/file unavailable
+            // Synthesized fallback will be used if file is missing
           });
       }
 
@@ -98,7 +166,6 @@ export function useSovereignAudio(): SovereignAudioState {
       if (analyserRef.current) {
         const buffer = new Uint8Array(analyserRef.current.frequencyBinCount);
         analyserRef.current.getByteFrequencyData(buffer);
-        // Take 16 bins for UI bars
         setFrequencyData(buffer.slice(0, 16));
       }
       rafRef.current = requestAnimationFrame(updateSpectrum);
@@ -110,16 +177,16 @@ export function useSovereignAudio(): SovereignAudioState {
     };
   }, []);
 
-  // Ambient Drone synthesis
+  // Ambient Soundscape synthesis engine
   const startDrone = useCallback((mode: AmbientSoundscape) => {
     const ctx = initAudio();
     if (!ctx || !masterGainRef.current) return;
 
-    // Stop current drone if exists
+    // Smoothly stop existing drone
     if (droneNodesRef.current) {
-      const { oscs, gain } = droneNodesRef.current;
+      const { oscs, gain, lfo } = droneNodesRef.current;
       gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.8);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
       setTimeout(() => {
         oscs.forEach((o) => {
           try {
@@ -129,50 +196,130 @@ export function useSovereignAudio(): SovereignAudioState {
             // Already stopped
           }
         });
-      }, 850);
+        if (lfo) {
+          try {
+            lfo.stop();
+            lfo.disconnect();
+          } catch {
+            // Already stopped
+          }
+        }
+      }, 650);
       droneNodesRef.current = null;
     }
 
-    if (mode === 'OFF' || mode === 'TICKING') {
-      if (masterGainRef.current) {
-        masterGainRef.current.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.2);
-      }
+    if (mode === 'OFF') {
+      return;
+    }
+
+    // Always keep master gain live when not muted
+    if (!isMutedRef.current && masterGainRef.current) {
+      masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.05);
+    }
+
+    // NORMAL mode is clean mechanical ticking; no drone needed
+    if (mode === 'NORMAL') {
       return;
     }
 
     const droneGain = ctx.createGain();
     droneGain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    droneGain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 1.2);
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(mode === 'DEEP_VOID' ? 180 : 320, ctx.currentTime);
-    filter.Q.setValueAtTime(3.5, ctx.currentTime);
 
-    // Harmonic chords
-    // DEEP_VOID: 55Hz (A1), 110Hz (A2), 164.81Hz (E3)
-    // QUANTUM_PULSE: 65.41Hz (C2), 98.0Hz (G2), 130.81Hz (C3), 196Hz (G3)
-    const freqs = mode === 'DEEP_VOID' ? [55, 110, 164.81] : [65.41, 98.0, 130.81, 196.0];
     const oscs: OscillatorNode[] = [];
+    let lfoNode: OscillatorNode | undefined;
 
-    freqs.forEach((freq, idx) => {
+    if (mode === 'DEEP_VOID') {
+      // Atmospheric, abyssal sub-bass: 43.65Hz (F1), 65.41Hz (C2), 87.31Hz (F2)
+      filter.frequency.setValueAtTime(140, ctx.currentTime);
+      filter.Q.setValueAtTime(4.2, ctx.currentTime);
+      droneGain.gain.exponentialRampToValueAtTime(0.24, ctx.currentTime + 1.2);
+
+      [43.65, 65.41, 87.31].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        osc.type = idx === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.detune.setValueAtTime(idx * 4 - 4, ctx.currentTime);
+        osc.connect(filter);
+        osc.start();
+        oscs.push(osc);
+      });
+    } else if (mode === 'CYBER_HEARTBEAT') {
+      // Sub-harmonic rhythmic throb: 50Hz with 1.1Hz subtle LFO amplitude pulse
+      filter.frequency.setValueAtTime(120, ctx.currentTime);
+      filter.Q.setValueAtTime(3.0, ctx.currentTime);
+      droneGain.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 1.0);
+
       const osc = ctx.createOscillator();
-      osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-      // Subtle detune for lush cinematic thickness
-      osc.detune.setValueAtTime(idx * 3 - 4, ctx.currentTime);
-
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(50, ctx.currentTime);
       osc.connect(filter);
       osc.start();
       oscs.push(osc);
-    });
+
+      // Low frequency oscillator for slow respiratory breathing effect
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.frequency.setValueAtTime(0.85, ctx.currentTime); // ~51 BPM human resting pulse
+      lfoGain.gain.setValueAtTime(0.06, ctx.currentTime);
+      lfo.connect(lfoGain);
+      lfoGain.connect(droneGain.gain);
+      lfo.start();
+      lfoNode = lfo;
+    } else if (mode === 'QUANTUM_PULSE') {
+      // Lush multi-voiced electronic chord: 65.41Hz (C2), 98.0Hz (G2), 130.81Hz (C3), 196.0Hz (G3), 261.63Hz (C4)
+      filter.frequency.setValueAtTime(360, ctx.currentTime);
+      filter.Q.setValueAtTime(2.8, ctx.currentTime);
+      droneGain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 1.2);
+
+      [65.41, 98.0, 130.81, 196.0, 261.63].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.detune.setValueAtTime(idx * 5 - 10, ctx.currentTime);
+        osc.connect(filter);
+        osc.start();
+        oscs.push(osc);
+      });
+    } else if (mode === 'CELESTIAL_ORBIT') {
+      // High glass shimmer & ethereal harmonics: 220Hz (A3), 329.63Hz (E4), 440Hz (A4), 659.25Hz (E5)
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(480, ctx.currentTime);
+      filter.Q.setValueAtTime(2.0, ctx.currentTime);
+      droneGain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 1.5);
+
+      [220, 329.63, 440, 659.25].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.detune.setValueAtTime((idx - 1.5) * 6, ctx.currentTime);
+        osc.connect(filter);
+        osc.start();
+        oscs.push(osc);
+      });
+    } else if (mode === 'CINEMA_DRONE') {
+      // Massive cinematic brass horn drone: 55Hz (A1), 82.4Hz (E2), 110Hz (A2), 164.8Hz (E3)
+      filter.frequency.setValueAtTime(280, ctx.currentTime);
+      filter.Q.setValueAtTime(4.0, ctx.currentTime);
+      droneGain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 1.2);
+
+      [55.0, 82.4, 110.0, 164.81].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        osc.type = idx % 2 === 0 ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.detune.setValueAtTime((idx - 1.5) * 5, ctx.currentTime);
+        osc.connect(filter);
+        osc.start();
+        oscs.push(osc);
+      });
+    }
 
     filter.connect(droneGain);
     droneGain.connect(masterGainRef.current);
 
-    droneNodesRef.current = { oscs, biquad: filter, gain: droneGain };
-    masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.1);
+    droneNodesRef.current = { oscs, biquad: filter, gain: droneGain, lfo: lfoNode };
   }, [initAudio]);
 
   const cycleSoundscape = useCallback(() => {
@@ -180,11 +327,18 @@ export function useSovereignAudio(): SovereignAudioState {
     if (ctx && ctx.state === 'suspended') ctx.resume();
 
     setSoundscape((prev) => {
-      let next: AmbientSoundscape = 'TICKING';
-      if (prev === 'OFF') next = 'TICKING';
-      else if (prev === 'TICKING') next = 'DEEP_VOID';
-      else if (prev === 'DEEP_VOID') next = 'QUANTUM_PULSE';
-      else next = 'OFF';
+      const modeList: AmbientSoundscape[] = [
+        'NORMAL',
+        'DEEP_VOID',
+        'CYBER_HEARTBEAT',
+        'QUANTUM_PULSE',
+        'CELESTIAL_ORBIT',
+        'CINEMA_DRONE',
+        'OFF',
+      ];
+      const currentIndex = modeList.indexOf(prev);
+      const nextIndex = (currentIndex + 1) % modeList.length;
+      const next = modeList[nextIndex];
 
       const nextMuted = next === 'OFF';
       isMutedRef.current = nextMuted;
@@ -192,11 +346,7 @@ export function useSovereignAudio(): SovereignAudioState {
       setIsMuted(nextMuted);
 
       if (masterGainRef.current && ctx) {
-        if (nextMuted) {
-          masterGainRef.current.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.05);
-        } else {
-          masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.05);
-        }
+        masterGainRef.current.gain.setTargetAtTime(nextMuted ? 0.0001 : 1.0, ctx.currentTime, 0.05);
       }
 
       startDrone(next);
@@ -214,22 +364,23 @@ export function useSovereignAudio(): SovereignAudioState {
 
       if (nextMuted) {
         if (masterGainRef.current && ctx) {
-          masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, ctx.currentTime);
-          masterGainRef.current.gain.setTargetAtTime(0.00001, ctx.currentTime, 0.02);
+          masterGainRef.current.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.03);
         }
       } else {
         if (masterGainRef.current && ctx) {
-          masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, ctx.currentTime);
           masterGainRef.current.gain.setTargetAtTime(1.0, ctx.currentTime, 0.05);
         }
         if (soundscapeRef.current === 'OFF') {
-          soundscapeRef.current = 'TICKING';
-          setSoundscape('TICKING');
+          soundscapeRef.current = 'NORMAL';
+          setSoundscape('NORMAL');
+          startDrone('NORMAL');
+        } else {
+          startDrone(soundscapeRef.current);
         }
       }
       return nextMuted;
     });
-  }, [initAudio]);
+  }, [initAudio, startDrone]);
 
   const setExplicitSoundscape = useCallback(
     (mode: AmbientSoundscape) => {
@@ -243,7 +394,7 @@ export function useSovereignAudio(): SovereignAudioState {
       setIsMuted(muted);
 
       if (masterGainRef.current && ctx) {
-        masterGainRef.current.gain.setTargetAtTime(muted ? 0.00001 : 1.0, ctx.currentTime, 0.05);
+        masterGainRef.current.gain.setTargetAtTime(muted ? 0.0001 : 1.0, ctx.currentTime, 0.05);
       }
 
       startDrone(mode);
@@ -251,24 +402,72 @@ export function useSovereignAudio(): SovereignAudioState {
     [initAudio, startDrone]
   );
 
-  // User-provided ticking sound player with synthesized fallback
+  // Soundscape-aware tick audio generator
   const playTickSound = useCallback(() => {
-    // Instant synchronous check against current ref states
     if (isMutedRef.current || soundscapeRef.current === 'OFF') return;
 
     const ctx = initAudio();
     if (!ctx || !masterGainRef.current) return;
 
+    const currentMode = soundscapeRef.current;
+
+    // CYBER_HEARTBEAT has a distinct low-end physiological sub-kick pulse
+    if (currentMode === 'CYBER_HEARTBEAT') {
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(80, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(32, ctx.currentTime + 0.08);
+
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+
+        osc.connect(gain);
+        gain.connect(masterGainRef.current);
+
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.13);
+      } catch {
+        // Ignore
+      }
+      return;
+    }
+
+    // CELESTIAL_ORBIT has a high celestial chime tick
+    if (currentMode === 'CELESTIAL_ORBIT') {
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1760, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(masterGainRef.current);
+
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.16);
+      } catch {
+        // Ignore
+      }
+      return;
+    }
+
+    // NORMAL, CINEMA_DRONE, DEEP_VOID, QUANTUM_PULSE use the audio file or procedural chronometer
     if (tickAudioBufferRef.current) {
       try {
         const source = ctx.createBufferSource();
         source.buffer = tickAudioBufferRef.current;
 
         const gainNode = ctx.createGain();
-        gainNode.gain.setValueAtTime(0.75, ctx.currentTime);
+        const tickVol = currentMode === 'CINEMA_DRONE' ? 0.9 : currentMode === 'DEEP_VOID' ? 0.45 : 0.75;
+        gainNode.gain.setValueAtTime(tickVol, ctx.currentTime);
 
         source.connect(gainNode);
-        // Connect to masterGainRef so muting instantly silences this sound
         gainNode.connect(masterGainRef.current);
 
         source.start(ctx.currentTime);

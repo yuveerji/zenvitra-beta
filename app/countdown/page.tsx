@@ -22,7 +22,7 @@ import {
   Clock
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
-import { useSovereignAudio } from '@/components/audio/useSovereignAudio';
+import { useSovereignAudio, SOUNDSCAPE_MODES, AmbientSoundscape } from '@/components/audio/useSovereignAudio';
 import { AudioSpectrumVisualizer } from '@/components/audio/AudioSpectrumVisualizer';
 import { HolographicPassport } from '@/components/visuals/HolographicPassport';
 
@@ -239,11 +239,12 @@ export default function CountdownPage() {
             <span className="hidden sm:inline">Check Clearance</span>
           </button>
 
-          {/* Sovereign Audio Spectrum Visualizer with dedicated mute control */}
+          {/* Sovereign Audio Spectrum Visualizer with dedicated mute control and multi-soundscape selector */}
           <AudioSpectrumVisualizer
             frequencyData={sovereignAudio.frequencyData}
             isMuted={sovereignAudio.isMuted}
             soundscape={sovereignAudio.soundscape}
+            onSelectSoundscape={(mode) => sovereignAudio.setSoundscape(mode)}
             onClick={() => sovereignAudio.cycleSoundscape()}
             onToggleMute={() => sovereignAudio.toggleMute()}
           />
@@ -400,23 +401,54 @@ export default function CountdownPage() {
               ))}
             </div>
 
-            {/* Ticking Audio Indicator Notice */}
-            <div className="pt-4 border-t border-white/[0.06] text-[11px] font-mono text-neutral-400 flex flex-wrap items-center justify-center gap-3">
-              <span className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${sovereignAudio.isMuted ? 'bg-neutral-600' : 'bg-amber-400 animate-ping'}`} />
-                <span>
-                  {sovereignAudio.isMuted
-                    ? 'Audio muted • Click the sound button in header to unmute'
-                    : `Ticking telemetry active [${sovereignAudio.soundscape}]`}
+            {/* Ticking Audio Indicator Notice & Soundscape Selector */}
+            <div className="pt-4 border-t border-white/[0.06] space-y-3">
+              <div className="text-[11px] font-mono text-neutral-400 flex flex-wrap items-center justify-between gap-3">
+                <span className="flex items-center gap-2">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      sovereignAudio.isMuted ? 'bg-neutral-600' : 'bg-amber-400 animate-ping'
+                    }`}
+                  />
+                  <span className="text-neutral-300">
+                    {sovereignAudio.isMuted
+                      ? 'Audio telemetry muted'
+                      : `Active Soundscape: ${
+                          SOUNDSCAPE_MODES.find((m) => m.id === sovereignAudio.soundscape)?.label ||
+                          sovereignAudio.soundscape
+                        }`}
+                  </span>
                 </span>
-              </span>
-              <span className="text-neutral-700">//</span>
-              <button
-                onClick={() => sovereignAudio.toggleMute()}
-                className="text-amber-400 hover:text-amber-300 underline underline-offset-4 cursor-pointer font-semibold"
-              >
-                {sovereignAudio.isMuted ? 'Unmute Audio' : 'Mute Audio'}
-              </button>
+
+                <button
+                  onClick={() => sovereignAudio.toggleMute()}
+                  className="text-amber-400 hover:text-amber-300 underline underline-offset-4 cursor-pointer font-semibold text-xs"
+                >
+                  {sovereignAudio.isMuted ? 'Unmute Audio' : 'Mute Audio'}
+                </button>
+              </div>
+
+              {/* Quick Soundscape Selector Pills */}
+              <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+                {SOUNDSCAPE_MODES.filter((m) => m.id !== 'OFF').map((mode) => {
+                  const isActive = sovereignAudio.soundscape === mode.id && !sovereignAudio.isMuted;
+                  return (
+                    <button
+                      key={mode.id}
+                      onClick={() => sovereignAudio.setSoundscape(mode.id)}
+                      type="button"
+                      className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer border ${
+                        isActive
+                          ? 'bg-amber-400/20 border-amber-400/60 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)] font-bold scale-105'
+                          : 'bg-white/[0.03] border-white/10 text-neutral-400 hover:text-white hover:bg-white/[0.08]'
+                      }`}
+                      title={mode.description}
+                    >
+                      {mode.label.split(' / ')[0]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
