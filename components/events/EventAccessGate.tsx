@@ -135,12 +135,21 @@ export function EventAccessGate({ onUnlock }: EventAccessGateProps) {
                 </button>
               </>
             ) : (
-              <a
-                href="mailto:secretariat@zenvitra.xyz?subject=Event%20Secretariat%20Access%20Request"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-rose-500 hover:bg-rose-400 text-white font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(244,63,94,0.4)]"
-              >
-                <span>✉️ Request Event Secretariat Accreditation</span>
-              </a>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+                <Link
+                  href="/register/professional"
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(6,182,212,0.4)]"
+                >
+                  <Sparkles className="w-4 h-4 text-black" />
+                  <span>Register Professional / Event Account →</span>
+                </Link>
+                <a
+                  href="mailto:secretariat@zenvitra.xyz?subject=Event%20Accreditation%20Inquiry"
+                  className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-neutral-300 font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>✉️ Email Inquiries</span>
+                </a>
+              </div>
             )}
           </div>
 

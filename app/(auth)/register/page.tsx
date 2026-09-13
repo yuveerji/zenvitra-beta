@@ -168,11 +168,15 @@ export default function RegisterPage() {
 
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('type') === 'professional' || params.get('track') === 'secretariat') {
+      if (params.get('type') === 'professional' || params.get('type') === 'event') {
+        router.replace('/register/professional');
+        return;
+      }
+      if (params.get('track') === 'secretariat') {
         setTrack('secretariat');
       }
     }
-  }, []);
+  }, [router]);
 
   const copySovereignKey = () => {
     if (!sovereignKey) return;
@@ -412,6 +416,22 @@ export default function RegisterPage() {
                   <span>{errorMessage}</span>
                 </div>
               )}
+
+              {/* Professional / Event Organizer Link Banner */}
+              <div className="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2">
+                  <Building className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span className="text-[11px] text-neutral-300 font-sans">
+                    Hosting events or an Organization? (Not a SEC Node)
+                  </span>
+                </div>
+                <Link
+                  href="/register/professional"
+                  className="px-3 py-1 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/40 transition shrink-0 text-center"
+                >
+                  Professional Registration →
+                </Link>
+              </div>
 
               {/* ── STEP 1: TRACK SELECTION ── */}
               {step === 1 && (

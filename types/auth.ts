@@ -3,6 +3,8 @@ export type UserRole =
   | 'journalist'
   | 'creator'
   | 'organizer'
+  | 'organization'
+  | 'professional'
   | 'core_team'
   | 'admin'
   | 'guest'
