@@ -103,10 +103,45 @@ interface AdminModuleMeta {
   badge?: string;
 }
 
+export interface ModerationCase {
+  caseId: string;
+  target: string;
+  reason: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  reporter: string;
+}
+
+export interface KycItem {
+  id: string;
+  name: string;
+  type: string;
+  org: string;
+  score: number;
+}
+
+export interface AdminTransaction {
+  id: string;
+  user: string;
+  item: string;
+  amount: string;
+  status: 'SETTLED' | 'ESCROW_HELD' | 'REFUNDED';
+}
+
+const INITIAL_MODERATION_CASES: ModerationCase[] = [
+  { caseId: 'CASE #ZNV-9842', target: '@bot_mesh_01', reason: 'Automated burst-posting suspicious links', severity: 'CRITICAL', reporter: 'AI Heuristic Flag' },
+  { caseId: 'CASE #ZNV-9843', target: '@troll_anonymous', reason: 'Harassment in public MUN committee room', severity: 'HIGH', reporter: 'Delegate Report' },
+];
+
+const INITIAL_KYC_QUEUE: KycItem[] = [
+  { id: 'KYC-101', name: 'Alexander Vance', type: 'Student Council Secretariat', org: 'Model UN Oxford', score: 98 },
+  { id: 'KYC-102', name: 'Elena Rostova', type: 'Press Correspondent', org: 'Global Diplomat Review', score: 95 },
+  { id: 'KYC-103', name: 'Dr. Tariq Al-Mansoor', type: 'Academic Fellow', org: 'Sovereign Research Lab', score: 89 },
+];
+
 const ADMIN_MODULES: AdminModuleMeta[] = [
   { id: '01_command_center', code: '01', name: 'Command Center', category: 'CORE', icon: Activity, badge: 'LIVE' },
   { id: '02_people', code: '02', name: 'People & Identities', category: 'OPERATIONS', icon: Users },
-  { id: '03_verify', code: '03', name: 'KYC & Verification', category: 'OPERATIONS', icon: UserCheck, badge: '4 QUEUED' },
+  { id: '03_verify', code: '03', name: 'KYC & Verification', category: 'OPERATIONS', icon: UserCheck },
   { id: '04_pulse_admin', code: '04', name: 'Pulse Feed Admin', category: 'CONTENT', icon: Radio },
   { id: '05_flux_admin', code: '05', name: 'Flux Video Pipeline', category: 'CONTENT', icon: Video },
   { id: '06_press', code: '06', name: 'Press & Newsroom', category: 'CONTENT', icon: Newspaper },
@@ -118,7 +153,7 @@ const ADMIN_MODULES: AdminModuleMeta[] = [
   { id: '12_payments', code: '12', name: 'Payments & Ledger', category: 'COMMERCE', icon: DollarSign },
   { id: '13_subscriptions', code: '13', name: 'VIP Subscriptions', category: 'COMMERCE', icon: CreditCard },
   { id: '14_ads_admin', code: '14', name: 'Ads & Sponsorship', category: 'COMMERCE', icon: Flame },
-  { id: '15_moderation', code: '15', name: 'Moderation Cases', category: 'SAFETY', icon: ShieldAlert, badge: '2 OPEN' },
+  { id: '15_moderation', code: '15', name: 'Moderation Cases', category: 'SAFETY', icon: ShieldAlert },
   { id: '16_reports_appeals', code: '16', name: 'Reports & Appeals', category: 'SAFETY', icon: AlertTriangle },
   { id: '17_analytics', code: '17', name: 'Analytics & Funnels', category: 'CORE', icon: TrendingUp },
   { id: '18_search_admin', code: '18', name: 'Search & Algorithms', category: 'CORE', icon: Search },
@@ -296,26 +331,223 @@ export function ZenAdminControlRoom() {
     setAuthError('Access Code Denied. Valid keys include: ZEN-ADMIN-PASS-2026 or Personal Founder Key.');
   };
 
+  // Active Moderation Cases State with persistence
+  const [activeCases, setActiveCases] = useState<ModerationCase[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('zenvitra_admin_cases');
+        if (saved) return JSON.parse(saved);
+      } catch (_) {}
+    }
+    return INITIAL_MODERATION_CASES;
+  });
+
+  // Pending KYC Queue with persistence
+  const [pendingKyc, setPendingKyc] = useState<KycItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('zenvitra_admin_kyc_queue');
+        if (saved) return JSON.parse(saved);
+      } catch (_) {}
+    }
+    return INITIAL_KYC_QUEUE;
+  });
+
+  // Real Press Articles State with persistence
+  const [pressArticles, setPressArticles] = useState<Array<{ id: string; title: string; author: string; status: string; date: string }>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('zenvitra_press_articles_v4_clean');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map((a: any) => ({
+              id: a.id || a.slug || 'art_' + Math.random().toString(36).slice(2, 6),
+              title: a.title,
+              author: a.authorName || a.authorUsername || 'Editorial',
+              status: (a.status || 'PUBLISHED').toUpperCase(),
+              date: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : 'Active',
+            }));
+          }
+        }
+      } catch (_) {}
+    }
+    return [];
+  });
+
+  // Payments / Transactions with persistence
+  const [transactions, setTransactions] = useState<AdminTransaction[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('zenvitra_admin_transactions');
+        if (saved) return JSON.parse(saved);
+      } catch (_) {}
+    }
+    return [];
+  });
+
+  // Action Handlers
+  const handlePermanentBanAndPurge = (c: ModerationCase) => {
+    setActiveCases((prev) => {
+      const next = prev.filter((item) => item.caseId !== c.caseId);
+      try {
+        localStorage.setItem('zenvitra_admin_cases', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+
+    try {
+      const cleanTarget = c.target.replace(/^@/, '').toLowerCase();
+      const rawPosts = localStorage.getItem('zenvitra_pulse_posts_v9_clean');
+      if (rawPosts) {
+        const posts = JSON.parse(rawPosts);
+        if (Array.isArray(posts)) {
+          const filtered = posts.filter(
+            (p: any) => (p.authorUsername || '').toLowerCase() !== cleanTarget
+          );
+          localStorage.setItem('zenvitra_pulse_posts_v9_clean', JSON.stringify(filtered));
+          window.dispatchEvent(new CustomEvent('zenvitra_pulse_sync'));
+        }
+      }
+      const bansRaw = localStorage.getItem('zenvitra_banned_users');
+      const bans = bansRaw ? JSON.parse(bansRaw) : [];
+      if (!bans.includes(cleanTarget)) {
+        bans.push(cleanTarget);
+        localStorage.setItem('zenvitra_banned_users', JSON.stringify(bans));
+      }
+    } catch (_) {}
+
+    addAuditLog(`Banned & Purged Account: ${c.target} (${c.caseId})`, 'DIRECTIVE');
+    notify(`Permanently banned ${c.target}, purged posts, and resolved ${c.caseId}.`);
+  };
+
+  const handleDismissCase = (c: ModerationCase) => {
+    setActiveCases((prev) => {
+      const next = prev.filter((item) => item.caseId !== c.caseId);
+      try {
+        localStorage.setItem('zenvitra_admin_cases', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+    addAuditLog(`Dismissed Case: ${c.caseId} (${c.target})`, 'NODE');
+    notify(`Dismissed ${c.caseId} as false positive.`);
+  };
+
+  const handleIssueStrike = (c: ModerationCase) => {
+    addAuditLog(`Issued Formal Strike: ${c.target} (${c.caseId})`, 'NODE');
+    notify(`Issued formal strike to ${c.target}. Account strike count incremented.`);
+  };
+
+  const handleApproveKyc = (k: KycItem) => {
+    setPendingKyc((prev) => {
+      const next = prev.filter((item) => item.id !== k.id);
+      try {
+        localStorage.setItem('zenvitra_admin_kyc_queue', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+    addAuditLog(`KYC Approved: ${k.name} (${k.id})`, 'NODE');
+    notify(`Approved ${k.name}. Verified badge issued!`);
+  };
+
+  const handleRejectKyc = (k: KycItem) => {
+    setPendingKyc((prev) => {
+      const next = prev.filter((item) => item.id !== k.id);
+      try {
+        localStorage.setItem('zenvitra_admin_kyc_queue', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+    addAuditLog(`KYC Rejected: ${k.name} (${k.id})`, 'NODE');
+    notify(`Rejected ${k.name} KYC application.`);
+  };
+
+  const handleResubmitKyc = (k: KycItem) => {
+    setPendingKyc((prev) => {
+      const next = prev.filter((item) => item.id !== k.id);
+      try {
+        localStorage.setItem('zenvitra_admin_kyc_queue', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+    addAuditLog(`KYC Re-submission Requested: ${k.name} (${k.id})`, 'NODE');
+    notify(`Requested credential re-submission from ${k.name}.`);
+  };
+
+  const handleDraftStory = () => {
+    const title = window.prompt('Enter Official Press Release / Communiqué Title:');
+    if (!title || !title.trim()) return;
+    const newArt = {
+      id: 'communique_' + Date.now().toString(36),
+      title: title.trim(),
+      author: operatorIdentity || 'Sovereign Editorial',
+      status: 'PUBLISHED',
+      date: new Date().toLocaleDateString(),
+    };
+    setPressArticles((prev) => {
+      const next = [newArt, ...prev];
+      try {
+        localStorage.setItem('zenvitra_press_articles_v4_clean', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+    addAuditLog(`Official Communiqué Published: ${newArt.title}`, 'DIRECTIVE');
+    notify(`Published communiqué [${newArt.title}] to newsroom wire!`);
+  };
+
+  const handleSimulateTransaction = () => {
+    const newTx: AdminTransaction = {
+      id: `TX-${Math.floor(1000 + Math.random() * 9000)}`,
+      user: `@delegate_${Math.random().toString(36).slice(2, 6)}`,
+      item: 'Simulated Plenary Seat Pass',
+      amount: '$45.00',
+      status: 'SETTLED',
+    };
+    setTransactions((prev) => {
+      const next = [newTx, ...prev];
+      try {
+        localStorage.setItem('zenvitra_admin_transactions', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+    notify(`Simulated settlement recorded: ${newTx.id} (${newTx.amount})`);
+  };
+
   const handleLockSession = () => {
     setIsAuthenticated(false);
     setAccessPasscode('');
     notify('Terminal session securely locked.');
   };
 
+  const dynamicModules = useMemo(() => {
+    return ADMIN_MODULES.map((m) => {
+      let dynamicBadge = m.badge;
+      if (m.id === '15_moderation') {
+        dynamicBadge = activeCases.length > 0 ? `${activeCases.length} OPEN` : undefined;
+      } else if (m.id === '03_verify') {
+        dynamicBadge = pendingKyc.length > 0 ? `${pendingKyc.length} QUEUED` : undefined;
+      }
+      return {
+        ...m,
+        badge: dynamicBadge,
+      };
+    });
+  }, [activeCases.length, pendingKyc.length]);
+
   const filteredModules = useMemo(() => {
-    return ADMIN_MODULES.filter((m) => {
+    return dynamicModules.filter((m) => {
       if (selectedCategory !== 'ALL' && m.category !== selectedCategory) return false;
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
       return m.name.toLowerCase().includes(q) || m.code.includes(q) || m.category.toLowerCase().includes(q);
     });
-  }, [selectedCategory, searchQuery]);
+  }, [dynamicModules, selectedCategory, searchQuery]);
 
   const paletteResults = useMemo(() => {
-    if (!paletteQuery.trim()) return ADMIN_MODULES.slice(0, 8);
+    if (!paletteQuery.trim()) return dynamicModules.slice(0, 8);
     const q = paletteQuery.toLowerCase();
-    return ADMIN_MODULES.filter(m => m.name.toLowerCase().includes(q) || m.code.includes(q));
-  }, [paletteQuery]);
+    return dynamicModules.filter(m => m.name.toLowerCase().includes(q) || m.code.includes(q));
+  }, [dynamicModules, paletteQuery]);
 
   // ── AUTH CHECK & STEALTH 404 FOR NORMAL/EVENT/PROFESSIONAL/DELEGATE USERS ──
   if (authLoading || (!user && !profile && !userIsLoggedIn)) {
@@ -736,45 +968,65 @@ export function ZenAdminControlRoom() {
                     <AlertTriangle className="w-4 h-4 text-amber-400" />
                     <span>CRITICAL ALERTS &amp; PENDING ESCALATIONS</span>
                   </div>
-                  <span className="text-xs font-mono text-neutral-500">2 Actions Required</span>
+                  <span className="text-xs font-mono text-neutral-500">
+                    {(pendingKyc.length > 0 ? 1 : 0) + (activeCases.length > 0 ? 1 : 0)} Action{((pendingKyc.length > 0 ? 1 : 0) + (activeCases.length > 0 ? 1 : 0)) === 1 ? '' : 's'} Required
+                  </span>
                 </div>
 
                 <div className="space-y-3 font-mono text-xs">
-                  <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold text-[10px]">KYC REVIEW</span>
-                        <span className="text-white font-bold">Model UN Secretariat ID Verification (Harvard MUN)</span>
+                  {pendingKyc.length > 0 ? (
+                    <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold text-[10px]">KYC REVIEW</span>
+                          <span className="text-white font-bold">{pendingKyc[0].type} ({pendingKyc[0].name})</span>
+                        </div>
+                        <p className="text-[11px] text-neutral-400 font-sans">
+                          {pendingKyc[0].org} credentials uploaded. Match confidence score: {pendingKyc[0].score}%.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-neutral-400 font-sans">
-                        Secretariat credentials uploaded 12m ago. Match confidence score: 94%.
-                      </p>
+                      <button
+                        onClick={() => setActiveModule('03_verify')}
+                        className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition cursor-pointer shrink-0"
+                      >
+                        Review Queue ({pendingKyc.length}) →
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setActiveModule('03_verify')}
-                      className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition cursor-pointer shrink-0"
-                    >
-                      Review Queue →
-                    </button>
-                  </div>
+                  ) : (
+                    <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-bold text-[10px]">KYC CLEAR</span>
+                        <span className="text-white font-bold text-xs">All Secretariat and Identity verifications reviewed &amp; issued.</span>
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-rose-400/20 text-rose-300 font-bold text-[10px]">REPORT SPIKE</span>
-                        <span className="text-white font-bold">Case #ZNV-9842: Coordinated spam on Pulse Feed</span>
+                  {activeCases.length > 0 ? (
+                    <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-rose-400/20 text-rose-300 font-bold text-[10px]">{activeCases[0].severity} ALERT</span>
+                          <span className="text-white font-bold">{activeCases[0].caseId}: {activeCases[0].reason}</span>
+                        </div>
+                        <p className="text-[11px] text-neutral-400 font-sans">
+                          Flagged target <strong className="text-cyan-300">{activeCases[0].target}</strong> &bull; Source: {activeCases[0].reporter}.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-neutral-400 font-sans">
-                        Automated bot farm detection flagged 3 accounts creating duplicate cryptocurrency links.
-                      </p>
+                      <button
+                        onClick={() => setActiveModule('15_moderation')}
+                        className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs transition cursor-pointer shrink-0"
+                      >
+                        Resolve Case ({activeCases.length}) →
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setActiveModule('15_moderation')}
-                      className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs transition cursor-pointer shrink-0"
-                    >
-                      Resolve Case →
-                    </button>
-                  </div>
+                  ) : (
+                    <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-bold text-[10px]">ALL CLEAR</span>
+                        <span className="text-white font-bold text-xs">Zero active moderation flags. Automated neural scans operating normally.</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -875,48 +1127,63 @@ export function ZenAdminControlRoom() {
               </div>
 
               <div className="space-y-4 font-mono text-xs">
-                {[
-                  { id: 'KYC-101', name: 'Alexander Vance', type: 'Student Council Secretariat', org: 'Model UN Oxford', score: 98 },
-                  { id: 'KYC-102', name: 'Elena Rostova', type: 'Press Correspondent', org: 'Global Diplomat Review', score: 95 },
-                  { id: 'KYC-103', name: 'Dr. Tariq Al-Mansoor', type: 'Academic Fellow', org: 'Sovereign Research Lab', score: 89 },
-                ].map((k) => (
-                  <div key={k.id} className="p-5 rounded-2xl bg-black/70 border border-white/10 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <span className="px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 text-[10px] font-bold">
-                          {k.type}
-                        </span>
-                        <h4 className="text-white font-bold text-sm">{k.name} ({k.org})</h4>
-                        <p className="text-neutral-400 text-[11px]">Match Confidence Score: <strong className="text-emerald-400">{k.score}%</strong></p>
+                <AnimatePresence mode="popLayout">
+                  {pendingKyc.map((k) => (
+                    <motion.div
+                      key={k.id}
+                      layout
+                      initial={{ opacity: 1, x: 0 }}
+                      exit={{
+                        opacity: 0,
+                        x: -280,
+                        transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
+                      }}
+                      className="p-5 rounded-2xl bg-black/70 border border-white/10 space-y-3 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <span className="px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 text-[10px] font-bold">
+                            {k.type}
+                          </span>
+                          <h4 className="text-white font-bold text-sm">{k.name} ({k.org})</h4>
+                          <p className="text-neutral-400 text-[11px]">Match Confidence Score: <strong className="text-emerald-400">{k.score}%</strong></p>
+                        </div>
+                        <span className="text-neutral-500 text-[11px]">{k.id}</span>
                       </div>
-                      <span className="text-neutral-500 text-[11px]">{k.id}</span>
-                    </div>
 
-                    <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                      <button
-                        onClick={() => {
-                          notify(`Approved ${k.name}. Verified badge issued!`);
-                          addAuditLog(`KYC Approved: ${k.name} (${k.id})`, 'NODE');
-                        }}
-                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold transition cursor-pointer"
-                      >
-                        Approve &amp; Grant Badge
-                      </button>
-                      <button
-                        onClick={() => notify(`Requested re-submission from ${k.name}.`)}
-                        className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition cursor-pointer"
-                      >
-                        Request Re-submission
-                      </button>
-                      <button
-                        onClick={() => notify(`Rejected ${k.name} KYC application.`)}
-                        className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold transition cursor-pointer"
-                      >
-                        Reject
-                      </button>
+                      <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                        <button
+                          onClick={() => handleApproveKyc(k)}
+                          className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold transition cursor-pointer"
+                        >
+                          Approve &amp; Grant Badge
+                        </button>
+                        <button
+                          onClick={() => handleResubmitKyc(k)}
+                          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition cursor-pointer"
+                        >
+                          Request Re-submission
+                        </button>
+                        <button
+                          onClick={() => handleRejectKyc(k)}
+                          className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold transition cursor-pointer"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {pendingKyc.length === 0 && (
+                  <div className="p-8 rounded-2xl bg-black/40 border border-emerald-500/30 text-center space-y-2">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
+                      <CheckCircle2 className="w-5 h-5" />
                     </div>
+                    <p className="text-sm font-bold text-white">KYC &amp; Verification Queue Clear</p>
+                    <p className="text-neutral-400 text-xs">All Secretariat and identity credential authorizations processed.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
@@ -935,7 +1202,7 @@ export function ZenAdminControlRoom() {
                   </p>
                 </div>
                 <button
-                  onClick={() => notify('Article Draft initialized in Editorial Editor.')}
+                  onClick={handleDraftStory}
                   className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono font-bold text-xs flex items-center gap-2 transition cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
@@ -944,12 +1211,8 @@ export function ZenAdminControlRoom() {
               </div>
 
               <div className="space-y-3 font-mono text-xs">
-                {[
-                  { title: 'ZENVITRA Protocol V1 Sovereign Genesis Release', author: 'Sovereign Editorial', status: 'PUBLISHED', date: 'Sept 2026' },
-                  { title: 'Model UN Parliamentary Rules of Procedure 2026', author: 'Oxford Secretariat', status: 'IN_REVIEW', date: 'Pending' },
-                  { title: 'Autonomous Civic Network Infrastructure Whitepaper', author: 'Policy Research Team', status: 'APPROVED', date: 'Ready' },
-                ].map((art, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between gap-4">
+                {pressArticles.map((art) => (
+                  <div key={art.id} className="p-4 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -982,6 +1245,13 @@ export function ZenAdminControlRoom() {
                     </div>
                   </div>
                 ))}
+
+                {pressArticles.length === 0 && (
+                  <div className="p-8 rounded-2xl bg-black/40 border border-white/10 text-center space-y-2">
+                    <p className="text-sm font-bold text-white">No Press Communiqués Found</p>
+                    <p className="text-neutral-400 text-xs">Click &apos;Draft Story&apos; to compose and dispatch an official sovereign release.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1002,12 +1272,12 @@ export function ZenAdminControlRoom() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
                 <div className="p-4 rounded-2xl bg-black/60 border border-white/10">
                   <span className="text-[10px] text-neutral-400 uppercase">SETTLED TRANSACTION VOL</span>
-                  <p className="text-2xl font-bold text-white pt-1">$142,850.00</p>
+                  <p className="text-2xl font-bold text-white pt-1">{liveTelemetryData.liveMetrics.grossVol || '$0.00'}</p>
                   <span className="text-[10px] text-emerald-400">Zero disputes open</span>
                 </div>
                 <div className="p-4 rounded-2xl bg-black/60 border border-white/10">
                   <span className="text-[10px] text-neutral-400 uppercase">HELD IN TICKET ESCROW</span>
-                  <p className="text-2xl font-bold text-amber-300 pt-1">$38,400.00</p>
+                  <p className="text-2xl font-bold text-amber-300 pt-1">$0.00</p>
                   <span className="text-[10px] text-neutral-400">Releases upon event conclusion</span>
                 </div>
                 <div className="p-4 rounded-2xl bg-black/60 border border-white/10">
@@ -1018,12 +1288,17 @@ export function ZenAdminControlRoom() {
               </div>
 
               <div className="space-y-3 font-mono text-xs">
-                <span className="text-[11px] font-bold text-neutral-400 uppercase">LIVE TRANSACTION STREAM</span>
-                {[
-                  { id: 'TX-9481', user: '@delegate_chen', item: 'Oxford MUN Delegate Seat Pass', amount: '$65.00', status: 'SETTLED' },
-                  { id: 'TX-9482', user: '@sarah_j', item: 'VIP Pulse Pass Subscription (1 Year)', amount: '$120.00', status: 'SETTLED' },
-                  { id: 'TX-9483', user: '@harvard_sec', item: 'Conference Ticket Batch #4', amount: '$450.00', status: 'ESCROW_HELD' },
-                ].map((tx) => (
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-neutral-400 uppercase">LIVE TRANSACTION STREAM</span>
+                  <button
+                    onClick={handleSimulateTransaction}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-[10px] transition cursor-pointer"
+                  >
+                    + Record Test Settlement
+                  </button>
+                </div>
+
+                {transactions.map((tx) => (
                   <div key={tx.id} className="p-3.5 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
@@ -1039,6 +1314,13 @@ export function ZenAdminControlRoom() {
                     </span>
                   </div>
                 ))}
+
+                {transactions.length === 0 && (
+                  <div className="p-8 rounded-2xl bg-black/40 border border-white/10 text-center space-y-2">
+                    <p className="text-sm font-bold text-white">No Settlement Transactions Pending</p>
+                    <p className="text-neutral-400 text-xs">Escrow payment pipeline is online and awaiting delegate ticketing or pledge transactions.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1057,52 +1339,65 @@ export function ZenAdminControlRoom() {
               </div>
 
               <div className="space-y-4 font-mono text-xs">
-                {[
-                  { caseId: 'CASE #ZNV-9842', target: '@bot_mesh_01', reason: 'Automated burst-posting suspicious links', severity: 'CRITICAL', reporter: 'AI Heuristic Flag' },
-                  { caseId: 'CASE #ZNV-9843', target: '@troll_anonymous', reason: 'Harassment in public MUN committee room', severity: 'HIGH', reporter: 'Delegate Report' },
-                ].map((c) => (
-                  <div key={c.caseId} className="p-5 rounded-2xl bg-black/70 border border-rose-500/30 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold text-[10px]">
-                            {c.severity}
-                          </span>
-                          <span className="text-white font-bold text-sm">{c.caseId}</span>
+                <AnimatePresence mode="popLayout">
+                  {activeCases.map((c) => (
+                    <motion.div
+                      key={c.caseId}
+                      layout
+                      initial={{ opacity: 1, x: 0 }}
+                      exit={{
+                        opacity: 0,
+                        x: -280,
+                        transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
+                      }}
+                      className="p-5 rounded-2xl bg-black/70 border border-rose-500/30 space-y-3 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold text-[10px]">
+                              {c.severity}
+                            </span>
+                            <span className="text-white font-bold text-sm">{c.caseId}</span>
+                          </div>
+                          <p className="text-neutral-300 text-xs">Target: <strong className="text-cyan-300">{c.target}</strong> &bull; Reason: {c.reason}</p>
+                          <p className="text-[10px] text-neutral-500">Source: {c.reporter}</p>
                         </div>
-                        <p className="text-neutral-300 text-xs">Target: <strong className="text-cyan-300">{c.target}</strong> &bull; Reason: {c.reason}</p>
-                        <p className="text-[10px] text-neutral-500">Source: {c.reporter}</p>
                       </div>
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/10">
-                      <button
-                        onClick={() => {
-                          notify(`Issued formal strike to ${c.target}.`);
-                          addAuditLog(`Issued Strike: ${c.target} (${c.caseId})`, 'NODE');
-                        }}
-                        className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold transition cursor-pointer"
-                      >
-                        Issue Strike
-                      </button>
-                      <button
-                        onClick={() => {
-                          notify(`Permanently banned ${c.target} and removed associated posts.`);
-                          addAuditLog(`Banned Account: ${c.target} (${c.caseId})`, 'NODE');
-                        }}
-                        className="px-3.5 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold transition cursor-pointer"
-                      >
-                        Permanent Ban &amp; Purge
-                      </button>
-                      <button
-                        onClick={() => notify(`Dismissed ${c.caseId} as false positive.`)}
-                        className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 font-bold transition cursor-pointer"
-                      >
-                        Dismiss Case
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/10">
+                        <button
+                          onClick={() => handleIssueStrike(c)}
+                          className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold transition cursor-pointer"
+                        >
+                          Issue Strike
+                        </button>
+                        <button
+                          onClick={() => handlePermanentBanAndPurge(c)}
+                          className="px-3.5 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold transition cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.3)]"
+                        >
+                          Permanent Ban &amp; Purge
+                        </button>
+                        <button
+                          onClick={() => handleDismissCase(c)}
+                          className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 font-bold transition cursor-pointer"
+                        >
+                          Dismiss Case
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {activeCases.length === 0 && (
+                  <div className="p-8 rounded-2xl bg-black/40 border border-emerald-500/30 text-center space-y-2">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
+                      <CheckCircle2 className="w-5 h-5" />
                     </div>
+                    <p className="text-sm font-bold text-white">All Incident Queues Resolved</p>
+                    <p className="text-neutral-400 text-xs">Zero active moderation cases or flagged abuse targets. Heuristics operating cleanly.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}

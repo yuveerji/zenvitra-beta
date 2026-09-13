@@ -609,32 +609,31 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       return found;
     }
 
-    const isPlenary = clean === 'un_plenary';
     return {
       id: `profile_${clean}`,
       username: clean,
-      name: isPlenary ? 'Sovereign Treaty Council' : clean.charAt(0).toUpperCase() + clean.slice(1),
-      bio: isPlenary ? 'Official plenary secretariat for sovereign civic treaties and verified humanitarian wire.' : 'Sovereign diplomatic delegate.',
+      name: clean.charAt(0).toUpperCase() + clean.slice(1),
+      bio: 'Sovereign diplomatic delegate.',
       avatar: '',
-      badge: isPlenary ? 'ORGANIZATION' : 'DELEGATE',
-      accountType: isPlenary ? 'professional' : 'personal',
-      isSubscribedOrganizer: isPlenary,
-      subscriptionPlan: isPlenary ? 'ORGANIZER_PRO' : 'FREE',
+      badge: 'DELEGATE',
+      accountType: 'personal',
+      isSubscribedOrganizer: false,
+      subscriptionPlan: 'FREE',
       hostedEvents: [],
-      isVerified: true,
+      isVerified: false,
       isPrivate: false,
       followers: [],
       following: [],
       pendingFollowRequests: [],
       joinedDate: 'Aug 2026',
       civicClearance: {
-        level: isPlenary ? 5 : 2,
-        title: isPlenary ? 'Plenary Fellow' : 'Rapporteur',
-        reliabilityScore: isPlenary ? 99 : 88,
-        verifiedCitationsCount: isPlenary ? 24 : 6,
-        ratifiedTreatiesCount: isPlenary ? 12 : 2,
-        endorsementsCount: isPlenary ? 140 : 11,
-        stakedBountiesWon: isPlenary ? 8 : 1
+        level: 1,
+        title: 'Delegate',
+        reliabilityScore: 85,
+        verifiedCitationsCount: 0,
+        ratifiedTreatiesCount: 0,
+        endorsementsCount: 0,
+        stakedBountiesWon: 0
       }
     };
   }, [allProfiles, myProfile, currentUserUsername]);
