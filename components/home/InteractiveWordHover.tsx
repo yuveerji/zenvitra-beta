@@ -110,24 +110,23 @@ export function InteractiveWordHover({
       const spaceBelow = window.innerHeight - rect.bottom;
       const popoverEstimatedHeight = 360;
 
-      // Vertical placement
+      // Vertical placement: calculate if bottom placement would clip outside viewport
+      const neededHeight = popoverEstimatedHeight + 40;
       if (side === 'top') {
-        // Only stay on top if there is plenty of room above (> 420px)
-        if (spaceAbove >= popoverEstimatedHeight + 80) {
+        if (spaceAbove >= neededHeight) {
           setEffectiveSide('top');
         } else {
           setEffectiveSide('bottom');
         }
       } else if (side === 'bottom') {
-        // Stay bottom unless no room below AND lots of room above
-        if (spaceBelow < popoverEstimatedHeight + 20 && spaceAbove >= popoverEstimatedHeight + 80) {
+        if (spaceBelow < neededHeight && spaceAbove > spaceBelow) {
           setEffectiveSide('top');
         } else {
           setEffectiveSide('bottom');
         }
       } else {
-        // Auto: Prefer bottom (natural reading direction), only use top if constrained below
-        if (spaceBelow < popoverEstimatedHeight + 20 && spaceAbove >= popoverEstimatedHeight + 80) {
+        // Auto: if bottom doesn't have enough space and top has more room, flip to top
+        if (spaceBelow < neededHeight && spaceAbove > spaceBelow) {
           setEffectiveSide('top');
         } else {
           setEffectiveSide('bottom');
