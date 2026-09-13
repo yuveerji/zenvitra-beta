@@ -257,7 +257,7 @@ export function DiplomaticGlobe() {
                       <rect
                         x="-3"
                         y="-8"
-                        width={node.name.length * 5.6 + 6}
+                        width={node.name.length * 5.8 + 6}
                         height="12"
                         rx="3"
                         fill="rgba(5, 8, 15, 0.85)"
@@ -273,7 +273,7 @@ export function DiplomaticGlobe() {
                         fill={isHQ ? '#fef3c7' : isSelected ? '#ffffff' : '#cbd5e1'}
                         letterSpacing="0.05em"
                       >
-                        {node.name.split(' ')[0]}
+                        {node.name}
                       </text>
                     </g>
                   </g>
