@@ -81,27 +81,30 @@ import { ZenChatCommandBar } from '@/components/chat/ZenChatCommandBar';
 import { ZenIdentityCardModal } from '@/components/chat/ZenIdentityCardModal';
 import { ZenNativeMessageCard } from '@/components/chat/ZenNativeMessageCard';
 
-/* ── Seeded Sovereign Communities (Horizon MUN, RISMUN, Plenary) ── */
-const DEFAULT_COMMUNITIES: ChatCommunity[] = [
+/* ── Server & Caucus Templates (Replaced hardcoded seeded groups) ── */
+export interface CommunityTemplate {
+  id: string;
+  name: string;
+  icon: string;
+  badge: string;
+  description: string;
+  categories: ChannelCategory[];
+  channels: ChatChannel[];
+  roles: DiscordRole[];
+}
+
+export const COMMUNITY_TEMPLATES: CommunityTemplate[] = [
   {
-    id: 'comm-direct',
-    name: 'Direct Envoys & DMs',
-    icon: '💬',
-    badge: 'DMs',
-    roles: [],
-    channels: []
-  },
-  {
-    id: 'comm-horizon-mun',
-    name: 'Horizon MUN',
+    id: 'template-mun',
+    name: 'Model UN Conference',
     icon: '🌐',
-    badge: 'HORIZON',
-    description: 'Premier Model UN Conference — Official Ecosystem Space',
+    badge: 'MUN',
+    description: 'Premier Model UN Conference with plenary chamber, committees, press corps, and dais voice stage.',
     categories: [
-      { id: 'cat-horizon-bulletins', name: '[BULLETINS]' },
-      { id: 'cat-horizon-committees', name: '[CHAMBERS]' },
-      { id: 'cat-horizon-press', name: '[PRESS CORPS]' },
-      { id: 'cat-horizon-voice', name: '[DAIS VOICE]' },
+      { id: 'cat-bulletins', name: '[BULLETINS]' },
+      { id: 'cat-committees', name: '[CHAMBERS]' },
+      { id: 'cat-press', name: '[PRESS CORPS]' },
+      { id: 'cat-voice', name: '[DAIS VOICE]' },
     ],
     roles: [
       {
@@ -110,19 +113,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         color: '#f59e0b',
         hoist: true,
         position: 1,
-        permissions: {
-          manageServer: true,
-          manageRoles: true,
-          manageChannels: true,
-          kickMembers: true,
-          banMembers: true,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: true
-        }
+        permissions: { manageServer: true, manageRoles: true, manageChannels: true, kickMembers: true, banMembers: true, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: true }
       },
       {
         id: 'role-eb',
@@ -130,415 +121,73 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         color: '#a855f7',
         hoist: true,
         position: 2,
-        permissions: {
-          manageServer: false,
-          manageRoles: false,
-          manageChannels: true,
-          kickMembers: true,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: true
-        }
-      },
-      {
-        id: 'role-press-officer',
-        name: '📰 | International Press',
-        color: '#06b6d4',
-        hoist: true,
-        position: 3,
-        permissions: {
-          manageServer: false,
-          manageRoles: false,
-          manageChannels: false,
-          kickMembers: false,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: false
-        }
+        permissions: { manageServer: false, manageRoles: false, manageChannels: true, kickMembers: true, banMembers: false, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: true }
       },
       {
         id: 'role-delegate',
         name: 'Delegate',
         color: '#94a3b8',
         hoist: false,
-        position: 4,
+        position: 3,
         isDefault: true,
-        permissions: {
-          manageServer: false,
-          manageRoles: false,
-          manageChannels: false,
-          kickMembers: false,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: false
-        }
-      }
-    ],
-    members: [
-      {
-        id: 'u_yuveer',
-        name: 'Yuveer',
-        username: 'yuveer',
-        status: 'online',
-        roleIds: ['role-sec-gen'],
-        activity: { type: 'custom', name: 'Presiding Plenary', badge: 'DAIS' },
-        customStatus: 'Horizon MUN Secretariat'
-      },
-      {
-        id: 'u_aarav',
-        name: 'Aarav Sharma',
-        username: 'aarav_in',
-        status: 'online',
-        roleIds: ['role-eb'],
-        customStatus: 'Chair — UNGA DISEC'
-      },
-      {
-        id: 'u_riya',
-        name: 'Riya Patel',
-        username: 'riya_un',
-        status: 'online',
-        roleIds: ['role-delegate'],
-        customStatus: 'Delegate of Japan'
-      },
-      {
-        id: 'u_press',
-        name: 'Elena Rostova',
-        username: 'elena_press',
-        status: 'online',
-        roleIds: ['role-press-officer'],
-        customStatus: 'Reuters Press Bureau'
+        permissions: { manageServer: false, manageRoles: false, manageChannels: false, kickMembers: false, banMembers: false, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: false }
       }
     ],
     channels: [
-      { id: 'ch-hor-announcements', name: 'announcements', type: 'announcement', categoryId: 'cat-horizon-bulletins', description: 'Secretariat dispatches and schedule alerts' },
-      { id: 'ch-hor-secretariat', name: 'secretariat-eb', type: 'text', categoryId: 'cat-horizon-bulletins', description: 'Dais coordination & crisis directives' },
-      { id: 'ch-hor-delegates', name: 'delegates-assembly', type: 'text', categoryId: 'cat-horizon-committees', description: 'Plenary chamber and caucus debate' },
-      { id: 'ch-hor-press', name: 'international-press', type: 'text', categoryId: 'cat-horizon-press', description: 'Press communiqués and interview requests' },
-      { id: 'ch-hor-eb', name: 'eb-caucus', type: 'text', categoryId: 'cat-horizon-committees', description: 'Executive Board procedural consultations' },
-      { id: 'ch-hor-general', name: 'general-lounge', type: 'text', categoryId: 'cat-horizon-committees', description: 'Informal delegate lounge' },
-      { 
-        id: 'ch-hor-voice-main', 
-        name: 'Floor Mic [Plenary]', 
-        type: 'voice', 
-        categoryId: 'cat-horizon-voice', 
-        description: 'Live floor microphone & speeches',
-        userLimit: 25,
-        activeVoiceUsers: []
-      }
-    ],
-    groups: []
+      { id: 'ch-announcements', name: 'announcements', type: 'announcement', categoryId: 'cat-bulletins', description: 'Secretariat dispatches and schedule alerts' },
+      { id: 'ch-secretariat', name: 'secretariat-eb', type: 'text', categoryId: 'cat-bulletins', description: 'Dais coordination & crisis directives' },
+      { id: 'ch-delegates', name: 'delegates-assembly', type: 'text', categoryId: 'cat-committees', description: 'Plenary chamber and caucus debate' },
+      { id: 'ch-eb', name: 'eb-caucus', type: 'text', categoryId: 'cat-committees', description: 'Executive Board procedural consultations' },
+      { id: 'ch-press', name: 'international-press', type: 'text', categoryId: 'cat-press', description: 'Press communiqués and interview requests' },
+      { id: 'ch-voice-main', name: 'Floor Mic [Plenary]', type: 'voice', categoryId: 'cat-voice', description: 'Live floor microphone & speeches', userLimit: 25, activeVoiceUsers: [] }
+    ]
   },
   {
-    id: 'comm-rismun-2027',
-    name: 'RISMUN 2027',
+    id: 'template-parliament',
+    name: 'Diplomatic Parliamentary Assembly',
     icon: '🏛️',
-    badge: 'RISMUN',
-    description: 'International Parliamentary & Diplomatic Simulation',
+    badge: 'PARLIAMENT',
+    description: 'Multilateral parliamentary simulation with UNGA, UNSC crisis response, and speaker floor audio stage.',
     categories: [
-      { id: 'cat-ris-alerts', name: '[DISPATCHES]' },
-      { id: 'cat-ris-chambers', name: '[COMMITTEES]' },
-      { id: 'cat-ris-voice', name: '[LIVE AUDIO]' },
+      { id: 'cat-alerts', name: '[DISPATCHES]' },
+      { id: 'cat-chambers', name: '[COMMITTEES]' },
+      { id: 'cat-voice', name: '[LIVE AUDIO]' },
     ],
     roles: [
       {
-        id: 'role-ris-chair',
+        id: 'role-chair',
         name: '🏛️ | Dais Chair',
         color: '#f59e0b',
         hoist: true,
         position: 1,
-        permissions: {
-          manageServer: true,
-          manageRoles: true,
-          manageChannels: true,
-          kickMembers: true,
-          banMembers: true,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: true
-        }
+        permissions: { manageServer: true, manageRoles: true, manageChannels: true, kickMembers: true, banMembers: true, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: true }
       },
       {
-        id: 'role-ris-delegate',
-        name: 'Delegate',
+        id: 'role-diplomat',
+        name: 'Diplomat',
         color: '#94a3b8',
         hoist: false,
         position: 2,
         isDefault: true,
-        permissions: {
-          manageServer: false,
-          manageRoles: false,
-          manageChannels: false,
-          kickMembers: false,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: false
-        }
-      }
-    ],
-    members: [
-      {
-        id: 'u_yuveer',
-        name: 'Yuveer',
-        username: 'yuveer',
-        status: 'online',
-        roleIds: ['role-ris-chair'],
-        customStatus: 'Chief Dais Moderator'
+        permissions: { manageServer: false, manageRoles: false, manageChannels: false, kickMembers: false, banMembers: false, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: false }
       }
     ],
     channels: [
-      { id: 'ch-ris-bulletins', name: 'bulletins', type: 'announcement', categoryId: 'cat-ris-alerts', description: 'Official RISMUN announcements' },
-      { id: 'ch-ris-unga', name: 'unga-committee', type: 'text', categoryId: 'cat-ris-chambers', description: 'United Nations General Assembly debates' },
-      { id: 'ch-ris-unsc', name: 'unsc-crisis', type: 'text', categoryId: 'cat-ris-chambers', description: 'Security Council rapid emergency response' },
-      { id: 'ch-ris-press', name: 'press-wire', type: 'text', categoryId: 'cat-ris-alerts', description: 'Official international press releases' },
-      { 
-        id: 'ch-ris-voice-dais', 
-        name: 'Chamber Audio Stage', 
-        type: 'voice', 
-        categoryId: 'cat-ris-voice', 
-        description: 'Speakers list audio floor',
-        userLimit: 15,
-        activeVoiceUsers: []
-      }
-    ],
-    groups: []
+      { id: 'ch-bulletins', name: 'bulletins', type: 'announcement', categoryId: 'cat-alerts', description: 'Official announcements' },
+      { id: 'ch-unga', name: 'unga-committee', type: 'text', categoryId: 'cat-chambers', description: 'General Assembly debates' },
+      { id: 'ch-unsc', name: 'unsc-crisis', type: 'text', categoryId: 'cat-chambers', description: 'Security Council emergency response' },
+      { id: 'ch-voice-dais', name: 'Chamber Audio Stage', type: 'voice', categoryId: 'cat-voice', description: 'Speakers list audio floor', userLimit: 20, activeVoiceUsers: [] }
+    ]
   },
   {
-    id: 'comm-un-plenary',
-    name: 'Global Plenary Council',
-    icon: '🏛️',
-    badge: 'UN #418',
-    description: 'Multilateral diplomatic assembly and working committees',
-    categories: [
-      { id: 'cat-entrance', name: '[ENTRANCE]' },
-      { id: 'cat-alerts', name: '[ALERTS]' },
-      { id: 'cat-community', name: '[COMMUNITY]' },
-      { id: 'cat-voice', name: '[VOICE AREA]' }
-    ],
-    roles: [
-      {
-        id: 'role-founder',
-        name: '👑 | Founder',
-        color: '#f59e0b',
-        hoist: true,
-        position: 1,
-        permissions: {
-          manageServer: true,
-          manageRoles: true,
-          manageChannels: true,
-          kickMembers: true,
-          banMembers: true,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: true
-        }
-      },
-      {
-        id: 'role-admin',
-        name: '🏛️ | Admins & Dais',
-        color: '#a855f7',
-        hoist: true,
-        position: 2,
-        permissions: {
-          manageServer: false,
-          manageRoles: true,
-          manageChannels: true,
-          kickMembers: true,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: true
-        }
-      },
-      {
-        id: 'role-vip',
-        name: '⭐ | VIP & Envoys',
-        color: '#06b6d4',
-        hoist: true,
-        position: 3,
-        permissions: {
-          manageServer: false,
-          manageRoles: false,
-          manageChannels: false,
-          kickMembers: false,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: false
-        }
-      },
-      {
-        id: 'role-delegate',
-        name: 'Delegate',
-        color: '#94a3b8',
-        hoist: false,
-        position: 4,
-        isDefault: true,
-        permissions: {
-          manageServer: false,
-          manageRoles: false,
-          manageChannels: false,
-          kickMembers: false,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: false
-        }
-      }
-    ],
-    members: [
-      {
-        id: 'u_yuveer',
-        name: 'Yuveer',
-        username: 'yuveer',
-        status: 'online',
-        roleIds: ['role-founder'],
-        activity: {
-          type: 'playing',
-          name: 'Zenvitra OS',
-          details: 'Architecting sovereign nodes',
-          badge: 'DEV'
-        },
-        customStatus: 'building the sovereign stack'
-      },
-      {
-        id: 'u_sec',
-        name: 'Darky',
-        username: 'darky_admin',
-        status: 'online',
-        roleIds: ['role-admin'],
-        activity: {
-          type: 'custom',
-          name: 'USD',
-          badge: 'USD'
-        },
-        customStatus: 'Dais oversight'
-      },
-      {
-        id: 'u_chair',
-        name: 'RON9IE',
-        username: 'ron9ie',
-        status: 'dnd',
-        roleIds: ['role-admin'],
-        customStatus: 'in session'
-      },
-      {
-        id: 'u_tanmay',
-        name: 'tanmaybhat',
-        username: 'tanmay',
-        status: 'idle',
-        roleIds: ['role-vip'],
-        activity: {
-          type: 'playing',
-          name: 'Valorant Tracker App',
-          badge: 'ROBLOX'
-        },
-        customStatus: 'streaming live'
-      },
-      {
-        id: 'u_elena',
-        name: 'Elena Rostova',
-        username: 'elena_press',
-        status: 'online',
-        roleIds: ['role-delegate'],
-        customStatus: 'International Press Wire'
-      },
-      {
-        id: 'u_marcus',
-        name: 'Marcus Sterling',
-        username: 'marcus_uk',
-        status: 'online',
-        roleIds: ['role-delegate'],
-        customStatus: 'Delegate of United Kingdom'
-      },
-      {
-        id: 'u_aarav',
-        name: 'Aarav Sharma',
-        username: 'aarav_in',
-        status: 'offline',
-        roleIds: ['role-delegate'],
-        customStatus: 'Delegate of India'
-      }
-    ],
-    channels: [
-      { id: 'ch-welcome', name: 'welcome-chamber', type: 'text', categoryId: 'cat-entrance', description: 'Welcome hub & charter overview' },
-      { id: 'ch-rules', name: 'assembly-rules', type: 'text', categoryId: 'cat-entrance', description: 'Rules of procedure & diplomatic decorum' },
-      { id: 'ch-briefs', name: 'yt-alerts', type: 'announcement', categoryId: 'cat-alerts', description: 'Breaking news and crisis broadcasts' },
-      { id: 'ch-general', name: 'general-assembly', type: 'text', categoryId: 'cat-community', description: 'Multilateral sovereign debates & floor speeches' },
-      { id: 'ch-resolutions', name: 'policy-drafts', type: 'text', categoryId: 'cat-community', description: 'Collaborative treaty and draft resolution workbench' },
-      { id: 'ch-unfiltered', name: 'unfiltered-baatein', type: 'text', categoryId: 'cat-community', description: 'Informal delegate lounge and caucus coffee' },
-      { 
-        id: 'ch-voice-plenary', 
-        name: 'Chamber Alpha [Voice]', 
-        type: 'voice', 
-        categoryId: 'cat-voice',
-        description: 'Live floor microphone & speaking delegates',
-        userLimit: 10,
-        isLocked: false,
-        activeVoiceUsers: [] 
-      },
-      { 
-        id: 'ch-voice-duo1', 
-        name: 'Duo Chamber 1', 
-        type: 'voice', 
-        categoryId: 'cat-voice',
-        description: 'Bilateral unmoderated consultation',
-        userLimit: 2,
-        isLocked: false,
-        activeVoiceUsers: [] 
-      },
-      { 
-        id: 'ch-voice-warroom', 
-        name: 'Crisis War Room [Voice]', 
-        type: 'voice', 
-        categoryId: 'cat-voice',
-        description: 'Immediate response caucus chamber',
-        isLocked: true,
-        userLimit: 5,
-        activeVoiceUsers: [] 
-      }
-    ],
-    groups: []
-  },
-  {
-    id: 'comm-crisis-alpha',
+    id: 'template-crisis',
     name: 'Sovereign Crisis Chamber',
     icon: '⚡',
     badge: 'CRISIS',
-    description: 'Rapid response multilateral war room',
+    description: 'Rapid response multilateral crisis room with encrypted operations and high command voice.',
     categories: [
-      { id: 'cat-crisis-ops', name: '[OPERATIONS]' },
-      { id: 'cat-crisis-voice', name: '[COMMAND VOICE]' }
+      { id: 'cat-ops', name: '[OPERATIONS]' },
+      { id: 'cat-cmd-voice', name: '[COMMAND VOICE]' }
     ],
     roles: [
       {
@@ -547,94 +196,122 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         color: '#ef4444',
         hoist: true,
         position: 1,
-        permissions: {
-          manageServer: true,
-          manageRoles: true,
-          manageChannels: true,
-          kickMembers: true,
-          banMembers: true,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: true
-        }
+        permissions: { manageServer: true, manageRoles: true, manageChannels: true, kickMembers: true, banMembers: true, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: true }
       },
       {
-        id: 'role-intel',
-        name: '🛡️ | Intel Director',
-        color: '#f59e0b',
-        hoist: true,
-        position: 2,
-        permissions: {
-          manageServer: false,
-          manageRoles: true,
-          manageChannels: true,
-          kickMembers: false,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: false
-        }
-      },
-      {
-        id: 'role-op',
+        id: 'role-operator',
         name: 'Field Operator',
         color: '#94a3b8',
         hoist: false,
-        position: 3,
+        position: 2,
         isDefault: true,
-        permissions: {
-          manageServer: false,
-          manageRoles: false,
-          manageChannels: false,
-          kickMembers: false,
-          banMembers: false,
-          sendMessages: true,
-          embedLinks: true,
-          attachFiles: true,
-          connectVoice: true,
-          speakVoice: true,
-          prioritySpeaker: false
-        }
+        permissions: { manageServer: false, manageRoles: false, manageChannels: false, kickMembers: false, banMembers: false, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: false }
+      }
+    ],
+    channels: [
+      { id: 'ch-war-room', name: 'war-room-text', type: 'text', categoryId: 'cat-ops', description: 'Fast-paced crisis directive broadcast' },
+      { id: 'ch-intel', name: 'intelligence-briefs', type: 'text', categoryId: 'cat-ops', description: 'Encrypted intelligence leaks and evidence' },
+      { id: 'ch-voice-crisis', name: 'High Command [Voice]', type: 'voice', categoryId: 'cat-cmd-voice', description: 'Live emergency audio command', isLocked: false, activeVoiceUsers: [] }
+    ]
+  },
+  {
+    id: 'template-blank',
+    name: 'Custom Server / Blank Caucus',
+    icon: '💬',
+    badge: 'SERVER',
+    description: 'Clean slate server with general floor, announcements, and floor audio stage.',
+    categories: [
+      { id: 'cat-general', name: '[GENERAL]' },
+      { id: 'cat-audio', name: '[AUDIO FLOOR]' }
+    ],
+    roles: [
+      {
+        id: 'role-owner',
+        name: '👑 | Owner',
+        color: '#f59e0b',
+        hoist: true,
+        position: 1,
+        permissions: { manageServer: true, manageRoles: true, manageChannels: true, kickMembers: true, banMembers: true, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: true }
+      },
+      {
+        id: 'role-member',
+        name: 'Member',
+        color: '#94a3b8',
+        hoist: false,
+        position: 2,
+        isDefault: true,
+        permissions: { manageServer: false, manageRoles: false, manageChannels: false, kickMembers: false, banMembers: false, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: false }
+      }
+    ],
+    channels: [
+      { id: 'ch-announcements', name: 'announcements', type: 'announcement', categoryId: 'cat-general', description: 'General server announcements' },
+      { id: 'ch-general', name: 'general-floor', type: 'text', categoryId: 'cat-general', description: 'General discussions' },
+      { id: 'ch-voice', name: 'Floor Audio', type: 'voice', categoryId: 'cat-audio', description: 'Live audio floor', activeVoiceUsers: [] }
+    ]
+  }
+];
+
+export function buildDefaultUserServer(userId?: string, userName?: string, userHandle?: string): ChatCommunity {
+  const sName = userName && userName !== 'You' ? `${userName}'s Server` : "Your Server";
+  return {
+    id: 'comm-user-primary',
+    name: sName,
+    icon: '🏛️',
+    badge: 'COUNCIL',
+    description: `Official sovereign diplomatic server & caucus chamber for @${userHandle || 'you'}`,
+    categories: [
+      { id: 'cat-user-bulletins', name: '[BULLETINS]' },
+      { id: 'cat-user-chambers', name: '[CHAMBERS]' },
+      { id: 'cat-user-voice', name: '[AUDIO STAGE]' },
+    ],
+    roles: [
+      {
+        id: 'role-owner',
+        name: '👑 | Server Owner',
+        color: '#f59e0b',
+        hoist: true,
+        position: 1,
+        permissions: { manageServer: true, manageRoles: true, manageChannels: true, kickMembers: true, banMembers: true, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: true }
+      },
+      {
+        id: 'role-delegate',
+        name: 'Delegate',
+        color: '#94a3b8',
+        hoist: false,
+        position: 2,
+        isDefault: true,
+        permissions: { manageServer: false, manageRoles: false, manageChannels: false, kickMembers: false, banMembers: false, sendMessages: true, embedLinks: true, attachFiles: true, connectVoice: true, speakVoice: true, prioritySpeaker: false }
       }
     ],
     members: [
       {
-        id: 'u_yuveer',
-        name: 'Yuveer',
-        username: 'yuveer',
+        id: userId || 'u_self',
+        name: userName || 'You',
+        username: userHandle || 'you',
         status: 'online',
-        roleIds: ['role-high-cmd'],
-        customStatus: 'Commander-in-Chief'
-      },
-      {
-        id: 'u_sec',
-        name: 'Intel Ops',
-        username: 'intel_core',
-        status: 'online',
-        roleIds: ['role-intel'],
-        customStatus: 'Monitoring satellites'
+        roleIds: ['role-owner'],
+        customStatus: 'Server Founder & Architect'
       }
     ],
     channels: [
-      { id: 'ch-crisis-general', name: 'war-room-text', type: 'text', categoryId: 'cat-crisis-ops', description: 'Fast-paced crisis directive broadcast' },
-      { id: 'ch-crisis-intel', name: 'intelligence-briefs', type: 'text', categoryId: 'cat-crisis-ops', description: 'Encrypted intelligence leaks and evidence' },
-      { 
-        id: 'ch-voice-crisis', 
-        name: 'High Command [Voice]', 
-        type: 'voice', 
-        categoryId: 'cat-crisis-voice',
-        description: 'Live emergency audio command',
-        isLocked: true,
-        activeVoiceUsers: [] 
-      }
+      { id: 'ch-user-announcements', name: 'announcements', type: 'announcement', categoryId: 'cat-user-bulletins', description: 'Dispatches and executive directives' },
+      { id: 'ch-user-general', name: 'general-floor', type: 'text', categoryId: 'cat-user-chambers', description: 'General debate and floor speeches' },
+      { id: 'ch-user-resolutions', name: 'working-drafts', type: 'text', categoryId: 'cat-user-chambers', description: 'Collaborative draft resolutions' },
+      { id: 'ch-user-voice', name: 'Chamber Audio [Live]', type: 'voice', categoryId: 'cat-user-voice', description: 'Speakers list microphone floor', userLimit: 20, activeVoiceUsers: [] }
     ],
     groups: []
+  };
+}
+
+/* ── Base Direct Messaging Space ── */
+const DEFAULT_COMMUNITIES: ChatCommunity[] = [
+  {
+    id: 'comm-direct',
+    name: 'Direct Envoys & DMs',
+    icon: '💬',
+    badge: 'DMs',
+    roles: [],
+    channels: []
   }
 ];
 
@@ -719,11 +396,8 @@ export function ZenChatMesh() {
     name: string;
     username: string;
     phone?: string;
-  } | null>({
-    name: 'Sarah Jenkins',
-    username: 'sarah_j',
-    phone: '+1 (555) 382-9102'
-  });
+  } | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('template-mun');
   const [showCallDropdown, setShowCallDropdown] = useState(false);
   const [showNewCallLinkModal, setShowNewCallLinkModal] = useState(false);
   const [showScheduleCallModal, setShowScheduleCallModal] = useState(false);
@@ -781,10 +455,52 @@ export function ZenChatMesh() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  /* Dismiss contact alert permanently */
+  const handleDismissContactAlert = () => {
+    try {
+      localStorage.setItem('zenvitra_contact_alert_dismissed_v2', 'true');
+    } catch (_) {}
+    setJoinedContactAlert(null);
+  };
+
   useEffect(() => {
     setMounted(true);
 
-    // Restore saved custom groups for communities
+    // 1. Check if contact alert was previously dismissed
+    try {
+      const isAlertDismissed = localStorage.getItem('zenvitra_contact_alert_dismissed_v2');
+      if (!isAlertDismissed) {
+        setJoinedContactAlert({
+          name: 'Sarah Jenkins',
+          username: 'sarah_j',
+          phone: '+1 (555) 382-9102'
+        });
+      }
+    } catch (_) {}
+
+    // 2. Restore user communities or initialize personal server
+    try {
+      const savedComm = localStorage.getItem('zenvitra_user_communities_v4');
+      if (savedComm) {
+        const parsed = JSON.parse(savedComm);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCommunities([DEFAULT_COMMUNITIES[0], ...parsed]);
+        } else {
+          const userServer = buildDefaultUserServer(currentUser?.id, currentUserName, currentUserUsername);
+          setCommunities([DEFAULT_COMMUNITIES[0], userServer]);
+          localStorage.setItem('zenvitra_user_communities_v4', JSON.stringify([userServer]));
+        }
+      } else {
+        const userServer = buildDefaultUserServer(currentUser?.id, currentUserName, currentUserUsername);
+        setCommunities([DEFAULT_COMMUNITIES[0], userServer]);
+        localStorage.setItem('zenvitra_user_communities_v4', JSON.stringify([userServer]));
+      }
+    } catch (_) {
+      const userServer = buildDefaultUserServer(currentUser?.id, currentUserName, currentUserUsername);
+      setCommunities([DEFAULT_COMMUNITIES[0], userServer]);
+    }
+
+    // 3. Restore saved custom groups for communities
     try {
       const savedGroups = localStorage.getItem('zenvitra_community_custom_groups_v2');
       if (savedGroups) {
@@ -801,6 +517,38 @@ export function ZenChatMesh() {
       if (sm) setMutedContexts(JSON.parse(sm));
     } catch (_) {}
   }, []);
+
+  // Update default user server title if current user name loads asynchronously
+  useEffect(() => {
+    if (!currentUserName || currentUserName === 'You') return;
+    setCommunities((prev) => {
+      let changed = false;
+      const next = prev.map((c) => {
+        if (c.id === 'comm-user-primary' && (c.name === 'Your Server' || c.name.endsWith("'s Server"))) {
+          const expectedName = `${currentUserName}'s Server`;
+          if (c.name !== expectedName) {
+            changed = true;
+            return {
+              ...c,
+              name: expectedName,
+              description: `Official sovereign diplomatic server & caucus chamber for @${currentUserUsername || 'you'}`
+            };
+          }
+        }
+        return c;
+      });
+      if (changed) {
+        try {
+          localStorage.setItem(
+            'zenvitra_user_communities_v4',
+            JSON.stringify(next.filter((c) => c.id !== 'comm-direct'))
+          );
+        } catch (_) {}
+        return next;
+      }
+      return prev;
+    });
+  }, [currentUserName, currentUserUsername]);
 
   const saveCommunityGroups = (communityId: string, updatedGroups: any[]) => {
     setCommunities((prev) =>
@@ -1216,86 +964,89 @@ export function ZenChatMesh() {
     }
   };
 
-  /* Create Caucus Community */
+  /* Create Caucus Community from Template or Custom */
   const handleCreateCaucus = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCaucusName.trim()) return;
 
+    const chosenTemplate =
+      COMMUNITY_TEMPLATES.find((t) => t.id === selectedTemplateId) || COMMUNITY_TEMPLATES[0];
+
+    const newCommId = `comm-user-${Date.now()}`;
     const newComm: ChatCommunity = {
-      id: `comm-${Date.now()}`,
+      id: newCommId,
       name: newCaucusName.trim(),
-      icon: newCaucusIcon || '🏛️',
-      badge: 'CAUCUS',
-      categories: [
-        { id: `cat-${Date.now()}-text`, name: '[COMMUNITY]' },
-        { id: `cat-${Date.now()}-voice`, name: '[VOICE AREA]' }
-      ],
-      roles: [
-        {
-          id: `role-${Date.now()}-admin`,
-          name: '👑 | Founder',
-          color: '#f59e0b',
-          hoist: true,
-          position: 1,
-          permissions: {
-            manageServer: true,
-            manageRoles: true,
-            manageChannels: true,
-            kickMembers: true,
-            banMembers: true,
-            sendMessages: true,
-            embedLinks: true,
-            attachFiles: true,
-            connectVoice: true,
-            speakVoice: true,
-            prioritySpeaker: true
-          }
-        },
-        {
-          id: `role-${Date.now()}-member`,
-          name: 'Delegate',
-          color: '#94a3b8',
-          hoist: false,
-          position: 2,
-          isDefault: true,
-          permissions: {
-            manageServer: false,
-            manageRoles: false,
-            manageChannels: false,
-            kickMembers: false,
-            banMembers: false,
-            sendMessages: true,
-            embedLinks: true,
-            attachFiles: true,
-            connectVoice: true,
-            speakVoice: true,
-            prioritySpeaker: false
-          }
-        }
-      ],
+      icon: newCaucusIcon || chosenTemplate.icon,
+      badge: chosenTemplate.badge,
+      description: newCaucusDescription.trim() || chosenTemplate.description,
+      categories: chosenTemplate.categories.map((cat) => ({
+        ...cat,
+        id: `cat-${Date.now()}-${cat.id}`
+      })),
+      roles: chosenTemplate.roles.map((r, i) => ({
+        ...r,
+        id: `role-${Date.now()}-${i}`,
+      })),
       members: [
         {
-          id: 'u_yuveer',
-          name: 'Yuveer',
-          username: 'yuveer',
+          id: currentUser?.id || 'u_self',
+          name: currentUserName || 'You',
+          username: currentUserUsername || 'you',
           status: 'online',
-          roleIds: [`role-${Date.now()}-admin`],
+          roleIds: [`role-${Date.now()}-0`],
           customStatus: 'Caucus Founder'
         }
       ],
-      channels: [
-        { id: `ch-${Date.now()}-1`, name: 'general-floor', type: 'text', categoryId: `cat-${Date.now()}-text`, description: newCaucusDescription || 'General caucus discourse' },
-        { id: `ch-${Date.now()}-2`, name: 'Chamber Alpha [Voice]', type: 'voice', categoryId: `cat-${Date.now()}-voice`, description: 'Live audio floor' }
-      ]
+      channels: chosenTemplate.channels.map((ch, i) => ({
+        ...ch,
+        id: `ch-${Date.now()}-${i}`,
+        activeVoiceUsers: ch.type === 'voice' ? [] : undefined
+      })),
+      groups: []
     };
 
-    setCommunities((prev) => [...prev, newComm]);
+    setCommunities((prev) => {
+      const updated = [...prev, newComm];
+      try {
+        localStorage.setItem(
+          'zenvitra_user_communities_v4',
+          JSON.stringify(updated.filter((c) => c.id !== 'comm-direct'))
+        );
+      } catch (_) {}
+      return updated;
+    });
+
+    setActiveRailTab('communities');
     setSelectedCommunityId(newComm.id);
-    setActiveChannelId(newComm.channels[0].id);
+    if (newComm.channels.length > 0) {
+      setActiveChannelId(newComm.channels[0].id);
+      setActiveCommunityGroupId(null);
+    }
     setShowCreateCaucusModal(false);
     setNewCaucusName('');
     setNewCaucusDescription('');
     showToast(`Caucus "${newComm.name}" established`);
+  };
+
+  /* Delete Community */
+  const handleDeleteCommunity = (communityId: string) => {
+    if (communityId === 'comm-direct') return;
+    setCommunities((prev) => {
+      const filtered = prev.filter((c) => c.id !== communityId);
+      try {
+        localStorage.setItem(
+          'zenvitra_user_communities_v4',
+          JSON.stringify(filtered.filter((c) => c.id !== 'comm-direct'))
+        );
+      } catch (_) {}
+      return filtered;
+    });
+
+    if (selectedCommunityId === communityId) {
+      setSelectedCommunityId('comm-direct');
+      setActiveRailTab('chats');
+    }
+    showToast('Server deleted');
   };
 
   /* Create Channel */
@@ -1312,14 +1063,21 @@ export function ZenChatMesh() {
       activeVoiceUsers: newChannelType === 'voice' ? [] : undefined
     };
 
-    setCommunities((prev) =>
-      prev.map((c) => {
+    setCommunities((prev) => {
+      const updated = prev.map((c) => {
         if (c.id === selectedCommunityId) {
           return { ...c, channels: [...c.channels, newChan] };
         }
         return c;
-      })
-    );
+      });
+      try {
+        localStorage.setItem(
+          'zenvitra_user_communities_v4',
+          JSON.stringify(updated.filter((c) => c.id !== 'comm-direct'))
+        );
+      } catch (_) {}
+      return updated;
+    });
 
     setActiveChannelId(newChan.id);
     setShowCreateChannelModal(false);
@@ -1403,7 +1161,14 @@ export function ZenChatMesh() {
             onClick={() => {
               setActiveRailTab('communities');
               if (selectedCommunityId === 'comm-direct') {
-                setSelectedCommunityId('comm-un-plenary');
+                const firstUserComm = communities.find((c) => c.id !== 'comm-direct');
+                if (firstUserComm) {
+                  setSelectedCommunityId(firstUserComm.id);
+                  if (firstUserComm.channels.length > 0) {
+                    setActiveChannelId(firstUserComm.channels[0].id);
+                    setActiveCommunityGroupId(null);
+                  }
+                }
               }
             }}
             title="Communities"
@@ -1466,6 +1231,18 @@ export function ZenChatMesh() {
                 </button>
               );
             })}
+
+            {/* Add Server / Caucus Button */}
+            <button
+              onClick={() => {
+                setNewCaucusName(currentUserName && currentUserName !== 'You' ? `${currentUserName}'s Server` : 'New Server');
+                setShowCreateCaucusModal(true);
+              }}
+              title="Add a Server / Caucus"
+              className="w-10 h-10 rounded-2xl bg-white/[0.03] hover:bg-emerald-500/20 border border-dashed border-white/20 hover:border-emerald-500/50 text-neutral-400 hover:text-emerald-400 flex items-center justify-center transition-all duration-200 cursor-pointer hover:rounded-[16px] group shrink-0"
+            >
+              <Plus className="w-5 h-5 transition-transform group-hover:rotate-90 text-neutral-300 group-hover:text-emerald-400" />
+            </button>
           </div>
         </div>
 
@@ -1614,6 +1391,18 @@ export function ZenChatMesh() {
                         <Copy className="w-4 h-4 text-blue-400" />
                         <span>Copy Community Link</span>
                       </button>
+                      <div className="pt-1 border-t border-white/[0.06]">
+                        <button
+                          onClick={() => {
+                            setShowSidebarHeaderMenu(false);
+                            handleDeleteCommunity(selectedCommunityId);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-left transition cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4 text-rose-400" />
+                          <span>Delete Server</span>
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <>
@@ -1941,7 +1730,7 @@ export function ZenChatMesh() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setJoinedContactAlert(null)}
+                    onClick={handleDismissContactAlert}
                     className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -1952,7 +1741,7 @@ export function ZenChatMesh() {
                     type="button"
                     onClick={() => {
                       createDirectChat(joinedContactAlert.username, joinedContactAlert.name);
-                      setJoinedContactAlert(null);
+                      handleDismissContactAlert();
                       showToast(`Opened chat with ${joinedContactAlert.name}!`);
                     }}
                     className="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5 shadow"
@@ -3211,33 +3000,162 @@ export function ZenChatMesh() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md rounded-[2.5rem] bg-[#090a0f] border border-white/10 p-6 shadow-2xl space-y-4"
+              className="w-full max-w-lg rounded-3xl bg-[#090a0f] border border-white/10 p-6 shadow-2xl space-y-5 text-left max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <h3 className="font-display font-medium text-sm text-white">
-                  Establish Sovereign Caucus Chamber
-                </h3>
-                <button onClick={() => setShowCreateCaucusModal(false)} className="p-1 rounded-lg text-neutral-400 hover:text-white">
+                <div>
+                  <h3 className="font-display font-semibold text-base text-white">
+                    Establish Sovereign Server
+                  </h3>
+                  <p className="font-sans text-xs text-neutral-400 mt-0.5">
+                    Select an architecture template or build your own caucus
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCreateCaucusModal(false)}
+                  className="p-1.5 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateCaucus} className="space-y-4">
-                <input
-                  type="text"
-                  value={newCaucusName}
-                  onChange={(e) => setNewCaucusName(e.target.value)}
-                  placeholder="Caucus Name (e.g. ECOSOC Plenary)"
-                  className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  disabled={!newCaucusName.trim()}
-                  className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs"
-                >
-                  Establish Caucus
-                </button>
+              {/* Template Chooser Grid */}
+              <div className="space-y-2">
+                <label className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider block">
+                  Select Server Template
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {COMMUNITY_TEMPLATES.map((tmpl) => {
+                    const isChosen = selectedTemplateId === tmpl.id;
+                    return (
+                      <button
+                        key={tmpl.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedTemplateId(tmpl.id);
+                          setNewCaucusIcon(tmpl.icon);
+                          const prefix = currentUserName && currentUserName !== 'You' ? `${currentUserName}'s` : 'My';
+                          setNewCaucusName(tmpl.id === 'template-blank' ? `${prefix} Server` : `${prefix} ${tmpl.name}`);
+                          setNewCaucusDescription(tmpl.description);
+                        }}
+                        className={`p-3 rounded-2xl border text-left transition cursor-pointer relative group flex flex-col justify-between ${
+                          isChosen
+                            ? 'bg-purple-500/15 border-purple-500/60 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                            : 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.05]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{tmpl.icon}</span>
+                            <div>
+                              <h4 className="font-display font-bold text-xs text-white group-hover:text-purple-300 transition">
+                                {tmpl.name}
+                              </h4>
+                              <span className="font-mono text-[9px] text-purple-400 font-semibold uppercase">
+                                {tmpl.badge}
+                              </span>
+                            </div>
+                          </div>
+                          {isChosen && (
+                            <div className="w-4 h-4 rounded-full bg-purple-500 text-white flex items-center justify-center shrink-0">
+                              <Check className="w-2.5 h-2.5" />
+                            </div>
+                          )}
+                        </div>
+                        <p className="font-sans text-[11px] text-neutral-400 mt-2 line-clamp-2">
+                          {tmpl.description}
+                        </p>
+                        <div className="mt-2.5 pt-2 border-t border-white/[0.04] flex items-center gap-1.5 flex-wrap">
+                          {tmpl.channels.slice(0, 3).map((ch) => (
+                            <span key={ch.id} className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/[0.04] text-neutral-400">
+                              {ch.type === 'voice' ? '🔊' : '#'}{ch.name}
+                            </span>
+                          ))}
+                          {tmpl.channels.length > 3 && (
+                            <span className="font-mono text-[9px] text-neutral-500">
+                              +{tmpl.channels.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <form onSubmit={handleCreateCaucus} className="space-y-4 pt-1 border-t border-white/[0.06]">
+                {/* Server Name & Icon */}
+                <div className="space-y-1.5">
+                  <label className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider block">
+                    Server Name & Icon
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={newCaucusIcon}
+                        onChange={(e) => setNewCaucusIcon(e.target.value)}
+                        maxLength={2}
+                        className="w-11 h-10 rounded-2xl bg-white/[0.04] border border-white/10 text-center text-lg text-white focus:outline-none focus:border-purple-500/50"
+                        title="Server Icon (Emoji)"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={newCaucusName}
+                      onChange={(e) => setNewCaucusName(e.target.value)}
+                      placeholder={currentUserName && currentUserName !== 'You' ? `${currentUserName}'s Server` : "Your Server Name"}
+                      className="flex-1 px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white focus:outline-none focus:border-purple-500/50"
+                      autoFocus
+                    />
+                  </div>
+                  {/* Emoji Quick Select */}
+                  <div className="flex items-center gap-1.5 pt-1">
+                    {['🏛️', '🌐', '⚡', '💬', '👑', '🛡️', '⚖️', '🚀', '💎'].map((em) => (
+                      <button
+                        key={em}
+                        type="button"
+                        onClick={() => setNewCaucusIcon(em)}
+                        className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition cursor-pointer ${
+                          newCaucusIcon === em ? 'bg-purple-500/30 border border-purple-500/50' : 'bg-white/[0.02] hover:bg-white/[0.08]'
+                        }`}
+                      >
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Server Description */}
+                <div className="space-y-1.5">
+                  <label className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider block">
+                    Caucus Mission / Description (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newCaucusDescription}
+                    onChange={(e) => setNewCaucusDescription(e.target.value)}
+                    placeholder="e.g. Official diplomatic deliberations and multilateral caucusing"
+                    className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white focus:outline-none focus:border-purple-500/50"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateCaucusModal(false)}
+                    className="px-4 py-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 font-semibold text-xs transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!newCaucusName.trim()}
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-600/25 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Establish Server
+                  </button>
+                </div>
               </form>
             </motion.div>
           </motion.div>
