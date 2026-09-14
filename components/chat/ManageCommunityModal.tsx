@@ -28,8 +28,8 @@ interface ManageCommunityModalProps {
   onToast: (msg: string) => void;
 }
 
-const BADGE_PRESETS = ['COUNCIL', 'PARLIAMENT', 'LOK SABHA', 'MUN', 'SUMMIT', 'SECRETARIAT', 'DIRECT', 'COMMUNITY'];
-const ICON_PRESETS = ['🏛️', '🇮🇳', '🌐', '🛡️', '⚖️', '💬', '🚀', '🔥', '⚡', '✨'];
+const BADGE_PRESETS = ['COUNCIL', 'COMMUNITY', 'PARLIAMENT', 'MUN', 'SUMMIT', 'SECRETARIAT', 'SERVER', 'VIP'];
+const ICON_PRESETS = ['🏛️', '🌐', '🛡️', '⚖️', '💬', '🚀', '🔥', '⚡', '✨'];
 
 export function ManageCommunityModal({
   isOpen,
@@ -220,7 +220,7 @@ export function ManageCommunityModal({
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Parliament of India / Lok Sabha"
+                    placeholder="Enter server or community name..."
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-purple-500/50"
                   />
                 </div>

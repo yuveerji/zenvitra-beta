@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
       }
     } catch (_) {}
 
-    // Special platform seeds
-    if (['yuveer', 'elena_press', 'un_secretariat', 'zen_ai'].includes(clean)) {
+    // Platform services
+    if (['yuveer', 'zen_ai'].includes(clean)) {
       isRegistered = true;
     }
 

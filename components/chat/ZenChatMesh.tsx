@@ -394,11 +394,6 @@ export function ZenChatMesh() {
 
   /* WhatsApp & Navigation Rail State */
   const [activeRailTab, setActiveRailTab] = useState<'chats' | 'calls' | 'communities' | 'media'>('chats');
-  const [joinedContactAlert, setJoinedContactAlert] = useState<{
-    name: string;
-    username: string;
-    phone?: string;
-  } | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('template-mun');
   const [showCallDropdown, setShowCallDropdown] = useState(false);
   const [showNewCallLinkModal, setShowNewCallLinkModal] = useState(false);
@@ -469,28 +464,8 @@ export function ZenChatMesh() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  /* Dismiss contact alert permanently */
-  const handleDismissContactAlert = () => {
-    try {
-      localStorage.setItem('zenvitra_contact_alert_dismissed_v2', 'true');
-    } catch (_) {}
-    setJoinedContactAlert(null);
-  };
-
   useEffect(() => {
     setMounted(true);
-
-    // 1. Check if contact alert was previously dismissed
-    try {
-      const isAlertDismissed = localStorage.getItem('zenvitra_contact_alert_dismissed_v2');
-      if (!isAlertDismissed) {
-        setJoinedContactAlert({
-          name: 'Sarah Jenkins',
-          username: 'sarah_j',
-          phone: '+1 (555) 382-9102'
-        });
-      }
-    } catch (_) {}
 
     // 2. Restore user communities or initialize personal server
     try {
@@ -1108,9 +1083,7 @@ export function ZenChatMesh() {
       profiles.some((p) => p.username.toLowerCase() === clean) ||
       conversations.some((c) => (c.handle?.toLowerCase() === clean || c.members.some((m) => m.username.toLowerCase() === clean))) ||
       clean === 'yuveer' ||
-      clean === 'yuveerji' ||
-      clean === 'elena_press' ||
-      clean === 'un_secretariat';
+      clean === 'yuveerji';
 
     if (!isPlatformUser) {
       setIsOnlineCallingError(`Delegate @${clean} is currently offline or not registered on Zenvitra. Direct calling is only available for active platform members.`);
@@ -1251,26 +1224,7 @@ export function ZenChatMesh() {
 
     const peerVoiceUsers = (channel.activeVoiceUsers && channel.activeVoiceUsers.length > 0)
       ? channel.activeVoiceUsers.filter((u) => u.id !== selfVoiceUser.id)
-      : [
-          {
-            id: 'u_peer_1',
-            name: 'Hon. Rajesh Kumar',
-            username: 'rajesh_loksabha',
-            isSpeaking: false,
-            isMuted: false,
-            isDeafened: false,
-            activityText: 'Speaking Floor'
-          },
-          {
-            id: 'u_peer_2',
-            name: 'Elena Rostova',
-            username: 'elena_press',
-            isSpeaking: false,
-            isMuted: true,
-            isDeafened: false,
-            activityText: 'Press Attaché'
-          }
-        ];
+      : [];
 
     const updatedVoiceUsers = [selfVoiceUser, ...peerVoiceUsers];
 
@@ -2197,46 +2151,6 @@ export function ZenChatMesh() {
                 ))}
               </div>
             </div>
-
-            {/* ── Contact Joined Flash Alert Banner ── */}
-            {joinedContactAlert && (
-              <div className="mx-2 mb-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-transparent border border-emerald-500/40 space-y-2 text-left relative animate-slide-down">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">✨</span>
-                    <div>
-                      <p className="font-display font-bold text-xs text-white">
-                        {joinedContactAlert.name} joined ZenChat!
-                      </p>
-                      <p className="text-[10px] text-emerald-300 font-mono">
-                        From your phone contacts &bull; @{joinedContactAlert.username}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleDismissContactAlert}
-                    className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      createDirectChat(joinedContactAlert.username, joinedContactAlert.name);
-                      handleDismissContactAlert();
-                      showToast(`Opened chat with ${joinedContactAlert.name}!`);
-                    }}
-                    className="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5 shadow"
-                  >
-                    <MessageSquare className="w-3 h-3 text-black" />
-                    <span>Say Hello 👋</span>
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* 3. Conversation List */}
             <div className="flex-1 overflow-y-auto divide-y divide-white/[0.02] p-2 space-y-1">

@@ -29,7 +29,7 @@ interface ManageCommunityGroupModalProps {
   onToast: (msg: string) => void;
 }
 
-const EMOJI_OPTIONS = ['🏛️', '🇮🇳', '💬', '⚖️', '📢', '🛡️', '🤝', '⚡', '📜', '🌍', '🔥', '🎯', '💡', '✨'];
+const EMOJI_OPTIONS = ['🏛️', '💬', '⚖️', '📢', '🛡️', '🤝', '⚡', '📜', '🌍', '🔥', '🎯', '💡', '✨'];
 
 export function ManageCommunityGroupModal({
   isOpen,
@@ -54,48 +54,7 @@ export function ManageCommunityGroupModal({
     if (community.members && community.members.length > 0) {
       return community.members;
     }
-    return [
-      {
-        id: 'u_self',
-        name: 'You (Founding Architect)',
-        username: 'you',
-        status: 'online',
-        roleIds: ['role-owner'],
-        customStatus: 'Community Admin'
-      },
-      {
-        id: 'u_rajesh_mp',
-        name: 'Hon. Rajesh Kumar',
-        username: 'rajesh_loksabha',
-        status: 'online',
-        roleIds: ['role-delegate'],
-        customStatus: 'Member of Parliament'
-      },
-      {
-        id: 'u_priya_mp',
-        name: 'Priya Sharma (MP)',
-        username: 'priya_mp',
-        status: 'online',
-        roleIds: ['role-delegate'],
-        customStatus: 'Constituency Delegate'
-      },
-      {
-        id: 'u_elena_press',
-        name: 'Elena Rostova',
-        username: 'elena_press',
-        status: 'idle',
-        roleIds: ['role-delegate'],
-        customStatus: 'Parliamentary Press Attaché'
-      },
-      {
-        id: 'u_secretariat',
-        name: 'Secretariat General',
-        username: 'sec_gen',
-        status: 'online',
-        roleIds: ['role-owner'],
-        customStatus: 'Assembly Speaker Secretariat'
-      }
-    ];
+    return [];
   }, [community.members]);
 
   const [memberSearch, setMemberSearch] = useState('');
@@ -106,7 +65,7 @@ export function ManageCommunityGroupModal({
     if (group.members && group.members.length > 0) {
       return group.members.map((m) => m.id);
     }
-    return communityMembers.slice(0, 3).map((m) => m.id);
+    return communityMembers.map((m) => m.id);
   });
 
   // Permissions Settings State
@@ -290,13 +249,13 @@ export function ManageCommunityGroupModal({
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider block">
-                    Subgroup Name (e.g. Lok Sabha, Standing Committee)
+                    Subgroup Name
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Lok Sabha - Floor Deliberations"
+                    placeholder="Enter subgroup name..."
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-purple-500/50"
                   />
                 </div>
