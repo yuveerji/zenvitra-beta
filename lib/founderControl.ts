@@ -458,8 +458,25 @@ export function getFounderDirective(): FounderDirective {
   }
 }
 
-export function saveFounderDirective(directive: Partial<FounderDirective>): FounderDirective {
+export function isYuveer(usernameOrEmail?: string | null): boolean {
+  if (!usernameOrEmail) return false;
+  const clean = usernameOrEmail.toLowerCase().trim().replace(/^@/, '');
+  return clean === 'yuveer' || clean.startsWith('yuveer') || clean === 'founder';
+}
+
+export function saveFounderDirective(directive: Partial<FounderDirective>, editorUsername?: string): FounderDirective {
   if (typeof window === 'undefined') return DEFAULT_FOUNDER_DIRECTIVE;
+  
+  // Security Guard: Founder's Note can strictly only be edited by @yuveer
+  const sessionUser = (localStorage.getItem('zenvitra_session_user') || '').toLowerCase().trim().replace(/^@/, '');
+  const editor = (editorUsername || sessionUser).toLowerCase().trim().replace(/^@/, '');
+  const isAuthorized = isYuveer(editor) || isFounderSessionActive();
+
+  if (!isAuthorized) {
+    console.warn('Unauthorized attempt to edit Founder Note. Access restricted strictly to @yuveer.');
+    return getFounderDirective();
+  }
+
   const current = getFounderDirective();
   const updated: FounderDirective = {
     ...current,
@@ -472,8 +489,18 @@ export function saveFounderDirective(directive: Partial<FounderDirective>): Foun
   return updated;
 }
 
-export function clearFounderDirective(): void {
+export function clearFounderDirective(editorUsername?: string): void {
   if (typeof window === 'undefined') return;
+
+  const sessionUser = (localStorage.getItem('zenvitra_session_user') || '').toLowerCase().trim().replace(/^@/, '');
+  const editor = (editorUsername || sessionUser).toLowerCase().trim().replace(/^@/, '');
+  const isAuthorized = isYuveer(editor) || isFounderSessionActive();
+
+  if (!isAuthorized) {
+    console.warn('Unauthorized attempt to clear Founder Note. Access restricted strictly to @yuveer.');
+    return;
+  }
+
   const cleared: FounderDirective = {
     ...DEFAULT_FOUNDER_DIRECTIVE,
     isActive: false,
@@ -798,18 +825,8 @@ export function isFounder(usernameOrEmail?: string | null, role?: string | null)
   if (typeof window !== 'undefined' && isFounderSessionActive()) {
     return true;
   }
-  if (!usernameOrEmail && !role) return false;
-  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
-  const r = (role || '').toUpperCase().trim();
-  return (
-    clean.includes('yuveer') ||
-    clean === 'founder' ||
-    clean === 'root' ||
-    clean.startsWith('yuveer') ||
-    r === 'FOUNDER' ||
-    r === 'ROOT' ||
-    r.includes('FOUNDER')
-  );
+  if (!usernameOrEmail) return false;
+  return isYuveer(usernameOrEmail);
 }
 
 export function isAdmin(usernameOrEmail?: string | null, role?: string | null): boolean {

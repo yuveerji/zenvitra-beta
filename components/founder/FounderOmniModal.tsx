@@ -44,9 +44,11 @@ import {
   Layers,
   Database,
   Volume2,
-  Unlock
+  Unlock,
+  Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
 import { 
   getFounderDirective, 
   saveFounderDirective, 
@@ -690,13 +692,44 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono text-neutral-400 uppercase font-bold">Directive Decree Body</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-mono text-neutral-400 uppercase font-bold">Directive Decree Body</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDirectiveBody((prev) => prev ? `${prev.trimEnd()}\n\n---\n\n` : '---\n\n');
+                      }}
+                      className="text-[10px] font-mono font-bold text-rose-300 hover:text-white px-2 py-0.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 transition flex items-center gap-1 cursor-pointer"
+                      title="Insert dividing aura effect"
+                    >
+                      <span>❖ Insert Divider (---)</span>
+                    </button>
+                  </div>
                   <textarea
-                    rows={4}
+                    rows={5}
                     value={directiveBody}
                     onChange={(e) => setDirectiveBody(e.target.value)}
+                    placeholder="Write the executive announcement or founder message... Use --- on any line to insert the dividing effect."
                     className="w-full px-4 py-3 rounded-xl bg-black border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-amber-400 leading-relaxed"
                   />
+                </div>
+
+                {/* Instant Real-Time Visual Preview */}
+                <div className="space-y-2 p-4 rounded-2xl bg-black/60 border border-white/10">
+                  <div className="flex items-center justify-between text-[10px] font-mono">
+                    <span className="flex items-center gap-1.5 text-amber-300 font-bold uppercase">
+                      <Eye className="w-3 h-3 text-cyan-400" />
+                      <span>Live Render Preview</span>
+                    </span>
+                    <span className="text-neutral-500">&quot;---&quot; converts to dividing aura</span>
+                  </div>
+                  <div className="pt-1">
+                    <FounderNoteRenderer
+                      body={directiveBody || 'Directive content preview will appear here...'}
+                      defaultExpanded={true}
+                      collapsible={false}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-2">

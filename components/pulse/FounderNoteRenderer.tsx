@@ -34,21 +34,32 @@ export function FounderNoteRenderer({
 
   if (!body) return null;
 
-  // Split content by paragraphs (double newline or single if formatted)
-  const sections = body.split(/\n\n+/);
+  // 1. Normalize line breaks
+  // 2. Isolate any line containing 3+ hyphens (---), em-dashes (———), asterisks (***), or underscores (___)
+  //    into a distinct standalone divider block
+  const normalizedBody = body
+    .replace(/\r\n/g, '\n')
+    .replace(/^[ \t]*(-{3,}|—{2,}|\*{3,}|_{3,})[ \t]*$/gm, '\n\n__DIVIDER__\n\n');
+
+  // Split into structural blocks
+  const sections = normalizedBody.split(/\n\n+/).filter((s) => s.trim().length > 0);
 
   const renderContent = () => {
     return sections.map((section, idx) => {
       const trimmed = section.trim();
       if (!trimmed) return null;
 
-      // Divider line
-      if (trimmed === '———' || trimmed === '---' || trimmed === '***') {
+      // Divider line with centered diamond aura (converts "---" into dividing effect)
+      const isDivider =
+        trimmed === '__DIVIDER__' ||
+        /^\s*(-{3,}|—{2,}|\*{3,}|_{3,})\s*$/.test(trimmed);
+
+      if (isDivider) {
         return (
-          <div key={idx} className="my-4 flex items-center gap-3">
-            <div className="h-px bg-gradient-to-r from-transparent via-rose-500/30 to-transparent flex-1" />
-            <span className="text-[10px] font-mono text-rose-400/60 tracking-widest select-none">❖</span>
-            <div className="h-px bg-gradient-to-r from-transparent via-rose-500/30 to-transparent flex-1" />
+          <div key={idx} className="my-5 flex items-center gap-3 select-none" role="separator">
+            <div className="h-px bg-gradient-to-r from-transparent via-rose-500/40 to-rose-500/60 flex-1" />
+            <span className="text-[10px] font-mono text-rose-400/80 tracking-widest select-none drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]">❖</span>
+            <div className="h-px bg-gradient-to-r from-rose-500/60 via-rose-500/40 to-transparent flex-1" />
           </div>
         );
       }
@@ -110,6 +121,8 @@ export function FounderNoteRenderer({
     });
   };
 
+  const readableSectionsCount = sections.filter((s) => s.trim() !== '__DIVIDER__').length;
+
   return (
     <div className={`space-y-3 ${className}`}>
       <div
@@ -141,7 +154,7 @@ export function FounderNoteRenderer({
               </>
             ) : (
               <>
-                <span>Read Full Founder's Note ({sections.length} sections)</span>
+                <span>Read Full Founder's Note ({readableSectionsCount} sections)</span>
                 <ChevronDown className="w-3.5 h-3.5" />
               </>
             )}

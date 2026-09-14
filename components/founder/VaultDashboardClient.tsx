@@ -377,6 +377,7 @@ import {
   AlertOctagon
 } from 'lucide-react';
 import { ZenAdminControlRoom } from '@/components/admin/ZenAdminControlRoom';
+import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
 import { 
   ADMIN_BYPASS_KEYS,
   generateCustomAdminKey,
@@ -1570,13 +1571,25 @@ export function VaultDashboardClient({
             </div>
 
             <div className="space-y-1.5 font-mono text-xs">
-              <label className="text-[11px] text-neutral-400 uppercase font-bold">Directive Full Body &amp; Decrees</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] text-neutral-400 uppercase font-bold">Directive Full Body &amp; Decrees</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDirectiveBody((prev) => prev ? `${prev.trimEnd()}\n\n---\n\n` : '---\n\n');
+                  }}
+                  className="text-[10px] font-mono font-bold text-rose-300 hover:text-white px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  title="Insert dividing aura effect"
+                >
+                  <span>❖ Insert Divider (---)</span>
+                </button>
+              </div>
               <textarea
-                rows={5}
+                rows={6}
                 required
                 value={directiveBody}
                 onChange={(e) => setDirectiveBody(e.target.value)}
-                placeholder="Write the executive announcement or founder message..."
+                placeholder="Write the executive announcement or founder message... Use --- on any line to insert the dividing effect."
                 className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 leading-relaxed"
               />
             </div>
@@ -1658,11 +1671,13 @@ export function VaultDashboardClient({
                   {directiveTitle || 'Executive Directive Headline'}
                 </h3>
 
-                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-                  noteTypography === 'SERIF' ? 'font-serif text-neutral-200' : noteTypography === 'MONO' ? 'font-mono text-neutral-300' : 'font-sans text-neutral-200'
-                }`}>
-                  {directiveBody || 'Decree statement content will render here with full formatting.'}
-                </p>
+                <div className="pt-2">
+                  <FounderNoteRenderer
+                    body={directiveBody || 'Decree statement content will render here with full formatting.'}
+                    defaultExpanded={true}
+                    collapsible={false}
+                  />
+                </div>
 
                 <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
                   <span>Sign-off: <strong className="text-white">{directiveAuthor || '@yuveer'}</strong></span>
