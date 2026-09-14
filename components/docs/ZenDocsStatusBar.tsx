@@ -84,7 +84,7 @@ export function ZenDocsStatusBar({
           title="Font Family"
         >
           {FONT_OPTIONS.map((f) => (
-            <option key={f} value={f}>
+            <option key={f} value={f} className="bg-[#0b0e17] text-white">
               {f}
             </option>
           ))}
@@ -118,10 +118,10 @@ export function ZenDocsStatusBar({
           className="hidden lg:block px-1 py-0.5 rounded bg-transparent border border-white/[0.06] text-[9px] text-neutral-400 cursor-pointer focus:outline-none hover:border-white/15"
           title="Line Spacing"
         >
-          <option value="1">1.0×</option>
-          <option value="1.15">1.15×</option>
-          <option value="1.5">1.5×</option>
-          <option value="2">2.0×</option>
+          <option value="1" className="bg-[#0b0e17] text-white">1.0×</option>
+          <option value="1.15" className="bg-[#0b0e17] text-white">1.15×</option>
+          <option value="1.5" className="bg-[#0b0e17] text-white">1.5×</option>
+          <option value="2" className="bg-[#0b0e17] text-white">2.0×</option>
         </select>
 
         <div className="h-3 w-px bg-white/[0.06] mx-1" />

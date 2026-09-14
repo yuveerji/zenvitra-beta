@@ -33,13 +33,13 @@ function PressNavBar() {
   ];
 
   return (
-    <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-white/[0.08]">
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 font-mono text-xs shadow-inner">
+    <div className="flex items-center justify-between gap-2 sm:gap-3 mb-6 pb-4 border-b border-white/[0.08] flex-wrap sm:flex-nowrap">
+      <div className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 font-mono text-xs shadow-inner overflow-x-auto max-w-full">
         {navItems.map((item) => (
           <button
             key={item.view}
             onClick={() => setActiveView(item.view)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl transition cursor-pointer font-semibold ${
+            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition cursor-pointer font-semibold text-[11px] sm:text-xs whitespace-nowrap ${
               activeView === item.view ||
               (item.view === 'feed' && activeView === 'article')
                 ? 'bg-white text-black shadow-md'
@@ -57,14 +57,14 @@ function PressNavBar() {
           setEditingArticleId(null);
           setActiveView('editor');
         }}
-        className={`flex items-center gap-2 px-5 py-2 rounded-xl font-mono text-xs font-bold transition cursor-pointer shadow-md ${
+        className={`flex items-center gap-2 px-3.5 sm:px-5 py-2 rounded-xl font-mono text-[11px] sm:text-xs font-bold transition cursor-pointer shadow-md whitespace-nowrap shrink-0 ${
           isFounderUser
             ? 'bg-amber-400 hover:bg-amber-300 text-black shadow-[0_0_15px_rgba(251,191,36,0.3)]'
             : 'bg-white text-black hover:bg-neutral-200'
         }`}
       >
         {isFounderUser ? <Crown className="w-3.5 h-3.5 fill-black" /> : <PenLine className="w-3.5 h-3.5" />}
-        <span className="hidden sm:inline">{isFounderUser ? 'Founder Press Studio' : 'Draft Dispatch'}</span>
+        <span className="hidden xs:inline sm:inline">{isFounderUser ? 'Founder Press Studio' : 'Draft Dispatch'}</span>
       </button>
     </div>
   );

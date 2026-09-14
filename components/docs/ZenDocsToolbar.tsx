@@ -126,7 +126,7 @@ export function ZenDocsToolbar({
   }, [isFileMenuOpen]);
 
   return (
-    <div className="bg-[#0b0e17]/90 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-xl print:hidden">
+    <div className="sticky top-2 z-30 bg-[#0b0e17]/95 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-xl print:hidden">
       <div className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2">
 
         {/* Left: Library toggle + Title + Star + Status */}

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Footer } from '@/components/layout/Footer';
 import { Scale, CheckCircle2 } from 'lucide-react';
 import { useDocumentEditor } from './hooks/useDocumentEditor';
 import { useEditorCommands } from './hooks/useEditorCommands';
@@ -198,7 +197,6 @@ export function ZenDocsClient() {
             </p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -315,31 +313,33 @@ export function ZenDocsClient() {
           </div>
 
           {/* Bottom Status Bar */}
-          <ZenDocsStatusBar
-            saveStatus={editor.saveStatus}
-            docCode={editor.activeDoc.docCode}
-            wordCount={editor.wordCount}
-            charCount={editor.charCount}
-            zoomLevel={editor.zoomLevel}
-            fontFamily={editor.fontFamily}
-            fontSize={editor.fontSize}
-            lineSpacing={editor.lineSpacing}
-            onZoomChange={editor.setZoomLevel}
-            onFontFamilyChange={(font) => {
-              editor.setFontFamily(font);
-              commands.execCmd('fontName', font);
-              editor.saveDocument({ fontFamily: font });
-            }}
-            onFontSizeChange={(size) => {
-              editor.setFontSize(size);
-              commands.execCmd('fontSize', String(Math.min(7, Math.max(1, Math.floor(size / 4)))));
-              editor.saveDocument({ fontSize: size });
-            }}
-            onLineSpacingChange={(spacing) => {
-              editor.setLineSpacing(spacing);
-              editor.saveDocument({ lineSpacing: spacing });
-            }}
-          />
+          <div className="sticky bottom-0 z-20 pb-16 md:pb-0">
+            <ZenDocsStatusBar
+              saveStatus={editor.saveStatus}
+              docCode={editor.activeDoc.docCode}
+              wordCount={editor.wordCount}
+              charCount={editor.charCount}
+              zoomLevel={editor.zoomLevel}
+              fontFamily={editor.fontFamily}
+              fontSize={editor.fontSize}
+              lineSpacing={editor.lineSpacing}
+              onZoomChange={editor.setZoomLevel}
+              onFontFamilyChange={(font) => {
+                editor.setFontFamily(font);
+                commands.execCmd('fontName', font);
+                editor.saveDocument({ fontFamily: font });
+              }}
+              onFontSizeChange={(size) => {
+                editor.setFontSize(size);
+                commands.execCmd('fontSize', String(Math.min(7, Math.max(1, Math.floor(size / 4)))));
+                editor.saveDocument({ fontSize: size });
+              }}
+              onLineSpacingChange={(spacing) => {
+                editor.setLineSpacing(spacing);
+                editor.saveDocument({ lineSpacing: spacing });
+              }}
+            />
+          </div>
         </div>
       )}
 
@@ -515,10 +515,6 @@ export function ZenDocsClient() {
         activeDoc={editor.activeDoc}
         onToast={editor.triggerToast}
       />
-
-      <div className="print:hidden">
-        <Footer />
-      </div>
     </div>
   );
 }

@@ -684,12 +684,14 @@ export function PlatformShell({
           onMouseEnter={() => setShowTopHeader(true)}
         />
 
-        {/* Global Constant Homepage Navbar (Consistent across entire app) */}
+        {/* Global Constant Homepage Navbar (Consistent across entire app, excluded on full-bleed studios) */}
         {!(
           pathname === '/pulse' || 
           pathname?.startsWith('/pulse') || 
           pathname === '/chat' || 
-          pathname?.startsWith('/chat')
+          pathname?.startsWith('/chat') ||
+          pathname === '/docs' || 
+          pathname?.startsWith('/docs')
         ) && (
           <div className="shrink-0 z-40">
             <Navbar hasPlatformSidebar={true} />
@@ -700,6 +702,12 @@ export function PlatformShell({
         {pathname === '/chat' || pathname?.startsWith('/chat') ? (
           <div className="flex-1 w-full h-[100dvh] min-h-[100dvh] overflow-hidden relative">
             {children}
+          </div>
+        ) : pathname === '/docs' || pathname?.startsWith('/docs') ? (
+          <div className="flex-1 w-full overflow-y-auto relative pb-16 md:pb-4">
+            <div className="relative z-10 w-full max-w-[1700px] mx-auto px-1 sm:px-4">
+              {children}
+            </div>
           </div>
         ) : (
           <div className={`flex-1 p-3 sm:p-6 pb-24 md:pb-6 overflow-y-auto relative ${

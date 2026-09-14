@@ -196,7 +196,7 @@ export function ZenDocsOutline({
             {headings.map((item) => {
               const isActive = activeId === item.id;
               const indentClass =
-                item.level === 1 ? 'font-semibold' : item.level === 2 ? 'indent-4' : 'indent-8 text-[11px]';
+                item.level === 1 ? 'font-semibold' : item.level === 2 ? 'pl-4' : 'pl-7 text-[11px]';
 
               return (
                 <button

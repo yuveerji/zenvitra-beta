@@ -78,15 +78,15 @@ export function ZenDocsCanvas({
   const isLight = paperMode === 'light';
 
   return (
-    <div className="flex-1 flex justify-center overflow-x-auto py-6 relative">
+    <div className="flex-1 flex justify-center overflow-x-auto py-4 sm:py-6 px-1 sm:px-4 relative">
       <div
-        className="transition-transform duration-200 flex flex-col items-center"
-        style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
+        className="transition-transform duration-200 flex flex-col items-center w-full max-w-[816px]"
+        style={{ transform: zoomLevel !== 100 ? `scale(${zoomLevel / 100})` : undefined, transformOrigin: 'top center' }}
       >
         {/* Horizontal Ruler */}
         {showRuler && !isReaderMode && (
           <div
-            className={`w-[816px] h-5 border-b flex items-center justify-between text-[8px] font-mono select-none px-12 mb-1 print:hidden ${
+            className={`w-full max-w-[816px] h-5 border-b flex items-center justify-between text-[8px] font-mono select-none px-6 sm:px-12 mb-1 print:hidden ${
               isLight
                 ? 'bg-neutral-100 border-neutral-200 text-neutral-400'
                 : 'bg-[#111522]/60 border-white/[0.06] text-neutral-600'
@@ -112,7 +112,7 @@ export function ZenDocsCanvas({
 
         {/* A4 Paper Sheet */}
         <div
-          className={`w-[816px] min-h-[1056px] relative transition-colors duration-300 border print:p-0 print:border-none print:shadow-none print:w-full print:bg-white print:text-black ${
+          className={`w-full max-w-[816px] min-h-[1056px] relative transition-colors duration-300 border print:p-0 print:border-none print:shadow-none print:w-full print:bg-white print:text-black ${
             isLight
               ? 'bg-[#fcfdfe] text-[#111827] border-neutral-200/80 shadow-[0_25px_80px_-20px_rgba(0,0,0,0.5)] rounded-sm'
               : 'bg-[#111522] text-[#e5e7eb] border-white/[0.08] shadow-[0_25px_80px_-20px_rgba(6,182,212,0.06)] rounded-lg'
@@ -128,7 +128,7 @@ export function ZenDocsCanvas({
           )}
 
           {/* Header Watermark */}
-          <div className={`flex items-center justify-between text-[9px] font-mono select-none px-16 sm:px-20 pt-12 pb-6 ${
+          <div className={`flex items-center justify-between text-[9px] font-mono select-none px-6 sm:px-16 md:px-20 pt-8 sm:pt-12 pb-4 sm:pb-6 ${
             isLight ? 'text-neutral-400' : 'text-neutral-600'
           }`}>
             <span>{activeDoc.docCode}</span>
@@ -141,12 +141,12 @@ export function ZenDocsCanvas({
           </div>
 
           {/* Content Area with Gutter Line Numbers */}
-          <div className="flex px-8 sm:px-10">
+          <div className="flex px-3 sm:px-8 md:px-10">
             {/* Gutter Line Numbers */}
             {!isReaderMode && (
               <div
                 ref={lineNumbersRef}
-                className={`w-8 shrink-0 text-right pr-3 select-none font-mono text-[10px] print:hidden ${
+                className={`w-6 sm:w-8 shrink-0 text-right pr-2 sm:pr-3 select-none font-mono text-[10px] print:hidden ${
                   isLight ? 'text-neutral-300' : 'text-neutral-700'
                 }`}
                 style={{
@@ -163,7 +163,7 @@ export function ZenDocsCanvas({
               contentEditable={!isReaderMode}
               suppressContentEditableWarning
               onInput={onInput}
-              className={`flex-1 outline-none min-h-[850px] leading-relaxed px-8 sm:px-10 pb-20 ${
+              className={`flex-1 outline-none min-h-[850px] leading-relaxed px-3 sm:px-8 md:px-10 pb-20 ${
                 isLight ? 'selection:bg-cyan-400/20' : 'selection:bg-cyan-500/20'
               } ${isReaderMode ? 'cursor-default' : 'cursor-text'}`}
               style={{
@@ -173,7 +173,7 @@ export function ZenDocsCanvas({
           </div>
 
           {/* Footer Watermark */}
-          <div className={`px-16 sm:px-20 pb-10 pt-8 border-t border-dashed flex items-center justify-between text-[8px] font-mono select-none ${
+          <div className={`px-6 sm:px-16 md:px-20 pb-8 sm:pb-10 pt-6 sm:pt-8 border-t border-dashed flex items-center justify-between text-[8px] font-mono select-none flex-wrap gap-2 ${
             isLight
               ? 'border-neutral-200 text-neutral-300'
               : 'border-white/[0.06] text-neutral-700'
