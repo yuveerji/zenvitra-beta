@@ -41,6 +41,7 @@ interface ZenChatContextType {
   sendSticker: (stickerUrl: string, name?: string, targetConvId?: string) => void;
   editMessage: (messageId: string, newContent: string, targetConvId?: string) => void;
   deleteMessage: (messageId: string, targetConvId?: string) => void;
+  clearChatMessages: (targetConvId?: string) => void;
   reactToMessage: (messageId: string, emoji: string, targetConvId?: string) => void;
   addReaction: (messageId: string, emoji: string, targetConvId?: string) => void;
   pinMessage: (messageId: string, targetConvId?: string) => void;
@@ -561,6 +562,18 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
     saveMessages({ ...messagesMap, [activeConversationId]: nextList });
   }, [activeConversationId, messagesMap, saveMessages]);
 
+  const clearChatMessages = useCallback((targetConvId?: string) => {
+    const convId = targetConvId || activeConversationId;
+    if (!convId) return;
+    const nextMap = { ...messagesMap, [convId]: [] };
+    saveMessages(nextMap);
+
+    // Sync with backend API to delete conversation messages
+    fetch(`/api/chat?targetId=${encodeURIComponent(convId)}`, {
+      method: 'DELETE'
+    }).catch(() => {});
+  }, [activeConversationId, messagesMap, saveMessages]);
+
   const reactToMessage = useCallback((messageId: string, emoji: string) => {
     if (!activeConversationId) return;
     const currentList = messagesMap[activeConversationId] || [];
@@ -882,6 +895,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       sendSticker,
       editMessage,
       deleteMessage,
+      clearChatMessages,
       reactToMessage,
       addReaction,
       pinMessage,
@@ -940,6 +954,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       sendSticker,
       editMessage,
       deleteMessage,
+      clearChatMessages,
       reactToMessage,
       addReaction,
       pinMessage,

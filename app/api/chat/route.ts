@@ -140,3 +140,31 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const targetId = searchParams.get('targetId') || searchParams.get('conversationId');
+
+    if (!targetId) {
+      return NextResponse.json({ success: false, error: 'targetId or conversationId required' }, { status: 400 });
+    }
+
+    // Purge from Supabase if connected
+    try {
+      await supabase.from('chat_messages').delete().eq('conversation_id', targetId);
+    } catch (_) {}
+
+    return NextResponse.json({
+      success: true,
+      message: `Chat history purged for ${targetId}`,
+      clearedAt: new Date().toISOString()
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message || 'Failed to clear chat history' },
+      { status: 500 }
+    );
+  }
+}
+

@@ -238,10 +238,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         activeVoiceUsers: []
       }
     ],
-    groups: [
-      { id: 'grp-hor-g77', name: 'G-77 Sovereign Coalition', description: 'Bloc treaty coordination', icon: '🌐', membersCount: 16 },
-      { id: 'grp-hor-drafting', name: 'Drafting Working Group Alpha', description: 'Resolution clause crafting', icon: '📝', membersCount: 9 }
-    ]
+    groups: []
   },
   {
     id: 'comm-rismun-2027',
@@ -322,9 +319,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         activeVoiceUsers: []
       }
     ],
-    groups: [
-      { id: 'grp-ris-secretariat', name: 'Secretariat Ops', description: 'Dais operations', icon: '⚡', membersCount: 6 }
-    ]
+    groups: []
   },
   {
     id: 'comm-un-plenary',
@@ -533,10 +528,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         activeVoiceUsers: [] 
       }
     ],
-    groups: [
-      { id: 'grp-un-drafting', name: 'Drafting Committee Alpha', description: 'Treaty working group without channels (Direct Caucus style)', icon: '📝', membersCount: 14 },
-      { id: 'grp-un-g77', name: 'G-77 Sovereign Coalition', description: 'Caucus bloc coordination group', icon: '🌐', membersCount: 28 }
-    ]
+    groups: []
   },
   {
     id: 'comm-crisis-alpha',
@@ -642,9 +634,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
         activeVoiceUsers: [] 
       }
     ],
-    groups: [
-      { id: 'grp-crisis-cyber', name: 'Cyber Defense Taskforce', description: 'Specialized encrypted team chat', icon: '💻', membersCount: 8 }
-    ]
+    groups: []
   }
 ];
 
@@ -690,6 +680,7 @@ export function ZenChatMesh() {
     votePoll,
     toggleMuteConversation,
     deleteConversation,
+    clearChatMessages,
   } = useZenChat();
 
   const { profiles } = useZenPulse();
@@ -701,7 +692,17 @@ export function ZenChatMesh() {
   const [activeCommunityGroupId, setActiveCommunityGroupId] = useState<string | null>(null);
   const [activeVoiceChannel, setActiveVoiceChannel] = useState<ChatChannel | null>(null);
   const [showGroupSettingsMenu, setShowGroupSettingsMenu] = useState(false);
+  const [showSidebarHeaderMenu, setShowSidebarHeaderMenu] = useState(false);
   
+  /* Custom community groups & modals */
+  const [showCreateCommunityGroupModal, setShowCreateCommunityGroupModal] = useState(false);
+  const [newCommunityGroupName, setNewCommunityGroupName] = useState('');
+  const [newCommunityGroupDesc, setNewCommunityGroupDesc] = useState('');
+  const [newCommunityGroupIcon, setNewCommunityGroupIcon] = useState('💬');
+  const [showRoomInfoModal, setShowRoomInfoModal] = useState(false);
+  const [showInviteLinkModal, setShowInviteLinkModal] = useState(false);
+  const [mutedContexts, setMutedContexts] = useState<Record<string, boolean>>({});
+
   const [messageText, setMessageText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'primary' | 'requests' | 'general' | 'broadcasts'>('primary');
@@ -782,7 +783,88 @@ export function ZenChatMesh() {
 
   useEffect(() => {
     setMounted(true);
+
+    // Restore saved custom groups for communities
+    try {
+      const savedGroups = localStorage.getItem('zenvitra_community_custom_groups_v2');
+      if (savedGroups) {
+        const parsedMap: Record<string, any[]> = JSON.parse(savedGroups);
+        setCommunities((prev) =>
+          prev.map((c) => ({
+            ...c,
+            groups: parsedMap[c.id] || []
+          }))
+        );
+      }
+
+      const sm = localStorage.getItem('zenvitra_muted_contexts_v2');
+      if (sm) setMutedContexts(JSON.parse(sm));
+    } catch (_) {}
   }, []);
+
+  const saveCommunityGroups = (communityId: string, updatedGroups: any[]) => {
+    setCommunities((prev) =>
+      prev.map((c) => (c.id === communityId ? { ...c, groups: updatedGroups } : c))
+    );
+    try {
+      const saved = localStorage.getItem('zenvitra_community_custom_groups_v2');
+      const map = saved ? JSON.parse(saved) : {};
+      map[communityId] = updatedGroups;
+      localStorage.setItem('zenvitra_community_custom_groups_v2', JSON.stringify(map));
+    } catch (_) {}
+  };
+
+  const handleCreateCommunityGroup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCommunityGroupName.trim()) return;
+
+    const newGroup = {
+      id: `grp-${Date.now()}`,
+      name: newCommunityGroupName.trim(),
+      description: newCommunityGroupDesc.trim() || 'Community taskforce working group',
+      icon: newCommunityGroupIcon || '💬',
+      membersCount: 1,
+      createdAt: new Date().toISOString(),
+    };
+
+    const existing = currentCommunity.groups || [];
+    const updated = [...existing, newGroup];
+    saveCommunityGroups(currentCommunity.id, updated);
+
+    setActiveCommunityGroupId(newGroup.id);
+    setMobileActiveView('chat');
+    setShowCreateCommunityGroupModal(false);
+    setNewCommunityGroupName('');
+    setNewCommunityGroupDesc('');
+    showToast(`Group "${newGroup.name}" created in ${currentCommunity.name}`);
+  };
+
+  const handleDeleteCommunityGroup = (groupId: string) => {
+    const existing = currentCommunity.groups || [];
+    const updated = existing.filter((g) => g.id !== groupId);
+    saveCommunityGroups(currentCommunity.id, updated);
+
+    // Purge messages for that group
+    clearChatMessages(`grp_${currentCommunity.id}_${groupId}`);
+
+    if (activeCommunityGroupId === groupId) {
+      setActiveCommunityGroupId(null);
+      if (currentCommunity.channels.length > 0) {
+        setActiveChannelId(currentCommunity.channels[0].id);
+      }
+    }
+    showToast('🚪 Group caucus removed');
+  };
+
+  const toggleMuteContext = (contextId: string) => {
+    const next = !mutedContexts[contextId];
+    const updated = { ...mutedContexts, [contextId]: next };
+    setMutedContexts(updated);
+    try {
+      localStorage.setItem('zenvitra_muted_contexts_v2', JSON.stringify(updated));
+    } catch (_) {}
+    showToast(next ? '🔕 Notifications muted for this room' : '🔔 Notifications unmuted');
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -863,6 +945,152 @@ export function ZenChatMesh() {
   const displayedMessages = useMemo(() => {
     return messagesMap[currentChatContextId] || [];
   }, [messagesMap, currentChatContextId]);
+
+  /* Dynamic room info (used by header and room info modal) */
+  const currentRoomInfo = useMemo(() => {
+    if (activeCommunityGroup) {
+      return {
+        title: activeCommunityGroup.name,
+        badge: 'COMMUNITY GROUP',
+        description: activeCommunityGroup.description || 'Specialized multilateral taskforce caucus',
+        type: 'group',
+        icon: activeCommunityGroup.icon || '💬',
+        memberCount: activeCommunityGroup.membersCount || 1,
+        link: typeof window !== 'undefined' ? `${window.location.origin}/chat?community=${selectedCommunityId}&group=${activeCommunityGroup.id}` : '',
+        id: activeCommunityGroup.id,
+      };
+    }
+    if (activeChannel) {
+      return {
+        title: `#${activeChannel.name}`,
+        badge: activeChannel.type === 'voice' ? 'VOICE STAGE' : 'CHAMBER CHANNEL',
+        description: activeChannel.description || 'Official chamber channel dispatches',
+        type: 'channel',
+        icon: activeChannel.type === 'voice' ? '🔊' : '#',
+        memberCount: currentCommunity.members?.length || 1,
+        link: typeof window !== 'undefined' ? `${window.location.origin}/chat?community=${selectedCommunityId}&channel=${activeChannel.id}` : '',
+        id: activeChannel.id,
+      };
+    }
+    return {
+      title: activeConversation?.name || 'Direct Link',
+      badge: activeConversation?.type === 'broadcast' ? 'BROADCAST' : activeConversation?.type === 'group' ? 'GROUP DM' : 'DIRECT ENVOY',
+      description: activeConversation?.description || (activeConversation?.handle ? `@${activeConversation.handle}` : 'Encrypted sovereign DM wire'),
+      type: 'conversation',
+      icon: '💬',
+      memberCount: activeConversation?.members?.length || 2,
+      link: typeof window !== 'undefined' ? `${window.location.origin}/chat?conv=${activeConversationId}` : '',
+      id: activeConversationId || '',
+    };
+  }, [activeCommunityGroup, activeChannel, activeConversation, activeConversationId, selectedCommunityId, currentCommunity]);
+
+  /* Real dynamic Media, Docs, and Links extracted from room messages */
+  const channelMediaItems = useMemo(() => {
+    const items: { id: string; url: string; title: string; date: string; sender: string; type: 'image' | 'video' }[] = [];
+    displayedMessages.forEach((msg) => {
+      if (msg.attachments && msg.attachments.length > 0) {
+        msg.attachments.forEach((att: any, idx: number) => {
+          if (att.type === 'image' || att.type === 'video' || /\.(png|jpe?g|gif|webp|mp4|mov)$/i.test(att.url || '')) {
+            items.push({
+              id: `${msg.id}_att_${idx}`,
+              url: att.url || '',
+              title: att.name || 'Shared Media',
+              date: msg.timestamp,
+              sender: msg.senderName,
+              type: att.type === 'video' ? 'video' : 'image',
+            });
+          }
+        });
+      }
+      if (msg.snap?.mediaUrl) {
+        items.push({
+          id: `${msg.id}_snap`,
+          url: msg.snap.mediaUrl,
+          title: msg.snap.caption || 'Glimpse Snap',
+          date: msg.timestamp,
+          sender: msg.senderName,
+          type: 'image',
+        });
+      }
+      if (msg.stickerUrl) {
+        items.push({
+          id: `${msg.id}_sticker`,
+          url: msg.stickerUrl,
+          title: msg.content || 'Sticker',
+          date: msg.timestamp,
+          sender: msg.senderName,
+          type: 'image',
+        });
+      }
+      const imgMatch = msg.content.match(/https?:\/\/[^\s]+?\.(png|jpe?g|gif|webp)/i);
+      if (imgMatch) {
+        items.push({
+          id: `${msg.id}_url`,
+          url: imgMatch[0],
+          title: 'Media Link',
+          date: msg.timestamp,
+          sender: msg.senderName,
+          type: 'image',
+        });
+      }
+    });
+    return items;
+  }, [displayedMessages]);
+
+  const channelDocItems = useMemo(() => {
+    const docs: { id: string; title: string; size?: string; date: string; sender: string; url?: string }[] = [];
+    displayedMessages.forEach((msg) => {
+      if (msg.attachments && msg.attachments.length > 0) {
+        msg.attachments.forEach((att: any, idx: number) => {
+          if (att.type === 'file' || att.type === 'document' || att.type === 'pdf' || /\.(pdf|docx?|xlsx?|txt|json)$/i.test(att.name || att.url || '')) {
+            docs.push({
+              id: `${msg.id}_doc_${idx}`,
+              title: att.name || 'Document Dispatch',
+              size: att.size || 'Document',
+              date: msg.timestamp,
+              sender: msg.senderName,
+              url: att.url,
+            });
+          }
+        });
+      }
+      if (msg.nativeObject?.type === 'doc') {
+        docs.push({
+          id: `${msg.id}_native_doc`,
+          title: msg.nativeObject.title || 'Official Document',
+          size: 'ZENVITRA DOC',
+          date: msg.timestamp,
+          sender: msg.senderName,
+          url: (msg.nativeObject as any)?.url || `/docs`,
+        });
+      }
+    });
+    return docs;
+  }, [displayedMessages]);
+
+  const channelLinkItems = useMemo(() => {
+    const links: { id: string; url: string; title: string; date: string; sender: string }[] = [];
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    displayedMessages.forEach((msg) => {
+      const matches = msg.content.match(urlRegex);
+      if (matches) {
+        matches.forEach((url, idx) => {
+          let domain = url;
+          try {
+            domain = new URL(url).hostname;
+          } catch (_) {}
+          links.push({
+            id: `${msg.id}_link_${idx}`,
+            url,
+            title: domain,
+            date: msg.timestamp,
+            sender: msg.senderName,
+          });
+        });
+      }
+    });
+    return links;
+  }, [displayedMessages]);
 
   // Scroll to bottom on message change
   useEffect(() => {
@@ -1313,14 +1541,111 @@ export function ZenChatMesh() {
               </button>
             )}
 
-            {/* Single primary compose + button in sidebar header */}
-            <button
-              onClick={() => setShowNewChatActionModal(true)}
-              className="p-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white transition shadow-sm cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
-              title="New Message, Group, Caucus or Channel"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-            </button>
+            {/* 3-Dot Options & Management Menu in sidebar header (Replacing + button) */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSidebarHeaderMenu((prev) => !prev)}
+                className="p-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white transition shadow-sm cursor-pointer flex items-center justify-center"
+                title="Options & Management"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+
+              {showSidebarHeaderMenu && (
+                <div className="absolute right-0 top-9 w-56 p-1.5 rounded-2xl bg-[#0e1017]/95 backdrop-blur-xl border border-white/10 shadow-2xl z-50 space-y-1 text-xs font-sans">
+                  {selectedCommunityId !== 'comm-direct' ? (
+                    <>
+                      <div className="px-3 py-1.5 border-b border-white/[0.06]">
+                        <p className="font-semibold text-white truncate">{currentCommunity.name}</p>
+                        <p className="font-mono text-[9px] text-purple-400">Community Management</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          setShowCreateCommunityGroupModal(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-purple-500/20 text-left transition cursor-pointer"
+                      >
+                        <Users className="w-4 h-4 text-purple-400" />
+                        <span>Create Community Group</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          setShowCreateChannelModal(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                      >
+                        <Hash className="w-4 h-4 text-cyan-400" />
+                        <span>Create Channel</span>
+                      </button>
+                      {canManageCurrentRoles && (
+                        <button
+                          onClick={() => {
+                            setShowSidebarHeaderMenu(false);
+                            setShowRoleSettingsModal(true);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                        >
+                          <ShieldCheck className="w-4 h-4 text-amber-400" />
+                          <span>Roles & Permissions</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          setShowRoomInfoModal(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                      >
+                        <Info className="w-4 h-4 text-emerald-400" />
+                        <span>Community Details</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                            navigator.clipboard.writeText(`${window.location.origin}/chat?community=${selectedCommunityId}`);
+                          }
+                          showToast('📋 Community invite link copied');
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                      >
+                        <Copy className="w-4 h-4 text-blue-400" />
+                        <span>Copy Community Link</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="px-3 py-1.5 border-b border-white/[0.06]">
+                        <p className="font-semibold text-white">Direct Envoys</p>
+                        <p className="font-mono text-[9px] text-neutral-400">Compose & Caucus</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          setShowNewChatActionModal(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-purple-500/20 text-left transition cursor-pointer"
+                      >
+                        <MessageSquare className="w-4 h-4 text-purple-400" />
+                        <span>New Direct Message</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          setShowCreateCaucusModal(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                      >
+                        <Globe2 className="w-4 h-4 text-emerald-400" />
+                        <span>Establish Caucus</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1884,13 +2209,23 @@ export function ZenChatMesh() {
               </div>
             )}
 
-            {/* Section: COMMUNITY GROUPS (WhatsApp style taskforces) */}
-            {currentCommunity.groups && currentCommunity.groups.length > 0 && (
-              <div className="space-y-1 pt-2 border-t border-white/[0.04]">
-                <span className="font-mono text-[9px] tracking-[0.2em] text-neutral-400 uppercase font-semibold px-2 block">
-                  COMMUNITY GROUPS
+            {/* Section: COMMUNITY GROUPS (Multilateral Taskforces) */}
+            <div className="space-y-1 pt-2 border-t border-white/[0.04]">
+              <div className="flex items-center justify-between px-2 pb-1">
+                <span className="font-mono text-[9px] tracking-[0.2em] text-neutral-400 uppercase font-semibold block">
+                  COMMUNITY GROUPS {currentCommunity.groups && currentCommunity.groups.length > 0 ? `(${currentCommunity.groups.length})` : ''}
                 </span>
-                {currentCommunity.groups.map((group) => {
+                <button
+                  onClick={() => setShowCreateCommunityGroupModal(true)}
+                  className="p-1 rounded-lg hover:bg-white/[0.06] text-neutral-400 hover:text-purple-300 transition cursor-pointer"
+                  title="Create Community Group"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
+
+              {currentCommunity.groups && currentCommunity.groups.length > 0 ? (
+                currentCommunity.groups.map((group) => {
                   const isActive = activeCommunityGroupId === group.id;
                   return (
                     <button
@@ -1910,22 +2245,31 @@ export function ZenChatMesh() {
                         <div className="truncate">
                           <span className="truncate block font-medium text-white">{group.name}</span>
                           <span className="font-mono text-[9px] text-neutral-500 block truncate">
-                            {group.membersCount || 12} members
+                            {group.membersCount || 1} {group.membersCount === 1 ? 'member' : 'members'}
                           </span>
                         </div>
                       </div>
-                      {group.isLocked ? (
-                        <Lock className="w-3 h-3 text-neutral-500 shrink-0" />
-                      ) : (
-                        <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/[0.04] text-neutral-400 shrink-0">
-                          GROUP
-                        </span>
-                      )}
+                      <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/[0.04] text-neutral-400 shrink-0">
+                        GROUP
+                      </span>
                     </button>
                   );
-                })}
-              </div>
-            )}
+                })
+              ) : (
+                <div className="px-2 py-2 text-left">
+                  <p className="font-mono text-[10px] text-neutral-500">
+                    No community groups yet.
+                  </p>
+                  <button
+                    onClick={() => setShowCreateCommunityGroupModal(true)}
+                    className="mt-1 text-[10px] text-purple-400 hover:text-purple-300 font-mono flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-2.5 h-2.5" />
+                    <span>Create a group caucus</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -2167,19 +2511,18 @@ export function ZenChatMesh() {
                 <div className="absolute right-0 top-11 w-64 p-1.5 rounded-2xl bg-[#0e1017]/95 backdrop-blur-xl border border-white/10 shadow-2xl z-50 space-y-1 text-xs font-sans">
                   <div className="px-3 py-2 border-b border-white/[0.06]">
                     <p className="font-semibold text-white truncate">
-                      {activeCommunityGroup?.name || (activeChannel ? `#${activeChannel.name}` : activeConversation?.name || 'Chat Room')}
+                      {currentRoomInfo.title}
                     </p>
-                    <p className="font-mono text-[9px] text-neutral-400">
-                      {activeConversation?.type === 'group' ? 'Group Settings & Controls' : 'Room Settings & Options'}
+                    <p className="font-mono text-[9px] text-purple-400">
+                      {currentRoomInfo.badge} &bull; Options
                     </p>
                   </div>
 
-                  {/* Group / Room Info */}
+                  {/* 1. Group / Room Info */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
-                      const infoDesc = activeConversation?.description || activeChannel?.description || 'Encrypted sovereign communication room';
-                      showToast(`ℹ️ ${infoDesc}`);
+                      setShowRoomInfoModal(true);
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
@@ -2187,7 +2530,7 @@ export function ZenChatMesh() {
                     <span>Group / Room Info</span>
                   </button>
 
-                  {/* View Member Roster */}
+                  {/* 2. View Member Roster */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
@@ -2196,17 +2539,17 @@ export function ZenChatMesh() {
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
                     <Users className="w-4 h-4 text-purple-400" />
-                    <span>View Participants ({activeConversation?.members?.length || (currentCommunity.members?.length ?? 1)})</span>
+                    <span>View Participants ({currentRoomInfo.memberCount})</span>
                   </button>
 
-                  {/* Add / Invite Members */}
+                  {/* 3. Add / Invite Members */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
                       if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                        navigator.clipboard.writeText(window.location.href);
+                        navigator.clipboard.writeText(currentRoomInfo.link);
                       }
-                      showToast('🔗 Room invite link copied to clipboard');
+                      setShowInviteLinkModal(true);
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
@@ -2214,14 +2557,14 @@ export function ZenChatMesh() {
                     <span>Invite / Add Members</span>
                   </button>
 
-                  {/* Copy Link */}
+                  {/* 4. Copy Link */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
                       if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                        navigator.clipboard.writeText(window.location.href);
+                        navigator.clipboard.writeText(currentRoomInfo.link);
                       }
-                      showToast('📋 Link copied to clipboard');
+                      showToast('📋 Room link copied to clipboard');
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
@@ -2229,7 +2572,7 @@ export function ZenChatMesh() {
                     <span>Copy Room Link</span>
                   </button>
 
-                  {/* Server Roles (if in caucus) */}
+                  {/* 5. Server Roles (if in caucus) */}
                   {selectedCommunityId !== 'comm-direct' && canManageCurrentRoles && (
                     <button
                       onClick={() => {
@@ -2243,28 +2586,37 @@ export function ZenChatMesh() {
                     </button>
                   )}
 
-                  {/* Mute Notifications */}
+                  {/* 6. Mute Notifications */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
-                      if (activeConversationId) {
-                        toggleMuteConversation(activeConversationId);
-                      }
-                      showToast('🔔 Notification settings updated');
+                      toggleMuteContext(currentChatContextId);
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
-                    <VolumeX className="w-4 h-4 text-neutral-400" />
-                    <span>Mute Notifications</span>
+                    {mutedContexts[currentChatContextId] ? (
+                      <>
+                        <Volume2 className="w-4 h-4 text-emerald-400" />
+                        <span className="text-emerald-300">Unmute Notifications</span>
+                      </>
+                    ) : (
+                      <>
+                        <VolumeX className="w-4 h-4 text-neutral-400" />
+                        <span>Mute Notifications</span>
+                      </>
+                    )}
                   </button>
 
                   <div className="h-px bg-white/[0.06] my-1" />
 
-                  {/* Clear Chat History */}
+                  {/* 7. Clear Chat History */}
                   <button
                     onClick={() => {
                       setShowGroupSettingsMenu(false);
-                      showToast('🧹 Room message cache cleared');
+                      if (typeof window !== 'undefined' && window.confirm('Clear all messages in this room? This action cannot be undone.')) {
+                        clearChatMessages(currentChatContextId);
+                        showToast('🧹 Room message cache cleared');
+                      }
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-amber-400 hover:bg-amber-500/10 transition text-left cursor-pointer"
                   >
@@ -2272,20 +2624,26 @@ export function ZenChatMesh() {
                     <span>Clear Chat History</span>
                   </button>
 
-                  {/* Leave Group / Delete Conversation */}
-                  {activeConversation && (
+                  {/* 8. Leave Group / Delete Conversation */}
+                  {(activeCommunityGroup || activeConversation) && (
                     <button
                       onClick={() => {
                         setShowGroupSettingsMenu(false);
-                        if (confirm(`Are you sure you want to leave or delete "${activeConversation.name}"?`)) {
-                          deleteConversation(activeConversation.id);
-                          showToast('🚪 Left conversation');
+                        if (activeCommunityGroup) {
+                          if (typeof window !== 'undefined' && window.confirm(`Are you sure you want to leave or delete "${activeCommunityGroup.name}"?`)) {
+                            handleDeleteCommunityGroup(activeCommunityGroup.id);
+                          }
+                        } else if (activeConversation) {
+                          if (typeof window !== 'undefined' && window.confirm(`Are you sure you want to leave or delete "${activeConversation.name}"?`)) {
+                            deleteConversation(activeConversation.id);
+                            showToast('🚪 Left conversation');
+                          }
                         }
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 transition text-left cursor-pointer"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>{activeConversation.type === 'group' ? 'Leave Group' : 'Delete Chat'}</span>
+                      <span>{activeCommunityGroup || activeConversation?.type === 'group' ? 'Leave Group' : 'Delete Chat'}</span>
                     </button>
                   )}
                 </div>
@@ -3271,9 +3629,9 @@ export function ZenChatMesh() {
               {/* Tabs: Media | Docs | Links */}
               <div className="flex border-b border-white/[0.06] bg-[#07090e] px-4">
                 {[
-                  { id: 'media', label: 'Media' },
-                  { id: 'docs', label: 'Docs' },
-                  { id: 'links', label: 'Links' },
+                  { id: 'media', label: `Media (${channelMediaItems.length})` },
+                  { id: 'docs', label: `Docs (${channelDocItems.length})` },
+                  { id: 'links', label: `Links (${channelLinkItems.length})` },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -3289,93 +3647,401 @@ export function ZenChatMesh() {
                 ))}
               </div>
 
-              {/* Gallery Content grouped by date (Yesterday - 5 September 2026) */}
+              {/* Gallery Content */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {/* Date Group Header */}
-                <div className="sticky top-0 bg-[#0e1017]/95 backdrop-blur-sm py-1 z-10">
-                  <span className="font-display text-xs text-neutral-300 font-medium">
-                    Yesterday - 5 September 2026
+                {/* Channel Context Header */}
+                <div className="sticky top-0 bg-[#0e1017]/95 backdrop-blur-sm py-1 z-10 flex items-center justify-between border-b border-white/[0.04]">
+                  <span className="font-display text-xs text-neutral-300 font-medium truncate">
+                    Shared in {currentRoomInfo.title}
+                  </span>
+                  <span className="font-mono text-[9px] text-purple-400 shrink-0">
+                    Live Channel Index
                   </span>
                 </div>
 
                 {mediaGalleryTab === 'media' && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {[
-                      { id: 'm1', label: 'Plenary Floor Resolution', color: 'from-purple-900 to-indigo-950', icon: '📜' },
-                      { id: 'm2', label: 'Dais Sovereign Seal', color: 'from-amber-900 to-stone-900', icon: '⚖️' },
-                      { id: 'm3', label: 'G-77 Treaty Draft Snapshot', color: 'from-emerald-950 to-teal-900', icon: '🌐' },
-                      { id: 'm4', label: 'Security Briefing Graph', color: 'from-blue-950 to-slate-900', icon: '📊' },
-                      { id: 'm5', label: 'Delegate Credential QR', color: 'from-cyan-950 to-indigo-950', icon: '🛡️' },
-                      { id: 'm6', label: 'Crisis War Room Dispatch', color: 'from-rose-950 to-neutral-900', icon: '⚡' },
-                    ].map((item) => (
-                      <div
-                        key={item.id}
-                        className={`aspect-square rounded-xl bg-gradient-to-tr ${item.color} border border-white/10 flex flex-col items-center justify-center p-2 relative group overflow-hidden cursor-pointer hover:border-emerald-400/50 transition`}
-                      >
-                        <span className="text-3xl group-hover:scale-110 transition">{item.icon}</span>
-                        <span className="font-sans text-[10px] text-neutral-300 text-center truncate w-full mt-2 font-medium">
-                          {item.label}
-                        </span>
+                  channelMediaItems.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {channelMediaItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="aspect-square rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col items-center justify-center p-2 relative group overflow-hidden hover:border-emerald-400/50 transition cursor-pointer"
+                        >
+                          {item.url ? (
+                            <img src={item.url} alt={item.title} className="w-full h-full object-cover rounded-xl" />
+                          ) : (
+                            <span className="text-3xl">🖼️</span>
+                          )}
+                          <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/90 to-transparent">
+                            <span className="font-sans text-[10px] text-white truncate block font-medium">
+                              {item.title}
+                            </span>
+                            <span className="font-mono text-[8px] text-neutral-400 block truncate">
+                              {item.sender} &bull; {item.date}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-neutral-500">
+                        <ImageIcon className="w-6 h-6 text-emerald-400/60" />
                       </div>
-                    ))}
-                  </div>
+                      <div>
+                        <p className="font-display font-medium text-xs text-white">No Shared Media</p>
+                        <p className="font-mono text-[10px] text-neutral-500 mt-0.5">Images and videos shared in this room will appear here</p>
+                      </div>
+                    </div>
+                  )
                 )}
 
                 {mediaGalleryTab === 'docs' && (
-                  <div className="space-y-2">
-                    {[
-                      { title: 'UN_Resolution_418_Draft_v3.pdf', size: '2.4 MB', date: '5 Sep 2026' },
-                      { title: 'Bilateral_Pact_Framework.docx', size: '840 KB', date: '5 Sep 2026' },
-                      { title: 'Sovereign_Protocol_Manifest.pdf', size: '1.1 MB', date: '4 Sep 2026' },
-                    ].map((doc, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
-                            <FileText className="w-5 h-5" />
+                  channelDocItems.length > 0 ? (
+                    <div className="space-y-2">
+                      {channelDocItems.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="font-display font-medium text-xs text-white truncate">{doc.title}</h5>
+                              <span className="font-mono text-[9px] text-neutral-400 block truncate">
+                                {doc.size} &bull; {doc.sender} &bull; {doc.date}
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <h5 className="font-display font-medium text-xs text-white">{doc.title}</h5>
-                            <span className="font-mono text-[9px] text-neutral-400">{doc.size} • {doc.date}</span>
-                          </div>
+                          {doc.url && (
+                            <a href={doc.url} target="_blank" rel="noreferrer" className="p-1 rounded text-neutral-400 hover:text-white">
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          )}
                         </div>
-                        <ExternalLink className="w-4 h-4 text-neutral-400 hover:text-white" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-neutral-500">
+                        <FileText className="w-6 h-6 text-purple-400/60" />
                       </div>
-                    ))}
-                  </div>
+                      <div>
+                        <p className="font-display font-medium text-xs text-white">No Shared Documents</p>
+                        <p className="font-mono text-[10px] text-neutral-500 mt-0.5">PDFs and resolution briefs shared in this room will appear here</p>
+                      </div>
+                    </div>
+                  )
                 )}
 
                 {mediaGalleryTab === 'links' && (
-                  <div className="space-y-2">
-                    {[
-                      { title: 'Zenvitra Sovereign Dais Transmission', url: 'https://zenvitra.gov/dais/live-418', date: '5 Sep 2026' },
-                      { title: 'Global Plenary Draft Resolution Workbench', url: 'https://zenvitra.gov/docs/res-418', date: '5 Sep 2026' },
-                      { title: 'G-77 Sovereign Multilateral Agreement', url: 'https://zenvitra.gov/treaties/g77-2026', date: '4 Sep 2026' },
-                    ].map((lnk, i) => (
-                      <a
-                        key={i}
-                        href={lnk.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
-                            <Link2 className="w-5 h-5" />
+                  channelLinkItems.length > 0 ? (
+                    <div className="space-y-2">
+                      {channelLinkItems.map((lnk) => (
+                        <a
+                          key={lnk.id}
+                          href={lnk.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
+                              <Link2 className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="font-display font-medium text-xs text-white truncate">{lnk.title}</h5>
+                              <span className="font-mono text-[10px] text-cyan-400 truncate block">{lnk.url}</span>
+                              <span className="font-mono text-[8px] text-neutral-500 block">{lnk.sender} &bull; {lnk.date}</span>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <h5 className="font-display font-medium text-xs text-white truncate">{lnk.title}</h5>
-                            <span className="font-mono text-[10px] text-cyan-400 truncate block">{lnk.url}</span>
-                          </div>
-                        </div>
-                        <ExternalLink className="w-4 h-4 text-neutral-400 shrink-0 ml-2" />
-                      </a>
-                    ))}
-                  </div>
+                          <ExternalLink className="w-4 h-4 text-neutral-400 shrink-0 ml-2" />
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-neutral-500">
+                        <Link2 className="w-6 h-6 text-cyan-400/60" />
+                      </div>
+                      <div>
+                        <p className="font-display font-medium text-xs text-white">No Shared Links</p>
+                        <p className="font-mono text-[10px] text-neutral-500 mt-0.5">Web links sent in this room will automatically be indexed here</p>
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Group / Room Info Modal ── */}
+      <AnimatePresence>
+        {showRoomInfoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md rounded-3xl bg-[#0e1017] border border-white/10 p-6 shadow-2xl space-y-5"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">{currentRoomInfo.icon}</span>
+                  <div>
+                    <h3 className="font-display font-semibold text-sm sm:text-base text-white truncate">
+                      {currentRoomInfo.title}
+                    </h3>
+                    <span className="font-mono text-[9px] text-purple-400 font-semibold">
+                      {currentRoomInfo.badge}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowRoomInfoModal(false)}
+                  className="p-1 rounded-lg text-neutral-400 hover:text-white transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs">
+                <div>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500 block mb-1">
+                    Description & Charter
+                  </span>
+                  <p className="font-sans text-neutral-300 leading-relaxed bg-white/[0.02] p-3 rounded-2xl border border-white/[0.04]">
+                    {currentRoomInfo.description}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500 block">
+                      Active Participants
+                    </span>
+                    <span className="font-display font-semibold text-white text-sm mt-1 block">
+                      {currentRoomInfo.memberCount} Delegates
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500 block">
+                      Security Protocol
+                    </span>
+                    <span className="font-display font-semibold text-emerald-400 text-sm mt-1 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Encrypted Mesh</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500 block mb-1">
+                    Room Access Link
+                  </span>
+                  <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                    <span className="font-mono text-[10px] text-neutral-300 truncate flex-1 select-all">
+                      {currentRoomInfo.link}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                          navigator.clipboard.writeText(currentRoomInfo.link);
+                        }
+                        showToast('📋 Room link copied');
+                      }}
+                      className="p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-neutral-300 hover:text-white transition cursor-pointer"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-white/[0.06] flex justify-end">
+                <button
+                  onClick={() => setShowRoomInfoModal(false)}
+                  className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white font-medium text-xs transition cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Invite / Add Members Modal ── */}
+      <AnimatePresence>
+        {showInviteLinkModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md rounded-3xl bg-[#0e1017] border border-white/10 p-6 shadow-2xl space-y-5"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-emerald-400" />
+                  <h3 className="font-display font-semibold text-sm sm:text-base text-white">
+                    Invite Delegates to {currentRoomInfo.title}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowInviteLinkModal(false)}
+                  className="p-1 rounded-lg text-neutral-400 hover:text-white transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="font-sans text-xs text-neutral-400 leading-relaxed">
+                Share this direct sovereign link to invite other delegates or colleagues into this caucus room.
+              </p>
+
+              <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-white/[0.04] border border-white/10">
+                <span className="font-mono text-xs text-emerald-300 truncate flex-1 select-all">
+                  {currentRoomInfo.link}
+                </span>
+                <button
+                  onClick={() => {
+                    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                      navigator.clipboard.writeText(currentRoomInfo.link);
+                    }
+                    showToast('📋 Invite link copied to clipboard');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition cursor-pointer flex items-center gap-1 shrink-0 shadow-sm"
+                >
+                  <Copy className="w-3.5 h-3.5 text-black" />
+                  <span>Copy</span>
+                </button>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  onClick={() => setShowInviteLinkModal(false)}
+                  className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-medium cursor-pointer transition"
+                >
+                  Done
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Create Community Group Modal ── */}
+      <AnimatePresence>
+        {showCreateCommunityGroupModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md rounded-3xl bg-[#0e1017] border border-white/10 p-6 shadow-2xl space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-purple-400" />
+                  <h3 className="font-display font-semibold text-sm sm:text-base text-white">
+                    New Community Group
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowCreateCommunityGroupModal(false)}
+                  className="p-1 rounded-lg text-neutral-400 hover:text-white transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateCommunityGroup} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider block">
+                    Group Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newCommunityGroupName}
+                    onChange={(e) => setNewCommunityGroupName(e.target.value)}
+                    placeholder="e.g. Drafting Working Group Alpha"
+                    className="w-full px-3 py-2 rounded-xl bg-white/[0.03] border border-white/10 focus:border-purple-500/50 text-xs text-white focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider block">
+                    Purpose / Description
+                  </label>
+                  <input
+                    type="text"
+                    value={newCommunityGroupDesc}
+                    onChange={(e) => setNewCommunityGroupDesc(e.target.value)}
+                    placeholder="e.g. Resolution clause crafting and bilateral bloc consultation"
+                    className="w-full px-3 py-2 rounded-xl bg-white/[0.03] border border-white/10 focus:border-purple-500/50 text-xs text-white focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider block">
+                    Group Icon Emoji
+                  </label>
+                  <div className="flex items-center gap-2 overflow-x-auto py-1">
+                    {['📝', '🌐', '⚡', '🏛️', '🛡️', '💬', '⚖️', '🔥', '🎯', '🚀'].map((em) => (
+                      <button
+                        type="button"
+                        key={em}
+                        onClick={() => setNewCommunityGroupIcon(em)}
+                        className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center border transition cursor-pointer ${
+                          newCommunityGroupIcon === em
+                            ? 'bg-purple-500/20 border-purple-500 text-white'
+                            : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.08]'
+                        }`}
+                      >
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateCommunityGroupModal(false)}
+                    className="flex-1 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-neutral-300 text-xs font-medium cursor-pointer transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!newCommunityGroupName.trim()}
+                    className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-30 text-white text-xs font-bold transition shadow-[0_0_15px_rgba(168,85,247,0.3)] cursor-pointer"
+                  >
+                    Create Group
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}
