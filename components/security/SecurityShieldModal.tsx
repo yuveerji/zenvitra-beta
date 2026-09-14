@@ -20,7 +20,9 @@ import {
   Fingerprint,
   QrCode,
   Flame,
-  Globe2
+  Globe2,
+  Plus,
+  Monitor
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -32,6 +34,9 @@ import {
   toggleAccountFreeze, 
   generateBackupRecoveryCodes,
   regenerateSovereignCode,
+  createTestRemoteSession,
+  getClientSessionId,
+  registerActiveDeviceSession,
   UserSecurityProfile,
   logSecurityEvent
 } from '@/lib/securityShield';
@@ -78,10 +83,33 @@ export function SecurityShieldModal({ isOpen, onClose }: { isOpen: boolean; onCl
 
   useEffect(() => {
     if (isOpen) {
+      try {
+        registerActiveDeviceSession(userId);
+      } catch (_) {}
       const data = getSecurityProfile(userId);
       setSecurityProfile(data);
     }
+
+    const handleSecurityChange = () => {
+      if (isOpen) {
+        setSecurityProfile(getSecurityProfile(userId));
+      }
+    };
+
+    window.addEventListener('zenvitra_security_matrix_event', handleSecurityChange);
+    window.addEventListener('storage', handleSecurityChange);
+
+    return () => {
+      window.removeEventListener('zenvitra_security_matrix_event', handleSecurityChange);
+      window.removeEventListener('storage', handleSecurityChange);
+    };
   }, [isOpen, userId]);
+
+  const handleAddTestRemoteSession = () => {
+    createTestRemoteSession(userId);
+    setSecurityProfile(getSecurityProfile(userId));
+    showToast('⚡ Authorized Secondary Test Session');
+  };
 
   if (!isOpen || !securityProfile) return null;
 
@@ -449,93 +477,127 @@ export function SecurityShieldModal({ isOpen, onClose }: { isOpen: boolean; onCl
           )}
 
           {/* ════ TAB 2: ANTI-THEFT ACTIVE SESSIONS ════ */}
-          {activeTab === 'sessions' && (
-            <div className="space-y-6">
-              {/* Anti-Theft Kill Switch Banner */}
-              <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-rose-400" />
-                    <h3 className="font-bold text-sm text-rose-200">
-                      Anti-Theft Remote Session Kill Switch
-                    </h3>
+          {activeTab === 'sessions' && (() => {
+            const remoteCount = securityProfile.activeSessions.filter((s) => !s.isCurrent).length;
+
+            return (
+              <div className="space-y-6">
+                {/* Anti-Theft Kill Switch Banner */}
+                <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-rose-400" />
+                      <h3 className="font-bold text-sm text-rose-200">
+                        Anti-Theft Remote Session Kill Switch
+                      </h3>
+                    </div>
+                    <p className="text-xs text-rose-300/80">
+                      Suspect unauthorized access or lost a device? Instantly terminate all other active logins across devices.
+                    </p>
                   </div>
-                  <p className="text-xs text-rose-300/80">
-                    Suspect unauthorized access or lost a device? Instantly terminate all other active logins.
-                  </p>
+
+                  <button
+                    type="button"
+                    disabled={remoteCount === 0}
+                    onClick={handleKillAllSessions}
+                    className={`px-4 py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-2 shrink-0 shadow-lg ${
+                      remoteCount > 0
+                        ? 'bg-rose-600 hover:bg-rose-500 text-white cursor-pointer shadow-rose-900/30'
+                        : 'bg-zinc-800/80 text-zinc-500 cursor-not-allowed border border-white/5'
+                    }`}
+                  >
+                    <PowerOff className="w-3.5 h-3.5" />
+                    <span>Kill All Remote Sessions {remoteCount > 0 ? `(${remoteCount})` : ''}</span>
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleKillAllSessions}
-                  className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-lg"
-                >
-                  <PowerOff className="w-3.5 h-3.5" />
-                  <span>Kill All Remote Sessions</span>
-                </button>
-              </div>
-
-              {/* Sessions List */}
-              <div className="space-y-3">
-                <span className="font-mono text-xs text-zinc-400 font-bold uppercase tracking-wider block">
-                  AUTHORIZED ACTIVE DEVICES ({securityProfile.activeSessions.length})
-                </span>
-
-                <div className="space-y-2.5">
-                  {securityProfile.activeSessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className={`p-4 rounded-2xl border flex items-center justify-between gap-4 ${
-                        session.isCurrent
-                          ? 'bg-cyan-500/[0.04] border-cyan-500/30'
-                          : 'bg-white/[0.02] border-white/10'
-                      }`}
+                {/* Sessions List */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-zinc-400 font-bold uppercase tracking-wider block">
+                      AUTHORIZED ACTIVE DEVICES ({securityProfile.activeSessions.length})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAddTestRemoteSession}
+                      className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/30 text-xs font-mono text-cyan-300 flex items-center gap-1.5 transition cursor-pointer"
+                      title="Simulate a secondary authorized device to test remote session revocation and the kill switch"
                     >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-white/15 flex items-center justify-center text-white shrink-0">
-                          {session.deviceName.includes('Mobile') || session.deviceName.includes('iPhone') ? (
-                            <Smartphone className="w-5 h-5 text-cyan-400" />
-                          ) : (
-                            <Laptop className="w-5 h-5 text-white" />
-                          )}
-                        </div>
-                        <div className="truncate text-left">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-xs text-white truncate">{session.deviceName}</span>
-                            {session.isCurrent ? (
-                              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-                                THIS DEVICE
-                              </span>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Simulate Remote Client</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {securityProfile.activeSessions.map((session) => (
+                      <div
+                        key={session.id}
+                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 transition ${
+                          session.isCurrent
+                            ? 'bg-cyan-500/[0.04] border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.05)]'
+                            : 'bg-white/[0.02] border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${
+                            session.isCurrent 
+                              ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300' 
+                              : 'bg-neutral-900 border-white/15 text-white'
+                          }`}>
+                            {session.deviceName.includes('Mobile') || session.deviceName.includes('iPhone') || session.deviceName.includes('Android') ? (
+                              <Smartphone className="w-5 h-5 text-cyan-400" />
+                            ) : session.deviceName.includes('iPad') || session.deviceName.includes('Tablet') ? (
+                              <Smartphone className="w-5 h-5 text-purple-400" />
+                            ) : session.deviceName.includes('PC') || session.deviceName.includes('Desktop') ? (
+                              <Monitor className="w-5 h-5 text-emerald-400" />
                             ) : (
-                              <span className="text-[9px] font-mono text-zinc-400">{session.location}</span>
+                              <Laptop className="w-5 h-5 text-white" />
                             )}
                           </div>
-                          <div className="font-mono text-[10px] text-zinc-400 space-x-2 pt-0.5">
-                            <span>{session.browser}</span>
-                            <span>&bull;</span>
-                            <span>{session.os}</span>
-                            <span>&bull;</span>
-                            <span>{session.ipAddress}</span>
+                          <div className="truncate text-left">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-bold text-xs text-white truncate">{session.deviceName}</span>
+                              {session.isCurrent ? (
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold border border-emerald-500/30">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span>THIS DEVICE (CURRENT)</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 text-[9px] font-mono font-bold border border-cyan-500/20">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                  <span>REMOTE NODE</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="font-mono text-[10px] text-zinc-400 space-x-2 pt-1 flex flex-wrap items-center">
+                              <span>{session.browser}</span>
+                              <span>&bull;</span>
+                              <span>{session.os}</span>
+                              <span>&bull;</span>
+                              <span>{session.ipAddress}</span>
+                              <span>&bull;</span>
+                              <span className="text-zinc-500">{session.isCurrent ? 'Active now' : 'Verified connection'}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {!session.isCurrent && (
-                        <button
-                          type="button"
-                          onClick={() => handleRevokeSession(session.id)}
-                          className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 font-mono text-xs transition cursor-pointer shrink-0 flex items-center gap-1.5"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Revoke</span>
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                        {!session.isCurrent && (
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeSession(session.id)}
+                            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 font-mono text-xs transition cursor-pointer shrink-0 flex items-center gap-1.5"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Revoke</span>
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ════ TAB 3: ANTI-BRUTE-FORCE & EMERGENCY LOCKDOWN ════ */}
           {activeTab === 'lockdown' && (

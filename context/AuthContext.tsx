@@ -4,6 +4,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { signOut as nextAuthSignOut } from 'next-auth/react';
 import { supabase } from '@/lib/supabase';
 import { UserProfile, OAuthProvider, UserRole, ConnectedAccount } from '@/types/auth';
+import { 
+  registerActiveDeviceSession, 
+  isCurrentSessionRevoked, 
+  getClientSessionId, 
+  SecurityBroadcastMessage 
+} from '@/lib/securityShield';
 
 interface AuthContextType {
   user: any | null;
@@ -176,11 +182,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (storedUser) {
           const parsedProf = JSON.parse(storedUser);
           if (parsedProf && parsedProf.id) {
+            // Check if current device session was revoked
+            if (isCurrentSessionRevoked(parsedProf.id)) {
+              localStorage.removeItem('zenvitra_session_user');
+              setUser(null);
+              setProfile(null);
+              setIsLoading(false);
+              return false;
+            }
+
             if (parsedProf.avatar_url && typeof parsedProf.avatar_url === 'string' && parsedProf.avatar_url.includes('images.unsplash.com')) {
               parsedProf.avatar_url = undefined;
               localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
             }
             recordSavedSession(parsedProf);
+            try {
+              registerActiveDeviceSession(parsedProf.id);
+            } catch (_) {}
             setUser({ id: parsedProf.id, email: parsedProf.email });
             setProfile(parsedProf);
             setIsLoading(false);
@@ -199,8 +217,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       syncSessionFromStorage();
     };
 
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        bc = new BroadcastChannel('zenvitra_security_events');
+        bc.onmessage = (event) => {
+          handleSecurityEvent(event.data);
+        };
+      }
+    } catch (_) {}
+
+    const handleCustomSecurityEvent = (e: any) => {
+      if (e.detail) handleSecurityEvent(e.detail);
+    };
+
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === 'zenvitra_security_broadcast' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          handleSecurityEvent(parsed);
+        } catch (_) {}
+      } else {
+        syncSessionFromStorage();
+      }
+    };
+
+    const handleSecurityEvent = (msg: SecurityBroadcastMessage) => {
+      if (!msg) return;
+      const currentSid = getClientSessionId();
+      const stored = localStorage.getItem('zenvitra_session_user');
+      const activeUid = (stored ? JSON.parse(stored)?.id : '') || '';
+      const msgUid = (msg.userId || '').replace(/^@/, '').toLowerCase();
+      const cleanActiveUid = (activeUid || '').replace(/^@/, '').toLowerCase();
+
+      if (msgUid && cleanActiveUid && msgUid === cleanActiveUid) {
+        if (msg.type === 'REVOKE_SESSION' && msg.targetSessionId === currentSid) {
+          localStorage.removeItem('zenvitra_session_user');
+          setUser(null);
+          setProfile(null);
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?reason=session_revoked';
+          }
+        } else if (msg.type === 'KILL_ALL_OTHER_SESSIONS' && msg.keptSessionId !== currentSid) {
+          localStorage.removeItem('zenvitra_session_user');
+          setUser(null);
+          setProfile(null);
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?reason=session_revoked';
+          }
+        } else if (msg.type === 'ACCOUNT_FROZEN' && msg.keptSessionId !== currentSid) {
+          localStorage.removeItem('zenvitra_session_user');
+          setUser(null);
+          setProfile(null);
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?reason=account_frozen';
+          }
+        }
+      }
+    };
+
+    window.addEventListener('zenvitra_security_matrix_event', handleCustomSecurityEvent);
     window.addEventListener('zenvitra_auth_change', handleAuthChange);
-    window.addEventListener('storage', handleAuthChange);
+    window.addEventListener('storage', handleStorageEvent);
+
+    // Watchdog timer (every 4s) to enforce active sessions
+    const watchdog = setInterval(() => {
+      try {
+        const stored = localStorage.getItem('zenvitra_session_user');
+        if (stored) {
+          const activeUid = JSON.parse(stored)?.id;
+          if (activeUid && isCurrentSessionRevoked(activeUid)) {
+            localStorage.removeItem('zenvitra_session_user');
+            setUser(null);
+            setProfile(null);
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login?reason=session_revoked';
+            }
+          }
+        }
+      } catch (_) {}
+    }, 4000);
 
     // 2. Check live Supabase session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
@@ -241,8 +337,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      if (bc) bc.close();
+      window.removeEventListener('zenvitra_security_matrix_event', handleCustomSecurityEvent);
       window.removeEventListener('zenvitra_auth_change', handleAuthChange);
-      window.removeEventListener('storage', handleAuthChange);
+      window.removeEventListener('storage', handleStorageEvent);
+      clearInterval(watchdog);
       subscription.unsubscribe();
     };
   }, [loadProfile]);

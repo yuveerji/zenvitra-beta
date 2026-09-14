@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   ShieldCheck,
+  ShieldAlert,
   Lock,
   CheckCircle2,
   KeyRound,
@@ -614,6 +615,32 @@ function LoginForm() {
                 <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <span>{successMessage}</span>
+                </div>
+              )}
+
+              {/* Anti-Theft Session Revocation Notice */}
+              {searchParams.get('reason') === 'session_revoked' && (
+                <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs font-mono flex items-start gap-2.5 shadow-lg shadow-rose-950/20">
+                  <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-rose-300">🚨 Anti-Theft Session Terminated</p>
+                    <p className="text-[11px] text-rose-300/80 mt-0.5">
+                      Your session was remotely revoked via the Sovereign Security Shield kill switch. Please re-authenticate to authorize this device.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Sovereign Account Lockdown Notice */}
+              {searchParams.get('reason') === 'account_frozen' && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs font-mono flex items-start gap-2.5 shadow-lg shadow-amber-950/20">
+                  <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-amber-300">🔒 Sovereign Emergency Lockdown Active</p>
+                    <p className="text-[11px] text-amber-300/80 mt-0.5">
+                      This account is currently frozen against unauthorized access. Enter your Master Founder Key (5747) or Sovereign Passkey to unfreeze.
+                    </p>
+                  </div>
                 </div>
               )}
 
