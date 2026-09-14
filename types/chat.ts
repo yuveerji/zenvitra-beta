@@ -233,6 +233,11 @@ export interface ChatCommunityGroup {
   membersCount?: number;
   unreadCount?: number;
   isLocked?: boolean;
+  allowedRoleIds?: string[];
+  onlyAdminsCanPost?: boolean;
+  allowMediaUploads?: boolean;
+  allowPolls?: boolean;
+  members?: CommunityMember[];
 }
 
 export interface ChatCommunity {

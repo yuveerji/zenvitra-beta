@@ -69,7 +69,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
-import { ChatMessage, ChatConversation, ChatCommunity, ChatChannel, ChannelCategory, DiscordRole, CommunityMember, GlimpseSnap, ScheduledCall, CallLink, SharedMediaItem } from '@/types/chat';
+import { ChatMessage, ChatConversation, ChatCommunity, ChatCommunityGroup, ChatChannel, ChannelCategory, DiscordRole, CommunityMember, GlimpseSnap, ScheduledCall, CallLink, SharedMediaItem } from '@/types/chat';
 import { ZenNotesRow } from '@/components/chat/ZenNotesRow';
 import { GlimpseSnapModal } from '@/components/chat/GlimpseSnapModal';
 import { GlimpseViewerModal } from '@/components/chat/GlimpseViewerModal';
@@ -77,6 +77,8 @@ import { NewChatActionModal } from '@/components/chat/NewChatActionModal';
 import { StickersDrawer } from '@/components/chat/StickersDrawer';
 import { ZenChatSettingsModal } from '@/components/chat/ZenChatSettingsModal';
 import { DiscordRoleSettingsModal } from '@/components/chat/DiscordRoleSettingsModal';
+import { ManageCommunityGroupModal } from '@/components/chat/ManageCommunityGroupModal';
+import { ManageCommunityModal } from '@/components/chat/ManageCommunityModal';
 import { ZenChatCommandBar } from '@/components/chat/ZenChatCommandBar';
 import { ZenIdentityCardModal } from '@/components/chat/ZenIdentityCardModal';
 import { ZenNativeMessageCard } from '@/components/chat/ZenNativeMessageCard';
@@ -445,11 +447,23 @@ export function ZenChatMesh() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  /* Subgroup & Community Configuration Modals */
+  const [managingSubgroup, setManagingSubgroup] = useState<ChatCommunityGroup | null>(null);
+  const [showManageCommunityModal, setShowManageCommunityModal] = useState(false);
+
   /* Call state & streams */
   const [isVoiceMuted, setIsVoiceMuted] = useState(false);
   const [isVoiceDeafened, setIsVoiceDeafened] = useState(false);
   const [localMediaStream, setLocalMediaStream] = useState<MediaStream | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
+
+  /* Discord Live Voice Channel Web Audio & Microphone Streams */
+  const [micVolumeLevel, setMicVolumeLevel] = useState<number>(0);
+  const [isCurrentUserSpeaking, setIsCurrentUserSpeaking] = useState<boolean>(false);
+  const voiceStreamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const voiceAnimFrameRef = useRef<number | null>(null);
 
   /* Toast Notification */
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -694,43 +708,198 @@ export function ZenChatMesh() {
     return messagesMap[currentChatContextId] || [];
   }, [messagesMap, currentChatContextId]);
 
-  /* Dynamic room info (used by header and room info modal) */
+  /* Dynamic room info (used by header, participants button, and room info modal) */
   const currentRoomInfo = useMemo(() => {
     if (activeCommunityGroup) {
+      const allMembers = (activeCommunityGroup.members && activeCommunityGroup.members.length > 0)
+        ? activeCommunityGroup.members
+        : (currentCommunity.members && currentCommunity.members.length > 0 ? currentCommunity.members : []);
+      const activeMembers = allMembers.filter((m) => m.status === 'online' || m.status === 'idle');
+      const activeCount = activeMembers.length > 0 ? activeMembers.length : 1;
+      const totalCount = allMembers.length > 0 ? allMembers.length : (activeCommunityGroup.membersCount || 1);
+
       return {
         title: activeCommunityGroup.name,
         badge: 'COMMUNITY GROUP',
         description: activeCommunityGroup.description || 'Specialized multilateral taskforce caucus',
         type: 'group',
         icon: activeCommunityGroup.icon || '💬',
-        memberCount: activeCommunityGroup.membersCount || 1,
+        memberCount: totalCount,
+        activeParticipantCount: activeCount,
         link: typeof window !== 'undefined' ? `${window.location.origin}/chat?community=${selectedCommunityId}&group=${activeCommunityGroup.id}` : '',
         id: activeCommunityGroup.id,
       };
     }
     if (activeChannel) {
+      if (activeChannel.type === 'voice') {
+        const voiceUsers = activeChannel.activeVoiceUsers || [];
+        const activeCount = voiceUsers.length;
+        const totalCount = currentCommunity.members?.length || Math.max(voiceUsers.length, 1);
+        return {
+          title: `#${activeChannel.name}`,
+          badge: 'VOICE STAGE',
+          description: activeChannel.description || 'Live floor microphone & speeches',
+          type: 'channel',
+          icon: '🔊',
+          memberCount: totalCount,
+          activeParticipantCount: activeCount,
+          link: typeof window !== 'undefined' ? `${window.location.origin}/chat?community=${selectedCommunityId}&channel=${activeChannel.id}` : '',
+          id: activeChannel.id,
+        };
+      }
+      const allMembers = currentCommunity.members || [];
+      const activeMembers = allMembers.filter((m) => m.status === 'online' || m.status === 'idle');
+      const activeCount = activeMembers.length > 0 ? activeMembers.length : 1;
+      const totalCount = allMembers.length > 0 ? allMembers.length : 1;
+
       return {
         title: `#${activeChannel.name}`,
-        badge: activeChannel.type === 'voice' ? 'VOICE STAGE' : 'CHAMBER CHANNEL',
+        badge: activeChannel.type === 'announcement' ? 'ANNOUNCEMENT' : 'CHAMBER CHANNEL',
         description: activeChannel.description || 'Official chamber channel dispatches',
         type: 'channel',
-        icon: activeChannel.type === 'voice' ? '🔊' : '#',
-        memberCount: currentCommunity.members?.length || 1,
+        icon: activeChannel.type === 'announcement' ? '📢' : '#',
+        memberCount: totalCount,
+        activeParticipantCount: activeCount,
         link: typeof window !== 'undefined' ? `${window.location.origin}/chat?community=${selectedCommunityId}&channel=${activeChannel.id}` : '',
         id: activeChannel.id,
       };
     }
+    const convMembers = activeConversation?.members || [];
+    const activeMembers = convMembers.filter((m) => m.status === 'online' || m.status === 'idle');
+    const activeCount = activeMembers.length > 0 ? activeMembers.length : 1;
+    const totalCount = convMembers.length > 0 ? convMembers.length : 2;
+
     return {
       title: activeConversation?.name || 'Direct Link',
       badge: activeConversation?.type === 'broadcast' ? 'BROADCAST' : activeConversation?.type === 'group' ? 'GROUP DM' : 'DIRECT ENVOY',
       description: activeConversation?.description || (activeConversation?.handle ? `@${activeConversation.handle}` : 'Encrypted sovereign DM wire'),
       type: 'conversation',
       icon: '💬',
-      memberCount: activeConversation?.members?.length || 2,
+      memberCount: totalCount,
+      activeParticipantCount: activeCount,
       link: typeof window !== 'undefined' ? `${window.location.origin}/chat?conv=${activeConversationId}` : '',
       id: activeConversationId || '',
     };
   }, [activeCommunityGroup, activeChannel, activeConversation, activeConversationId, selectedCommunityId, currentCommunity]);
+
+  /* Subgroup Posting Restriction Check */
+  const isSubgroupRestricted = useMemo(() => {
+    if (!activeCommunityGroup) return false;
+    if (canManageCurrentRoles) return false;
+
+    if (activeCommunityGroup.isLocked) return true;
+    if (activeCommunityGroup.onlyAdminsCanPost) return true;
+
+    if (activeCommunityGroup.allowedRoleIds && activeCommunityGroup.allowedRoleIds.length > 0) {
+      const myMember = currentCommunity.members?.find((m) => m.id === (currentUser?.id || 'u_self'));
+      const myRoleIds = myMember?.roleIds || [];
+      const hasAllowedRole = activeCommunityGroup.allowedRoleIds.some((rId) => myRoleIds.includes(rId));
+      if (!hasAllowedRole) return true;
+    }
+
+    return false;
+  }, [activeCommunityGroup, canManageCurrentRoles, currentCommunity.members, currentUser]);
+
+  /* Dynamic Roster for Participants Drawer */
+  const drawerRoster = useMemo(() => {
+    if (activeCommunityGroup) {
+      const mems: CommunityMember[] = (activeCommunityGroup.members && activeCommunityGroup.members.length > 0)
+        ? activeCommunityGroup.members
+        : (currentCommunity.members && currentCommunity.members.length > 0 ? currentCommunity.members : []);
+      const online = mems.filter((m) => m.status === 'online' || m.status === 'idle');
+      const offline = mems.filter((m) => m.status === 'offline' || m.status === 'dnd');
+      return {
+        title: `${activeCommunityGroup.name} Participants`,
+        subtitle: `${online.length} Active / ${mems.length} Total`,
+        sections: [
+          { name: `ACTIVE MEMBERS — ${online.length}`, members: online },
+          { name: `OFFLINE MEMBERS — ${offline.length}`, members: offline }
+        ]
+      };
+    }
+
+    if (activeChannel) {
+      if (activeChannel.type === 'voice') {
+        const connectedUsers = activeChannel.activeVoiceUsers || [];
+        const communityMems = currentCommunity.members || [];
+        const connectedIds = connectedUsers.map((u) => u.id);
+        const offlineMems = communityMems.filter((m) => !connectedIds.includes(m.id));
+
+        return {
+          title: `#${activeChannel.name} Participants`,
+          subtitle: `${connectedUsers.length} In Voice / ${communityMems.length || connectedUsers.length} Total`,
+          sections: [
+            {
+              name: `IN VOICE FLOOR — ${connectedUsers.length}`,
+              members: connectedUsers.map((u) => ({
+                id: u.id,
+                name: u.name,
+                username: u.username,
+                avatar: u.avatar,
+                status: 'online' as const,
+                roleIds: ['role-voice'],
+                customStatus: u.isSpeaking ? 'Speaking Floor' : u.isMuted ? 'Muted' : 'Listening',
+                isSpeaking: u.isSpeaking,
+                isMuted: u.isMuted,
+              }))
+            },
+            {
+              name: `OFFLINE DELEGATES — ${offlineMems.length}`,
+              members: offlineMems
+            }
+          ]
+        };
+      }
+
+      const allMembers = currentCommunity.members || [];
+      const online = allMembers.filter((m) => m.status === 'online' || m.status === 'idle');
+      const offline = allMembers.filter((m) => m.status === 'offline' || m.status === 'dnd');
+
+      return {
+        title: `#${activeChannel.name} Participants`,
+        subtitle: `${online.length} Active / ${allMembers.length} Total`,
+        sections: [
+          { name: `ONLINE DELEGATES — ${online.length}`, members: online },
+          { name: `OFFLINE DELEGATES — ${offline.length}`, members: offline }
+        ]
+      };
+    }
+
+    const convMembers = activeConversation?.members || [];
+    const online = convMembers.filter((m) => m.status === 'online' || m.status === 'idle');
+    const offline = convMembers.filter((m) => m.status !== 'online' && m.status !== 'idle');
+
+    return {
+      title: `${activeConversation?.name || 'Conversation'} Participants`,
+      subtitle: `${online.length} Active / ${convMembers.length} Total`,
+      sections: [
+        {
+          name: `ONLINE PARTICIPANTS — ${online.length}`,
+          members: online.map((m) => ({
+            id: m.id || m.username,
+            name: m.name,
+            username: m.username,
+            avatar: m.avatar,
+            status: m.status || 'online',
+            roleIds: ['role-delegate'],
+            customStatus: m.role || 'Member'
+          }))
+        },
+        {
+          name: `OFFLINE PARTICIPANTS — ${offline.length}`,
+          members: offline.map((m) => ({
+            id: m.id || m.username,
+            name: m.name,
+            username: m.username,
+            avatar: m.avatar,
+            status: m.status || 'offline',
+            roleIds: ['role-delegate'],
+            customStatus: m.role || 'Member'
+          }))
+        }
+      ]
+    };
+  }, [activeCommunityGroup, activeChannel, currentCommunity, activeConversation]);
 
   /* Real dynamic Media, Docs, and Links extracted from room messages */
   const channelMediaItems = useMemo(() => {
@@ -953,15 +1122,319 @@ export function ZenChatMesh() {
     startDirectNumberCall(clean, `@${clean}`, callType);
   };
 
-  /* Join Voice Channel */
-  const handleJoinVoiceChannel = (channel: ChatChannel) => {
-    if (activeVoiceChannel?.id === channel.id) {
-      setActiveVoiceChannel(null);
-      showToast(`Disconnected from ${channel.name}`);
-    } else {
-      setActiveVoiceChannel(channel);
-      showToast(`Connected to 🔊 ${channel.name}`);
+  /* Web Audio Synthesizer for Zero-Asset Discord-Style Chimes */
+  const playVoiceTone = (type: 'join' | 'leave' | 'mute' | 'unmute') => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === 'join') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(392, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(784, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      } else if (type === 'leave') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659.25, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(329.63, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      } else if (type === 'mute') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(350, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      } else if (type === 'unmute') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      }
+    } catch (_) {}
+  };
+
+  /* Leave Voice Channel */
+  const handleLeaveVoiceChannel = (playTone = true) => {
+    if (playTone) playVoiceTone('leave');
+
+    if (voiceAnimFrameRef.current) {
+      cancelAnimationFrame(voiceAnimFrameRef.current);
+      voiceAnimFrameRef.current = null;
     }
+    if (voiceStreamRef.current) {
+      voiceStreamRef.current.getTracks().forEach((track) => track.stop());
+      voiceStreamRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+    analyserRef.current = null;
+    setMicVolumeLevel(0);
+    setIsCurrentUserSpeaking(false);
+
+    if (activeVoiceChannel) {
+      const leavingChannelId = activeVoiceChannel.id;
+      setCommunities((prev) => {
+        const updated = prev.map((c) => {
+          if (c.id === currentCommunity.id) {
+            return {
+              ...c,
+              channels: c.channels.map((ch) =>
+                ch.id === leavingChannelId
+                  ? {
+                      ...ch,
+                      activeVoiceUsers: (ch.activeVoiceUsers || []).filter(
+                        (u) => u.id !== (currentUser?.id || 'u_self')
+                      )
+                    }
+                  : ch
+              )
+            };
+          }
+          return c;
+        });
+        try {
+          localStorage.setItem(
+            'zenvitra_user_communities_v4',
+            JSON.stringify(updated.filter((c) => c.id !== 'comm-direct'))
+          );
+        } catch (_) {}
+        return updated;
+      });
+      showToast(`Disconnected from ${activeVoiceChannel.name}`);
+    }
+    setActiveVoiceChannel(null);
+  };
+
+  /* Join Voice Channel with Live User Roster & Real Audio Analysis */
+  const handleJoinVoiceChannel = async (channel: ChatChannel) => {
+    if (activeVoiceChannel?.id === channel.id) {
+      handleLeaveVoiceChannel(true);
+      return;
+    }
+
+    if (activeVoiceChannel) {
+      handleLeaveVoiceChannel(false);
+    }
+
+    playVoiceTone('join');
+    setActiveVoiceChannel(channel);
+    showToast(`🔊 Connected to ${channel.name}`);
+
+    const selfVoiceUser = {
+      id: currentUser?.id || 'u_self',
+      name: currentUserName && currentUserName !== 'You' ? currentUserName : 'You',
+      username: currentUserUsername || 'you',
+      avatar: (currentUser as any)?.avatar || (currentUser as any)?.photoURL || undefined,
+      isSpeaking: false,
+      isMuted: isVoiceMuted,
+      isDeafened: isVoiceDeafened,
+      activityText: 'Floor Speaker'
+    };
+
+    const peerVoiceUsers = (channel.activeVoiceUsers && channel.activeVoiceUsers.length > 0)
+      ? channel.activeVoiceUsers.filter((u) => u.id !== selfVoiceUser.id)
+      : [
+          {
+            id: 'u_peer_1',
+            name: 'Hon. Rajesh Kumar',
+            username: 'rajesh_loksabha',
+            isSpeaking: false,
+            isMuted: false,
+            isDeafened: false,
+            activityText: 'Speaking Floor'
+          },
+          {
+            id: 'u_peer_2',
+            name: 'Elena Rostova',
+            username: 'elena_press',
+            isSpeaking: false,
+            isMuted: true,
+            isDeafened: false,
+            activityText: 'Press Attaché'
+          }
+        ];
+
+    const updatedVoiceUsers = [selfVoiceUser, ...peerVoiceUsers];
+
+    setCommunities((prev) => {
+      const updated = prev.map((c) => {
+        if (c.id === currentCommunity.id) {
+          return {
+            ...c,
+            channels: c.channels.map((ch) =>
+              ch.id === channel.id ? { ...ch, activeVoiceUsers: updatedVoiceUsers } : ch
+            )
+          };
+        }
+        return c;
+      });
+      try {
+        localStorage.setItem(
+          'zenvitra_user_communities_v4',
+          JSON.stringify(updated.filter((c) => c.id !== 'comm-direct'))
+        );
+      } catch (_) {}
+      return updated;
+    });
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        voiceStreamRef.current = stream;
+
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          audioContextRef.current = ctx;
+          const source = ctx.createMediaStreamSource(stream);
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 64;
+          analyser.smoothingTimeConstant = 0.4;
+          source.connect(analyser);
+          analyserRef.current = analyser;
+
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+          const detectAudio = () => {
+            if (!analyserRef.current) return;
+            analyserRef.current.getByteFrequencyData(dataArray);
+
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+              sum += dataArray[i];
+            }
+            const avg = sum / dataArray.length;
+            const normalized = Math.min(100, Math.round((avg / 128) * 100));
+            setMicVolumeLevel(normalized);
+
+            const isSpeakingNow = !isVoiceMuted && avg > 14;
+            setIsCurrentUserSpeaking(isSpeakingNow);
+
+            setCommunities((prev) =>
+              prev.map((c) => {
+                if (c.id === currentCommunity.id) {
+                  return {
+                    ...c,
+                    channels: c.channels.map((ch) => {
+                      if (ch.id === channel.id && ch.activeVoiceUsers) {
+                        return {
+                          ...ch,
+                          activeVoiceUsers: ch.activeVoiceUsers.map((u) =>
+                            u.id === (currentUser?.id || 'u_self')
+                              ? { ...u, isSpeaking: isSpeakingNow, isMuted: isVoiceMuted, isDeafened: isVoiceDeafened }
+                              : u
+                          )
+                        };
+                      }
+                      return ch;
+                    })
+                  };
+                }
+                return c;
+              })
+            );
+
+            voiceAnimFrameRef.current = requestAnimationFrame(detectAudio);
+          };
+
+          voiceAnimFrameRef.current = requestAnimationFrame(detectAudio);
+        }
+      }
+    } catch (err) {
+      console.warn('Microphone stream optional note:', err);
+    }
+  };
+
+  /* Toggle Voice Mute */
+  const handleToggleVoiceMute = () => {
+    const nextMuted = !isVoiceMuted;
+    setIsVoiceMuted(nextMuted);
+    playVoiceTone(nextMuted ? 'mute' : 'unmute');
+
+    if (voiceStreamRef.current) {
+      voiceStreamRef.current.getAudioTracks().forEach((t) => {
+        t.enabled = !nextMuted;
+      });
+    }
+
+    if (activeVoiceChannel) {
+      setCommunities((prev) =>
+        prev.map((c) => {
+          if (c.id === currentCommunity.id) {
+            return {
+              ...c,
+              channels: c.channels.map((ch) => {
+                if (ch.id === activeVoiceChannel.id && ch.activeVoiceUsers) {
+                  return {
+                    ...ch,
+                    activeVoiceUsers: ch.activeVoiceUsers.map((u) =>
+                      u.id === (currentUser?.id || 'u_self')
+                        ? { ...u, isMuted: nextMuted, isSpeaking: nextMuted ? false : u.isSpeaking }
+                        : u
+                    )
+                  };
+                }
+                return ch;
+              })
+            };
+          }
+          return c;
+        })
+      );
+    }
+    showToast(nextMuted ? 'Microphone muted' : 'Microphone unmuted');
+  };
+
+  /* Toggle Voice Deafen */
+  const handleToggleVoiceDeafen = () => {
+    const nextDeafened = !isVoiceDeafened;
+    setIsVoiceDeafened(nextDeafened);
+    playVoiceTone(nextDeafened ? 'mute' : 'unmute');
+
+    if (activeVoiceChannel) {
+      setCommunities((prev) =>
+        prev.map((c) => {
+          if (c.id === currentCommunity.id) {
+            return {
+              ...c,
+              channels: c.channels.map((ch) => {
+                if (ch.id === activeVoiceChannel.id && ch.activeVoiceUsers) {
+                  return {
+                    ...ch,
+                    activeVoiceUsers: ch.activeVoiceUsers.map((u) =>
+                      u.id === (currentUser?.id || 'u_self')
+                        ? { ...u, isDeafened: nextDeafened }
+                        : u
+                    )
+                  };
+                }
+                return ch;
+              })
+            };
+          }
+          return c;
+        })
+      );
+    }
+    showToast(nextDeafened ? 'Deafened' : 'Undeafened');
   };
 
   /* Create Caucus Community from Template or Custom */
@@ -1356,6 +1829,18 @@ export function ZenChatMesh() {
                         <Hash className="w-4 h-4 text-cyan-400" />
                         <span>Create Channel</span>
                       </button>
+                      {canManageCurrentRoles && (
+                        <button
+                          onClick={() => {
+                            setShowSidebarHeaderMenu(false);
+                            setShowManageCommunityModal(true);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                        >
+                          <Settings className="w-4 h-4 text-purple-400" />
+                          <span>Server Settings & Channels</span>
+                        </button>
+                      )}
                       {canManageCurrentRoles && (
                         <button
                           onClick={() => {
@@ -1896,31 +2381,47 @@ export function ZenChatMesh() {
                                     {ch.activeVoiceUsers.map((user) => (
                                       <div
                                         key={user.id}
-                                        className="flex items-center justify-between px-2 py-1 rounded-lg bg-white/[0.02] text-xs text-neutral-300"
+                                        className={`flex items-center justify-between px-2 py-1 rounded-lg text-xs transition-all duration-150 ${
+                                          user.isSpeaking
+                                            ? 'bg-emerald-500/10 border border-emerald-500/30 text-white'
+                                            : 'bg-white/[0.02] text-neutral-300'
+                                        }`}
                                       >
                                         <div className="flex items-center gap-2 truncate">
                                           <div className="relative flex items-center justify-center">
-                                            <div className="w-5 h-5 rounded-full bg-purple-600/30 border border-purple-500/40 text-[10px] text-purple-300 flex items-center justify-center font-bold">
+                                            <div
+                                              className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold transition-all duration-150 ${
+                                                user.isSpeaking
+                                                  ? 'bg-emerald-500/30 border-2 border-emerald-400 ring-2 ring-emerald-400/80 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse text-emerald-200'
+                                                  : 'bg-purple-600/30 border border-purple-500/40 text-purple-300'
+                                              }`}
+                                            >
                                               {user.name.charAt(0)}
                                             </div>
                                             {user.isSpeaking && (
-                                              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse ring-2 ring-black" />
+                                              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping ring-2 ring-black" />
                                             )}
                                           </div>
-                                          <span className="font-sans text-[11px] truncate text-neutral-200">
+                                          <span
+                                            className={`font-sans text-[11px] truncate ${
+                                              user.isSpeaking ? 'text-emerald-300 font-semibold' : 'text-neutral-200'
+                                            }`}
+                                          >
                                             {user.name}
                                           </span>
                                         </div>
-                                        <div className="flex items-center gap-1 text-[10px]">
+                                        <div className="flex items-center gap-1.5 text-[10px]">
                                           {user.activityText && (
-                                            <span className="font-mono text-[8px] px-1.5 py-0.2 rounded bg-red-500/20 border border-red-500/30 text-red-300 font-bold uppercase tracking-wider">
+                                            <span className="font-mono text-[8px] px-1.5 py-0.2 rounded bg-white/5 border border-white/10 text-neutral-400 font-medium">
                                               {user.activityText}
                                             </span>
                                           )}
                                           {user.isMuted ? (
                                             <MicOff className="w-3 h-3 text-red-400" />
+                                          ) : user.isSpeaking ? (
+                                            <Volume2 className="w-3 h-3 text-emerald-400 animate-bounce" />
                                           ) : (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400/60" />
                                           )}
                                         </div>
                                       </div>
@@ -2064,20 +2565,69 @@ export function ZenChatMesh() {
 
         {/* ── Discord-Style Connected Voice HUD ── */}
         {activeVoiceChannel && (
-          <div className="p-3 bg-[#0a0a0f] border-t border-purple-500/20 flex flex-col gap-2">
+          <div className="p-3 bg-[#0a0a12] border-t border-purple-500/20 flex flex-col gap-2 shadow-2xl">
+            {/* Top row: Status, Ping, Disconnect */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-mono text-[10px] text-purple-300 uppercase font-semibold truncate">
-                  {activeVoiceChannel.name}
-                </span>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[9px] text-emerald-400 font-bold uppercase tracking-wider">
+                      Voice Connected
+                    </span>
+                    <span className="font-mono text-[8px] text-neutral-500">24ms (RTC HD)</span>
+                  </div>
+                  <span className="font-display font-medium text-xs text-white truncate block">
+                    {activeVoiceChannel.name}
+                  </span>
+                </div>
               </div>
-              <button
-                onClick={() => setActiveVoiceChannel(null)}
-                className="p-1 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-400 transition"
-              >
-                <PhoneOff className="w-3 h-3" />
-              </button>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={handleToggleVoiceMute}
+                  className={`p-1.5 rounded-lg transition cursor-pointer ${
+                    isVoiceMuted ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.06] text-neutral-300 hover:text-white'
+                  }`}
+                  title={isVoiceMuted ? 'Unmute Mic' : 'Mute Mic'}
+                >
+                  {isVoiceMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={handleToggleVoiceDeafen}
+                  className={`p-1.5 rounded-lg transition cursor-pointer ${
+                    isVoiceDeafened ? 'bg-red-500/20 text-red-400' : 'bg-white/[0.06] text-neutral-300 hover:text-white'
+                  }`}
+                  title={isVoiceDeafened ? 'Undeafen' : 'Deafen'}
+                >
+                  <Headphones className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleLeaveVoiceChannel(true)}
+                  className="p-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 transition cursor-pointer"
+                  title="Disconnect Voice"
+                >
+                  <PhoneOff className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Live Audio Visualizer Waveform (12 Frequency Bars) */}
+            <div className="flex items-center justify-center gap-1 h-3.5 px-2 bg-black/40 rounded-lg border border-white/[0.04]">
+              {[0.4, 0.7, 1.0, 0.6, 1.2, 0.8, 1.1, 0.5, 0.9, 0.7, 1.0, 0.4].map((mult, idx) => {
+                const barHeight = isCurrentUserSpeaking
+                  ? Math.max(3, Math.min(14, Math.round(micVolumeLevel * 0.15 * mult)))
+                  : 2;
+                return (
+                  <div
+                    key={idx}
+                    className={`w-1 rounded-full transition-all duration-75 ${
+                      isCurrentUserSpeaking ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-neutral-600'
+                    }`}
+                    style={{ height: `${barHeight}px` }}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -2100,14 +2650,14 @@ export function ZenChatMesh() {
 
           <div className="flex items-center gap-1 text-neutral-400">
             <button
-              onClick={() => setIsVoiceMuted(!isVoiceMuted)}
+              onClick={handleToggleVoiceMute}
               className="p-1.5 hover:text-white hover:bg-white/[0.04] rounded-lg transition cursor-pointer"
               title={isVoiceMuted ? 'Unmute Mic' : 'Mute Mic'}
             >
               {isVoiceMuted ? <MicOff className="w-3.5 h-3.5 text-red-400" /> : <Mic className="w-3.5 h-3.5" />}
             </button>
             <button
-              onClick={() => setIsVoiceDeafened(!isVoiceDeafened)}
+              onClick={handleToggleVoiceDeafen}
               className="p-1.5 hover:text-white hover:bg-white/[0.04] rounded-lg transition cursor-pointer"
               title={isVoiceDeafened ? 'Undeafen' : 'Deafen'}
             >
@@ -2286,6 +2836,17 @@ export function ZenChatMesh() {
               <Users className="w-4 h-4" />
             </button>
 
+            {activeCommunityGroup && (
+              <button
+                onClick={() => setManagingSubgroup(activeCommunityGroup)}
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-300 hover:text-white transition text-xs font-medium cursor-pointer"
+                title="Configure Subgroup Details & Permissions"
+              >
+                <Settings className="w-3.5 h-3.5 text-purple-400" />
+                <span>Subgroup Settings</span>
+              </button>
+            )}
+
             {/* 3-Dot Group / Channel Settings Menu */}
             <div className="relative">
               <button
@@ -2319,6 +2880,20 @@ export function ZenChatMesh() {
                     <span>Group / Room Info</span>
                   </button>
 
+                  {/* 1. Configure Subgroup (If inside community group) */}
+                  {activeCommunityGroup && (
+                    <button
+                      onClick={() => {
+                        setShowGroupSettingsMenu(false);
+                        setManagingSubgroup(activeCommunityGroup);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-purple-300 hover:text-white hover:bg-purple-600/20 transition text-left cursor-pointer"
+                    >
+                      <Settings className="w-4 h-4 text-purple-400" />
+                      <span>Configure Subgroup Details</span>
+                    </button>
+                  )}
+
                   {/* 2. View Member Roster */}
                   <button
                     onClick={() => {
@@ -2328,7 +2903,7 @@ export function ZenChatMesh() {
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
                   >
                     <Users className="w-4 h-4 text-purple-400" />
-                    <span>View Participants ({currentRoomInfo.memberCount})</span>
+                    <span>View Participants ({currentRoomInfo.activeParticipantCount})</span>
                   </button>
 
                   {/* 3. Add / Invite Members */}
@@ -2648,106 +3223,130 @@ export function ZenChatMesh() {
             onSelectSticker={(url, name) => sendSticker(url, name)}
           />
 
-          <form onSubmit={handleSendMessage} className="max-w-5xl mx-auto flex items-center gap-2">
-            {/* Action Group: ⌘K Command Bar + Snap + Sticker */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowCommandBar(true)}
-                className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:to-purple-500/30 border border-cyan-500/40 text-cyan-300 font-mono text-xs flex items-center gap-1.5 transition-all duration-150 cursor-pointer shadow-sm"
-                title="Universal Command Palette (⌘K)"
-              >
-                <Zap className="w-4 h-4 text-cyan-400" />
-                <span className="hidden md:inline font-bold">⌘K</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowGlimpseSnapModal(true)}
-                className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-neutral-400 hover:text-cyan-300 transition-all duration-150 cursor-pointer shadow-sm"
-                title="Send Glimpse Snap"
-              >
-                <Camera className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowStickerDrawer(!showStickerDrawer)}
-                className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-neutral-400 hover:text-cyan-300 transition-all duration-150 cursor-pointer shadow-sm"
-                title="Stickers Library"
-              >
-                <Sparkles className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Main Text Input Field */}
-            <div className="flex-1 relative flex items-center rounded-2xl bg-white/[0.04] border border-white/10 hover:border-white/20 focus-within:border-cyan-500/60 focus-within:bg-white/[0.06] transition-all duration-200">
-              <input
-                type="text"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                placeholder="Dispatch a message, treaty amendment, or note..."
-                className="w-full pl-4 pr-10 py-2.5 sm:py-3 bg-transparent text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none font-sans"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-white hover:scale-110 transition cursor-pointer"
-              >
-                <Smile className="w-4 h-4" />
-              </button>
-
-              {showEmojiPicker && (
-                <div className="absolute bottom-14 right-0 p-3 bg-[#0d1017] border border-white/15 rounded-2xl shadow-2xl grid grid-cols-5 gap-2 z-50">
-                  {EMOJI_LIST.map((em) => (
-                    <button
-                      key={em}
-                      type="button"
-                      onClick={() => {
-                        setMessageText((prev) => prev + em);
-                        setShowEmojiPicker(false);
-                      }}
-                      className="text-lg hover:scale-125 transition p-1 cursor-pointer"
-                    >
-                      {em}
-                    </button>
-                  ))}
-                </div>
+          {isSubgroupRestricted ? (
+            <div className="max-w-5xl mx-auto p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between text-xs text-amber-300 shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>
+                  {activeCommunityGroup?.isLocked
+                    ? `🔒 #${activeCommunityGroup.name} discussions are currently frozen by administration.`
+                    : activeCommunityGroup?.onlyAdminsCanPost
+                    ? `🔒 Only administrators and committee chairs can send messages in this subgroup. You have read-only access.`
+                    : `🔒 Message sending in #${activeCommunityGroup?.name} is restricted to authorized parliamentary roles.`}
+                </span>
+              </div>
+              {canManageCurrentRoles && (
+                <button
+                  type="button"
+                  onClick={() => setManagingSubgroup(activeCommunityGroup)}
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-medium text-[11px] transition cursor-pointer shrink-0 ml-2"
+                >
+                  Subgroup Settings
+                </button>
               )}
             </div>
+          ) : (
+            <form onSubmit={handleSendMessage} className="max-w-5xl mx-auto flex items-center gap-2">
+              {/* Action Group: ⌘K Command Bar + Snap + Sticker */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowCommandBar(true)}
+                  className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:to-purple-500/30 border border-cyan-500/40 text-cyan-300 font-mono text-xs flex items-center gap-1.5 transition-all duration-150 cursor-pointer shadow-sm"
+                  title="Universal Command Palette (⌘K)"
+                >
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                  <span className="hidden md:inline font-bold">⌘K</span>
+                </button>
 
-            {/* Voice Recorder Button */}
-            {isRecordingVoice ? (
-              <button
-                type="button"
-                onClick={stopRecordingAudio}
-                className="px-3 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-mono text-xs transition shadow-md flex items-center gap-1.5 shrink-0 animate-pulse cursor-pointer"
-              >
-                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                <span>{recordingSeconds}s • SEND</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={startRecordingAudio}
-                className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition-all duration-150 shrink-0 cursor-pointer"
-                title="Record Voice Dispatch"
-              >
-                <Mic className="w-4 h-4" />
-              </button>
-            )}
+                <button
+                  type="button"
+                  onClick={() => setShowGlimpseSnapModal(true)}
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-neutral-400 hover:text-cyan-300 transition-all duration-150 cursor-pointer shadow-sm"
+                  title="Send Glimpse Snap"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
 
-            {/* Send Button */}
-            <button
-              type="submit"
-              disabled={!messageText.trim()}
-              className="p-2.5 sm:px-4 sm:py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 disabled:opacity-25 text-black font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] flex items-center gap-1.5 shrink-0 cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-              <span className="hidden sm:inline">Send</span>
-            </button>
-          </form>
+                <button
+                  type="button"
+                  onClick={() => setShowStickerDrawer(!showStickerDrawer)}
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-neutral-400 hover:text-cyan-300 transition-all duration-150 cursor-pointer shadow-sm"
+                  title="Stickers Library"
+                >
+                  <Sparkles className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Main Text Input Field */}
+              <div className="flex-1 relative flex items-center rounded-2xl bg-white/[0.04] border border-white/10 hover:border-white/20 focus-within:border-cyan-500/60 focus-within:bg-white/[0.06] transition-all duration-200">
+                <input
+                  type="text"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Dispatch a message, treaty amendment, or note..."
+                  className="w-full pl-4 pr-10 py-2.5 sm:py-3 bg-transparent text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none font-sans"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-white hover:scale-110 transition cursor-pointer"
+                >
+                  <Smile className="w-4 h-4" />
+                </button>
+
+                {showEmojiPicker && (
+                  <div className="absolute bottom-14 right-0 p-3 bg-[#0d1017] border border-white/15 rounded-2xl shadow-2xl grid grid-cols-5 gap-2 z-50">
+                    {EMOJI_LIST.map((em) => (
+                      <button
+                        key={em}
+                        type="button"
+                        onClick={() => {
+                          setMessageText((prev) => prev + em);
+                          setShowEmojiPicker(false);
+                        }}
+                        className="text-lg hover:scale-125 transition p-1 cursor-pointer"
+                      >
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Voice Recorder Button */}
+              {isRecordingVoice ? (
+                <button
+                  type="button"
+                  onClick={stopRecordingAudio}
+                  className="px-3 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-mono text-xs transition shadow-md flex items-center gap-1.5 shrink-0 animate-pulse cursor-pointer"
+                >
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                  <span>{recordingSeconds}s • SEND</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={startRecordingAudio}
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition-all duration-150 shrink-0 cursor-pointer"
+                  title="Record Voice Dispatch"
+                >
+                  <Mic className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Send Button */}
+              <button
+                type="submit"
+                disabled={!messageText.trim()}
+                className="p-2.5 sm:px-4 sm:py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 disabled:opacity-25 text-black font-bold font-sans text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] flex items-center gap-1.5 shrink-0 cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+                <span className="hidden sm:inline">Send</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
 
@@ -2766,125 +3365,101 @@ export function ZenChatMesh() {
               exit={{ width: 0, opacity: 0 }}
               className="fixed right-0 top-0 bottom-0 md:relative h-full bg-[#08090d] border-l border-white/[0.06] flex flex-col z-50 md:z-20 overflow-hidden flex-shrink-0 shadow-2xl md:shadow-none"
             >
-            <div className="p-3.5 border-b border-white/[0.06] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-purple-400" />
-                <h4 className="font-display font-medium text-xs text-white">
-                  {activeCommunityGroup ? 'Group Members' : 'Chamber Delegates'}
-                </h4>
+            <div className="p-3.5 border-b border-white/[0.06] flex items-center justify-between bg-[#0a0b10]">
+              <div className="flex items-center gap-2 min-w-0">
+                <Users className="w-4 h-4 text-purple-400 shrink-0" />
+                <div className="min-w-0">
+                  <h4 className="font-display font-medium text-xs text-white truncate">
+                    {drawerRoster.title}
+                  </h4>
+                  <p className="font-mono text-[9px] text-purple-400 truncate">
+                    {drawerRoster.subtitle}
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setShowMembersDrawer(false)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-white transition"
+                className="p-1 rounded-lg text-neutral-400 hover:text-white transition cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-4">
-              {/* Category: Leadership / Founder */}
-              <div className="space-y-1.5">
-                <span className="font-mono text-[9px] uppercase tracking-wider text-amber-400 font-bold px-1 block">
-                  👑 FOUNDER & ARCHITECT — 1
-                </span>
-                <div className="flex items-center gap-2.5 p-2 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                  <div className="relative">
-                    <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center justify-center">
-                      Y
-                    </div>
-                    <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#08090d]" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-sans font-medium text-xs text-white truncate">Yuveer</span>
-                      <span className="font-mono text-[8px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 font-bold">
-                        FOUNDER
-                      </span>
-                    </div>
-                    <span className="font-mono text-[9px] text-neutral-400 truncate block">@yuveer</span>
-                  </div>
-                </div>
-              </div>
+              {drawerRoster.sections.map((section, sIdx) => {
+                if (!section.members || section.members.length === 0) return null;
+                return (
+                  <div key={sIdx} className="space-y-1.5">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-purple-400/80 font-bold px-1 block">
+                      {section.name}
+                    </span>
+                    <div className="space-y-1">
+                      {section.members.map((member: any) => {
+                        const isSpeaking = !!member.isSpeaking;
+                        const isMuted = !!member.isMuted;
+                        const isOnline = member.status === 'online' || member.status === 'idle' || isSpeaking;
+                        return (
+                          <div
+                            key={member.id || member.username}
+                            onClick={() => {
+                              setShowMembersDrawer(false);
+                              showToast(`Participant @${member.username}`);
+                            }}
+                            className={`flex items-center justify-between p-2 rounded-xl transition cursor-pointer ${
+                              isSpeaking
+                                ? 'bg-emerald-500/10 border border-emerald-500/30 text-white'
+                                : 'hover:bg-white/[0.04] text-neutral-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="relative shrink-0">
+                                <div
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
+                                    isSpeaking
+                                      ? 'bg-emerald-500/30 border-2 border-emerald-400 ring-2 ring-emerald-400/80 shadow-[0_0_10px_rgba(52,211,153,0.8)] text-emerald-200'
+                                      : 'bg-purple-600/20 border border-purple-500/30 text-purple-300'
+                                  }`}
+                                >
+                                  {member.name ? member.name.charAt(0) : '?'}
+                                </div>
+                                <span
+                                  className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ring-2 ring-[#08090d] ${
+                                    isSpeaking
+                                      ? 'bg-emerald-400 animate-ping'
+                                      : isOnline
+                                      ? 'bg-emerald-400'
+                                      : 'bg-neutral-500'
+                                  }`}
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`font-sans font-medium text-xs truncate ${isSpeaking ? 'text-emerald-300 font-semibold' : 'text-white'}`}>
+                                    {member.name}
+                                  </span>
+                                  {member.customStatus && (
+                                    <span className="font-mono text-[8px] px-1 py-0.2 rounded bg-white/5 border border-white/10 text-neutral-400 truncate max-w-[80px]">
+                                      {member.customStatus}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="font-mono text-[9px] text-neutral-500 truncate block">
+                                  @{member.username}
+                                </span>
+                              </div>
+                            </div>
 
-              {/* Category: Dais & Secretariat */}
-              <div className="space-y-1.5">
-                <span className="font-mono text-[9px] uppercase tracking-wider text-purple-400 font-semibold px-1 block">
-                  🏛️ SECRETARIAT & DAIS — 2
-                </span>
-                <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/[0.03] transition cursor-pointer">
-                  <div className="relative">
-                    <div className="w-7 h-7 rounded-full bg-purple-600/20 border border-purple-500/30 text-purple-300 font-bold text-xs flex items-center justify-center">
-                      S
-                    </div>
-                    <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#08090d]" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-sans font-medium text-xs text-white truncate">UN Secretariat</span>
-                      <span className="font-mono text-[8px] px-1 py-0.2 rounded bg-purple-500/20 text-purple-300">
-                        SECRETARIAT
-                      </span>
-                    </div>
-                    <span className="font-mono text-[9px] text-neutral-400 truncate block">@un_secretariat</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/[0.03] transition cursor-pointer">
-                  <div className="relative">
-                    <div className="w-7 h-7 rounded-full bg-cyan-600/20 border border-cyan-500/30 text-cyan-300 font-bold text-xs flex items-center justify-center">
-                      C
-                    </div>
-                    <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-neutral-500 ring-2 ring-[#08090d]" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-sans font-medium text-xs text-white truncate">Council Chair</span>
-                      <span className="font-mono text-[8px] px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300">
-                        CHAIR
-                      </span>
-                    </div>
-                    <span className="font-mono text-[9px] text-neutral-400 truncate block">@chair_dais</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category: Delegates / Members */}
-              <div className="space-y-1.5">
-                <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-400 font-semibold px-1 block">
-                  ONLINE DELEGATES — 4
-                </span>
-                {[
-                  { name: 'Elena Rostova', handle: '@elena_press', role: 'PRESS', initial: 'E', color: 'bg-emerald-500/20 text-emerald-300' },
-                  { name: 'Marcus Sterling', handle: '@marcus_delegate', role: 'DELEGATE', initial: 'M', color: 'bg-white/10 text-neutral-300' },
-                  { name: 'Sovereign Ledger', handle: '@ledger_bot', role: 'BOT', initial: '🤖', color: 'bg-blue-500/20 text-blue-300' },
-                  { name: 'Aarav Sharma', handle: '@aarav_in', role: 'DELEGATE', initial: 'A', color: 'bg-white/10 text-neutral-300' }
-                ].map((member) => (
-                  <div 
-                    key={member.handle}
-                    onClick={() => {
-                      setShowMembersDrawer(false);
-                      showToast(`Opened envoy dispatch with ${member.name}`);
-                    }}
-                    className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/[0.04] transition cursor-pointer"
-                  >
-                    <div className="relative">
-                      <div className={`w-7 h-7 rounded-full border border-white/10 font-bold text-xs flex items-center justify-center ${member.color}`}>
-                        {member.initial}
-                      </div>
-                      <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#08090d]" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-sans font-medium text-xs text-white truncate">{member.name}</span>
-                        <span className="font-mono text-[8px] px-1 py-0.2 rounded bg-white/5 border border-white/10 text-neutral-400">
-                          {member.role}
-                        </span>
-                      </div>
-                      <span className="font-mono text-[9px] text-neutral-400 truncate block">{member.handle}</span>
+                            <div className="flex items-center gap-1 text-[10px] shrink-0">
+                              {isMuted && <MicOff className="w-3 h-3 text-red-400" />}
+                              {isSpeaking && <Volume2 className="w-3.5 h-3.5 text-emerald-400 animate-bounce" />}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </motion.div>
           </>
@@ -3980,17 +4555,89 @@ export function ZenChatMesh() {
         members={currentCommunity.members || []}
         canManageRoles={canManageCurrentRoles}
         onUpdateRoles={(newRoles) => {
-          setCommunities((prev) =>
-            prev.map((c) => (c.id === currentCommunity.id ? { ...c, roles: newRoles } : c))
-          );
+          setCommunities((prev) => {
+            const updated = prev.map((c) => (c.id === currentCommunity.id ? { ...c, roles: newRoles } : c));
+            try {
+              localStorage.setItem(
+                'zenvitra_user_communities_v4',
+                JSON.stringify(updated.filter((c) => c.id !== 'comm-direct'))
+              );
+            } catch (_) {}
+            return updated;
+          });
           showToast('Server roles updated');
         }}
         onUpdateMembers={(newMembers) => {
-          setCommunities((prev) =>
-            prev.map((c) => (c.id === currentCommunity.id ? { ...c, members: newMembers } : c))
-          );
+          setCommunities((prev) => {
+            const updated = prev.map((c) => (c.id === currentCommunity.id ? { ...c, members: newMembers } : c));
+            try {
+              localStorage.setItem(
+                'zenvitra_user_communities_v4',
+                JSON.stringify(updated.filter((c) => c.id !== 'comm-direct'))
+              );
+            } catch (_) {}
+            return updated;
+          });
           showToast('Member role assignments updated');
         }}
+        onToast={showToast}
+      />
+
+      {/* ── Manage Subgroup Details & Permissions Modal ── */}
+      <ManageCommunityGroupModal
+        isOpen={!!managingSubgroup}
+        onClose={() => setManagingSubgroup(null)}
+        group={managingSubgroup}
+        community={currentCommunity}
+        onSaveGroup={(updatedGroup) => {
+          const existing = currentCommunity.groups || [];
+          const updated = existing.map((g) => (g.id === updatedGroup.id ? updatedGroup : g));
+          saveCommunityGroups(currentCommunity.id, updated);
+          setManagingSubgroup(null);
+        }}
+        onDeleteGroup={(groupId) => {
+          handleDeleteCommunityGroup(groupId);
+          setManagingSubgroup(null);
+        }}
+        onToast={showToast}
+      />
+
+      {/* ── Manage Community Server Overview, Categories & Channels Modal ── */}
+      <ManageCommunityModal
+        isOpen={showManageCommunityModal}
+        onClose={() => setShowManageCommunityModal(false)}
+        community={currentCommunity}
+        onUpdateCommunity={(updatedComm) => {
+          setCommunities((prev) => {
+            const updated = prev.map((c) => (c.id === updatedComm.id ? updatedComm : c));
+            try {
+              localStorage.setItem(
+                'zenvitra_user_communities_v4',
+                JSON.stringify(updated.filter((c) => c.id !== 'comm-direct'))
+              );
+            } catch (_) {}
+            return updated;
+          });
+        }}
+        onOpenRoles={() => setShowRoleSettingsModal(true)}
+        onDeleteCommunity={
+          currentCommunity.id !== 'comm-direct' && currentCommunity.id !== 'comm-user-primary'
+            ? (commId) => {
+                setCommunities((prev) => {
+                  const filtered = prev.filter((c) => c.id !== commId);
+                  try {
+                    localStorage.setItem(
+                      'zenvitra_user_communities_v4',
+                      JSON.stringify(filtered.filter((c) => c.id !== 'comm-direct'))
+                    );
+                  } catch (_) {}
+                  return filtered;
+                });
+                setSelectedCommunityId('comm-direct');
+                showToast('Server deleted');
+              }
+            : undefined
+        }
         onToast={showToast}
       />
 
