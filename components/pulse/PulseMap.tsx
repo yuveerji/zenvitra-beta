@@ -63,19 +63,19 @@ export function PulseMap({ onSelectTopic }: PulseMapProps) {
       });
     }
 
-    // 2. Add foundational baseline topics if feed is sparse
-    const baselineTopics = [
-      { name: 'Education Reform', count: 48 },
-      { name: 'Climate & Water', count: 32 },
-      { name: 'Youth Elections', count: 61 },
-      { name: 'Digital Sovereignty', count: 25 },
-      { name: 'Mental Health Rights', count: 39 },
-      { name: 'UN Charter 2026', count: 18 },
+    // 2. Foundation civic channels if feed has not received dispatches yet (strictly 0 signals / standby)
+    const foundationChannels = [
+      'Diplomacy',
+      'Governance',
+      'Digital Sovereignty',
+      'Civil Rights',
+      'Education',
+      'Environment',
     ];
 
-    baselineTopics.forEach((bt) => {
-      if (!topicCounts.has(bt.name)) {
-        topicCounts.set(bt.name, bt.count);
+    foundationChannels.forEach((name) => {
+      if (!topicCounts.has(name)) {
+        topicCounts.set(name, 0);
       }
     });
 
@@ -258,7 +258,8 @@ export function PulseMap({ onSelectTopic }: PulseMapProps) {
         // Signal count pill
         ctx.font = 'bold 9px ui-monospace, monospace';
         ctx.fillStyle = isSelected ? node.color : '#a1a1aa';
-        ctx.fillText(`${node.count} signals`, px, py + (isSelected ? 30 : 22));
+        const countText = node.count > 0 ? `${node.count} ${node.count === 1 ? 'signal' : 'signals'}` : 'Standby';
+        ctx.fillText(countText, px, py + (isSelected ? 30 : 22));
         ctx.shadowBlur = 0;
       });
 
@@ -293,6 +294,7 @@ export function PulseMap({ onSelectTopic }: PulseMapProps) {
   };
 
   const activeCount = nodesMapRef.current.size;
+  const totalSignals = Array.from(nodesMapRef.current.values()).reduce((sum, n) => sum + n.count, 0);
 
   return (
     <div className="relative rounded-3xl bg-[#07090e]/95 border border-white/[0.08] p-5 sm:p-6 space-y-4 overflow-hidden backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
@@ -345,8 +347,10 @@ export function PulseMap({ onSelectTopic }: PulseMapProps) {
           <span>CLICK ANY TOPIC BEACON TO FILTER DISPATCH WIRE</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span className="text-neutral-300 font-semibold">{activeCount} SIGNAL HUBS ONLINE</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${totalSignals > 0 ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'}`} />
+          <span className="text-neutral-300 font-semibold">
+            {totalSignals > 0 ? `${totalSignals} SIGNALS ACTIVE` : `${activeCount} CHANNELS ONLINE // STANDBY`}
+          </span>
         </div>
       </div>
     </div>

@@ -464,25 +464,59 @@ export function ZenPulseCore() {
   };
 
   /* Live Breaking Dynamic Ticker - ZERO FAKE WIRES, PURE REAL DATA */
+  interface TickerItem {
+    id: string;
+    badge: string;
+    text: string;
+    post?: PulsePost;
+    directiveIndex?: number;
+  }
+
   const [tickerIndex, setTickerIndex] = useState(0);
-  const dynamicTickerDirectives = useMemo(() => {
-    const realWires: string[] = [];
+  const dynamicTickerDirectives: TickerItem[] = useMemo(() => {
+    const items: TickerItem[] = [];
+
+    // Official platform directives (indices map directly to DIRECTIVE_DOSSIERS in ChamberDirectiveModal)
+    // 0: directive-mesh ('ZENVITRA MESH')
+    // 1: directive-civic ('Constitutional 25% Profit Civic Treasury Allocation')
+    // 2: directive-sovereign ('Sovereign Identity Shield')
+    const officialDirectives: TickerItem[] = [
+      {
+        id: 'directive-mesh',
+        badge: 'CHAMBER DIRECTIVE',
+        text: 'ZENVITRA MESH • Live Decentralized Diplomatic Network Active',
+        directiveIndex: 0,
+      },
+      {
+        id: 'directive-civic',
+        badge: 'CIVIC COVENANT',
+        text: 'CONSTITUTIONAL INVARIANT • 25% Platform Profit Reserved for Public Schools & Scholarships',
+        directiveIndex: 1,
+      },
+      {
+        id: 'directive-sovereign',
+        badge: 'SECURITY MANDATE',
+        text: 'SOVEREIGN IDENTITY SHIELD • Zero Tracking, Zero Ad Algorithms & 100% Data Sovereignty',
+        directiveIndex: 2,
+      },
+    ];
+
     if (Array.isArray(feedPosts) && feedPosts.length > 0) {
-      feedPosts.slice(0, 6).forEach((p) => {
+      feedPosts.slice(0, 5).forEach((p) => {
         const cleanTxt = (p.content || '').replace(/[\r\n]+/g, ' ').trim();
         if (cleanTxt) {
-          const wirePrefix = (p as any).treatyData ? '📜 TREATY WIRE' : (p as any).speechData ? '🎙️ FLOOR RELAY' : '⚡ LIVE WIRE';
-          realWires.push(`${wirePrefix} • @${p.authorUsername || 'delegate'}: ${cleanTxt.slice(0, 100)}...`);
+          const wirePrefix = (p as any).treatyData ? 'TREATY WIRE' : (p as any).speechData ? 'FLOOR RELAY' : 'LIVE WIRE';
+          items.push({
+            id: `post-${p.id}`,
+            badge: wirePrefix,
+            text: `@${p.authorUsername || 'delegate'}: ${cleanTxt.length > 90 ? cleanTxt.slice(0, 90) + '...' : cleanTxt}`,
+            post: p,
+          });
         }
       });
     }
-    if (realWires.length === 0) {
-      return [
-        '⚡ ZENVITRA MESH • Live Decentralized Diplomatic Network Active',
-        '🌐 REAL-TIME PROTOCOL • Post a dispatch or treaty to broadcast to global wires',
-      ];
-    }
-    return realWires;
+
+    return items.length > 0 ? [...items, ...officialDirectives] : officialDirectives;
   }, [feedPosts]);
 
   useEffect(() => {
@@ -493,19 +527,41 @@ export function ZenPulseCore() {
     return () => clearInterval(timer);
   }, [dynamicTickerDirectives.length]);
 
+  const currentTickerItem = dynamicTickerDirectives[tickerIndex] || dynamicTickerDirectives[0];
+
+  const handleTickerClick = (item: TickerItem) => {
+    if (item.post) {
+      setActiveFlexItem({
+        id: item.post.id,
+        type: 'pulse_post',
+        title: item.post.authorName ? `${item.post.authorName}'s Dispatch` : 'Sovereign Dispatch',
+        content: item.post.content,
+        authorName: item.post.authorName,
+        authorUsername: item.post.authorUsername,
+        authorAvatar: item.post.authorAvatar,
+        images: item.post.images,
+        createdAt: item.post.createdAt,
+        likes: item.post.likes,
+        category: (item.post as any).category || 'Dispatch',
+        tags: item.post.tags,
+        threadSegments: [item.post.content],
+      });
+    } else if (item.directiveIndex !== undefined) {
+      setActiveDirectiveIndex(item.directiveIndex);
+      setShowDirectiveModal(true);
+    }
+  };
+
   /* Chamber & Post Category Filter */
   const [chamberFilter, setChamberFilter] = useState<'all' | 'plenary' | 'treaties' | 'audio' | 'summits' | 'delegates'>('all');
   const [composerMode, setComposerMode] = useState<'dispatch' | 'treaty' | 'audio' | 'media'>('dispatch');
 
-  /* Interactive Consensus Ballots */
-  const [votesByPostId, setVotesByPostId] = useState<Record<string, { ayes: number; nays: number; userVote?: 'aye' | 'nay' }>>({
-    'post-1': { ayes: 184, nays: 22, userVote: 'aye' },
-    'post-2': { ayes: 96, nays: 8 },
-  });
+  /* Interactive Consensus Ballots - PURE REAL DATA, ZERO MOCK BALLOTS */
+  const [votesByPostId, setVotesByPostId] = useState<Record<string, { ayes: number; nays: number; userVote?: 'aye' | 'nay' }>>({});
 
   const handleVote = (postId: string, vote: 'aye' | 'nay') => {
     setVotesByPostId((prev) => {
-      const current = prev[postId] || { ayes: 50, nays: 5 };
+      const current = prev[postId] || { ayes: 0, nays: 0 };
       if (current.userVote === vote) return prev;
       const prevVote = current.userVote;
       const newAyes = vote === 'aye' ? current.ayes + 1 : prevVote === 'aye' ? current.ayes - 1 : current.ayes;
@@ -600,14 +656,11 @@ export function ZenPulseCore() {
       <div className="max-w-7xl mx-auto w-full px-2 sm:px-4 space-y-6">
         
         {/* ── Breaking Directive Live Ticker (Clean Minimalist Glass) ── */}
-        {navTab !== 'profile' && activeView !== 'profile' && (
+        {navTab !== 'profile' && activeView !== 'profile' && currentTickerItem && (
           <div 
-            onClick={() => {
-              setActiveDirectiveIndex(tickerIndex);
-              setShowDirectiveModal(true);
-            }}
+            onClick={() => handleTickerClick(currentTickerItem)}
             className="p-3 rounded-2xl bg-[#090a0f] border border-white/10 hover:border-white/20 hover:bg-[#0c0d14] backdrop-blur-xl flex items-center justify-between gap-3 overflow-hidden cursor-pointer transition-all group select-none shadow-sm"
-            title="Click to inspect full chamber directive & legislative dossier"
+            title="Click to inspect full chamber directive & verified dossier"
           >
             <div className="flex items-center gap-2.5 shrink-0">
               <span className="flex h-2 w-2 relative">
@@ -615,21 +668,21 @@ export function ZenPulseCore() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
               </span>
               <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-neutral-300 font-mono text-[9px] font-bold uppercase tracking-wider group-hover:bg-white/10 transition">
-                CHAMBER DIRECTIVE
+                {currentTickerItem.badge}
               </span>
             </div>
 
             <div className="flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.p
-                  key={tickerIndex}
+                  key={currentTickerItem.id || tickerIndex}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                   className="text-xs font-mono text-zinc-300 group-hover:text-white truncate tracking-tight"
                 >
-                  {dynamicTickerDirectives[tickerIndex] || dynamicTickerDirectives[0]}
+                  {currentTickerItem.text}
                 </motion.p>
               </AnimatePresence>
             </div>
@@ -771,7 +824,7 @@ export function ZenPulseCore() {
                     />
 
                     {/* 3. What's Moving Live Velocity Ticker */}
-                    <WhatsMovingTicker />
+                    <WhatsMovingTicker feedPosts={feedPosts} />
 
                     {/* 4. Global Chamber Filter Bar */}
                     <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 select-none">

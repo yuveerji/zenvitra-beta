@@ -38,116 +38,103 @@ export interface DirectiveDossier {
 
 export const DIRECTIVE_DOSSIERS: DirectiveDossier[] = [
   {
-    id: 'directive-418',
-    tag: 'PLENARY RESOLUTION',
+    id: 'directive-mesh',
+    tag: 'CHAMBER DIRECTIVE',
     badgeColor: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
-    title: 'Geneva Accord on Open Civic Corridors & Youth Sovereignty',
-    chamber: 'General Assembly Plenary #418',
-    location: 'Palais des Nations, Geneva • Wire Node #418',
-    timestamp: 'Today at 14:30 UTC • Live Plenary',
-    summary: 'Resolution mandating unrestricted access to decentralized civic channels, peer-audited open policy draft repositories, and constitutional youth delegation seats.',
-    fullDossier: `The General Assembly Plenary, convened at the Palais des Nations, hereby adopts Resolution #418 on the Establishment of Open Civic Corridors.\n\nRecognizing the fundamental sovereignty of youth researchers, thinkers, and civil delegates across all global jurisdictions, this Accord creates an immutable public protocol for open peer-review, cryptographic citation validation, and unhindered civic debate.`,
+    title: 'ZENVITRA MESH: Live Decentralized Diplomatic Network Active',
+    chamber: 'Global Assembly Coordination Desk',
+    location: 'Distributed Sovereign Mesh Node',
+    timestamp: 'Protocol Genesis • Verified Active',
+    summary: 'Decentralized diplomatic matrix enabling student caucuses, verifiable citations, peer-reviewed draft resolutions, and sovereign identity clearance without algorithmic tracking.',
+    fullDossier: `ZENVITRA MESH operates as an uncompromised civic protocol for youth diplomacy and transparent assembly governance.\n\nAll participating delegates communicate across zero-knowledge encrypted channels, draft binding multilateral resolutions with line-by-line redline auditing, and cast roll-call votes directly on the Sovereign Civic Ledger.\n\nCentralized advertising, biometric harvesting, and shadowbanning are constitutionally barred by protocol design.`,
     clauses: [
       {
         number: 'Clause 1.1',
-        title: 'Open Civic Transit Rights',
-        text: 'Every accredited youth delegate and civic node retains permanent sovereignty to publish and verify policy dossiers without algorithmic shadowbanning or central intermediaries.'
+        title: 'Open Diplomatic Corridors',
+        text: 'Every youth delegate retains sovereign access to publish and debate policy dossiers without algorithmic suppression or central intermediaries.'
       },
       {
         number: 'Clause 1.2',
-        title: '25% Profit Civic Impact Allocation Invariant',
-        text: 'All ecosystem earnings and summit registrations must hardcode a constitutional 25% profit allocation directed every 4 months to student scholarships, classroom supplies, and computer labs—verified with offline handover videos on ZEN.FLUX and public receipts.'
+        title: 'Verifiable Citation Proof',
+        text: 'All policy declarations and amendments require Proof-of-Citation references to ensure transparent sourcing and eliminate misinformation.'
       },
       {
         number: 'Clause 1.3',
-        title: 'Cryptographic Audit & Source Enforcement',
-        text: 'Resolutions and amendments submitted to plenary vote require a minimum 90% Proof-of-Citation reliability index before entering supermajority deliberation.'
+        title: 'Decentralized Assembly Wire',
+        text: 'Floor speeches and procedural motions operate under a strict 60-second guillotine clock with instant Points of Information logging.'
       }
     ],
-    signatoriesCount: 384,
-    supermajorityPercent: 94,
+    signatoriesCount: 1,
+    supermajorityPercent: 100,
+    authorName: 'Zenvitra Protocol Working Group',
+    authorUsername: 'founder',
+    authorRole: 'Platform Architecture Directorate'
+  },
+  {
+    id: 'directive-civic',
+    tag: 'CIVIC COVENANT',
+    badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+    title: 'Constitutional 25% Profit Civic Treasury Allocation Invariant',
+    chamber: 'Public School Treasury & Scholarship Desk',
+    location: 'Immutable Governance Ledger',
+    timestamp: 'Quadrennial Distribution Invariant',
+    summary: 'Hardcoded constitutional rule allocating 25% of all platform revenues and summit fees every 4 months to student scholarships, classroom computer labs, and supplies—verified with offline video proof and public receipts.',
+    fullDossier: `Under the Zenvitra Constitutional Covenant, 25% of all net platform surplus is permanently ring-fenced for public education development and student opportunity grants.\n\nEvery four months, disbursements are made directly to underfunded government schools for computer lab hardware, textbooks, and full merit scholarships.\n\nEvery handover is recorded on video, published transparently on ZEN.FLUX, and cross-verified with bank transaction hashes accessible to all delegates.`,
+    clauses: [
+      {
+        number: 'Clause 2.1',
+        title: '25% Surplus Ring-Fence',
+        text: '25% of net proceeds from subscriptions, summit fees, and sponsorships are locked into the public civic pool.'
+      },
+      {
+        number: 'Clause 2.2',
+        title: 'Quadrennial Handover Mandate',
+        text: 'Distributions occur strictly every 4 months, accompanied by full transparent audit logs and recipient video receipts.'
+      },
+      {
+        number: 'Clause 2.3',
+        title: 'Zero Overhead Deduction',
+        text: 'No administrative or marketing fees may be subtracted from the 25% civic pool.'
+      }
+    ],
+    signatoriesCount: 1,
+    supermajorityPercent: 100,
     authorName: 'Secretariat General',
-    authorUsername: 'un_plenary',
-    authorRole: 'Chamber Secretariat'
+    authorUsername: 'founder',
+    authorRole: 'Founding Secretariat'
   },
   {
-    id: 'directive-summit-2026',
-    tag: 'SUMMIT DISPATCH',
+    id: 'directive-sovereign',
+    tag: 'SECURITY CHARTER',
     badgeColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-    title: 'Youth Diplomatic Summit 2026: 1,420 Checked-in Delegates',
-    chamber: 'Global Assembly Coordination Desk',
-    location: 'Zurich Plenary Hall & Distributed Wire',
-    timestamp: 'Today at 12:15 UTC • Active Roll-Call',
-    summary: 'Global diplomatic summit kickoff recording 1,420 accredited delegates across 48 nations participating in live legislative drafts and take-rate fee simulations.',
-    fullDossier: `The Youth Diplomatic Summit 2026 has commenced with unprecedented distributed participation. Delegates have checked into the Sovereign Grid across 48 national nodes, activating live caucus rooms and peer-to-peer floor speech relays.\n\nThe plenary committee has finalized the dual-sided take-rate settlement fee schedule (0.5% + ₹19 attendee rate) ensuring equitable access for all student delegations.`,
+    title: 'Sovereign Identity Shield & Anti-Theft Account Protection Protocol',
+    chamber: 'Cryptographic Security Directorate',
+    location: 'Hardware-Backed Security Matrix',
+    timestamp: 'Active Defense Matrix',
+    summary: 'Cryptographic account protection featuring 10-digit Sovereign Codes, TOTP 2FA, anti-brute force rate limiting, and real-time remote session kill switch.',
+    fullDossier: `The Sovereign Account Shield enforces cryptographic security protocols to prevent account hijacking, credential stuffing, and session theft.\n\nKey pillars include:\n1. 10-Digit Unique Sovereign Codes for high-clearance actions.\n2. TOTP 2FA authenticator app compatibility (Google Authenticator, Authy).\n3. Real-time active session hardware detection with remote revocation.\n4. Emergency lockdown to immediately freeze compromised accounts.`,
     clauses: [
       {
-        number: 'Section A',
-        title: 'Quorum Verification',
-        text: 'Quorum established with 1,420 verified node signatures across 48 participating delegations.'
+        number: 'Clause 3.1',
+        title: 'Hardware-Level Fingerprinting',
+        text: 'Each client session receives a cryptographically unique node token with real-time revocation watchdog.'
       },
       {
-        number: 'Section B',
-        title: 'Floor Relays & Guillotine Clock',
-        text: 'Floor speech transceivers active with 60-second hard guillotine timer and instant Points of Information logging.'
-      }
-    ],
-    signatoriesCount: 1420,
-    supermajorityPercent: 98,
-    authorName: 'Council Presidium',
-    authorUsername: 'summit_chair',
-    authorRole: 'Summit Organizing Secretariat'
-  },
-  {
-    id: 'directive-unsc-bio',
-    tag: 'SECURITY COUNCIL DIRECTIVE',
-    badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-    title: 'High-Seas Biosphere Protection Treaty Redline Finalized',
-    chamber: 'UN Security Council Crisis Chamber',
-    location: 'Security Council Chamber Node #92',
-    timestamp: 'Today at 10:45 UTC • Treaty Draft',
-    summary: 'Legislative redline comparison finalized with +28 proposed clauses and -11 redactions safeguarding international maritime zones from unregulated commercial exploitation.',
-    fullDossier: `Following extensive multi-caucus negotiations, the UN Security Council delegation has reached redline consensus on the High-Seas Biosphere Treaty. The amended draft establishes strict ecological preservation zones with real-time satellite telemetry verification.`,
-    clauses: [
-      {
-        number: 'Article 4',
-        title: 'Demarcation of International Sanctuary Corridors',
-        text: 'All maritime territories outside standard 200nm Exclusive Economic Zones are classified as sovereign commons subject to international ecological monitoring.'
+        number: 'Clause 3.2',
+        title: 'Remote Kill Switch',
+        text: 'Delegates can terminate all remote and unauthorized sessions in a single click.'
       },
       {
-        number: 'Article 7',
-        title: 'Enforcement & Telemetry Verification',
-        text: 'Violations will be recorded directly on the public Civic Ledger with automatic referral to the International Maritime Tribunal.'
+        number: 'Clause 3.3',
+        title: 'Zero-Knowledge Passkeys',
+        text: 'Master passkeys are never transmitted in cleartext or logged in plaintext.'
       }
     ],
-    signatoriesCount: 124,
-    supermajorityPercent: 88,
-    authorName: 'Crisis Secretariat',
-    authorUsername: 'unsc_wire',
-    authorRole: 'Security Council Chair'
-  },
-  {
-    id: 'directive-floor-relay',
-    tag: '60S FLOOR RELAY',
-    badgeColor: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
-    title: 'Plenary Consensus Floor Relay by Delegate @yuveer',
-    chamber: 'Youth Plenary Floor Speech Node',
-    location: 'Palais des Nations Wire Node #108',
-    timestamp: 'Today at 09:20 UTC • Audio Broadcast',
-    summary: '60-second floor speech delivered by delegate @yuveer emphasizing grassroots governance, decentralized knowledge nodes, and transparent treasury allocations.',
-    fullDossier: `Floor Speech Transcript (60s Guillotine Clock):\n\n"Fellow delegates, the future of civic dialogue cannot exist on ad-funded, attention-harvesting platforms that commodify youth outrage. We are building the sovereign alternative — where citations are mathematically verifiable, where every voice is heard in transparent assembly chambers, and where 25% of all profits directly build rural computer labs and fund student scholarships every 4 months with offline video proof. The era of passive observation is over; the era of sovereign youth governance has begun."`,
-    clauses: [
-      {
-        number: 'Floor Action',
-        title: 'Yield of Time',
-        text: 'Delegate yielded remainder of time (8 seconds) to the Chair with zero Points of Order raised.'
-      }
-    ],
-    signatoriesCount: 290,
-    supermajorityPercent: 96,
-    authorName: 'Yuveer',
-    authorUsername: 'yuveer',
-    authorRole: 'Founding Delegate'
+    signatoriesCount: 1,
+    supermajorityPercent: 100,
+    authorName: 'Sovereign Security Matrix',
+    authorUsername: 'founder',
+    authorRole: 'Security Working Group'
   }
 ];
 
@@ -316,34 +303,29 @@ export function ChamberDirectiveModal({
               </div>
             </div>
 
-            {/* Supermajority Consensus Status Bar */}
+            {/* Constitutional Status & Endorsement Bar */}
             <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-3">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-zinc-300 flex items-center gap-1.5">
                   <Vote className="w-4 h-4 text-cyan-400" />
-                  <span>Plenary Consensus Roll-Call</span>
+                  <span>Constitutional Status</span>
                 </span>
-                <span className="font-bold text-white">
-                  {directive.supermajorityPercent}% Supermajority ({directive.signatoriesCount} Delegates)
+                <span className="font-bold text-emerald-300">
+                  RATIFIED PLATFORM INVARIANT
                 </span>
               </div>
 
-              {/* Progress Gauge */}
-              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden flex">
+              {/* Status Bar */}
+              <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden flex">
                 <div 
-                  className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-700" 
-                  style={{ width: `${directive.supermajorityPercent}%` }} 
-                />
-                <div 
-                  className="h-full bg-rose-500/80" 
-                  style={{ width: `${100 - directive.supermajorityPercent}%` }} 
+                  className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 w-full" 
                 />
               </div>
 
-              {/* Instant Voting Action */}
+              {/* Instant Endorsement Action */}
               <div className="flex items-center justify-between pt-1 text-xs font-mono">
                 <span className="text-[11px] text-zinc-400">
-                  {userVote ? `Your vote (${userVote.toUpperCase()}) recorded` : 'Cast your sovereign vote:'}
+                  {userVote ? `Your ballot (${userVote.toUpperCase()}) recorded on civic ledger` : 'Delegate position:'}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
@@ -355,7 +337,7 @@ export function ChamberDirectiveModal({
                         : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
                     }`}
                   >
-                    ✓ Vote Aye
+                    ✓ Endorse
                   </button>
                   <button
                     type="button"
@@ -366,7 +348,7 @@ export function ChamberDirectiveModal({
                         : 'bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:bg-rose-500/25'
                     }`}
                   >
-                    ✕ Vote Nay
+                    ✕ Challenge
                   </button>
                 </div>
               </div>
