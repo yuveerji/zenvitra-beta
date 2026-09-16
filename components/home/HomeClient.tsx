@@ -479,7 +479,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                       <div className="relative w-10 h-10 rounded-2xl overflow-hidden border border-white/15 bg-white/5 shadow-md flex-shrink-0">
                         <Image
                           src="/assets/founder.png"
-                          alt="Yuveer - Founder"
+                          alt="Founder & System Architect"
                           fill
                           className="object-cover"
                         />
@@ -525,10 +525,10 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <div className="pt-5 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                     <div className="space-y-0.5">
                       <h4 className="font-display font-medium text-base text-white">
-                        {founderDirective.author || 'Yuveer Chhatwani'}
+                        {founderDirective.author || 'Founder & System Architect'}
                       </h4>
                       <p className="font-mono text-xs text-neutral-400">
-                        Founder &amp; System Architect, Zenvitra &bull; <span className="text-neutral-300">@yuveer</span>
+                        Founder &amp; System Architect, Zenvitra &bull; <span className="text-neutral-300">@founder</span>
                       </p>
                     </div>
 

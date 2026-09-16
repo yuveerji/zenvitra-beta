@@ -123,6 +123,20 @@ export function ZenDocsClient() {
 
   // Detect Slash command trigger on keydown
   const handleEditorKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Auto-convert '---' into the dividing effect when pressing Enter or Space
+    if (e.key === 'Enter' || e.key === ' ') {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const anchorNode = selection.anchorNode;
+        const text = anchorNode?.textContent || '';
+        if (text.trim() === '---' || /^[ \t]*---[ \t]*$/.test(text)) {
+          e.preventDefault();
+          commands.insertDivider();
+          return;
+        }
+      }
+    }
+
     if (e.key === '/') {
       setTimeout(() => {
         const selection = window.getSelection();
@@ -282,6 +296,38 @@ export function ZenDocsClient() {
             onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
             isReaderMode={editor.isReaderMode}
             onToggleReaderMode={editor.toggleReaderMode}
+            onUndo={commands.undo}
+            onRedo={commands.redo}
+            fontFamily={editor.fontFamily}
+            onFontFamilyChange={(font) => {
+              editor.setFontFamily(font);
+              commands.execCmd('fontName', font);
+              editor.saveDocument({ fontFamily: font });
+            }}
+            fontSize={editor.fontSize}
+            onFontSizeChange={(size) => {
+              editor.setFontSize(size);
+              commands.execCmd('fontSize', String(Math.min(7, Math.max(1, Math.floor(size / 4)))));
+              editor.saveDocument({ fontSize: size });
+            }}
+            lineSpacing={editor.lineSpacing}
+            onLineSpacingChange={(spacing) => {
+              editor.setLineSpacing(spacing);
+              editor.saveDocument({ lineSpacing: spacing });
+            }}
+            onApplyStyle={commands.applyStyle}
+            onTextColor={commands.setTextColor}
+            onHighlight={commands.setHighlight}
+            onInsertTable={commands.insertTable}
+            onInsertImage={commands.insertImage}
+            onInsertLink={commands.insertLink}
+            onInsertChecklist={commands.insertChecklist}
+            onInsertDivider={commands.insertDivider}
+            onInsertDate={commands.insertDate}
+            onImportWhiteboard={commands.importWhiteboard}
+            onIndent={commands.indent}
+            onOutdent={commands.outdent}
+            onClearFormatting={commands.clearFormatting}
           />
 
           {/* Workspace: Outline Sidebar + A4 Canvas */}

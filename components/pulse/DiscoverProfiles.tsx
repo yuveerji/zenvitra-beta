@@ -128,7 +128,7 @@ export function DiscoverProfiles() {
     return {
       id: `sovereign_node_${cleanQuery}`,
       username: cleanQuery,
-      name: isFounderQuery ? 'Yuveer (Founder & CEO)' : cleanQuery.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      name: isFounderQuery ? 'Founder & CEO' : cleanQuery.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
       bio: isFounderQuery ? 'Founder & Architect of Zenvitra Sovereign Infrastructure.' : `Sovereign delegate node registered on Zenvitra Plenary Grid.`,
       avatar: '',
       badge: isFounderQuery ? 'FOUNDER' : 'DELEGATE',

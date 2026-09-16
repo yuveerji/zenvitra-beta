@@ -323,7 +323,7 @@ export function NotificationBell() {
                           {/* Signature & Status */}
                           <div className="flex items-center justify-between pt-2 border-t border-rose-500/20 text-[10px] font-mono">
                             <span className="text-neutral-400">
-                              SIGNATURE: <span className="text-rose-300 font-bold">{notif.author || '@yuveer (Founder & CEO)'}</span>
+                              SIGNATURE: <span className="text-rose-300 font-bold">{notif.author || '@founder (Executive Office)'}</span>
                             </span>
                             <span className="inline-flex items-center gap-1 font-bold tracking-wider text-rose-400">
                               {isExpanded ? 'EXPANDED' : 'DIRECTIVE ACTIVE'}

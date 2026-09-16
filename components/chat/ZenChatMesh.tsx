@@ -82,6 +82,8 @@ import { ManageCommunityModal } from '@/components/chat/ManageCommunityModal';
 import { ZenChatCommandBar } from '@/components/chat/ZenChatCommandBar';
 import { ZenIdentityCardModal } from '@/components/chat/ZenIdentityCardModal';
 import { ZenNativeMessageCard } from '@/components/chat/ZenNativeMessageCard';
+import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
+import { useRouter } from 'next/navigation';
 
 /* ── Server & Caucus Templates (Replaced hardcoded seeded groups) ── */
 export interface CommunityTemplate {
@@ -320,6 +322,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
 const EMOJI_LIST = ['👍', '❤️', '⚡', '📜', '🔥', '👏', '🎯', '🤝', '💎', '🚀', '💡', '🛡️', '⚖️', '🌍', '✨'];
 
 export function ZenChatMesh() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { isMockMode } = useAuth();
 
@@ -2707,6 +2710,18 @@ export function ZenChatMesh() {
                   <button
                     onClick={() => {
                       setShowCallDropdown(false);
+                      const code = `zen-${activeConversationId || 'ch-general'}`;
+                      router.push(`/call/${code}?mode=CALL&mic=true&cam=true`);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-cyan-300 hover:text-white bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition text-left cursor-pointer"
+                  >
+                    <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
+                    <span className="font-semibold">ZEN.CALL Studio (HD / Live)</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowCallDropdown(false);
                       setShowMembersDrawer(true);
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-300 hover:text-white hover:bg-white/[0.06] transition text-left cursor-pointer"
@@ -3206,25 +3221,36 @@ export function ZenChatMesh() {
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-white hover:scale-110 transition cursor-pointer"
+                  title="Universal Emojis & GIPHY"
                 >
-                  <Smile className="w-4 h-4" />
+                  <Smile className="w-4 h-4 text-cyan-400" />
                 </button>
 
                 {showEmojiPicker && (
-                  <div className="absolute bottom-14 right-0 p-3 bg-[#0d1017] border border-white/15 rounded-2xl shadow-2xl grid grid-cols-5 gap-2 z-50">
-                    {EMOJI_LIST.map((em) => (
-                      <button
-                        key={em}
-                        type="button"
-                        onClick={() => {
-                          setMessageText((prev) => prev + em);
-                          setShowEmojiPicker(false);
-                        }}
-                        className="text-lg hover:scale-125 transition p-1 cursor-pointer"
-                      >
-                        {em}
-                      </button>
-                    ))}
+                  <div className="absolute bottom-14 right-0 z-50">
+                    <UniversalEmojiGifPicker
+                      isOpen={showEmojiPicker}
+                      onClose={() => setShowEmojiPicker(false)}
+                      position="dropdown"
+                      onSelectEmoji={(emoji) => {
+                        setMessageText((prev) => prev + emoji);
+                      }}
+                      onSelectGif={(gifUrl) => {
+                        const myRole = currentUserUsername === 'yuveer' ? '👑 FOUNDER' : 'DELEGATE';
+                        sendMessage(
+                          gifUrl,
+                          [{ type: 'image', url: gifUrl, name: 'Giphy GIF' }],
+                          replyingTo ? {
+                            id: replyingTo.id,
+                            senderName: replyingTo.senderName,
+                            snippet: replyingTo.content.slice(0, 80),
+                          } : undefined,
+                          currentChatContextId,
+                          myRole
+                        );
+                        setShowEmojiPicker(false);
+                      }}
+                    />
                   </div>
                 )}
               </div>
@@ -3446,7 +3472,7 @@ export function ZenChatMesh() {
                   type="text"
                   value={directDialInput}
                   onChange={(e) => setDirectDialInput(e.target.value)}
-                  placeholder="e.g. @yuveerji or 9876543210"
+                  placeholder="e.g. @delegate or 9876543210"
                   className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500/50"
                   autoFocus
                 />
@@ -3833,7 +3859,7 @@ export function ZenChatMesh() {
                     type="text"
                     value={scheduleCallName}
                     onChange={(e) => setScheduleCallName(e.target.value)}
-                    placeholder="e.g. Yuveer Chhatwani's call"
+                    placeholder="e.g. Diplomatic Caucus Call"
                     className="w-full px-3.5 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white focus:outline-none focus:border-emerald-500/40"
                   />
                   <button
@@ -4642,7 +4668,7 @@ export function ZenChatMesh() {
                 type: 'pulse',
                 id: `pulse_${Date.now()}`,
                 title: 'Should India change its education system for the AI age?',
-                subtitle: 'Civic pulse signal by @yuveer with 143 signals and 28 verified citations',
+                subtitle: 'Civic pulse signal by @founder with 143 signals and 28 verified citations',
                 badge: 'CIVIC',
                 actionLabel: 'Open in Pulse',
                 actionUrl: '/pulse'

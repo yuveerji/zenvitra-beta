@@ -47,7 +47,8 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
-import { MusicPickerModal } from './MusicPickerModal';
+import { MusicPickerModal, SelectedTrackPayload } from './MusicPickerModal';
+import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auditPostDispatch, IntegrityCheckResult } from '@/lib/fluxIntegrityGuard';
 
@@ -164,8 +165,9 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
   const [showCustomAspectPopup, setShowCustomAspectPopup] = useState<boolean>(false);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(['YouthAction', 'ZenPulse']);
-  const [attachedSong, setAttachedSong] = useState<{ title: string; artist: string; audioUrl: string } | null>(null);
+  const [attachedSong, setAttachedSong] = useState<SelectedTrackPayload | null>(null);
   const [isMusicPickerOpen, setIsMusicPickerOpen] = useState(false);
+  const [showUniversalEmojiPicker, setShowUniversalEmojiPicker] = useState(false);
   const [sourceName, setSourceName] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [showSourceFields, setShowSourceFields] = useState(false);
@@ -556,7 +558,11 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
       attachedSong ? {
         songTitle: attachedSong.title,
         songArtist: attachedSong.artist,
-        songAudioUrl: attachedSong.audioUrl
+        songAudioUrl: attachedSong.audioUrl,
+        songVideoId: attachedSong.videoId,
+        songStartTime: attachedSong.startTime,
+        songEndTime: attachedSong.endTime,
+        songFrameDuration: attachedSong.frameDuration,
       } : undefined,
       undefined,
       sourceName.trim() || sourceUrl.trim() ? {
@@ -1178,8 +1184,17 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       </div>
 
                       {/* Emojis Quick Picker Row */}
-                      <div className="flex items-center justify-between pt-1 border-t border-white/[0.06]">
+                      <div className="flex items-center justify-between pt-1 border-t border-white/[0.06] relative">
                         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+                          <button
+                            type="button"
+                            onClick={() => setShowUniversalEmojiPicker(!showUniversalEmojiPicker)}
+                            className="px-2 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[11px] font-mono font-bold flex items-center gap-1 cursor-pointer transition shrink-0 mr-1"
+                            title="Open All World Emojis & GIPHY GIFs"
+                          >
+                            <Smile className="w-3.5 h-3.5" />
+                            <span>ALL &amp; GIF</span>
+                          </button>
                           {EMOJI_PRESETS.map((emoji) => (
                             <button
                               key={emoji}
@@ -1197,6 +1212,19 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                         }`}>
                           {remaining}
                         </span>
+
+                        <UniversalEmojiGifPicker
+                          isOpen={showUniversalEmojiPicker}
+                          onClose={() => setShowUniversalEmojiPicker(false)}
+                          position="modal"
+                          onSelectEmoji={(emoji) => {
+                            addEmoji(emoji);
+                          }}
+                          onSelectGif={(gifUrl) => {
+                            setImages((prev) => [...prev, gifUrl]);
+                            setShowUniversalEmojiPicker(false);
+                          }}
+                        />
                       </div>
                     </div>
 
@@ -2181,6 +2209,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
         onClose={() => setIsMusicPickerOpen(false)}
         onSelectTrack={(t) => setAttachedSong(t)}
         selectedTrackTitle={attachedSong?.title}
+        mode="post"
       />
     </div>
   );

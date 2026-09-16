@@ -417,9 +417,9 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
         excerpt: (activeDoc.plainBody || activeDoc.title).slice(0, 180) + '…',
         sourceName: 'ZEN.DOCS Sovereign Press',
         sourceUrl: `/docs?doc=${activeDoc.id}`,
-        authorId: 'user_yuveer',
-        authorName: 'Yuveer',
-        authorUsername: 'yuveer',
+        authorId: 'founder_exec',
+        authorName: 'Founder',
+        authorUsername: 'founder',
         category: 'EDITORIAL',
         tags: activeDoc.tags || ['Diplomacy', 'Treaty', 'Plenary'],
         status: 'published',
@@ -456,64 +456,66 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
 
       const treatyPost = {
         id: pulsePostId,
-        authorId: 'user_yuveer',
-        authorName: 'Yuveer',
-        authorUsername: 'yuveer',
+        authorId: 'founder_exec',
+        authorName: 'Founder',
+        authorUsername: 'founder',
         content: summary || `📜 ${activeDoc.title} (${activeDoc.docCode}) tabled for multilateral plenary consensus.`,
         images: [],
         createdAt: new Date().toISOString(),
         likes: 1,
-        likedBy: ['user_yuveer'],
+        likedBy: ['founder_exec'],
         reposts: 0,
         repostedBy: [],
         replyCount: 0,
         location: activeDoc.committeeOrChamber || 'Sovereign Plenary Chamber',
-        tags: ['TreatyDraft', caucusTag.replace(/\s+/g, ''), 'ZEN_DOCS'],
-        isTreaty: true,
-        treatyTitle: activeDoc.title,
-        treatyVersion: `v${activeDoc.version || 1}.0`,
-        treatyStatus: 'debate',
-        caucusTag: caucusTag || 'General Assembly',
-        citations: [
-          {
-            id: `cit_${Date.now()}`,
-            symbolOrId: activeDoc.docCode,
-            type: 'UN_DOC',
-            title: activeDoc.title,
-            institution: activeDoc.committeeOrChamber || 'UN General Assembly',
-            archiveUrl: `/docs?doc=${activeDoc.id}`,
-            sha256Hash: activeDoc.cryptographicHash || '0x8f3c2b1a99d45e0287cb8921a1ef4c29d00b731e847ad3e1987d6052f38ab4c1',
-            verifiedCount: 1,
-            verifiedBy: ['yuveer']
-          }
-        ],
-        rollCallVotes: {
-          ayes: ['yuveer'],
-          nays: [],
-          abstains: []
+        tags: ['Treaty', 'Ratification', 'SovereignDocs'],
+        isTreatyWire: true,
+        treatyData: {
+          docId: activeDoc.id,
+          docCode: activeDoc.docCode,
+          status: 'PROPOSED',
+          sponsorCaucus: caucusTag || 'Sovereign Bloc',
+          votingClosesAt: new Date(Date.now() + 86400000 * 3).toISOString(),
+          sources: [
+            {
+              symbolOrId: activeDoc.docCode,
+              type: 'UN_DOC',
+              title: activeDoc.title,
+              institution: activeDoc.committeeOrChamber || 'UN General Assembly',
+              archiveUrl: `/docs?doc=${activeDoc.id}`,
+              sha256Hash: activeDoc.cryptographicHash || '0x8f3c2b1a99d45e0287cb8921a1ef4c29d00b731e847ad3e1987d6052f38ab4c1',
+              verifiedCount: 1,
+              verifiedBy: ['founder']
+            }
+          ],
+          rollCallVotes: {
+            ayes: ['founder'],
+            nays: [],
+            abstains: []
+          },
+          coSignatures: [
+            {
+              userId: 'founder_exec',
+              name: 'Founder',
+              username: 'founder',
+              caucus: caucusTag || 'Primary Sponsor',
+              clearanceLevel: 5,
+              timestamp: new Date().toISOString()
+            }
+          ],
+          redlineDiffs: [],
+          revisions: [
+            {
+              version: `v${activeDoc.version || 1}.0`,
+              timestamp: new Date().toISOString(),
+              ratifiedByName: 'Founder',
+              diffSummary: 'Initial document ratified from ZEN.DOCS Studio.',
+              fullContent: activeDoc.contentHtml || ''
+            }
+          ],
+          factBounties: [],
+          civicReliabilityScore: 99
         },
-        coSignatures: [
-          {
-            userId: 'user_yuveer',
-            name: 'Yuveer',
-            username: 'yuveer',
-            caucus: caucusTag || 'Primary Sponsor',
-            clearanceLevel: 5,
-            timestamp: new Date().toISOString()
-          }
-        ],
-        redlineDiffs: [],
-        revisions: [
-          {
-            version: `v${activeDoc.version || 1}.0`,
-            timestamp: new Date().toISOString(),
-            ratifiedByName: 'Yuveer',
-            diffSummary: 'Initial document ratified from ZEN.DOCS Studio.',
-            fullContent: activeDoc.contentHtml || ''
-          }
-        ],
-        factBounties: [],
-        civicReliabilityScore: 99
       };
 
       const filtered = Array.isArray(existingPosts) ? existingPosts.filter((p: any) => p.id !== treatyPost.id) : [];

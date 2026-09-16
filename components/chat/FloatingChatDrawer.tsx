@@ -289,7 +289,7 @@ export function FloatingChatDrawer() {
                       <input
                         type="text"
                         autoFocus
-                        placeholder="Enter username (e.g. yuveer or delegate_name)"
+                        placeholder="Enter username (e.g. delegate_name)"
                         value={newChatHandle}
                         onChange={(e) => setNewChatHandle(e.target.value)}
                         className="flex-1 px-3 py-1.5 rounded-xl bg-black border border-purple-500/40 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-purple-400"

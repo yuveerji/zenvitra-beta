@@ -46,7 +46,7 @@ interface ZenPulseContextType {
     tags?: string[], 
     fontStyle?: string, 
     effectStyle?: string,
-    songData?: { songTitle?: string; songArtist?: string; songAudioUrl?: string },
+    songData?: { songTitle?: string; songArtist?: string; songAudioUrl?: string; songVideoId?: string; songStartTime?: number; songEndTime?: number; songFrameDuration?: number },
     speechData?: { speechFormat?: 'video' | 'audio'; speechVideoUrl?: string; speechAudioUrl?: string; speechDuration?: number; speechTranscript?: string; speechDelegation?: string },
     sourceData?: { sourceName?: string; sourceUrl?: string }
   ) => string;
@@ -140,6 +140,10 @@ interface ZenPulseContextType {
     songTitle?: string;
     songArtist?: string;
     songAudioUrl?: string;
+    songVideoId?: string;
+    songStartTime?: number;
+    songEndTime?: number;
+    songFrameDuration?: number;
     isSnap?: boolean;
     snapFilter?: string;
     snapLocation?: string;
@@ -867,7 +871,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     tags: string[] = [], 
     fontStyle?: string, 
     effectStyle?: string,
-    songData?: { songTitle?: string; songArtist?: string; songAudioUrl?: string },
+    songData?: { songTitle?: string; songArtist?: string; songAudioUrl?: string; songVideoId?: string; songStartTime?: number; songEndTime?: number; songFrameDuration?: number },
     speechData?: { speechFormat?: 'video' | 'audio'; speechVideoUrl?: string; speechAudioUrl?: string; speechDuration?: number; speechTranscript?: string; speechDelegation?: string },
     sourceData?: { sourceName?: string; sourceUrl?: string }
   ) => {
@@ -896,6 +900,10 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       songTitle: songData?.songTitle,
       songArtist: songData?.songArtist,
       songAudioUrl: songData?.songAudioUrl,
+      songVideoId: songData?.songVideoId,
+      songStartTime: songData?.songStartTime,
+      songEndTime: songData?.songEndTime,
+      songFrameDuration: songData?.songFrameDuration,
       speechFormat: speechData?.speechFormat,
       speechVideoUrl: speechData?.speechVideoUrl,
       speechAudioUrl: speechData?.speechAudioUrl,
@@ -1675,6 +1683,10 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     songTitle?: string;
     songArtist?: string;
     songAudioUrl?: string;
+    songVideoId?: string;
+    songStartTime?: number;
+    songEndTime?: number;
+    songFrameDuration?: number;
     isSnap?: boolean;
     snapFilter?: string;
     snapLocation?: string;
@@ -1701,6 +1713,10 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       songTitle: data.songTitle,
       songArtist: data.songArtist,
       songAudioUrl: data.songAudioUrl,
+      songVideoId: data.songVideoId,
+      songStartTime: data.songStartTime,
+      songEndTime: data.songEndTime,
+      songFrameDuration: data.songFrameDuration,
       isSnap: data.isSnap,
       snapFilter: data.snapFilter,
       snapLocation: data.snapLocation || 'ZENVITRA // SOVEREIGN MESH',

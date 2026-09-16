@@ -48,7 +48,7 @@ export function PublishToPressModal({
             </div>
             <div className="flex items-center justify-between text-neutral-400">
               <span>Author Attribution:</span>
-              <span className="text-pink-400 font-bold">@yuveer (Founder Verified)</span>
+              <span className="text-pink-400 font-bold">@founder (Founder Verified)</span>
             </div>
             <div className="flex items-center justify-between text-neutral-400">
               <span>Target Feed:</span>

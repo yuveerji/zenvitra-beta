@@ -6,6 +6,8 @@ import { Plus, Sparkles, MapPin, X, Trash2, Music, Play, Pause, Volume2, Search,
 import { motion, AnimatePresence } from 'framer-motion';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
 import { ZenNote, ZenNoteColor, ZenNoteSong } from '@/types/chat';
+import { useGlobalAudio } from '@/components/audio/GlobalAudioContext';
+import { MusicPickerModal } from '@/components/pulse/MusicPickerModal';
 
 const MOOD_EMOJIS = ['✨', '✈️', '🏛️', '⚡', '☕', '🔥', '🎯', '📜', '💎', '💡', '🌍', '🚀'];
 const LOCATION_TAGS = ['Location off', 'Palais des Nations', 'Chamber Plenary', 'War Room Caucus', 'Geneva Base', 'Sovereign Lab'];
@@ -112,26 +114,26 @@ export function ZenNotesRow() {
   const [songSearchQuery, setSongSearchQuery] = useState('');
   const [activeNoteInspect, setActiveNoteInspect] = useState<ZenNote | null>(null);
 
-  // Audio preview playing state
-  const [playingSongId, setPlayingSongId] = useState<string | null>(null);
-  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  // Audio preview playing state via Global Audio Engine
+  const { currentTrack, isPlaying: isGlobalAudioPlaying, toggleTrack } = useGlobalAudio();
 
   const toggleAudioPlay = (song: ZenNoteSong, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const sid = song.id || song.title;
-    if (playingSongId === sid) {
-      audioPlayerRef.current?.pause();
-      setPlayingSongId(null);
-    } else {
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-      }
-      const audio = new Audio(song.audioUrl || 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=lofi-study-112191.mp3');
-      audioPlayerRef.current = audio;
-      audio.play().catch(() => {});
-      audio.onended = () => setPlayingSongId(null);
-      setPlayingSongId(sid);
-    }
+    toggleTrack({
+      title: song.title,
+      artist: song.artist,
+      audioUrl: song.audioUrl,
+      videoId: song.videoId,
+      startTime: song.startTime || 0,
+      endTime: song.endTime,
+      frameDuration: song.frameDuration || 60,
+      source: 'YouTube Music'
+    });
+  };
+
+  const isSongPlaying = (song?: ZenNoteSong | null) => {
+    if (!song) return false;
+    return isGlobalAudioPlaying && currentTrack?.title === song.title;
   };
 
   // Find user's active note
@@ -168,10 +170,6 @@ export function ZenNotesRow() {
     setNoteText('');
     setSelectedSong(null);
     setIsComposerOpen(false);
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.pause();
-    }
-    setPlayingSongId(null);
   };
 
   const getColorConfig = (theme?: ZenNoteColor) => {
@@ -225,7 +223,7 @@ export function ZenNotesRow() {
               >
                 <Music className="w-2.5 h-2.5 shrink-0 animate-pulse text-cyan-400" />
                 <span className="truncate">{myNote.song.title}</span>
-                {playingSongId === (myNote.song.id || myNote.song.title) ? (
+                {isSongPlaying(myNote.song) ? (
                   <Pause className="w-2.5 h-2.5 shrink-0" />
                 ) : (
                   <Play className="w-2.5 h-2.5 shrink-0 fill-current" />
@@ -238,7 +236,7 @@ export function ZenNotesRow() {
         {/* 2. Other Delegates' Active Notes */}
         {otherNotes.map((note) => {
           const config = getColorConfig(note.colorTheme);
-          const isPlayingThis = playingSongId === (note.song?.id || note.song?.title);
+          const isPlayingThis = isSongPlaying(note.song);
           return (
             <div
               key={note.id}
@@ -368,7 +366,7 @@ export function ZenNotesRow() {
                               <Music className="w-3 h-3 text-cyan-400 animate-pulse shrink-0" />
                               <span className="truncate font-semibold text-white">{selectedSong.title}</span>
                               <span className="opacity-75 truncate text-neutral-300">· {selectedSong.artist}</span>
-                              {playingSongId === (selectedSong.id || selectedSong.title) ? (
+                              {isSongPlaying(selectedSong) ? (
                                 <Pause className="w-3 h-3 shrink-0 ml-0.5 text-cyan-300" />
                               ) : (
                                 <Play className="w-3 h-3 shrink-0 ml-0.5 fill-current text-cyan-300" />
@@ -454,7 +452,7 @@ export function ZenNotesRow() {
                           className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
                         >
                           <div className="w-8 h-8 rounded-xl bg-cyan-400/20 text-cyan-300 flex items-center justify-center shrink-0">
-                            {playingSongId === (selectedSong.id || selectedSong.title) ? (
+                            {isSongPlaying(selectedSong) ? (
                               <Pause className="w-4 h-4 text-cyan-300" />
                             ) : (
                               <Play className="w-4 h-4 text-cyan-300 fill-cyan-300" />
@@ -576,109 +574,28 @@ export function ZenNotesRow() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          MODAL 2: SONG PICKER MODAL (Portaled to Body, Solid Opaque)
+          MODAL 2: YOUTUBE MUSIC FRAME TRIMMER (Instagram-style)
           ══════════════════════════════════════════════════════════════ */}
-      {mounted && typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {isSongPickerOpen && (
-            <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 select-none">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsSongPickerOpen(false)}
-                className="fixed inset-0 bg-black/90 backdrop-blur-md"
-              />
-
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                style={{ backgroundColor: '#0c0e17' }}
-                className="relative w-full max-w-sm sm:max-w-md rounded-3xl bg-[#0c0e17] border border-white/15 p-5 shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-white z-10"
-              >
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div className="flex items-center gap-2">
-                    <Music className="w-4 h-4 text-amber-400" />
-                    <h3 className="font-display font-medium text-sm text-white">
-                      Select Music Track
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => setIsSongPickerOpen(false)}
-                    className="p-1 rounded-lg bg-white/[0.06] text-neutral-400 hover:text-white transition cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Search Box */}
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={songSearchQuery}
-                    onChange={(e) => setSongSearchQuery(e.target.value)}
-                    placeholder="Search songs or artists..."
-                    style={{ backgroundColor: '#07080f' }}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#07080f] border border-white/15 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400/60"
-                    autoFocus
-                  />
-                </div>
-
-                {/* Track List */}
-                <div className="max-h-64 overflow-y-auto space-y-1 scrollbar-none pr-1">
-                  {filteredSongs.map((song) => {
-                    const isPlaying = playingSongId === (song.id || song.title);
-                    const isCurrentChosen = selectedSong?.title === song.title;
-                    return (
-                      <div
-                        key={song.id || song.title}
-                        onClick={() => {
-                          setSelectedSong(song);
-                          setIsSongPickerOpen(false);
-                        }}
-                        className={`flex items-center justify-between p-2.5 rounded-2xl cursor-pointer transition ${
-                          isCurrentChosen 
-                            ? 'bg-amber-400/20 border border-amber-400/40' 
-                            : 'hover:bg-white/[0.05] border border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <button
-                            type="button"
-                            onClick={(e) => toggleAudioPlay(song, e)}
-                            className="w-8 h-8 rounded-xl bg-white/10 hover:bg-amber-400 hover:text-black flex items-center justify-center transition shrink-0"
-                          >
-                            {isPlaying ? (
-                              <Pause className="w-4 h-4" />
-                            ) : (
-                              <Play className="w-4 h-4 fill-current" />
-                            )}
-                          </button>
-                          <div className="min-w-0">
-                            <p className="font-sans font-semibold text-xs text-white truncate">
-                              {song.title}
-                            </p>
-                            <p className="font-mono text-[10px] text-neutral-400 truncate">
-                              {song.artist}
-                            </p>
-                          </div>
-                        </div>
-
-                        {isCurrentChosen && (
-                          <Check className="w-4 h-4 text-amber-400 shrink-0 ml-2" />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      <MusicPickerModal
+        isOpen={isSongPickerOpen}
+        onClose={() => setIsSongPickerOpen(false)}
+        onSelectTrack={(t) => {
+          setSelectedSong({
+            id: t.videoId || t.title,
+            title: t.title,
+            artist: t.artist,
+            audioUrl: t.audioUrl,
+            coverUrl: t.thumbnailUrl,
+            videoId: t.videoId,
+            startTime: t.startTime,
+            endTime: t.endTime,
+            frameDuration: t.frameDuration,
+          });
+          setIsSongPickerOpen(false);
+        }}
+        selectedTrackTitle={selectedSong?.title}
+        mode="notes"
+      />
 
       {/* ══════════════════════════════════════════════════════════════
           MODAL 3: INSPECT OTHER DELEGATE'S NOTE (Portaled to Body)
@@ -714,7 +631,7 @@ export function ZenNotesRow() {
                 {/* Note Bubble with Color Theme */}
                 {(() => {
                   const inspectConfig = getColorConfig(activeNoteInspect.colorTheme);
-                  const isPlaying = playingSongId === (activeNoteInspect.song?.id || activeNoteInspect.song?.title);
+                  const isPlaying = isSongPlaying(activeNoteInspect.song);
                   return (
                     <div className={`px-4 py-3 rounded-2xl text-sm font-sans shadow-lg ${inspectConfig.bubbleClass}`}>
                       <span className="text-base mr-1.5">{activeNoteInspect.moodEmoji}</span>

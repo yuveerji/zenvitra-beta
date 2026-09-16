@@ -22,10 +22,12 @@ import {
   Zap,
   CheckCircle2,
   Crown,
-  MessageSquareShare
+  MessageSquareShare,
+  Music
 } from 'lucide-react';
 import { PulsePost } from '@/types/pulse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
+import { useGlobalAudio } from '@/components/audio/GlobalAudioContext';
 import { ImageGrid } from './ImageGrid';
 import { getStoryFontStyle } from '@/lib/storyFonts';
 import { ShareToChatModal } from './ShareToChatModal';
@@ -41,11 +43,15 @@ export function PostCard({ post }: PostCardProps) {
     currentUserId,
   } = useZenPulse();
 
+  const { currentTrack, isPlaying: isGlobalAudioPlaying, toggleTrack } = useGlobalAudio();
+
   const [copied, setCopied] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [likeBurst, setLikeBurst] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [showShareToChat, setShowShareToChat] = useState(false);
+
+  const isCurrentSongPlaying = isGlobalAudioPlaying && currentTrack?.title === post.songTitle;
 
   const hasLiked = post.likedBy.includes(currentUserId);
   const hasReposted = post.repostedBy.includes(currentUserId);
@@ -216,6 +222,50 @@ export function PostCard({ post }: PostCardProps) {
                       }}
                     />
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Attached Song / Music Track Player (Instagram Style) */}
+            {(post.songTitle || post.songAudioUrl) && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleTrack({
+                    title: post.songTitle || 'Attached Track',
+                    artist: post.songArtist || 'Unknown Artist',
+                    audioUrl: post.songAudioUrl,
+                    videoId: post.songVideoId,
+                    startTime: post.songStartTime || 0,
+                    endTime: post.songEndTime,
+                    frameDuration: post.songFrameDuration || 60,
+                    source: 'YouTube Music'
+                  });
+                }}
+                className="mt-3.5 inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-black/70 border border-white/15 hover:border-cyan-400/60 transition-all cursor-pointer group shadow-sm"
+              >
+                <div className={`w-5 h-5 rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white ${isCurrentSongPlaying ? 'animate-spin' : ''}`}>
+                  <Music className="w-2.5 h-2.5" />
+                </div>
+                <span className="text-xs font-bold text-white font-display group-hover:text-cyan-300 transition-colors">
+                  {post.songTitle}
+                </span>
+                {post.songArtist && (
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    • {post.songArtist}
+                  </span>
+                )}
+                {post.songFrameDuration && (
+                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                    {post.songFrameDuration}s
+                  </span>
+                )}
+                <div className="ml-1 text-cyan-400">
+                  {isCurrentSongPlaying ? (
+                    <Pause className="w-3.5 h-3.5" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  )}
                 </div>
               </div>
             )}

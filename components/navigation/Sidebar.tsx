@@ -8,7 +8,8 @@ import {
   Terminal, 
   ShieldCheck, 
   LogOut,
-  Sparkles
+  Sparkles,
+  PhoneCall
 } from 'lucide-react';
 import { signOut } from '@/lib/auth';
 
@@ -26,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const routes = [
     { label: 'PULSE', href: '/pulse', icon: Radio },
     { label: 'CHAT', href: '/chat', icon: MessageSquare },
+    { label: 'CALL', href: '/call', icon: PhoneCall },
     { label: 'EVENTS', href: '/events', icon: Calendar },
     { label: 'PRESS', href: '/press', icon: Newspaper },
   ];

@@ -239,7 +239,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-neutral-500">DIRECTIVE AUTHORITY:</span>
-              <span className="text-neutral-300">FOUNDER OFFICE (@yuveer)</span>
+              <span className="text-neutral-300">FOUNDER OFFICE (@founder)</span>
             </div>
           </div>
 

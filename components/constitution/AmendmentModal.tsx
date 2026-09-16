@@ -358,7 +358,7 @@ Citations: ${citations || 'N/A'}`;
                     type="text"
                     value={proposerHandle}
                     onChange={(e) => setProposerHandle(e.target.value)}
-                    placeholder="e.g. @del_yuveer or @assembly_node"
+                    placeholder="e.g. @delegate or @assembly_node"
                     className="w-full px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-400/50 transition"
                   />
                 </div>

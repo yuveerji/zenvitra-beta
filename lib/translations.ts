@@ -114,7 +114,7 @@ export const TRANSLATIONS = {
     },
     form: {
       fullName: 'Full Legal Name',
-      fullNamePlaceholder: 'e.g. Yuveer Chhatwani',
+      fullNamePlaceholder: 'e.g. Sovereign Delegate',
       email: 'Primary Email Address',
       emailPlaceholder: 'e.g. delegate@zenvitra.xyz',
       phone: 'Mobile / Contact Number',
@@ -180,7 +180,7 @@ export const TRANSLATIONS = {
       formHeader: 'Executive Candidate Dossier',
       formSubheader: 'Please complete all fields with accurate, verifiable details.',
       fullName: 'Full Legal Name',
-      fullNamePlaceholder: 'e.g. Yuveer Chhatwani',
+      fullNamePlaceholder: 'e.g. Sovereign Delegate',
       email: 'Institutional / Primary Email',
       emailPlaceholder: 'e.g. director@zenvitra.xyz',
       city: 'City & State / Country',

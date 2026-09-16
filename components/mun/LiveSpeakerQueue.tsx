@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { Crown, Mic, Clock, Users, Flame, FileText, CheckCircle2, Radio } from 'lucide-react';
@@ -12,7 +12,7 @@ interface SpeakerQueueItem {
 }
 
 const SAMPLE_QUEUE: SpeakerQueueItem[] = [
-  { country: 'Republic of India', flag: '🇮🇳', delegate: 'Delegate Yuveer', timeRemaining: '01:24', status: 'SPEAKING' },
+  { country: 'Republic of India', flag: '🇮🇳', delegate: 'Delegate Sharma', timeRemaining: '01:24', status: 'SPEAKING' },
   { country: 'French Republic', flag: '🇫🇷', delegate: 'Delegate Camille', timeRemaining: '01:30', status: 'NEXT' },
   { country: 'State of Japan', flag: '🇯🇵', delegate: 'Delegate Kenji', timeRemaining: '01:30', status: 'QUEUED' },
   { country: 'Federative Republic of Brazil', flag: '🇧🇷', delegate: 'Delegate Sofia', timeRemaining: '01:30', status: 'QUEUED' },

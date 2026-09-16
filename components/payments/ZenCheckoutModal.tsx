@@ -49,8 +49,8 @@ export function ZenCheckoutModal({
   onSuccess,
 }: ZenCheckoutModalProps) {
   // Payer details & taxation
-  const [payerName, setPayerName] = useState('Yuveer');
-  const [payerEmail, setPayerEmail] = useState('yuveer@zenvitra.xyz');
+  const [payerName, setPayerName] = useState('');
+  const [payerEmail, setPayerEmail] = useState('');
   const [userAge, setUserAge] = useState<number>(17);
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
   const [studentIdFile, setStudentIdFile] = useState<{ name: string; size: string } | null>(null);
@@ -60,7 +60,7 @@ export function ZenCheckoutModal({
   const [selectedMethod, setSelectedMethod] = useState<'UPI_QR' | 'UPI_ID' | 'CREDIT_CARD'>('UPI_QR');
   const [upiId, setUpiId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
-  const [cardHolder, setCardHolder] = useState('Yuveer Chhatwani');
+  const [cardHolder, setCardHolder] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [cardOtp, setCardOtp] = useState('');

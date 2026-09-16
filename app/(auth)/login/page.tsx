@@ -331,7 +331,7 @@ function LoginForm() {
       if (secProfile.isTwoFactorEnabled) {
         setIs2FAStep(true);
         setLoading(false);
-        setSuccessMessage('Sovereign 2FA Challenge: Enter your Master PIN (5747), Sovereign Code, or Emergency Passkey.');
+        setSuccessMessage('Sovereign 2FA Challenge: Enter your Master PIN, Sovereign Code, or Emergency Passkey.');
         return;
       }
 
@@ -388,7 +388,7 @@ function LoginForm() {
     e.preventDefault();
     const code = securityCodeInput.trim();
     if (!code) {
-      setErrorMessage('Please enter your 2FA verification code, Master PIN (5747), or passkey.');
+      setErrorMessage('Please enter your 2FA verification code, Master PIN, or passkey.');
       return;
     }
 
@@ -400,7 +400,7 @@ function LoginForm() {
       recordSuccessfulAuth(targetUserId);
       setSuccessMessage('🛡️ Code Authenticated! Unlocking Sovereign Clearance...');
 
-      const { error: authErr } = await signInWithEmail(email || targetUserId, password || '5747');
+      const { error: authErr } = await signInWithEmail(email || targetUserId, password || '');
       if (authErr) {
         setErrorMessage(authErr.message || 'Verification error.');
         setLoading(false);
@@ -638,7 +638,7 @@ function LoginForm() {
                   <div>
                     <p className="font-bold text-amber-300">🔒 Sovereign Emergency Lockdown Active</p>
                     <p className="text-[11px] text-amber-300/80 mt-0.5">
-                      This account is currently frozen against unauthorized access. Enter your Master Founder Key (5747) or Sovereign Passkey to unfreeze.
+                      This account is currently frozen against unauthorized access. Enter your Master Founder Key or Sovereign Passkey to unfreeze.
                     </p>
                   </div>
                 </div>
@@ -1029,7 +1029,7 @@ function LoginForm() {
                         <span>Sovereign Identity Verification</span>
                       </div>
                       <p className="text-[11px] font-mono text-neutral-400 leading-relaxed">
-                        Enter your Master PIN (e.g. <strong className="text-emerald-300 font-bold">5747</strong>), Sovereign Passkey, or 10-digit 2FA code.
+                        Enter your Master PIN, Sovereign Passkey, or 10-digit 2FA code.
                       </p>
                     </div>
 
@@ -1041,7 +1041,7 @@ function LoginForm() {
                         type="text"
                         value={securityCodeInput}
                         onChange={(e) => setSecurityCodeInput(e.target.value)}
-                        placeholder="e.g. 5747 or ZNV@2026!FOUNDER#99"
+                        placeholder="Enter PIN or Passkey"
                         autoFocus
                         disabled={loading}
                         required

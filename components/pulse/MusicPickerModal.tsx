@@ -15,7 +15,9 @@ import {
   ListPlus,
   Loader2,
   ExternalLink,
-  Youtube
+  Youtube,
+  ChevronLeft,
+  Sliders
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { POPULAR_MUSIC_TRACKS, MusicTrack } from '@/lib/musicTracks';
@@ -28,13 +30,17 @@ export interface SelectedTrackPayload {
   videoId?: string;
   duration?: string;
   source?: string;
+  startTime?: number; // start second (e.g. 30)
+  endTime?: number;   // end second (e.g. 90)
+  frameDuration?: number; // duration in seconds (30s to 120s)
 }
 
-interface MusicPickerModalProps {
+export interface MusicPickerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectTrack: (track: SelectedTrackPayload) => void;
   selectedTrackTitle?: string;
+  mode?: 'story' | 'post' | 'notes' | 'flux';
 }
 
 interface YTTrackItem {
@@ -54,6 +60,7 @@ export function MusicPickerModal({
   onClose,
   onSelectTrack,
   selectedTrackTitle,
+  mode = 'post',
 }: MusicPickerModalProps) {
   const [activeTab, setActiveTab] = useState<'ytmusic' | 'featured' | 'custom'>('ytmusic');
   const [search, setSearch] = useState('Oasis Wonderwall');
@@ -63,8 +70,34 @@ export function MusicPickerModal({
   const [activeYtEmbedId, setActiveYtEmbedId] = useState<string | null>(null);
   const [playlistStatus, setPlaylistStatus] = useState<string | null>(null);
 
+  // Instagram-style song frame trimming state
+  const maxLimit = (mode === 'story' || mode === 'notes') ? 60 : 120;
+  const minLimit = 30;
+  const [trimTrack, setTrimTrack] = useState<YTTrackItem | MusicTrack | null>(null);
+  const [frameDuration, setFrameDuration] = useState<number>(Math.min(60, maxLimit));
+  const [startTime, setStartTime] = useState<number>(15);
+  const [isTrimPlaying, setIsTrimPlaying] = useState<boolean>(true);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const customFileInputRef = useRef<HTMLInputElement>(null);
+
+  const parseDurationSeconds = (durStr?: string): number => {
+    if (!durStr) return 210;
+    const parts = durStr.split(':').map(Number);
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return parts[0] * 60 + parts[1];
+    }
+    if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+    return 210;
+  };
+
+  const formatSeconds = (sec: number): string => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   // Search YouTube Music via Next.js API backed by ytmusicapi
   const performYTSearch = useCallback(async (query: string) => {
@@ -153,33 +186,51 @@ export function MusicPickerModal({
     }
   };
 
-  const handleSelectYTTrack = (t: YTTrackItem) => {
+  const openTrimForTrack = (track: YTTrackItem | MusicTrack) => {
     audioRef.current?.pause();
     setPlayingTrackId(null);
     setActiveYtEmbedId(null);
+    setTrimTrack(track);
+    setStartTime(15);
+    setFrameDuration(Math.min(60, maxLimit));
+    setIsTrimPlaying(true);
+  };
+
+  const confirmAttachTrack = (
+    track: YTTrackItem | MusicTrack,
+    start: number,
+    durationSecs: number
+  ) => {
+    audioRef.current?.pause();
+    setPlayingTrackId(null);
+    setActiveYtEmbedId(null);
+
+    const isYT = 'videoId' in track || (track as any).source === 'YouTube Music';
+    const videoId = (track as any).videoId || (isYT ? track.id : undefined);
+    const audioUrl = (track as any).audioUrl || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : '');
+
     onSelectTrack({
-      title: t.title,
-      artist: t.artist,
-      audioUrl: t.audioUrl || `https://www.youtube.com/watch?v=${t.videoId || t.id}`,
-      thumbnailUrl: t.thumbnail,
-      videoId: t.videoId || t.id,
-      duration: t.duration,
-      source: 'YouTube Music'
+      title: track.title,
+      artist: track.artist,
+      audioUrl: audioUrl,
+      thumbnailUrl: (track as any).thumbnail || (track as any).coverArt,
+      videoId: videoId,
+      duration: (track as any).duration,
+      source: isYT ? 'YouTube Music' : 'Featured Sovereign',
+      startTime: start,
+      endTime: start + durationSecs,
+      frameDuration: durationSecs,
     });
+    setTrimTrack(null);
     onClose();
   };
 
+  const handleSelectYTTrack = (t: YTTrackItem) => {
+    openTrimForTrack(t);
+  };
+
   const handleSelectFeatured = (t: MusicTrack) => {
-    audioRef.current?.pause();
-    setPlayingTrackId(null);
-    setActiveYtEmbedId(null);
-    onSelectTrack({
-      title: t.title,
-      artist: t.artist,
-      audioUrl: t.audioUrl,
-      source: 'Featured Sovereign'
-    });
-    onClose();
+    openTrimForTrack(t);
   };
 
   // Create playlist and add videoId using the ytmusicapi flow specified by user
@@ -265,6 +316,173 @@ export function MusicPickerModal({
             </button>
           </div>
 
+          {/* ─── CONDITIONAL: FRAME TRIMMER VIEW vs SEARCH TABS ─── */}
+          {trimTrack ? (
+            <div className="p-5 space-y-5 flex-1 overflow-y-auto">
+              {/* Back to Search Bar */}
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setTrimTrack(null)}
+                  className="flex items-center gap-1.5 text-xs font-mono text-zinc-400 hover:text-white transition cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Choose Different Track</span>
+                </button>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                  Frame Trimmer • {mode.toUpperCase()} (Max {maxLimit}s)
+                </span>
+              </div>
+
+              {/* Track Identity Card */}
+              <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-black/60 border border-white/10">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-zinc-900 border border-white/10 shrink-0 relative flex items-center justify-center">
+                  {(trimTrack as any).thumbnail || (trimTrack as any).coverArt ? (
+                    <img
+                      src={(trimTrack as any).thumbnail || (trimTrack as any).coverArt}
+                      alt={trimTrack.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Music className="w-6 h-6 text-rose-400" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-sm font-bold text-white font-display truncate">{trimTrack.title}</h4>
+                  <p className="text-xs text-zinc-400 font-mono truncate">{trimTrack.artist}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] font-mono text-zinc-500">
+                      Length: {trimTrack.duration || '3:30'}
+                    </span>
+                    <span className="text-[10px] font-mono text-rose-400 font-bold">• YouTube Music</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Clip Duration Selector Chips (Instagram Style) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
+                    Select Clip Duration (Min 30s, Max {maxLimit}s)
+                  </label>
+                  <span className="text-xs font-mono font-bold text-cyan-400">{frameDuration}s frame</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[30, 45, 60, ...(maxLimit > 60 ? [90, 120] : [])].map((dur) => (
+                    <button
+                      key={dur}
+                      type="button"
+                      onClick={() => {
+                        setFrameDuration(dur);
+                        const totalSec = parseDurationSeconds(trimTrack.duration);
+                        if (startTime + dur > totalSec) {
+                          setStartTime(Math.max(0, totalSec - dur));
+                        }
+                      }}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition cursor-pointer border ${
+                        frameDuration === dur
+                          ? 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+                          : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {dur}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Waveform Scrubber & Start Time Slider */}
+              <div className="space-y-3 p-4 rounded-2xl bg-black/40 border border-white/10">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-zinc-400">Audio Frame:</span>
+                  <span className="text-white font-bold">
+                    {formatSeconds(startTime)} — {formatSeconds(startTime + frameDuration)}
+                  </span>
+                </div>
+
+                {/* Visual Equalizer Window */}
+                <div className="relative h-12 bg-zinc-950/80 rounded-xl border border-white/10 flex items-center justify-between px-3 overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none opacity-40">
+                    {[20, 45, 80, 60, 30, 95, 70, 40, 85, 100, 50, 75, 30, 65, 90, 45, 80, 60, 30, 90, 70, 40, 85, 95, 50, 75, 30, 65, 85, 40, 60, 90].map((h, i) => (
+                      <div
+                        key={i}
+                        className={`w-1 rounded-full ${isTrimPlaying ? 'bg-rose-400' : 'bg-zinc-600'}`}
+                        style={{ height: `${h}%` }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Selected Window Highlight */}
+                  <div
+                    className="absolute top-1 bottom-1 rounded-lg bg-rose-500/25 border-2 border-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.4)] pointer-events-none transition-all duration-75"
+                    style={{
+                      left: `${(startTime / Math.max(1, parseDurationSeconds(trimTrack.duration))) * 100}%`,
+                      width: `${(frameDuration / Math.max(1, parseDurationSeconds(trimTrack.duration))) * 100}%`,
+                    }}
+                  />
+                </div>
+
+                {/* Range Slider for Start Time */}
+                <div className="space-y-1">
+                  <input
+                    type="range"
+                    min={0}
+                    max={Math.max(0, parseDurationSeconds(trimTrack.duration) - frameDuration)}
+                    value={startTime}
+                    onChange={(e) => setStartTime(Number(e.target.value))}
+                    className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                  />
+                  <div className="flex justify-between text-[10px] font-mono text-zinc-500">
+                    <span>0:00 (Intro)</span>
+                    <span>Drag timeline to select song section</span>
+                    <span>{trimTrack.duration || '3:30'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audio Preview Engine with Play/Pause */}
+              <div className="p-3 rounded-2xl bg-black border border-rose-500/30 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsTrimPlaying(!isTrimPlaying)}
+                    className="w-9 h-9 rounded-xl bg-rose-500 hover:bg-rose-400 text-white flex items-center justify-center cursor-pointer shadow"
+                  >
+                    {isTrimPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                  </button>
+                  <div>
+                    <span className="text-xs font-mono font-bold text-white block">Previewing Frame</span>
+                    <span className="text-[10px] font-mono text-zinc-400">
+                      {formatSeconds(startTime)} - {formatSeconds(startTime + frameDuration)} ({frameDuration}s)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Embedded Hidden YouTube Player for Exact Window */}
+                {isTrimPlaying && (
+                  <div className="w-1 h-1 opacity-0 overflow-hidden pointer-events-none">
+                    <iframe
+                      key={`${(trimTrack as any).videoId || trimTrack.id}-${startTime}-${startTime + frameDuration}`}
+                      src={`https://www.youtube-nocookie.com/embed/${(trimTrack as any).videoId || trimTrack.id}?autoplay=1&enablejsapi=1&start=${startTime}&end=${startTime + frameDuration}&loop=1&playsinline=1`}
+                      title="Audio Preview"
+                      allow="autoplay"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Attach Button */}
+              <button
+                type="button"
+                onClick={() => confirmAttachTrack(trimTrack, startTime, frameDuration)}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 hover:opacity-95 text-white font-bold text-xs uppercase tracking-widest transition shadow-[0_0_25px_rgba(244,63,94,0.4)] cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Check className="w-4 h-4" />
+                <span>Attach Song Frame ({formatSeconds(startTime)} - {formatSeconds(startTime + frameDuration)})</span>
+              </button>
+            </div>
+          ) : (
+            <>
           {/* Navigation Tabs */}
           <div className="grid grid-cols-3 gap-1 p-2 bg-black/60 border-b border-white/10 text-xs font-mono">
             <button
@@ -527,6 +745,8 @@ export function MusicPickerModal({
               </div>
             )}
           </div>
+          </>
+          )}
         </motion.div>
       </div>
     </AnimatePresence>

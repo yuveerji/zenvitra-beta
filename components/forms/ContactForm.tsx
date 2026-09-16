@@ -57,7 +57,7 @@ export function ContactForm() {
           <input
             type="text"
             required
-            placeholder="e.g. Yuveer Chhatwani"
+            placeholder="e.g. Sovereign Delegate"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full bg-[#0d0e14] border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-amber-400/50 transition"

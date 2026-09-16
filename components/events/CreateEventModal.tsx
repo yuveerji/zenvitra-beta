@@ -12,9 +12,13 @@ import {
   Layers, 
   Users,
   Check,
-  Upload
+  Upload,
+  Lock,
+  Ticket
 } from 'lucide-react';
 import { useZenEvents, KNOWN_CITIES } from '@/context/ZenEventsPlatformContext';
+import { useAuth } from '@/context/AuthContext';
+import { useZenPass } from '@/context/ZenPassContext';
 import { EventCategory, EventType } from '@/types/events';
 
 const COVER_PRESETS = [
@@ -25,7 +29,17 @@ const COVER_PRESETS = [
 ];
 
 export function CreateEventModal() {
-  const { createEvent, setActiveView } = useZenEvents();
+  const { profile } = useAuth();
+  const { createEvent, setActiveView, events, currentUserUsername, currentUserId } = useZenEvents();
+  const { setShowPassWalletModal } = useZenPass();
+
+  const isEventManager = Boolean(
+    profile?.role === 'admin' ||
+    (profile?.role as string) === 'organizer' ||
+    (profile?.role as string) === 'secretariat' ||
+    profile?.email?.toLowerCase() === 'founder@zenvitra.org' ||
+    (events && events.some((e) => e.organizerUsername === currentUserUsername || e.organizerId === currentUserId))
+  );
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -89,6 +103,44 @@ export function CreateEventModal() {
       tags,
     });
   };
+
+  if (!isEventManager) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl p-4 flex items-center justify-center font-sans">
+        <div className="relative w-full max-w-md rounded-3xl border border-rose-500/30 bg-[#0c0e17] p-6 sm:p-8 text-center space-y-5 shadow-2xl">
+          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto shadow-[0_0_30px_rgba(244,63,94,0.2)]">
+            <Lock className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-display font-bold text-lg text-white">Organizer Clearance Required</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Event creation is restricted to verified event organizers, host pages, and secretariat councils. Standard delegates and attendees can access registered passes and present tickets at the chamber gate.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveView('list');
+                setShowPassWalletModal(true);
+              }}
+              className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+            >
+              <Ticket className="w-4 h-4" />
+              <span>Show My Tickets & Passes</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveView('list')}
+              className="w-full py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white font-mono text-xs transition cursor-pointer"
+            >
+              Return to Events Hub
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl p-3 sm:p-6 flex flex-col justify-start sm:justify-center items-center font-sans">

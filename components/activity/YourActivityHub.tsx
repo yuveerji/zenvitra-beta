@@ -766,7 +766,7 @@ export function YourActivityHub() {
                 <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="e.g. yuveer or un_caucus"
+                  placeholder="e.g. delegate or un_caucus"
                   value={filterAuthor}
                   onChange={(e) => setFilterAuthor(e.target.value)}
                   className="w-full pl-8 pr-3 py-2 rounded-xl bg-black border border-zinc-700 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-white transition"

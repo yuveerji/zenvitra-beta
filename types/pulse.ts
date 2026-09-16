@@ -44,6 +44,10 @@ export interface PulseStory {
   songTitle?: string;
   songArtist?: string;
   songAudioUrl?: string;
+  songVideoId?: string;
+  songStartTime?: number;
+  songEndTime?: number;
+  songFrameDuration?: number;
   /* ZEN.GLIMPSE SNAP BRANDING */
   isSnap?: boolean;
   snapFilter?: string;
@@ -253,6 +257,10 @@ export interface PulsePost {
   songTitle?: string;
   songArtist?: string;
   songAudioUrl?: string;
+  songVideoId?: string;
+  songStartTime?: number;
+  songEndTime?: number;
+  songFrameDuration?: number;
 
   // Speech Dispatches (Video & Audio)
   speechFormat?: 'video' | 'audio';

@@ -79,11 +79,129 @@ export function useEditorCommands({
     [execCmd]
   );
 
-  // Insert horizontal rule
+  // High-Tech Divider with glowing diamond aura
   const insertDivider = useCallback(() => {
-    execCmd('insertHorizontalRule');
+    const dividerHtml = `<div style="margin: 24px 0; display: flex; align-items: center; gap: 12px; user-select: none;" role="separator"><div style="height: 1px; background: linear-gradient(to right, transparent, rgba(6,182,212,0.4), rgba(6,182,212,0.7)); flex: 1;"></div><span style="font-size: 11px; font-family: monospace; color: #06b6d4; letter-spacing: 0.2em;">❖</span><div style="height: 1px; background: linear-gradient(to right, rgba(6,182,212,0.7), rgba(6,182,212,0.4), transparent); flex: 1;"></div></div><p><br></p>`;
+    insertHTML(dividerHtml);
     onToast('Inserted divider');
-  }, [execCmd, onToast]);
+  }, [insertHTML, onToast]);
+
+  // Insert Table (Word & Google Docs style)
+  const insertTable = useCallback(
+    (rows: number = 3, cols: number = 3) => {
+      const borderColor = paperMode === 'light' ? '#cbd5e1' : 'rgba(255,255,255,0.15)';
+      const headerBg = paperMode === 'light' ? '#f1f5f9' : 'rgba(255,255,255,0.06)';
+      
+      let html = `<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; border: 1px solid ${borderColor};">`;
+      html += '<thead><tr>';
+      for (let c = 0; c < cols; c++) {
+        html += `<th style="border: 1px solid ${borderColor}; background: ${headerBg}; padding: 8px 12px; font-weight: 700; text-align: left; color: ${headingColor};">Header ${c + 1}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+      for (let r = 0; r < rows; r++) {
+        html += '<tr>';
+        for (let c = 0; c < cols; c++) {
+          html += `<td style="border: 1px solid ${borderColor}; padding: 8px 12px; color: ${textColor};">Cell ${r + 1},${c + 1}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table><p><br></p>';
+      insertHTML(html);
+      onToast(`Inserted ${rows}x${cols} Table`);
+    },
+    [insertHTML, paperMode, headingColor, textColor, onToast]
+  );
+
+  // Insert Image
+  const insertImage = useCallback(
+    (url: string, caption?: string) => {
+      if (!url) return;
+      const html = `<figure style="margin: 20px 0; text-align: center;"><img src="${url}" alt="${caption || 'Document Image'}" style="max-width: 100%; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: inline-block;" />${caption ? `<figcaption style="font-size: 11px; color: ${subTextColor}; margin-top: 6px; font-style: italic;">${caption}</figcaption>` : ''}</figure><p><br></p>`;
+      insertHTML(html);
+      onToast('Inserted image');
+    },
+    [insertHTML, subTextColor, onToast]
+  );
+
+  // Insert Link
+  const insertLink = useCallback(
+    (url: string, text?: string) => {
+      if (!url) return;
+      const label = text || url;
+      const html = `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #06b6d4; text-decoration: underline; font-weight: 500;">${label}</a>`;
+      insertHTML(html);
+      onToast('Inserted hyperlink');
+    },
+    [insertHTML, onToast]
+  );
+
+  // Insert Checklist
+  const insertChecklist = useCallback(() => {
+    const html = `<div style="display: flex; align-items: flex-start; gap: 8px; margin: 4px 0;"><input type="checkbox" style="margin-top: 4px; accent-color: #06b6d4; width: 14px; height: 14px; cursor: pointer;" /><span style="color: ${textColor};">Task checklist item...</span></div><p><br></p>`;
+    insertHTML(html);
+    onToast('Inserted checklist');
+  }, [insertHTML, textColor, onToast]);
+
+  // Apply Heading & Styles
+  const applyStyle = useCallback(
+    (style: 'p' | 'title' | 'subtitle' | 'h1' | 'h2' | 'h3' | 'h4' | 'code') => {
+      if (style === 'p') {
+        execCmd('formatBlock', '<p>');
+        onToast('Applied Normal text');
+      } else if (style === 'title') {
+        const sel = window.getSelection()?.toString() || 'Document Title';
+        insertHTML(`<h1 style="font-size: 32px; font-weight: 900; line-height: 1.2; margin: 24px 0 12px 0; color: ${headingColor}; letter-spacing: -0.02em;">${sel}</h1><p><br></p>`);
+        onToast('Applied Title style');
+      } else if (style === 'subtitle') {
+        const sel = window.getSelection()?.toString() || 'Document Subtitle';
+        insertHTML(`<p style="font-size: 16px; line-height: 1.5; color: ${subTextColor}; margin-bottom: 20px; font-weight: 400;">${sel}</p><p><br></p>`);
+        onToast('Applied Subtitle style');
+      } else if (style === 'code') {
+        const sel = window.getSelection()?.toString() || '// Enter code here...';
+        const codeBg = paperMode === 'light' ? '#f1f5f9' : '#0f172a';
+        insertHTML(`<pre style="background: ${codeBg}; padding: 14px 16px; border-radius: 10px; font-family: monospace; font-size: 12px; overflow-x: auto; border: 1px solid rgba(255,255,255,0.1); color: #06b6d4;"><code>${sel}</code></pre><p><br></p>`);
+        onToast('Applied Code block');
+      } else {
+        execCmd('formatBlock', `<${style}>`);
+        onToast(`Applied ${style.toUpperCase()}`);
+      }
+    },
+    [execCmd, insertHTML, headingColor, subTextColor, paperMode, onToast]
+  );
+
+  // Insert formatted Date
+  const insertDate = useCallback(() => {
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    insertHTML(`<span style="font-family: monospace; color: #06b6d4; font-weight: 600;">${formattedDate}</span> `);
+    onToast('Inserted current date');
+  }, [insertHTML, onToast]);
+
+  // Insert Special Character
+  const insertSpecialChar = useCallback(
+    (char: string) => {
+      insertHTML(char);
+      onToast(`Inserted ${char}`);
+    },
+    [insertHTML, onToast]
+  );
+
+  // Import from Whiteboard
+  const importWhiteboard = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const whiteboardData = localStorage.getItem('zen_whiteboard_export_last');
+    if (!whiteboardData) {
+      onToast('No saved Whiteboard drawing found! Open Whiteboard, sketch, and click Export.');
+      return;
+    }
+    const html = `<div style="margin: 20px 0; text-align: center;"><img src="${whiteboardData}" alt="Whiteboard Export" style="max-width: 100%; border-radius: 12px; border: 1.5px solid rgba(6,182,212,0.4); box-shadow: 0 12px 36px rgba(0,0,0,0.35); display: inline-block;" /><div style="font-size: 10px; color: #06b6d4; font-family: monospace; font-weight: bold; margin-top: 6px; letter-spacing: 0.1em;">🎨 ZEN.WHITEBOARD EMBEDDED RECORD</div></div><p><br></p>`;
+    insertHTML(html);
+    onToast('Imported Whiteboard drawing into Document!');
+  }, [insertHTML, onToast]);
 
   // Insert heading
   const insertHeading = useCallback(
@@ -145,7 +263,7 @@ export function useEditorCommands({
     <span style="color: #059669; font-weight: bold;">25% CIVIC ENDOWMENT LOCKED</span>
   </div>
   <p style="margin: 4px 0; color: ${paperMode === 'light' ? '#374151' : '#93c5fd'};"><strong>SHA-256 HASH:</strong> ${hash}</p>
-  <p style="margin: 4px 0; color: ${paperMode === 'light' ? '#4b5563' : '#60a5fa'};"><strong>PLENIPOTENTIARY STAMP:</strong> Authenticated by Sovereign Node Yuveer on ${new Date().toISOString()}</p>
+  <p style="margin: 4px 0; color: ${paperMode === 'light' ? '#4b5563' : '#60a5fa'};"><strong>PLENIPOTENTIARY STAMP:</strong> Authenticated by Sovereign Authority on ${new Date().toISOString()}</p>
 </div>`;
     insertHTML(sealHtml);
     onSave({ cryptographicHash: hash, sealedAt: new Date().toISOString() });
@@ -183,6 +301,14 @@ export function useEditorCommands({
     insertDivider,
     insertHeading,
     insertBlockquote,
+    insertTable,
+    insertImage,
+    insertLink,
+    insertChecklist,
+    applyStyle,
+    insertDate,
+    insertSpecialChar,
+    importWhiteboard,
     insertPreambleClause,
     insertOperativeClause,
     insertBillSection,

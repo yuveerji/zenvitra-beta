@@ -10,6 +10,7 @@ import { MunInviteModal } from '@/components/mun/MunInviteModal';
 import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt';
 import { ContentProtectionProvider } from '@/components/security/ContentProtectionProvider';
 import { MaintenanceGate } from '@/components/maintenance/MaintenanceGate';
+import { GlobalAudioProvider } from '@/components/audio/GlobalAudioContext';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
@@ -62,12 +63,14 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         <ZenChatPlatformProvider>
           <MunProvider>
             <ContentProtectionProvider>
-              <MaintenanceGate>
-                {children}
-                <MockModeBanner />
-                <MunInviteModal />
-                <PWAInstallPrompt />
-              </MaintenanceGate>
+              <GlobalAudioProvider>
+                <MaintenanceGate>
+                  {children}
+                  <MockModeBanner />
+                  <MunInviteModal />
+                  <PWAInstallPrompt />
+                </MaintenanceGate>
+              </GlobalAudioProvider>
             </ContentProtectionProvider>
           </MunProvider>
         </ZenChatPlatformProvider>

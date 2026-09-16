@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { CheckCircle2, AlertCircle, ListTodo, Vote, ShieldCheck } from 'lucide-react';
@@ -27,7 +27,7 @@ const DEFAULT_CHAMBER_DATA: ChamberSummaryData = {
     'What latency threshold is considered acceptable for offline asynchronous resolution voting?',
   ],
   actionItems: [
-    { task: 'Draft Section 4 amendments on student scholarship allocation criteria', assignee: '@yuveer' },
+    { task: 'Draft Section 4 amendments on student scholarship allocation criteria', assignee: '@delegate_india' },
     { task: 'Benchmark distributed audio mesh performance under 500 simultaneous speakers', assignee: '@directorate' },
   ],
   votes: [

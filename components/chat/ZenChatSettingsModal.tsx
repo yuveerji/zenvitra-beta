@@ -204,7 +204,7 @@ export function ZenChatSettingsModal({ isOpen, onClose }: ZenChatSettingsModalPr
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="e.g. Yuveer Chhatwani"
+                      placeholder="e.g. Sovereign Delegate"
                       className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-purple-500/50 text-xs sm:text-sm text-white focus:outline-none transition"
                       required
                     />
@@ -225,7 +225,7 @@ export function ZenChatSettingsModal({ isOpen, onClose }: ZenChatSettingsModalPr
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase())}
-                      placeholder="e.g. yuveer"
+                      placeholder="e.g. delegate_01"
                       className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-purple-500/50 text-xs sm:text-sm text-white focus:outline-none font-mono transition"
                       required
                     />

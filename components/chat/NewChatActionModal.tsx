@@ -241,7 +241,7 @@ export function NewChatActionModal({
                   type="text"
                   value={targetHandle}
                   onChange={(e) => setTargetHandle(e.target.value)}
-                  placeholder="e.g. @yuveerji or 9876543210"
+                  placeholder="e.g. @delegate or 9876543210"
                   className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500/50"
                   autoFocus
                 />

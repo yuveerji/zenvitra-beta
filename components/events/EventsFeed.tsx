@@ -123,6 +123,21 @@ export function EventsFeed() {
             <span className="truncate">My Passes (<span suppressHydrationWarning>{userPasses.length}</span>)</span>
           </button>
 
+          {/* Quick Present Pass for Door Entry Button (for attendees with tickets) */}
+          {userPasses.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setActivePassForModal(userPasses[0]);
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold transition shadow-sm cursor-pointer animate-pulse"
+              title="Show Ticket for Gate Entry"
+            >
+              <QrCode className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="truncate">Show Entry QR</span>
+            </button>
+          )}
+
           {/* Door QR Scanner Button — STRICTLY VISIBLE ONLY TO AUTHORIZED EVENT MANAGERS */}
           {isEventManager && (
             <button
@@ -136,24 +151,37 @@ export function EventsFeed() {
             </button>
           )}
 
-          {/* Organizer Dashboard Button */}
-          <button
-            type="button"
-            onClick={() => setActiveView('dashboard')}
-            className="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold transition shadow-sm cursor-pointer"
-            title="Open Organizer Event Management & Role Delegation Dashboard"
-          >
-            <LayoutDashboard className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span className="truncate">Dashboard</span>
-          </button>
+          {/* Organizer Dashboard Button — STRICTLY VISIBLE ONLY TO EVENT MANAGERS */}
+          {isEventManager && (
+            <button
+              type="button"
+              onClick={() => setActiveView('dashboard')}
+              className="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold transition shadow-sm cursor-pointer"
+              title="Open Organizer Event Management & Role Delegation Dashboard"
+            >
+              <LayoutDashboard className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span className="truncate">Dashboard</span>
+            </button>
+          )}
 
-          <button
-            onClick={() => setActiveView('create')}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white hover:bg-zinc-200 text-black text-xs font-semibold transition shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4 shrink-0" />
-            <span>Create Event</span>
-          </button>
+          {/* Create Event Button — STRICTLY RESTRICTED TO EVENT MANAGERS & HOST PAGES */}
+          {isEventManager ? (
+            <button
+              onClick={() => setActiveView('create')}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white hover:bg-zinc-200 text-black text-xs font-semibold transition shadow-sm cursor-pointer"
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>Create Event</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowPassWalletModal(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-200 text-xs font-semibold transition shadow-sm cursor-pointer"
+            >
+              <Ticket className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Show Passes & Enter</span>
+            </button>
+          )}
         </div>
       </div>
 

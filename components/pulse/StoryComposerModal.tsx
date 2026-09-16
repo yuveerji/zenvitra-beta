@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { MediaStudioModal } from '@/components/creator/MediaStudioModal';
-import { MusicPickerModal } from './MusicPickerModal';
+import { MusicPickerModal, SelectedTrackPayload } from './MusicPickerModal';
 import { STORY_FONTS, STORY_GRADIENTS, STORY_STICKERS, getStoryFontStyle } from '@/lib/storyFonts';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -51,7 +51,7 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
   const [selectedGradientId, setSelectedGradientId] = useState('nebula');
   const [highlightMode, setHighlightMode] = useState<'none' | 'box' | 'neon' | 'inverted'>('box');
   const [selectedStickers, setSelectedStickers] = useState<string[]>([]);
-  const [attachedSong, setAttachedSong] = useState<{ title: string; artist: string; audioUrl: string } | null>(null);
+  const [attachedSong, setAttachedSong] = useState<SelectedTrackPayload | null>(null);
   const [isMusicPickerOpen, setIsMusicPickerOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
@@ -112,6 +112,10 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
       songTitle: attachedSong?.title,
       songArtist: attachedSong?.artist,
       songAudioUrl: attachedSong?.audioUrl,
+      songVideoId: attachedSong?.videoId,
+      songStartTime: attachedSong?.startTime,
+      songEndTime: attachedSong?.endTime,
+      songFrameDuration: attachedSong?.frameDuration,
       isSnap: isSnapMode,
       snapFilter: isSnapMode ? selectedSnapFilter : undefined,
       snapLocation: isSnapMode ? snapLocation : undefined,
@@ -624,6 +628,7 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
           onClose={() => setIsMusicPickerOpen(false)}
           onSelectTrack={(t) => setAttachedSong(t)}
           selectedTrackTitle={attachedSong?.title}
+          mode="story"
         />
       </div>
     </div>

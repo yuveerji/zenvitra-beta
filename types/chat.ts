@@ -260,6 +260,10 @@ export interface ZenNoteSong {
   artist: string;
   coverUrl?: string;
   audioUrl?: string;
+  videoId?: string;
+  startTime?: number;
+  endTime?: number;
+  frameDuration?: number;
 }
 
 export type ZenNoteColor = 'dark' | 'yellow' | 'sunset' | 'cyan' | 'emerald' | 'lavender';

@@ -1551,7 +1551,7 @@ export function VaultDashboardClient({
                   type="text"
                   value={directiveAuthor}
                   onChange={(e) => setDirectiveAuthor(e.target.value)}
-                  placeholder="e.g. @yuveer // Sovereign Founder"
+                  placeholder="e.g. Sovereign Founder"
                   className="w-full px-3.5 py-2 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
                 />
               </div>
