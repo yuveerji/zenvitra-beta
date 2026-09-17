@@ -351,7 +351,15 @@ export const privacyPolicyParts: LegalPart[] = [
         subsections: [
           { number: '10.1', heading: 'Posts', paragraphs: ['ZEN.PULSE may process posts, captions, images, videos, comments, reactions, shares, bookmarks, mentions, hashtags, publication information, and associated metadata.'] },
           { number: '10.2', heading: 'Visibility', paragraphs: ['Depending on settings, Content may be private, visible to approved followers, visible to an organization, visible to an event, unlisted, or public.'] },
-          { number: '10.3', heading: 'Public Posts', paragraphs: ['Public posts may be accessible outside ZENVITRA and may be indexed by search engines or shared by other users. Treat deliberately public Content as information that may travel beyond the interface.'] }
+          { number: '10.3', heading: 'Public Posts', paragraphs: ['Public posts may be accessible outside ZENVITRA and may be indexed by search engines or shared by other users. Treat deliberately public Content as information that may travel beyond the interface.'] },
+          {
+            number: '10.4',
+            heading: 'Music & Third-Party Audio Credits',
+            paragraphs: [
+              'All musical recordings, audio streams, and artist metadata featured across Zenvitra Pulse, Stories, Notes, and Events are the intellectual property of their respective original artists, copyright holders, and record labels. Music indexing and playback functionality utilizes public APIs including ytmusic-api from GitHub for transformative preview and personal civic expression. Zenvitra does not claim ownership of proprietary musical compositions.',
+              'Third-party audio streams are processed for non-commercial preview and civic dialogue under fair dealing principles. Users or copyright holders wishing to query attribution or request removal may contact copyright@zenvitra.xyz or legal@zenvitra.xyz.'
+            ]
+          }
         ]
       },
       {
@@ -1033,6 +1041,14 @@ export const TERMS_OF_SERVICE_DATA: LegalSection[] = [
           'You retain full ownership of the original User Content you create and submit to ZENVITRA. Using ZENVITRA does not transfer ownership of your intellectual property to ZENVITRA.',
           'By submitting User Content, you grant ZENVITRA a non-exclusive, worldwide, royalty-free license to host, store, reproduce, transmit, process, format, and display that Content strictly to the extent reasonably necessary to operate, maintain, secure, and improve the Service.',
           'For public Content, you authorize ZENVITRA to make that material available to the public. For private Content, ZENVITRA does not publish it and restricts access strictly to authorized systems and recipients.'
+        ]
+      },
+      {
+        number: '7.2',
+        heading: 'Music & Third-Party Audio Credits',
+        paragraphs: [
+          'All musical recordings, audio streams, and artist metadata featured across Zenvitra Pulse, Stories, Notes, and Events are the intellectual property of their respective original artists, copyright holders, and record labels. Music indexing and playback functionality utilizes public APIs including ytmusic-api from GitHub for transformative preview and personal civic expression. Zenvitra does not claim ownership of proprietary musical compositions.',
+          'Audio preview snippets are strictly constrained between 30 and 120 seconds. Zenvitra does not charge for, sell, or commercially distribute independent audio master files. Rights holders may file attribution inquiries or takedown requests to legal@zenvitra.xyz.'
         ]
       }
     ]

@@ -20,7 +20,8 @@ import {
   AlertCircle,
   HelpCircle,
   Clock,
-  Printer
+  Printer,
+  Music
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -171,6 +172,13 @@ export default function PrivacyPolicyPage() {
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <strong className="text-amber-300">Statutory Notice:</strong> This privacy framework operates in accordance with India&apos;s Digital Personal Data Protection Act, 2023, the MeitY Digital Personal Data Protection Rules, 2025 (including verifiable parental consent and prohibition of behavioral tracking on children), and the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021 as amended through February 2026.
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-indigo-500/[0.05] border border-indigo-500/25 text-xs font-mono text-indigo-200/90 flex items-start gap-3">
+            <Music className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-indigo-300">Music & Third-Party Audio Credits:</strong> All musical recordings, audio streams, and artist metadata featured across Zenvitra Pulse, Stories, Notes, and Events are the intellectual property of their respective original artists, copyright holders, and record labels. Music indexing and playback functionality utilizes public APIs including <code className="text-white bg-white/10 px-1 py-0.5 rounded">ytmusic-api</code> from GitHub for transformative preview and personal civic expression. Zenvitra does not claim ownership of proprietary musical compositions.
             </div>
           </div>
         </div>

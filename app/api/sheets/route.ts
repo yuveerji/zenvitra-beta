@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
     }
 
     const targetTab = mapTabToTarget(rawTab);
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL;
+    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
+    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || 'Browser Client';
 
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(appsScriptPayload),
+          redirect: 'follow',
           cache: 'no-store'
         });
 
@@ -102,7 +104,8 @@ export async function GET(req: NextRequest) {
     const tab = searchParams.get('tab') || 'Register Data Core';
     const action = searchParams.get('action') || 'GET_DATA';
     const query = searchParams.get('q') || '';
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL;
+    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
+    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
 
     if (webhookUrl) {
       try {
@@ -110,6 +113,7 @@ export async function GET(req: NextRequest) {
         const res = await fetch(scriptUrlWithQuery, {
           method: 'GET',
           headers: { 'Accept': 'application/json' },
+          redirect: 'follow',
           cache: 'no-store'
         });
 

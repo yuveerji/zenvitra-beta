@@ -15,7 +15,8 @@ import {
   Terminal,
   Radio,
   CheckCircle2,
-  Lock
+  Lock,
+  Music
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -171,6 +172,16 @@ export default function TermsOfServicePage() {
                 <span className={`font-bold block ${isLight ? 'text-stone-900' : 'text-white'}`}>&bull; Zero Culture Wars:</span>
                 <p>Using Zenvitra dispatches, FLUX streams, or Chat relays to debate religious dogmas or denigrate beliefs results in immediate purge.</p>
               </div>
+            </div>
+          </div>
+
+          {/* Music & Third-Party Audio Credits Callout */}
+          <div className={`p-4 rounded-2xl border text-xs font-mono flex items-start gap-3 ${
+            isLight ? 'bg-indigo-50 border-indigo-200 text-indigo-950' : 'bg-indigo-500/[0.05] border-indigo-500/25 text-indigo-200/90'
+          }`}>
+            <Music className={`w-4 h-4 shrink-0 mt-0.5 ${isLight ? 'text-indigo-600' : 'text-indigo-400'}`} />
+            <div>
+              <strong className={isLight ? 'text-indigo-900' : 'text-indigo-300'}>Music &amp; Third-Party Audio Credits:</strong> All musical recordings, audio streams, and artist metadata featured across Zenvitra Pulse, Stories, Notes, and Events are the intellectual property of their respective original artists, copyright holders, and record labels. Music indexing and playback functionality utilizes public APIs including <code className={`px-1 py-0.5 rounded ${isLight ? 'bg-indigo-100 text-indigo-900 font-semibold' : 'text-white bg-white/10'}`}>ytmusic-api</code> from GitHub for transformative preview and personal civic expression. Zenvitra does not claim ownership of proprietary musical compositions.
             </div>
           </div>
         </div>

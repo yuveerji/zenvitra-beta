@@ -185,11 +185,8 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   }
 
   // 2. Server-Side Direct Webhook Dispatch
-  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-  if (!webhookUrl) {
-    console.info(`[GOOGLE-SHEETS-SIMULATION] [Tab: ${payload.tab}] Payload recorded locally:`, enrichedData);
-    return true;
-  }
+  const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
+  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || DEFAULT_WEBHOOK_URL;
 
   // Normalize tab string to match Apps Script expected targetTab
   const rawTab = (payload.tab || '').toUpperCase();
@@ -218,6 +215,7 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(outgoingPayload),
+      redirect: 'follow',
     });
     return response.ok;
   } catch (error) {

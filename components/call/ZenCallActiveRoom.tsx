@@ -38,8 +38,22 @@ import {
   Sidebar as SidebarIcon,
   Circle,
   MoreVertical,
-  Share2
+  Share2,
+  Smartphone,
+  LayoutDashboard,
+  Wifi,
+  Zap,
+  RotateCcw,
+  Compass,
+  ExternalLink,
+  QrCode
 } from 'lucide-react';
+
+const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+  </svg>
+);
 import { 
   CallMode, 
   CallRole, 
@@ -278,8 +292,13 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   const [micLevel, setMicLevel] = useState(40);
   const [callDuration, setCallDuration] = useState(128); // seconds
   const [isCopied, setIsCopied] = useState(false);
-  const [layoutMode, setLayoutMode] = useState<'grid' | 'spotlight'>('grid');
+  const [layoutMode, setLayoutMode] = useState<'grid' | 'spotlight' | 'sidebar' | 'whatsapp'>('grid');
   const [pinnedId, setPinnedId] = useState<string | null>(null);
+  const [isPipFloating, setIsPipFloating] = useState(false);
+  const [pipCorner, setPipCorner] = useState<'top-right' | 'bottom-right' | 'bottom-left' | 'top-left'>('bottom-right');
+  const [showLayoutSelector, setShowLayoutSelector] = useState(false);
+  const [showSpeedDialModal, setShowSpeedDialModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Drawers and Modals
   const [activeDrawer, setActiveDrawer] = useState<'chat' | 'participants' | 'polls' | 'breakout' | 'mun' | null>(
@@ -604,18 +623,46 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
     }
   };
 
+  const getPipClasses = () => {
+    switch (pipCorner) {
+      case 'top-right':
+        return 'top-20 right-6';
+      case 'top-left':
+        return 'top-20 left-6';
+      case 'bottom-left':
+        return 'bottom-28 left-6';
+      case 'bottom-right':
+      default:
+        return 'bottom-28 right-6';
+    }
+  };
+
+  const cyclePipCorner = () => {
+    const corners: ('top-right' | 'bottom-right' | 'bottom-left' | 'top-left')[] = [
+      'bottom-right', 'bottom-left', 'top-left', 'top-right'
+    ];
+    const currentIndex = corners.indexOf(pipCorner);
+    setPipCorner(corners[(currentIndex + 1) % corners.length]);
+  };
+
+  const handleShareToWhatsApp = () => {
+    const inviteUrl = typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`;
+    const text = encodeURIComponent(`Join my live encrypted ZEN.CALL room on Zenvitra:\n${inviteUrl}\nRoom: ${roomId}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+  };
+
   return (
     <div className="relative w-full h-[calc(100vh-4rem)] bg-black text-white flex flex-col overflow-hidden select-none">
       {/* 1. TOP BAR */}
-      <header className="h-14 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl px-4 flex items-center justify-between z-30 shrink-0">
-        {/* Left: Mode badge & Room Code */}
-        <div className="flex items-center gap-3">
+      <header className="h-14 border-b border-white/10 bg-slate-950/85 backdrop-blur-2xl px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
+        {/* Left: Mode badge, Room Code & Speed-Dial */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
             <Radio className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
-            <span>{mode}</span>
+            <span className="hidden sm:inline">{mode}</span>
           </div>
 
-          <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-3 py-1 text-xs text-slate-300 font-mono transition-colors">
+          <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-slate-300 font-mono transition-colors">
             <span>{roomId}</span>
             <button
               onClick={handleCopyLink}
@@ -626,10 +673,20 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
             </button>
           </div>
 
+          {/* Speed-Dial Button */}
+          <button
+            onClick={() => setShowSpeedDialModal(true)}
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-300 hover:text-white transition-colors"
+            title="Speed-Dial to another chamber or lounge"
+          >
+            <Compass className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Chambers</span>
+          </button>
+
           {/* E2E Security Badge */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
+          <div className="hidden lg:flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="font-medium">E2E Encrypted</span>
+            <span className="font-medium font-mono text-[11px]">E2EE 256-Bit Quantum-Safe</span>
           </div>
 
           {/* Breakout Notice if Active */}
@@ -647,10 +704,16 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
           )}
         </div>
 
-        {/* Center: Call Timer & Recording Status */}
-        <div className="flex items-center gap-3">
-          <div className="text-sm font-mono text-slate-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
-            {formatDuration(callDuration)}
+        {/* Center: Call Timer, Network Quality & Recording Status */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="text-xs sm:text-sm font-mono text-slate-200 bg-white/5 border border-white/10 px-3 py-1 rounded-full flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{formatDuration(callDuration)}</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono text-slate-400">
+            <Wifi className="w-3 h-3 text-emerald-400" />
+            <span>18ms</span>
           </div>
 
           {isRecording && (
@@ -661,8 +724,8 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
           )}
         </div>
 
-        {/* Right: Layout mode, Hand count & Whiteboard toggle */}
-        <div className="flex items-center gap-2">
+        {/* Right: Layout Switcher, WhatsApp Share, PiP, Whiteboard */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {handsRaisedCount > 0 && (
             <div className="flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg text-xs font-medium animate-bounce">
               <Hand className="w-3.5 h-3.5" />
@@ -670,25 +733,89 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
             </div>
           )}
 
+          {/* WhatsApp 1-Click Invite */}
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-slate-950 transition-all shadow-sm"
+            title="Invite via WhatsApp or Copy Link"
+          >
+            <WhatsAppIcon className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Invite</span>
+          </button>
+
+          {/* Whiteboard Button */}
           <button
             onClick={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               isWhiteboardOpen
                 ? 'bg-cyan-500 text-slate-950 font-bold shadow-lg shadow-cyan-500/20'
                 : 'bg-white/10 text-slate-300 hover:bg-white/15'
             }`}
           >
             <PenTool className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Whiteboard</span>
+            <span>Whiteboard</span>
           </button>
 
+          {/* Floating PiP Toggle */}
           <button
-            onClick={() => setLayoutMode(layoutMode === 'grid' ? 'spotlight' : 'grid')}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-            title={layoutMode === 'grid' ? 'Switch to Spotlight View' : 'Switch to Grid View'}
+            onClick={() => setIsPipFloating(!isPipFloating)}
+            className={`p-1.5 rounded-lg transition-colors ${
+              isPipFloating
+                ? 'bg-cyan-500 text-slate-950 font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-white/10'
+            }`}
+            title={isPipFloating ? 'Dock self-view back to grid' : 'Pop out self-view as Floating PiP'}
           >
-            {layoutMode === 'grid' ? <SidebarIcon className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
+            <Smartphone className="w-4 h-4" />
           </button>
+
+          {/* Google Meet Layout Mode Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowLayoutSelector(!showLayoutSelector)}
+              className="flex items-center gap-1 p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors border border-white/10"
+              title="Change Layout Mode"
+            >
+              {layoutMode === 'grid' && <Grid className="w-4 h-4 text-cyan-400" />}
+              {layoutMode === 'spotlight' && <SidebarIcon className="w-4 h-4 text-cyan-400" />}
+              {layoutMode === 'sidebar' && <LayoutDashboard className="w-4 h-4 text-cyan-400" />}
+              {layoutMode === 'whatsapp' && <Smartphone className="w-4 h-4 text-emerald-400" />}
+              <ChevronDown className="w-3 h-3 text-slate-400" />
+            </button>
+
+            {showLayoutSelector && (
+              <div className="absolute right-0 top-11 w-52 bg-slate-950 border border-white/15 rounded-2xl p-2 shadow-2xl z-50 backdrop-blur-2xl space-y-1">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 px-2 py-1">Layout Views</div>
+                {[
+                  { id: 'grid', label: 'Tiled Grid (Auto)', desc: 'Balanced equal tiles', icon: Grid },
+                  { id: 'spotlight', label: 'Speaker Spotlight', desc: 'Focus active presenter', icon: SidebarIcon },
+                  { id: 'sidebar', label: 'Sidebar Filmstrip', desc: 'Stage + right queue', icon: LayoutDashboard },
+                  { id: 'whatsapp', label: 'WhatsApp 1:1 View', desc: 'Immersive peer phone view', icon: Smartphone }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const active = layoutMode === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setLayoutMode(item.id as any);
+                        setShowLayoutSelector(false);
+                      }}
+                      className={`w-full p-2 rounded-xl flex items-center gap-2.5 text-left transition-colors ${
+                        active ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'hover:bg-white/10 text-slate-300'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 ${active ? 'text-cyan-400' : 'text-slate-400'}`} />
+                      <div>
+                        <div className="text-xs font-semibold">{item.label}</div>
+                        <div className="text-[10px] text-slate-400">{item.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -723,177 +850,218 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
             </div>
           )}
 
-          {/* VIDEO TILES GRID / SPOTLIGHT */}
-          <div
-            className={`flex-1 w-full grid gap-3 ${
-              layoutMode === 'spotlight' || pinnedId
-                ? 'grid-cols-1 md:grid-cols-4 md:grid-rows-4'
-                : participants.length <= 1
-                ? 'grid-cols-1 md:grid-cols-2'
-                : participants.length <= 3
-                ? 'grid-cols-1 md:grid-cols-2'
-                : 'grid-cols-2 md:grid-cols-3'
-            }`}
-          >
-            {/* LOCAL USER TILE */}
-            <div
-              className={`relative rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col items-center justify-center ${
-                layoutMode === 'spotlight' && !pinnedId
-                  ? 'md:col-span-3 md:row-span-4'
-                  : 'min-h-[160px] md:min-h-[220px]'
-              } ${
-                isMicOn && micLevel > 30
-                  ? 'border-cyan-400 shadow-lg shadow-cyan-500/20 ring-2 ring-cyan-400/40'
-                  : 'border-white/10 bg-slate-900/90'
-              } ${getBgClass()}`}
-            >
-              {isCamOn ? (
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover -scale-x-100"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 font-bold text-xl md:text-2xl shadow-inner">
-                    YOU
-                  </div>
-                  <span className="text-xs text-slate-400">Camera Off</span>
-                </div>
-              )}
-
-              {/* Top status badges */}
-              <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
-                <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[11px] font-semibold text-white border border-white/10">
-                  You (Host)
-                </span>
-                {mode === 'COMMITTEE' && (
-                  <span className="px-2 py-0.5 rounded-md bg-blue-500/30 text-blue-200 border border-blue-500/40 text-[11px]">
-                    🇺🇳 Chair
-                  </span>
-                )}
-              </div>
-
-              {/* Hand raised badge */}
-              {isHandRaised && (
-                <div className="absolute top-2.5 right-2.5 bg-amber-500 text-slate-950 p-1.5 rounded-full shadow-lg animate-bounce z-10">
-                  <Hand className="w-4 h-4" />
-                </div>
-              )}
-
-              {/* Bottom bar inside tile */}
-              <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10">
-                  {isMicOn ? (
-                    <div className="flex items-center gap-1">
-                      <Mic className="w-3.5 h-3.5 text-emerald-400" />
-                      {/* VU Meter visualizer */}
-                      <div className="flex items-end gap-0.5 h-3 w-4">
-                        <div
-                          className="w-1 bg-emerald-400 rounded-sm transition-all duration-75"
-                          style={{ height: `${Math.min(100, micLevel * 1.1)}%` }}
-                        />
-                        <div
-                          className="w-1 bg-emerald-400 rounded-sm transition-all duration-75"
-                          style={{ height: `${Math.min(100, micLevel * 0.7)}%` }}
-                        />
-                        <div
-                          className="w-1 bg-emerald-400 rounded-sm transition-all duration-75"
-                          style={{ height: `${Math.min(100, micLevel * 1.3)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <MicOff className="w-3.5 h-3.5 text-rose-400" />
-                  )}
-                  <span className="text-[11px] text-slate-200 font-medium">You</span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {pinnedId === 'local' ? (
-                    <button
-                      onClick={() => setPinnedId(null)}
-                      className="p-1 rounded bg-black/60 hover:bg-black/80 text-cyan-400 transition-colors"
-                      title="Unpin"
-                    >
-                      <PinOff className="w-3.5 h-3.5" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setPinnedId('local')}
-                      className="p-1 rounded bg-black/60 hover:bg-black/80 text-slate-300 hover:text-white transition-colors"
-                      title="Pin video"
-                    >
-                      <Pin className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* REMOTE PARTICIPANT TILES */}
-            {participants.map((peer) => {
-              const isPinned = pinnedId === peer.id;
-              const isSpotlighted = layoutMode === 'spotlight' && (pinnedId ? isPinned : peer.isSpeaking);
-
-              return (
-                <div
-                  key={peer.id}
-                  className={`relative rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col items-center justify-center ${
-                    isSpotlighted
-                      ? 'md:col-span-3 md:row-span-4'
-                      : 'min-h-[160px] md:min-h-[220px]'
-                  } ${
-                    peer.isSpeaking
-                      ? 'border-emerald-400 shadow-lg shadow-emerald-500/20 ring-2 ring-emerald-400/40'
-                      : 'border-white/10 bg-slate-900/80'
-                  }`}
-                >
-                  {peer.isCameraOff ? (
-                    <div className="flex flex-col items-center gap-2">
-                      {peer.avatar ? (
+          {/* VIDEO TILES VIEWPORT WITH GOOGLE MEET & WHATSAPP LAYOUT MODES */}
+          {layoutMode === 'whatsapp' ? (
+            /* WHATSAPP 1:1 IMMERSIVE MOBILE / CINEMATIC VIEW */
+            <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-slate-950 shadow-2xl">
+              {participants[0] && (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  {participants[0].isCameraOff ? (
+                    <div className="flex flex-col items-center gap-4 text-center z-10">
+                      {participants[0].avatar ? (
                         <img
-                          src={peer.avatar}
-                          alt={peer.name}
-                          className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-white/20 shadow-lg"
+                          src={participants[0].avatar}
+                          alt={participants[0].name}
+                          className="w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover border-4 border-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.3)]"
                         />
                       ) : (
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-800 border border-white/20 flex items-center justify-center text-slate-300 font-bold text-xl">
-                          {peer.name.slice(0, 2).toUpperCase()}
+                        <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-slate-800 border-4 border-emerald-500/50 flex items-center justify-center text-4xl font-bold text-white shadow-2xl">
+                          {participants[0].name.slice(0, 2).toUpperCase()}
                         </div>
                       )}
-                      <span className="text-xs text-slate-400">Camera Off</span>
+                      <div className="space-y-1">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{participants[0].name}</h3>
+                        <p className="text-xs font-mono text-emerald-400 flex items-center justify-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <span>WhatsApp Direct Channel &bull; Connected</span>
+                        </p>
+                      </div>
                     </div>
                   ) : (
                     <div className="w-full h-full relative">
                       <img
-                        src={peer.avatar}
-                        alt={peer.name}
+                        src={participants[0].avatar}
+                        alt={participants[0].name}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
+                    </div>
+                  )}
+
+                  {/* WhatsApp Top Overlay */}
+                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-none">
+                    <div className="flex items-center gap-2.5 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-bold text-white">{participants[0].name}</span>
+                      <span className="text-[11px] font-mono text-slate-300">&bull; {formatDuration(callDuration)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-mono">
+                      <WhatsAppIcon className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">End-to-End Encrypted</span>
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Soundwave if speaking */}
+                  {participants[0].isSpeaking && (
+                    <div className="absolute bottom-24 left-6 z-20 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-500/40 shadow-lg">
+                      <div className="flex items-end gap-1 h-3.5">
+                        <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce" />
+                        <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce delay-100" />
+                        <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce delay-200" />
+                        <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce delay-300" />
+                      </div>
+                      <span className="text-xs text-emerald-300 font-semibold">Speaking</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : layoutMode === 'sidebar' ? (
+            /* GOOGLE MEET SIDEBAR MODE: STAGE + RIGHT FILMSTRIP */
+            <div className="flex-1 w-full flex flex-col md:flex-row gap-3 overflow-hidden">
+              {/* Main Stage (70-75% width) */}
+              <div className="flex-1 h-full min-h-[350px] relative rounded-3xl overflow-hidden border border-white/15 bg-slate-950 flex items-center justify-center shadow-xl">
+                {(() => {
+                  const mainPeer = participants.find((p) => (pinnedId ? p.id === pinnedId : p.isSpeaking)) || participants[0];
+                  if (!mainPeer) return null;
+                  return (
+                    <div className="w-full h-full relative flex items-center justify-center">
+                      {mainPeer.isCameraOff ? (
+                        <div className="flex flex-col items-center gap-3">
+                          <img src={mainPeer.avatar} alt={mainPeer.name} className="w-24 h-24 rounded-full object-cover border-2 border-white/20 shadow-xl" />
+                          <div className="text-lg font-bold text-white">{mainPeer.name}</div>
+                          <span className="text-xs text-slate-400">Camera Off</span>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full relative">
+                          <img src={mainPeer.avatar} alt={mainPeer.name} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+                        </div>
+                      )}
+
+                      {/* Main Stage Badge */}
+                      <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
+                        <span className="px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-xs font-semibold text-white border border-white/10">
+                          {mainPeer.name}
+                        </span>
+                        {mainPeer.countryFlag && (
+                          <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-xs text-slate-200 border border-white/10">
+                            {mainPeer.countryFlag}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Active Soundwave */}
+                      {mainPeer.isSpeaking && (
+                        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-emerald-500/40">
+                          <div className="flex items-end gap-0.5 h-3">
+                            <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-bounce" />
+                            <span className="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce delay-100" />
+                            <span className="w-0.5 h-1.5 bg-emerald-400 rounded-full animate-bounce delay-200" />
+                          </div>
+                          <span className="text-xs text-emerald-300 font-medium">Active Speaker</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Right Filmstrip (Vertical Queue) */}
+              <div className="w-full md:w-72 flex md:flex-col gap-2.5 overflow-y-auto shrink-0 pb-16 md:pb-0">
+                {/* Local user tile in filmstrip if not floating */}
+                {!isPipFloating && (
+                  <div className={`relative h-36 rounded-2xl overflow-hidden border border-white/10 bg-slate-900/90 flex flex-col items-center justify-center shrink-0 ${getBgClass()}`}>
+                    {isCamOn ? (
+                      <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover -scale-x-100" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs">YOU</div>
+                    )}
+                    <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-white">You</span>
+                  </div>
+                )}
+
+                {/* Other Peers in Filmstrip */}
+                {participants.map((peer) => (
+                  <div
+                    key={peer.id}
+                    onClick={() => setPinnedId(peer.id)}
+                    className={`relative h-36 rounded-2xl overflow-hidden border transition-all cursor-pointer shrink-0 flex flex-col items-center justify-center ${
+                      peer.isSpeaking ? 'border-emerald-400 ring-2 ring-emerald-400/50 shadow-md' : 'border-white/10 bg-slate-900/90'
+                    }`}
+                  >
+                    <img src={peer.avatar} alt={peer.name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between z-10">
+                      <span className="text-[11px] font-medium text-white truncate max-w-[120px]">{peer.name}</span>
+                      {peer.isSpeaking && (
+                        <div className="flex items-end gap-0.5 h-2.5">
+                          <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-bounce" />
+                          <span className="w-0.5 h-2.5 bg-emerald-400 rounded-full animate-bounce delay-100" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* TILED GRID & SPOTLIGHT MODES */
+            <div
+              className={`flex-1 w-full grid gap-3 pb-20 md:pb-0 ${
+                layoutMode === 'spotlight' || pinnedId
+                  ? 'grid-cols-1 md:grid-cols-4 md:grid-rows-4'
+                  : participants.length <= 1
+                  ? 'grid-cols-1 md:grid-cols-2'
+                  : participants.length <= 3
+                  ? 'grid-cols-1 md:grid-cols-2'
+                  : 'grid-cols-2 md:grid-cols-3'
+              }`}
+            >
+              {/* LOCAL USER TILE (Only rendered in grid if not in PiP mode) */}
+              {!isPipFloating && (
+                <div
+                  className={`relative rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col items-center justify-center ${
+                    layoutMode === 'spotlight' && !pinnedId
+                      ? 'md:col-span-3 md:row-span-4'
+                      : 'min-h-[160px] md:min-h-[220px]'
+                  } ${
+                    isMicOn && micLevel > 30
+                      ? 'border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.35)] ring-2 ring-emerald-400/80'
+                      : 'border-white/10 bg-slate-900/90'
+                  } ${getBgClass()}`}
+                >
+                  {isCamOn ? (
+                    <video
+                      ref={localVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover -scale-x-100"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 font-bold text-xl md:text-2xl shadow-inner">
+                        YOU
+                      </div>
+                      <span className="text-xs text-slate-400">Camera Off</span>
                     </div>
                   )}
 
                   {/* Top status badges */}
                   <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
                     <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[11px] font-semibold text-white border border-white/10">
-                      {peer.name}
+                      You (Host)
                     </span>
-                    {peer.countryFlag && (
-                      <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[11px] text-slate-200 border border-white/10">
-                        {peer.countryFlag}
+                    {mode === 'COMMITTEE' && (
+                      <span className="px-2 py-0.5 rounded-md bg-blue-500/30 text-blue-200 border border-blue-500/40 text-[11px]">
+                        🇺🇳 Chair
                       </span>
                     )}
-                    <span className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-slate-300 font-medium">
-                      {peer.role}
-                    </span>
                   </div>
 
-                  {/* Hand raise badge */}
-                  {peer.isHandRaised && (
+                  {/* Hand raised badge */}
+                  {isHandRaised && (
                     <div className="absolute top-2.5 right-2.5 bg-amber-500 text-slate-950 p-1.5 rounded-full shadow-lg animate-bounce z-10">
                       <Hand className="w-4 h-4" />
                     </div>
@@ -902,25 +1070,33 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
                   {/* Bottom bar inside tile */}
                   <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
                     <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10">
-                      {peer.isMuted ? (
-                        <MicOff className="w-3.5 h-3.5 text-rose-400" />
-                      ) : (
+                      {isMicOn ? (
                         <div className="flex items-center gap-1">
                           <Mic className="w-3.5 h-3.5 text-emerald-400" />
-                          {peer.isSpeaking && (
-                            <div className="flex items-end gap-0.5 h-3 w-4">
-                              <div className="w-1 h-3 bg-emerald-400 rounded-sm animate-pulse" />
-                              <div className="w-1 h-2 bg-emerald-400 rounded-sm animate-pulse delay-75" />
-                              <div className="w-1 h-3 bg-emerald-400 rounded-sm animate-pulse delay-150" />
-                            </div>
-                          )}
+                          {/* 4-bar equalizer */}
+                          <div className="flex items-end gap-0.5 h-3 w-4">
+                            <div
+                              className="w-1 bg-emerald-400 rounded-xs transition-all duration-75"
+                              style={{ height: `${Math.min(100, micLevel * 1.1)}%` }}
+                            />
+                            <div
+                              className="w-1 bg-emerald-400 rounded-xs transition-all duration-75"
+                              style={{ height: `${Math.min(100, micLevel * 0.7)}%` }}
+                            />
+                            <div
+                              className="w-1 bg-emerald-400 rounded-xs transition-all duration-75"
+                              style={{ height: `${Math.min(100, micLevel * 1.3)}%` }}
+                            />
+                          </div>
                         </div>
+                      ) : (
+                        <MicOff className="w-3.5 h-3.5 text-rose-400" />
                       )}
-                      <span className="text-[11px] text-slate-200 font-medium">@{peer.handle}</span>
+                      <span className="text-[11px] text-slate-200 font-medium">You</span>
                     </div>
 
                     <div className="flex items-center gap-1">
-                      {isPinned ? (
+                      {pinnedId === 'local' ? (
                         <button
                           onClick={() => setPinnedId(null)}
                           className="p-1 rounded bg-black/60 hover:bg-black/80 text-cyan-400 transition-colors"
@@ -930,7 +1106,7 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
                         </button>
                       ) : (
                         <button
-                          onClick={() => setPinnedId(peer.id)}
+                          onClick={() => setPinnedId('local')}
                           className="p-1 rounded bg-black/60 hover:bg-black/80 text-slate-300 hover:text-white transition-colors"
                           title="Pin video"
                         >
@@ -940,9 +1116,120 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              )}
+
+              {/* REMOTE PARTICIPANT TILES */}
+              {participants.map((peer) => {
+                const isPinned = pinnedId === peer.id;
+                const isSpotlighted = layoutMode === 'spotlight' && (pinnedId ? isPinned : peer.isSpeaking);
+
+                return (
+                  <div
+                    key={peer.id}
+                    className={`relative rounded-2xl overflow-hidden border transition-all duration-300 flex flex-col items-center justify-center ${
+                      isSpotlighted
+                        ? 'md:col-span-3 md:row-span-4'
+                        : 'min-h-[160px] md:min-h-[220px]'
+                    } ${
+                      peer.isSpeaking
+                        ? 'border-emerald-400 shadow-[0_0_35px_rgba(52,211,153,0.45)] ring-2 ring-emerald-400/80'
+                        : 'border-white/10 bg-slate-900/80'
+                    }`}
+                  >
+                    {peer.isCameraOff ? (
+                      <div className="flex flex-col items-center gap-2">
+                        {peer.avatar ? (
+                          <img
+                            src={peer.avatar}
+                            alt={peer.name}
+                            className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-white/20 shadow-lg"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-800 border border-white/20 flex items-center justify-center text-slate-300 font-bold text-xl">
+                            {peer.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="text-xs text-slate-400">Camera Off</span>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full relative">
+                        <img
+                          src={peer.avatar}
+                          alt={peer.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+                      </div>
+                    )}
+
+                    {/* Top status badges */}
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
+                      <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[11px] font-semibold text-white border border-white/10">
+                        {peer.name}
+                      </span>
+                      {peer.countryFlag && (
+                        <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[11px] text-slate-200 border border-white/10">
+                          {peer.countryFlag}
+                        </span>
+                      )}
+                      <span className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-slate-300 font-medium">
+                        {peer.role}
+                      </span>
+                    </div>
+
+                    {/* Hand raise badge */}
+                    {peer.isHandRaised && (
+                      <div className="absolute top-2.5 right-2.5 bg-amber-500 text-slate-950 p-1.5 rounded-full shadow-lg animate-bounce z-10">
+                        <Hand className="w-4 h-4" />
+                      </div>
+                    )}
+
+                    {/* Bottom bar inside tile with soundwave */}
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10">
+                        {peer.isMuted ? (
+                          <MicOff className="w-3.5 h-3.5 text-rose-400" />
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <Mic className="w-3.5 h-3.5 text-emerald-400" />
+                            {peer.isSpeaking && (
+                              <div className="flex items-end gap-0.5 h-3 w-4">
+                                <div className="w-0.5 h-2 bg-emerald-400 rounded-full animate-bounce" />
+                                <div className="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce delay-75" />
+                                <div className="w-0.5 h-1.5 bg-emerald-400 rounded-full animate-bounce delay-150" />
+                                <div className="w-0.5 h-2.5 bg-emerald-400 rounded-full animate-bounce delay-100" />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <span className="text-[11px] text-slate-200 font-medium">@{peer.handle}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        {isPinned ? (
+                          <button
+                            onClick={() => setPinnedId(null)}
+                            className="p-1 rounded bg-black/60 hover:bg-black/80 text-cyan-400 transition-colors"
+                            title="Unpin"
+                          >
+                            <PinOff className="w-3.5 h-3.5" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setPinnedId(peer.id)}
+                            className="p-1 rounded bg-black/60 hover:bg-black/80 text-slate-300 hover:text-white transition-colors"
+                            title="Pin video"
+                          >
+                            <Pin className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* FLOATING PARTICLES (REACTIONS) */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
@@ -1328,159 +1615,212 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
         )}
       </div>
 
-      {/* 4. BOTTOM CONTROL DOCK */}
-      <footer className="h-18 md:h-20 border-t border-white/10 bg-slate-950/95 backdrop-blur-2xl px-4 flex items-center justify-between z-30 shrink-0">
-        {/* Left: Device Toggles (Mic & Camera) */}
-        <div className="flex items-center gap-2">
-          {/* Mic Button */}
-          <button
-            onClick={() => setIsMicOn(!isMicOn)}
-            className={`p-3 rounded-2xl flex items-center justify-center transition-all ${
-              isMicOn
-                ? 'bg-white/10 hover:bg-white/15 text-white'
-                : 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30'
-            }`}
-            title={isMicOn ? 'Mute Microphone' : 'Unmute Microphone'}
-          >
-            {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-          </button>
+      {/* 4. FLOATING CYBER-GLASS CONTROL DOCK */}
+      <footer className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[96vw] px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-slate-950/85 backdrop-blur-3xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(6,182,212,0.18)] flex items-center gap-1.5 sm:gap-2.5 transition-all">
+        {/* Device Toggles (Mic & Camera) */}
+        <button
+          onClick={() => setIsMicOn(!isMicOn)}
+          className={`p-2.5 sm:p-3 rounded-full flex items-center justify-center transition-all ${
+            isMicOn
+              ? 'bg-white/10 hover:bg-white/20 text-white ring-1 ring-emerald-400/40 shadow-sm'
+              : 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/40'
+          }`}
+          title={isMicOn ? 'Mute Microphone' : 'Unmute Microphone'}
+        >
+          {isMicOn ? <Mic className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" /> : <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />}
+        </button>
 
-          {/* Camera Button */}
-          <button
-            onClick={() => setIsCamOn(!isCamOn)}
-            className={`p-3 rounded-2xl flex items-center justify-center transition-all ${
-              isCamOn
-                ? 'bg-white/10 hover:bg-white/15 text-white'
-                : 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30'
-            }`}
-            title={isCamOn ? 'Turn Camera Off' : 'Turn Camera On'}
-          >
-            {isCamOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-          </button>
+        <button
+          onClick={() => setIsCamOn(!isCamOn)}
+          className={`p-2.5 sm:p-3 rounded-full flex items-center justify-center transition-all ${
+            isCamOn
+              ? 'bg-white/10 hover:bg-white/20 text-white'
+              : 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/40'
+          }`}
+          title={isCamOn ? 'Turn Camera Off' : 'Turn Camera On'}
+        >
+          {isCamOn ? <Video className="w-4 h-4 sm:w-5 sm:h-5" /> : <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" />}
+        </button>
 
-          {/* Screen Share */}
+        <button
+          onClick={handleToggleScreenShare}
+          className={`hidden sm:flex p-3 rounded-full items-center justify-center transition-all ${
+            isScreenSharing
+              ? 'bg-cyan-500 text-slate-950 font-bold shadow-lg shadow-cyan-500/30'
+              : 'bg-white/10 hover:bg-white/20 text-white'
+          }`}
+          title="Share Screen"
+        >
+          <MonitorUp className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+
+        <div className="h-6 w-px bg-white/15 mx-0.5 sm:mx-1" />
+
+        {/* Hand Raise */}
+        <button
+          onClick={() => setIsHandRaised(!isHandRaised)}
+          className={`p-2.5 sm:px-3.5 sm:py-2.5 rounded-full flex items-center gap-1.5 text-xs font-semibold transition-all ${
+            isHandRaised
+              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 ring-2 ring-amber-400'
+              : 'bg-white/10 hover:bg-white/20 text-white'
+          }`}
+          title="Raise / Lower Hand"
+        >
+          <Hand className="w-4 h-4" />
+          <span className="hidden md:inline">{isHandRaised ? 'Lower' : 'Raise'}</span>
+        </button>
+
+        {/* Emoji Reactions */}
+        <div className="relative">
           <button
-            onClick={handleToggleScreenShare}
-            className={`p-3 rounded-2xl flex items-center justify-center transition-all ${
-              isScreenSharing
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-lg shadow-cyan-500/30'
-                : 'bg-white/10 hover:bg-white/15 text-white'
-            }`}
-            title="Share Screen"
+            onClick={() => setShowReactionPicker(!showReactionPicker)}
+            className="p-2.5 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all flex items-center justify-center"
+            title="Reactions"
           >
-            <MonitorUp className="w-5 h-5" />
+            <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
+          {showReactionPicker && (
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 p-2 bg-slate-900 border border-white/20 rounded-2xl shadow-2xl flex items-center gap-2 z-50 backdrop-blur-2xl">
+              {['👍', '❤️', '👏', '🔥', '⚡', '🎉', '🚀', '💯'].map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => triggerReaction(emoji)}
+                  className="text-2xl hover:scale-125 transition-transform p-1 rounded hover:bg-white/10"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Center: Collaboration Tools & Reactions */}
-        <div className="flex items-center gap-1.5 md:gap-2">
-          {/* Hand Raise */}
-          <button
-            onClick={() => setIsHandRaised(!isHandRaised)}
-            className={`px-3 md:px-4 py-2.5 rounded-2xl flex items-center gap-2 text-xs font-semibold transition-all ${
-              isHandRaised
-                ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 ring-2 ring-amber-400'
-                : 'bg-white/10 hover:bg-white/15 text-white'
-            }`}
-          >
-            <Hand className="w-4 h-4" />
-            <span className="hidden sm:inline">{isHandRaised ? 'Hand Raised' : 'Raise Hand'}</span>
-          </button>
+        {/* Polls & Q&A */}
+        <button
+          onClick={() => setActiveDrawer(activeDrawer === 'polls' ? null : 'polls')}
+          className={`p-2.5 sm:p-3 rounded-full transition-all flex items-center justify-center ${
+            activeDrawer === 'polls'
+              ? 'bg-cyan-500 text-slate-950 font-bold'
+              : 'bg-white/10 hover:bg-white/20 text-white'
+          }`}
+          title="Polls & Q&A"
+        >
+          <Vote className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
 
-          {/* Emoji Reactions Popover */}
-          <div className="relative">
-            <button
-              onClick={() => setShowReactionPicker(!showReactionPicker)}
-              className="p-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white transition-all flex items-center justify-center"
-              title="Reactions"
-            >
-              <Smile className="w-5 h-5" />
-            </button>
+        {/* MUN Chamber Toggle */}
+        <button
+          onClick={() => setActiveDrawer(activeDrawer === 'mun' ? null : 'mun')}
+          className={`p-2.5 sm:p-3 rounded-full transition-all flex items-center justify-center ${
+            activeDrawer === 'mun'
+              ? 'bg-cyan-500 text-slate-950 font-bold'
+              : mode === 'COMMITTEE'
+              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40'
+              : 'bg-white/10 hover:bg-white/20 text-white'
+          }`}
+          title="MUN Rules of Procedure"
+        >
+          <Gavel className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
 
-            {showReactionPicker && (
-              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 p-2 bg-slate-900 border border-white/20 rounded-2xl shadow-2xl flex items-center gap-2 z-50 backdrop-blur-2xl">
-                {['👍', '❤️', '👏', '🔥', '⚡', '🎉', '🚀', '💯'].map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => triggerReaction(emoji)}
-                    className="text-2xl hover:scale-130 transition-transform p-1 rounded hover:bg-white/10"
-                  >
-                    {emoji}
-                  </button>
-                ))}
+        {/* WhatsApp 1-Click Invite */}
+        <button
+          onClick={() => setShowShareModal(true)}
+          className="p-2.5 sm:p-3 rounded-full bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/30 transition-all flex items-center justify-center shadow-sm"
+          title="Invite via WhatsApp"
+        >
+          <WhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+
+        <div className="h-6 w-px bg-white/15 mx-0.5 sm:mx-1" />
+
+        {/* In-Call Chat */}
+        <button
+          onClick={() => setActiveDrawer(activeDrawer === 'chat' ? null : 'chat')}
+          className={`p-2.5 sm:p-3 rounded-full transition-all flex items-center justify-center relative ${
+            activeDrawer === 'chat'
+              ? 'bg-cyan-500 text-slate-950 font-bold'
+              : 'bg-white/10 hover:bg-white/20 text-white'
+          }`}
+          title="In-Call Chat"
+        >
+          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400" />
+        </button>
+
+        {/* Participants */}
+        <button
+          onClick={() => setActiveDrawer(activeDrawer === 'participants' ? null : 'participants')}
+          className={`p-2.5 sm:p-3 rounded-full transition-all flex items-center justify-center relative ${
+            activeDrawer === 'participants'
+              ? 'bg-cyan-500 text-slate-950 font-bold'
+              : 'bg-white/10 hover:bg-white/20 text-white'
+          }`}
+          title={`Participants (${participants.length + 1})`}
+        >
+          <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+
+        {/* End Call */}
+        <button
+          onClick={handleLeaveCall}
+          className="px-3.5 sm:px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-rose-600/40 transition-all hover:scale-105 ml-1"
+          title="Leave Call"
+        >
+          <PhoneOff className="w-4 h-4" />
+          <span className="hidden sm:inline">End</span>
+        </button>
+      </footer>
+
+      {/* FLOATING PICTURE-IN-PICTURE (PiP) SELF-VIEW */}
+      {(isPipFloating || layoutMode === 'whatsapp') && (
+        <div className={`fixed z-40 ${getPipClasses()} w-40 h-56 sm:w-52 sm:h-64 rounded-3xl overflow-hidden border-2 border-cyan-400/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] bg-slate-950 transition-all duration-300 group`}>
+          {isCamOn ? (
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover -scale-x-100"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-cyan-300 font-bold">
+              <div className="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-lg">
+                YOU
               </div>
+              <span className="text-[10px] text-slate-400 mt-2">Camera Off</span>
+            </div>
+          )}
+
+          {/* PiP Overlay Controls */}
+          <div className="absolute top-2 left-2 right-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-md p-1 rounded-xl">
+            <button
+              onClick={cyclePipCorner}
+              className="p-1 text-slate-300 hover:text-white rounded-lg hover:bg-white/10"
+              title="Move PiP corner"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+            <span className="text-[10px] font-mono text-cyan-400">PiP Self-View</span>
+            {layoutMode !== 'whatsapp' && (
+              <button
+                onClick={() => setIsPipFloating(false)}
+                className="p-1 text-slate-300 hover:text-white rounded-lg hover:bg-white/10"
+                title="Dock back to grid"
+              >
+                <Minimize2 className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
 
-          {/* Polls & Q&A Toggle */}
-          <button
-            onClick={() => setActiveDrawer(activeDrawer === 'polls' ? null : 'polls')}
-            className={`p-3 rounded-2xl transition-all flex items-center justify-center ${
-              activeDrawer === 'polls'
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : 'bg-white/10 hover:bg-white/15 text-white'
-            }`}
-            title="Polls & Q&A"
-          >
-            <Vote className="w-5 h-5" />
-          </button>
-
-          {/* MUN Chamber Toggle (Always available or highlighted if mode === COMMITTEE) */}
-          <button
-            onClick={() => setActiveDrawer(activeDrawer === 'mun' ? null : 'mun')}
-            className={`p-3 rounded-2xl transition-all flex items-center justify-center ${
-              activeDrawer === 'mun'
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : mode === 'COMMITTEE'
-                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
-                : 'bg-white/10 hover:bg-white/15 text-white'
-            }`}
-            title="MUN Committee Rules"
-          >
-            <Gavel className="w-5 h-5" />
-          </button>
+          {/* PiP Status Bottom */}
+          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+            <div className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-semibold text-white border border-white/10 flex items-center gap-1">
+              {isMicOn ? <Mic className="w-2.5 h-2.5 text-emerald-400" /> : <MicOff className="w-2.5 h-2.5 text-rose-400" />}
+              <span>You</span>
+            </div>
+          </div>
         </div>
-
-        {/* Right: Chat, Participants & End Call */}
-        <div className="flex items-center gap-2">
-          {/* Chat drawer button */}
-          <button
-            onClick={() => setActiveDrawer(activeDrawer === 'chat' ? null : 'chat')}
-            className={`p-3 rounded-2xl transition-all flex items-center justify-center relative ${
-              activeDrawer === 'chat'
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : 'bg-white/10 hover:bg-white/15 text-white'
-            }`}
-            title="In-Call Chat"
-          >
-            <MessageSquare className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-cyan-400" />
-          </button>
-
-          {/* Participants drawer button */}
-          <button
-            onClick={() => setActiveDrawer(activeDrawer === 'participants' ? null : 'participants')}
-            className={`p-3 rounded-2xl transition-all flex items-center justify-center ${
-              activeDrawer === 'participants'
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : 'bg-white/10 hover:bg-white/15 text-white'
-            }`}
-            title="Participants"
-          >
-            <Users className="w-5 h-5" />
-          </button>
-
-          {/* Leave / End Call */}
-          <button
-            onClick={handleLeaveCall}
-            className="px-4 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-lg shadow-rose-600/30 transition-all hover:scale-105"
-            title="Leave Call"
-          >
-            <PhoneOff className="w-4 h-4" />
-            <span className="hidden md:inline">Leave</span>
-          </button>
-        </div>
-      </footer>
+      )}
 
       {/* 5. WHITEBOARD MODAL / OVERLAY */}
       <ZenWhiteboard
@@ -1492,6 +1832,96 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
           }
         }}
       />
+
+      {/* 6. SPEED-DIAL ROOM SWITCHER MODAL */}
+      {showSpeedDialModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-slate-950 border border-white/15 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2 text-cyan-400">
+                <Compass className="w-5 h-5" />
+                <h3 className="font-bold text-white text-base">Speed-Dial Room Switcher</h3>
+              </div>
+              <button onClick={() => setShowSpeedDialModal(false)} className="text-slate-400 hover:text-white p-1">✕</button>
+            </div>
+            <p className="text-xs text-slate-400">Jump between parliamentary simulations, diplomatic bilateral suites, and plenary stages instantaneously.</p>
+            <div className="space-y-2">
+              {[
+                { id: 'zen-unsc-chamber', name: 'UN Security Council (UNSC) Plenary', mode: 'COMMITTEE', icon: '🇺🇳' },
+                { id: 'zen-diplomacy-lounge', name: 'High-Level Bilateral Lounge', mode: 'CALL', icon: '🤝' },
+                { id: 'zen-press-briefing', name: 'International Press Briefing Studio', mode: 'EVENT', icon: '🎙️' },
+                { id: 'zen-climate-working-group', name: 'Youth Climate Action Taskforce', mode: 'GROUP', icon: '🌱' },
+                { id: 'zen-ai-governance', name: 'Global AI Ethics Assembly', mode: 'ROOM', icon: '🤖' }
+              ].map((room) => (
+                <button
+                  key={room.id}
+                  onClick={() => {
+                    setShowSpeedDialModal(false);
+                    router.push(`/call/${room.id}?mode=${room.mode}`);
+                  }}
+                  className="w-full p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between text-left transition-all hover:scale-[1.01]"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{room.icon}</span>
+                    <div>
+                      <div className="text-xs font-semibold text-white">{room.name}</div>
+                      <div className="text-[10px] text-cyan-400 font-mono">Room: {room.id} &bull; {room.mode}</div>
+                    </div>
+                  </div>
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. WHATSAPP & DIRECT SHARE MODAL */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-slate-950 border border-white/15 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2 text-emerald-400">
+                <WhatsAppIcon className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-bold text-white text-base">Share &amp; Invite</h3>
+              </div>
+              <button onClick={() => setShowShareModal(false)} className="text-slate-400 hover:text-white p-1">✕</button>
+            </div>
+            <p className="text-xs text-slate-400">Invite colleagues, delegates, or press members to this encrypted chamber with 1 click.</p>
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-emerald-300">Invite via WhatsApp</div>
+                <div className="text-[11px] text-slate-400">Pre-formatted direct invite message</div>
+              </div>
+              <button
+                onClick={handleShareToWhatsApp}
+                className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-500/30"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+                <span>Send WhatsApp</span>
+              </button>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-mono text-slate-400">Direct Room URL</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 outline-none"
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className="p-2.5 bg-white/10 hover:bg-white/15 text-white rounded-xl transition-colors shrink-0"
+                  title="Copy Link"
+                >
+                  {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
