@@ -240,6 +240,10 @@ export async function recordZenFormSubmission(
   // 2. Dispatch to server ledger API (and forward to Google Sheets if connected)
   try {
     const sheetsConfig = getZenFormsSheetsConfig();
+    const currentForm = getZenFormById(formId);
+    const formWebhook = currentForm?.googleSheetsConfig?.webhookUrl;
+    const customSheetUrl = currentForm?.googleSheetsConfig?.sheetUrl || sheetsConfig?.defaultSheetUrl;
+
     fetch('/api/forms/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -249,9 +253,10 @@ export async function recordZenFormSubmission(
         submittedAt: newSub.submittedAt,
         data,
         submitterHandle,
-        googleSheetsConnected: Boolean(sheetsConfig?.isConnected),
+        googleSheetsConnected: Boolean(sheetsConfig?.isConnected || formWebhook),
         googleUserEmail: sheetsConfig?.userEmail,
-        customSheetUrl: sheetsConfig?.defaultSheetUrl,
+        customSheetUrl,
+        webhookUrl: formWebhook,
       }),
     }).catch(() => {});
   } catch {}
@@ -318,7 +323,8 @@ export async function syncFormSubmissionsToGoogleSheets(
 
     const config = getZenFormsSheetsConfig();
     const finalEmail = userEmail || config?.userEmail || 'authenticated_user';
-    const finalSheetUrl = customSheetUrl || config?.defaultSheetUrl;
+    const finalSheetUrl = customSheetUrl || form.googleSheetsConfig?.sheetUrl || config?.defaultSheetUrl;
+    const finalWebhookUrl = form.googleSheetsConfig?.webhookUrl;
 
     const res = await fetch('/api/forms/sheets/sync', {
       method: 'POST',
@@ -330,7 +336,8 @@ export async function syncFormSubmissionsToGoogleSheets(
         submissions: subs,
         userEmail: finalEmail,
         customSheetUrl: finalSheetUrl,
-        targetTab: form.slug ? `ZEN_${form.slug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS'
+        webhookUrl: finalWebhookUrl,
+        targetTab: form.googleSheetsConfig?.sheetTab || (form.slug ? `ZEN_${form.slug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS')
       })
     });
 

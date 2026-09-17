@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
     // Always persist to local ledger immediately
     appendToLocalLedger(ledgerEntry);
 
-    // If Google Sheets webhook is configured, forward asynchronously
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-    if (webhookUrl && webhookUrl.startsWith('http')) {
-      fetch(webhookUrl, {
+    // If creator or system Google Sheets webhook is configured, forward asynchronously
+    const targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+    if (targetWebhook && typeof targetWebhook === 'string' && targetWebhook.startsWith('http')) {
+      fetch(targetWebhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ledgerEntry),

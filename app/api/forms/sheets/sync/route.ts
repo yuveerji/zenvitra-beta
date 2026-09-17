@@ -20,9 +20,9 @@ function appendToLocalLedger(entry: Record<string, any>) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { formId, formTitle, formSlug, submissions, userEmail, customSheetUrl, targetTab } = body;
+    const { formId, formTitle, formSlug, submissions, userEmail, customSheetUrl, targetTab, webhookUrl } = body;
 
-    const DEFAULT_WEBHOOK_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
+    const DEFAULT_WEBHOOK_URL = webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
     const finalTab = targetTab || (formSlug ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS');
 
     const syncedEntries: any[] = [];
