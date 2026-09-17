@@ -56,7 +56,7 @@ export function Navbar({ hasPlatformSidebar = false }: { hasPlatformSidebar?: bo
     { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Encrypted', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
     { name: 'ZEN.DOCS', href: '/docs', icon: BookOpen, tag: 'Workspace', desc: 'Sovereign Collaborative Drafting, Resolutions & Publishing' },
     { name: 'ZEN.LEGISLATE', href: '/legislate', icon: Scale, tag: 'Lok Sabha', desc: 'Parliamentary Bill Drafting, Official Dispatches & Chamber Motions' },
-    { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Public Ledger', desc: 'Google Forms Killer — Sovereign Drag & Drop Form Builder & Exports' },
+    { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Public Ledger', desc: 'Sovereign Form Builder, Custom Aesthetics & Ledger Exports' },
     { name: 'ZEN.MUN', href: '/mun', icon: Crown, tag: 'OS', desc: 'Complete Model United Nations Operating System' },
     { name: 'Chamber', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },

@@ -358,7 +358,7 @@ export default function ZenFormsHubPage() {
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight leading-tight">
-              Google Forms &lt;&lt;&lt;&lt;&lt; ZenForms
+              ZEN.FORMS
             </h1>
 
             <p className="text-sm sm:text-base text-neutral-300 font-sans leading-relaxed">
