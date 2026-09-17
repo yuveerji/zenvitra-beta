@@ -94,6 +94,14 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel+Decorative:wght@700&family=Dancing+Script:wght@700&family=Orbitron:wght@700;900&family=Permanent+Marker&family=Prata&family=Special+Elite&family=Syne:wght@700;800&display=swap"
           rel="stylesheet"
         />
+
+        {/* Preload Hero Monolith Image for Instant LCP */}
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/new-hero-monolith.webp"
+          type="image/webp"
+        />
       </head>
       <body suppressHydrationWarning className="bg-[#030405] text-white antialiased grain-overlay">
         <AppProviders>
