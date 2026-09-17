@@ -16,6 +16,12 @@ import {
   trackBlockClick, 
   recordFormSubmission
 } from '@/lib/spaceStorage';
+import { 
+  suggestSmartThemes, 
+  BACKGROUND_PRESETS, 
+  ThemeRecommendation,
+  BackgroundPreset 
+} from '@/lib/spaceStylistAlgo';
 import { useAuth } from '@/context/AuthContext';
 import { 
   Share2, 
@@ -59,7 +65,9 @@ import {
   ChevronUp,
   Volume2,
   Film,
-  Trash2
+  Trash2,
+  Wand2,
+  Image as ImageIcon
 } from 'lucide-react';
 
 const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -157,6 +165,90 @@ const THEME_CONFIG: Record<ZenSpaceTheme, {
     textMuted: 'text-zinc-400',
     badgeBg: 'bg-zinc-800 text-zinc-200 border-zinc-700',
     inputBg: 'bg-zinc-800 border-zinc-700 text-white',
+    isLight: false
+  },
+  ceramic_white: {
+    bg: 'from-[#FAFAFA] via-[#F4F4F6] to-[#EAEAEF]',
+    cardBg: 'bg-white/95 hover:bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)]',
+    border: 'border-slate-200 hover:border-slate-400',
+    accent: 'text-slate-900',
+    accentGlow: 'shadow-[0_4px_20px_rgba(15,23,42,0.08)]',
+    textPrimary: 'text-slate-900',
+    textMuted: 'text-slate-500',
+    badgeBg: 'bg-slate-900 text-white border-slate-900',
+    inputBg: 'bg-white border-slate-300 text-slate-900',
+    isLight: true
+  },
+  editorial_paper: {
+    bg: 'from-[#FDFBF7] via-[#F6F2E9] to-[#EEE7D8]',
+    cardBg: 'bg-white/90 hover:bg-white shadow-[0_2px_12px_rgba(50,40,30,0.06)]',
+    border: 'border-[#2C241D]/70 hover:border-[#1A140F]',
+    accent: 'text-[#1A140F]',
+    accentGlow: 'shadow-[0_4px_16px_rgba(44,36,29,0.12)]',
+    textPrimary: 'text-[#1A140F]',
+    textMuted: 'text-[#61564C]',
+    badgeBg: 'bg-[#1A140F] text-[#FDFBF7] border-[#1A140F]',
+    inputBg: 'bg-[#FDFBF7] border-[#2C241D]/40 text-[#1A140F]',
+    isLight: true
+  },
+  matcha_latte: {
+    bg: 'from-[#E8EFE8] via-[#DFE9DF] to-[#D2E2D3]',
+    cardBg: 'bg-[#F4F9F4]/90 hover:bg-white shadow-[0_4px_20px_rgba(46,76,50,0.08)]',
+    border: 'border-[#7D9D80]/40 hover:border-[#527756]',
+    accent: 'text-[#2E4C32]',
+    accentGlow: 'shadow-[0_4px_24px_rgba(74,115,79,0.18)]',
+    textPrimary: 'text-[#1B3020]',
+    textMuted: 'text-[#4F6C53]',
+    badgeBg: 'bg-[#3A5D3E] text-white border-[#2A472E]',
+    inputBg: 'bg-white/90 border-[#A3BFA5] text-[#1B3020]',
+    isLight: true
+  },
+  synthwave: {
+    bg: 'from-[#1a0826] via-[#240a34] to-[#0d0218]',
+    cardBg: 'bg-[#2b0c3d]/60 hover:bg-[#380e50]/80',
+    border: 'border-fuchsia-500/40 hover:border-pink-400',
+    accent: 'text-fuchsia-400',
+    accentGlow: 'shadow-[0_0_28px_rgba(217,70,239,0.3)]',
+    textPrimary: 'text-pink-50',
+    textMuted: 'text-pink-300/70',
+    badgeBg: 'bg-fuchsia-950/80 text-fuchsia-300 border-fuchsia-500/50',
+    inputBg: 'bg-[#220730]/90 border-fuchsia-500/40 text-pink-50',
+    isLight: false
+  },
+  velvet_wine: {
+    bg: 'from-[#1e040c] via-[#2d0714] to-[#120207]',
+    cardBg: 'bg-[#3d0a1b]/60 hover:bg-[#4d0d23]/80',
+    border: 'border-rose-700/50 hover:border-rose-500',
+    accent: 'text-rose-400',
+    accentGlow: 'shadow-[0_0_26px_rgba(244,63,94,0.22)]',
+    textPrimary: 'text-rose-50',
+    textMuted: 'text-rose-300/70',
+    badgeBg: 'bg-rose-950/90 text-rose-300 border-rose-700/60',
+    inputBg: 'bg-[#280511] border-rose-800 text-rose-50',
+    isLight: false
+  },
+  neo_tokyo: {
+    bg: 'from-[#080214] via-[#050b1a] to-[#010207]',
+    cardBg: 'bg-indigo-950/40 hover:bg-indigo-950/70',
+    border: 'border-cyan-400/40 hover:border-fuchsia-400/70',
+    accent: 'text-cyan-300',
+    accentGlow: 'shadow-[0_0_28px_rgba(34,211,238,0.28)]',
+    textPrimary: 'text-white',
+    textMuted: 'text-indigo-200/70',
+    badgeBg: 'bg-cyan-950/70 text-cyan-300 border-cyan-400/40',
+    inputBg: 'bg-indigo-950/60 border-cyan-500/30 text-white',
+    isLight: false
+  },
+  alpine_dusk: {
+    bg: 'from-[#0b1322] via-[#101b30] to-[#070b14]',
+    cardBg: 'bg-slate-900/70 hover:bg-slate-850',
+    border: 'border-sky-600/40 hover:border-sky-400',
+    accent: 'text-sky-300',
+    accentGlow: 'shadow-[0_0_25px_rgba(56,189,248,0.2)]',
+    textPrimary: 'text-slate-100',
+    textMuted: 'text-slate-400',
+    badgeBg: 'bg-sky-950/80 text-sky-300 border-sky-600/50',
+    inputBg: 'bg-slate-900 border-sky-700/50 text-white',
     isLight: false
   },
   cyberpunk: {
@@ -277,8 +369,11 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
   const [editRole, setEditRole] = useState('');
   const [editIsOrg, setEditIsOrg] = useState(false);
   const [editOrgType, setEditOrgType] = useState('Forum / MUN');
-  const [editBgType, setEditBgType] = useState<'theme' | 'video' | 'custom_color'>('theme');
+  const [editBgType, setEditBgType] = useState<'theme' | 'video' | 'image' | 'custom_color'>('theme');
   const [editVideoUrl, setEditVideoUrl] = useState('');
+  const [editImageUrl, setEditImageUrl] = useState('');
+  const [editImageBlur, setEditImageBlur] = useState<'none' | 'sm' | 'md' | 'lg'>('md');
+  const [editOverlayOpacity, setEditOverlayOpacity] = useState<number>(0.72);
   const [editInstagram, setEditInstagram] = useState('');
   const [editPhone, setEditPhone] = useState('');
 
@@ -312,9 +407,85 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
     setEditOrgType(loaded.organizationType || 'Forum / MUN');
     setEditBgType((loaded.backgroundType as any) || 'theme');
     setEditVideoUrl(loaded.videoBackgroundUrl || '');
+    setEditImageUrl(loaded.imageBackgroundUrl || '');
+    setEditImageBlur(loaded.imageBlur || 'md');
+    setEditOverlayOpacity(loaded.backgroundOverlayOpacity ?? 0.72);
     setEditInstagram(loaded.socials?.instagram || '');
     setEditPhone(loaded.socials?.phone || '');
   }, [username]);
+
+  // AI Theme Stylist Recommendations (calculated reactively based on profile elements & blocks)
+  const stylistRecommendations = useMemo<ThemeRecommendation[]>(() => {
+    if (!profile) return [];
+    return suggestSmartThemes(profile);
+  }, [profile]);
+
+  // Apply Stylist Recommendation 1-Click
+  const handleApplyRecommendation = (rec: ThemeRecommendation) => {
+    if (!profile) return;
+    const preset = rec.suggestedPreset;
+    const fallbackBgType: 'theme' | 'video' | 'image' | 'custom_color' = 
+      profile.backgroundType === 'color' ? 'theme' : (profile.backgroundType || 'theme');
+    const newBgType: 'theme' | 'video' | 'image' | 'custom_color' = preset 
+      ? (preset.type === 'video' ? 'video' : 'image') 
+      : (rec.recommendedBackgroundType || fallbackBgType);
+    const newVideoUrl = preset?.type === 'video' ? preset.url : profile.videoBackgroundUrl;
+    const newImageUrl = preset?.type === 'image' ? preset.url : profile.imageBackgroundUrl;
+    const newImageBlur = preset?.type === 'image' ? (preset.blur || 'md') : profile.imageBlur;
+    const targetEffect = rec.suggestedEffect || rec.recommendedEffect || 'none';
+
+    const updated: ZenSpaceProfile = {
+      ...profile,
+      theme: rec.theme,
+      effect: targetEffect,
+      backgroundType: newBgType,
+      videoBackgroundUrl: newVideoUrl,
+      imageBackgroundUrl: newImageUrl,
+      imageBlur: newImageBlur,
+      backgroundOverlayOpacity: profile.backgroundOverlayOpacity ?? 0.72
+    };
+
+    setActiveTheme(rec.theme);
+    setActiveEffect(targetEffect);
+    setEditBgType(newBgType);
+    if (newVideoUrl) setEditVideoUrl(newVideoUrl);
+    if (newImageUrl) setEditImageUrl(newImageUrl);
+    if (newImageBlur) setEditImageBlur(newImageBlur);
+
+    setProfile(updated);
+    saveZenSpaceProfile(updated);
+    showToast(`✨ Stylist applied: ${rec.theme.replace(/_/g, ' ')} (${rec.matchScore}% match)`);
+  };
+
+  // 1-Click Backdrop Preset Selection
+  const handleSelectBackgroundPreset = (preset: BackgroundPreset) => {
+    if (!profile) return;
+    if (preset.type === 'video') {
+      setEditBgType('video');
+      setEditVideoUrl(preset.url);
+      const updated: ZenSpaceProfile = {
+        ...profile,
+        backgroundType: 'video',
+        videoBackgroundUrl: preset.url
+      };
+      setProfile(updated);
+      saveZenSpaceProfile(updated);
+      showToast(`Backdrop video set: ${preset.name}`);
+    } else {
+      setEditBgType('image');
+      setEditImageUrl(preset.url);
+      setEditImageBlur(preset.blur || 'md');
+      const updated: ZenSpaceProfile = {
+        ...profile,
+        backgroundType: 'image',
+        imageBackgroundUrl: preset.url,
+        imageBlur: preset.blur || 'md'
+      };
+      setProfile(updated);
+      saveZenSpaceProfile(updated);
+      showToast(`Backdrop image set: ${preset.name}`);
+    }
+  };
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -549,6 +720,9 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       organizationType: editOrgType,
       backgroundType: editBgType,
       videoBackgroundUrl: editVideoUrl.trim() || undefined,
+      imageBackgroundUrl: editImageUrl.trim() || undefined,
+      imageBlur: editImageBlur,
+      backgroundOverlayOpacity: editOverlayOpacity,
       socials: {
         ...profile.socials,
         instagram: editInstagram.trim() || undefined,
@@ -733,15 +907,47 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
 
       {/* Video Background if configured */}
       {profile.backgroundType === 'video' && profile.videoBackgroundUrl && (
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="fixed inset-0 w-full h-full object-cover pointer-events-none z-0 opacity-35"
-        >
-          <source src={profile.videoBackgroundUrl} type="video/mp4" />
-        </video>
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover"
+          >
+            <source src={profile.videoBackgroundUrl} type="video/mp4" />
+          </video>
+          <div 
+            className="absolute inset-0 transition-opacity duration-700" 
+            style={{
+              backgroundColor: isLight ? 'rgba(255,255,255,0.72)' : 'rgba(0,0,0,0.70)'
+            }}
+          />
+        </div>
+      )}
+
+      {/* Image Backdrop if configured */}
+      {profile.backgroundType === 'image' && profile.imageBackgroundUrl && (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={profile.imageBackgroundUrl} 
+            alt="Space Backdrop"
+            className={`w-full h-full object-cover transition-all duration-700 ${
+              profile.imageBlur === 'lg' ? 'blur-xl scale-110' :
+              profile.imageBlur === 'md' ? 'blur-md scale-105' :
+              profile.imageBlur === 'sm' ? 'blur-xs scale-102' : 'blur-none'
+            }`}
+          />
+          <div 
+            className="absolute inset-0 transition-opacity duration-700" 
+            style={{
+              backgroundColor: isLight 
+                ? `rgba(255,255,255,${profile.backgroundOverlayOpacity ?? 0.72})` 
+                : `rgba(0,0,0,${profile.backgroundOverlayOpacity ?? 0.72})`
+            }}
+          />
+        </div>
       )}
 
       {/* Atmosphere Effects */}
@@ -1819,7 +2025,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 <div>
                   <label className="text-[11px] font-mono uppercase text-zinc-400 block mb-1">Initial Theme</label>
                   <div className="grid grid-cols-3 gap-1.5">
-                    {(['minimal_sand', 'minimal_cream', 'minimal_dark', 'cyberpunk', 'obsidian', 'geneva'] as ZenSpaceTheme[]).map((t) => (
+                    {(['minimal_sand', 'minimal_cream', 'minimal_dark', 'ceramic_white', 'editorial_paper', 'matcha_latte', 'synthwave', 'velvet_wine', 'neo_tokyo', 'alpine_dusk', 'cyberpunk', 'obsidian', 'geneva'] as ZenSpaceTheme[]).map((t) => (
                       <button
                         key={t}
                         type="button"
@@ -1827,7 +2033,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                         className={`py-1.5 px-2 rounded-lg text-xs font-mono capitalize border transition-all cursor-pointer ${
                           claimTheme === t 
                             ? 'border-amber-400 bg-amber-500/20 text-amber-300 font-bold' 
-                            : 'border-neutral-800 bg-neutral-900 text-zinc-400'
+                            : 'border-neutral-800 bg-neutral-900 text-zinc-400 hover:text-white'
                         }`}
                       >
                         {t.replace(/_/g, ' ')}
@@ -1922,44 +2128,132 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 />
               </div>
 
-              {/* Background Type: Theme vs Looping Video */}
-              <div className="p-3 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-2">
+              {/* Background Visual Style: Theme vs Video vs Image */}
+              <div className="p-3 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">Background Visual Style</span>
-                  <div className="flex gap-1.5">
+                  <span className="text-xs font-bold text-white">Backdrop Canvas</span>
+                  <div className="flex gap-1">
                     <button
                       type="button"
                       onClick={() => setEditBgType('theme')}
-                      className={`px-2 py-1 rounded text-[10px] font-mono cursor-pointer ${
-                        editBgType === 'theme' ? 'bg-amber-400 text-black font-bold' : 'bg-neutral-800 text-zinc-400'
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono cursor-pointer transition-colors ${
+                        editBgType === 'theme' ? 'bg-amber-400 text-black font-bold' : 'bg-neutral-800 text-zinc-400 hover:text-white'
                       }`}
                     >
-                      Theme Color
+                      Theme
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditBgType('video')}
-                      className={`px-2 py-1 rounded text-[10px] font-mono cursor-pointer ${
-                        editBgType === 'video' ? 'bg-amber-400 text-black font-bold' : 'bg-neutral-800 text-zinc-400'
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono cursor-pointer transition-colors ${
+                        editBgType === 'video' ? 'bg-amber-400 text-black font-bold' : 'bg-neutral-800 text-zinc-400 hover:text-white'
                       }`}
                     >
-                      Looping Video
+                      Video
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditBgType('image')}
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono cursor-pointer transition-colors ${
+                        editBgType === 'image' ? 'bg-amber-400 text-black font-bold' : 'bg-neutral-800 text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      Image
                     </button>
                   </div>
                 </div>
 
                 {editBgType === 'video' && (
-                  <div>
-                    <label className="text-[10px] font-mono text-zinc-400 uppercase">Video URL (.mp4)</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-zinc-400 uppercase">Looping Video URL (.mp4)</label>
                     <input
                       type="text"
                       value={editVideoUrl}
                       onChange={(e) => setEditVideoUrl(e.target.value)}
-                      placeholder="https://.../video.mp4"
-                      className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono"
+                      placeholder="https://assets.mixkit.co/.../video.mp4"
+                      className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none"
                     />
                   </div>
                 )}
+
+                {editBgType === 'image' && (
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase">Image Backdrop URL (.jpg / .png / .webp)</label>
+                      <input
+                        type="text"
+                        value={editImageUrl}
+                        onChange={(e) => setEditImageUrl(e.target.value)}
+                        placeholder="https://images.unsplash.com/... or /custom-bg.jpg"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] font-mono text-zinc-400 uppercase">Blur Depth</span>
+                      <div className="flex gap-1">
+                        {(['none', 'sm', 'md', 'lg'] as const).map((b) => (
+                          <button
+                            key={b}
+                            type="button"
+                            onClick={() => setEditImageBlur(b)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase cursor-pointer ${
+                              editImageBlur === b ? 'bg-cyan-400 text-black font-bold' : 'bg-neutral-800 text-zinc-400'
+                            }`}
+                          >
+                            {b}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] font-mono text-zinc-400 uppercase">Readability Tint</span>
+                      <div className="flex gap-1">
+                        {[0.55, 0.72, 0.85].map((op) => (
+                          <button
+                            key={op}
+                            type="button"
+                            onClick={() => setEditOverlayOpacity(op)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono cursor-pointer ${
+                              editOverlayOpacity === op ? 'bg-amber-400 text-black font-bold' : 'bg-neutral-800 text-zinc-400'
+                            }`}
+                          >
+                            {Math.round(op * 100)}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 1-Click Curated Backdrop Presets */}
+                <div className="pt-2 border-t border-neutral-800/80">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+                      1-Click Curated Presets
+                    </span>
+                    <span className="text-[9px] text-zinc-500 font-mono">Video & Images</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                    {BACKGROUND_PRESETS.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => handleSelectBackgroundPreset(p)}
+                        className="p-1.5 rounded-xl bg-neutral-950 border border-neutral-800 hover:border-amber-400/80 text-left transition-all cursor-pointer flex items-center gap-2 group"
+                      >
+                        <div className="w-6 h-6 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-400/20 text-zinc-400 group-hover:text-amber-400">
+                          {p.type === 'video' ? <Film className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[11px] font-semibold text-white block truncate">{p.name}</span>
+                          <span className="text-[9px] text-zinc-500 font-mono block capitalize">{p.type} &bull; {p.category || p.vibe}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Social Handles */}
@@ -1988,11 +2282,65 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
 
               <button
                 type="submit"
-                className="w-full py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition-colors cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition-colors cursor-pointer shadow-md"
               >
                 Save Identity Updates
               </button>
             </form>
+
+            {/* AI Theme Stylist Recommendations */}
+            {stylistRecommendations.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-cyan-500/10 border border-amber-500/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                    <span className="text-xs font-bold text-white font-mono uppercase tracking-wider">AI Theme & Backdrop Stylist</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    Adaptive Algo
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-300 leading-relaxed">
+                  Tailored palettes based on your active elements (music blocks, forms, videos, and organization profile):
+                </p>
+
+                <div className="space-y-2">
+                  {stylistRecommendations.map((rec) => (
+                    <div 
+                      key={rec.theme}
+                      className="p-3 rounded-xl bg-neutral-950/80 border border-neutral-800 hover:border-amber-400/50 transition-all flex flex-col gap-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-white font-mono capitalize">
+                            {rec.theme.replace(/_/g, ' ')}
+                          </span>
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            {rec.matchScore}% Match
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleApplyRecommendation(rec)}
+                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-black text-[10px] font-bold font-mono hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1 shadow-xs"
+                        >
+                          <Wand2 className="w-3 h-3" />
+                          <span>Apply</span>
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-zinc-400 leading-normal">
+                        {rec.reason}
+                      </p>
+                      {rec.suggestedPreset && (
+                        <div className="flex items-center gap-1 text-[10px] text-cyan-300 font-mono pt-0.5">
+                          <span>Includes backdrop preset: <strong>{rec.suggestedPreset.name}</strong> ({rec.suggestedPreset.type})</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Layout Mode */}
             <div>
@@ -2027,21 +2375,27 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               </div>
             </div>
 
-            {/* Theme Selector (Including Minimal Sand, Cream, Dark) */}
+            {/* Theme Selector (All 16 Visual Themes) */}
             <div>
-              <label className="text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2 block">
-                Visual Themes
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['minimal_sand', 'minimal_cream', 'minimal_dark', 'cyberpunk', 'obsidian', 'geneva', 'aurora', 'solar', 'nordic'] as ZenSpaceTheme[]).map((t) => (
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-mono uppercase tracking-wider text-zinc-400 block">
+                  All Visual Themes (16)
+                </label>
+                <span className="text-[10px] text-amber-400 font-mono capitalize">
+                  Active: {activeTheme.replace(/_/g, ' ')}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                {(['minimal_sand', 'minimal_cream', 'minimal_dark', 'ceramic_white', 'editorial_paper', 'matcha_latte', 'synthwave', 'velvet_wine', 'neo_tokyo', 'alpine_dusk', 'cyberpunk', 'obsidian', 'geneva', 'aurora', 'solar', 'nordic'] as ZenSpaceTheme[]).map((t) => (
                   <button
                     key={t}
                     onClick={() => handleThemeChange(t)}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-mono capitalize border transition-all cursor-pointer ${
+                    className={`py-2 px-1.5 rounded-xl text-[11px] font-mono capitalize border transition-all cursor-pointer text-center truncate ${
                       activeTheme === t 
-                        ? 'border-amber-400 bg-amber-500/20 text-amber-300 font-bold' 
-                        : 'border-neutral-800 bg-neutral-900 text-zinc-400 hover:text-white'
+                        ? 'border-amber-400 bg-amber-500/25 text-amber-300 font-bold shadow-xs' 
+                        : 'border-neutral-800 bg-neutral-900/90 text-zinc-400 hover:text-white hover:border-neutral-700'
                     }`}
+                    title={t.replace(/_/g, ' ')}
                   >
                     {t.replace(/_/g, ' ')}
                   </button>

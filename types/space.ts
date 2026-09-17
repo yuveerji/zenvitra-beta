@@ -7,7 +7,14 @@ export type ZenSpaceTheme =
   | 'nordic'
   | 'minimal_sand'
   | 'minimal_cream'
-  | 'minimal_dark';
+  | 'minimal_dark'
+  | 'matcha_latte'
+  | 'synthwave'
+  | 'velvet_wine'
+  | 'ceramic_white'
+  | 'neo_tokyo'
+  | 'alpine_dusk'
+  | 'editorial_paper';
 
 export type ZenSpaceEffect = 
   | 'none'
@@ -101,8 +108,11 @@ export interface ZenSpaceProfile {
   theme: ZenSpaceTheme;
   effect: ZenSpaceEffect;
   layout?: 'stream' | 'bento';
-  backgroundType?: 'theme' | 'video' | 'color' | 'custom_color';
+  backgroundType?: 'theme' | 'video' | 'image' | 'color' | 'custom_color';
   videoBackgroundUrl?: string;
+  imageBackgroundUrl?: string;
+  imageBlur?: 'none' | 'sm' | 'md' | 'lg';
+  backgroundOverlayOpacity?: number;
   customBackgroundColor?: string;
   isOrganization?: boolean;
   organizationType?: string;
