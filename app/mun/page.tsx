@@ -46,6 +46,9 @@ import {
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ZENMUN_2026_MASTER } from '@/lib/conferenceData';
+import { useAuth } from '@/context/AuthContext';
+import { useMun } from '@/context/MunContext';
+import { isFounder, isAdmin } from '@/lib/founderControl';
 
 type MunModuleTab = 
   | 'ALL'
@@ -62,6 +65,36 @@ type MunModuleTab =
   | 'ANALYTICS';
 
 export default function ZenMunPortalPage() {
+  const { user, profile } = useAuth();
+  const { committees, registrations, userInvites, activeCommitteeId } = useMun();
+
+  const isExecutive = Boolean(
+    isFounder(user) || 
+    isAdmin(user) || 
+    user?.role === 'ADMIN' || 
+    user?.role === 'SECRETARIAT_CHAIR'
+  );
+
+  // Delegate strictly sees only their own assigned committee!
+  const userChambers = React.useMemo(() => {
+    if (isExecutive) return committees;
+    
+    // Find committee assigned by accepted invite or registration preference
+    const assigned = committees.filter((c) => {
+      const matchInvite = userInvites.some((i) => i.committeeId === c.id && i.status === 'accepted');
+      const matchReg = registrations.some(
+        (r) => r.committeePreference === c.name || r.committeePreference === c.shortName || r.committeePreference === c.id
+      );
+      return matchInvite || matchReg;
+    });
+
+    if (assigned.length > 0) return assigned;
+
+    // Fallback to active chamber or first registered committee for delegate
+    const active = committees.find((c) => c.id === activeCommitteeId);
+    return active ? [active] : committees.slice(0, 1);
+  }, [committees, isExecutive, userInvites, registrations, activeCommitteeId]);
+
   const [activeModule, setActiveModule] = useState<MunModuleTab>('ALL');
   const [isSearchLayoverOpen, setIsSearchLayoverOpen] = useState<boolean>(false);
   const [layoverSearchInput, setLayoverSearchInput] = useState<string>('');
@@ -104,23 +137,29 @@ export default function ZenMunPortalPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 relative z-10 border-t border-white/10">
             <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
               <span className="text-[10px] font-mono text-neutral-400 uppercase block">Active Delegates</span>
-              <span className="text-xl sm:text-2xl font-black text-white font-mono">{ZENMUN_2026_MASTER.stats.totalDelegates}</span>
-              <span className="text-[9px] text-emerald-400 font-mono block mt-0.5">93% Checked-In Live</span>
+              <span className="text-xl sm:text-2xl font-black text-white font-mono">
+                {registrations.length > 0 ? `${registrations.length} Active` : 'Live Roster'}
+              </span>
+              <span className="text-[9px] text-emerald-400 font-mono block mt-0.5">Sovereign Mesh Active</span>
             </div>
             <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
-              <span className="text-[10px] font-mono text-neutral-400 uppercase block">Live Chambers</span>
-              <span className="text-xl sm:text-2xl font-black text-cyan-400 font-mono">5 Committees</span>
-              <span className="text-[9px] text-neutral-400 font-mono block mt-0.5">UNSC, UNHRC, Lok Sabha...</span>
+              <span className="text-[10px] font-mono text-neutral-400 uppercase block">Chamber Scope</span>
+              <span className="text-xl sm:text-2xl font-black text-cyan-400 font-mono">
+                {isExecutive ? `${committees.length} Committees` : '1 Assigned Chamber'}
+              </span>
+              <span className="text-[9px] text-neutral-400 font-mono block mt-0.5">
+                {isExecutive ? 'Full Dais Oversight' : 'Delegate Restricted View'}
+              </span>
             </div>
             <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
               <span className="text-[10px] font-mono text-neutral-400 uppercase block">Resolutions &amp; Bills</span>
-              <span className="text-xl sm:text-2xl font-black text-amber-400 font-mono">{ZENMUN_2026_MASTER.stats.documentsSubmitted} Drafted</span>
-              <span className="text-[9px] text-neutral-400 font-mono block mt-0.5">Cryptographically Sealed</span>
+              <span className="text-xl sm:text-2xl font-black text-amber-400 font-mono">ZEN.LEGISLATE</span>
+              <span className="text-[9px] text-neutral-400 font-mono block mt-0.5">Clause-by-Clause Drafting</span>
             </div>
             <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
               <span className="text-[10px] font-mono text-neutral-400 uppercase block">Chamber Access</span>
               <span className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">100% Free</span>
-              <span className="text-[9px] text-neutral-400 font-mono block mt-0.5">For All Students &amp; Dais</span>
+              <span className="text-[9px] text-neutral-400 font-mono block mt-0.5">Verified Diplomatic Identity</span>
             </div>
           </div>
 
@@ -435,45 +474,84 @@ export default function ZenMunPortalPage() {
               </Link>
             </div>
 
+            {!isExecutive && (
+              <div className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span className="text-xs font-mono font-bold text-cyan-300">
+                    DELEGATE RESTRICTED VIEW &bull; ASSIGNED CHAMBER ONLY
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400">
+                  Other private committee chambers are hidden to preserve diplomatic isolation
+                </span>
+              </div>
+            )}
+
             {/* Active Committee Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {ZENMUN_2026_MASTER.committees.map((c) => (
-                <div
-                  key={c.id}
-                  className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-purple-500/40 transition space-y-3 text-left group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                      {c.shortName}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                      <span>{c.status}</span>
-                    </span>
-                  </div>
+              {userChambers.map((c) => {
+                const isLok = c.type === 'LOK_SABHA' || c.name.toLowerCase().includes('lok sabha') || c.id.includes('lok');
+                return (
+                  <div
+                    key={c.id}
+                    className={`p-5 rounded-2xl bg-white/[0.02] border transition space-y-3 text-left group ${
+                      isLok ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-white/10 hover:border-purple-500/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
+                        isLok ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                      }`}>
+                        {c.shortName || 'CHAMBER'}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                        <span>LIVE DEBATE</span>
+                      </span>
+                    </div>
 
-                  <div>
-                    <h4 className="font-bold text-white text-sm group-hover:text-purple-300 transition">{c.name}</h4>
-                    <p className="text-[11px] text-neutral-400 font-mono mt-0.5">{c.room} &bull; {c.chairName}</p>
-                  </div>
+                    <div>
+                      <h4 className={`font-bold text-sm transition ${isLok ? 'text-white group-hover:text-amber-300' : 'text-white group-hover:text-purple-300'}`}>
+                        {c.name}
+                      </h4>
+                      <p className="text-[11px] text-neutral-400 font-mono mt-0.5">
+                        {c.dais?.chair ? `Presiding: ${c.dais.chair}` : 'Executive Dais Connected'}
+                      </p>
+                    </div>
 
-                  <div className="p-2.5 rounded-xl bg-black/60 border border-white/5 space-y-1 text-xs font-mono">
-                    <span className="text-[9px] text-neutral-500 uppercase block">Active Debate:</span>
-                    <p className="text-neutral-300 text-[11px] truncate font-semibold">{c.currentSession}</p>
-                  </div>
+                    <div className="p-2.5 rounded-xl bg-black/60 border border-white/5 space-y-1 text-xs font-mono">
+                      <span className="text-[9px] text-neutral-500 uppercase block">Active Floor Agenda:</span>
+                      <p className="text-neutral-300 text-[11px] truncate font-semibold">{c.agenda}</p>
+                    </div>
 
-                  <div className="pt-2 flex items-center justify-between border-t border-white/5">
-                    <span className="text-[11px] text-neutral-400 font-mono">{c.totalDelegates} Delegates</span>
-                    <Link
-                      href={`/committee?chamber=${c.id}`}
-                      className="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-mono text-xs font-bold transition flex items-center gap-1"
-                    >
-                      <span>Join Chamber</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </Link>
+                    <div className="pt-2 flex items-center justify-between border-t border-white/5 gap-2">
+                      <span className="text-[11px] text-neutral-400 font-mono">
+                        {c.presentCount || c.totalDelegates || 35} Present
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {isLok && (
+                          <Link
+                            href="/docs?committee=lok_sabha&mode=legislate&action=draft_choice"
+                            className="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold transition flex items-center gap-1"
+                            title="Draft Bill or Press Release"
+                          >
+                            <Gavel className="w-3 h-3" />
+                            <span>Draft</span>
+                          </Link>
+                        )}
+                        <Link
+                          href={`/committee?chamber=${c.id}`}
+                          className="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-mono text-xs font-bold transition flex items-center gap-1"
+                        >
+                          <span>Enter Floor</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -496,12 +574,12 @@ export default function ZenMunPortalPage() {
               </p>
               <div className="p-3 rounded-xl bg-black/60 border border-white/5 space-y-1 text-xs font-mono">
                 <div className="flex justify-between text-neutral-400">
-                  <span>Total Portfolios:</span>
-                  <span className="text-white font-bold">486 / 500</span>
+                  <span>Allocated Portfolios:</span>
+                  <span className="text-white font-bold">{registrations.length > 0 ? `${registrations.length} Verified` : 'Dynamic Roster'}</span>
                 </div>
                 <div className="flex justify-between text-neutral-400">
                   <span>Conflict Status:</span>
-                  <span className="text-emerald-400 font-bold">0 Conflicts Detected</span>
+                  <span className="text-emerald-400 font-bold">0 Conflicts &bull; Verified</span>
                 </div>
               </div>
               <Link
@@ -526,9 +604,15 @@ export default function ZenMunPortalPage() {
                 Replaces messy Google Forms. Multi-tier application pipeline: Pending &rarr; Review &rarr; Accepted &rarr; Waitlisted with conditional questions and ticket categories.
               </p>
               <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] font-mono">
-                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-300 font-bold">24 Pending</div>
-                <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-300 font-bold">12 Review</div>
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-300 font-bold">450 Accepted</div>
+                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-300 font-bold">
+                  {registrations.filter((r) => r.status === 'registered').length} Registered
+                </div>
+                <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-300 font-bold">
+                  {registrations.filter((r) => r.status === 'allotted' || r.status === 'invite_sent').length} Allotted
+                </div>
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-300 font-bold">
+                  {registrations.filter((r) => r.status === 'accepted').length || registrations.length} Confirmed
+                </div>
               </div>
               <Link
                 href="/mun/conference"
@@ -554,11 +638,11 @@ export default function ZenMunPortalPage() {
               <div className="p-3 rounded-xl bg-black/60 border border-white/5 space-y-1 text-xs font-mono">
                 <div className="flex justify-between text-neutral-400">
                   <span>Scored Delegates:</span>
-                  <span className="text-white font-bold">486 / 486 (100%)</span>
+                  <span className="text-white font-bold">Dais Confidential</span>
                 </div>
                 <div className="flex justify-between text-neutral-400">
                   <span>Award Locking:</span>
-                  <span className="text-purple-400 font-bold">Awaiting Dais Seal</span>
+                  <span className="text-amber-400 font-bold">Sealed until MUN Ends</span>
                 </div>
               </div>
               <Link
@@ -588,8 +672,9 @@ export default function ZenMunPortalPage() {
                 </p>
               </div>
 
-              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
-                🔒 SHA-256 Tamper-Proof
+              <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-mono font-bold flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Locked Until MUN Concludes</span>
               </span>
             </div>
 
@@ -597,74 +682,67 @@ export default function ZenMunPortalPage() {
               <div className="space-y-3 font-mono text-xs">
                 <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2">
                   <div className="flex items-center justify-between text-neutral-400">
-                    <span>Certificate ID:</span>
-                    <span className="text-cyan-400 font-bold">CERT-ZEN-2026-0486</span>
+                    <span>Certificate Status:</span>
+                    <span className="text-amber-400 font-bold">Minted Upon Valedictory Assembly</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Award Classification:</span>
-                    <span className="text-amber-400 font-bold">Best Delegate (UNSC)</span>
+                    <span className="text-amber-300 font-bold">Awaiting Dais Official Seal</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Cryptographic Seal:</span>
-                    <span className="text-emerald-400 truncate max-w-[200px]">0x8f3c2b1a99d45e0287cb...</span>
+                    <span className="text-neutral-500 truncate max-w-[200px]">Locked during active debate</span>
                   </div>
                 </div>
 
-                <p className="text-neutral-400 text-xs font-sans leading-relaxed">
-                  When scanned by universities, employers, or conference secretariats, the certificate independently validates attendance, speeches delivered, and verified awards.
-                </p>
+                <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-amber-200/90 text-xs font-sans leading-relaxed">
+                  <strong>Notice to Delegates:</strong> Award classifications and diplomatic certificates are strictly sealed during conference sessions. Once the MUN officially concludes and the Dais strikes the final gavel, your verified certificate will be cryptographically minted and automatically synchronized to your <strong>Profile</strong> and <strong>Dashboard</strong>.
+                </div>
               </div>
 
               <div className="p-6 rounded-2xl bg-gradient-to-b from-cyan-950/40 via-black/60 to-black/80 border border-cyan-500/30 flex flex-col justify-between space-y-4 shadow-xl">
                 <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Verified Sovereign Credential</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                    <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Conference In Session</span>
                   </div>
-                  <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-500/30">
-                    LIVE REGISTRY
+                  <span className="text-[10px] font-mono text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-500/30">
+                    AWAITING CLOSE
                   </span>
                 </div>
 
                 <div className="space-y-2 py-1">
                   <div className="flex items-center justify-between text-xs font-mono">
                     <span className="text-neutral-400">Issuer Authority:</span>
-                    <span className="text-white font-bold">UN Secretariat & Zenvitra High Council</span>
+                    <span className="text-white font-bold">Executive Board &amp; Zenvitra Council</span>
                   </div>
                   <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-neutral-400">Protocol Validation:</span>
+                    <span className="text-neutral-400">Auto-Sync Target:</span>
                     <span className="text-emerald-400 font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      100% Cryptographically Bound
+                      Profile &amp; Dashboard Ledger
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-neutral-400">Merkle Root:</span>
-                    <span className="text-neutral-300 font-mono text-[11px]">sha256:7f83b165...49a1</span>
+                    <span className="text-neutral-400">Release Protocol:</span>
+                    <span className="text-neutral-300 font-mono text-[11px]">Automatic Post-Adjournment</span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-3">
                   <Link
-                    href="/cert/verify?id=CERT-ZEN-2026-0486"
+                    href="/profile"
                     className="flex-1 py-2 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold text-center transition flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <FileCheck2 className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Verify Live Record</span>
+                    <Award className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>View Profile Credentials</span>
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                        navigator.clipboard.writeText(`${window.location.origin}/cert/verify?id=CERT-ZEN-2026-0486`);
-                        alert('Certificate verification link copied to clipboard!');
-                      }
-                    }}
-                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white transition cursor-pointer"
-                    title="Copy verification link"
+                  <Link
+                    href="/dashboard"
+                    className="flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white text-xs font-mono font-bold text-center transition flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <Share2 className="w-4 h-4" />
-                  </button>
+                    <span>Go to Dashboard</span>
+                  </Link>
                 </div>
               </div>
             </div>

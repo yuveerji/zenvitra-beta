@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Scale, CheckCircle2 } from 'lucide-react';
+import { Scale, CheckCircle2, Gavel } from 'lucide-react';
 import { useDocumentEditor } from './hooks/useDocumentEditor';
 import { useEditorCommands } from './hooks/useEditorCommands';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -25,9 +25,21 @@ import {
   PublishToPressModal,
   SaveAsModal,
   ShareToPulseModal,
+  LokSabhaDraftModal,
 } from './modals';
+import { useSearchParams } from 'next/navigation';
 
-export function ZenDocsClient() {
+export interface ZenDocsClientProps {
+  initialMode?: string;
+  initialCommittee?: string;
+}
+
+export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientProps = {}) {
+  const searchParams = useSearchParams();
+  const committeeParam = searchParams?.get('committee') || searchParams?.get('chamber') || initialCommittee || '';
+  const modeParam = searchParams?.get('mode') || initialMode || '';
+  const isLokSabhaContext = committeeParam.toLowerCase().includes('lok') || committeeParam.toLowerCase().includes('sabha') || modeParam === 'legislate';
+
   const editor = useDocumentEditor();
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChangeRef = useRef<boolean>(false);
@@ -45,6 +57,7 @@ export function ZenDocsClient() {
   const [isShareToPulseModalOpen, setIsShareToPulseModalOpen] = useState<boolean>(false);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+  const [isLokSabhaDraftModalOpen, setIsLokSabhaDraftModalOpen] = useState<boolean>(isLokSabhaContext);
 
   // Export Document Handler
   const handleExportFormat = useCallback((format: ExportFormat) => {
@@ -254,6 +267,24 @@ export function ZenDocsClient() {
       ) : (
         /* Main Studio Shell */
         <div className="max-w-[1600px] mx-auto w-full px-2 sm:px-4 lg:px-6 py-3 flex-1 flex flex-col space-y-3">
+          {/* Parliamentary Lok Sabha Banner */}
+          {isLokSabhaContext && (
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-black/40 to-amber-950/20 border border-amber-500/30 text-amber-300 text-xs font-mono shadow-sm">
+              <div className="flex items-center gap-2">
+                <Scale className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="font-bold">ZEN.LEGISLATE Active &bull; Lok Sabha Parliamentary Drafting Session</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLokSabhaDraftModalOpen(true)}
+                className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-[11px] transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+              >
+                <Gavel className="w-3.5 h-3.5 text-black" />
+                <span>Switch Draft (Bill / Press Release)</span>
+              </button>
+            </div>
+          )}
+
           {/* Unified Top Toolbar */}
           <ZenDocsToolbar
             activeDoc={editor.activeDoc}
@@ -561,6 +592,16 @@ export function ZenDocsClient() {
         activeDoc={editor.activeDoc}
         onToast={editor.triggerToast}
       />
+
+      <LokSabhaDraftModal
+        isOpen={isLokSabhaDraftModalOpen}
+        onClose={() => setIsLokSabhaDraftModalOpen(false)}
+        onSelectDraftType={(type, title) => {
+          editor.createDocument(type, title);
+          editor.setActiveView('EDITOR');
+        }}
+      />
     </div>
   );
 }
+

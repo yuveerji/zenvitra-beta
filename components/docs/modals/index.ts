@@ -17,4 +17,5 @@ export { SaveAsModal } from './SaveAsModal';
 export type { SaveAsModalProps } from './SaveAsModal';
 export { ShareToPulseModal } from './ShareToPulseModal';
 export type { ShareToPulseModalProps } from './ShareToPulseModal';
+export { LokSabhaDraftModal } from './LokSabhaDraftModal';
 

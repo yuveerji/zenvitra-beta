@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
+
+function appendToLocalLedger(entry: Record<string, any>) {
+  try {
+    const dir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const filePath = path.join(dir, 'sheets_backup_ledger.jsonl');
+    fs.appendFileSync(filePath, JSON.stringify(entry) + '\n', 'utf-8');
+  } catch (err) {
+    console.warn('[LOCAL-LEDGER-WRITE-ERROR]', err);
+  }
+}
 
 /**
  * Normalized tab target mapping to ensure compatibility with Apps Script
@@ -54,6 +69,9 @@ export async function POST(req: NextRequest) {
       sourceUrl: rawData.sourceUrl || req.headers.get('referer') || '/',
       timestamp: new Date().toISOString()
     };
+
+    // 1. Immediately persist to local zero-loss ledger
+    appendToLocalLedger(appsScriptPayload);
 
     if (webhookUrl) {
       try {

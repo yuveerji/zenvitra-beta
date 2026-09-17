@@ -111,6 +111,12 @@ export function CommitteeChamber() {
   };
 
   const committee = getCommitteeById(activeCommitteeId) || committees[0] || DEFAULT_COMMITTEE;
+  const isLokSabhaChamber = Boolean(
+    (committee.type as string) === 'LOK_SABHA' ||
+    committee.id?.toLowerCase().includes('lok') ||
+    committee.name?.toLowerCase().includes('lok sabha') ||
+    committee.shortName?.toLowerCase().includes('lok sabha')
+  );
   const userAcceptedInvite = userInvites.find(
     (i) => i.committeeId === activeCommitteeId && i.status === 'accepted'
   );
@@ -497,6 +503,27 @@ export function CommitteeChamber() {
             <BookOpen className="w-4 h-4 text-neutral-400 shrink-0" />
             <span>Sources</span>
           </button>
+
+          {/* Direct ZEN.LEGISLATE / ZEN.DOCS Drafting Gateway */}
+          {isLokSabhaChamber ? (
+            <Link
+              href="/docs?committee=lok_sabha&mode=legislate&action=draft_choice"
+              className="p-2.5 px-3.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-mono text-xs font-bold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+              title="ZEN.LEGISLATE — Draft Parliamentary Bill or Press Release"
+            >
+              <Gavel className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>ZEN.LEGISLATE</span>
+            </Link>
+          ) : (
+            <Link
+              href="/docs"
+              className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
+              title="ZEN.DOCS Sovereign Drafting Studio"
+            >
+              <FileText className="w-4 h-4 text-neutral-400 shrink-0" />
+              <span>ZEN.DOCS</span>
+            </Link>
+          )}
 
           {/* Live Vote Trigger */}
           <button
@@ -1049,14 +1076,24 @@ export function CommitteeChamber() {
           )}
 
           {activeTab === 'resolutions' && (
-            <button
-              type="button"
-              onClick={() => setShowDraftResolutionModal(true)}
-              className="px-4 py-2.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4 text-black" />
-              <span>Draft Working Paper</span>
-            </button>
+            isLokSabhaChamber ? (
+              <Link
+                href="/docs?committee=lok_sabha&mode=legislate&action=draft_choice"
+                className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-display font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.3)] active:scale-95"
+              >
+                <Gavel className="w-4 h-4 text-black" />
+                <span>Draft Bill / Press Release (ZEN.LEGISLATE)</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowDraftResolutionModal(true)}
+                className="px-4 py-2.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              >
+                <Plus className="w-4 h-4 text-black" />
+                <span>Draft Working Paper</span>
+              </button>
+            )
           )}
         </div>
 

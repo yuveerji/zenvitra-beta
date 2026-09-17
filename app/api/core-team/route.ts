@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dispatchToGoogleSheets } from '@/lib/googleSheets';
 import { db } from '@/lib/db';
+import fs from 'fs';
+import path from 'path';
+
+function appendToLocalLedger(entry: Record<string, any>) {
+  try {
+    const dir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const filePath = path.join(dir, 'sheets_backup_ledger.jsonl');
+    fs.appendFileSync(filePath, JSON.stringify(entry) + '\n', 'utf-8');
+  } catch (err) {
+    console.warn('[LOCAL-LEDGER-WRITE-ERROR]', err);
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,7 +57,24 @@ export async function POST(req: NextRequest) {
       console.warn('[DB-APPLICATION-SAVE-WARN]', dbErr?.message);
     }
 
-    // Dispatch to Google Sheets under 'Core Team Applications'
+    // 1. Immediately persist to local zero-loss ledger
+    appendToLocalLedger({
+      targetTab: 'Core Team Applications',
+      fullName,
+      handle: body.handle || '',
+      email,
+      phoneNumber: resolvedPhone,
+      department: department || body.roleAppliedFor || 'Core Team',
+      roleAppliedFor: department || body.roleAppliedFor || 'Core Team',
+      portfolioUrl: resolvedPortfolio,
+      dossierUploadUrl: resolvedDossierDoc,
+      hoursPerWeek: hoursPerWeek || body.weeklyBandwidth || '',
+      motivation: motivation || body.motivationStatement || '',
+      ipAddress: ip,
+      timestamp: new Date().toISOString()
+    });
+
+    // 2. Dispatch to Google Sheets under 'Core Team Applications'
     try {
       await dispatchToGoogleSheets({
         tab: 'Core Team Applications',

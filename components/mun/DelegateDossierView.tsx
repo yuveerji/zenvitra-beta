@@ -107,6 +107,31 @@ export function DelegateDossierView({ userHandle, isOwner = true }: DelegateDoss
   return (
     <div className="space-y-6 text-left font-sans text-white">
       
+      {/* ─── ACTIVE MUN AWARDS NOTICE & AUTO-SYNC PROTOCOL ─── */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-cyan-500/5 to-transparent border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-amber-500/20 text-amber-300 shrink-0">
+            <Award className="w-4 h-4" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-white">Active MUN Diplomatic Records &amp; Awards</span>
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[9px] font-bold">LOCKED IN SESSION</span>
+            </div>
+            <p className="text-zinc-400 text-[11px] leading-relaxed">
+              Award citations and verified diplomatic certificates are sealed while MUN committees are in active session. Upon conference adjournment, all ratified credentials auto-mint directly to this profile and dashboard ledger.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/mun"
+          className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-white font-mono text-[11px] font-semibold transition shrink-0 flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>MUN Dais</span>
+          <ExternalLink className="w-3 h-3 text-zinc-400" />
+        </Link>
+      </div>
+
       {/* ─── METRIC CARDS OVERVIEW ─── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         

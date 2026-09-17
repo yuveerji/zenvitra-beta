@@ -237,6 +237,28 @@ export function useDocumentEditor(): UseDocumentEditorReturn {
 </div>
 <hr style="border: none; border-top: 1.5px solid #d1d5db; margin: 20px 0;" />
 <p style="font-size: 14px; line-height: 1.8; color: #1f2937;"><strong>Directive Orders &amp; Covert Actions:</strong> Specify deployed assets, covert intelligence tasks, and immediate operational milestones.</p>`;
+      } else if (type === 'PRESS_RELEASE') {
+        title = customTitle || 'OFFICIAL PRESS RELEASE: LOK SABHA PROCEEDINGS';
+        docCode = `PRESS/LS/2026/${Date.now().toString().slice(-3)}`;
+        committee = 'Lok Sabha Press Bureau';
+        font = 'Inter';
+        initialHtml = `<div style="text-align: center; margin-bottom: 24px;">
+  <p style="font-size: 11px; letter-spacing: 0.18em; font-family: monospace; font-weight: bold; color: #dc2626; text-transform: uppercase; margin-bottom: 6px;">FOR IMMEDIATE RELEASE &bull; LOK SABHA PRESS BUREAU</p>
+  <h1 style="font-size: 22px; font-weight: 800; margin: 0 0 10px 0; color: #111827;">${title}</h1>
+  <p style="font-size: 12px; color: #6b7280; font-family: monospace; margin: 0;">NEW DELHI / PARLIAMENT HOUSE &bull; EMBARGO: NONE</p>
+</div>
+<hr style="border: none; border-top: 1.5px solid #d1d5db; margin: 20px 0;" />
+<p style="font-size: 14px; line-height: 1.8; color: #1f2937;"><strong>NEW DELHI, INDIA</strong> — In a significant legislative development on the floor of the Lok Sabha today, members convened to deliberate upon [Topic].</p>
+<p style="font-size: 14px; line-height: 1.8; color: #1f2937;">Addressing the press gallery, the Official Spokesperson stated: <em>"[Insert Official Parliamentary Statement or Member Quote Here]."</em></p>
+<h3 style="font-size: 14px; font-weight: bold; margin-top: 20px; color: #111827;">Key Highlights:</h3>
+<ul style="font-size: 13px; line-height: 1.8; color: #374151;">
+  <li>Statutory provisions and clause scrutiny under consideration.</li>
+  <li>Interventions raised during Zero Hour and question hour debate.</li>
+  <li>Cross-party consultative discussions before the division vote.</li>
+</ul>
+<p style="font-size: 12px; font-family: monospace; color: #6b7280; margin-top: 24px;">
+  <strong>MEDIA CLEARANCE:</strong> Parliamentary Information Bureau &bull; verified@zenvitra.xyz
+</p>`;
       } else {
         title = customTitle || 'NAME YOUR DOCUMENT';
         initialHtml = `<h1 style="font-size: 24px; font-weight: 800; margin-bottom: 8px; color: #111827;">${title}</h1>
