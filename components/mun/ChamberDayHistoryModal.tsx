@@ -31,27 +31,37 @@ export function ChamberDayHistoryModal({
   committeeName = 'Committee Chamber',
 }: ChamberDayHistoryModalProps) {
   const { sessionState, currentConferenceDay, activeConference } = useMun();
-  const [selectedDay, setSelectedDay] = useState<1 | 2 | 3 | 'ALL'>(currentConferenceDay || 1);
+  const motionsList: MunMotion[] = sessionState.motionHistory || [];
+  const speakersList: MunSpeaker[] = sessionState.speakerHistory || [];
+  const billsList = sessionState.passedBills || [];
+
+  const maxRecordedDay = Math.max(
+    activeConference?.totalDays || 3,
+    currentConferenceDay || 1,
+    ...motionsList.map((m) => m.day || 1),
+    ...speakersList.map((s) => s.day || 1),
+    ...billsList.map((b) => b.day || 1),
+    1
+  );
+
+  const [selectedDay, setSelectedDay] = useState<number | 'ALL'>(currentConferenceDay || 1);
   const [activeTab, setActiveTab] = useState<'MOTIONS' | 'SPEAKERS' | 'BILLS'>('MOTIONS');
 
   if (!isOpen) return null;
 
   // Motions filter
-  const motionsList: MunMotion[] = sessionState.motionHistory || [];
   const filteredMotions = motionsList.filter((m) => {
     if (selectedDay === 'ALL') return true;
     return (m.day || 1) === selectedDay;
   });
 
   // Speakers filter
-  const speakersList: MunSpeaker[] = sessionState.speakerHistory || [];
   const filteredSpeakers = speakersList.filter((s) => {
     if (selectedDay === 'ALL') return true;
     return (s.day || 1) === selectedDay;
   });
 
   // Bills filter
-  const billsList = sessionState.passedBills || [];
   const filteredBills = billsList.filter((b) => {
     if (selectedDay === 'ALL') return true;
     return (b.day || 1) === selectedDay;
@@ -81,7 +91,7 @@ export function ChamberDayHistoryModal({
               Committee Productivity & Chamber History
             </h2>
             <p className="text-xs text-neutral-400 font-sans">
-              Comprehensive log of all caucus motions, roll calls, and General Speakers List (GSL) turns across Day 1, Day 2, and Day 3.
+              Comprehensive log of all caucus motions, roll calls, and General Speakers List (GSL) turns across conference days.
             </p>
           </div>
 
@@ -96,21 +106,32 @@ export function ChamberDayHistoryModal({
 
         {/* Day Selector Navigation Pills */}
         <div className="flex flex-wrap items-center justify-between gap-3 relative z-10">
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/5 border border-white/10 font-mono text-xs">
-            {([1, 2, 3, 'ALL'] as const).map((day) => (
+          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-white/5 border border-white/10 font-mono text-xs">
+            {Array.from({ length: maxRecordedDay }, (_, i) => i + 1).map((day) => (
               <button
                 key={day}
                 type="button"
                 onClick={() => setSelectedDay(day)}
-                className={`px-3.5 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
                   selectedDay === day
                     ? 'bg-amber-500 text-black shadow-md'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
-                {day === 'ALL' ? 'All Days Combined' : `Day ${day}`}
+                Day {day}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setSelectedDay('ALL')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${
+                selectedDay === 'ALL'
+                  ? 'bg-amber-500 text-black shadow-md'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              All Days
+            </button>
           </div>
 
           {/* Sub-tab Navigation */}

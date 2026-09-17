@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
 import { ChatMessage } from '@/types/chat';
+import { formatViewerTime } from '@/lib/timezone';
 
 const QUICK_EMOJIS = ['👍', '❤️', '🔥', '⚡', '👏', '😂'];
 const EMOJI_PALETTE = ['👍', '❤️', '🔥', '⚡', '👏', '😂', '🎉', '🚀', '💡', '🛡️', '✨', '🤝', '💯', '🎯'];
@@ -442,7 +443,7 @@ export function CleanChatWindow() {
                             isMe ? 'text-neutral-300' : 'text-neutral-500'
                           }`}>
                             {msg.isEdited && <span className="italic">(edited)</span>}
-                            <span>{msg.timestamp}</span>
+                            <span>{formatViewerTime(msg.createdAt || msg.timestamp)}</span>
                             {isMe && <CheckCheck className="w-3.5 h-3.5 text-cyan-300" />}
                           </div>
                         </>

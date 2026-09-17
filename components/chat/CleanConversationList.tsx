@@ -17,6 +17,7 @@ import {
   X
 } from 'lucide-react';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
+import { formatViewerTime } from '@/lib/timezone';
 
 export function CleanConversationList() {
   const {
@@ -264,7 +265,7 @@ function ConversationItem({
             {conv.name}
           </span>
           <span className="font-mono text-[10px] text-neutral-500 shrink-0">
-            {conv.lastMessage?.timestamp || ''}
+            {formatViewerTime(conv.lastMessage?.timestamp || '')}
           </span>
         </div>
 

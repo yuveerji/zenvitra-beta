@@ -5,7 +5,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
     username: 'yuveer',
     displayName: 'Yuveer',
     bio: 'Founder & Lead Architect of Zenvitra. Designing sovereign digital architecture, international diplomacy systems, and high-frequency communication protocols.',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    avatar: '/assets/founder.png',
     bannerUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80',
     role: 'Founder & Chief Architect',
     verified: true,
@@ -28,16 +28,17 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
       {
         id: 'block-music-1',
         type: 'music',
-        title: 'Starboy (Cyber-Acoustic Edit)',
-        subtitle: 'The Weeknd, Daft Punk',
-        url: 'https://music.youtube.com',
+        title: 'Starboy',
+        subtitle: 'The Weeknd ft. Daft Punk',
+        url: 'https://music.youtube.com/watch?v=34Na4j8AVgA',
         highlight: true,
-        clicks: 420,
+        clicks: 0,
         bentoSpan: '2',
         metadata: {
-          artist: 'The Weeknd & Daft Punk',
+          artist: 'The Weeknd ft. Daft Punk',
           albumArt: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=400&q=80',
-          audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
+          audioUrl: '/music/starboy_preview.wav',
+          videoId: '34Na4j8AVgA',
           category: 'Current Rotation'
         }
       },
@@ -68,7 +69,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         subtitle: 'UNSC Working Group on Autonomous Systems & Sovereign AI',
         url: '/platform/docs',
         highlight: false,
-        clicks: 189,
+        clicks: 0,
         bentoSpan: '1',
         metadata: {
           category: 'Diplomatic Dispatch',
@@ -82,7 +83,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         subtitle: 'Encrypted HD Video & Voice • Instant Room Link',
         url: '/call/founder-chamber',
         highlight: true,
-        clicks: 864,
+        clicks: 0,
         icon: 'Video',
         bentoSpan: '1'
       },
@@ -116,7 +117,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         title: 'Zenvitra Unveils Sovereign Protocol v2.0',
         subtitle: 'Geneva Digital Gazette • Sept 2026',
         url: '/press',
-        clicks: 312,
+        clicks: 0,
         bentoSpan: '1',
         metadata: {
           date: 'Sept 2026',
@@ -128,22 +129,22 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         type: 'quote',
         title: '"The future of communication belongs to those who build architectures of calm, sovereign resonance."',
         subtitle: 'Founding Axiom 01',
-        clicks: 98,
+        clicks: 0,
         bentoSpan: '2'
       }
     ],
     stats: {
-      views: 14280,
-      connections: 1890,
-      shares: 642,
-      submissions: 87
+      views: 0,
+      connections: 0,
+      shares: 0,
+      submissions: 0
     }
   },
   zenvitra: {
     username: 'zenvitra',
     displayName: 'Zenvitra Collective',
     bio: 'The next-generation unified communication, intelligence, and diplomatic operating system.',
-    avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80',
+    avatar: '/brand/logo.png',
     bannerUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80',
     role: 'Official Platform Core',
     verified: true,
@@ -166,24 +167,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         subtitle: 'Omni-channel workspaces, secure chats & rooms',
         url: '/platform',
         highlight: true,
-        clicks: 3200
-      },
-      {
-        id: 'zen-form-join',
-        type: 'form',
-        title: 'Register Interest / Early Sovereign Node',
-        subtitle: 'Join the waitlist for sovereign community access',
-        highlight: true,
-        metadata: {
-          formSubmitText: 'Join Waitlist',
-          formSuccessMsg: 'You have been registered for network node activation!',
-          formWebhookTab: 'INTEREST',
-          formFields: [
-            { id: 'name', label: 'Name or Pseudonym', placeholder: 'Explorer', type: 'text', required: true },
-            { id: 'email', label: 'Email Address', placeholder: 'you@domain.com', type: 'email', required: true },
-            { id: 'interest', label: 'Area of Interest', type: 'select', options: ['Autonomous Intelligence', 'Diplomatic Chambers', 'Civic Media', 'Decentralized Cloud'] }
-          ]
-        }
+        clicks: 0
       },
       {
         id: 'zen-call-launch',
@@ -191,123 +175,14 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         title: 'ZEN.CALL Realtime Engine',
         subtitle: 'Experience spatial acoustic video calls',
         url: '/call',
-        clicks: 2150
-      },
-      {
-        id: 'zen-press',
-        type: 'press',
-        title: 'Platform Architecture Whitepaper v4.8',
-        subtitle: 'Technical specifications for zero-latency pipelines',
-        url: '/press',
-        clicks: 980
+        clicks: 0
       }
     ],
     stats: {
-      views: 45900,
-      connections: 5820,
-      shares: 1940,
-      submissions: 340
-    }
-  },
-  thejharokhaforum: {
-    username: 'thejharokhaforum',
-    displayName: '@thejharokhaforum',
-    bio: 'Where Worlds are Wrought of Words',
-    avatar: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80',
-    bannerUrl: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1600&q=80',
-    role: 'Diplomatic & Literary Youth Forum',
-    verified: true,
-    isOrganization: true,
-    organizationType: 'Secretariat & Model UN Organization',
-    location: 'Global / National Circuit',
-    badges: ['ORGANIZATION', 'LITERARY_FORUM', 'SECRETARIAT_NODE'],
-    theme: 'minimal_sand',
-    effect: 'none',
-    layout: 'stream',
-    socials: {
-      instagram: 'https://instagram.com/thejharokhaforum',
-      email: 'secretariat@thejharokhaforum.org',
-      phone: '+91 98765 43210'
-    },
-    blocks: [
-      {
-        id: 'block-jf-secretariat',
-        type: 'form',
-        title: 'Join Jharokha Forum 2026 Secretariat',
-        subtitle: 'Executive board & organizing committee application dossier',
-        highlight: true,
-        clicks: 1420,
-        metadata: {
-          formMode: 'embed',
-          formSubmitText: 'Submit Secretariat Application',
-          formSuccessMsg: 'Your Secretariat application has been registered with Jharokha Forum 2026!',
-          formWebhookTab: 'SECRETARIAT',
-          formFields: [
-            { id: 'fullName', label: 'Full Legal Name', placeholder: 'Enter your full name', type: 'text', required: true },
-            { id: 'email', label: 'Primary Contact Email', placeholder: 'yourname@domain.com', type: 'email', required: true },
-            { id: 'phone', label: 'WhatsApp / Phone Number', placeholder: '+91 98765 43210', type: 'text', required: true },
-            { id: 'institution', label: 'Institution / School / University', placeholder: 'e.g. Modern School / Delhi University', type: 'text', required: true },
-            { id: 'prefDept', label: 'Preferred Department', type: 'select', options: ['Delegate Affairs', 'Logistics & Hospitality', 'Public Relations & Social Media', 'Finance & Sponsorship', 'Research & Substantive Policy'] },
-            { id: 'statement', label: 'Why do you want to join the Secretariat?', placeholder: 'Describe your vision, past MUN experience and skill sets...', type: 'textarea', required: true }
-          ]
-        }
-      },
-      {
-        id: 'block-jf-offline-delegate',
-        type: 'form',
-        title: 'Offline Delegate Application- THE JHAROKHA FORUM 2026',
-        subtitle: 'In-person parliamentary caucus & committee delegate registration',
-        highlight: false,
-        clicks: 2150,
-        metadata: {
-          formMode: 'embed',
-          formSubmitText: 'Register as Offline Delegate',
-          formSuccessMsg: 'Delegate registration received! Allotment matrix will be communicated shortly.',
-          formWebhookTab: 'DELEGATES',
-          formFields: [
-            { id: 'name', label: 'Delegate Full Name', placeholder: 'Your full name', type: 'text', required: true },
-            { id: 'email', label: 'Email Address', placeholder: 'delegate@school.edu', type: 'email', required: true },
-            { id: 'phone', label: 'Contact Phone Number', placeholder: '+91 ...', type: 'text', required: true },
-            { id: 'committeePref', label: 'Committee 1st Preference', type: 'select', options: ['UNSC (United Nations Security Council)', 'UNHRC (Human Rights Council)', 'Lok Sabha (Indian Parliament)', 'AIPPM (All India Political Parties Meet)', 'IP (International Press)'] },
-            { id: 'experience', label: 'Prior MUN Experience (No. of conferences & awards)', placeholder: 'e.g. 3 MUNs (Executive Board / Delegate awards)', type: 'text' }
-          ]
-        }
-      },
-      {
-        id: 'block-jf-online-delegate',
-        type: 'form',
-        title: 'Online Delegate Application- THE JHAROKHA FORUM 2026',
-        subtitle: 'Virtual international cohort & digital diplomacy session registration',
-        highlight: false,
-        clicks: 1680,
-        metadata: {
-          formMode: 'embed',
-          formSubmitText: 'Register for Online Session',
-          formSuccessMsg: 'Online delegate registration confirmed. Digital session links will be dispatched.',
-          formWebhookTab: 'ONLINE_DELEGATES',
-          formFields: [
-            { id: 'name', label: 'Delegate Full Name', placeholder: 'Your full name', type: 'text', required: true },
-            { id: 'email', label: 'Email Address', placeholder: 'online.delegate@example.com', type: 'email', required: true },
-            { id: 'country', label: 'Country & City of Residence', placeholder: 'e.g. London, UK or New Delhi, India', type: 'text', required: true },
-            { id: 'committeePref', label: 'Committee Choice', type: 'select', options: ['UNSC Virtual Node', 'UNEP Climate Working Group', 'Digital Compact Assembly'] }
-          ]
-        }
-      },
-      {
-        id: 'block-jf-committee-status',
-        type: 'link',
-        title: 'Jharokha Forum 2026: Committee Status',
-        subtitle: 'View live allotment matrix, study guides, agendas & background guides',
-        url: '/mun',
-        highlight: false,
-        clicks: 3410
-      }
-    ],
-    stats: {
-      views: 8940,
-      connections: 1420,
-      shares: 430,
-      submissions: 382
+      views: 0,
+      connections: 0,
+      shares: 0,
+      submissions: 0
     }
   }
 };
@@ -332,57 +207,55 @@ export function getZenSpaceProfile(username: string): ZenSpaceProfile {
     return DEFAULT_PROFILES[cleanUser];
   }
 
-  // Generate fallback profile for any username
-  const formattedName = cleanUser ? cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1) : 'Zen Traveler';
+  // Resolve user avatar dynamically: pulse profile -> session user -> default pulse avatar mark
+  let userAvatar = '/brand/logo.png';
+  let userBio = 'Explorer of sovereign cybernetics and open communication protocols on Zenvitra.';
+  let userDisplayName = cleanUser ? cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1) : 'Zen Traveler';
+
+  if (cleanUser === 'yuveer') {
+    userAvatar = '/assets/founder.png';
+  } else if (typeof window !== 'undefined') {
+    try {
+      const pulseProfile = JSON.parse(localStorage.getItem('zenvitra_pulse_my_profile_v1') || '{}');
+      const sessionUser = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+      const pulseProfiles = JSON.parse(localStorage.getItem('zenvitra_pulse_profiles_v9_clean') || '[]');
+      
+      const foundPulse = Array.isArray(pulseProfiles) 
+        ? pulseProfiles.find((p: any) => (p.username || '').toLowerCase().replace(/^@/, '') === cleanUser) 
+        : null;
+
+      if (foundPulse?.avatar) {
+        userAvatar = foundPulse.avatar;
+        if (foundPulse.name) userDisplayName = foundPulse.name;
+        if (foundPulse.bio) userBio = foundPulse.bio;
+      } else if ((sessionUser.username || sessionUser.handle || '').toLowerCase().replace(/^@/, '') === cleanUser && (sessionUser.avatar || sessionUser.avatar_url)) {
+        userAvatar = sessionUser.avatar || sessionUser.avatar_url;
+        if (sessionUser.name || sessionUser.display_name) userDisplayName = sessionUser.name || sessionUser.display_name;
+      } else if ((pulseProfile.username || '').toLowerCase().replace(/^@/, '') === cleanUser && pulseProfile.avatar) {
+        userAvatar = pulseProfile.avatar;
+        if (pulseProfile.name) userDisplayName = pulseProfile.name;
+        if (pulseProfile.bio) userBio = pulseProfile.bio;
+      }
+    } catch (_) {}
+  }
+
+  // Generate clean real profile for any username
   return {
     username: cleanUser || 'traveler',
-    displayName: formattedName,
-    bio: 'Explorer of sovereign cybernetics and open communication protocols on Zenvitra.',
-    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${cleanUser || 'zen'}`,
-    role: 'Zen Explorer',
+    displayName: userDisplayName,
+    bio: userBio,
+    avatar: userAvatar,
+    role: 'Sovereign Node',
     verified: false,
     badges: ['VERIFIED_NODE'],
-    theme: 'obsidian',
-    effect: 'geometry',
+    theme: 'minimal_sand',
+    effect: 'none',
     layout: 'stream',
     socials: {},
-    blocks: [
-      {
-        id: 'block-welcome',
-        type: 'text',
-        title: `Welcome to @${cleanUser}'s Space`,
-        subtitle: 'This space is newly initialized on the Zenvitra decentralized mesh.',
-        clicks: 1
-      },
-      {
-        id: 'block-form-contact',
-        type: 'form',
-        title: `Send Message to @${cleanUser}`,
-        subtitle: 'Drop an encrypted note, collaboration inquiry or contact request',
-        metadata: {
-          formSubmitText: 'Send Message',
-          formSuccessMsg: 'Your message has been dispatched!',
-          formWebhookTab: 'CONTACT',
-          formFields: [
-            { id: 'name', label: 'Your Name', placeholder: 'Name or handle', type: 'text', required: true },
-            { id: 'email', label: 'Your Email', placeholder: 'you@example.com', type: 'email', required: true },
-            { id: 'message', label: 'Message', placeholder: 'Write your message...', type: 'textarea', required: true }
-          ]
-        }
-      },
-      {
-        id: 'block-call',
-        type: 'link',
-        title: 'Connect on ZEN.CALL',
-        subtitle: 'Start an instant encrypted session',
-        url: `/call/${cleanUser}-chamber`,
-        highlight: true,
-        clicks: 0
-      }
-    ],
+    blocks: [],
     stats: {
-      views: 12,
-      connections: 3,
+      views: 0,
+      connections: 0,
       shares: 0,
       submissions: 0
     }

@@ -79,6 +79,7 @@ export interface ChatMessage {
   isSelf: boolean;
   content: string;
   timestamp: string;
+  createdAt?: string;
   reactions: MessageReaction[];
   attachments?: MessageAttachment[];
   voiceNoteUrl?: string;

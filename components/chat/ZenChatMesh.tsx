@@ -83,6 +83,7 @@ import { ZenChatCommandBar } from '@/components/chat/ZenChatCommandBar';
 import { ZenIdentityCardModal } from '@/components/chat/ZenIdentityCardModal';
 import { ZenNativeMessageCard } from '@/components/chat/ZenNativeMessageCard';
 import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
+import { formatViewerTime } from '@/lib/timezone';
 import { useRouter } from 'next/navigation';
 
 /* ── Server & Caucus Templates (Replaced hardcoded seeded groups) ── */
@@ -2015,7 +2016,7 @@ export function ZenChatMesh() {
                             <span className="text-purple-400">↗ Outgoing</span>
                           )}
                           <span>•</span>
-                          <span>{call.timestamp}</span>
+                          <span>{formatViewerTime(call.timestamp)}</span>
                         </div>
                       </div>
                     </div>
@@ -2206,7 +2207,7 @@ export function ZenChatMesh() {
                           {conv.name}
                         </h4>
                         <span className="font-mono text-[9px] text-neutral-400 shrink-0">
-                          {conv.lastMessage?.timestamp || 'Now'}
+                          {formatViewerTime(conv.lastMessage?.timestamp) || 'Now'}
                         </span>
                       </div>
                       <p className="font-sans text-[11px] text-neutral-400 truncate mt-0.5">
@@ -3049,7 +3050,7 @@ export function ZenChatMesh() {
                     )}
 
                     <span>•</span>
-                    <span>{msg.timestamp}</span>
+                    <span>{formatViewerTime(msg.createdAt || msg.timestamp)}</span>
 
                     {isUnread && (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-[8px] font-mono font-bold uppercase tracking-wider">

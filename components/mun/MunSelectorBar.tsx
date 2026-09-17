@@ -30,51 +30,41 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
     activeConference,
     setActiveConferenceId,
     setConferenceStatus,
+    setConferenceDay,
+    setConferenceTotalDays,
+    addConferenceDay,
     advanceConferenceDay,
+    concludeConference,
     currentConferenceDay
   } = useMun();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSecControlsOpen, setIsSecControlsOpen] = useState(false);
 
-  const getStatusBadge = (status: MunConferenceStatus) => {
-    switch (status) {
-      case 'NOT_STARTED':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-            <Clock className="w-3 h-3 text-amber-400 animate-pulse" />
-            <span>NOT STARTED &bull; STARTS NEXT WEEK</span>
-          </span>
-        );
-      case 'DAY_1':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>DAY 1 IN SESSION</span>
-          </span>
-        );
-      case 'DAY_2':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-cyan-400" />
-            <span>DAY 2 ACTIVE DEBATE</span>
-          </span>
-        );
-      case 'DAY_3':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30 animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-purple-400" />
-            <span>DAY 3 VOTING & PLENARY</span>
-          </span>
-        );
-      case 'CONCLUDED':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-neutral-500/20 text-neutral-300 border border-neutral-500/30">
-            <CheckCircle2 className="w-3 h-3 text-neutral-400" />
-            <span>CONCLUDED &bull; AWARDS ISSUED</span>
-          </span>
-        );
+  const getStatusBadge = (status: MunConferenceStatus, day?: number) => {
+    if (status === 'NOT_STARTED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          <Clock className="w-3 h-3 text-amber-400 animate-pulse" />
+          <span>NOT STARTED &bull; GAVEL PENDING</span>
+        </span>
+      );
     }
+    if (status === 'CONCLUDED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-neutral-500/20 text-neutral-300 border border-neutral-500/30">
+          <CheckCircle2 className="w-3 h-3 text-neutral-400" />
+          <span>CONCLUDED &bull; AWARDS ISSUED</span>
+        </span>
+      );
+    }
+    const currentNum = day !== undefined && day > 0 ? day : (status.startsWith('DAY_') ? parseInt(status.replace('DAY_', ''), 10) : 1);
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 animate-pulse">
+        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+        <span>DAY {currentNum} IN SESSION</span>
+      </span>
+    );
   };
 
   return (
@@ -202,7 +192,9 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
                     <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                     <span>Secretariat Day Engine</span>
                   </div>
-                  <span className="text-[10px] font-mono text-neutral-400">Day {currentConferenceDay}</span>
+                  <span className="text-[10px] font-mono text-neutral-400">
+                    Day {activeConference.status === 'NOT_STARTED' ? '0 (Not Started)' : currentConferenceDay} of {activeConference.totalDays || 3}
+                  </span>
                 </div>
 
                 <div className="text-xs text-neutral-300">
@@ -210,34 +202,91 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
                   <span className="font-semibold text-white">{activeConference.secretariatChair}</span>
                 </div>
 
+                {/* Total Days Selector (No Limit - Any Natural Number n) */}
+                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase text-neutral-400">Conference Total Days:</span>
+                    <span className="text-xs font-mono font-bold text-cyan-300">{activeConference.totalDays || 3} Days</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setConferenceTotalDays(activeConference.id, Math.max(1, (activeConference.totalDays || 3) - 1))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-neutral-300 border border-white/10"
+                      title="Decrease total days"
+                    >
+                      -1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addConferenceDay(activeConference.id)}
+                      className="flex-1 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-xs font-mono font-bold text-cyan-300 border border-cyan-500/30 text-center"
+                      title="Add one more day to conference"
+                    >
+                      + Add Day (Day {(activeConference.totalDays || 3) + 1})
+                    </button>
+                  </div>
+                </div>
+
+                {/* Day Switcher Grid */}
                 <div className="space-y-1.5">
-                  <div className="text-[10px] font-mono uppercase text-neutral-400">Conference State:</div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {(['NOT_STARTED', 'DAY_1', 'DAY_2', 'DAY_3', 'CONCLUDED'] as MunConferenceStatus[]).map((st) => (
+                  <div className="text-[10px] font-mono uppercase text-neutral-400">Switch Conference Day:</div>
+                  <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConferenceStatus(activeConference.id, 'NOT_STARTED');
+                        setConferenceDay(activeConference.id, 0);
+                        setIsSecControlsOpen(false);
+                      }}
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition ${
+                        activeConference.status === 'NOT_STARTED'
+                          ? 'bg-amber-500 text-black'
+                          : 'bg-white/5 hover:bg-white/10 text-neutral-300'
+                      }`}
+                    >
+                      Not Started
+                    </button>
+                    {Array.from({ length: Math.max(activeConference.totalDays || 3, currentConferenceDay, 1) }, (_, i) => i + 1).map((d) => (
                       <button
-                        key={st}
+                        key={d}
                         type="button"
                         onClick={() => {
-                          setConferenceStatus(activeConference.id, st);
+                          setConferenceDay(activeConference.id, d);
                           setIsSecControlsOpen(false);
                         }}
                         className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition ${
-                          activeConference.status === st
+                          activeConference.status !== 'NOT_STARTED' && activeConference.status !== 'CONCLUDED' && currentConferenceDay === d
                             ? 'bg-cyan-500 text-black'
                             : 'bg-white/5 hover:bg-white/10 text-neutral-300'
                         }`}
                       >
-                        {st.replace('_', ' ')}
+                        Day {d}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        concludeConference(activeConference.id);
+                        setIsSecControlsOpen(false);
+                      }}
+                      className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition ${
+                        activeConference.status === 'CONCLUDED'
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-white/5 hover:bg-white/10 text-neutral-300'
+                      }`}
+                    >
+                      Concluded
+                    </button>
                   </div>
                 </div>
 
+                {/* Action Buttons */}
                 {activeConference.status === 'NOT_STARTED' && (
                   <button
                     type="button"
                     onClick={() => {
-                      setConferenceStatus(activeConference.id, 'DAY_1');
+                      setConferenceDay(activeConference.id, 1);
                       setIsSecControlsOpen(false);
                     }}
                     className="w-full py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20"
@@ -248,17 +297,31 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
                 )}
 
                 {activeConference.status !== 'NOT_STARTED' && activeConference.status !== 'CONCLUDED' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      advanceConferenceDay(activeConference.id);
-                      setIsSecControlsOpen(false);
-                    }}
-                    className="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <FastForward className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Advance Next Day &rarr;</span>
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        advanceConferenceDay(activeConference.id);
+                        setIsSecControlsOpen(false);
+                      }}
+                      className="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <FastForward className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Advance to Day {currentConferenceDay + 1} &rarr;</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        concludeConference(activeConference.id);
+                        setIsSecControlsOpen(false);
+                      }}
+                      className="w-full py-2 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Adjourn Conference (Conclude)</span>
+                    </button>
+                  </div>
                 )}
               </div>
             )}

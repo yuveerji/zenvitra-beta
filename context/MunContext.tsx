@@ -37,10 +37,16 @@ interface MunContextType {
   activeConference?: MunConference;
   setActiveConferenceId: (id: string) => void;
   setConferenceStatus: (confId: string, status: MunConferenceStatus) => void;
+  setConferenceDay: (confId: string, day: number) => void;
+  setConferenceTotalDays: (confId: string, totalDays: number) => void;
+  addConferenceDay: (confId: string) => void;
   advanceConferenceDay: (confId: string) => void;
-  currentConferenceDay: 1 | 2 | 3;
+  concludeConference: (confId: string) => void;
+  currentConferenceDay: number;
   passAndArchiveBill: (bill: { title: string; code?: string; sponsors?: string[]; fullText?: string; clauses?: any[] }) => void;
   setCommitteeWinners: (committeeId: string, winners: NonNullable<MunSessionState['winnersSummary']>) => void;
+  addCustomAward: (committeeId: string, award: { title: string; recipientPortfolio: string; delegateName: string; citation?: string }) => void;
+  removeCustomAward: (committeeId: string, awardId: string) => void;
 
   /* Registrations & Invites */
   registrations: MunRegistration[];
@@ -143,6 +149,8 @@ export const DEFAULT_CONFERENCES: MunConference[] = [
     startDate: 'Sept 17, 2026',
     endDate: 'Sept 19, 2026',
     status: 'DAY_1',
+    currentDay: 1,
+    totalDays: 3,
     conveningDate: '2026-09-17T09:00:00.000Z',
     secretariatChair: 'Yuveer Chhatwani (Secretary-General)',
     location: 'The Grand Palace / Live Sovereign Dais',
@@ -156,6 +164,8 @@ export const DEFAULT_CONFERENCES: MunConference[] = [
     startDate: 'Sept 26, 2026',
     endDate: 'Sept 28, 2026',
     status: 'NOT_STARTED',
+    currentDay: 0,
+    totalDays: 3,
     conveningDate: '2026-09-26T09:00:00.000Z',
     secretariatChair: 'Executive Secretariat Council',
     location: 'Geneva Diplomatic Quarters',
@@ -413,11 +423,15 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     return conferences.find((c) => c.id === activeConferenceId) || conferences[0];
   }, [conferences, activeConferenceId]);
 
-  const currentConferenceDay: 1 | 2 | 3 = useMemo(() => {
-    if (activeConference?.status === 'DAY_2') return 2;
-    if (activeConference?.status === 'DAY_3') return 3;
+  const currentConferenceDay: number = useMemo(() => {
+    if (!activeConference) return 1;
+    if (activeConference.currentDay !== undefined && activeConference.currentDay > 0) {
+      return activeConference.currentDay;
+    }
+    const match = (activeConference.status || '').match(/DAY_(\d+)/i);
+    if (match && match[1]) return parseInt(match[1], 10);
     return 1;
-  }, [activeConference?.status]);
+  }, [activeConference]);
 
   const setActiveConferenceId = useCallback((id: string) => {
     setActiveConferenceIdState(id);
@@ -441,15 +455,18 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
   }, []);
 
-  const advanceConferenceDay = useCallback((confId: string) => {
+  const setConferenceDay = useCallback((confId: string, day: number) => {
+    const cleanDay = Math.max(0, day);
     setConferences((prev) => {
       const updated = prev.map((c) => {
         if (c.id !== confId) return c;
-        const nextStatus: MunConferenceStatus = 
-          c.status === 'NOT_STARTED' ? 'DAY_1' :
-          c.status === 'DAY_1' ? 'DAY_2' :
-          c.status === 'DAY_2' ? 'DAY_3' : 'CONCLUDED';
-        return { ...c, status: nextStatus };
+        const total = Math.max(c.totalDays || 3, cleanDay);
+        return {
+          ...c,
+          currentDay: cleanDay,
+          totalDays: total,
+          status: cleanDay === 0 ? 'NOT_STARTED' : `DAY_${cleanDay}`
+        };
       });
       try {
         localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
@@ -457,6 +474,131 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
     broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
+  }, []);
+
+  const setConferenceTotalDays = useCallback((confId: string, totalDays: number) => {
+    const cleanTotal = Math.max(1, totalDays);
+    setConferences((prev) => {
+      const updated = prev.map((c) => (c.id === confId ? { ...c, totalDays: cleanTotal } : c));
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
+  }, []);
+
+  const addConferenceDay = useCallback((confId: string) => {
+    setConferences((prev) => {
+      const updated = prev.map((c) => {
+        if (c.id !== confId) return c;
+        const nextTotal = (c.totalDays || 3) + 1;
+        return {
+          ...c,
+          totalDays: nextTotal,
+        };
+      });
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
+  }, []);
+
+  const advanceConferenceDay = useCallback((confId: string) => {
+    setConferences((prev) => {
+      const updated = prev.map((c) => {
+        if (c.id !== confId) return c;
+        const current = c.currentDay !== undefined ? c.currentDay : (c.status === 'NOT_STARTED' ? 0 : 1);
+        const nextDay = current + 1;
+        const total = Math.max(c.totalDays || 3, nextDay);
+        return {
+          ...c,
+          currentDay: nextDay,
+          totalDays: total,
+          status: `DAY_${nextDay}`
+        };
+      });
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
+  }, []);
+
+  const concludeConference = useCallback((confId: string) => {
+    setConferences((prev) => {
+      const updated = prev.map((c) => (c.id === confId ? { ...c, status: 'CONCLUDED' } : c));
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
+  }, []);
+
+  const addCustomAward = useCallback((committeeId: string, award: { title: string; recipientPortfolio: string; delegateName: string; citation?: string }) => {
+    setSessionStates((prev) => {
+      const current = prev[committeeId] || {
+        committeeId,
+        sessionNumber: 1,
+        status: 'in_session',
+        sessionMode: 'GSL',
+        timer: { totalSeconds: 90, remainingSeconds: 90, isRunning: false, label: 'GSL', sessionType: 'GSL' },
+        currentSpeaker: null,
+        currentMotion: null,
+        motionsQueue: [],
+        speakersList: [],
+        parliamentaryPoints: [],
+        resolutions: [],
+      };
+      const existingSummary = current.winnersSummary || {};
+      const newCustomAward = {
+        id: `award_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        title: award.title.trim(),
+        recipientPortfolio: award.recipientPortfolio.trim(),
+        delegateName: award.delegateName.trim(),
+        citation: award.citation?.trim() || ''
+      };
+      const updated = {
+        ...prev,
+        [committeeId]: {
+          ...current,
+          winnersSummary: {
+            ...existingSummary,
+            customAwards: [...(existingSummary.customAwards || []), newCustomAward]
+          }
+        }
+      };
+      try {
+        localStorage.setItem(LS_MUN_SESSION, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
+  const removeCustomAward = useCallback((committeeId: string, awardId: string) => {
+    setSessionStates((prev) => {
+      const current = prev[committeeId];
+      if (!current || !current.winnersSummary) return prev;
+      const filtered = (current.winnersSummary.customAwards || []).filter(a => a.id !== awardId);
+      const updated = {
+        ...prev,
+        [committeeId]: {
+          ...current,
+          winnersSummary: {
+            ...current.winnersSummary,
+            customAwards: filtered
+          }
+        }
+      };
+      try {
+        localStorage.setItem(LS_MUN_SESSION, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   }, []);
 
   /* Chamber Rooms */
@@ -1764,10 +1906,16 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
         activeConference,
         setActiveConferenceId,
         setConferenceStatus,
+        setConferenceDay,
+        setConferenceTotalDays,
+        addConferenceDay,
         advanceConferenceDay,
+        concludeConference,
         currentConferenceDay,
         passAndArchiveBill,
         setCommitteeWinners,
+        addCustomAward,
+        removeCustomAward,
         registrations,
         invites,
         userInvites,

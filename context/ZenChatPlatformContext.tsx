@@ -261,7 +261,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
     const convId = targetConvId || activeConversationId;
     if (!convId || (!content.trim() && (!attachments || attachments.length === 0) && !nativeObject)) return;
 
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const nowIso = new Date().toISOString();
     const newMsg: ChatMessage = {
       id: 'msg_' + Date.now(),
       conversationId: convId,
@@ -271,7 +271,8 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
       senderRole: senderRole || 'DELEGATE',
       isSelf: true,
       content: content.trim(),
-      timestamp: timeStr,
+      timestamp: nowIso,
+      createdAt: nowIso,
       reactions: [],
       attachments,
       replyTo,
@@ -294,7 +295,7 @@ export function ZenChatPlatformProvider({ children }: { children: React.ReactNod
           ...c,
           lastMessage: {
             text: snippetText,
-            timestamp: timeStr,
+            timestamp: nowIso,
             senderName: currentUserName,
           }
         };

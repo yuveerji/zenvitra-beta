@@ -77,7 +77,7 @@ export interface MunInvite {
   acceptedAt?: string;
 }
 
-export type MunConferenceStatus = 'NOT_STARTED' | 'DAY_1' | 'DAY_2' | 'DAY_3' | 'CONCLUDED';
+export type MunConferenceStatus = 'NOT_STARTED' | 'CONCLUDED' | `DAY_${number}` | string;
 
 export interface MunConference {
   id: string;
@@ -87,6 +87,8 @@ export interface MunConference {
   startDate: string;
   endDate: string;
   status: MunConferenceStatus;
+  currentDay: number; // 0 = NOT_STARTED, 1, 2, 3, ... n
+  totalDays: number; // Dynamic natural number n set by Secretariat (no limit)
   conveningDate: string; // for countdown when NOT_STARTED
   secretariatChair: string;
   location: string;
@@ -130,7 +132,7 @@ export interface MunMotion {
   verdict?: 'passed' | 'failed' | 'withdrawn' | 'PASSED' | 'FAILED' | 'WITHDRAWN';
   votesFor: number;
   votesAgainst: number;
-  day?: 1 | 2 | 3;
+  day?: number;
   createdAt: string;
 }
 
@@ -145,7 +147,7 @@ export interface MunSpeaker {
   timeRemaining?: number;
   speakingSeconds?: number;
   hasSpoken?: boolean;
-  day?: 1 | 2 | 3;
+  day?: number;
   listType?: 'GSL' | 'MOD' | 'UNMOD';
 }
 
@@ -171,7 +173,7 @@ export interface MunDraftResolution {
   preambulatoryClauses: string[];
   operativeClauses: string[];
   status: 'drafting' | 'introduced' | 'voting' | 'passed' | 'failed';
-  day?: 1 | 2 | 3;
+  day?: number;
   introducedAt?: string;
   passedAt?: string;
 }
@@ -181,7 +183,7 @@ export interface MunSessionState {
   sessionNumber: number;
   status: 'in_session' | 'caucus' | 'recess' | 'voting' | 'concluded';
   sessionMode: MunSessionMode;
-  activeDay?: 1 | 2 | 3;
+  activeDay?: number;
   timer: {
     totalSeconds: number;
     remainingSeconds: number;
@@ -195,9 +197,9 @@ export interface MunSessionState {
   speakersList: MunSpeaker[];
   parliamentaryPoints: MunParliamentaryPoint[];
   resolutions: MunDraftResolution[];
-  motionHistory?: Array<MunMotion & { day?: 1 | 2 | 3; verdict?: 'passed' | 'failed' | 'withdrawn' | 'PASSED' | 'FAILED' | 'WITHDRAWN' }>;
-  speakerHistory?: Array<MunSpeaker & { day?: 1 | 2 | 3; listType?: 'GSL' | 'MOD' | 'UNMOD'; speakingSeconds?: number; hasSpoken?: boolean }>;
-  passedBills?: Array<{ id: string; title: string; code: string; day?: 1 | 2 | 3; sponsors?: string[]; passedAt: string; documentUrl?: string; fullText?: string; summary?: string }>;
+  motionHistory?: Array<MunMotion & { day?: number; verdict?: 'passed' | 'failed' | 'withdrawn' | 'PASSED' | 'FAILED' | 'WITHDRAWN' }>;
+  speakerHistory?: Array<MunSpeaker & { day?: number; listType?: 'GSL' | 'MOD' | 'UNMOD'; speakingSeconds?: number; hasSpoken?: boolean }>;
+  passedBills?: Array<{ id: string; title: string; code: string; day?: number; sponsors?: string[]; passedAt: string; documentUrl?: string; fullText?: string; summary?: string }>;
   winnersSummary?: {
     bestDelegate?: string | { portfolio: string; delegateName?: string; school?: string };
     highCommendation?: string | { portfolio: string; delegateName?: string };
@@ -206,6 +208,13 @@ export interface MunSessionState {
     honorableMention?: string;
     bestPositionPaper?: string;
     bestChair?: string;
+    customAwards?: Array<{
+      id: string;
+      title: string;
+      recipientPortfolio: string;
+      delegateName: string;
+      citation?: string;
+    }>;
     concludedAt?: string;
     verdictNotes?: string;
   };

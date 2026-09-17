@@ -31,6 +31,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
+import { formatViewerTime } from '@/lib/timezone';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function FloatingChatDrawer() {
@@ -331,7 +332,7 @@ export function FloatingChatDrawer() {
                               <h4 className="font-bold text-xs text-white truncate group-hover:text-purple-300 transition-colors">
                                 {c.name}
                               </h4>
-                              <span className="text-[10px] text-zinc-500 font-mono">{c.lastMessage?.timestamp || 'Now'}</span>
+                              <span className="text-[10px] text-zinc-500 font-mono">{formatViewerTime(c.lastMessage?.timestamp) || 'Now'}</span>
                             </div>
                             <p className="text-[11px] text-zinc-400 truncate mt-0.5 font-light">
                               {c.lastMessage?.text || 'Encrypted transmission established.'}
@@ -443,7 +444,7 @@ export function FloatingChatDrawer() {
                             <p className="text-xs leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                           </div>
                           <div className="flex items-center gap-1 text-[9px] text-zinc-500 px-1 font-mono">
-                            <span>{msg.timestamp}</span>
+                            <span>{formatViewerTime(msg.createdAt || msg.timestamp)}</span>
                             {isMe && <CheckCheck className="w-3 h-3 text-cyan-400" />}
                           </div>
                         </div>

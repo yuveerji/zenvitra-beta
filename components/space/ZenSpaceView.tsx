@@ -614,9 +614,44 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
     }
   };
 
+  // Helper to construct exact YouTube Music URL with timestamp
+  const getYouTubeMusicUrlWithTimestamp = (block: ZenSpaceBlock, currentSec: number = 0) => {
+    const seconds = Math.floor(Math.max(0, currentSec));
+    const timeParam = `&t=${seconds}s`;
+
+    let videoId = block.metadata?.videoId;
+    if (!videoId && block.url) {
+      const match = block.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+      if (match && match[1]) videoId = match[1];
+    }
+    if (!videoId && (block.title.toLowerCase().includes('starboy') || (block.subtitle || '').toLowerCase().includes('starboy'))) {
+      videoId = '34Na4j8AVgA';
+    }
+
+    if (videoId) {
+      return `https://music.youtube.com/watch?v=${videoId}${timeParam}`;
+    }
+
+    if (block.url && block.url.includes('music.youtube.com/watch')) {
+      const clean = block.url.replace(/[?&]t=\d+s?/, '');
+      const sep = clean.includes('?') ? '&' : '?';
+      return `${clean}${sep}t=${seconds}s`;
+    }
+
+    const q = encodeURIComponent(`${block.title} ${block.subtitle || block.metadata?.artist || ''}`.trim());
+    return `https://music.youtube.com/search?q=${q}`;
+  };
+
+  const handleOpenMusicWithTimestamp = (block: ZenSpaceBlock, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const currentSec = (playingBlockId === block.id && audioRef.current) ? audioRef.current.currentTime : 0;
+    const targetUrl = getYouTubeMusicUrlWithTimestamp(block, currentSec);
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // Real Audio Toggle Handler
   const handleTogglePlay = (blockId: string, trackUrl?: string) => {
-    const fallbackUrl = 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3';
+    const fallbackUrl = '/music/starboy_preview.wav';
     const targetUrl = trackUrl || fallbackUrl;
 
     if (playingBlockId === blockId && isPlaying) {
@@ -1560,11 +1595,13 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 return (
                   <div
                     key={block.id}
-                    className={`rounded-3xl border ${themeStyle.border} ${themeStyle.cardBg} backdrop-blur-xl p-4 transition-all duration-300 hover:scale-[1.01] ${bentoSpanClass} ${block.highlight ? themeStyle.accentGlow : ''}`}
+                    onClick={() => handleOpenMusicWithTimestamp(block)}
+                    className={`rounded-3xl border ${themeStyle.border} ${themeStyle.cardBg} backdrop-blur-xl p-4 transition-all duration-300 hover:scale-[1.01] cursor-pointer ${bentoSpanClass} ${block.highlight ? themeStyle.accentGlow : ''}`}
+                    title="Click to open this track on YouTube Music at current timestamp"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="relative w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 border border-black/10 dark:border-white/10">
+                        <div className="relative w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 border border-black/10 dark:border-white/10" onClick={(e) => e.stopPropagation()}>
                           {block.metadata?.albumArt ? (
                             <img src={block.metadata.albumArt} alt={block.title} className="w-full h-full object-cover" />
                           ) : (
@@ -1574,7 +1611,10 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                           )}
                           <button
                             type="button"
-                            onClick={() => handleTogglePlay(block.id, block.metadata?.audioUrl)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTogglePlay(block.id, block.metadata?.audioUrl);
+                            }}
                             className="absolute inset-0 bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors text-white cursor-pointer"
                             title={trackIsPlaying ? "Pause preview" : "Play live audio"}
                           >
@@ -1592,12 +1632,12 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                             {/* Live Jumping Soundbar Waves */}
                             <LiveSoundbarWaves isPlaying={trackIsPlaying} isLight={isLight} />
                           </div>
-                          <h3 className="text-sm font-bold truncate">{block.title}</h3>
+                          <h3 className="text-sm font-bold truncate hover:underline">{block.title}</h3>
                           <p className={`text-xs truncate ${themeStyle.textMuted}`}>{block.subtitle || block.metadata?.artist}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                         {isOwner && (
                           <button
                             type="button"
@@ -1608,23 +1648,22 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        <a
-                          href={block.url || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`p-2.5 rounded-xl border transition-colors ${
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenMusicWithTimestamp(block, e)}
+                          className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${
                             isLight ? 'bg-neutral-100 border-black/10 hover:bg-neutral-200' : 'bg-white/5 border-white/10 hover:bg-white/10 text-zinc-400 hover:text-white'
                           }`}
-                          title="Open on YouTube Music"
+                          title="Open song on YouTube Music with timestamp"
                         >
                           <ExternalLink className="w-4 h-4" />
-                        </a>
+                        </button>
                       </div>
                     </div>
 
                     <div className="mt-3 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px] opacity-60 font-mono">
-                      <span>Music preview powered via ytmusic-api / Mixkit</span>
-                      <span>© Original Artists</span>
+                      <span>Click track to open on YouTube Music at current timestamp</span>
+                      <span>© Sovereign Audio</span>
                     </div>
                   </div>
                 );
@@ -2092,7 +2131,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                       type="text"
                       value={claimUsername}
                       onChange={(e) => setClaimUsername(e.target.value)}
-                      placeholder="thejharokhaforum"
+                      placeholder="sovereign_identity"
                       className="flex-1 bg-transparent text-xs text-white outline-none font-mono"
                       required
                     />
@@ -2107,7 +2146,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                     type="text"
                     value={claimDisplayName}
                     onChange={(e) => setClaimDisplayName(e.target.value)}
-                    placeholder={claimIsOrg ? "The Jharokha Forum" : "Your Name or Title"}
+                    placeholder={claimIsOrg ? "Global Diplomatic Forum" : "Your Name or Title"}
                     className="w-full rounded-xl bg-neutral-900 border border-neutral-800 px-3 py-2 text-xs text-white outline-none focus:border-cyan-400"
                     required
                   />
@@ -2402,7 +2441,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                     type="text"
                     value={editInstagram}
                     onChange={(e) => setEditInstagram(e.target.value)}
-                    placeholder="@thejharokhaforum"
+                    placeholder="@yourhandle"
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white"
                   />
                 </div>

@@ -15,7 +15,10 @@ import {
   ShieldCheck,
   Edit3,
   Save,
-  Share2
+  Share2,
+  Plus,
+  Trash2,
+  Medal
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
 import { MunCommittee } from '@/types/mun';
@@ -60,6 +63,41 @@ export function CommitteeSummaryPaperModal({
   const [specialMention2, setSpecialMention2] = useState(initialSm2);
   const [verdictNotes, setVerdictNotes] = useState(winners?.verdictNotes || 'Chamber conducted sovereign deliberative proceedings with high parliamentary decorum.');
 
+  // Custom Awards State
+  const [customAwardsList, setCustomAwardsList] = useState<Array<{
+    id: string;
+    title: string;
+    recipientPortfolio: string;
+    delegateName: string;
+    citation?: string;
+  }>>(winners?.customAwards || []);
+  const [showAddCustomForm, setShowAddCustomForm] = useState(false);
+  const [newAwardTitle, setNewAwardTitle] = useState('');
+  const [newAwardPort, setNewAwardPort] = useState('');
+  const [newAwardName, setNewAwardName] = useState('');
+  const [newAwardCitation, setNewAwardCitation] = useState('');
+
+  const handleAddCustomAward = () => {
+    if (!newAwardTitle.trim() || !newAwardPort.trim()) return;
+    const newAward = {
+      id: `award_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      title: newAwardTitle.trim(),
+      recipientPortfolio: newAwardPort.trim(),
+      delegateName: newAwardName.trim(),
+      citation: newAwardCitation.trim()
+    };
+    setCustomAwardsList((prev) => [...prev, newAward]);
+    setNewAwardTitle('');
+    setNewAwardPort('');
+    setNewAwardName('');
+    setNewAwardCitation('');
+    setShowAddCustomForm(false);
+  };
+
+  const handleRemoveCustomAward = (id: string) => {
+    setCustomAwardsList((prev) => prev.filter(a => a.id !== id));
+  };
+
   if (!isOpen) return null;
 
   const motionHistory = sessionState.motionHistory || [];
@@ -80,6 +118,7 @@ export function CommitteeSummaryPaperModal({
         specialMention1 ? { portfolio: specialMention1 } : null,
         specialMention2 ? { portfolio: specialMention2 } : null,
       ].filter(Boolean) as Array<{ portfolio: string }>,
+      customAwards: customAwardsList,
       concludedAt: new Date().toISOString(),
       verdictNotes,
     });
@@ -308,6 +347,108 @@ export function CommitteeSummaryPaperModal({
                   </div>
                 </div>
 
+                {/* Custom Awards Section in Edit Mode */}
+                <div className="space-y-2 pt-2 border-t border-white/10">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-mono uppercase text-amber-300 font-bold flex items-center gap-1.5">
+                      <Medal className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Custom Awards ({customAwardsList.length})</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCustomForm(!showAddCustomForm)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-mono text-[10px] font-bold transition cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>+ Add Custom Award</span>
+                    </button>
+                  </div>
+
+                  {customAwardsList.length > 0 && (
+                    <div className="space-y-1.5">
+                      {customAwardsList.map((award) => (
+                        <div
+                          key={award.id}
+                          className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-2"
+                        >
+                          <div className="text-xs">
+                            <span className="font-bold text-amber-300 mr-2">{award.title}:</span>
+                            <span className="text-white font-mono">{award.recipientPortfolio}</span>
+                            {award.delegateName && (
+                              <span className="text-neutral-400 ml-1.5">({award.delegateName})</span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCustomAward(award.id)}
+                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition cursor-pointer shrink-0"
+                            title="Remove Award"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {showAddCustomForm && (
+                    <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2.5">
+                      <div className="text-[11px] font-mono uppercase text-amber-300 font-bold">
+                        New Custom Award Details
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Award Title (e.g. Best Diplomat / Verbal Commendation)"
+                          value={newAwardTitle}
+                          onChange={(e) => setNewAwardTitle(e.target.value)}
+                          className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-white"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Recipient Portfolio (e.g. Delegate of UK)"
+                          value={newAwardPort}
+                          onChange={(e) => setNewAwardPort(e.target.value)}
+                          className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Delegate Name (e.g. Aditi Rao)"
+                          value={newAwardName}
+                          onChange={(e) => setNewAwardName(e.target.value)}
+                          className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-white"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Citation / Rationale (optional)"
+                          value={newAwardCitation}
+                          onChange={(e) => setNewAwardCitation(e.target.value)}
+                          className="px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 text-xs text-white"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddCustomForm(false)}
+                          className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 text-xs font-mono cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAddCustomAward}
+                          disabled={!newAwardTitle.trim() || !newAwardPort.trim()}
+                          className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs font-mono cursor-pointer disabled:opacity-50"
+                        >
+                          Add Award
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-[10px] font-mono uppercase text-neutral-400">Executive Chair Verdict Notes</label>
                   <textarea
@@ -368,6 +509,46 @@ export function CommitteeSummaryPaperModal({
                     {winners.specialMentions 
                       ? winners.specialMentions.map((sm: { portfolio: string }) => sm.portfolio).join(', ')
                       : winners.specialMention}
+                  </div>
+                )}
+
+                {/* Custom Awards Display */}
+                {((winners?.customAwards && winners.customAwards.length > 0) || customAwardsList.length > 0) && (
+                  <div className="space-y-2 pt-1">
+                    <div className="text-[10px] font-mono uppercase text-amber-300 font-bold flex items-center gap-1.5">
+                      <Medal className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Custom Secretariat & Chair Recognitions</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {(winners?.customAwards || customAwardsList).map((award) => (
+                        <div
+                          key={award.id}
+                          className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 flex items-start gap-3"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                            🎖️
+                          </div>
+                          <div className="space-y-0.5 min-w-0 flex-1">
+                            <div className="text-[10px] font-mono uppercase text-amber-300 font-bold truncate">
+                              {award.title}
+                            </div>
+                            <div className="font-bold text-xs text-white truncate">
+                              {award.recipientPortfolio}
+                            </div>
+                            {award.delegateName && (
+                              <div className="text-[11px] text-neutral-300 truncate">
+                                {award.delegateName}
+                              </div>
+                            )}
+                            {award.citation && (
+                              <div className="text-[10px] text-neutral-400 italic">
+                                &ldquo;{award.citation}&rdquo;
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
