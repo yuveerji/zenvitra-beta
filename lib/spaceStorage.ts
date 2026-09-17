@@ -15,6 +15,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
     badges: ['FOUNDER', 'SOVEREIGN_ARCHITECT', 'UNSC_CHAIR', 'ROOT_ACCESS'],
     theme: 'cyberpunk',
     effect: 'grid',
+    layout: 'stream',
     socials: {
       twitter: 'https://x.com/zenvitra',
       github: 'https://github.com/zenvitra',
@@ -31,10 +32,31 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         url: 'https://music.youtube.com',
         highlight: true,
         clicks: 420,
+        bentoSpan: '2',
         metadata: {
           artist: 'The Weeknd & Daft Punk',
           albumArt: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=400&q=80',
           category: 'Current Rotation'
+        }
+      },
+      {
+        id: 'block-form-delegate',
+        type: 'form',
+        title: 'Bilateral Inquiry & Delegate Access',
+        subtitle: 'Submit credentials for high-level diplomatic caucus & partnership',
+        highlight: true,
+        bentoSpan: '2',
+        metadata: {
+          formSubmitText: 'Submit Credential Dossier',
+          formSuccessMsg: 'Your credentials have been securely received by the Founder Enclave.',
+          formWebhookTab: 'INTEREST',
+          formFields: [
+            { id: 'name', label: 'Full Name / Delegate Title', placeholder: 'Ambassador / Lead Researcher', type: 'text', required: true },
+            { id: 'email', label: 'Diplomatic / Work Email', placeholder: 'delegate@ministry.gov or name@org.com', type: 'email', required: true },
+            { id: 'org', label: 'Entity or Organization', placeholder: 'e.g. UN Department, University, Sovereign Fund', type: 'text', required: true },
+            { id: 'purpose', label: 'Inquiry Purpose', type: 'select', options: ['Diplomatic Cooperation', 'Platform Enclave Access', 'Press / Keynote Interview', 'Technology Integration'] },
+            { id: 'message', label: 'Message / Briefing Notes', placeholder: 'Summary of discussion objectives...', type: 'textarea' }
+          ]
         }
       },
       {
@@ -45,6 +67,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         url: '/platform/docs',
         highlight: false,
         clicks: 189,
+        bentoSpan: '1',
         metadata: {
           category: 'Diplomatic Dispatch',
           docSummary: 'Operational framework on establishing verified cryptosecure corridors in non-signatory territories.'
@@ -58,7 +81,32 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         url: '/call/founder-chamber',
         highlight: true,
         clicks: 864,
-        icon: 'Video'
+        icon: 'Video',
+        bentoSpan: '1'
+      },
+      {
+        id: 'block-booking-1',
+        type: 'booking',
+        title: 'Request 15-Min Sovereign Briefing',
+        subtitle: 'Direct high-bandwidth consultation on sovereign mesh architecture',
+        url: '/call/briefing-lounge',
+        bentoSpan: '1',
+        metadata: {
+          bookingDuration: '15 Minutes',
+          category: 'Consultation'
+        }
+      },
+      {
+        id: 'block-donate-impact',
+        type: 'donate',
+        title: 'Fund Sovereign Tech & Public Education',
+        subtitle: '100% of contributions deploy verified hardware & digital kits to govt schools',
+        url: '/donate/govt-schools',
+        bentoSpan: '2',
+        metadata: {
+          donateGoal: '₹1,00,000 Raised for 100 Classrooms',
+          donateUrl: '/donate/govt-schools'
+        }
       },
       {
         id: 'block-press-1',
@@ -67,6 +115,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         subtitle: 'Geneva Digital Gazette • Sept 2026',
         url: '/press',
         clicks: 312,
+        bentoSpan: '1',
         metadata: {
           date: 'Sept 2026',
           category: 'Official Statement'
@@ -77,13 +126,15 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         type: 'quote',
         title: '"The future of communication belongs to those who build architectures of calm, sovereign resonance."',
         subtitle: 'Founding Axiom 01',
-        clicks: 98
+        clicks: 98,
+        bentoSpan: '2'
       }
     ],
     stats: {
       views: 14280,
       connections: 1890,
-      shares: 642
+      shares: 642,
+      submissions: 87
     }
   },
   zenvitra: {
@@ -99,6 +150,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
     badges: ['OFFICIAL', 'CORE_ENGINE', 'NETWORK_VERIFIED'],
     theme: 'obsidian',
     effect: 'stardust',
+    layout: 'stream',
     socials: {
       twitter: 'https://x.com/zenvitra',
       github: 'https://github.com/zenvitra',
@@ -113,6 +165,23 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         url: '/platform',
         highlight: true,
         clicks: 3200
+      },
+      {
+        id: 'zen-form-join',
+        type: 'form',
+        title: 'Register Interest / Early Sovereign Node',
+        subtitle: 'Join the waitlist for sovereign community access',
+        highlight: true,
+        metadata: {
+          formSubmitText: 'Join Waitlist',
+          formSuccessMsg: 'You have been registered for network node activation!',
+          formWebhookTab: 'INTEREST',
+          formFields: [
+            { id: 'name', label: 'Name or Pseudonym', placeholder: 'Explorer', type: 'text', required: true },
+            { id: 'email', label: 'Email Address', placeholder: 'you@domain.com', type: 'email', required: true },
+            { id: 'interest', label: 'Area of Interest', type: 'select', options: ['Autonomous Intelligence', 'Diplomatic Chambers', 'Civic Media', 'Decentralized Cloud'] }
+          ]
+        }
       },
       {
         id: 'zen-call-launch',
@@ -134,7 +203,8 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
     stats: {
       views: 45900,
       connections: 5820,
-      shares: 1940
+      shares: 1940,
+      submissions: 340
     }
   }
 };
@@ -171,6 +241,7 @@ export function getZenSpaceProfile(username: string): ZenSpaceProfile {
     badges: ['VERIFIED_NODE'],
     theme: 'obsidian',
     effect: 'geometry',
+    layout: 'stream',
     socials: {},
     blocks: [
       {
@@ -179,6 +250,22 @@ export function getZenSpaceProfile(username: string): ZenSpaceProfile {
         title: `Welcome to @${cleanUser}'s Space`,
         subtitle: 'This space is newly initialized on the Zenvitra decentralized mesh.',
         clicks: 1
+      },
+      {
+        id: 'block-form-contact',
+        type: 'form',
+        title: `Send Message to @${cleanUser}`,
+        subtitle: 'Drop an encrypted note, collaboration inquiry or contact request',
+        metadata: {
+          formSubmitText: 'Send Message',
+          formSuccessMsg: 'Your message has been dispatched!',
+          formWebhookTab: 'CONTACT',
+          formFields: [
+            { id: 'name', label: 'Your Name', placeholder: 'Name or handle', type: 'text', required: true },
+            { id: 'email', label: 'Your Email', placeholder: 'you@example.com', type: 'email', required: true },
+            { id: 'message', label: 'Message', placeholder: 'Write your message...', type: 'textarea', required: true }
+          ]
+        }
       },
       {
         id: 'block-call',
@@ -193,7 +280,8 @@ export function getZenSpaceProfile(username: string): ZenSpaceProfile {
     stats: {
       views: 12,
       connections: 3,
-      shares: 0
+      shares: 0,
+      submissions: 0
     }
   };
 }
@@ -220,5 +308,27 @@ export function trackBlockClick(username: string, blockId: string): void {
     }
   } catch (e) {
     // Non-blocking
+  }
+}
+
+export function recordFormSubmission(username: string, blockId: string, data: Record<string, any>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const profile = getZenSpaceProfile(username);
+    profile.stats.submissions = (profile.stats.submissions || 0) + 1;
+    saveZenSpaceProfile(profile);
+
+    // Save submission locally for owner review
+    const subKey = `zen_space_subs_${profile.username}`;
+    const existing = JSON.parse(localStorage.getItem(subKey) || '[]');
+    existing.unshift({
+      id: `sub-${Date.now()}`,
+      blockId,
+      timestamp: new Date().toISOString(),
+      data
+    });
+    localStorage.setItem(subKey, JSON.stringify(existing.slice(0, 100)));
+  } catch (e) {
+    console.warn('Failed to record submission:', e);
   }
 }

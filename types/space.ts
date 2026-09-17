@@ -1,4 +1,4 @@
-﻿export type ZenSpaceTheme = 
+export type ZenSpaceTheme = 
   | 'cyberpunk'
   | 'obsidian'
   | 'geneva'
@@ -35,7 +35,19 @@ export type ZenSpaceBlockType =
   | 'event'
   | 'text'
   | 'quote'
-  | 'docs';
+  | 'docs'
+  | 'form'
+  | 'donate'
+  | 'booking';
+
+export interface ZenSpaceFormField {
+  id: string;
+  label: string;
+  placeholder?: string;
+  type: 'text' | 'email' | 'textarea' | 'select';
+  options?: string[];
+  required?: boolean;
+}
 
 export interface ZenSpaceBlock {
   id: string;
@@ -46,6 +58,7 @@ export interface ZenSpaceBlock {
   icon?: string;
   highlight?: boolean;
   clicks?: number;
+  bentoSpan?: '1' | '2' | 'full';
   metadata?: {
     artist?: string;
     albumArt?: string;
@@ -55,6 +68,13 @@ export interface ZenSpaceBlock {
     date?: string;
     venue?: string;
     docSummary?: string;
+    formFields?: ZenSpaceFormField[];
+    formSubmitText?: string;
+    formSuccessMsg?: string;
+    formWebhookTab?: string;
+    donateGoal?: string;
+    donateUrl?: string;
+    bookingDuration?: string;
   };
 }
 
@@ -72,11 +92,13 @@ export interface ZenSpaceProfile {
   badges: string[];
   theme: ZenSpaceTheme;
   effect: ZenSpaceEffect;
+  layout?: 'stream' | 'bento';
   socials: ZenSpaceSocials;
   blocks: ZenSpaceBlock[];
   stats: {
     views: number;
     connections: number;
     shares: number;
+    submissions?: number;
   };
 }
