@@ -71,207 +71,12 @@ interface ZenCallActiveRoomProps {
 }
 
 const DEFAULT_PEERS: Record<CallMode, CallParticipant[]> = {
-  CALL: [
-    {
-      id: 'peer-1',
-      name: 'Dr. Sarah Lin',
-      handle: 'sarahlin',
-      role: 'PARTICIPANT',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-      isMuted: false,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: true,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 450000,
-    }
-  ],
-  GROUP: [
-    {
-      id: 'peer-1',
-      name: 'Elena Rostova',
-      handle: 'elena',
-      role: 'HOST',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-      isMuted: false,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: true,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 600000,
-    },
-    {
-      id: 'peer-2',
-      name: 'Marcus Vance',
-      handle: 'marcus_v',
-      role: 'SPEAKER',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-      isMuted: true,
-      isCameraOff: false,
-      isHandRaised: true,
-      handRaisedAt: Date.now() - 60000,
-      isSpeaking: false,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 500000,
-    },
-    {
-      id: 'peer-3',
-      name: 'Aoi Takahashi',
-      handle: 'aoi_t',
-      role: 'PARTICIPANT',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80',
-      isMuted: true,
-      isCameraOff: true,
-      isHandRaised: false,
-      isSpeaking: false,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 300000,
-    },
-    {
-      id: 'peer-4',
-      name: 'Kofi Mensah',
-      handle: 'kmensah',
-      role: 'PARTICIPANT',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
-      isMuted: false,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: false,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 200000,
-    }
-  ],
-  ROOM: [
-    {
-      id: 'peer-1',
-      name: 'Alex Rivera',
-      handle: 'arivera',
-      role: 'MODERATOR',
-      avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&auto=format&fit=crop&q=80',
-      isMuted: false,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: true,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 1200000,
-    },
-    {
-      id: 'peer-2',
-      name: 'Maya Patel',
-      handle: 'maya_p',
-      role: 'PARTICIPANT',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
-      isMuted: true,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: false,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 900000,
-    }
-  ],
-  EVENT: [
-    {
-      id: 'peer-stage-1',
-      name: 'Keynote: Prof. David Thorne',
-      handle: 'davidthorne',
-      role: 'SPEAKER',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&auto=format&fit=crop&q=80',
-      isMuted: false,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: true,
-      isPinned: true,
-      isScreenSharing: true,
-      joinedAt: Date.now() - 1800000,
-    }
-  ],
-  LIVE: [
-    {
-      id: 'peer-broadcast-1',
-      name: 'Host: Zenvitra Studio Live',
-      handle: 'zenvitra_live',
-      role: 'HOST',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-      isMuted: false,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: true,
-      isPinned: true,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 3600000,
-    }
-  ],
-  COMMITTEE: [
-    {
-      id: 'mun-1',
-      name: 'Ambassador Laurent',
-      handle: 'france_delegate',
-      countryFlag: '🇫🇷 France',
-      role: 'SPEAKER',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-      isMuted: false,
-      isCameraOff: false,
-      isHandRaised: false,
-      isSpeaking: true,
-      isPinned: true,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 2400000,
-    },
-    {
-      id: 'mun-2',
-      name: 'Lord Sterling',
-      handle: 'uk_delegate',
-      countryFlag: '🇬🇧 United Kingdom',
-      role: 'SPEAKER',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
-      isMuted: true,
-      isCameraOff: false,
-      isHandRaised: true,
-      handRaisedAt: Date.now() - 45000,
-      isSpeaking: false,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 2300000,
-    },
-    {
-      id: 'mun-3',
-      name: 'Delegate Tanaka',
-      handle: 'japan_delegate',
-      countryFlag: '🇯🇵 Japan',
-      role: 'SPEAKER',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80',
-      isMuted: true,
-      isCameraOff: false,
-      isHandRaised: true,
-      handRaisedAt: Date.now() - 30000,
-      isSpeaking: false,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 2100000,
-    },
-    {
-      id: 'mun-4',
-      name: 'Delegate Silva',
-      handle: 'brazil_delegate',
-      countryFlag: '🇧🇷 Brazil',
-      role: 'SPEAKER',
-      avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&auto=format&fit=crop&q=80',
-      isMuted: true,
-      isCameraOff: true,
-      isHandRaised: false,
-      isSpeaking: false,
-      isPinned: false,
-      isScreenSharing: false,
-      joinedAt: Date.now() - 1900000,
-    }
-  ]
+  CALL: [],
+  GROUP: [],
+  ROOM: [],
+  EVENT: [],
+  LIVE: [],
+  COMMITTEE: [],
 };
 
 export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
@@ -290,7 +95,7 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   const [isHandRaised, setIsHandRaised] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [micLevel, setMicLevel] = useState(40);
-  const [callDuration, setCallDuration] = useState(128); // seconds
+  const [callDuration, setCallDuration] = useState(0); // seconds
   const [isCopied, setIsCopied] = useState(false);
   const [layoutMode, setLayoutMode] = useState<'grid' | 'spotlight' | 'sidebar' | 'whatsapp'>('grid');
   const [pinnedId, setPinnedId] = useState<string | null>(null);
@@ -309,85 +114,28 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Participants
-  const [participants, setParticipants] = useState<CallParticipant[]>(() => {
-    return DEFAULT_PEERS[paramMode] || DEFAULT_PEERS.GROUP;
-  });
+  const [participants, setParticipants] = useState<CallParticipant[]>([]);
 
   // Floating Reactions
   const [floatingReactions, setFloatingReactions] = useState<{ id: string; emoji: string; x: number }[]>([]);
 
   // In-Call Chat
-  const [chatMessages, setChatMessages] = useState<CallMessage[]>([
-    {
-      id: 'msg-1',
-      senderId: 'peer-1',
-      senderName: 'Elena Rostova',
-      senderRole: 'HOST',
-      text: 'Welcome everyone! Audio check passed. Docs and slides are ready.',
-      timestamp: '10:42 AM',
-      target: 'everyone',
-    },
-    {
-      id: 'msg-2',
-      senderId: 'peer-2',
-      senderName: 'Marcus Vance',
-      senderRole: 'SPEAKER',
-      text: 'Good morning! Excited to kick off.',
-      timestamp: '10:43 AM',
-      target: 'everyone',
-    }
-  ]);
+  const [chatMessages, setChatMessages] = useState<CallMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatTarget, setChatTarget] = useState<'everyone' | 'host'>('everyone');
 
   // Polls
-  const [polls, setPolls] = useState<CallPoll[]>([
-    {
-      id: 'poll-1',
-      question: 'Should we adopt the Proposed Clause 4.2 in the draft resolution?',
-      options: [
-        { id: 'opt-1', text: 'In Favor (Aye)', votes: 8 },
-        { id: 'opt-2', text: 'Opposed (Nay)', votes: 2 },
-        { id: 'opt-3', text: 'Abstain', votes: 1 },
-      ],
-      createdBy: 'Elena Rostova',
-      isClosed: false,
-      totalVotes: 11,
-      userVotedOptionId: undefined,
-    }
-  ]);
+  const [polls, setPolls] = useState<CallPoll[]>([]);
   const [newPollQuestion, setNewPollQuestion] = useState('');
   const [newPollOpts, setNewPollOpts] = useState(['', '']);
 
   // Q&A
-  const [questions, setQuestions] = useState<CallQuestion[]>([
-    {
-      id: 'q-1',
-      authorName: 'Marcus Vance',
-      authorRole: 'SPEAKER',
-      question: 'How does the protocol handle failover if the primary node disconnects?',
-      upvotes: 6,
-      isAnswered: false,
-      timestamp: '10:45 AM',
-    },
-    {
-      id: 'q-2',
-      authorName: 'Aoi Takahashi',
-      authorRole: 'PARTICIPANT',
-      question: 'Will the whiteboard session notes automatically sync to Zen.Docs?',
-      upvotes: 12,
-      isAnswered: true,
-      timestamp: '10:48 AM',
-    }
-  ]);
+  const [questions, setQuestions] = useState<CallQuestion[]>([]);
   const [newQuestionText, setNewQuestionText] = useState('');
   const [qaActiveTab, setQaActiveTab] = useState<'polls' | 'qa'>('polls');
 
   // Breakout Rooms
-  const [breakoutRooms, setBreakoutRooms] = useState<BreakoutRoom[]>([
-    { id: 'br-1', name: 'Drafting Sub-Group Alpha', participantIds: ['peer-1', 'peer-2'] },
-    { id: 'br-2', name: 'Technical Architecture Review', participantIds: ['peer-3', 'peer-4'] },
-  ]);
+  const [breakoutRooms, setBreakoutRooms] = useState<BreakoutRoom[]>([]);
   const [currentBreakoutRoom, setCurrentBreakoutRoom] = useState<string | null>(null);
 
   // Video Refs
@@ -854,7 +602,36 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
           {layoutMode === 'whatsapp' ? (
             /* WHATSAPP 1:1 IMMERSIVE MOBILE / CINEMATIC VIEW */
             <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-slate-950 shadow-2xl">
-              {participants[0] && (
+              {!participants[0] ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center max-w-md">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
+                    <WhatsAppIcon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">You&apos;re the only one here</h3>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    Share this meeting link with others to start your 1:1 WhatsApp or Sovereign session.
+                  </p>
+                  <div className="mt-5 w-full flex items-center gap-2 p-1.5 rounded-2xl bg-black/70 border border-white/15">
+                    <div className="flex-1 px-3 py-1 text-xs font-mono text-emerald-400 truncate text-left">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                    </div>
+                    <button
+                      onClick={handleCopyLink}
+                      className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setShowShareModal(true)}
+                    className="mt-3 w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-500/20"
+                  >
+                    <WhatsAppIcon className="w-4 h-4" />
+                    <span>Invite via WhatsApp</span>
+                  </button>
+                </div>
+              ) : (
                 <div className="relative w-full h-full flex items-center justify-center">
                   {participants[0].isCameraOff ? (
                     <div className="flex flex-col items-center gap-4 text-center z-10">
@@ -923,7 +700,31 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
               <div className="flex-1 h-full min-h-[350px] relative rounded-3xl overflow-hidden border border-white/15 bg-slate-950 flex items-center justify-center shadow-xl">
                 {(() => {
                   const mainPeer = participants.find((p) => (pinnedId ? p.id === pinnedId : p.isSpeaking)) || participants[0];
-                  if (!mainPeer) return null;
+                  if (!mainPeer) {
+                    return (
+                      <div className="flex flex-col items-center justify-center p-8 text-center max-w-md">
+                        <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-3">
+                          <Users className="w-7 h-7" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white">You&apos;re the only one here</h3>
+                        <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                          Share this meeting link with others you want in the meeting.
+                        </p>
+                        <div className="mt-4 w-full flex items-center gap-2 p-1.5 rounded-2xl bg-black/70 border border-white/15">
+                          <div className="flex-1 px-3 py-1 text-xs font-mono text-cyan-300 truncate text-left">
+                            {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                          </div>
+                          <button
+                            onClick={handleCopyLink}
+                            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold flex items-center gap-1 transition-colors"
+                          >
+                            {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
                   return (
                     <div className="w-full h-full relative flex items-center justify-center">
                       {mainPeer.isCameraOff ? (
@@ -1118,6 +919,47 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
                 </div>
               )}
 
+              {/* WHEN ALONE: GOOGLE MEET WAITING & SHARE CARD */}
+              {participants.length === 0 && (
+                <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-black/70 backdrop-blur-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-2xl min-h-[220px]">
+                  <div className="w-14 h-14 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-3 shadow-lg">
+                    <Users className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white tracking-tight">You&apos;re the only one here</h3>
+                  <p className="text-xs text-slate-400 mt-1 max-w-sm leading-relaxed">
+                    Share this meeting link with others you want in the meeting.
+                  </p>
+
+                  <div className="mt-4 w-full max-w-md flex items-center gap-2 p-1.5 rounded-2xl bg-black/70 border border-white/15">
+                    <div className="flex-1 px-3 py-1 text-xs font-mono text-cyan-300 truncate text-left">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                    </div>
+                    <button
+                      onClick={handleCopyLink}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      onClick={() => setShowShareModal(true)}
+                      className="px-4 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
+                    >
+                      <WhatsAppIcon className="w-4 h-4" />
+                      <span>Invite via WhatsApp</span>
+                    </button>
+                  </div>
+
+                  <div className="mt-3.5 flex items-center gap-1.5 text-[11px] font-mono text-slate-500">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Your meeting is safe &bull; Only people invited or admitted can join</span>
+                  </div>
+                </div>
+              )}
+
               {/* REMOTE PARTICIPANT TILES */}
               {participants.map((peer) => {
                 const isPinned = pinnedId === peer.id;
@@ -1280,7 +1122,17 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
 
                 {/* Messages feed */}
                 <div className="flex-1 p-3 overflow-y-auto space-y-3">
-                  {chatMessages.map((msg) => (
+                  {chatMessages.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
+                      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 text-cyan-400">
+                        <MessageSquare className="w-6 h-6" />
+                      </div>
+                      <h4 className="text-xs font-semibold text-slate-300">No messages yet</h4>
+                      <p className="text-[11px] text-slate-500 mt-1 max-w-[200px]">
+                        Messages sent will be visible to delegates and participants in this room.
+                      </p>
+                    </div>
+                  ) : chatMessages.map((msg) => (
                     <div key={msg.id} className="flex flex-col gap-0.5">
                       <div className="flex items-center justify-between text-[11px] text-slate-400">
                         <span className="font-semibold text-slate-300">
