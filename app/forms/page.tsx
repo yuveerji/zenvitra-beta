@@ -20,7 +20,9 @@ import {
   Table,
   Zap,
   Clock,
-  Send
+  Send,
+  FileSpreadsheet,
+  RefreshCw
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -29,9 +31,11 @@ import {
   saveZenForm,
   deleteZenForm,
   getFormSubmissions,
-  exportSubmissionsToCsv
+  exportSubmissionsToCsv,
+  syncFormSubmissionsToGoogleSheets
 } from '@/lib/formsStorage';
 import { ZenForm, ZenFormField, ZenFormFieldType, ZenFormTheme, ZenFormSubmission } from '@/types/forms';
+import { ZenFormsSheetsPanel } from '@/components/forms/ZenFormsSheetsPanel';
 
 export default function ZenFormsHubPage() {
   const [forms, setForms] = useState<ZenForm[]>([]);
@@ -39,6 +43,8 @@ export default function ZenFormsHubPage() {
   const [viewingSubmissionsForm, setViewingSubmissionsForm] = useState<ZenForm | null>(null);
   const [currentSubmissions, setCurrentSubmissions] = useState<ZenFormSubmission[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSyncingFormId, setIsSyncingFormId] = useState<string | null>(null);
+  const [syncToast, setSyncToast] = useState<string | null>(null);
 
   // New Form Builder State
   const [newTitle, setNewTitle] = useState('');
@@ -114,6 +120,19 @@ export default function ZenFormsHubPage() {
       deleteZenForm(formId);
       refreshForms();
     }
+  };
+
+  const handleSyncSingleFormToSheets = async (form: ZenForm) => {
+    setIsSyncingFormId(form.id);
+    const subs = getFormSubmissions(form.id);
+    const res = await syncFormSubmissionsToGoogleSheets(form, subs);
+    setIsSyncingFormId(null);
+    if (res.success) {
+      setSyncToast(`✓ Synced ${res.count || subs.length} responses for "${form.title}" to Google Sheets!`);
+    } else {
+      setSyncToast(`Sync notice: ${res.error || 'Failed to sync. Please ensure Google OAuth is connected.'}`);
+    }
+    setTimeout(() => setSyncToast(null), 4000);
   };
 
   // Field Editor in Modal
@@ -233,6 +252,17 @@ export default function ZenFormsHubPage() {
           </div>
         </div>
 
+        {/* Global Toast Alert */}
+        {syncToast && (
+          <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center gap-2.5 animate-fade-in">
+            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{syncToast}</span>
+          </div>
+        )}
+
+        {/* Google Sheets Account Connection Engine */}
+        <ZenFormsSheetsPanel />
+
         {/* Live Public Forms Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -316,6 +346,16 @@ export default function ZenFormsHubPage() {
                       title="Export Responses to CSV"
                     >
                       <Download className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSyncSingleFormToSheets(form)}
+                      disabled={isSyncingFormId === form.id}
+                      className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 transition cursor-pointer disabled:opacity-50"
+                      title="Stream & Sync responses to Google Sheets"
+                    >
+                      <FileSpreadsheet className={`w-4 h-4 ${isSyncingFormId === form.id ? 'animate-bounce' : ''}`} />
                     </button>
 
                     <button
@@ -527,8 +567,19 @@ export default function ZenFormsHubPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={() => handleSyncSingleFormToSheets(viewingSubmissionsForm)}
+                  disabled={isSyncingFormId === viewingSubmissionsForm.id}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-mono transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  title="Stream responses directly to Google Sheets"
+                >
+                  <FileSpreadsheet className={`w-3.5 h-3.5 text-emerald-400 ${isSyncingFormId === viewingSubmissionsForm.id ? 'animate-spin' : ''}`} />
+                  <span>{isSyncingFormId === viewingSubmissionsForm.id ? 'Syncing...' : 'Sync to Google Sheets'}</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => handleExportCsv(viewingSubmissionsForm)}
-                  className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-mono transition flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-mono transition flex items-center gap-1 cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download CSV</span>

@@ -1,4 +1,4 @@
-﻿export type ZenFormFieldType = 
+export type ZenFormFieldType = 
   | 'text'
   | 'email'
   | 'tel'
@@ -36,6 +36,29 @@ export interface ZenFormSubmission {
   submitterHandle?: string;
 }
 
+export interface ZenFormGoogleSheetsConfig {
+  isConnected: boolean;
+  connectedEmail?: string;
+  connectedAt?: string;
+  provider?: 'google' | 'github' | 'oauth';
+  sheetId?: string;
+  sheetUrl?: string;
+  sheetTab?: string;
+  autoSync: boolean;
+  lastSyncedAt?: string;
+}
+
+export interface ZenFormsAccountSheetsConfig {
+  isConnected: boolean;
+  userEmail: string;
+  userId?: string;
+  provider: 'google' | 'github';
+  connectedAt: string;
+  defaultSheetUrl?: string;
+  defaultSheetId?: string;
+  autoSyncAllForms: boolean;
+}
+
 export interface ZenForm {
   id: string;
   title: string;
@@ -52,4 +75,5 @@ export interface ZenForm {
   allowAnonymous: boolean;
   createdAt: string;
   updatedAt: string;
+  googleSheetsConfig?: ZenFormGoogleSheetsConfig;
 }

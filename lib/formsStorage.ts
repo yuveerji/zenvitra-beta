@@ -1,7 +1,15 @@
-import { ZenForm, ZenFormField, ZenFormSubmission, ZenFormTheme } from '@/types/forms';
+import { 
+  ZenForm, 
+  ZenFormField, 
+  ZenFormSubmission, 
+  ZenFormTheme, 
+  ZenFormsAccountSheetsConfig, 
+  ZenFormGoogleSheetsConfig 
+} from '@/types/forms';
 
 const LS_FORMS_KEY = 'zenvitra_public_forms_v1';
 const LS_SUBMISSIONS_KEY = 'zenvitra_form_submissions_v1';
+const LS_ZENFORMS_SHEETS_KEY = 'zenvitra_forms_sheets_config_v1';
 
 export const DEFAULT_ZEN_FORMS: ZenForm[] = [
   {
@@ -229,8 +237,9 @@ export async function recordZenFormSubmission(
     }
   }
 
-  // 2. Dispatch to server ledger API
+  // 2. Dispatch to server ledger API (and forward to Google Sheets if connected)
   try {
+    const sheetsConfig = getZenFormsSheetsConfig();
     fetch('/api/forms/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -240,6 +249,9 @@ export async function recordZenFormSubmission(
         submittedAt: newSub.submittedAt,
         data,
         submitterHandle,
+        googleSheetsConnected: Boolean(sheetsConfig?.isConnected),
+        googleUserEmail: sheetsConfig?.userEmail,
+        customSheetUrl: sheetsConfig?.defaultSheetUrl,
       }),
     }).catch(() => {});
   } catch {}
@@ -264,4 +276,67 @@ export function exportSubmissionsToCsv(form: ZenForm, submissions: ZenFormSubmis
   });
 
   return [headers.join(','), ...rows].join('\n');
+}
+
+/* ── Google Sheets Integration Helpers ── */
+
+export function getZenFormsSheetsConfig(): ZenFormsAccountSheetsConfig | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(LS_ZENFORMS_SHEETS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveZenFormsSheetsConfig(config: ZenFormsAccountSheetsConfig): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LS_ZENFORMS_SHEETS_KEY, JSON.stringify(config));
+  } catch {}
+}
+
+export function disconnectZenFormsSheets(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(LS_ZENFORMS_SHEETS_KEY);
+  } catch {}
+}
+
+export async function syncFormSubmissionsToGoogleSheets(
+  form: ZenForm, 
+  submissions?: ZenFormSubmission[],
+  userEmail?: string,
+  customSheetUrl?: string
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  try {
+    const subs = submissions || getFormSubmissions(form.id);
+    if (!subs || subs.length === 0) {
+      return { success: false, error: 'No submissions found to sync.' };
+    }
+
+    const config = getZenFormsSheetsConfig();
+    const finalEmail = userEmail || config?.userEmail || 'authenticated_user';
+    const finalSheetUrl = customSheetUrl || config?.defaultSheetUrl;
+
+    const res = await fetch('/api/forms/sheets/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        formId: form.id,
+        formTitle: form.title,
+        formSlug: form.slug,
+        submissions: subs,
+        userEmail: finalEmail,
+        customSheetUrl: finalSheetUrl,
+        targetTab: form.slug ? `ZEN_${form.slug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS'
+      })
+    });
+
+    const data = await res.json();
+    return { success: Boolean(data.success), count: data.count, error: data.error };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Sync failed' };
+  }
 }

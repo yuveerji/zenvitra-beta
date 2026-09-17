@@ -20,15 +20,32 @@ function appendToLocalLedger(entry: Record<string, any>) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { formId, submissionId, submittedAt, data, submitterHandle } = body;
+    const { 
+      formId, 
+      formSlug, 
+      submissionId, 
+      submittedAt, 
+      data, 
+      submitterHandle,
+      googleSheetsConnected,
+      googleUserEmail,
+      customSheetUrl 
+    } = body;
+
+    const targetTab = formSlug 
+      ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` 
+      : 'ZEN_FORMS';
 
     const ledgerEntry = {
       timestamp: submittedAt || new Date().toISOString(),
-      tab: 'ZEN_FORMS',
+      tab: targetTab,
+      targetTab,
       formId,
       submissionId,
       submitterHandle: submitterHandle || 'anonymous',
-      data: data || {},
+      googleUserEmail: googleUserEmail || '',
+      customSheetUrl: customSheetUrl || '',
+      ...data,
     };
 
     // Always persist to local ledger immediately
