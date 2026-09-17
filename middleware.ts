@@ -33,6 +33,8 @@ const PUBLIC_PREFIXES = [
   '/mission',
   '/pricing',
   '/privacy',
+  '/space',
+  '/call',
   '/statusregister',
   '/statussignin',
   '/terms',
