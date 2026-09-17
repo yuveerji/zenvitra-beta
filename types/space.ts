@@ -42,6 +42,7 @@ export interface ZenSpaceSocials {
 export type ZenSpaceBlockType = 
   | 'link'
   | 'video'
+  | 'image'
   | 'music'
   | 'press'
   | 'event'
@@ -75,6 +76,8 @@ export interface ZenSpaceBlock {
     artist?: string;
     albumArt?: string;
     audioUrl?: string;
+    imageUrl?: string;
+    imageCaption?: string;
     category?: string;
     readTime?: string;
     date?: string;

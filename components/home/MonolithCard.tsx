@@ -84,8 +84,8 @@ export default function MonolithCard() {
           className="absolute inset-0 z-0 select-none pointer-events-none"
         >
           <Image
-            src="/assets/hero-monolith.png"
-            alt="Zenvitra Monolith Portal"
+            src="/assets/new-hero-monolith.png"
+            alt="Zenvitra Monolith Portal - Sovereign Portal Active"
             fill
             priority
             className="object-cover object-center brightness-[0.95] contrast-[1.06] group-hover:scale-105 transition-transform duration-700 ease-out"

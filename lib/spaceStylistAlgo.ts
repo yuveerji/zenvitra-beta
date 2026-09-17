@@ -121,9 +121,11 @@ export function suggestSmartThemes(profile: ZenSpaceProfile): ThemeRecommendatio
   const hasMusic = blocks.some(b => b.type === 'music');
   const hasForm = blocks.some(b => b.type === 'form');
   const hasVideo = blocks.some(b => b.type === 'video');
+  const hasImage = blocks.some(b => b.type === 'image');
   const hasDocs = blocks.some(b => b.type === 'docs');
   const hasPress = blocks.some(b => b.type === 'press');
   const hasDonate = blocks.some(b => b.type === 'donate');
+  const hasCustomDeviceBackdrop = profile.backgroundType === 'image' && Boolean(profile.imageBackgroundUrl);
   const isOrg = Boolean(profile.isOrganization);
 
   const textCorpus = `${profile.displayName} ${profile.role} ${profile.bio} ${profile.organizationType || ''} ${blocks.map(b => `${b.title} ${b.subtitle || ''}`).join(' ')}`.toLowerCase();
@@ -136,16 +138,43 @@ export function suggestSmartThemes(profile: ZenSpaceProfile): ThemeRecommendatio
 
   const candidates: ThemeRecommendation[] = [];
 
+  // 0. Clean Canvas (No seeded blocks - user starting fresh from device)
+  if (blocks.length === 0) {
+    candidates.push({
+      theme: 'minimal_sand',
+      name: 'Minimal Sand (Clean Canvas)',
+      reason: 'Clean canvas with zero seeded data. High-contrast white cards ready for your custom links, forms, and root device media uploads.',
+      matchScore: 99,
+      recommendedBackgroundType: 'theme',
+      recommendedEffect: 'none',
+      paletteDescription: 'Warm Sand #D8C5AA • Ink Black #1a1612 • White Pill Cards',
+      vibeTag: 'Pure Canvas'
+    });
+    candidates.push({
+      theme: 'ceramic_white',
+      name: 'Ceramic White Minimal',
+      reason: 'Ultra-crisp monochrome aesthetic designed for custom photo galleries and device uploads without distraction.',
+      matchScore: 95,
+      recommendedBackgroundType: 'theme',
+      recommendedEffect: 'none',
+      paletteDescription: 'Pure Snow #fafafa • Slate Charcoal #0f172a • Minimal Borders',
+      vibeTag: 'Architectural'
+    });
+  }
+
   // 1. Linktree Minimal Sand Recommendation
-  if (hasForm || isOrg || isDiplomatic) {
+  if (hasForm || isOrg || isDiplomatic || hasImage || hasCustomDeviceBackdrop) {
     candidates.push({
       theme: 'minimal_sand',
       name: 'Minimal Sand (Linktree Aesthetic)',
-      reason: isOrg 
-        ? 'Best fit for institutional forums & MUN bodies. Warm parchment background with high-contrast white rounded cards and dark ink badges.'
-        : 'Pairs crisp white cards with a soothing warm sand canvas, optimizing readability for your interactive forms and official links.',
+      reason: hasCustomDeviceBackdrop
+        ? 'Pairs your custom root-device backdrop image with frosted white cards and dark ink badges for maximum legibility.'
+        : isOrg 
+          ? 'Best fit for institutional forums & MUN bodies. Warm parchment background with high-contrast white rounded cards and dark ink badges.'
+          : 'Pairs crisp white cards with a soothing warm sand canvas, optimizing readability for your interactive forms and device uploads.',
       matchScore: 98,
-      recommendedBackgroundType: 'theme',
+      recommendedBackgroundType: hasCustomDeviceBackdrop ? 'image' : 'theme',
+      recommendedBackgroundUrl: hasCustomDeviceBackdrop ? profile.imageBackgroundUrl : undefined,
       recommendedEffect: 'none',
       paletteDescription: 'Warm Sand #D8C5AA • Ink Black #1a1612 • White Pill Cards',
       vibeTag: 'Clean Editorial'

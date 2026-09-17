@@ -76,7 +76,7 @@ export default function MonolithCard() {
         {/* Central Monolith Visual Portal */}
         <div className="relative w-full flex-1 my-3 rounded-lg overflow-hidden border border-white/5 bg-black">
           <Image
-            src="/assets/hero-monolith.png"
+            src="/assets/new-hero-monolith.png"
             alt="Zenvitra Monolith"
             fill
             priority

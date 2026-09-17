@@ -67,6 +67,7 @@ import {
   Film,
   Trash2,
   Wand2,
+  Upload,
   Image as ImageIcon
 } from 'lucide-react';
 
@@ -361,6 +362,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
   const [newBlockHighlight, setNewBlockHighlight] = useState(false);
   const [newBlockFormMode, setNewBlockFormMode] = useState<'embed' | 'modal' | 'redirect'>('embed');
   const [newBlockAudioUrl, setNewBlockAudioUrl] = useState('');
+  const [newBlockImageUrl, setNewBlockImageUrl] = useState('');
 
   // Space Profile Edit states (for owner)
   const [editDisplayName, setEditDisplayName] = useState('');
@@ -484,6 +486,73 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       setProfile(updated);
       saveZenSpaceProfile(updated);
       showToast(`Backdrop image set: ${preset.name}`);
+    }
+  };
+
+  // Root Device Direct Upload Handlers
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setEditAvatar(reader.result);
+        showToast('Avatar photo loaded from root device!');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBackdropFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setEditImageUrl(reader.result);
+        setEditBgType('image');
+        showToast('Backdrop canvas loaded from root device!');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setNewBlockAudioUrl(reader.result);
+        showToast('Audio track loaded from root device!');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBlockImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setNewBlockImageUrl(reader.result);
+        showToast('Block image loaded from root device!');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClearSeededBlocks = () => {
+    if (!profile) return;
+    if (confirm('Purge all seeded blocks and start fresh with your own device elements?')) {
+      const updated: ZenSpaceProfile = {
+        ...profile,
+        blocks: []
+      };
+      setProfile(updated);
+      saveZenSpaceProfile(updated);
+      showToast('Seeded blocks purged! Clean canvas ready.');
     }
   };
 
@@ -774,6 +843,9 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
         artist: newBlockSub || profile.displayName,
         category: 'Audio Track',
         audioUrl: newBlockAudioUrl || 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3'
+      } : newBlockType === 'image' ? {
+        imageUrl: newBlockImageUrl || newBlockUrl || undefined,
+        imageCaption: newBlockSub || undefined
       } : undefined
     };
 
@@ -789,7 +861,8 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
     setNewBlockSub('');
     setNewBlockHighlight(false);
     setNewBlockAudioUrl('');
-    showToast('New block added to your Space!');
+    setNewBlockImageUrl('');
+    showToast('New block added to your Space from device!');
   };
 
   // Claim & Create Space Handler (Requires logged in account)
@@ -1557,6 +1630,46 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 );
               }
 
+              // IMAGE BLOCK (Root Device Photo Upload / Custom Graphic)
+              if (block.type === 'image') {
+                const imgSource = block.metadata?.imageUrl || block.url;
+                return (
+                  <div
+                    key={block.id}
+                    className={`rounded-3xl border ${themeStyle.border} ${themeStyle.cardBg} backdrop-blur-xl p-4 transition-all duration-300 hover:scale-[1.01] ${bentoSpanClass} ${block.highlight ? themeStyle.accentGlow : ''}`}
+                  >
+                    {imgSource && (
+                      <div className="relative w-full h-56 sm:h-72 rounded-2xl overflow-hidden mb-3 border border-black/10 dark:border-white/10 bg-black/20">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={imgSource} 
+                          alt={block.title} 
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-bold">{block.title}</h3>
+                        {block.subtitle && (
+                          <p className={`text-xs mt-0.5 ${themeStyle.textMuted}`}>{block.subtitle}</p>
+                        )}
+                      </div>
+                      {isOwner && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBlock(block.id)}
+                          className="p-2 rounded-xl opacity-40 hover:opacity-100 hover:text-rose-500 transition-opacity"
+                          title="Remove block"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
               // VIDEO BLOCK
               if (block.type === 'video') {
                 return (
@@ -2119,11 +2232,24 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono text-zinc-400 uppercase">Avatar Photo URL</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] font-mono text-zinc-400 uppercase">Avatar Photo</label>
+                  <label className="cursor-pointer text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold">
+                    <Upload className="w-3 h-3" />
+                    <span>Upload from Device</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
                 <input
                   type="text"
                   value={editAvatar}
                   onChange={(e) => setEditAvatar(e.target.value)}
+                  placeholder="https://... or choose photo from device"
                   className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono"
                 />
               </div>
@@ -2179,12 +2305,24 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 {editBgType === 'image' && (
                   <div className="space-y-2">
                     <div>
-                      <label className="text-[10px] font-mono text-zinc-400 uppercase">Image Backdrop URL (.jpg / .png / .webp)</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[10px] font-mono text-zinc-400 uppercase">Image Backdrop</label>
+                        <label className="cursor-pointer text-[10px] font-mono text-amber-400 hover:text-amber-300 flex items-center gap-1 font-bold">
+                          <Upload className="w-3 h-3" />
+                          <span>Upload from Device</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleBackdropFileUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
                       <input
                         type="text"
                         value={editImageUrl}
                         onChange={(e) => setEditImageUrl(e.target.value)}
-                        placeholder="https://images.unsplash.com/... or /custom-bg.jpg"
+                        placeholder="https://... or choose photo from device"
                         className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none"
                       />
                     </div>
@@ -2432,8 +2570,8 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 Add New Modular Block
               </h3>
 
-              <div className="grid grid-cols-4 gap-1.5 text-xs font-mono">
-                {(['link', 'form', 'music', 'quote'] as ZenSpaceBlockType[]).map((bt) => (
+              <div className="grid grid-cols-5 gap-1.5 text-xs font-mono">
+                {(['link', 'form', 'image', 'music', 'quote'] as ZenSpaceBlockType[]).map((bt) => (
                   <button
                     key={bt}
                     type="button"
@@ -2441,7 +2579,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                     className={`py-1.5 rounded-lg capitalize border transition-all cursor-pointer ${
                       newBlockType === bt
                         ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 font-bold'
-                        : 'border-neutral-800 bg-neutral-900 text-zinc-400'
+                        : 'border-neutral-800 bg-neutral-900 text-zinc-400 hover:text-white'
                     }`}
                   >
                     {bt}
@@ -2489,7 +2627,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                   type="text"
                   value={newBlockTitle}
                   onChange={(e) => setNewBlockTitle(e.target.value)}
-                  placeholder={newBlockType === 'form' ? 'Form Title (e.g. Delegate Registration)' : 'Block Title'}
+                  placeholder={newBlockType === 'form' ? 'Form Title (e.g. Delegate Registration)' : newBlockType === 'image' ? 'Image Title / Label' : 'Block Title'}
                   className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
                   required
                 />
@@ -2500,24 +2638,62 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                   type="text"
                   value={newBlockSub}
                   onChange={(e) => setNewBlockSub(e.target.value)}
-                  placeholder="Subtitle or description (optional)"
+                  placeholder={newBlockType === 'image' ? 'Image caption or description (optional)' : 'Subtitle or description (optional)'}
                   className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
                 />
               </div>
 
-              {newBlockType === 'music' && (
-                <div>
+              {newBlockType === 'image' && (
+                <div className="space-y-1.5 p-3 rounded-2xl bg-neutral-900 border border-neutral-800">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-mono uppercase text-zinc-400">Card Image Source</span>
+                    <label className="cursor-pointer text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold">
+                      <Upload className="w-3 h-3" />
+                      <span>Upload from Device</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBlockImageFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                   <input
                     type="text"
-                    value={newBlockAudioUrl}
-                    onChange={(e) => setNewBlockAudioUrl(e.target.value)}
-                    placeholder="Direct audio preview URL (.mp3) - optional"
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-mono"
+                    value={newBlockImageUrl}
+                    onChange={(e) => setNewBlockImageUrl(e.target.value)}
+                    placeholder="https://... or choose photo from your device"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-mono"
                   />
                 </div>
               )}
 
-              {newBlockType !== 'quote' && (
+              {newBlockType === 'music' && (
+                <div className="space-y-1.5 p-3 rounded-2xl bg-neutral-900 border border-neutral-800">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-mono uppercase text-zinc-400">Audio Track Source</span>
+                    <label className="cursor-pointer text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold">
+                      <Upload className="w-3 h-3" />
+                      <span>Upload Audio from Device</span>
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={handleAudioFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    value={newBlockAudioUrl}
+                    onChange={(e) => setNewBlockAudioUrl(e.target.value)}
+                    placeholder="Direct audio preview URL (.mp3) or choose from device"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-mono"
+                  />
+                </div>
+              )}
+
+              {newBlockType !== 'quote' && newBlockType !== 'image' && (
                 <div>
                   <input
                     type="text"
@@ -2548,6 +2724,22 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 <span>Insert Block to Space</span>
               </button>
             </form>
+
+            {/* Clean Slate: Purge Seeded Blocks */}
+            <div className="p-3.5 rounded-2xl bg-neutral-900/90 border border-neutral-800 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-white block">Clean Slate Canvas</span>
+                <span className="text-[10px] text-zinc-400">Purge default seeded blocks to use only your root device elements</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleClearSeededBlocks}
+                className="px-3 py-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Purge Seeded</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
