@@ -21,11 +21,14 @@ import {
   Camera,
   Zap,
   Flame,
-  ShieldAlert
+  ShieldAlert,
+  MapPin,
+  Globe2
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { MediaStudioModal } from '@/components/creator/MediaStudioModal';
 import { MusicPickerModal, SelectedTrackPayload } from './MusicPickerModal';
+import { WorldLocationPickerModal } from '@/components/common/WorldLocationPickerModal';
 import { STORY_FONTS, STORY_GRADIENTS, STORY_STICKERS, getStoryFontStyle } from '@/lib/storyFonts';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -38,8 +41,8 @@ export const ZEN_SNAP_FILTERS = [
   { id: 'none', name: 'Raw Snap', css: 'none', badge: 'RAW' },
   { id: 'vintage_cam', name: 'Retro 35mm', css: 'sepia(30%) contrast(120%) saturate(115%)', badge: '35MM' },
   { id: 'cyber_gold', name: 'Solar Flare', css: 'hue-rotate(20deg) contrast(125%) saturate(130%)', badge: 'SOLAR' },
-  { id: 'monochrome', name: 'Sovereign Noir', css: 'grayscale(100%) contrast(140%)', badge: 'NOIR' },
-  { id: 'ultra_punch', name: 'Hyper Vivid', css: 'saturate(160%) contrast(120%)', badge: 'HYPER' },
+  { id: 'monolith_noir', name: 'Plenary Mono', css: 'grayscale(100%) contrast(140%)', badge: 'MONO' },
+  { id: 'infrared_recon', name: 'Night Ops', css: 'invert(80%) hue-rotate(180deg)', badge: 'INFRA' },
 ];
 
 export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps) {
@@ -62,6 +65,7 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
   const [isSnapMode, setIsSnapMode] = useState(true);
   const [selectedSnapFilter, setSelectedSnapFilter] = useState('vintage_cam');
   const [snapLocation, setSnapLocation] = useState('GENESIS ASSEMBLY // UDAIPUR');
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -377,16 +381,37 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-neutral-400 uppercase block">
-                      Sovereign Geotag / Committee Venue
-                    </label>
-                    <input
-                      type="text"
-                      value={snapLocation}
-                      onChange={(e) => setSnapLocation(e.target.value)}
-                      placeholder="e.g. CONSTITUENT ASSEMBLY // UDAIPUR"
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono"
-                    />
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-mono text-neutral-400 uppercase flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-amber-400" />
+                        <span>Sovereign Geotag / Committee Venue</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowLocationPicker(true)}
+                        className="text-[10px] font-mono text-amber-400 hover:text-amber-300 font-bold transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <Globe2 className="w-3 h-3" />
+                        <span>Pick on World Map &rarr;</span>
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={snapLocation}
+                        onChange={(e) => setSnapLocation(e.target.value)}
+                        placeholder="e.g. CONSTITUENT ASSEMBLY // UDAIPUR"
+                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-3 pr-8 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowLocationPicker(true)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-amber-400 transition cursor-pointer"
+                        title="Search World Map"
+                      >
+                        <Globe2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -629,6 +654,18 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
           onSelectTrack={(t) => setAttachedSong(t)}
           selectedTrackTitle={attachedSong?.title}
           mode="story"
+        />
+
+        {/* ─── WORLD MAP LOCATION PICKER MODAL ─── */}
+        <WorldLocationPickerModal
+          isOpen={showLocationPicker}
+          onClose={() => setShowLocationPicker(false)}
+          initialLocation={snapLocation}
+          onSelectLocation={(loc) => {
+            setSnapLocation(loc.name.toUpperCase());
+            setShowLocationPicker(false);
+          }}
+          title="Tag Story World Location"
         />
       </div>
     </div>

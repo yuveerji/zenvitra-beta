@@ -44,24 +44,18 @@ import {
   Layers2,
   Music,
   Landmark,
-  ExternalLink
+  ExternalLink,
+  Ban,
+  Globe2
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { MusicPickerModal, SelectedTrackPayload } from './MusicPickerModal';
 import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
+import { WorldLocationPickerModal, WorldLocation } from '@/components/common/WorldLocationPickerModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auditPostDispatch, IntegrityCheckResult } from '@/lib/fluxIntegrityGuard';
 
 const EMOJI_PRESETS = ['✨', '🌍', '💡', '🔥', '🌱', '🚀', '🏛️', '✊', '⚡', '🤝'];
-
-const LOCATION_SUGGESTIONS = [
-  'Geneva Climate Assembly',
-  'Global Youth Grid',
-  'Youth Innovation Summit 2026',
-  'UN Digital Compact Node',
-  'Sovereign Secretariat Lab',
-  'Civic AI Working Group',
-];
 
 export interface EmbeddedTextOverlay {
   id: string;
@@ -78,6 +72,10 @@ export interface EmbeddedTextOverlay {
   effect: 'clean' | 'neon' | 'glass' | 'brutalist' | 'outline' | 'shadow';
   isUppercase: boolean;
   align: 'left' | 'center' | 'right';
+  /* Instagram-Style Text Background System */
+  hasBackground?: boolean;
+  bgStyle?: 'none' | 'solid' | 'soft' | 'invert';
+  bgColor?: string;
 }
 
 export const FX_FILTERS = [
@@ -256,6 +254,8 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
       effect: 'clean',
       isUppercase: true,
       align: 'center',
+      hasBackground: false,
+      bgStyle: 'none',
     };
     setTextOverlays((prev) => [...prev, newOverlay]);
     setActiveOverlayId(newOverlay.id);
@@ -279,6 +279,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
   };
 
   const handleAddStickerPreset = (preset: typeof STICKER_PRESETS[0]) => {
+    const isBadge = preset.effect === 'glass' || preset.effect === 'brutalist';
     const newOverlay: EmbeddedTextOverlay = {
       id: String(Date.now()),
       imageIndex: selectedImageIdx,
@@ -294,6 +295,8 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
       effect: preset.effect,
       isUppercase: true,
       align: 'center',
+      hasBackground: isBadge,
+      bgStyle: preset.effect === 'glass' ? 'soft' : preset.effect === 'brutalist' ? 'solid' : 'none',
     };
     setTextOverlays((prev) => [...prev, newOverlay]);
     setActiveOverlayId(newOverlay.id);
@@ -469,11 +472,71 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
 
           const textToRender = ov.isUppercase ? ov.text.toUpperCase() : ov.text;
 
-          // Effect styles
+          // Instagram-Style Text Background Box Check
+          const hasBackgroundBox =
+            ov.hasBackground !== false &&
+            (ov.bgStyle === 'solid' ||
+              ov.bgStyle === 'soft' ||
+              ov.bgStyle === 'invert' ||
+              (!ov.bgStyle && (ov.effect === 'glass' || ov.effect === 'brutalist')));
+
+          if (hasBackgroundBox) {
+            const metrics = ctx.measureText(textToRender);
+            const padX = 14 * scale;
+            const padY = 8 * scale;
+            const rectW = metrics.width + padX * 2;
+            const rectH = fontSize + padY * 2;
+            const radius = 10 * scale;
+
+            if (ov.bgStyle === 'invert') {
+              ctx.fillStyle = ov.color;
+              if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(-rectW / 2, -rectH / 2, rectW, rectH, radius);
+                ctx.fill();
+              } else {
+                ctx.fillRect(-rectW / 2, -rectH / 2, rectW, rectH);
+              }
+            } else if (ov.bgStyle === 'soft' || ov.effect === 'glass') {
+              ctx.fillStyle = 'rgba(0,0,0,0.58)';
+              if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(-rectW / 2, -rectH / 2, rectW, rectH, radius);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+                ctx.lineWidth = 1 * scale;
+                ctx.stroke();
+              } else {
+                ctx.fillRect(-rectW / 2, -rectH / 2, rectW, rectH);
+              }
+            } else {
+              // Solid Highlighter Pill or Brutalist
+              ctx.fillStyle = ov.bgColor || '#000000';
+              if (ctx.roundRect && ov.effect !== 'brutalist') {
+                ctx.beginPath();
+                ctx.roundRect(-rectW / 2, -rectH / 2, rectW, rectH, radius);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.lineWidth = 1 * scale;
+                ctx.stroke();
+              } else {
+                ctx.fillRect(-rectW / 2, -rectH / 2, rectW, rectH);
+                if (ov.effect === 'brutalist') {
+                  ctx.strokeStyle = ov.color;
+                  ctx.lineWidth = 2 * scale;
+                  ctx.strokeRect(-rectW / 2, -rectH / 2, rectW, rectH);
+                }
+              }
+            }
+          }
+
+          // Effect & Text Rendering
+          const textColor = ov.bgStyle === 'invert' ? '#000000' : ov.color;
+
           if (ov.effect === 'neon') {
             ctx.shadowColor = ov.color;
             ctx.shadowBlur = 25 * scale;
-            ctx.fillStyle = ov.color;
+            ctx.fillStyle = textColor;
             ctx.fillText(textToRender, 0, 0);
           } else if (ov.effect === 'outline') {
             ctx.strokeStyle = ov.color;
@@ -484,34 +547,15 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
             ctx.shadowBlur = 8 * scale;
             ctx.shadowOffsetX = 4 * scale;
             ctx.shadowOffsetY = 4 * scale;
-            ctx.fillStyle = ov.color;
-            ctx.fillText(textToRender, 0, 0);
-          } else if (ov.effect === 'glass' || ov.effect === 'brutalist') {
-            const metrics = ctx.measureText(textToRender);
-            const padX = 14 * scale;
-            const padY = 8 * scale;
-            const rectW = metrics.width + padX * 2;
-            const rectH = fontSize + padY * 2;
-
-            if (ov.effect === 'glass') {
-              ctx.fillStyle = 'rgba(0,0,0,0.55)';
-              ctx.roundRect(-rectW / 2, -rectH / 2, rectW, rectH, 10 * scale);
-              ctx.fill();
-              ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-              ctx.stroke();
-            } else {
-              ctx.fillStyle = '#000000';
-              ctx.fillRect(-rectW / 2, -rectH / 2, rectW, rectH);
-              ctx.strokeStyle = ov.color;
-              ctx.lineWidth = 2 * scale;
-              ctx.strokeRect(-rectW / 2, -rectH / 2, rectW, rectH);
-            }
-            ctx.fillStyle = ov.color;
+            ctx.fillStyle = textColor;
             ctx.fillText(textToRender, 0, 0);
           } else {
-            ctx.shadowColor = 'rgba(0,0,0,0.85)';
-            ctx.shadowBlur = 8 * scale;
-            ctx.fillStyle = ov.color;
+            // Clean / Glass / Solid - subtle shadow for legibility over photos
+            if (!hasBackgroundBox) {
+              ctx.shadowColor = 'rgba(0,0,0,0.9)';
+              ctx.shadowBlur = 8 * scale;
+            }
+            ctx.fillStyle = textColor;
             ctx.fillText(textToRender, 0, 0);
           }
 
@@ -959,26 +1003,48 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                           left: `${ov.x}%`,
                           top: `${ov.y}%`,
                           transform: `translate(-50%, -50%) rotate(${ov.rotation}deg)`,
-                          color: ov.effect === 'outline' ? 'transparent' : ov.color,
+                          color: ov.bgStyle === 'invert' ? '#000000' : ov.effect === 'outline' ? 'transparent' : ov.color,
                           WebkitTextStroke: ov.effect === 'outline' ? `1.5px ${ov.color}` : undefined,
                           fontSize: `${ov.fontSize}px`,
                           letterSpacing: ov.letterSpacing ? `${ov.letterSpacing}px` : undefined,
                           opacity: ov.opacity / 100,
                           fontFamily: fontObj?.font || "'Clash Display', sans-serif",
                           textAlign: ov.align || 'center',
+                          backgroundColor:
+                            ov.hasBackground === false || ov.bgStyle === 'none'
+                              ? 'transparent'
+                              : ov.bgStyle === 'solid'
+                              ? (ov.bgColor || '#000000')
+                              : ov.bgStyle === 'soft'
+                              ? 'rgba(0,0,0,0.58)'
+                              : ov.bgStyle === 'invert'
+                              ? ov.color
+                              : ov.effect === 'glass'
+                              ? 'rgba(0,0,0,0.55)'
+                              : ov.effect === 'brutalist'
+                              ? '#000000'
+                              : 'transparent',
                           textShadow: 
                             ov.effect === 'neon' 
                               ? `0 0 12px ${ov.color}, 0 0 24px ${ov.color}`
                               : ov.effect === 'shadow'
                               ? '3px 3px 0px rgba(0,0,0,0.9), 6px 6px 0px rgba(0,0,0,0.4)'
-                              : '0 2px 10px rgba(0,0,0,0.85)',
+                              : ov.hasBackground === false || ov.bgStyle === 'none'
+                              ? '0 2px 10px rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.8)'
+                              : 'none',
                         }}
-                        className={`absolute cursor-move select-none px-2.5 py-1 transition-all z-20 ${
-                          ov.effect === 'glass'
-                            ? 'bg-black/50 backdrop-blur-md border border-white/25 rounded-xl shadow-lg'
+                        className={`absolute cursor-move select-none px-3 py-1.5 transition-all z-20 ${
+                          ov.hasBackground === false || ov.bgStyle === 'none'
+                            ? 'rounded-lg bg-transparent border-0'
+                            : ov.bgStyle === 'soft' || ov.effect === 'glass'
+                            ? 'backdrop-blur-md border border-white/25 rounded-2xl shadow-xl'
+                            : ov.bgStyle === 'solid'
+                            ? 'border border-white/20 rounded-2xl shadow-2xl'
+                            : ov.bgStyle === 'invert'
+                            ? 'border border-black/20 rounded-2xl shadow-2xl font-black'
                             : ov.effect === 'brutalist'
-                            ? 'bg-black text-white border-2 border-current shadow-[4px_4px_0px_rgba(0,0,0,0.9)] rounded-none'
-                            : 'rounded-lg'
+                            ? 'border-2 border-current shadow-[4px_4px_0px_rgba(0,0,0,0.9)] rounded-none'
+                            : 'rounded-xl'
                         } ${
                           isSelected
                             ? 'ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.8)]'
@@ -1228,40 +1294,33 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       </div>
                     </div>
 
-                    {/* Location Tag */}
+                    {/* Location Tag (World Map API) */}
                     <div className="pt-2 border-t border-white/[0.06] space-y-2">
                       <div 
-                        onClick={() => setShowLocationPicker(!showLocationPicker)}
-                        className="flex items-center justify-between text-xs text-zinc-300 hover:text-white cursor-pointer py-1"
+                        onClick={() => setShowLocationPicker(true)}
+                        className="flex items-center justify-between text-xs text-zinc-300 hover:text-white cursor-pointer py-1.5 px-2 rounded-xl hover:bg-white/[0.04] transition border border-transparent hover:border-white/10"
                       >
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4 text-rose-400" />
-                          <span>{location || 'Add Location / Committee Node'}</span>
+                          <span className={location ? "text-cyan-300 font-bold" : "text-zinc-300"}>
+                            {location || 'Add World Location / Committee Node'}
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                            World Map API
+                          </span>
                         </div>
-                        {location && (
+                        {location ? (
                           <button
+                            type="button"
                             onClick={(e) => { e.stopPropagation(); setLocation(''); }}
-                            className="text-[10px] text-zinc-500 hover:text-rose-400 cursor-pointer"
+                            className="text-[10px] text-zinc-500 hover:text-rose-400 cursor-pointer font-mono"
                           >
                             Clear
                           </button>
+                        ) : (
+                          <Globe2 className="w-3.5 h-3.5 text-zinc-500" />
                         )}
                       </div>
-
-                      {showLocationPicker && (
-                        <div className="p-2 rounded-xl bg-black/60 border border-white/10 space-y-1 text-xs">
-                          {LOCATION_SUGGESTIONS.map((loc) => (
-                            <button
-                              key={loc}
-                              onClick={() => { setLocation(loc); setShowLocationPicker(false); }}
-                              className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-zinc-300 hover:text-white transition flex items-center justify-between cursor-pointer text-xs"
-                            >
-                              <span>{loc}</span>
-                              {location === loc && <Check className="w-3 h-3 text-emerald-400" />}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
                     {/* Tags Selector */}
@@ -1938,6 +1997,88 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                               </div>
                             </div>
 
+                            {/* ── INSTAGRAM-STYLE TEXT BACKGROUND SYSTEM ── */}
+                            <div className="space-y-1.5 pt-1 border-t border-white/[0.08]">
+                              <div className="flex items-center justify-between text-[9px] font-mono">
+                                <span className="text-zinc-300 uppercase font-bold flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                  Text Background (Instagram Style)
+                                </span>
+                                {activeOverlayObj.hasBackground !== false && activeOverlayObj.bgStyle && activeOverlayObj.bgStyle !== 'none' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateActiveOverlay({ hasBackground: false, bgStyle: 'none' })}
+                                    className="text-rose-400 hover:text-rose-300 font-bold transition flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Ban className="w-2.5 h-2.5" />
+                                    <span>Remove BG</span>
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-4 gap-1.5">
+                                {/* Option 1: None / Remove Background (Transparent Text) */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateActiveOverlay({ hasBackground: false, bgStyle: 'none' })}
+                                  className={`py-1.5 px-1.5 rounded-xl text-center border text-[10px] font-mono transition cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
+                                    !activeOverlayObj.bgStyle || activeOverlayObj.bgStyle === 'none' || activeOverlayObj.hasBackground === false
+                                      ? 'bg-white text-black border-white font-bold shadow-md'
+                                      : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                                  }`}
+                                  title="Transparent text without any background container (Instagram text style)"
+                                >
+                                  <span className="text-xs font-bold leading-none">A</span>
+                                  <span className="text-[8px] uppercase tracking-wider">Remove BG</span>
+                                </button>
+
+                                {/* Option 2: Solid Highlighter Pill */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateActiveOverlay({ hasBackground: true, bgStyle: 'solid' })}
+                                  className={`py-1.5 px-1.5 rounded-xl text-center border text-[10px] font-mono transition cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
+                                    activeOverlayObj.hasBackground !== false && activeOverlayObj.bgStyle === 'solid'
+                                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold shadow-md'
+                                      : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                                  }`}
+                                  title="Solid highlighter pill behind text"
+                                >
+                                  <span className="px-1.5 py-0.5 rounded bg-black text-white text-[10px] font-bold leading-none border border-white/30">A</span>
+                                  <span className="text-[8px] uppercase tracking-wider">Solid Pill</span>
+                                </button>
+
+                                {/* Option 3: Frosted Glass */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateActiveOverlay({ hasBackground: true, bgStyle: 'soft' })}
+                                  className={`py-1.5 px-1.5 rounded-xl text-center border text-[10px] font-mono transition cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
+                                    activeOverlayObj.hasBackground !== false && activeOverlayObj.bgStyle === 'soft'
+                                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold shadow-md'
+                                      : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                                  }`}
+                                  title="Frosted glass translucent pill"
+                                >
+                                  <span className="px-1.5 py-0.5 rounded bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold leading-none border border-white/40">A</span>
+                                  <span className="text-[8px] uppercase tracking-wider">Frosted</span>
+                                </button>
+
+                                {/* Option 4: Inverted Contrast */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateActiveOverlay({ hasBackground: true, bgStyle: 'invert' })}
+                                  className={`py-1.5 px-1.5 rounded-xl text-center border text-[10px] font-mono transition cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
+                                    activeOverlayObj.hasBackground !== false && activeOverlayObj.bgStyle === 'invert'
+                                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold shadow-md'
+                                      : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                                  }`}
+                                  title="Inverted background using text accent color"
+                                >
+                                  <span className="px-1.5 py-0.5 rounded bg-white text-black text-[10px] font-black leading-none">A</span>
+                                  <span className="text-[8px] uppercase tracking-wider">Invert</span>
+                                </button>
+                              </div>
+                            </div>
+
                             {/* Sliders Grid */}
                             <div className="grid grid-cols-2 gap-2">
                               {/* Size Slider */}
@@ -2210,6 +2351,17 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
         onSelectTrack={(t) => setAttachedSong(t)}
         selectedTrackTitle={attachedSong?.title}
         mode="post"
+      />
+
+      {/* ─── WORLD MAP LOCATION PICKER MODAL ─── */}
+      <WorldLocationPickerModal
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        initialLocation={location}
+        onSelectLocation={(loc) => {
+          setLocation(loc.name);
+          setShowLocationPicker(false);
+        }}
       />
     </div>
   );

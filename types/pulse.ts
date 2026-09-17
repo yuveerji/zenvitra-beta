@@ -334,6 +334,7 @@ export interface FluxVideo {
   isPrivate?: boolean;
   fontStyle?: string;
   effectStyle?: string;
+  location?: string;
 }
 
 export interface PulseArticle {

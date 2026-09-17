@@ -20,13 +20,15 @@ import {
   Type,
   Wand2,
   Sliders,
-  Search
+  Search,
+  MapPin
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { auditFluxDispatch, IntegrityCheckResult } from '@/lib/fluxIntegrityGuard';
 import { FONT_OPTIONS, TEXT_EFFECTS, FILTER_PRESETS } from '@/components/creator/MediaStudioModal';
 import { STORY_FONTS, getStoryFontStyle } from '@/lib/storyFonts';
 import { MusicPickerModal } from './MusicPickerModal';
+import { WorldLocationPickerModal } from '@/components/common/WorldLocationPickerModal';
 
 const FLUX_AUDIO_TRACKS = [
   '⚡ Ambient Synthwaves (120 BPM)',
@@ -47,6 +49,8 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
   const [showMusicPicker, setShowMusicPicker] = useState(false);
   const [tagsInput, setTagsInput] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [location, setLocation] = useState('');
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Creator FX Studio overlay states for reel
@@ -127,6 +131,7 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
         isPrivate,
         fontStyle: reelFont,
         effectStyle: reelEffect,
+        location: location.trim() || undefined,
       });
       handleClose();
     } catch (err: any) {
@@ -552,6 +557,47 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
                 </div>
               </div>
 
+              {/* Location Tag (World Map API) */}
+              <div className="space-y-1.5">
+                <label className="text-xs text-zinc-400 font-medium flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Location Tag (World Map)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowLocationPicker(true)}
+                    className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 font-bold transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Pick on Map &rarr;</span>
+                  </button>
+                </label>
+
+                <div 
+                  onClick={() => setShowLocationPicker(true)}
+                  className="w-full bg-white/[0.04] border border-white/10 hover:border-white/20 rounded-2xl px-3.5 py-2.5 flex items-center justify-between text-xs cursor-pointer transition"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span className={location ? "text-cyan-300 font-semibold truncate" : "text-zinc-500 truncate"}>
+                      {location || 'Add World Location, City or Venue...'}
+                    </span>
+                  </div>
+                  {location && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLocation('');
+                      }}
+                      className="text-[10px] text-zinc-500 hover:text-rose-400 font-mono cursor-pointer ml-2"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Privacy Toggle */}
               <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/10">
                 <div className="flex items-center gap-2">
@@ -589,6 +635,18 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
         onSelectTrack={(track) => {
           setMusicTitle(track.artist ? `${track.title} — ${track.artist}` : track.title);
         }}
+      />
+
+      {/* World Map Location Picker Modal */}
+      <WorldLocationPickerModal
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        initialLocation={location}
+        onSelectLocation={(loc) => {
+          setLocation(loc.name);
+          setShowLocationPicker(false);
+        }}
+        title="Tag Reel World Location"
       />
     </div>
   );

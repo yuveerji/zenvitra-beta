@@ -27,7 +27,8 @@ import {
   BookOpen,
   Film,
   Landmark,
-  Shuffle
+  Shuffle,
+  MapPin
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { FluxVideo } from '@/types/pulse';
@@ -483,6 +484,12 @@ export function FluxReelsFeed() {
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 text-neutral-300">
               MEMBER
             </span>
+            {currentFlux.location && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-md border border-white/15 text-white/90 flex items-center gap-1 shadow-sm">
+                <MapPin className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+                <span className="truncate max-w-[130px]">{currentFlux.location}</span>
+              </span>
+            )}
           </div>
 
           {/* Caption */}

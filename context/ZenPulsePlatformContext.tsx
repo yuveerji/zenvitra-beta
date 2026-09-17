@@ -117,6 +117,7 @@ interface ZenPulseContextType {
     isPrivate?: boolean;
     fontStyle?: string;
     effectStyle?: string;
+    location?: string;
   }) => string;
   deleteFlux: (id: string) => void;
   purgeFakeFlux: (id: string, reason?: string) => void;
@@ -1596,6 +1597,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     isPrivate?: boolean;
     fontStyle?: string;
     effectStyle?: string;
+    location?: string;
   }) => {
     const newFlux: FluxVideo = {
       id: `flux_${Date.now()}`,
@@ -1616,6 +1618,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       isPrivate: data.isPrivate,
       fontStyle: data.fontStyle,
       effectStyle: data.effectStyle,
+      location: data.location || undefined,
     };
 
     setAllFluxVideos([newFlux, ...allFluxVideos]);
