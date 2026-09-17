@@ -5,7 +5,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
     username: 'yuveer',
     displayName: 'Yuveer',
     bio: 'Founder & Lead Architect of Zenvitra. Designing sovereign digital architecture, international diplomacy systems, and high-frequency communication protocols.',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
     bannerUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80',
     role: 'Founder & Chief Architect',
     verified: true,
@@ -17,6 +17,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
     effect: 'grid',
     layout: 'stream',
     socials: {
+      instagram: 'https://instagram.com/zenvitra',
       twitter: 'https://x.com/zenvitra',
       github: 'https://github.com/zenvitra',
       linkedin: 'https://linkedin.com/in/yuveer',
@@ -36,6 +37,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         metadata: {
           artist: 'The Weeknd & Daft Punk',
           albumArt: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=400&q=80',
+          audioUrl: 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
           category: 'Current Rotation'
         }
       },
@@ -205,6 +207,107 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
       connections: 5820,
       shares: 1940,
       submissions: 340
+    }
+  },
+  thejharokhaforum: {
+    username: 'thejharokhaforum',
+    displayName: '@thejharokhaforum',
+    bio: 'Where Worlds are Wrought of Words',
+    avatar: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1600&q=80',
+    role: 'Diplomatic & Literary Youth Forum',
+    verified: true,
+    isOrganization: true,
+    organizationType: 'Secretariat & Model UN Organization',
+    location: 'Global / National Circuit',
+    badges: ['ORGANIZATION', 'LITERARY_FORUM', 'SECRETARIAT_NODE'],
+    theme: 'minimal_sand',
+    effect: 'none',
+    layout: 'stream',
+    socials: {
+      instagram: 'https://instagram.com/thejharokhaforum',
+      email: 'secretariat@thejharokhaforum.org',
+      phone: '+91 98765 43210'
+    },
+    blocks: [
+      {
+        id: 'block-jf-secretariat',
+        type: 'form',
+        title: 'Join Jharokha Forum 2026 Secretariat',
+        subtitle: 'Executive board & organizing committee application dossier',
+        highlight: true,
+        clicks: 1420,
+        metadata: {
+          formMode: 'embed',
+          formSubmitText: 'Submit Secretariat Application',
+          formSuccessMsg: 'Your Secretariat application has been registered with Jharokha Forum 2026!',
+          formWebhookTab: 'SECRETARIAT',
+          formFields: [
+            { id: 'fullName', label: 'Full Legal Name', placeholder: 'Enter your full name', type: 'text', required: true },
+            { id: 'email', label: 'Primary Contact Email', placeholder: 'yourname@domain.com', type: 'email', required: true },
+            { id: 'phone', label: 'WhatsApp / Phone Number', placeholder: '+91 98765 43210', type: 'text', required: true },
+            { id: 'institution', label: 'Institution / School / University', placeholder: 'e.g. Modern School / Delhi University', type: 'text', required: true },
+            { id: 'prefDept', label: 'Preferred Department', type: 'select', options: ['Delegate Affairs', 'Logistics & Hospitality', 'Public Relations & Social Media', 'Finance & Sponsorship', 'Research & Substantive Policy'] },
+            { id: 'statement', label: 'Why do you want to join the Secretariat?', placeholder: 'Describe your vision, past MUN experience and skill sets...', type: 'textarea', required: true }
+          ]
+        }
+      },
+      {
+        id: 'block-jf-offline-delegate',
+        type: 'form',
+        title: 'Offline Delegate Application- THE JHAROKHA FORUM 2026',
+        subtitle: 'In-person parliamentary caucus & committee delegate registration',
+        highlight: false,
+        clicks: 2150,
+        metadata: {
+          formMode: 'embed',
+          formSubmitText: 'Register as Offline Delegate',
+          formSuccessMsg: 'Delegate registration received! Allotment matrix will be communicated shortly.',
+          formWebhookTab: 'DELEGATES',
+          formFields: [
+            { id: 'name', label: 'Delegate Full Name', placeholder: 'Your full name', type: 'text', required: true },
+            { id: 'email', label: 'Email Address', placeholder: 'delegate@school.edu', type: 'email', required: true },
+            { id: 'phone', label: 'Contact Phone Number', placeholder: '+91 ...', type: 'text', required: true },
+            { id: 'committeePref', label: 'Committee 1st Preference', type: 'select', options: ['UNSC (United Nations Security Council)', 'UNHRC (Human Rights Council)', 'Lok Sabha (Indian Parliament)', 'AIPPM (All India Political Parties Meet)', 'IP (International Press)'] },
+            { id: 'experience', label: 'Prior MUN Experience (No. of conferences & awards)', placeholder: 'e.g. 3 MUNs (Executive Board / Delegate awards)', type: 'text' }
+          ]
+        }
+      },
+      {
+        id: 'block-jf-online-delegate',
+        type: 'form',
+        title: 'Online Delegate Application- THE JHAROKHA FORUM 2026',
+        subtitle: 'Virtual international cohort & digital diplomacy session registration',
+        highlight: false,
+        clicks: 1680,
+        metadata: {
+          formMode: 'embed',
+          formSubmitText: 'Register for Online Session',
+          formSuccessMsg: 'Online delegate registration confirmed. Digital session links will be dispatched.',
+          formWebhookTab: 'ONLINE_DELEGATES',
+          formFields: [
+            { id: 'name', label: 'Delegate Full Name', placeholder: 'Your full name', type: 'text', required: true },
+            { id: 'email', label: 'Email Address', placeholder: 'online.delegate@example.com', type: 'email', required: true },
+            { id: 'country', label: 'Country & City of Residence', placeholder: 'e.g. London, UK or New Delhi, India', type: 'text', required: true },
+            { id: 'committeePref', label: 'Committee Choice', type: 'select', options: ['UNSC Virtual Node', 'UNEP Climate Working Group', 'Digital Compact Assembly'] }
+          ]
+        }
+      },
+      {
+        id: 'block-jf-committee-status',
+        type: 'link',
+        title: 'Jharokha Forum 2026: Committee Status',
+        subtitle: 'View live allotment matrix, study guides, agendas & background guides',
+        url: '/mun',
+        highlight: false,
+        clicks: 3410
+      }
+    ],
+    stats: {
+      views: 8940,
+      connections: 1420,
+      shares: 430,
+      submissions: 382
     }
   }
 };

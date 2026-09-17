@@ -4,7 +4,10 @@ export type ZenSpaceTheme =
   | 'geneva'
   | 'aurora'
   | 'solar'
-  | 'nordic';
+  | 'nordic'
+  | 'minimal_sand'
+  | 'minimal_cream'
+  | 'minimal_dark';
 
 export type ZenSpaceEffect = 
   | 'none'
@@ -25,11 +28,13 @@ export interface ZenSpaceSocials {
   telegram?: string;
   substack?: string;
   email?: string;
+  phone?: string;
   website?: string;
 }
 
 export type ZenSpaceBlockType = 
   | 'link'
+  | 'video'
   | 'music'
   | 'press'
   | 'event'
@@ -68,6 +73,9 @@ export interface ZenSpaceBlock {
     date?: string;
     venue?: string;
     docSummary?: string;
+    formMode?: 'embed' | 'modal' | 'redirect';
+    formInstructions?: string;
+    formExternalUrl?: string;
     formFields?: ZenSpaceFormField[];
     formSubmitText?: string;
     formSuccessMsg?: string;
@@ -93,6 +101,13 @@ export interface ZenSpaceProfile {
   theme: ZenSpaceTheme;
   effect: ZenSpaceEffect;
   layout?: 'stream' | 'bento';
+  backgroundType?: 'theme' | 'video' | 'color' | 'custom_color';
+  videoBackgroundUrl?: string;
+  customBackgroundColor?: string;
+  isOrganization?: boolean;
+  organizationType?: string;
+  ownerId?: string;
+  ownerUsername?: string;
   socials: ZenSpaceSocials;
   blocks: ZenSpaceBlock[];
   stats: {

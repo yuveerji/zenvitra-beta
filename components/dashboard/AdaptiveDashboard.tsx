@@ -24,8 +24,11 @@ import {
   ShieldCheck,
   Radio,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Globe,
+  Edit3
 } from 'lucide-react';
+import { getZenSpaceProfile } from '@/lib/spaceStorage';
 import { useAuth } from '@/context/AuthContext';
 import { useMun } from '@/context/MunContext';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
@@ -70,6 +73,7 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
   // Real 25% protocol calculation based on user's actual registered passes
   const totalPassSpend = passesCount * 1500; // standard registration unit
   const escrowContribution = Math.round(totalPassSpend * 0.25);
+  const mySpace = getZenSpaceProfile(currentUserUsername || profile?.username || 'yuveer');
 
   // Pro mode real stats
   const currentUserId = profile?.id || user?.id || '';
@@ -298,6 +302,65 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
                 </h4>
                 <p className="text-xs text-zinc-400 leading-relaxed">
                   Verified platform membership &amp; democratic voting mandate.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── SOVEREIGN ZEN.SPACE HUB CARD ─── */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0c0d12] to-[#07080b] border border-white/10 space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="font-mono text-[10px] text-amber-300 uppercase tracking-widest font-bold">
+                    Sovereign Bio Hub &amp; Forms
+                  </span>
+                </div>
+                <h3 className="font-bold text-lg text-white flex items-center gap-2">
+                  <span>ZEN.SPACE — @{currentUserUsername || profile?.username || 'yuveer'}</span>
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Decentralized link-in-bio, interactive application forms, multimedia reels, and audio rotations.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/space/${currentUserUsername || profile?.username || 'yuveer'}`}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-white font-mono text-xs transition flex items-center gap-1.5"
+                >
+                  <span>View Space</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+                </Link>
+                <Link
+                  href={`/space/${currentUserUsername || profile?.username || 'yuveer'}`}
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xs transition flex items-center gap-1.5 shadow-md"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Open Space Studio</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 space-y-1">
+                <span className="text-[10px] font-mono uppercase text-zinc-500">Public Space URL</span>
+                <p className="text-xs font-mono text-amber-300 truncate">
+                  zenvitra.xyz/space/{currentUserUsername || profile?.username || 'yuveer'}
+                </p>
+              </div>
+              <div className="p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 space-y-1">
+                <span className="text-[10px] font-mono uppercase text-zinc-500">Active Modular Blocks</span>
+                <p className="text-sm font-bold text-white">
+                  {mySpace?.blocks?.length || 4} modular blocks active
+                </p>
+              </div>
+              <div className="p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 space-y-1">
+                <span className="text-[10px] font-mono uppercase text-zinc-500">Form Responses &amp; Traffic</span>
+                <p className="text-sm font-bold text-emerald-400">
+                  {(mySpace?.stats?.views || 1).toLocaleString()} views &bull; {mySpace?.stats?.submissions || 0} submissions
                 </p>
               </div>
             </div>

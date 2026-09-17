@@ -124,6 +124,32 @@ export const DATA_LIFECYCLE_EXPLAINERS: DataLifecycleExplainer[] = [
     retention: 'Chat prompts stored in ephemeral user session; not used to train global public foundational weights.',
     deletion: 'AI query history can be purged at any time from Settings > Privacy & Security.',
     legalBasis: 'Consent and User-Initiated Service Execution.'
+  },
+  {
+    id: 'zen-space-modular-hubs',
+    title: 'ZEN.SPACE Sovereign Bio-Hubs & Form Ledgers',
+    product: 'ZEN.SPACE',
+    icon: 'Globe',
+    purpose: 'Host decentralized, customizable sovereign link-in-bio portals, stream audio previews, showcase multimedia reels, and collect encrypted interactive form responses.',
+    permission: 'Configured and published voluntarily by the Space owner.',
+    access: 'Public visitors can view links and submit inquiry forms. Only the verified Space owner and designated webhook endpoints can access response records.',
+    security: 'Encrypted webhook dispatch, SSL/TLS transport security, zero third-party cross-site advertising trackers.',
+    retention: 'Maintained until edited or deleted by the Space owner in their dashboard.',
+    deletion: 'Deleting blocks or resetting the Space immediately removes public records and stops webhook routing.',
+    legalBasis: 'Performance of contract, user consent, and legitimate civic communication under DPDP Rules, 2025.'
+  },
+  {
+    id: 'zen-call-encrypted-chambers',
+    title: 'ZEN.CALL Real-Time Audiovisual Chambers',
+    product: 'ZEN.CALL',
+    icon: 'Video',
+    purpose: 'Facilitate low-latency peer-to-peer audio, video, and screen-sharing sessions for diplomacy, MUN caucuses, and sovereign bilateral meetings.',
+    permission: 'Initiated voluntarily upon joining an authorized chamber room.',
+    access: 'Active chamber participants only. Zero eavesdropping or unlisted guest entry.',
+    security: 'DTLS-SRTP end-to-end media encryption; ephemeral signaling nodes.',
+    retention: 'Zero persistent storage of audio/video streams. In-meeting chat and signaling states evaporate upon room termination.',
+    deletion: 'Instantaneous destruction upon last participant departure.',
+    legalBasis: 'User consent and Contractual Service Execution.'
   }
 ];
 
@@ -357,7 +383,31 @@ export const privacyPolicyParts: LegalPart[] = [
             heading: 'Music & Third-Party Audio Credits',
             paragraphs: [
               'All musical recordings, audio streams, and artist metadata featured across Zenvitra Pulse, Stories, Notes, and Events are the intellectual property of their respective original artists, copyright holders, and record labels. Music indexing and playback functionality utilizes public APIs including ytmusic-api from GitHub for transformative preview and personal civic expression. Zenvitra does not claim ownership of proprietary musical compositions.',
-              'Third-party audio streams are processed for non-commercial preview and civic dialogue under fair dealing principles. Users or copyright holders wishing to query attribution or request removal may contact copyright@zenvitra.xyz or legal@zenvitra.xyz.'
+              'Audio preview snippets are strictly constrained between 30 and 120 seconds. Zenvitra does not charge for, sell, or commercially distribute independent audio master files. Rights holders may file attribution inquiries or takedown requests to legal@zenvitra.xyz.'
+            ]
+          },
+          {
+            number: '10.5',
+            heading: 'Custom Location Tagging & World Geocoding Privacy',
+            paragraphs: [
+              'When tagging custom places, cities, or diplomatic venues on Posts, Pulse dispatches, or Event notices, geocoding lookups query public OpenStreetMap / Nominatim servers through privacy-preserving client proxies.',
+              'Zenvitra does not track, log, or broadcast granular real-time GPS coordinates. Only the coarse textual administrative label (e.g. city, landmark, or summit hall) voluntarily attached by the author is associated with the published post.'
+            ]
+          },
+          {
+            number: '10.6',
+            heading: 'ZEN.SPACE Sovereign Link Hubs & Interactive Form Ledgers',
+            paragraphs: [
+              'ZEN.SPACE allows users and verified organizations to curate sovereign link hubs with customizable themes (including Linktree-style minimalist sand/cream themes and looping video backgrounds), audio previews, and interactive form blocks (expandable accordions, modals, or external redirects).',
+              'Form submissions collected through a user’s space are securely routed to the space owner’s designated encrypted ledger or authorized webhook tab (e.g. Google Sheets integration). Zenvitra does not sell form submission entries, build advertising dossiers from visitor inquiries, or inject third-party surveillance pixels into sovereign spaces.'
+            ]
+          },
+          {
+            number: '10.7',
+            heading: 'ZEN.CALL Real-Time Audiovisual Privacy',
+            paragraphs: [
+              'ZEN.CALL provides low-latency peer-to-peer audio, video, and screen-sharing communications for bilateral diplomatic dialogues, Model UN caucuses, and sovereign consultations.',
+              'Media streams are transmitted via encrypted DTLS-SRTP protocols directly between session participants. Signaling server nodes are strictly ephemeral; meeting chat dispatches and active roster states are permanently erased when the room dissolves. Zenvitra enforces a strict zero-telemetry and zero-server-recording standard across private meeting rooms without verified participant opt-in.'
             ]
           }
         ]
@@ -1049,6 +1099,30 @@ export const TERMS_OF_SERVICE_DATA: LegalSection[] = [
         paragraphs: [
           'All musical recordings, audio streams, and artist metadata featured across Zenvitra Pulse, Stories, Notes, and Events are the intellectual property of their respective original artists, copyright holders, and record labels. Music indexing and playback functionality utilizes public APIs including ytmusic-api from GitHub for transformative preview and personal civic expression. Zenvitra does not claim ownership of proprietary musical compositions.',
           'Audio preview snippets are strictly constrained between 30 and 120 seconds. Zenvitra does not charge for, sell, or commercially distribute independent audio master files. Rights holders may file attribution inquiries or takedown requests to legal@zenvitra.xyz.'
+        ]
+      },
+      {
+        number: '7.3',
+        heading: 'ZEN.SPACE Sovereign Link Hubs & Custom Handles',
+        paragraphs: [
+          'Users and verified organizations may claim custom sovereign handles (e.g. zenvitra.xyz/space/[handle]) to showcase bio portals, audio rotations, multimedia reels, and interactive forms (inline accordions, modals, or external redirects).',
+          'Handle squatting, misleading impersonation of public officials, diplomatic missions, Model UN forums, or registered corporate trademarks is strictly prohibited. Zenvitra reserves the right to reclaim or reassign contested handles in cases of verified trademark infringement or fraudulent misrepresentation.'
+        ]
+      },
+      {
+        number: '7.4',
+        heading: 'ZEN.CALL Chamber Guidelines & Media Etiquette',
+        paragraphs: [
+          'ZEN.CALL media chambers are designed for peer-to-peer diplomatic caucus negotiations, youth committee sessions, and secure bilateral discussions.',
+          'Users agree to uphold respectful parliamentary decorum and must not initiate non-consensual audiovisual recording, interception, or re-broadcasting of participants without the unambiguous prior knowledge and consent of all active participants in the chamber.'
+        ]
+      },
+      {
+        number: '7.5',
+        heading: 'World Map API & Custom Location Attribution',
+        paragraphs: [
+          'Users may enrich posts, dispatches, and event notices with custom geolocation tags queried through OpenStreetMap and Nominatim.',
+          'Users warrant that location tags reflect genuine civic, educational, or diplomatic venues and will not be used to publish private home addresses without consent (doxxing), issue false emergency distress locations, or fabricate fraudulent event venues.'
         ]
       }
     ]
