@@ -61,8 +61,16 @@ import { OfficialSourcesModal } from './OfficialSourcesModal';
 import { ConversationMemory } from './ConversationMemory';
 import { LiveSpeakerQueue } from './LiveSpeakerQueue';
 import { DelegatePerformanceRadar } from './DelegatePerformanceRadar';
+import { MunSelectorBar } from './MunSelectorBar';
+import { MunNotStartedView } from './MunNotStartedView';
+import { ChamberDayHistoryModal } from './ChamberDayHistoryModal';
+import { CommitteeSummaryPaperModal } from './CommitteeSummaryPaperModal';
+import { LokSabhaDraftModal, UnDocsDraftModal } from '@/components/docs/modals';
+import { useRouter } from 'next/navigation';
+import { ScrollText, FileCheck } from 'lucide-react';
 
 export function CommitteeChamber() {
+  const router = useRouter();
   const { user, profile } = useAuth();
   const {
     committees,
@@ -92,7 +100,13 @@ export function CommitteeChamber() {
     activeVotingSession,
     votingSessions,
     stagePerformers,
-    chamberRooms
+    chamberRooms,
+    conferences,
+    activeConferenceId,
+    activeConference,
+    currentConferenceDay,
+    passAndArchiveBill,
+    setCommitteeWinners,
   } = useMun();
 
   const DEFAULT_COMMITTEE = {
@@ -111,12 +125,17 @@ export function CommitteeChamber() {
   };
 
   const committee = getCommitteeById(activeCommitteeId) || committees[0] || DEFAULT_COMMITTEE;
-  const isLokSabhaChamber = Boolean(
+  const isIndianCommittee = Boolean(
+    committee.isIndianCommittee ||
     (committee.type as string) === 'LOK_SABHA' ||
+    (committee.type as string) === 'AIPPM' ||
+    (committee.type as string) === 'PARLIAMENTARY' ||
     committee.id?.toLowerCase().includes('lok') ||
     committee.name?.toLowerCase().includes('lok sabha') ||
+    committee.name?.toLowerCase().includes('constituent') ||
     committee.shortName?.toLowerCase().includes('lok sabha')
   );
+  const isLokSabhaChamber = isIndianCommittee;
   const userAcceptedInvite = userInvites.find(
     (i) => i.committeeId === activeCommitteeId && i.status === 'accepted'
   );
@@ -138,6 +157,10 @@ export function CommitteeChamber() {
   const [showDiplomaticChitsModal, setShowDiplomaticChitsModal] = useState(false);
   const [showEditChamberModal, setShowEditChamberModal] = useState(false);
   const [showOfficialSourcesModal, setShowOfficialSourcesModal] = useState(false);
+  const [showDayHistoryModal, setShowDayHistoryModal] = useState(false);
+  const [showSummaryPaperModal, setShowSummaryPaperModal] = useState(false);
+  const [showLokSabhaDraftModal, setShowLokSabhaDraftModal] = useState(false);
+  const [showUnDocsDraftModal, setShowUnDocsDraftModal] = useState(false);
 
   // New Motion Form State
   const [motionType, setMotionType] = useState<MotionType>('MODERATED_CAUCUS');
@@ -250,8 +273,34 @@ export function CommitteeChamber() {
     userRole === 'admin'
   );
 
+  if (activeConference?.status === 'NOT_STARTED') {
+    return (
+      <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-neutral-100 select-none space-y-6 pb-12">
+        <MunSelectorBar
+          onOpenHistory={() => setShowDayHistoryModal(true)}
+          onOpenSummary={() => setShowSummaryPaperModal(true)}
+        />
+        <MunNotStartedView />
+        <ChamberDayHistoryModal
+          isOpen={showDayHistoryModal}
+          onClose={() => setShowDayHistoryModal(false)}
+          committeeName={committee.name}
+        />
+        <CommitteeSummaryPaperModal
+          isOpen={showSummaryPaperModal}
+          onClose={() => setShowSummaryPaperModal(false)}
+          committee={committee}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-neutral-100 select-none space-y-6 pb-12">
+      <MunSelectorBar
+        onOpenHistory={() => setShowDayHistoryModal(true)}
+        onOpenSummary={() => setShowSummaryPaperModal(true)}
+      />
       
       {/* ─────────────────────────────────────────────────────────────
           1. TOP DAIS BANNER & COMMITTEE SELECTOR
@@ -505,24 +554,26 @@ export function CommitteeChamber() {
           </button>
 
           {/* Direct ZEN.LEGISLATE / ZEN.DOCS Drafting Gateway */}
-          {isLokSabhaChamber ? (
-            <Link
-              href="/docs?committee=lok_sabha&mode=legislate&action=draft_choice"
+          {isIndianCommittee ? (
+            <button
+              type="button"
+              onClick={() => setShowLokSabhaDraftModal(true)}
               className="p-2.5 px-3.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-mono text-xs font-bold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.2)]"
               title="ZEN.LEGISLATE — Draft Parliamentary Bill or Press Release"
             >
               <Gavel className="w-4 h-4 text-amber-400 shrink-0" />
               <span>ZEN.LEGISLATE</span>
-            </Link>
+            </button>
           ) : (
-            <Link
-              href="/docs"
-              className="p-2.5 px-3 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer"
-              title="ZEN.DOCS Sovereign Drafting Studio"
+            <button
+              type="button"
+              onClick={() => setShowUnDocsDraftModal(true)}
+              className="p-2.5 px-3 rounded-2xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-mono text-xs font-bold transition flex items-center justify-center sm:justify-start gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+              title="ZEN.DOCS Multilateral Drafting Studio"
             >
-              <FileText className="w-4 h-4 text-neutral-400 shrink-0" />
+              <ScrollText className="w-4 h-4 text-cyan-400 shrink-0" />
               <span>ZEN.DOCS</span>
-            </Link>
+            </button>
           )}
 
           {/* Live Vote Trigger */}
@@ -1273,6 +1324,38 @@ export function CommitteeChamber() {
         {/* TAB 4: DRAFT RESOLUTIONS */}
         {activeTab === 'resolutions' && (
           <div className="space-y-6">
+            {/* Drafting Studio Launcher Banner */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+              <div>
+                <h4 className="font-bold text-sm text-white">
+                  {isIndianCommittee ? 'Legislative Drafting Studio (Parliamentary Bills & Press)' : 'Multilateral Drafting Studio (Resolutions & Working Papers)'}
+                </h4>
+                <p className="text-xs text-neutral-400">
+                  {isIndianCommittee
+                    ? 'Draft statutory bills with Section clauses, Definitions, and Statements of Objects via ZEN.LEGISLATE.'
+                    : 'Draft resolutions with standardized UN preambulatory phrases and operative clauses via ZEN.DOCS.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isIndianCommittee) {
+                    setShowLokSabhaDraftModal(true);
+                  } else {
+                    setShowUnDocsDraftModal(true);
+                  }
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-mono font-bold flex items-center gap-2 cursor-pointer shadow-md transition active:scale-95 ${
+                  isIndianCommittee
+                    ? 'bg-amber-500 hover:bg-amber-400 text-black'
+                    : 'bg-cyan-500 hover:bg-cyan-400 text-black'
+                }`}
+              >
+                {isIndianCommittee ? <Gavel className="w-4 h-4" /> : <ScrollText className="w-4 h-4" />}
+                <span>{isIndianCommittee ? 'Draft Bill / Press Release' : 'Draft Resolution / Working Paper'}</span>
+              </button>
+            </div>
+
             {sessionState.resolutions.map((res) => (
               <div
                 key={res.id}
@@ -1288,7 +1371,7 @@ export function CommitteeChamber() {
                     </h3>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={() => sponsorResolution(res.id)}
@@ -1302,6 +1385,27 @@ export function CommitteeChamber() {
                       className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold transition cursor-pointer"
                     >
                       + Signatory
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        passAndArchiveBill({
+                          title: res.title,
+                          code: res.code,
+                          sponsors: res.sponsors,
+                          fullText: [...res.preambulatoryClauses, ...res.operativeClauses].join('\n\n'),
+                          clauses: [
+                            ...res.preambulatoryClauses.map((p, i) => ({ clauseNumber: `P${i+1}`, type: 'PREAMBULARY' as const, text: p })),
+                            ...res.operativeClauses.map((o, i) => ({ clauseNumber: `${i+1}`, type: 'OPERATIVE' as const, text: o }))
+                          ]
+                        });
+                        playGavelSound();
+                        setShowSummaryPaperModal(true);
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-bold transition cursor-pointer shadow-md flex items-center gap-1.5 active:scale-95"
+                    >
+                      <FileCheck className="w-3.5 h-3.5 fill-black" />
+                      <span>Pass &amp; Archive Bill</span>
                     </button>
                   </div>
                 </div>
@@ -1698,6 +1802,39 @@ export function CommitteeChamber() {
           if (motionTopic) {
             setMotionTopic((prev) => `${prev} [Ref: ${source.name}]`);
           }
+        }}
+      />
+
+      {/* CHAMBER DAY HISTORY MODAL */}
+      <ChamberDayHistoryModal
+        isOpen={showDayHistoryModal}
+        onClose={() => setShowDayHistoryModal(false)}
+        committeeName={committee.name}
+      />
+
+      {/* COMMITTEE VALEDICTORY SUMMARY PAPER MODAL */}
+      <CommitteeSummaryPaperModal
+        isOpen={showSummaryPaperModal}
+        onClose={() => setShowSummaryPaperModal(false)}
+        committee={committee}
+      />
+
+      {/* LOK SABHA / INDIAN BILL DRAFTING MODAL */}
+      <LokSabhaDraftModal
+        isOpen={showLokSabhaDraftModal}
+        onClose={() => setShowLokSabhaDraftModal(false)}
+        onSelectDraftType={(type, title) => {
+          router.push(`/docs?committee=${encodeURIComponent(committee.shortName || committee.name)}&mode=legislate&type=${type}`);
+        }}
+      />
+
+      {/* UN DOCS MULTILATERAL DRAFTING MODAL */}
+      <UnDocsDraftModal
+        isOpen={showUnDocsDraftModal}
+        onClose={() => setShowUnDocsDraftModal(false)}
+        committeeName={committee.name}
+        onSelectDraftType={(type, title) => {
+          router.push(`/docs?committee=${encodeURIComponent(committee.shortName || committee.name)}&mode=docs&type=${type}`);
         }}
       />
     </div>

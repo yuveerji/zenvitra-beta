@@ -26,8 +26,10 @@ import {
   SaveAsModal,
   ShareToPulseModal,
   LokSabhaDraftModal,
+  UnDocsDraftModal,
 } from './modals';
 import { useSearchParams } from 'next/navigation';
+import { ScrollText, Globe2 } from 'lucide-react';
 
 export interface ZenDocsClientProps {
   initialMode?: string;
@@ -38,7 +40,13 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
   const searchParams = useSearchParams();
   const committeeParam = searchParams?.get('committee') || searchParams?.get('chamber') || initialCommittee || '';
   const modeParam = searchParams?.get('mode') || initialMode || '';
-  const isLokSabhaContext = committeeParam.toLowerCase().includes('lok') || committeeParam.toLowerCase().includes('sabha') || modeParam === 'legislate';
+  const isIndianContext = committeeParam.toLowerCase().includes('lok') || 
+    committeeParam.toLowerCase().includes('sabha') || 
+    committeeParam.toLowerCase().includes('aippm') || 
+    committeeParam.toLowerCase().includes('parliament') || 
+    committeeParam.toLowerCase().includes('constituent') || 
+    modeParam === 'legislate';
+  const isUnContext = !isIndianContext && (Boolean(committeeParam) || modeParam === 'docs');
 
   const editor = useDocumentEditor();
   const editorRef = useRef<HTMLDivElement>(null);
@@ -57,7 +65,8 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
   const [isShareToPulseModalOpen, setIsShareToPulseModalOpen] = useState<boolean>(false);
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
-  const [isLokSabhaDraftModalOpen, setIsLokSabhaDraftModalOpen] = useState<boolean>(isLokSabhaContext);
+  const [isLokSabhaDraftModalOpen, setIsLokSabhaDraftModalOpen] = useState<boolean>(isIndianContext);
+  const [isUnDraftModalOpen, setIsUnDraftModalOpen] = useState<boolean>(isUnContext);
 
   // Export Document Handler
   const handleExportFormat = useCallback((format: ExportFormat) => {
@@ -267,12 +276,12 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
       ) : (
         /* Main Studio Shell */
         <div className="max-w-[1600px] mx-auto w-full px-2 sm:px-4 lg:px-6 py-3 flex-1 flex flex-col space-y-3">
-          {/* Parliamentary Lok Sabha Banner */}
-          {isLokSabhaContext && (
+          {/* Parliamentary Lok Sabha / Indian Banner */}
+          {isIndianContext && (
             <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-black/40 to-amber-950/20 border border-amber-500/30 text-amber-300 text-xs font-mono shadow-sm">
               <div className="flex items-center gap-2">
                 <Scale className="w-4 h-4 text-amber-400 shrink-0" />
-                <span className="font-bold">ZEN.LEGISLATE Active &bull; Lok Sabha Parliamentary Drafting Session</span>
+                <span className="font-bold">ZEN.LEGISLATE Active &bull; Parliamentary Drafting Session</span>
               </div>
               <button
                 type="button"
@@ -280,7 +289,25 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
                 className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-[11px] transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
               >
                 <Gavel className="w-3.5 h-3.5 text-black" />
-                <span>Switch Draft (Bill / Press Release)</span>
+                <span>Switch Draft (Bill / Press Release / Motion)</span>
+              </button>
+            </div>
+          )}
+
+          {/* Multilateral UN Drafting Banner */}
+          {isUnContext && (
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-black/40 to-blue-950/20 border border-cyan-500/30 text-cyan-300 text-xs font-mono shadow-sm">
+              <div className="flex items-center gap-2">
+                <Globe2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span className="font-bold">ZEN.DOCS Active &bull; Multilateral Drafting ({committeeParam || 'UN Chamber'})</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsUnDraftModalOpen(true)}
+                className="px-3 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-[11px] transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+              >
+                <ScrollText className="w-3.5 h-3.5 text-black" />
+                <span>Switch Draft (Draft Res / Working Paper / Communiqué)</span>
               </button>
             </div>
           )}
@@ -596,6 +623,16 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
       <LokSabhaDraftModal
         isOpen={isLokSabhaDraftModalOpen}
         onClose={() => setIsLokSabhaDraftModalOpen(false)}
+        onSelectDraftType={(type, title) => {
+          editor.createDocument(type, title);
+          editor.setActiveView('EDITOR');
+        }}
+      />
+
+      <UnDocsDraftModal
+        isOpen={isUnDraftModalOpen}
+        onClose={() => setIsUnDraftModalOpen(false)}
+        committeeName={committeeParam || 'UN Chamber'}
         onSelectDraftType={(type, title) => {
           editor.createDocument(type, title);
           editor.setActiveView('EDITOR');

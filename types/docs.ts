@@ -2,6 +2,7 @@
 
 export type ZenDocType = 
   | 'UN_RESOLUTION' 
+  | 'DRAFT_RESOLUTION'
   | 'INDIAN_BILL' 
   | 'POLICY_WORKING_PAPER' 
   | 'PRESS_ARTICLE' 

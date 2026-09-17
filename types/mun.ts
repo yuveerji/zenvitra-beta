@@ -77,6 +77,22 @@ export interface MunInvite {
   acceptedAt?: string;
 }
 
+export type MunConferenceStatus = 'NOT_STARTED' | 'DAY_1' | 'DAY_2' | 'DAY_3' | 'CONCLUDED';
+
+export interface MunConference {
+  id: string;
+  name: string;
+  shortName: string;
+  tagline?: string;
+  startDate: string;
+  endDate: string;
+  status: MunConferenceStatus;
+  conveningDate: string; // for countdown when NOT_STARTED
+  secretariatChair: string;
+  location: string;
+  committees: string[]; // committee IDs belonging to this conference
+}
+
 export interface MunCommittee {
   id: string;
   eventId: string;
@@ -84,6 +100,7 @@ export interface MunCommittee {
   shortName: string;
   agenda: string;
   type: MunCommitteeType;
+  isIndianCommittee?: boolean;
   totalDelegates: number;
   presentCount: number;
   presentAndVotingCount: number;
@@ -110,8 +127,10 @@ export interface MunMotion {
   totalMinutes: number;
   individualSpeakerSeconds: number;
   status: 'queued' | 'active' | 'passed' | 'failed' | 'withdrawn';
+  verdict?: 'passed' | 'failed' | 'withdrawn' | 'PASSED' | 'FAILED' | 'WITHDRAWN';
   votesFor: number;
   votesAgainst: number;
+  day?: 1 | 2 | 3;
   createdAt: string;
 }
 
@@ -124,6 +143,10 @@ export interface MunSpeaker {
   status: 'queued' | 'speaking' | 'completed' | 'yielded';
   yieldType?: 'chair' | 'points_of_info' | 'another_delegate';
   timeRemaining?: number;
+  speakingSeconds?: number;
+  hasSpoken?: boolean;
+  day?: 1 | 2 | 3;
+  listType?: 'GSL' | 'MOD' | 'UNMOD';
 }
 
 export interface MunParliamentaryPoint {
@@ -148,14 +171,17 @@ export interface MunDraftResolution {
   preambulatoryClauses: string[];
   operativeClauses: string[];
   status: 'drafting' | 'introduced' | 'voting' | 'passed' | 'failed';
+  day?: 1 | 2 | 3;
   introducedAt?: string;
+  passedAt?: string;
 }
 
 export interface MunSessionState {
   committeeId: string;
   sessionNumber: number;
-  status: 'in_session' | 'caucus' | 'recess' | 'voting';
+  status: 'in_session' | 'caucus' | 'recess' | 'voting' | 'concluded';
   sessionMode: MunSessionMode;
+  activeDay?: 1 | 2 | 3;
   timer: {
     totalSeconds: number;
     remainingSeconds: number;
@@ -169,14 +195,31 @@ export interface MunSessionState {
   speakersList: MunSpeaker[];
   parliamentaryPoints: MunParliamentaryPoint[];
   resolutions: MunDraftResolution[];
+  motionHistory?: Array<MunMotion & { day?: 1 | 2 | 3; verdict?: 'passed' | 'failed' | 'withdrawn' | 'PASSED' | 'FAILED' | 'WITHDRAWN' }>;
+  speakerHistory?: Array<MunSpeaker & { day?: 1 | 2 | 3; listType?: 'GSL' | 'MOD' | 'UNMOD'; speakingSeconds?: number; hasSpoken?: boolean }>;
+  passedBills?: Array<{ id: string; title: string; code: string; day?: 1 | 2 | 3; sponsors?: string[]; passedAt: string; documentUrl?: string; fullText?: string; summary?: string }>;
+  winnersSummary?: {
+    bestDelegate?: string | { portfolio: string; delegateName?: string; school?: string };
+    highCommendation?: string | { portfolio: string; delegateName?: string };
+    specialMention?: string;
+    specialMentions?: Array<{ portfolio: string; delegateName?: string }>;
+    honorableMention?: string;
+    bestPositionPaper?: string;
+    bestChair?: string;
+    concludedAt?: string;
+    verdictNotes?: string;
+  };
 }
 
 /* ─────────── DELEGATE MUN EXPERIENCE & VERIFICATION DOSSIER ─────────── */
 
 export type MunParticipationRole = 
   | 'DELEGATE'
+  | 'delegate'
   | 'EXECUTIVE_BOARD'
+  | 'executive_board'
   | 'SECRETARIAT'
+  | 'secretariat'
   | 'HEAD_DELEGATE'
   | 'INTERNATIONAL_PRESS'
   | 'ORGANIZER_FOUNDER'
@@ -186,13 +229,18 @@ export type MunParticipationRole =
 
 export type MunAward = 
   | 'BEST_DELEGATE'
+  | 'Best Delegate (Gavel)'
   | 'HIGH_COMMENDATION'
+  | 'High Commendation'
   | 'SPECIAL_MENTION'
+  | 'Special Mention'
   | 'HONORABLE_MENTION'
+  | 'Honorable Mention'
   | 'VERBAL_MENTION'
   | 'BEST_CHAIR'
   | 'BEST_POSITION_PAPER'
-  | 'PARTICIPATION';
+  | 'PARTICIPATION'
+  | string;
 
 export type MunVerificationStatus = 
   | 'VERIFIED_SECRETARIAT'
@@ -213,11 +261,17 @@ export interface MunExperienceRecord {
   award?: MunAward;
   agendaOrTopic?: string;
   verificationStatus: MunVerificationStatus;
+  eventName?: string;
+  eventId?: string;
+  portfolio?: string;
+  isVerified?: boolean;
+  startDate?: string;
+  endDate?: string;
   verificationProofUrl?: string;
   secretariatContactEmail?: string;
   certificateId?: string;
   verifiedAt?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 /* ─────────── LIVE CHAMBER VOTING & MULTI-MODE STAGES ─────────── */

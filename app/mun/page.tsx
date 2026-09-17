@@ -49,6 +49,10 @@ import { ZENMUN_2026_MASTER } from '@/lib/conferenceData';
 import { useAuth } from '@/context/AuthContext';
 import { useMun } from '@/context/MunContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
+import { MunSelectorBar } from '@/components/mun/MunSelectorBar';
+import { MunNotStartedView } from '@/components/mun/MunNotStartedView';
+import { ChamberDayHistoryModal } from '@/components/mun/ChamberDayHistoryModal';
+import { CommitteeSummaryPaperModal } from '@/components/mun/CommitteeSummaryPaperModal';
 
 type MunModuleTab = 
   | 'ALL'
@@ -66,7 +70,18 @@ type MunModuleTab =
 
 export default function ZenMunPortalPage() {
   const { user, profile } = useAuth();
-  const { committees, registrations, userInvites, activeCommitteeId } = useMun();
+  const {
+    committees,
+    registrations,
+    userInvites,
+    activeCommitteeId,
+    conferences,
+    activeConferenceId,
+    activeConference
+  } = useMun();
+
+  const [showDayHistoryModal, setShowDayHistoryModal] = useState(false);
+  const [showSummaryPaperModal, setShowSummaryPaperModal] = useState(false);
 
   const isExecutive = Boolean(
     isFounder(user) || 
@@ -105,7 +120,19 @@ export default function ZenMunPortalPage() {
     <div className="min-h-screen bg-[#030407] text-neutral-300 flex flex-col justify-between font-sans selection:bg-cyan-500/30 pt-20 sm:pt-24">
       <Navbar />
 
+      <MunSelectorBar
+        onOpenHistory={() => setShowDayHistoryModal(true)}
+        onOpenSummary={() => setShowSummaryPaperModal(true)}
+      />
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-12 text-left">
+        
+        {/* If Selected Conference has not started yet */}
+        {activeConference?.status === 'NOT_STARTED' && (
+          <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/25">
+            <MunNotStartedView />
+          </div>
+        )}
         
         {/* ─── 1. SOVEREIGN OS HERO SECTION ─── */}
         <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-[#0a0d18] via-[#05070c] to-black border border-cyan-500/30 relative overflow-hidden shadow-[0_20px_70px_rgba(0,0,0,0.8)] space-y-8">
@@ -877,6 +904,20 @@ export default function ZenMunPortalPage() {
         )}
 
       </main>
+
+      {/* CHAMBER DAY HISTORY MODAL */}
+      <ChamberDayHistoryModal
+        isOpen={showDayHistoryModal}
+        onClose={() => setShowDayHistoryModal(false)}
+        committeeName={activeConference?.shortName || 'Chamber Plenary'}
+      />
+
+      {/* COMMITTEE VALEDICTORY SUMMARY PAPER MODAL */}
+      <CommitteeSummaryPaperModal
+        isOpen={showSummaryPaperModal}
+        onClose={() => setShowSummaryPaperModal(false)}
+        committee={committees.find(c => c.id === activeCommitteeId) || committees[0]}
+      />
 
       <Footer />
     </div>
