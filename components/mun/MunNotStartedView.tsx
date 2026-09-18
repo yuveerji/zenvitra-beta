@@ -48,7 +48,7 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
     return () => clearInterval(timer);
   }, [targetTime]);
 
-  const jharokha = conferences.find((c) => c.id === 'mun_jharokha_2026');
+  const liveConference = conferences.find((c) => c.status !== 'NOT_STARTED' && c.id !== activeConference?.id);
 
   return (
     <div className="w-full max-w-4xl mx-auto py-12 px-4 text-center space-y-8 animate-fade-in">
@@ -65,7 +65,7 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
           MUN Has Not Started Yet!
         </h1>
         <p className="text-sm sm:text-lg text-neutral-400 max-w-2xl mx-auto font-sans leading-relaxed">
-          <span className="text-white font-semibold">{activeConference?.name}</span> is scheduled for next week.
+          <span className="text-white font-semibold">{activeConference?.name || 'This Conference'}</span> is scheduled for next week.
           Chambers remain sealed until the Secretariat officially turns on Day 1.
         </p>
       </div>
@@ -98,7 +98,7 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
           <div className="text-[10px] font-mono text-neutral-400 uppercase">Convening Dates</div>
           <div className="text-xs font-bold text-white flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{activeConference?.startDate} &ndash; {activeConference?.endDate}</span>
+            <span>{activeConference?.startDate || 'TBA'} &ndash; {activeConference?.endDate || 'TBA'}</span>
           </div>
         </div>
 
@@ -106,7 +106,7 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
           <div className="text-[10px] font-mono text-neutral-400 uppercase">Secretariat Chair</div>
           <div className="text-xs font-bold text-white flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-amber-400" />
-            <span className="truncate">{activeConference?.secretariatChair}</span>
+            <span className="truncate">{activeConference?.secretariatChair || 'Executive Secretariat'}</span>
           </div>
         </div>
 
@@ -114,7 +114,7 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
           <div className="text-[10px] font-mono text-neutral-400 uppercase">Chamber Venue</div>
           <div className="text-xs font-bold text-white flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="truncate">{activeConference?.location}</span>
+            <span className="truncate">{activeConference?.location || 'Digital Sovereignty Chamber'}</span>
           </div>
         </div>
       </div>
@@ -122,17 +122,17 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
       {/* Secretariat Quick Launch & Switch Button */}
       <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
         {/* Switch to active MUN */}
-        {jharokha && jharokha.status !== 'NOT_STARTED' && (
+        {liveConference && (
           <button
             type="button"
             onClick={() => {
-              setActiveConferenceId('mun_jharokha_2026');
+              setActiveConferenceId(liveConference.id);
               if (onSwitchToActive) onSwitchToActive();
             }}
             className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20 transition-transform active:scale-95"
           >
             <Building2 className="w-4 h-4" />
-            <span>Switch to Active MUN: The Jharokha Forum (Day 1 Live)</span>
+            <span>Switch to Active MUN: {liveConference.shortName || liveConference.name} (Live)</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         )}

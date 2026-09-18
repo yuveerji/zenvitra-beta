@@ -4635,7 +4635,7 @@ export function ZenChatMesh() {
               {
                 type: 'mun',
                 id: `mun_${Date.now()}`,
-                title: 'Horizon MUN — UNGA DISEC Committee',
+                title: 'United Nations General Assembly — DISEC Committee',
                 subtitle: 'Debate resumes tomorrow at 09:00 AM CET in Plenary Hall',
                 badge: 'DISEC',
                 actionLabel: 'Enter Committee Dais',

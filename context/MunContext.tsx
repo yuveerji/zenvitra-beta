@@ -140,149 +140,19 @@ interface MunContextType {
 
 /* ─────────── LIVE DEFAULT PLATFORM DATA ─────────── */
 
-export const DEFAULT_CONFERENCES: MunConference[] = [
-  {
-    id: 'mun_jharokha_2026',
-    name: 'The Jharokha Forum Model United Nations 2026',
-    shortName: 'JHAROKHA 2026',
-    tagline: 'Sovereign Youth Multilateral Assembly & Indian Parliamentary Simulation',
-    startDate: 'Sept 17, 2026',
-    endDate: 'Sept 19, 2026',
-    status: 'DAY_1',
-    currentDay: 1,
-    totalDays: 3,
-    conveningDate: '2026-09-17T09:00:00.000Z',
-    secretariatChair: 'Yuveer Chhatwani (Secretary-General)',
-    location: 'The Grand Palace / Live Sovereign Dais',
-    committees: ['lok-sabha-2026', 'constituent-assembly-2026', 'unsc-2026'],
-  },
-  {
-    id: 'mun_horizon_2026',
-    name: 'Horizon Model United Nations 2026',
-    shortName: 'HORIZON 2026',
-    tagline: 'Global Strategic Diplomatic Council & Youth Climate Forum',
-    startDate: 'Sept 26, 2026',
-    endDate: 'Sept 28, 2026',
-    status: 'NOT_STARTED',
-    currentDay: 0,
-    totalDays: 3,
-    conveningDate: '2026-09-26T09:00:00.000Z',
-    secretariatChair: 'Executive Secretariat Council',
-    location: 'Geneva Diplomatic Quarters',
-    committees: ['unga-plenary', 'unhrc-2026', 'pitch-arena'],
-  }
-];
+export const DEFAULT_CONFERENCES: MunConference[] = [];
 
 const DEFAULT_COMMITTEES: MunCommittee[] = [
   {
-    id: 'unsc-2026',
-    eventId: 'mun_jharokha_2026',
-    name: 'UN Security Council (UNSC)',
-    shortName: 'UNSC',
-    type: 'UNSC',
-    isIndianCommittee: false,
-    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
-    totalDelegates: 15,
-    presentCount: 15,
-    presentAndVotingCount: 15,
-    quorumNeeded: 9,
-    dais: { chair: 'Presiding Officer (Geneva)', viceChair: 'Deputy Rapporteur' }
-  },
-  {
-    id: 'unga-plenary',
-    eventId: 'mun_horizon_2026',
-    name: 'UN General Assembly Plenary',
-    shortName: 'UNGA',
-    type: 'DISEC',
-    isIndianCommittee: false,
-    agenda: 'Universal Youth Framework for Sustainable Compute & Climate Action',
-    totalDelegates: 30,
-    presentCount: 26,
-    presentAndVotingCount: 24,
-    quorumNeeded: 16,
-    dais: { chair: 'President of General Assembly', viceChair: 'Under-Secretary-General' }
-  },
-  {
-    id: 'unhrc-2026',
-    eventId: 'mun_horizon_2026',
-    name: 'UN Human Rights Council (UNHRC)',
-    shortName: 'UNHRC',
-    type: 'UNHRC',
-    isIndianCommittee: false,
-    agenda: 'Digital Privacy, Algorithmic Transparency & Youth Human Rights in the AI Era',
-    totalDelegates: 25,
-    presentCount: 22,
-    presentAndVotingCount: 20,
-    quorumNeeded: 13,
-    dais: { chair: 'High Commissioner Rapporteur', viceChair: 'Session Moderator' }
-  },
-  {
-    id: 'lok-sabha-2026',
-    eventId: 'mun_jharokha_2026',
-    name: 'Lok Sabha (House of the People) — Youth Parliamentary Session',
-    shortName: 'LOK SABHA',
-    type: 'LOK_SABHA',
-    isIndianCommittee: true,
-    agenda: 'National Digital Sovereignty, AI Ethics & Youth Entrepreneurship Promotion Bill',
-    totalDelegates: 45,
-    presentCount: 38,
-    presentAndVotingCount: 35,
-    quorumNeeded: 23,
-    dais: { chair: "Hon'ble Speaker of the House", viceChair: 'Deputy Speaker' }
-  },
-  {
-    id: 'constituent-assembly-2026',
-    eventId: 'mun_jharokha_2026',
-    name: 'Constituent Assembly of India (SASSY 2026)',
-    shortName: 'CONSTITUENT ASSEMBLY',
-    type: 'PARLIAMENTARY',
-    isIndianCommittee: true,
-    agenda: 'Deliberation upon Drafting and Adoption of an Amended Constitution for the Republic',
-    totalDelegates: 50,
-    presentCount: 44,
-    presentAndVotingCount: 40,
-    quorumNeeded: 25,
-    dais: { 
-      chair: 'Hit Upadhyay (Chairman)', 
-      viceChair: 'Kavyanshi (Deputy Chairman) & Yuveer Chhatwani (Advisor)' 
-    }
-  },
-  {
-    id: 'open-mic-stage',
-    eventId: 'evt_stage_2026',
-    name: 'Global Youth Open Mic & Spoken Word Stage',
-    shortName: 'STAGE',
-    type: 'CRISIS',
-    agenda: 'Live Poetry, Acoustic Jam, Standup Comedy & Expressive Freedom',
-    totalDelegates: 50,
-    presentCount: 42,
-    presentAndVotingCount: 38,
-    quorumNeeded: 10,
-    dais: { chair: 'Stage Host & MC', viceChair: 'Sound & Voting Coordinator' }
-  },
-  {
-    id: 'pitch-arena',
-    eventId: 'evt_pitch_2026',
-    name: 'Youth DeepTech & Climate Venture Pitch Arena',
-    shortName: 'PITCH',
-    type: 'ECOSOC',
-    agenda: '3-Minute Lightning Innovation Pitches & Real-Time Jury Venture Balloting',
-    totalDelegates: 25,
-    presentCount: 20,
-    presentAndVotingCount: 18,
-    quorumNeeded: 12,
-    dais: { chair: 'Lead Jury Evaluator', viceChair: 'Venture Moderator' }
-  },
-  {
     id: 'custom-chamber-other',
-    eventId: 'evt_custom_2026',
+    eventId: 'evt_custom_chamber',
     name: 'Universal Youth Assembly & Multidisciplinary Forum',
     shortName: 'OTHER',
     type: 'OTHER',
     agenda: 'Open Consensus Deliberation, Cross-Sector Direct Policy & Innovation',
     totalDelegates: 25,
-    presentCount: 20,
-    presentAndVotingCount: 18,
+    presentCount: 0,
+    presentAndVotingCount: 0,
     quorumNeeded: 12,
     dais: { chair: 'Session Moderator', viceChair: 'Assembly Secretary' }
   }
@@ -290,101 +160,19 @@ const DEFAULT_COMMITTEES: MunCommittee[] = [
 
 const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
   {
-    id: 'unsc-2026',
-    title: 'UN Security Council (UNSC) Plenary',
-    category: 'MUN_COMMITTEE',
-    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
-    shortCode: 'UNSC-01',
-    hostName: 'Presiding Officer',
-    hostHandle: 'chair.unsc',
-    isLive: true,
-    activeVotingSession: null,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-08-29'
-  },
-  {
-    id: 'unga-plenary',
-    title: 'UN General Assembly Plenary',
-    category: 'MUN_COMMITTEE',
-    agenda: 'Universal Youth Framework for Sustainable Compute & Climate Action',
-    shortCode: 'UNGA-01',
-    hostName: 'President of General Assembly',
-    hostHandle: 'president.ga',
-    isLive: true,
-    activeVotingSession: null,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-08-29'
-  },
-  {
-    id: 'open-mic-stage',
-    title: 'Geneva Youth Open Mic & Poetry Stage',
-    category: 'OPEN_MIC',
-    agenda: 'Live Spoken Word, Acoustic Beats, Standup Comedy & Stage Deliberations',
-    shortCode: 'MIC-432',
-    hostName: 'Stage Host MC',
-    hostHandle: 'stage.mc',
-    isLive: true,
-    activeVotingSession: null,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-08-29'
-  },
-  {
-    id: 'pitch-arena',
-    title: 'Climate & Sovereign AI Demo Pitch Arena',
-    category: 'PITCH_STAGE',
-    agenda: '3-Minute Lightning Startup Pitches with Live Jury Venture Ballots',
-    shortCode: 'PITCH-26',
-    hostName: 'Venture Moderator',
-    hostHandle: 'venture.lead',
-    isLive: true,
-    activeVotingSession: null,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-08-29'
-  },
-  {
-    id: 'lok-sabha-2026',
-    title: 'Lok Sabha (House of the People) — Special Youth Parliamentary Session',
-    category: 'LOK_SABHA',
-    agenda: 'National Digital Sovereignty, AI Ethics & Youth Entrepreneurship Promotion Bill',
-    shortCode: 'LS-01',
-    hostName: "Hon'ble Speaker of the House",
-    hostHandle: 'speaker.loksabha',
-    isLive: true,
-    activeVotingSession: null,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [
-      { id: 'ls_1', emoji: '🇮🇳', count: 64 },
-      { id: 'ls_2', emoji: '⚖️', count: 45 },
-      { id: 'ls_3', emoji: '📢', count: 38 }
-    ],
-    createdAt: '2026-08-29'
-  },
-  {
     id: 'custom-chamber-other',
     title: 'Universal Youth Assembly & Multidisciplinary Forum',
     category: 'OTHER',
     agenda: 'Open Consensus Deliberation, Cross-Sector Direct Policy & Innovation',
-    shortCode: 'YOUTH-99',
+    shortCode: 'YOUTH-01',
     hostName: 'Assembly Moderator',
-    hostHandle: 'moderator.custom',
+    hostHandle: 'moderator',
     isLive: true,
     activeVotingSession: null,
     votingHistory: [],
     performersQueue: [],
-    reactions: [
-      { id: 'c_1', emoji: '✨', count: 30 },
-      { id: 'c_2', emoji: '💡', count: 27 }
-    ],
-    createdAt: '2026-08-29'
+    reactions: [],
+    createdAt: new Date().toISOString()
   }
 ];
 
@@ -413,10 +201,10 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
   /* Conferences & Multi-MUN Day Engine */
   const [conferences, setConferences] = useState<MunConference[]>(DEFAULT_CONFERENCES);
-  const [activeConferenceId, setActiveConferenceIdState] = useState<string>('mun_jharokha_2026');
+  const [activeConferenceId, setActiveConferenceIdState] = useState<string>('');
 
   const [committees, setCommittees] = useState<MunCommittee[]>(INITIAL_COMMITTEES);
-  const [activeCommitteeId, setActiveCommitteeId] = useState<string>('lok-sabha-2026');
+  const [activeCommitteeId, setActiveCommitteeId] = useState<string>('custom-chamber-other');
   const [selectedInviteModal, setSelectedInviteModal] = useState<MunInvite | null>(null);
 
   const activeConference = useMemo(() => {
@@ -626,14 +414,60 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   const [sessionStates, setSessionStates] = useState<Record<string, MunSessionState>>(INITIAL_SESSION_STATES);
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
-  // Load from localStorage on client mount
+  // Load from localStorage on client mount & scrub any legacy seeded data
   useEffect(() => {
     try {
+      const storedConfs = localStorage.getItem(LS_MUN_CONFERENCES);
+      if (storedConfs) {
+        const parsed = JSON.parse(storedConfs);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(
+            (c: any) => c && c.id !== 'mun_jharokha_2026' && c.id !== 'mun_horizon_2026'
+          );
+          setConferences(cleaned);
+          localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(cleaned));
+        }
+      }
+
+      const storedActiveConf = localStorage.getItem(LS_ACTIVE_CONFERENCE);
+      if (storedActiveConf && storedActiveConf !== 'mun_jharokha_2026' && storedActiveConf !== 'mun_horizon_2026') {
+        setActiveConferenceIdState(storedActiveConf);
+      } else {
+        localStorage.removeItem(LS_ACTIVE_CONFERENCE);
+        setActiveConferenceIdState('');
+      }
+
       const storedCommittees = localStorage.getItem(LS_MUN_COMMITTEES);
-      if (storedCommittees) setCommittees(JSON.parse(storedCommittees));
+      if (storedCommittees) {
+        const parsed = JSON.parse(storedCommittees);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(
+            (c: any) =>
+              c &&
+              c.eventId !== 'mun_jharokha_2026' &&
+              c.eventId !== 'mun_horizon_2026' &&
+              !['lok-sabha-2026', 'unsc-2026', 'unga-plenary', 'unhrc-2026', 'constituent-assembly-2026'].includes(c.id)
+          );
+          const finalComms = cleaned.length > 0 ? cleaned : DEFAULT_COMMITTEES;
+          setCommittees(finalComms);
+          localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(finalComms));
+        }
+      }
 
       const storedRooms = localStorage.getItem(LS_CHAMBER_ROOMS);
-      if (storedRooms) setChamberRooms(JSON.parse(storedRooms));
+      if (storedRooms) {
+        const parsed = JSON.parse(storedRooms);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(
+            (r: any) =>
+              r &&
+              !['lok-sabha-2026', 'unsc-2026', 'unga-plenary', 'unhrc-2026'].includes(r.id)
+          );
+          const finalRooms = cleaned.length > 0 ? cleaned : DEFAULT_CHAMBER_ROOMS;
+          setChamberRooms(finalRooms);
+          localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(finalRooms));
+        }
+      }
 
       const storedVotes = localStorage.getItem(LS_CHAMBER_VOTES);
       if (storedVotes) setVotingSessions(JSON.parse(storedVotes));
@@ -652,12 +486,6 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
       const storedSessions = localStorage.getItem(LS_MUN_SESSION);
       if (storedSessions) setSessionStates(JSON.parse(storedSessions));
-
-      const storedConfs = localStorage.getItem(LS_MUN_CONFERENCES);
-      if (storedConfs) setConferences(JSON.parse(storedConfs));
-
-      const storedActiveConf = localStorage.getItem(LS_ACTIVE_CONFERENCE);
-      if (storedActiveConf) setActiveConferenceIdState(storedActiveConf);
     } catch {}
     setIsMounted(true);
   }, []);

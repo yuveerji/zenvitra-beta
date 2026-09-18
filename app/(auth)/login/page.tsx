@@ -218,9 +218,15 @@ function LoginForm() {
           parsed = JSON.parse(raw);
         } catch (_) {}
       }
-      // Purge any auto-seeded unauthenticated founder entry from previous build
+      // Purge any auto-seeded unauthenticated founder entry or mock test accounts
       if (Array.isArray(parsed)) {
-        parsed = parsed.filter(a => a.id !== 'zen_user_yuveer' || a.lastLoginSuccess);
+        const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova'];
+        parsed = parsed.filter(a => {
+          const u = (a.username || a.handle || a.id || '').replace(/^@/, '').toLowerCase();
+          if (fakeHandles.includes(u)) return false;
+          if (a.id === 'zen_user_yuveer' && !a.lastLoginSuccess) return false;
+          return true;
+        });
         if (parsed.length === 0) {
           localStorage.removeItem('zenvitra_saved_sessions');
         } else {

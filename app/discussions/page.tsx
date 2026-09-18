@@ -33,96 +33,7 @@ import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
 
 /* ─────────── UNCENSORED CIVIC YOUTH DEBATES ─────────── */
 
-const INITIAL_DISCUSSIONS: OpenDiscussion[] = [
-  {
-    id: 'disc-standup-free-speech',
-    title: 'Samay Raina, Ranveer & Ashish Solanki: Is comedy & podcasting becoming a political crime?',
-    slug: 'samay-ranveer-ashish-comedy-crackdown',
-    question: 'Where does constitutional freedom of satirical expression end, and where does state-backed outrage and criminal intimidation begin?',
-    contextSummary: 'In the wake of criminal FIRs, takedown demands, police complaints, and organized algorithmic boycotts targeting Indian comedians and podcasters (including Samay Raina, Ranveer Allahbadia / TRS episodes, and Ashish Solanki’s Pretty Good Roast episodes being forced offline), India’s youth face unprecedented cultural censorship. Does comedy require legal guardrails, or is weaponized outrage suffocating genuine civic dissent?',
-    category: 'JUSTICE',
-    tags: ['FreeSpeech', 'StandUpComedy', 'SamayRaina', 'RanveerAllahbadia', 'AshishSolanki', 'Censorship', 'Article19'],
-    authorId: 'auth-citizen-yuveer',
-    authorName: 'Yuveer Chhatwani',
-    authorUsername: 'yuveer',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    viewCount: 0,
-    participantCount: 0,
-    proCount: 0,
-    conCount: 0,
-    evidenceCount: 0,
-    isFeatured: true,
-    status: 'ACTIVE',
-    arguments: []
-  },
-  {
-    id: 'disc-neet-paper-leaks',
-    title: 'The NEET-UG Paper Leak Scandal: Systemic corruption and compromised meritocracy',
-    slug: 'neet-paper-leak-nta-collapse',
-    question: 'How do 2.4 million Indian medical aspirants dismantle the coaching mafia and bureaucratic impunity of the National Testing Agency?',
-    contextSummary: 'The 2024–2025 NEET-UG crisis exposed burnt question papers in Patna, solver gangs operating across Godhra and Bihar, 67 students scoring impossible 720/720 perfection, and arbitrary grace marks awarded behind closed doors. Indian youth sacrifice years of mental and financial stability for high-stakes exams that are traded to the highest bidder.',
-    category: 'EDUCATION',
-    tags: ['NEETUG', 'PaperLeak', 'NTACorruption', 'StudentRights', 'EducationReform', 'MeritCrisis'],
-    authorId: 'auth-citizen-yuveer',
-    authorName: 'Yuveer Chhatwani',
-    authorUsername: 'yuveer',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    viewCount: 0,
-    participantCount: 0,
-    proCount: 0,
-    conCount: 0,
-    evidenceCount: 0,
-    isFeatured: true,
-    status: 'ACTIVE',
-    arguments: []
-  },
-  {
-    id: 'disc-godi-media-collapse',
-    title: 'The "Godi Media" Surrender: Has Indian television traded truth for state theatrics?',
-    slug: 'godi-media-propaganda-crisis',
-    question: 'Has prime-time television debased the Fourth Pillar into an instrument of division, and how can decentralized youth journalism replace it?',
-    contextSummary: 'Coined by independent journalists to describe corporate news channels acting as lapdogs to political power rather than watchdogs of the public, the "Godi Media" phenomenon has replaced ground reporting on youth unemployment, healthcare, and educational collapse with manufactured 9 PM communal shouting matches and state-sanctioned distraction.',
-    category: 'GOVERNANCE',
-    tags: ['GodiMedia', 'FourthPillar', 'JournalismCrisis', 'IndependentMedia', 'PressFreedom', 'YouthAccountability'],
-    authorId: 'auth-citizen-yuveer',
-    authorName: 'Yuveer Chhatwani',
-    authorUsername: 'yuveer',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    viewCount: 0,
-    participantCount: 0,
-    proCount: 0,
-    conCount: 0,
-    evidenceCount: 0,
-    isFeatured: true,
-    status: 'ACTIVE',
-    arguments: []
-  },
-  {
-    id: 'disc-marvel-doctor-doom-geopolitics',
-    title: 'Doctor Doom, Latverian Sovereignty & Multiverse Incursions: Is authoritarian order justified when global systems fail?',
-    slug: 'doctor-doom-latveria-secret-wars-geopolitics',
-    question: 'When international multilateralism collapses and crises become existential, does Victor von Doom’s absolute authoritarian technocracy represent the only viable path to planetary survival, or is freedom non-negotiable even in the face of annihilation?',
-    contextSummary: 'From Marvel Secret Wars to Latveria’s isolationist welfare state, Doctor Doom presents the ultimate philosophical paradox: zero poverty, zero crime, supreme technological advancement, yet absolute denial of democratic liberty. As young thinkers witness democratic gridlock on global issues, can Doom’s realpolitik doctrine be critiqued through real-world political theory and international law?',
-    category: 'MARVEL',
-    tags: ['Marvel', 'DoctorDoom', 'Latveria', 'SecretWars', 'MCU', 'Geopolitics', 'PoliticalTheory', 'Authoritarianism'],
-    authorId: 'auth-citizen-yuveer',
-    authorName: 'Yuveer Chhatwani',
-    authorUsername: 'yuveer',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    viewCount: 0,
-    participantCount: 0,
-    proCount: 0,
-    conCount: 0,
-    evidenceCount: 0,
-    isFeatured: true,
-    status: 'ACTIVE',
-    arguments: []
-  }
-];
+const INITIAL_DISCUSSIONS: OpenDiscussion[] = [];
 
 const CATEGORIES: DiscussionCategory[] = [
   'MARVEL',
@@ -140,30 +51,39 @@ const CATEGORIES: DiscussionCategory[] = [
 
 const LS_DISCUSSIONS = 'zenvitra_discussions_v4_clean';
 
+const SEEDED_DISCUSSION_IDS = [
+  'disc-standup-free-speech',
+  'disc-neet-paper-leaks',
+  'disc-godi-media-collapse',
+  'disc-marvel-doctor-doom-geopolitics'
+];
+
 // Helper to sanitize discussions and ensure no legacy fake arguments remain
 function sanitizeDiscussions(discs: OpenDiscussion[]): OpenDiscussion[] {
-  return discs.map(d => {
-    // Filter out fake seeded arguments (Priya Nair, Rohan Deshmukh, Kavita Krishnan, or legacy seed IDs)
-    const cleanArgs = (d.arguments || []).filter(arg => {
-      const isFakeAuthor = ['priya_med', 'rohand_aspirant', 'kavita_krishnan'].includes(arg.authorUsername);
-      const isFakeId = arg.id.startsWith('arg-neet-') || arg.id.startsWith('arg-standup-') || arg.id.startsWith('arg-godi-');
-      return !isFakeAuthor && !isFakeId;
+  return discs
+    .filter(d => !SEEDED_DISCUSSION_IDS.includes(d.id))
+    .map(d => {
+      // Filter out fake seeded arguments
+      const cleanArgs = (d.arguments || []).filter(arg => {
+        const isFakeAuthor = ['priya_med', 'rohand_aspirant', 'kavita_krishnan'].includes(arg.authorUsername);
+        const isFakeId = arg.id.startsWith('arg-neet-') || arg.id.startsWith('arg-standup-') || arg.id.startsWith('arg-godi-');
+        return !isFakeAuthor && !isFakeId;
+      });
+
+      const pro = cleanArgs.filter(a => a.stance === 'PRO').length;
+      const con = cleanArgs.filter(a => a.stance === 'CON').length;
+      const evi = cleanArgs.filter(a => a.stance === 'EVIDENCE').length;
+      const debatersCount = new Set(cleanArgs.map(a => a.authorUsername || a.authorName)).size;
+
+      return {
+        ...d,
+        arguments: cleanArgs,
+        proCount: pro,
+        conCount: con,
+        evidenceCount: evi,
+        participantCount: debatersCount
+      };
     });
-
-    const pro = cleanArgs.filter(a => a.stance === 'PRO').length;
-    const con = cleanArgs.filter(a => a.stance === 'CON').length;
-    const evi = cleanArgs.filter(a => a.stance === 'EVIDENCE').length;
-    const debatersCount = new Set(cleanArgs.map(a => a.authorUsername || a.authorName)).size;
-
-    return {
-      ...d,
-      arguments: cleanArgs,
-      proCount: pro,
-      conCount: con,
-      evidenceCount: evi,
-      participantCount: debatersCount
-    };
-  });
 }
 
 export default function OpenDiscussionsPage() {
@@ -180,7 +100,9 @@ export default function OpenDiscussionsPage() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return sanitizeDiscussions(parsed);
+          const sanitized = sanitizeDiscussions(parsed);
+          localStorage.setItem(LS_DISCUSSIONS, JSON.stringify(sanitized));
+          return sanitized;
         }
       }
       return INITIAL_DISCUSSIONS;

@@ -127,16 +127,9 @@ export interface AdminTransaction {
   status: 'SETTLED' | 'ESCROW_HELD' | 'REFUNDED';
 }
 
-const INITIAL_MODERATION_CASES: ModerationCase[] = [
-  { caseId: 'CASE #ZNV-9842', target: '@bot_mesh_01', reason: 'Automated burst-posting suspicious links', severity: 'CRITICAL', reporter: 'AI Heuristic Flag' },
-  { caseId: 'CASE #ZNV-9843', target: '@troll_anonymous', reason: 'Harassment in public MUN committee room', severity: 'HIGH', reporter: 'Delegate Report' },
-];
+const INITIAL_MODERATION_CASES: ModerationCase[] = [];
 
-const INITIAL_KYC_QUEUE: KycItem[] = [
-  { id: 'KYC-101', name: 'Alexander Vance', type: 'Student Council Secretariat', org: 'Model UN Oxford', score: 98 },
-  { id: 'KYC-102', name: 'Elena Rostova', type: 'Press Correspondent', org: 'Global Diplomat Review', score: 95 },
-  { id: 'KYC-103', name: 'Dr. Tariq Al-Mansoor', type: 'Academic Fellow', org: 'Sovereign Research Lab', score: 89 },
-];
+const INITIAL_KYC_QUEUE: KycItem[] = [];
 
 const ADMIN_MODULES: AdminModuleMeta[] = [
   { id: '01_command_center', code: '01', name: 'Command Center', category: 'CORE', icon: Activity, badge: 'LIVE' },
@@ -336,7 +329,14 @@ export function ZenAdminControlRoom() {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('zenvitra_admin_cases');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed: ModerationCase[] = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(c => c && c.caseId !== 'CASE #ZNV-9842' && c.caseId !== 'CASE #ZNV-9843');
+            localStorage.setItem('zenvitra_admin_cases', JSON.stringify(cleaned));
+            return cleaned;
+          }
+        }
       } catch (_) {}
     }
     return INITIAL_MODERATION_CASES;
@@ -347,7 +347,14 @@ export function ZenAdminControlRoom() {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('zenvitra_admin_kyc_queue');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed: KycItem[] = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(k => k && !['KYC-101', 'KYC-102', 'KYC-103'].includes(k.id));
+            localStorage.setItem('zenvitra_admin_kyc_queue', JSON.stringify(cleaned));
+            return cleaned;
+          }
+        }
       } catch (_) {}
     }
     return INITIAL_KYC_QUEUE;

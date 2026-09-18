@@ -117,8 +117,8 @@ export default function ZenFormsHubPage() {
         { id: 'p_allergies', label: 'Do you have any allergies?', type: 'short_answer', required: false }
       ];
     } else if (templateKey === 'mun_reg') {
-      title = 'The Jharokha Forum MUN 2026 — Delegate Registration';
-      description = 'Official delegate registration portal for The Jharokha Forum Model United Nations 2026. Select your preferred committees and portfolios.';
+      title = 'Model United Nations — Delegate Registration';
+      description = 'Official delegate registration portal. Select your preferred committees and portfolios.';
       category = 'MUN_REGISTRATION';
       fields = [
         { id: 'f_name', label: 'Full Delegate Name', type: 'short_answer', required: true },

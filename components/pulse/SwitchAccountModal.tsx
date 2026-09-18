@@ -38,7 +38,11 @@ export function SwitchAccountModal({
     try {
       const storedList = JSON.parse(localStorage.getItem('zenvitra_saved_sessions') || '[]');
       if (Array.isArray(storedList)) {
-        setSavedAccounts(storedList);
+        const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova'];
+        const cleaned = storedList.filter(
+          (a) => a && !fakeHandles.includes((a.username || '').replace(/^@/, '').toLowerCase())
+        );
+        setSavedAccounts(cleaned);
       }
     } catch (_) {}
   }, [isOpen]);

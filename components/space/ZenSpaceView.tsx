@@ -1501,7 +1501,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                     {/* Accordion Expand Body */}
                     {mode === 'embed' && isExpanded && (
                       <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10 animate-fade-in space-y-4">
-                        {/* Optional General Instructions (matching Jharokha forum style) */}
+                        {/* Optional General Instructions */}
                         {block.metadata?.formInstructions && (
                           <div className={`p-3.5 rounded-2xl text-xs space-y-1.5 leading-relaxed border ${
                             isLight ? 'bg-neutral-100 border-neutral-300 text-neutral-800' : 'bg-white/5 border-white/10 text-zinc-300'
