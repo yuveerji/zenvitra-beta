@@ -12,6 +12,7 @@ const PUBLIC_PREFIXES = [
   '/images',
   '/auth',
   '/mun',
+  '/zen-diplomacy',
   '/events',
   '/news',
   '/press',
@@ -143,6 +144,12 @@ export function middleware(request: NextRequest) {
   const isCountdownExempt = 
     pathname === '/countdown' ||
     pathname.startsWith('/countdown/') ||
+    pathname === '/zen-diplomacy' ||
+    pathname.startsWith('/zen-diplomacy/') ||
+    pathname === '/events' ||
+    pathname.startsWith('/events/') ||
+    pathname === '/mun' ||
+    pathname.startsWith('/mun/') ||
     pathname === '/forms' ||
     pathname.startsWith('/forms/') ||
     pathname.startsWith('/f/') ||
