@@ -163,6 +163,7 @@ export default function PublicFormFillingPage() {
 
     // Check required fields
     for (const field of form.fields) {
+      if (['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type)) continue;
       const val = formData[field.id];
       if (field.required) {
         if (val === undefined || val === null || val === '') {
@@ -296,8 +297,27 @@ export default function PublicFormFillingPage() {
       {/* ── Main Form Box ── */}
       <main className="max-w-2xl mx-auto w-full my-8 relative z-10 space-y-6">
         
-        {/* If successfully submitted */}
-        {submittedSubId ? (
+        {form.acceptingResponses === false ? (
+          <div className={`p-8 sm:p-12 ${borderRadiusClass} ${getCardStyleClasses()} text-center space-y-4`}>
+            <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center mx-auto">
+              <Lock className="w-6 h-6" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white" style={{ fontFamily: displayFont }}>
+              This form is no longer accepting responses
+            </h2>
+            <p className="text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
+              Submissions have concluded for this form. If you believe this is an error, please reach out to the form administrator.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/forms"
+                className="inline-block px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition"
+              >
+                Return to ZenForms Hub
+              </Link>
+            </div>
+          </div>
+        ) : submittedSubId ? (
           <div className={`p-8 sm:p-12 ${borderRadiusClass} ${getCardStyleClasses()} text-center space-y-6 animate-fade-in`}>
             <div
               className="w-16 h-16 rounded-full mx-auto flex items-center justify-center border"
@@ -433,173 +453,263 @@ export default function PublicFormFillingPage() {
 
               {/* Fields List */}
               <form onSubmit={handleSubmit} className="space-y-6">
-                {form.fields.map((field) => (
-                  <div key={field.id} className="space-y-2">
-                    <label className="text-xs sm:text-sm font-medium text-white flex items-center gap-1.5">
-                      <span>{field.label}</span>
-                      {field.required && <span className="text-rose-400 font-bold">*</span>}
-                    </label>
+                {form.fields.map((field) => {
+                  // 1. Title & Description Block
+                  if (field.type === 'title_desc') {
+                    return (
+                      <div key={field.id} className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                        <h3 className="text-lg sm:text-xl font-bold text-white" style={{ fontFamily: displayFont }}>
+                          {field.label}
+                        </h3>
+                        {field.description && (
+                          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                            {field.description}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
 
-                    {field.description && (
-                      <p className="text-[11px] text-neutral-400 font-normal">
-                        {field.description}
-                      </p>
-                    )}
+                  // 2. Image Block
+                  if (field.type === 'image_block') {
+                    return (
+                      <div key={field.id} className="rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden space-y-3 p-4">
+                        {field.mediaUrl && (
+                          <img src={field.mediaUrl} alt={field.label} className="w-full rounded-xl object-cover max-h-96" />
+                        )}
+                        {field.label && <h4 className="text-sm font-semibold text-white px-1">{field.label}</h4>}
+                        {field.description && <p className="text-xs text-neutral-400 px-1">{field.description}</p>}
+                      </div>
+                    );
+                  }
 
-                    {/* Short Text */}
-                    {field.type === 'text' && (
-                      <input
-                        type="text"
-                        placeholder={field.placeholder || 'Your answer'}
-                        value={formData[field.id] || ''}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
-                      />
-                    )}
+                  // 3. Video Block
+                  if (field.type === 'video_block') {
+                    let embedUrl = '';
+                    if (field.videoUrl) {
+                      const match = field.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+                      if (match && match[1]) embedUrl = `https://www.youtube-nocookie.com/embed/${match[1]}`;
+                    }
+                    return (
+                      <div key={field.id} className="rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden space-y-3 p-4">
+                        {embedUrl && (
+                          <div className="aspect-video w-full rounded-xl overflow-hidden">
+                            <iframe src={embedUrl} title={field.label} className="w-full h-full border-0" allowFullScreen />
+                          </div>
+                        )}
+                        {field.label && <h4 className="text-sm font-semibold text-white px-1">{field.label}</h4>}
+                      </div>
+                    );
+                  }
 
-                    {/* Email */}
-                    {field.type === 'email' && (
-                      <input
-                        type="email"
-                        placeholder={field.placeholder || 'email@example.com'}
-                        value={formData[field.id] || ''}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
-                      />
-                    )}
+                  // 4. Section Break
+                  if (field.type === 'section_break') {
+                    return (
+                      <div key={field.id} className="pt-6 border-t-2 border-dashed border-white/20 my-6">
+                        <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-200">
+                          <h4 className="text-base font-bold uppercase tracking-wider">{field.label}</h4>
+                          {field.description && <p className="text-xs text-neutral-300 pt-1">{field.description}</p>}
+                        </div>
+                      </div>
+                    );
+                  }
 
-                    {/* Telephone */}
-                    {field.type === 'tel' && (
-                      <input
-                        type="tel"
-                        placeholder={field.placeholder || '+91 98765 43210'}
-                        value={formData[field.id] || ''}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
-                      />
-                    )}
+                  // Standard Input Question Cards
+                  return (
+                    <div key={field.id} className="space-y-2">
+                      <label className="text-xs sm:text-sm font-medium text-white flex items-center gap-1.5">
+                        <span>{field.label}</span>
+                        {field.required && <span className="text-rose-400 font-bold">*</span>}
+                      </label>
 
-                    {/* Number */}
-                    {field.type === 'number' && (
-                      <input
-                        type="number"
-                        placeholder={field.placeholder || '0'}
-                        value={formData[field.id] || ''}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
-                      />
-                    )}
+                      {field.description && (
+                        <p className="text-[11px] text-neutral-400 font-normal">
+                          {field.description}
+                        </p>
+                      )}
 
-                    {/* Date */}
-                    {field.type === 'date' && (
-                      <div className="relative">
+                      {/* Short Text */}
+                      {(field.type === 'text' || field.type === 'short_answer') && (
                         <input
-                          type="date"
+                          type="text"
+                          placeholder={field.placeholder || 'Your answer'}
                           value={formData[field.id] || ''}
                           onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#0e111a] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono"
+                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
                         />
-                      </div>
-                    )}
+                      )}
 
-                    {/* Paragraph / Textarea */}
-                    {field.type === 'textarea' && (
-                      <textarea
-                        rows={3}
-                        placeholder={field.placeholder || 'Enter your detailed thoughts...'}
-                        value={formData[field.id] || ''}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed"
-                      />
-                    )}
+                      {/* Email */}
+                      {field.type === 'email' && (
+                        <input
+                          type="email"
+                          placeholder={field.placeholder || 'email@example.com'}
+                          value={formData[field.id] || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
+                        />
+                      )}
 
-                    {/* Dropdown Select */}
-                    {field.type === 'select' && (
-                      <select
-                        value={formData[field.id] || ''}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-[#0e111a] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer"
-                      >
-                        <option value="" disabled>Select an option...</option>
-                        {(field.options || []).map((opt) => (
-                          <option key={opt} value={opt} className="bg-[#0e111a] text-white">
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                      {/* Telephone */}
+                      {field.type === 'tel' && (
+                        <input
+                          type="tel"
+                          placeholder={field.placeholder || '+91 98765 43210'}
+                          value={formData[field.id] || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
+                        />
+                      )}
 
-                    {/* Radio Options */}
-                    {field.type === 'radio' && (
-                      <div className="space-y-2 pt-1">
-                        {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => (
-                          <label
-                            key={opt}
-                            className={`flex items-center gap-3 p-3 rounded-xl border transition cursor-pointer ${
-                              formData[field.id] === opt
-                                ? 'bg-white/10 border-white/40'
-                                : 'bg-white/[0.02] border-white/10 hover:bg-white/5'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={field.id}
-                              value={opt}
-                              checked={formData[field.id] === opt}
-                              onChange={() => handleInputChange(field.id, opt)}
-                              className="hidden"
-                            />
-                            <div
-                              className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
-                              style={{
-                                borderColor: formData[field.id] === opt ? accentColor : 'rgba(255,255,255,0.3)',
-                                backgroundColor: formData[field.id] === opt ? accentColor : 'transparent',
-                              }}
-                            >
-                              {formData[field.id] === opt && (
-                                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentTextColor }} />
-                              )}
-                            </div>
-                            <span className="text-xs sm:text-sm text-neutral-200">{opt}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
+                      {/* Number */}
+                      {field.type === 'number' && (
+                        <input
+                          type="number"
+                          placeholder={field.placeholder || '0'}
+                          value={formData[field.id] || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
+                        />
+                      )}
 
-                    {/* Checkbox Options */}
-                    {field.type === 'checkbox' && (
-                      <div className="space-y-2 pt-1">
-                        {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => {
-                          const isChecked = Array.isArray(formData[field.id]) && formData[field.id].includes(opt);
-                          return (
+                      {/* Date */}
+                      {field.type === 'date' && (
+                        <div className="relative">
+                          <input
+                            type="date"
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full px-4 py-3 rounded-2xl bg-[#0e111a] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono"
+                          />
+                        </div>
+                      )}
+
+                      {/* Paragraph / Textarea */}
+                      {(field.type === 'textarea' || field.type === 'paragraph') && (
+                        <textarea
+                          rows={3}
+                          placeholder={field.placeholder || 'Enter your detailed thoughts...'}
+                          value={formData[field.id] || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed"
+                        />
+                      )}
+
+                      {/* Dropdown Select */}
+                      {(field.type === 'select' || field.type === 'dropdown') && (
+                        <select
+                          value={formData[field.id] || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          className="w-full px-4 py-3 rounded-2xl bg-[#0e111a] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer"
+                        >
+                          <option value="" disabled>Select an option...</option>
+                          {(field.options || []).map((opt) => (
+                            <option key={opt} value={opt} className="bg-[#0e111a] text-white">
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+
+                      {/* Multiple Choice / Radio Options */}
+                      {(field.type === 'radio' || field.type === 'multiple_choice') && (
+                        <div className="space-y-2 pt-1">
+                          {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => (
                             <label
                               key={opt}
-                              onClick={() => handleCheckboxToggle(field.id, opt)}
                               className={`flex items-center gap-3 p-3 rounded-xl border transition cursor-pointer ${
-                                isChecked
+                                formData[field.id] === opt
                                   ? 'bg-white/10 border-white/40'
                                   : 'bg-white/[0.02] border-white/10 hover:bg-white/5'
                               }`}
                             >
+                              <input
+                                type="radio"
+                                name={field.id}
+                                value={opt}
+                                checked={formData[field.id] === opt}
+                                onChange={() => handleInputChange(field.id, opt)}
+                                className="hidden"
+                              />
                               <div
-                                className="w-4 h-4 rounded-md border flex items-center justify-center shrink-0"
+                                className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
                                 style={{
-                                  borderColor: isChecked ? accentColor : 'rgba(255,255,255,0.3)',
-                                  backgroundColor: isChecked ? accentColor : 'transparent',
+                                  borderColor: formData[field.id] === opt ? accentColor : 'rgba(255,255,255,0.3)',
+                                  backgroundColor: formData[field.id] === opt ? accentColor : 'transparent',
                                 }}
                               >
-                                {isChecked && (
-                                  <Check className="w-3 h-3" style={{ color: accentTextColor }} />
+                                {formData[field.id] === opt && (
+                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentTextColor }} />
                                 )}
                               </div>
                               <span className="text-xs sm:text-sm text-neutral-200">{opt}</span>
                             </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                          ))}
+
+                          {field.hasOtherOption && (
+                            <div className="flex items-center gap-3 p-2">
+                              <span className="text-xs text-neutral-400">Other:</span>
+                              <input
+                                type="text"
+                                placeholder="Your answer"
+                                onChange={(e) => handleInputChange(field.id, e.target.value)}
+                                className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white outline-none"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Checkboxes / Multi-select Options */}
+                      {(field.type === 'checkbox' || field.type === 'checkboxes') && (
+                        <div className="space-y-2 pt-1">
+                          {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => {
+                            const isChecked = Array.isArray(formData[field.id]) && formData[field.id].includes(opt);
+                            return (
+                              <label
+                                key={opt}
+                                onClick={() => handleCheckboxToggle(field.id, opt)}
+                                className={`flex items-center gap-3 p-3 rounded-xl border transition cursor-pointer ${
+                                  isChecked
+                                    ? 'bg-white/10 border-white/40'
+                                    : 'bg-white/[0.02] border-white/10 hover:bg-white/5'
+                                }`}
+                              >
+                                <div
+                                  className="w-4 h-4 rounded-md border flex items-center justify-center shrink-0"
+                                  style={{
+                                    borderColor: isChecked ? accentColor : 'rgba(255,255,255,0.3)',
+                                    backgroundColor: isChecked ? accentColor : 'transparent',
+                                  }}
+                                >
+                                  {isChecked && (
+                                    <Check className="w-3 h-3" style={{ color: accentTextColor }} />
+                                  )}
+                                </div>
+                                <span className="text-xs sm:text-sm text-neutral-200">{opt}</span>
+                              </label>
+                            );
+                          })}
+
+                          {field.hasOtherOption && (
+                            <div className="flex items-center gap-3 p-2">
+                              <span className="text-xs text-neutral-400">Other:</span>
+                              <input
+                                type="text"
+                                placeholder="Your answer"
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (val) handleCheckboxToggle(field.id, `Other: ${val}`);
+                                }}
+                                className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white outline-none"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
 
                 <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-1.5 text-[11px] font-mono text-neutral-400">

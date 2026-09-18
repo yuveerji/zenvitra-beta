@@ -2,33 +2,28 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
-  FileText,
+  FileSpreadsheet,
   Plus,
+  Search,
+  LayoutGrid,
+  List,
+  ArrowUpDown,
+  MoreVertical,
   Share2,
   Download,
   Trash2,
-  Eye,
-  CheckCircle2,
+  ExternalLink,
   Copy,
   Sparkles,
-  Shield,
-  Layers,
-  ArrowRight,
-  X,
-  ExternalLink,
-  Table,
-  Zap,
-  Clock,
-  Send,
-  FileSpreadsheet,
-  RefreshCw,
-  Palette,
-  Type,
-  Image as ImageIcon,
+  CheckCircle2,
   Sliders,
-  Check,
-  Code
+  Calendar,
+  Layers,
+  Clock,
+  Eye,
+  Edit3
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -41,70 +36,17 @@ import {
   syncFormSubmissionsToGoogleSheets,
   getZenFormsSheetsConfig
 } from '@/lib/formsStorage';
-import {
-  ZenForm,
-  ZenFormField,
-  ZenFormFieldType,
-  ZenFormTheme,
-  ZenFormSubmission,
-  ZenFormCustomStyle,
-  ZenFormFontFamily
-} from '@/types/forms';
+import { ZenForm } from '@/types/forms';
 import { ZenFormsSheetsPanel } from '@/components/forms/ZenFormsSheetsPanel';
-import {
-  ZEN_FORM_FONTS,
-  GRADIENT_PRESETS,
-  ACCENT_COLOR_PALETTES,
-  CARD_BORDER_RADIUS_MAP,
-  APPS_SCRIPT_TEMPLATE,
-  getFontCssFamily
-} from '@/lib/formsThemes';
 
 export default function ZenFormsHubPage() {
+  const router = useRouter();
   const [forms, setForms] = useState<ZenForm[]>([]);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [viewingSubmissionsForm, setViewingSubmissionsForm] = useState<ZenForm | null>(null);
-  const [currentSubmissions, setCurrentSubmissions] = useState<ZenFormSubmission[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState<'fields' | 'design' | 'sheets'>('fields');
-  const [editingFormId, setEditingFormId] = useState<string | null>(null);
-  const [isSyncingFormId, setIsSyncingFormId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [activeMenuFormId, setActiveMenuFormId] = useState<string | null>(null);
   const [syncToast, setSyncToast] = useState<string | null>(null);
-  const [copiedScript, setCopiedScript] = useState(false);
-
-  // Form Builder Core State
-  const [formTitle, setFormTitle] = useState('');
-  const [formSlug, setFormSlug] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [formCategory, setFormCategory] = useState<ZenForm['category']>('MUN_REGISTRATION');
-  const [formTheme, setFormTheme] = useState<ZenFormTheme>('amber');
-  const [formSubmitText, setFormSubmitText] = useState('Submit Response');
-  const [formSuccessMsg, setFormSuccessMsg] = useState('Your response has been cryptographically recorded on the Zenvitra ledger.');
-  const [formFields, setFormFields] = useState<ZenFormField[]>([]);
-
-  // 100% Configurable Aesthetics State
-  const [customStyle, setCustomStyle] = useState<ZenFormCustomStyle>({
-    displayFont: 'Space Grotesk',
-    bodyFont: 'Inter',
-    bgType: 'gradient',
-    bgGradient: GRADIENT_PRESETS[0].css,
-    bgSolidColor: '#07090e',
-    bgImageUrl: '',
-    bgOverlayOpacity: 75,
-    bgBlur: 0,
-    coverImageUrl: '',
-    logoUrl: '',
-    cardStyle: 'glass-deep',
-    borderRadius: 'xl',
-    accentColor: '#f59e0b',
-    accentTextColor: '#000000',
-    ambientEffect: 'aurora',
-  });
-
-  // Google Sheets Direct Flow State
-  const [sheetUrl, setSheetUrl] = useState('');
-  const [webhookUrl, setWebhookUrl] = useState('');
-  const [sheetTab, setSheetTab] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     refreshForms();
@@ -114,1266 +56,458 @@ export default function ZenFormsHubPage() {
     setForms(getPublicForms());
   };
 
-  const handleCopyLink = (formIdOrSlug: string) => {
-    if (typeof window !== 'undefined') {
-      const origin = window.location.origin;
-      const url = `${origin}/forms/${formIdOrSlug}`;
-      navigator.clipboard.writeText(url);
-      setCopiedId(formIdOrSlug);
-      setTimeout(() => setCopiedId(null), 2000);
+  const filteredForms = forms.filter((f) =>
+    f.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (f.description && f.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const handleCreateTemplate = (templateKey: string) => {
+    let title = 'Untitled form';
+    let category: ZenForm['category'] = 'GENERAL';
+    let description = 'Official intake form powered by Zenvitra Sovereign Ledger.';
+    let fields: ZenForm['fields'] = [];
+
+    if (templateKey === 'contact') {
+      title = 'Contact Information';
+      description = 'Please fill in your details and how our team can contact you.';
+      fields = [
+        { id: 'f_name', label: 'Name', type: 'short_answer', required: true },
+        { id: 'f_email', label: 'Email', type: 'short_answer', required: true },
+        { id: 'f_address', label: 'Address', type: 'paragraph', required: false },
+        { id: 'f_phone', label: 'Phone number', type: 'short_answer', required: false },
+        { id: 'f_comments', label: 'Comments', type: 'paragraph', required: false }
+      ];
+    } else if (templateKey === 'rsvp') {
+      title = 'Event RSVP & Accreditation';
+      description = 'Let us know if you will be joining our upcoming conference or summit session.';
+      fields = [
+        { id: 'r_attend', label: 'Can you attend?', type: 'multiple_choice', required: true, options: ['Yes, I will be there', 'Sorry, can\'t make it'] },
+        { id: 'r_names', label: 'What are the names of people attending?', type: 'paragraph', required: false },
+        { id: 'r_diet', label: 'Dietary restrictions', type: 'checkboxes', required: false, options: ['Vegetarian', 'Vegan', 'Halal', 'Kosher', 'Gluten-free'] }
+      ];
+    } else if (templateKey === 'party') {
+      title = 'Summit & Gala Dinner Invite';
+      description = 'Confirm your attendance and preferences for the diplomatic banquet.';
+      fields = [
+        { id: 'p_name', label: 'What is your name?', type: 'short_answer', required: true },
+        { id: 'p_bring', label: 'What will you be bringing?', type: 'checkboxes', required: false, options: ['Appetizers', 'Salad', 'Main Dish', 'Dessert', 'Drinks'] },
+        { id: 'p_allergies', label: 'Do you have any allergies?', type: 'short_answer', required: false }
+      ];
+    } else if (templateKey === 'mun_reg') {
+      title = 'The Jharokha Forum MUN 2026 — Delegate Registration';
+      description = 'Official delegate registration portal for The Jharokha Forum Model United Nations 2026. Select your preferred committees and portfolios.';
+      category = 'MUN_REGISTRATION';
+      fields = [
+        { id: 'f_name', label: 'Full Delegate Name', type: 'short_answer', required: true },
+        { id: 'f_email', label: 'Official Email Address', type: 'short_answer', required: true },
+        { id: 'f_phone', label: 'WhatsApp / Contact Number', type: 'short_answer', required: true },
+        { id: 'f_comm', label: 'First Committee Preference', type: 'dropdown', required: true, options: ['UNSC', 'DISEC', 'UNHRC', 'Historic Crisis'] },
+        { id: 'f_port', label: 'Country / Portfolio Choice', type: 'short_answer', required: true }
+      ];
     }
-  };
 
-  const handleOpenSubmissions = (form: ZenForm) => {
-    setViewingSubmissionsForm(form);
-    setCurrentSubmissions(getFormSubmissions(form.id));
-  };
-
-  const handleExportCsv = (form: ZenForm) => {
-    const subs = getFormSubmissions(form.id);
-    const csvContent = exportSubmissionsToCsv(form, subs);
-    if (!csvContent) {
-      alert('No submissions recorded for this form yet.');
-      return;
-    }
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${form.slug || form.id}_submissions.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleDelete = (formId: string) => {
-    if (confirm('Are you sure you want to delete this ZenForm?')) {
-      deleteZenForm(formId);
-      refreshForms();
-    }
-  };
-
-  const handleSyncSingleFormToSheets = async (form: ZenForm) => {
-    setIsSyncingFormId(form.id);
-    const subs = getFormSubmissions(form.id);
-    const res = await syncFormSubmissionsToGoogleSheets(form, subs);
-    setIsSyncingFormId(null);
-    if (res.success) {
-      setSyncToast(`✓ Synced ${res.count || subs.length} responses for "${form.title}" to Google Sheets!`);
-    } else {
-      setSyncToast(`Sync notice: ${res.error || 'Failed to sync. Please ensure Google OAuth is connected.'}`);
-    }
-    setTimeout(() => setSyncToast(null), 4000);
-  };
-
-  const handleCopyAppsScript = () => {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(APPS_SCRIPT_TEMPLATE);
-      setCopiedScript(true);
-      setTimeout(() => setCopiedScript(false), 3000);
-    }
-  };
-
-  // ── Open Modal for Create ──
-  const handleOpenCreateModal = () => {
-    setEditingFormId(null);
-    setFormTitle('');
-    setFormSlug('');
-    setFormDescription('');
-    setFormCategory('MUN_REGISTRATION');
-    setFormTheme('amber');
-    setFormSubmitText('Submit Response');
-    setFormSuccessMsg('Your response has been cryptographically recorded on the Zenvitra ledger.');
-    setFormFields([
-      {
-        id: 'f_name',
-        label: 'Full Legal / Delegate Name',
-        type: 'text',
-        placeholder: 'Enter your name...',
-        required: true,
-      },
-      {
-        id: 'f_email',
-        label: 'Email Address',
-        type: 'email',
-        placeholder: 'you@example.com',
-        required: true,
-      },
-      {
-        id: 'f_preference',
-        label: 'Portfolio / Country Preference',
-        type: 'text',
-        placeholder: 'Preferred assignment...',
-        required: true,
-      }
-    ]);
-    const sheetsAcc = getZenFormsSheetsConfig();
-    setSheetUrl(sheetsAcc?.defaultSheetUrl || '');
-    setWebhookUrl('');
-    setSheetTab('');
-    setCustomStyle({
-      displayFont: 'Space Grotesk',
-      bodyFont: 'Inter',
-      bgType: 'gradient',
-      bgGradient: GRADIENT_PRESETS[0].css,
-      bgSolidColor: '#07090e',
-      bgImageUrl: '',
-      bgOverlayOpacity: 75,
-      bgBlur: 0,
-      coverImageUrl: '',
-      logoUrl: '',
-      cardStyle: 'glass-deep',
-      borderRadius: 'xl',
-      accentColor: '#f59e0b',
-      accentTextColor: '#000000',
-      ambientEffect: 'aurora',
-    });
-    setModalTab('fields');
-    setIsModalOpen(true);
-  };
-
-  // ── Open Modal for Edit ──
-  const handleOpenEditModal = (form: ZenForm) => {
-    setEditingFormId(form.id);
-    setFormTitle(form.title);
-    setFormSlug(form.slug || '');
-    setFormDescription(form.description || '');
-    setFormCategory(form.category || 'MUN_REGISTRATION');
-    setFormTheme(form.theme || 'amber');
-    setFormSubmitText(form.submitButtonText || 'Submit Response');
-    setFormSuccessMsg(form.successMessage || 'Your response has been cryptographically recorded on the Zenvitra ledger.');
-    setFormFields(form.fields || []);
-    
-    // Custom styles
-    const fallbackStyle: ZenFormCustomStyle = {
-      displayFont: form.theme === 'amber' ? 'Playfair Display' : 'Space Grotesk',
-      bodyFont: 'Inter',
-      bgType: 'gradient',
-      bgGradient: GRADIENT_PRESETS[0].css,
-      bgSolidColor: '#07090e',
-      bgImageUrl: '',
-      bgOverlayOpacity: 75,
-      bgBlur: 0,
-      coverImageUrl: '',
-      logoUrl: '',
-      cardStyle: 'glass-deep',
-      borderRadius: 'xl',
-      accentColor: form.theme === 'midnight' ? '#06b6d4' : (form.theme === 'emerald' ? '#10b981' : (form.theme === 'purple' ? '#8b5cf6' : '#f59e0b')),
-      accentTextColor: '#000000',
-      ambientEffect: 'aurora',
-    };
-    setCustomStyle(form.customStyle ? { ...fallbackStyle, ...form.customStyle } : fallbackStyle);
-
-    // Google Sheets Config
-    setSheetUrl(form.googleSheetsConfig?.sheetUrl || '');
-    setWebhookUrl(form.googleSheetsConfig?.webhookUrl || '');
-    setSheetTab(form.googleSheetsConfig?.sheetTab || '');
-
-    setModalTab('fields');
-    setIsModalOpen(true);
-  };
-
-  // ── Field Editing Handlers ──
-  const handleAddField = () => {
-    const nextIdx = formFields.length + 1;
-    setFormFields([
-      ...formFields,
-      {
-        id: `field_${Date.now()}_${nextIdx}`,
-        label: `Question #${nextIdx}`,
-        type: 'text',
-        placeholder: 'Enter answer...',
-        required: false,
-      }
-    ]);
-  };
-
-  const handleRemoveField = (fieldId: string) => {
-    setFormFields(formFields.filter((f) => f.id !== fieldId));
-  };
-
-  // ── Save Form (Create or Update) ──
-  const handleSaveForm = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formTitle.trim()) return;
-
-    const generatedSlug = (formSlug.trim() || formTitle.trim())
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-
-    const currentForm = editingFormId ? forms.find((f) => f.id === editingFormId) : null;
-    const sheetsAcc = getZenFormsSheetsConfig();
-
-    const targetForm: ZenForm = {
-      id: editingFormId || `form_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      title: formTitle.trim(),
-      slug: generatedSlug,
-      description: formDescription.trim() || 'Official public intake form powered by Zenvitra Sovereign Ledger.',
-      category: formCategory,
-      theme: formTheme,
-      customStyle: customStyle,
-      submitButtonText: formSubmitText.trim() || 'Submit Response',
-      successMessage: formSuccessMsg.trim() || 'Your response has been cryptographically recorded on the Zenvitra ledger.',
-      ownerHandle: currentForm?.ownerHandle || 'sovereign_host',
-      submissionsCount: currentForm?.submissionsCount || 0,
+    const newForm: ZenForm = {
+      id: `form_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      title,
+      slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      description,
+      category,
+      theme: 'amber',
+      submitButtonText: 'Submit Response',
+      successMessage: 'Your response has been cryptographically recorded on the Zenvitra ledger.',
+      ownerHandle: 'sovereign_host',
+      submissionsCount: 0,
       isPublished: true,
       allowAnonymous: true,
-      createdAt: currentForm?.createdAt || new Date().toISOString(),
+      acceptingResponses: true,
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      fields: formFields,
-      googleSheetsConfig: {
-        isConnected: Boolean(sheetUrl.trim() || webhookUrl.trim() || sheetsAcc?.isConnected),
-        sheetUrl: sheetUrl.trim() || undefined,
-        webhookUrl: webhookUrl.trim() || undefined,
-        sheetTab: sheetTab.trim() || (generatedSlug ? `ZEN_${generatedSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : undefined),
-        autoSync: true,
-        lastSyncedAt: currentForm?.googleSheetsConfig?.lastSyncedAt,
+      fields: fields.length > 0 ? fields : [{ id: 'q_1', label: 'Untitled Question', type: 'multiple_choice', options: ['Option 1'] }],
+      customStyle: {
+        displayFont: 'Space Grotesk',
+        bodyFont: 'Inter',
+        bgType: 'gradient',
+        bgGradient: 'from-[#0b0f19] via-[#05070c] to-[#020306]',
+        cardStyle: 'solid-dark',
+        borderRadius: '2xl',
+        accentColor: '#f59e0b',
+        accentTextColor: '#000000',
+        ambientEffect: 'aurora'
       }
     };
 
-    saveZenForm(targetForm);
-    refreshForms();
-    setIsModalOpen(false);
-    setSyncToast(editingFormId ? `✓ ZenForm "${targetForm.title}" design and fields updated!` : `✓ New ZenForm "${targetForm.title}" published live!`);
-    setTimeout(() => setSyncToast(null), 4000);
+    saveZenForm(newForm);
+    router.push(`/forms/edit/${newForm.id}`);
   };
 
-  const totalEntries = forms.reduce((acc, curr) => acc + (curr.submissionsCount || 0), 0);
-
   return (
-    <div className="min-h-screen bg-[#040609] text-neutral-200 font-sans selection:bg-amber-500/30 flex flex-col justify-between pt-20 sm:pt-24 text-left">
+    <div className="min-h-screen bg-[#07090e] text-neutral-100 font-sans selection:bg-amber-500/30 flex flex-col justify-between pt-16 sm:pt-20">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-10 flex-1">
-        
-        {/* Hero Banner */}
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-[#121624] via-[#090d16] to-[#04060a] border border-amber-500/30 relative overflow-hidden shadow-2xl space-y-6">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 blur-[130px] pointer-events-none rounded-full" />
-          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-cyan-500/10 blur-[120px] pointer-events-none rounded-full" />
+      {/* ── TOAST NOTIFICATION ── */}
+      {syncToast && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-neutral-900 border border-emerald-500/40 text-emerald-300 font-mono text-xs shadow-2xl flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{syncToast}</span>
+        </div>
+      )}
 
-          <div className="space-y-3 relative z-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10px] uppercase font-bold tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>PUBLIC LEDGER &bull; DISTRACTION-FREE FORM ENGINE</span>
+      {/* ── TOP SEARCH & BRAND BAR (Google Forms Hub Header) ── */}
+      <div className="border-b border-white/10 bg-[#090c13]/80 backdrop-blur-md px-4 sm:px-8 py-3.5">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <FileSpreadsheet className="w-5 h-5 text-white" />
             </div>
-
-            <h1 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight leading-tight">
-              ZEN.FORMS
-            </h1>
-
-            <p className="text-sm sm:text-base text-neutral-300 font-sans leading-relaxed">
-              Create high-speed, beautiful, distraction-free public forms for delegate registrations, executive board applications, and event signups. No Google sign-in walls, zero surveillance telemetry, instant CSV exports, and offline backup ledgers.
-            </p>
+            <div>
+              <h1 className="text-xl font-bold font-display tracking-tight text-white flex items-center gap-2">
+                <span>ZEN.FORMS</span>
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-mono uppercase font-bold">
+                  Sovereign Studio
+                </span>
+              </h1>
+            </div>
           </div>
 
-          {/* Quick Metrics & CTA */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10 relative z-10 font-mono">
-            <div className="flex items-center gap-6 text-xs">
-              <div>
-                <span className="text-neutral-500 uppercase block text-[10px]">Active Forms</span>
-                <span className="text-xl font-bold text-white">{forms.length}</span>
-              </div>
-              <div className="h-8 w-px bg-white/10" />
-              <div>
-                <span className="text-neutral-500 uppercase block text-[10px]">Total Submissions</span>
-                <span className="text-xl font-bold text-amber-300">{totalEntries}</span>
-              </div>
-              <div className="h-8 w-px bg-white/10" />
-              <div>
-                <span className="text-neutral-500 uppercase block text-[10px]">Data Ledger</span>
-                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Permanent Sync</span>
-                </span>
-              </div>
+          {/* Search Input (Google Forms Search Style) */}
+          <div className="flex-1 max-w-xl mx-auto w-full">
+            <div className="relative">
+              <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search forms..."
+                className="w-full bg-[#121622] hover:bg-[#161b2a] focus:bg-[#161b2a] border border-white/10 focus:border-amber-400/80 rounded-full pl-10 pr-4 py-2 text-sm text-white placeholder-neutral-500 outline-none transition shadow-inner font-sans"
+              />
             </div>
-
-            <button
-              type="button"
-              onClick={handleOpenCreateModal}
-              className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 transition-transform active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create New ZenForm</span>
-            </button>
           </div>
         </div>
+      </div>
 
-        {/* Global Toast Alert */}
-        {syncToast && (
-          <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center gap-2.5 animate-fade-in">
-            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{syncToast}</span>
-          </div>
-        )}
+      <main className="max-w-6xl mx-auto px-4 sm:px-8 py-6 w-full space-y-10 flex-1">
+        {/* Google Sheets Account Connection Panel */}
+        <ZenFormsSheetsPanel onSyncComplete={refreshForms} />
 
-        {/* Google Sheets Account Connection Engine */}
-        <ZenFormsSheetsPanel />
-
-        {/* Live Public Forms Grid */}
-        <div className="space-y-4">
+        {/* ── SECTION 1: "START A NEW FORM" TEMPLATE GALLERY ── */}
+        <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-bold font-display text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-amber-400" />
-              <span>Public Forms Ledger</span>
+            <h2 className="text-sm font-semibold text-neutral-300 font-sans tracking-wide">
+              Start a new form
             </h2>
-            <span className="text-xs font-mono text-neutral-400">{forms.length} Forms Available</span>
+            <span className="text-xs font-mono text-neutral-500 hover:text-neutral-300 cursor-pointer">
+              Template gallery
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {forms.map((form) => (
-              <div
-                key={form.id}
-                className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-amber-500/40 transition-all flex flex-col justify-between space-y-5 group shadow-xl relative overflow-hidden"
-              >
-                {/* Visual Cover Accent if set */}
-                {form.customStyle?.coverImageUrl && (
-                  <div
-                    className="h-12 -mx-6 -mt-6 bg-cover bg-center border-b border-white/10 relative"
-                    style={{ backgroundImage: `url(${form.customStyle.coverImageUrl})` }}
-                  >
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
-                  </div>
-                )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {/* 1. Blank Form (+ Google Style) */}
+            <Link
+              href="/forms/edit/new"
+              className="group flex flex-col space-y-2 cursor-pointer"
+            >
+              <div className="aspect-[4/3] rounded-2xl bg-[#0e121c] border border-white/15 hover:border-amber-400/70 transition-all duration-200 flex items-center justify-center shadow-lg group-hover:shadow-amber-500/10 group-hover:scale-[1.02] relative overflow-hidden">
+                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 group-hover:bg-amber-400/10 group-hover:border-amber-400/40 flex items-center justify-center transition">
+                  <Plus className="w-7 h-7 text-amber-400 group-hover:scale-110 transition-transform" />
+                </div>
+              </div>
+              <span className="text-xs font-medium text-neutral-300 group-hover:text-white truncate">
+                Blank form
+              </span>
+            </Link>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-mono uppercase font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                      {form.category.replace('_', ' ')}
-                    </span>
-                    <span className="text-[11px] font-mono text-neutral-400 flex items-center gap-1.5">
-                      <Clock className="w-3 h-3 text-neutral-500" />
-                      <span>{form.submissionsCount || 0} responses</span>
-                    </span>
-                  </div>
+            {/* 2. Contact Information Template */}
+            <div
+              onClick={() => handleCreateTemplate('contact')}
+              className="group flex flex-col space-y-2 cursor-pointer"
+            >
+              <div className="aspect-[4/3] rounded-2xl bg-[#0e121c] border border-white/10 hover:border-emerald-400/60 transition-all duration-200 p-3 shadow-lg group-hover:scale-[1.02] flex flex-col justify-between">
+                <div className="h-2 w-full rounded bg-emerald-500/60" />
+                <div className="space-y-1.5 opacity-60">
+                  <div className="h-2 w-3/4 rounded bg-white/30" />
+                  <div className="h-1.5 w-1/2 rounded bg-white/20" />
+                  <div className="h-3 w-full rounded bg-white/10 mt-2" />
+                </div>
+                <div className="h-1 w-1/4 rounded bg-emerald-400/50" />
+              </div>
+              <span className="text-xs font-medium text-neutral-300 group-hover:text-white truncate">
+                Contact Information
+              </span>
+            </div>
 
-                  <h3
-                    className="font-bold text-lg text-white group-hover:text-amber-300 transition"
-                    style={{ fontFamily: getFontCssFamily(form.customStyle?.displayFont) }}
-                  >
-                    {form.title}
-                  </h3>
-
-                  <p className="text-xs text-neutral-400 font-sans leading-relaxed line-clamp-2">
-                    {form.description}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-2 pt-1 text-[10px] font-mono text-neutral-400">
-                    <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10">
-                      Font: {form.customStyle?.displayFont || 'Default'}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 capitalize">
-                      Style: {form.customStyle?.cardStyle || form.theme}
-                    </span>
-                    {form.googleSheetsConfig?.isConnected && (
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center gap-1">
-                        <FileSpreadsheet className="w-3 h-3" />
-                        <span>Sheets Connected</span>
-                      </span>
-                    )}
+            {/* 3. Event RSVP Template */}
+            <div
+              onClick={() => handleCreateTemplate('rsvp')}
+              className="group flex flex-col space-y-2 cursor-pointer"
+            >
+              <div className="aspect-[4/3] rounded-2xl bg-[#0e121c] border border-white/10 hover:border-cyan-400/60 transition-all duration-200 p-3 shadow-lg group-hover:scale-[1.02] flex flex-col justify-between">
+                <div className="h-2 w-full rounded bg-cyan-500/60" />
+                <div className="space-y-1.5 opacity-60">
+                  <div className="h-2 w-2/3 rounded bg-white/30" />
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-cyan-400/40" />
+                    <div className="h-2 w-1/2 rounded bg-white/20" />
                   </div>
                 </div>
+                <div className="h-1 w-1/3 rounded bg-cyan-400/50" />
+              </div>
+              <span className="text-xs font-medium text-neutral-300 group-hover:text-white truncate">
+                Event RSVP
+              </span>
+            </div>
 
-                {/* Card Action Controls */}
-                <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+            {/* 4. Summit & Gala Dinner */}
+            <div
+              onClick={() => handleCreateTemplate('party')}
+              className="group flex flex-col space-y-2 cursor-pointer"
+            >
+              <div className="aspect-[4/3] rounded-2xl bg-[#0e121c] border border-white/10 hover:border-purple-400/60 transition-all duration-200 p-3 shadow-lg group-hover:scale-[1.02] flex flex-col justify-between">
+                <div className="h-2 w-full rounded bg-purple-500/60" />
+                <div className="space-y-1.5 opacity-60">
+                  <div className="h-2 w-4/5 rounded bg-white/30" />
+                  <div className="h-1.5 w-3/5 rounded bg-white/20" />
+                </div>
+                <div className="h-1 w-1/4 rounded bg-purple-400/50" />
+              </div>
+              <span className="text-xs font-medium text-neutral-300 group-hover:text-white truncate">
+                Summit & Gala Dinner
+              </span>
+            </div>
+
+            {/* 5. MUN Delegate Registration */}
+            <div
+              onClick={() => handleCreateTemplate('mun_reg')}
+              className="group flex flex-col space-y-2 cursor-pointer"
+            >
+              <div className="aspect-[4/3] rounded-2xl bg-[#0e121c] border border-white/10 hover:border-amber-400/60 transition-all duration-200 p-3 shadow-lg group-hover:scale-[1.02] flex flex-col justify-between">
+                <div className="h-2 w-full rounded bg-amber-500/60" />
+                <div className="space-y-1.5 opacity-60">
+                  <div className="h-2 w-3/4 rounded bg-white/30" />
+                  <div className="h-2 w-1/2 rounded bg-white/20" />
+                  <div className="h-2 w-2/3 rounded bg-amber-400/30 mt-2" />
+                </div>
+                <div className="h-1 w-1/3 rounded bg-amber-400/50" />
+              </div>
+              <span className="text-xs font-medium text-neutral-300 group-hover:text-white truncate">
+                MUN Registration
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SECTION 2: "RECENT FORMS" LEDGER ── */}
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+            <h2 className="text-sm font-semibold text-neutral-300 font-sans tracking-wide">
+              Recent forms
+            </h2>
+
+            <div className="flex items-center gap-3 text-xs font-mono text-neutral-400">
+              <span className="cursor-pointer hover:text-white">Owned by anyone</span>
+              <div className="h-4 w-px bg-white/10" />
+              <button
+                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                className="p-1 rounded hover:bg-white/5 hover:text-white transition"
+                title={viewMode === 'grid' ? 'Switch to List' : 'Switch to Grid'}
+              >
+                {viewMode === 'grid' ? <List className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Forms Grid */}
+          {filteredForms.length === 0 ? (
+            <div className="p-12 rounded-3xl bg-[#0e121c] border border-white/10 text-center space-y-3">
+              <p className="text-sm text-neutral-400">No forms found matching your search.</p>
+              <button
+                onClick={() => router.push('/forms/edit/new')}
+                className="px-4 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs hover:bg-amber-400 transition"
+              >
+                Create New Form
+              </button>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {filteredForms.map((form) => (
+                <div
+                  key={form.id}
+                  className="rounded-2xl bg-[#0d1017] border border-white/10 hover:border-white/20 transition-all duration-200 overflow-hidden shadow-xl flex flex-col justify-between group relative"
+                >
+                  {/* Visual Mini-Preview Header (Click to Open Editor) */}
+                  <div
+                    onClick={() => router.push(`/forms/edit/${form.id}`)}
+                    className="h-32 bg-[#090b10] border-b border-white/10 p-4 cursor-pointer relative overflow-hidden flex flex-col justify-between group-hover:brightness-110 transition"
+                  >
+                    {/* Top Accent Strip of the form */}
+                    <div
+                      className="h-1.5 w-full rounded-full"
+                      style={{ backgroundColor: form.customStyle?.accentColor || '#f59e0b' }}
+                    />
+
+                    {/* Miniature Card Skeleton */}
+                    <div className="p-2.5 rounded-lg bg-black/40 border border-white/5 space-y-1.5 opacity-70">
+                      <div className="h-2 w-3/4 rounded bg-white/40" />
+                      <div className="h-1.5 w-1/2 rounded bg-white/20" />
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500">
+                      <span>{form.fields.length} questions</span>
+                      <span className="text-amber-400/80 font-bold">{form.submissionsCount || 0} entries</span>
+                    </div>
+                  </div>
+
+                  {/* Card Bottom Meta */}
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3
+                        onClick={() => router.push(`/forms/edit/${form.id}`)}
+                        className="text-sm font-bold text-white hover:text-amber-400 transition cursor-pointer truncate flex-1"
+                        title={form.title}
+                      >
+                        {form.title}
+                      </h3>
+
+                      {/* 3-Dot Menu */}
+                      <div className="relative flex-shrink-0">
+                        <button
+                          onClick={() => setActiveMenuFormId(activeMenuFormId === form.id ? null : form.id)}
+                          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-white/5 transition"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {activeMenuFormId === form.id && (
+                          <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-[#141824] border border-white/15 p-1 shadow-2xl z-30 space-y-0.5 text-xs font-mono text-left">
+                            <button
+                              onClick={() => router.push(`/forms/edit/${form.id}`)}
+                              className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Open Editor</span>
+                            </button>
+
+                            <Link
+                              href={`/forms/${form.slug || form.id}`}
+                              target="_blank"
+                              className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>View Public Form</span>
+                            </Link>
+
+                            <button
+                              onClick={() => {
+                                const url = `${window.location.origin}/forms/${form.slug || form.id}`;
+                                navigator.clipboard.writeText(url);
+                                setCopiedId(form.id);
+                                setTimeout(() => setCopiedId(null), 2000);
+                                setActiveMenuFormId(null);
+                              }}
+                              className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>{copiedId === form.id ? 'Copied Link!' : 'Copy Link'}</span>
+                            </button>
+
+                            <button
+                              onClick={async () => {
+                                setSyncToast('Syncing form submissions to Google Sheets...');
+                                const res = await syncFormSubmissionsToGoogleSheets(form);
+                                if (res.success) {
+                                  setSyncToast(`✓ Synced ${res.count || 0} entries to Google Sheets!`);
+                                } else {
+                                  setSyncToast(`Note: ${res.error}`);
+                                }
+                                setTimeout(() => setSyncToast(null), 4000);
+                                setActiveMenuFormId(null);
+                              }}
+                              className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-emerald-400 flex items-center gap-2"
+                            >
+                              <FileSpreadsheet className="w-3.5 h-3.5" />
+                              <span>Sync Sheets</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete form "${form.title}"?`)) {
+                                  deleteZenForm(form.id);
+                                  refreshForms();
+                                }
+                                setActiveMenuFormId(null);
+                              }}
+                              className="w-full px-3 py-2 rounded-lg hover:bg-red-500/20 text-red-400 flex items-center gap-2"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete Form</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-4 h-4 rounded bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                          <FileSpreadsheet className="w-2.5 h-2.5" />
+                        </div>
+                        <span>{new Date(form.updatedAt).toLocaleDateString()}</span>
+                      </div>
+
+                      {form.googleSheetsConfig?.webhookUrl && (
+                        <span className="text-[10px] text-emerald-400 font-bold">● Sheets Active</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* List View */
+            <div className="rounded-2xl bg-[#0d1017] border border-white/10 overflow-hidden divide-y divide-white/5 text-xs font-mono">
+              {filteredForms.map((form) => (
+                <div
+                  key={form.id}
+                  className="p-4 flex items-center justify-between gap-4 hover:bg-white/[0.02] transition"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0">
+                      <FileSpreadsheet className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <Link
+                        href={`/forms/edit/${form.id}`}
+                        className="font-bold text-white hover:text-amber-400 text-sm block truncate"
+                      >
+                        {form.title}
+                      </Link>
+                      <span className="text-[11px] text-neutral-400 block truncate">
+                        {form.fields.length} questions &bull; {form.submissionsCount || 0} entries
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/forms/${form.slug || form.id}`}
-                      className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+                      href={`/forms/edit/${form.id}`}
+                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white transition text-xs"
                     >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Open Form</span>
+                      Edit
                     </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEditModal(form)}
-                      className="px-3 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 transition flex items-center gap-1.5 cursor-pointer"
-                      title="Customize UI, Fonts & Fields"
+                    <Link
+                      href={`/forms/${form.slug || form.id}`}
+                      target="_blank"
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-white"
+                      title="Preview"
                     >
-                      <Palette className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Design &amp; Edit</span>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => handleCopyLink(form.slug || form.id)}
-                      className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition cursor-pointer"
-                      title="Copy Public Share Link"
-                    >
-                      {copiedId === (form.slug || form.id) ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      ) : (
-                        <Share2 className="w-4 h-4" />
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleOpenSubmissions(form)}
-                      className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition flex items-center gap-1.5 cursor-pointer"
-                      title="View Submissions Table"
-                    >
-                      <Table className="w-3.5 h-3.5" />
-                      <span>Responses</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleExportCsv(form)}
-                      className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition cursor-pointer"
-                      title="Export Responses to CSV"
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleSyncSingleFormToSheets(form)}
-                      disabled={isSyncingFormId === form.id}
-                      className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 transition cursor-pointer disabled:opacity-50"
-                      title="Stream responses to Google Sheets"
-                    >
-                      <FileSpreadsheet className={`w-4 h-4 ${isSyncingFormId === form.id ? 'animate-bounce' : ''}`} />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(form.id)}
-                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition cursor-pointer"
-                      title="Delete Form"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      <Eye className="w-4 h-4" />
+                    </Link>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+              ))}
+            </div>
+          )}
+        </section>
       </main>
-
-      {/* ═══════════════════════════════════════════════════════════════
-          ZENFORMS CREATOR & AESTHETICS STUDIO MODAL
-          ═══════════════════════════════════════════════════════════════ */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-xl animate-fade-in text-left">
-          <div className="w-full max-w-4xl max-h-[92vh] bg-gradient-to-b from-[#11141f] via-[#090c14] to-[#04060a] border border-amber-500/40 rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col relative overflow-hidden space-y-4">
-            
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Palette className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg sm:text-xl text-white font-display">
-                    {editingFormId ? 'Edit ZenForm & Aesthetics Studio' : 'ZenForms Design & Intake Studio'}
-                  </h3>
-                  <p className="text-[11px] text-neutral-400 font-mono">
-                    100% Configurable UI &bull; Custom Fonts &bull; Personal Google Sheets Flow
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-white/10 pb-2 font-mono text-xs">
-              <button
-                type="button"
-                onClick={() => setModalTab('fields')}
-                className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer ${
-                  modalTab === 'fields'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold'
-                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>1. Fields &amp; Questions ({formFields.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setModalTab('design')}
-                className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer ${
-                  modalTab === 'design'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold'
-                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <Palette className="w-3.5 h-3.5" />
-                <span>2. Design &amp; Aesthetics Studio</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setModalTab('sheets')}
-                className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer ${
-                  modalTab === 'sheets'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold'
-                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                <span>3. Google Sheets Link</span>
-              </button>
-            </div>
-
-            {/* Modal Form Body */}
-            <form onSubmit={handleSaveForm} className="flex-1 overflow-y-auto space-y-6 pr-2 font-sans text-xs">
-              
-              {/* ────────────────────────────────────────────────────────
-                  TAB 1: FIELDS & INTAKE
-                  ──────────────────────────────────────────────────────── */}
-              {modalTab === 'fields' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="sm:col-span-2 space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">Form Title *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. World Youth Diplomatic Summit 2026"
-                        value={formTitle}
-                        onChange={(e) => setFormTitle(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-amber-400 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">Category</label>
-                      <select
-                        value={formCategory}
-                        onChange={(e) => setFormCategory(e.target.value as any)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
-                      >
-                        <option value="MUN_REGISTRATION">MUN Registration</option>
-                        <option value="EXECUTIVE_BOARD">Executive Board (EB)</option>
-                        <option value="PRESS_CORPS">Press Corps (IP)</option>
-                        <option value="FEEDBACK">Feedback &amp; Reviews</option>
-                        <option value="SURVEY">Survey &amp; Poll</option>
-                        <option value="GENERAL">General Intake</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">Custom URL Slug</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. youth-summit-2026"
-                        value={formSlug}
-                        onChange={(e) => setFormSlug(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">Submit Button Text</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Submit Registration"
-                        value={formSubmitText}
-                        onChange={(e) => setFormSubmitText(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-amber-400 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">Description / Guidelines</label>
-                    <textarea
-                      rows={2}
-                      placeholder="Describe your committee, event rules, mandate, or instructions for delegates..."
-                      value={formDescription}
-                      onChange={(e) => setFormDescription(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-amber-400 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">Post-Submission Success Message</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Your response has been cryptographically recorded on the Zenvitra ledger."
-                      value={formSuccessMsg}
-                      onChange={(e) => setFormSuccessMsg(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-amber-400 focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Question Fields Builder */}
-                  <div className="space-y-3 pt-3 border-t border-white/10">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono uppercase font-bold text-amber-300">
-                        Form Questions ({formFields.length})
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleAddField}
-                        className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-mono transition flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>Add Question</span>
-                      </button>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {formFields.map((field, idx) => (
-                        <div
-                          key={field.id}
-                          className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5 transition-all"
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                              <input
-                                type="text"
-                                value={field.label}
-                                onChange={(e) => {
-                                  const updated = [...formFields];
-                                  updated[idx].label = e.target.value;
-                                  setFormFields(updated);
-                                }}
-                                placeholder="Question Title"
-                                className="px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-white text-xs"
-                              />
-
-                              <select
-                                value={field.type}
-                                onChange={(e) => {
-                                  const updated = [...formFields];
-                                  updated[idx].type = e.target.value as ZenFormFieldType;
-                                  setFormFields(updated);
-                                }}
-                                className="px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-white text-xs font-mono"
-                              >
-                                <option value="text">Short Text</option>
-                                <option value="email">Email</option>
-                                <option value="tel">Phone / WhatsApp</option>
-                                <option value="number">Number</option>
-                                <option value="date">Date</option>
-                                <option value="textarea">Paragraph / Essay</option>
-                                <option value="select">Dropdown Select</option>
-                                <option value="radio">Single Choice (Radio)</option>
-                                <option value="checkbox">Multiple Choice (Checkbox)</option>
-                              </select>
-
-                              <div className="flex items-center gap-3">
-                                <label className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer font-mono">
-                                  <input
-                                    type="checkbox"
-                                    checked={field.required}
-                                    onChange={(e) => {
-                                      const updated = [...formFields];
-                                      updated[idx].required = e.target.checked;
-                                      setFormFields(updated);
-                                    }}
-                                  />
-                                  <span>Required</span>
-                                </label>
-
-                                <input
-                                  type="text"
-                                  value={field.placeholder || ''}
-                                  onChange={(e) => {
-                                    const updated = [...formFields];
-                                    updated[idx].placeholder = e.target.value;
-                                    setFormFields(updated);
-                                  }}
-                                  placeholder="Placeholder hint"
-                                  className="flex-1 px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 text-neutral-400 text-xs"
-                                />
-                              </div>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveField(field.id)}
-                              className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition"
-                              title="Remove question"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-
-                          {/* Options field for select, radio, checkbox */}
-                          {['select', 'radio', 'checkbox'].includes(field.type) && (
-                            <div className="space-y-1 pt-1 border-t border-white/5">
-                              <span className="text-[10px] font-mono text-neutral-400 uppercase">
-                                Options (comma-separated):
-                              </span>
-                              <input
-                                type="text"
-                                value={(field.options || []).join(', ')}
-                                onChange={(e) => {
-                                  const updated = [...formFields];
-                                  updated[idx].options = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
-                                  setFormFields(updated);
-                                }}
-                                placeholder="e.g. Lok Sabha, UNSC, UNHRC, IP"
-                                className="w-full px-3 py-1.5 rounded-lg bg-black/60 border border-white/10 text-white text-xs font-mono"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ────────────────────────────────────────────────────────
-                  TAB 2: DESIGN & AESTHETICS STUDIO (100% CONFIGURABLE)
-                  ──────────────────────────────────────────────────────── */}
-              {modalTab === 'design' && (
-                <div className="space-y-6">
-                  
-                  {/* Live Interactive Preview Pill */}
-                  <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
-                    <div className="text-[10px] font-mono text-neutral-400 uppercase flex items-center justify-between">
-                      <span>Live Design Preview</span>
-                      <span className="text-cyan-400">Font: {customStyle.displayFont} &bull; Accent: {customStyle.accentColor}</span>
-                    </div>
-                    <div
-                      className={`p-5 ${CARD_BORDER_RADIUS_MAP[customStyle.borderRadius || 'xl']} transition-all border`}
-                      style={{
-                        background: customStyle.bgType === 'gradient' ? customStyle.bgGradient : (customStyle.bgType === 'solid' ? customStyle.bgSolidColor : '#0a0d14'),
-                        borderColor: customStyle.cardStyle === 'cyber-neon' ? customStyle.accentColor : 'rgba(255,255,255,0.2)',
-                        boxShadow: customStyle.cardStyle === 'cyber-neon' ? `0 0 25px ${customStyle.accentColor}30` : undefined,
-                      }}
-                    >
-                      <h4
-                        className="text-xl font-bold text-white mb-1"
-                        style={{ fontFamily: getFontCssFamily(customStyle.displayFont) }}
-                      >
-                        {formTitle || 'Sample Summit Title'}
-                      </h4>
-                      <p
-                        className="text-xs text-neutral-300 mb-3"
-                        style={{ fontFamily: getFontCssFamily(customStyle.bodyFont) }}
-                      >
-                        {formDescription || 'Preview how your bespoke typography and accents will appear to delegates.'}
-                      </p>
-                      <button
-                        type="button"
-                        className="px-5 py-2 rounded-xl text-xs font-bold transition shadow"
-                        style={{
-                          backgroundColor: customStyle.accentColor,
-                          color: customStyle.accentTextColor || '#000000',
-                          fontFamily: getFontCssFamily(customStyle.bodyFont),
-                        }}
-                      >
-                        {formSubmitText || 'Submit Response'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 1. Typography Section */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-mono uppercase font-bold text-cyan-300 flex items-center gap-1.5">
-                      <Type className="w-4 h-4" />
-                      <span>Typography Studio</span>
-                    </h4>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase">Display / Header Font</label>
-                        <select
-                          value={customStyle.displayFont || 'Space Grotesk'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, displayFont: e.target.value as ZenFormFontFamily })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                        >
-                          {ZEN_FORM_FONTS.map((font) => (
-                            <option key={font.name} value={font.name}>
-                              {font.name} ({font.category})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase">Body &amp; Questions Font</label>
-                        <select
-                          value={customStyle.bodyFont || 'Inter'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, bodyFont: e.target.value as ZenFormFontFamily })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                        >
-                          <option value="Inter">Inter (Clean Standard)</option>
-                          <option value="Space Grotesk">Space Grotesk (Tech Modern)</option>
-                          <option value="Outfit">Outfit (Geometric Sans)</option>
-                          <option value="Playfair Display">Playfair Display (Luxury Editorial)</option>
-                          <option value="JetBrains Mono">JetBrains Mono (Monospace)</option>
-                          <option value="Prata">Prata (Classical Serif)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 2. Background Customizer */}
-                  <div className="space-y-3 pt-3 border-t border-white/10">
-                    <h4 className="text-xs font-mono uppercase font-bold text-cyan-300 flex items-center gap-1.5">
-                      <ImageIcon className="w-4 h-4" />
-                      <span>Background Studio</span>
-                    </h4>
-
-                    <div className="flex items-center gap-2 pb-1">
-                      {(['gradient', 'image', 'solid'] as const).map((mode) => (
-                        <button
-                          key={mode}
-                          type="button"
-                          onClick={() => setCustomStyle({ ...customStyle, bgType: mode })}
-                          className={`px-3 py-1.5 rounded-xl font-mono text-xs capitalize cursor-pointer transition ${
-                            customStyle.bgType === mode
-                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold'
-                              : 'bg-white/5 text-neutral-400 hover:text-white'
-                          }`}
-                        >
-                          {mode} Background
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Mode: Gradient Presets */}
-                    {customStyle.bgType === 'gradient' && (
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-mono text-neutral-400 uppercase">Gradient Atmosphere Presets:</span>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                          {GRADIENT_PRESETS.map((preset) => (
-                            <button
-                              key={preset.id}
-                              type="button"
-                              onClick={() => setCustomStyle({ ...customStyle, bgGradient: preset.css, accentColor: preset.defaultAccent })}
-                              className={`p-3 rounded-xl border text-left transition relative overflow-hidden group cursor-pointer ${
-                                customStyle.bgGradient === preset.css ? 'border-cyan-400 ring-2 ring-cyan-400/30' : 'border-white/10 hover:border-white/30'
-                              }`}
-                              style={{ background: preset.css }}
-                            >
-                              <span className="text-xs font-bold text-white block relative z-10">{preset.name}</span>
-                              <span className="text-[10px] text-neutral-400 block relative z-10 font-mono">Preset</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Mode: Custom Image URL */}
-                    {customStyle.bgType === 'image' && (
-                      <div className="space-y-3 p-3 rounded-2xl bg-white/[0.02] border border-white/10">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-mono text-neutral-400 uppercase">Custom Background Image URL</label>
-                          <input
-                            type="url"
-                            placeholder="https://images.unsplash.com/... or direct image link"
-                            value={customStyle.bgImageUrl || ''}
-                            onChange={(e) => setCustomStyle({ ...customStyle, bgImageUrl: e.target.value })}
-                            className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-neutral-400 uppercase flex items-center justify-between">
-                              <span>Dark Tint Overlay</span>
-                              <span>{customStyle.bgOverlayOpacity ?? 75}%</span>
-                            </label>
-                            <input
-                              type="range"
-                              min="0"
-                              max="95"
-                              value={customStyle.bgOverlayOpacity ?? 75}
-                              onChange={(e) => setCustomStyle({ ...customStyle, bgOverlayOpacity: Number(e.target.value) })}
-                              className="w-full accent-cyan-400 cursor-pointer"
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-neutral-400 uppercase flex items-center justify-between">
-                              <span>Background Blur</span>
-                              <span>{customStyle.bgBlur || 0}px</span>
-                            </label>
-                            <input
-                              type="range"
-                              min="0"
-                              max="24"
-                              value={customStyle.bgBlur || 0}
-                              onChange={(e) => setCustomStyle({ ...customStyle, bgBlur: Number(e.target.value) })}
-                              className="w-full accent-cyan-400 cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Mode: Solid Color */}
-                    {customStyle.bgType === 'solid' && (
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={customStyle.bgSolidColor || '#07090e'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, bgSolidColor: e.target.value })}
-                          className="w-12 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={customStyle.bgSolidColor || '#07090e'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, bgSolidColor: e.target.value })}
-                          className="px-3.5 py-2 rounded-xl bg-black/40 border border-white/15 text-white font-mono text-xs focus:outline-none"
-                          placeholder="#07090e"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 3. Branding, Banners & Logo */}
-                  <div className="space-y-3 pt-3 border-t border-white/10">
-                    <h4 className="text-xs font-mono uppercase font-bold text-cyan-300 flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4" />
-                      <span>Branding &amp; Media</span>
-                    </h4>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase">Top Cover Banner Image URL</label>
-                        <input
-                          type="url"
-                          placeholder="https://example.com/banner.jpg"
-                          value={customStyle.coverImageUrl || ''}
-                          onChange={(e) => setCustomStyle({ ...customStyle, coverImageUrl: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase">Logo / MUN Crest Avatar URL</label>
-                        <input
-                          type="url"
-                          placeholder="https://example.com/crest.png"
-                          value={customStyle.logoUrl || ''}
-                          onChange={(e) => setCustomStyle({ ...customStyle, logoUrl: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 4. Card Styling, Radius & Ambient FX */}
-                  <div className="space-y-3 pt-3 border-t border-white/10">
-                    <h4 className="text-xs font-mono uppercase font-bold text-cyan-300 flex items-center gap-1.5">
-                      <Sliders className="w-4 h-4" />
-                      <span>Card Glassmorphism &amp; Geometry</span>
-                    </h4>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase">Card Style</label>
-                        <select
-                          value={customStyle.cardStyle || 'glass-deep'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, cardStyle: e.target.value as any })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                        >
-                          <option value="glass-deep">Glass Deep Obsidian</option>
-                          <option value="glass-frosted">Glass Ultra Frosted</option>
-                          <option value="cyber-neon">Cyber Neon Glow</option>
-                          <option value="solid-dark">Solid Dark Noir</option>
-                          <option value="outline-minimal">Outline Minimal</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase">Corner Radius</label>
-                        <select
-                          value={customStyle.borderRadius || 'xl'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, borderRadius: e.target.value as any })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                        >
-                          <option value="none">Sharp (0px)</option>
-                          <option value="sm">Subtle (8px)</option>
-                          <option value="lg">Modern Rounded (16px)</option>
-                          <option value="xl">Ultra Curved (24px)</option>
-                          <option value="2xl">Executive Pill (32px)</option>
-                        </select>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-mono text-neutral-400 uppercase">Ambient FX Atmosphere</label>
-                        <select
-                          value={customStyle.ambientEffect || 'aurora'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, ambientEffect: e.target.value as any })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-cyan-400 focus:outline-none font-mono"
-                        >
-                          <option value="aurora">Ethereal Aurora Glow</option>
-                          <option value="grid">Cyber Matrix Grid</option>
-                          <option value="dots">Architectural Dot Matrix</option>
-                          <option value="none">None / Clean</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 5. Accent Color Palette */}
-                  <div className="space-y-2 pt-3 border-t border-white/10">
-                    <label className="text-[10px] font-mono text-neutral-400 uppercase block">
-                      Brand Accent Color (Buttons &amp; Highlights)
-                    </label>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {ACCENT_COLOR_PALETTES.map((palette) => (
-                        <button
-                          key={palette.hex}
-                          type="button"
-                          onClick={() => setCustomStyle({ ...customStyle, accentColor: palette.hex, accentTextColor: palette.textHex })}
-                          className={`px-3 py-1.5 rounded-xl font-mono text-xs border flex items-center gap-1.5 cursor-pointer transition ${
-                            customStyle.accentColor?.toLowerCase() === palette.hex.toLowerCase()
-                              ? 'border-white ring-2 ring-white/30 text-white'
-                              : 'border-white/10 text-neutral-400 hover:text-white'
-                          }`}
-                        >
-                          <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: palette.hex }} />
-                          <span>{palette.name}</span>
-                        </button>
-                      ))}
-
-                      <div className="flex items-center gap-1 ml-2">
-                        <input
-                          type="color"
-                          value={customStyle.accentColor || '#f59e0b'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, accentColor: e.target.value })}
-                          className="w-8 h-8 rounded-lg bg-transparent cursor-pointer border border-white/20"
-                        />
-                        <input
-                          type="text"
-                          value={customStyle.accentColor || '#f59e0b'}
-                          onChange={(e) => setCustomStyle({ ...customStyle, accentColor: e.target.value })}
-                          className="w-24 px-2 py-1 rounded-lg bg-black/50 border border-white/15 text-white text-xs font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              )}
-
-              {/* ────────────────────────────────────────────────────────
-                  TAB 3: GOOGLE SHEETS DIRECT FLOW
-                  ──────────────────────────────────────────────────────── */}
-              {modalTab === 'sheets' && (
-                <div className="space-y-5">
-                  
-                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 space-y-2 font-mono text-xs">
-                    <div className="flex items-center gap-2 font-bold">
-                      <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                      <span>Direct Google Sheets Data Flow</span>
-                    </div>
-                    <p className="text-neutral-300 font-sans leading-relaxed text-xs">
-                      All entries filled by delegates or participants will immediately flow into <strong>your personal Google Sheet</strong> so you can view, sort, format, and share responses directly in Google Drive!
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">
-                        Your Google Spreadsheet Link (Optional Reference)
-                      </label>
-                      <input
-                        type="url"
-                        placeholder="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
-                        value={sheetUrl}
-                        onChange={(e) => setSheetUrl(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-emerald-400 focus:outline-none font-mono"
-                      />
-                      <span className="text-[10px] text-neutral-500 font-mono">
-                        Paste the URL of your Google Sheet for quick 1-click access from your dashboard.
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">
-                        Target Sheet Tab / Worksheet Name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Delegate_Registrations or ZEN_FORMS"
-                        value={sheetTab}
-                        onChange={(e) => setSheetTab(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-emerald-400 focus:outline-none font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-mono uppercase text-neutral-300 font-bold">
-                        Personal Apps Script Webhook URL (For Live Auto-Appends)
-                      </label>
-                      <input
-                        type="url"
-                        placeholder="https://script.google.com/macros/s/AKfycb.../exec"
-                        value={webhookUrl}
-                        onChange={(e) => setWebhookUrl(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs focus:border-emerald-400 focus:outline-none font-mono"
-                      />
-                      <span className="text-[10px] text-neutral-500 font-mono">
-                        If provided, submissions will trigger instant append row calls directly into your sheet!
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 10-Second Setup Helper */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold font-mono text-xs text-white flex items-center gap-1.5">
-                        <Code className="w-4 h-4 text-emerald-400" />
-                        <span>10-Second Google Apps Script Webhook (Free &amp; Direct)</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleCopyAppsScript}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-mono text-[11px] flex items-center gap-1 cursor-pointer"
-                      >
-                        {copiedScript ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                        <span>{copiedScript ? 'Script Copied!' : 'Copy Apps Script'}</span>
-                      </button>
-                    </div>
-
-                    <ol className="list-decimal list-inside space-y-1 text-[11px] text-neutral-400 font-sans leading-relaxed">
-                      <li>In your Google Sheet, click <strong>Extensions &gt; Apps Script</strong>.</li>
-                      <li>Delete any sample code and paste the copied script.</li>
-                      <li>Click <strong>Deploy &gt; New deployment</strong>, select <strong>Web app</strong>.</li>
-                      <li>Set <em>Execute as: Me</em> and <em>Who has access: Anyone</em>, then click <strong>Deploy</strong>.</li>
-                      <li>Copy the generated Web App URL and paste it into the Webhook URL field above!</li>
-                    </ol>
-                  </div>
-
-                </div>
-              )}
-
-              {/* Modal Footer Controls */}
-              <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3 font-mono text-xs">
-                <div className="text-[11px] text-neutral-400">
-                  Sovereign Cryptographic Ledger &bull; No Surveillance
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-neutral-300 transition cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition flex items-center gap-1.5 shadow-lg shadow-amber-500/25 cursor-pointer active:scale-95"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>{editingFormId ? 'Save ZenForm Changes' : 'Publish Live ZenForm'}</span>
-                  </button>
-                </div>
-              </div>
-
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ─── RESPONSES TABLE MODAL ─── */}
-      {viewingSubmissionsForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in text-left">
-          <div className="w-full max-w-4xl max-h-[90vh] bg-gradient-to-b from-[#10141e] via-[#0a0d14] to-[#04060a] border border-cyan-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col relative overflow-hidden space-y-4">
-            
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <h3 className="font-bold text-lg text-white font-display">
-                  Responses: {viewingSubmissionsForm.title}
-                </h3>
-                <p className="text-xs text-neutral-400 font-mono">
-                  {currentSubmissions.length} Submissions recorded &bull; Permanent CSV backup ready
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleSyncSingleFormToSheets(viewingSubmissionsForm)}
-                  disabled={isSyncingFormId === viewingSubmissionsForm.id}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-mono transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  title="Stream responses directly to Google Sheets"
-                >
-                  <FileSpreadsheet className={`w-3.5 h-3.5 text-emerald-400 ${isSyncingFormId === viewingSubmissionsForm.id ? 'animate-spin' : ''}`} />
-                  <span>{isSyncingFormId === viewingSubmissionsForm.id ? 'Syncing...' : 'Sync to Google Sheets'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleExportCsv(viewingSubmissionsForm)}
-                  className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-mono transition flex items-center gap-1 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download CSV</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewingSubmissionsForm(null)}
-                  className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-auto border border-white/10 rounded-2xl">
-              {currentSubmissions.length === 0 ? (
-                <div className="p-12 text-center text-neutral-500 font-mono text-xs">
-                  No responses received yet for this ZenForm. Share the link to begin collecting data.
-                </div>
-              ) : (
-                <table className="w-full text-left font-sans text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-white/5 border-b border-white/10 text-neutral-400 font-mono text-[11px] uppercase">
-                      <th className="p-3">#</th>
-                      <th className="p-3">Time</th>
-                      <th className="p-3">Submitter</th>
-                      {viewingSubmissionsForm.fields.map((f) => (
-                        <th key={f.id} className="p-3 whitespace-nowrap">{f.label}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-neutral-300">
-                    {currentSubmissions.map((sub, idx) => (
-                      <tr key={sub.id} className="hover:bg-white/[0.02]">
-                        <td className="p-3 font-mono text-neutral-500">{idx + 1}</td>
-                        <td className="p-3 font-mono text-[11px] text-neutral-400 whitespace-nowrap">
-                          {new Date(sub.submittedAt).toLocaleDateString()}
-                        </td>
-                        <td className="p-3 font-mono text-cyan-300">{sub.submitterHandle || 'Anonymous'}</td>
-                        {viewingSubmissionsForm.fields.map((f) => {
-                          const val = sub.data[f.id] ?? '-';
-                          const display = Array.isArray(val) ? val.join(', ') : String(val);
-                          return (
-                            <td key={f.id} className="p-3 max-w-[200px] truncate" title={display}>
-                              {display}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>

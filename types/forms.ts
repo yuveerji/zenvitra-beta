@@ -1,13 +1,22 @@
 export type ZenFormFieldType = 
   | 'text'
+  | 'short_answer'
   | 'email'
   | 'tel'
   | 'number'
   | 'textarea'
+  | 'paragraph'
   | 'select'
+  | 'dropdown'
   | 'radio'
+  | 'multiple_choice'
   | 'checkbox'
-  | 'date';
+  | 'checkboxes'
+  | 'date'
+  | 'title_desc'
+  | 'image_block'
+  | 'video_block'
+  | 'section_break';
 
 export interface ZenFormField {
   id: string;
@@ -18,6 +27,13 @@ export interface ZenFormField {
   required?: boolean;
   options?: string[];
   defaultValue?: string;
+  hasOtherOption?: boolean;
+  mediaUrl?: string;
+  mediaCaption?: string;
+  videoUrl?: string;
+  sectionTitle?: string;
+  sectionDescription?: string;
+  alignment?: 'left' | 'center' | 'right';
 }
 
 export type ZenFormTheme = 
@@ -119,6 +135,7 @@ export interface ZenForm {
   submissionsCount: number;
   isPublished: boolean;
   allowAnonymous: boolean;
+  acceptingResponses?: boolean;
   createdAt: string;
   updatedAt: string;
   googleSheetsConfig?: ZenFormGoogleSheetsConfig;

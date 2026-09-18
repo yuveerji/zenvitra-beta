@@ -207,6 +207,21 @@ export function getFormSubmissions(formId: string): ZenFormSubmission[] {
   }
 }
 
+export function clearFormSubmissions(formId: string): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    localStorage.removeItem(`${LS_SUBMISSIONS_KEY}_${formId}`);
+    const forms = getPublicForms();
+    const updatedForms = forms.map((f) => 
+      f.id === formId ? { ...f, submissionsCount: 0 } : f
+    );
+    localStorage.setItem(LS_FORMS_KEY, JSON.stringify(updatedForms));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function recordZenFormSubmission(
   formId: string, 
   data: Record<string, any>, 
