@@ -329,7 +329,8 @@ export default function CountdownPage() {
                   sizes="(max-width: 640px) 380px, (max-width: 1024px) 440px, 480px"
                   placeholder="blur"
                   blurDataURL="data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAAAwBACdASoQABwAPu1mqk4ppaOiMAgBMB2JZwDMHB08gMfLNV46i1SUzAAA/vKw3yO5q+33iWscUM2AXwIpNOXkapeQk3zQr0UcWYJnQZMcWhr6m31El9yL8PCTgv1s08XbvOPJNPZXRII/JSZRZx47WD7TaAAA"
-                  className="object-cover object-center brightness-[0.92] contrast-[1.08] group-hover:scale-105 transition-transform duration-700 ease-out"
+                  style={{ objectPosition: 'center 65%' }}
+                  className="object-cover brightness-[0.92] contrast-[1.08] group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
                 {/* Obsidian Gradient Vignettes */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/80" />

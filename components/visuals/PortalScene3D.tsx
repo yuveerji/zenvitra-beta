@@ -70,8 +70,9 @@ export function PortalScene3D() {
               x: parallaxX,
               y: parallaxY,
               scale: 1.04,
+              objectPosition: 'center 65%',
             }}
-            className="w-full h-full object-cover object-center pointer-events-none"
+            className="w-full h-full object-cover pointer-events-none"
           />
 
           {/* Interactive Dynamic Spotlight Sheen */}
