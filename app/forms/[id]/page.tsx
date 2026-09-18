@@ -16,7 +16,23 @@ import {
   AlertCircle,
   FileSpreadsheet,
   Calendar,
-  Check
+  Check,
+  Star,
+  Heart,
+  ThumbsUp,
+  Clock,
+  Mail,
+  Phone,
+  Globe,
+  UploadCloud,
+  PenTool,
+  Coins,
+  Wrench,
+  ChevronUp,
+  ChevronDown,
+  Award,
+  RotateCcw,
+  FileText
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { ZenForm, ZenFormTheme, ZenFormField } from '@/types/forms';
@@ -33,6 +49,7 @@ export default function PublicFormFillingPage() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSubId, setSubmittedSubId] = useState<string | null>(null);
+  const [quizScore, setQuizScore] = useState<{ total: number; earned: number; pct: number } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -48,33 +65,42 @@ export default function PublicFormFillingPage() {
       <div className="min-h-screen bg-[#06080e] text-white flex flex-col items-center justify-center p-4 space-y-4">
         <h1 className="text-2xl font-bold font-display">ZenForm Not Found</h1>
         <p className="text-sm text-neutral-400 max-w-md text-center">
-          The requested form link does not exist or may have been removed from the public ledger.
+          The requested multilateral form ledger does not exist or has been archived.
         </p>
         <Link
           href="/forms"
-          className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs font-mono"
+          className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-bold transition shadow-lg"
         >
-          View All ZenForms
+          Return to ZenForms Hub
         </Link>
       </div>
     );
   }
 
-  const themeStyles: Record<string, { bg: string; border: string; accent: string; text: string; glow: string; accentHex: string; accentText: string }> = {
+  // Theme preset mappings
+  const themeStyles: Record<ZenFormTheme, {
+    bg: string;
+    border: string;
+    accent: string;
+    text: string;
+    glow: string;
+    accentHex: string;
+    accentText: string;
+  }> = {
     amber: {
-      bg: 'from-[#0e121a] via-[#090c12] to-[#040608]',
+      bg: 'from-[#131722] via-[#0c0f17] to-[#05070a]',
       border: 'border-amber-500/30',
       accent: 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20',
-      text: 'text-amber-300',
+      text: 'text-amber-400',
       glow: 'bg-amber-500/10',
       accentHex: '#f59e0b',
       accentText: '#000000',
     },
     midnight: {
-      bg: 'from-[#080f1e] via-[#050913] to-[#020408]',
+      bg: 'from-[#071326] via-[#040a14] to-[#02050a]',
       border: 'border-cyan-500/30',
       accent: 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-cyan-500/20',
-      text: 'text-cyan-300',
+      text: 'text-cyan-400',
       glow: 'bg-cyan-500/10',
       accentHex: '#06b6d4',
       accentText: '#000000',
@@ -114,6 +140,15 @@ export default function PublicFormFillingPage() {
       glow: 'bg-purple-500/10',
       accentHex: '#8b5cf6',
       accentText: '#ffffff',
+    },
+    custom: {
+      bg: 'from-[#131722] via-[#0c0f17] to-[#05070a]',
+      border: 'border-white/20',
+      accent: 'bg-amber-500 hover:bg-amber-400 text-black',
+      text: 'text-white',
+      glow: 'bg-white/10',
+      accentHex: '#f59e0b',
+      accentText: '#000000',
     }
   };
 
@@ -182,6 +217,46 @@ export default function PublicFormFillingPage() {
       const submitter = profile?.username || user?.email?.split('@')[0] || 'anonymous';
       const submission = await recordZenFormSubmission(form.id, formData, submitter);
       setSubmittedSubId(submission.id);
+
+      // Calculate Quiz score if Quiz mode
+      if (form.settings?.isQuiz) {
+        let total = 0;
+        let earned = 0;
+        form.fields.forEach((f) => {
+          if (f.points && f.points > 0) {
+            total += f.points;
+            const ans = formData[f.id];
+            if (Array.isArray(f.correctAnswer)) {
+              if (Array.isArray(ans) && ans.length === f.correctAnswer.length && ans.every((x) => f.correctAnswer!.includes(x))) {
+                earned += f.points;
+              }
+            } else if (f.correctAnswer && ans === f.correctAnswer) {
+              earned += f.points;
+            }
+          }
+        });
+        setQuizScore({ total, earned, pct: total > 0 ? Math.round((earned / total) * 100) : 0 });
+      }
+
+      // Background dispatch to Google Sheets webhook
+      if (form.googleSheetsConfig?.webhookUrl && form.settings?.autoForwardSheets !== false) {
+        try {
+          fetch(form.googleSheetsConfig.webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'add_row',
+              formId: form.id,
+              formTitle: form.title,
+              timestamp: new Date().toISOString(),
+              submitterHandle: submitter,
+              sheetTab: form.googleSheetsConfig.sheetTab || 'ZenForms',
+              ...formData,
+            }),
+          }).catch(() => {});
+        } catch {}
+      }
     } catch {
       setValidationError('Failed to record submission. Please check your connection.');
     } finally {
@@ -350,17 +425,34 @@ export default function PublicFormFillingPage() {
               </div>
             </div>
 
+            {/* Quiz Score Result (if Quiz mode enabled) */}
+            {quizScore && (
+              <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-1.5 max-w-md mx-auto animate-fadeIn">
+                <div className="flex items-center justify-center gap-1.5 text-xs font-mono uppercase text-amber-400 font-bold">
+                  <Award className="w-4 h-4" />
+                  <span>Assessment Score</span>
+                </div>
+                <div className="text-3xl font-black text-white font-mono">
+                  {quizScore.earned} / {quizScore.total}{' '}
+                  <span className="text-sm font-normal text-amber-300">({quizScore.pct}%)</span>
+                </div>
+              </div>
+            )}
+
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setSubmittedSubId(null);
-                  setFormData({});
-                }}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition cursor-pointer"
-              >
-                Submit Another Response
-              </button>
+              {(form.settings?.showSubmitAnotherLink ?? true) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmittedSubId(null);
+                    setFormData({});
+                    setQuizScore(null);
+                  }}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition cursor-pointer"
+                >
+                  Submit Another Response
+                </button>
+              )}
               <Link
                 href="/forms"
                 className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md"
@@ -393,6 +485,38 @@ export default function PublicFormFillingPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               </div>
             )}
+
+            {/* ── Progress Bar (if enabled in settings) ── */}
+            {(() => {
+              if (form.settings?.showProgressBar === false) return null;
+              const nonContent = form.fields.filter(
+                (f) => !['title_desc', 'image_block', 'video_block', 'section_break'].includes(f.type)
+              );
+              const done = nonContent.filter((f) => {
+                const v = formData[f.id];
+                if (v === undefined || v === null || v === '') return false;
+                if (Array.isArray(v) && v.length === 0) return false;
+                return true;
+              }).length;
+              const pct = nonContent.length > 0 ? Math.round((done / nonContent.length) * 100) : 0;
+              return (
+                <div className="border-b border-white/10 bg-white/[0.02]">
+                  <div className="px-6 sm:px-10 py-2.5 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                    <span>Intake Progress</span>
+                    <div className="flex items-center gap-3">
+                      <span>{done} of {nonContent.length} answered</span>
+                      <div className="w-20 sm:w-28 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{ width: `${pct}%`, backgroundColor: accentColor }}
+                        />
+                      </div>
+                      <span className="text-white font-bold">{pct}%</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="p-6 sm:p-10 space-y-8">
               {/* Form Title & Description Header */}
@@ -514,93 +638,360 @@ export default function PublicFormFillingPage() {
                     );
                   }
 
-                  // Standard Input Question Cards
+                  // Standard & Advanced Question Cards
                   return (
-                    <div key={field.id} className="space-y-2">
-                      <label className="text-xs sm:text-sm font-medium text-white flex items-center gap-1.5">
-                        <span>{field.label}</span>
-                        {field.required && <span className="text-rose-400 font-bold">*</span>}
-                      </label>
+                    <div key={field.id} className="space-y-2 p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition shadow-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <label className="text-xs sm:text-sm font-medium text-white flex items-center gap-1.5 flex-1">
+                          <span>{field.label}</span>
+                          {field.required && <span className="text-rose-400 font-bold">*</span>}
+                        </label>
+
+                        {form.settings?.isQuiz && field.points !== undefined && (
+                          <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold shrink-0">
+                            {field.points} pts
+                          </span>
+                        )}
+                      </div>
 
                       {field.description && (
-                        <p className="text-[11px] text-neutral-400 font-normal">
+                        <p className="text-[11px] text-neutral-400 font-normal leading-relaxed">
                           {field.description}
                         </p>
                       )}
 
-                      {/* Short Text */}
+                      {/* 1. Short Text */}
                       {(field.type === 'text' || field.type === 'short_answer') && (
                         <input
                           type="text"
                           placeholder={field.placeholder || 'Your answer'}
                           value={formData[field.id] || ''}
                           onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
+                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans"
                         />
                       )}
 
-                      {/* Email */}
+                      {/* 2. Email */}
                       {field.type === 'email' && (
-                        <input
-                          type="email"
-                          placeholder={field.placeholder || 'email@example.com'}
-                          value={formData[field.id] || ''}
-                          onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
-                        />
+                        <div className="relative">
+                          <input
+                            type="email"
+                            placeholder={field.placeholder || 'email@example.com'}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans"
+                          />
+                          <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                        </div>
                       )}
 
-                      {/* Telephone */}
-                      {field.type === 'tel' && (
-                        <input
-                          type="tel"
-                          placeholder={field.placeholder || '+91 98765 43210'}
-                          value={formData[field.id] || ''}
-                          onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
-                        />
+                      {/* 3. Telephone / Phone */}
+                      {(field.type === 'tel' || field.type === 'phone') && (
+                        <div className="relative">
+                          <input
+                            type="tel"
+                            placeholder={field.placeholder || '+1 (555) 000-0000'}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono"
+                          />
+                          <Phone className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                        </div>
                       )}
 
-                      {/* Number */}
+                      {/* 4. Website / URL */}
+                      {field.type === 'url' && (
+                        <div className="relative">
+                          <input
+                            type="url"
+                            placeholder={field.placeholder || 'https://...'}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans"
+                          />
+                          <Globe className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                        </div>
+                      )}
+
+                      {/* 5. Number */}
                       {field.type === 'number' && (
                         <input
                           type="number"
                           placeholder={field.placeholder || '0'}
                           value={formData[field.id] || ''}
                           onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner"
+                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono"
                         />
                       )}
 
-                      {/* Date */}
+                      {/* 6. Date */}
                       {field.type === 'date' && (
                         <div className="relative">
                           <input
                             type="date"
                             value={formData[field.id] || ''}
                             onChange={(e) => handleInputChange(field.id, e.target.value)}
-                            className="w-full px-4 py-3 rounded-2xl bg-[#0e111a] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono"
+                            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono cursor-pointer"
                           />
                         </div>
                       )}
 
-                      {/* Paragraph / Textarea */}
+                      {/* 7. Time */}
+                      {field.type === 'time' && (
+                        <div className="relative">
+                          <input
+                            type="time"
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono cursor-pointer"
+                          />
+                        </div>
+                      )}
+
+                      {/* 8. Paragraph / Textarea */}
                       {(field.type === 'textarea' || field.type === 'paragraph') && (
                         <textarea
                           rows={3}
                           placeholder={field.placeholder || 'Enter your detailed thoughts...'}
                           value={formData[field.id] || ''}
                           onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed"
+                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed font-sans"
                         />
                       )}
 
-                      {/* Dropdown Select */}
+                      {/* 9. Linear Scale (Likert) */}
+                      {field.type === 'linear_scale' && (
+                        <div className="space-y-3 pt-2">
+                          <div className="flex items-center justify-between gap-1 sm:gap-2">
+                            {Array.from({
+                              length: (field.scaleMax ?? 5) - (field.scaleMin ?? 1) + 1,
+                            }).map((_, i) => {
+                              const val = (field.scaleMin ?? 1) + i;
+                              const isSelected = formData[field.id] === val;
+                              return (
+                                <button
+                                  type="button"
+                                  key={val}
+                                  onClick={() => handleInputChange(field.id, val)}
+                                  className={`flex-1 py-3 sm:py-3.5 rounded-xl border font-mono text-xs sm:text-sm font-bold transition flex items-center justify-center cursor-pointer ${
+                                    isSelected
+                                      ? 'border-amber-400 bg-amber-500/20 text-amber-300 ring-2 ring-amber-400/30 scale-105'
+                                      : 'border-white/10 bg-black/40 text-neutral-300 hover:border-white/25 hover:bg-white/5'
+                                  }`}
+                                  style={isSelected ? { borderColor: accentColor, color: accentColor } : {}}
+                                >
+                                  {val}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {(field.scaleMinLabel || field.scaleMaxLabel) && (
+                            <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 px-1">
+                              <span>{field.scaleMinLabel || ''}</span>
+                              <span>{field.scaleMaxLabel || ''}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 10. Rating (Stars / Hearts / Numbers) */}
+                      {field.type === 'rating' && (
+                        <div className="flex items-center gap-2 pt-2">
+                          {Array.from({ length: field.ratingMax ?? 5 }).map((_, i) => {
+                            const starVal = i + 1;
+                            const isFilled = (formData[field.id] || 0) >= starVal;
+                            return (
+                              <button
+                                type="button"
+                                key={starVal}
+                                onClick={() => handleInputChange(field.id, starVal)}
+                                className="p-2 rounded-xl transition hover:scale-125 cursor-pointer"
+                              >
+                                {field.ratingIcon === 'heart' ? (
+                                  <Heart
+                                    className={`w-7 h-7 transition ${
+                                      isFilled ? 'fill-amber-400 text-amber-400' : 'text-neutral-600'
+                                    }`}
+                                    style={isFilled ? { fill: accentColor, color: accentColor } : {}}
+                                  />
+                                ) : field.ratingIcon === 'thumb' ? (
+                                  <ThumbsUp
+                                    className={`w-7 h-7 transition ${
+                                      isFilled ? 'fill-amber-400 text-amber-400' : 'text-neutral-600'
+                                    }`}
+                                    style={isFilled ? { fill: accentColor, color: accentColor } : {}}
+                                  />
+                                ) : field.ratingIcon === 'number' ? (
+                                  <span
+                                    className={`w-8 h-8 rounded-xl font-mono text-xs flex items-center justify-center font-bold border transition ${
+                                      isFilled
+                                        ? 'bg-amber-500/20 text-amber-300 border-amber-400'
+                                        : 'bg-black/40 text-neutral-400 border-white/10'
+                                    }`}
+                                  >
+                                    {starVal}
+                                  </span>
+                                ) : (
+                                  <Star
+                                    className={`w-7 h-7 transition ${
+                                      isFilled ? 'fill-amber-400 text-amber-400' : 'text-neutral-600'
+                                    }`}
+                                    style={isFilled ? { fill: accentColor, color: accentColor } : {}}
+                                  />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* 11. Ranking (Preference Order) */}
+                      {field.type === 'ranking' && (
+                        <div className="space-y-2 pt-1">
+                          <p className="text-[11px] font-mono text-neutral-400">Use arrows to prioritize items from top to bottom:</p>
+                          {(() => {
+                            const currentOrder: string[] = formData[field.id] || field.options || ['Item 1', 'Item 2', 'Item 3'];
+                            return currentOrder.map((item, itemIdx) => (
+                              <div
+                                key={item}
+                                className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10 text-xs font-sans text-white"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="w-5 h-5 rounded bg-amber-500/20 text-amber-300 font-mono text-[11px] font-bold flex items-center justify-center">
+                                    #{itemIdx + 1}
+                                  </span>
+                                  <span>{item}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    disabled={itemIdx === 0}
+                                    onClick={() => {
+                                      const next = [...currentOrder];
+                                      const tmp = next[itemIdx];
+                                      next[itemIdx] = next[itemIdx - 1];
+                                      next[itemIdx - 1] = tmp;
+                                      handleInputChange(field.id, next);
+                                    }}
+                                    className="p-1 rounded hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-20"
+                                  >
+                                    <ChevronUp className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={itemIdx === currentOrder.length - 1}
+                                    onClick={() => {
+                                      const next = [...currentOrder];
+                                      const tmp = next[itemIdx];
+                                      next[itemIdx] = next[itemIdx + 1];
+                                      next[itemIdx + 1] = tmp;
+                                      handleInputChange(field.id, next);
+                                    }}
+                                    className="p-1 rounded hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-20"
+                                  >
+                                    <ChevronDown className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      )}
+
+                      {/* 12. File Upload */}
+                      {field.type === 'file_upload' && (
+                        <div className="pt-2">
+                          <label className="p-6 rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition flex flex-col items-center justify-center gap-2 cursor-pointer text-center">
+                            <UploadCloud className="w-8 h-8 text-neutral-400" />
+                            <span className="text-xs font-medium text-white">
+                              {formData[field.id] ? `Selected: ${formData[field.id]}` : 'Click or drop files here to attach'}
+                            </span>
+                            <span className="text-[10px] font-mono text-neutral-500">
+                              Max file size: {field.maxFileSizeMb ?? 10} MB &bull; PDF, Images, Documents
+                            </span>
+                            <input
+                              type="file"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleInputChange(field.id, file.name);
+                              }}
+                            />
+                          </label>
+                        </div>
+                      )}
+
+                      {/* 13. Digital Signature */}
+                      {field.type === 'signature' && (
+                        <div className="space-y-2 pt-2">
+                          <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+                            <div className="flex items-center justify-between text-xs font-mono text-emerald-400">
+                              <span className="font-bold flex items-center gap-1.5">
+                                <PenTool className="w-3.5 h-3.5" />
+                                <span>Sign Legal Attestation</span>
+                              </span>
+                              {formData[field.id] && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleInputChange(field.id, '')}
+                                  className="text-[10px] text-neutral-400 hover:text-white underline"
+                                >
+                                  Clear
+                                </button>
+                              )}
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="Type your full legal name or sovereign handle as signature"
+                              value={formData[field.id] || ''}
+                              onChange={(e) => handleInputChange(field.id, e.target.value)}
+                              className="w-full px-4 py-3 rounded-lg bg-black/60 border border-emerald-500/20 text-emerald-200 text-sm font-serif italic outline-none focus:border-emerald-400"
+                            />
+                            <p className="text-[10px] font-mono text-neutral-400">
+                              By typing your name, you attest under sovereign ledger protocols that this response is authentic.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 14. Web3 Wallet Address */}
+                      {field.type === 'wallet_address' && (
+                        <div className="relative pt-1">
+                          <input
+                            type="text"
+                            placeholder="0x... or Solana / Ledger public address"
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-purple-500/30 focus:border-purple-400 text-purple-200 text-xs sm:text-sm font-mono focus:outline-none transition shadow-inner"
+                          />
+                          <Coins className="w-4 h-4 text-purple-400 absolute left-3.5 top-4 pointer-events-none" />
+                        </div>
+                      )}
+
+                      {/* 15. Custom Configurable Field */}
+                      {field.type === 'custom' && (
+                        <div className="flex items-center rounded-xl bg-black/40 border border-white/15 focus-within:border-amber-400/80 overflow-hidden shadow-inner">
+                          {field.customPrefix && (
+                            <span className="px-3 text-xs font-mono text-amber-400 bg-white/5 border-r border-white/10 select-none">
+                              {field.customPrefix}
+                            </span>
+                          )}
+                          <input
+                            type={field.customInputType || 'text'}
+                            placeholder={field.customPlaceholder || 'Enter value...'}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="flex-1 px-4 py-3 bg-transparent text-white text-xs sm:text-sm focus:outline-none font-sans"
+                          />
+                        </div>
+                      )}
+
+                      {/* 16. Dropdown Select */}
                       {(field.type === 'select' || field.type === 'dropdown') && (
                         <select
                           value={formData[field.id] || ''}
                           onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#0e111a] border border-white/15 focus:border-white/40 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer"
+                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer font-sans"
                         >
                           <option value="" disabled>Select an option...</option>
                           {(field.options || []).map((opt) => (
@@ -611,7 +1002,7 @@ export default function PublicFormFillingPage() {
                         </select>
                       )}
 
-                      {/* Multiple Choice / Radio Options */}
+                      {/* 17. Multiple Choice / Radio Options */}
                       {(field.type === 'radio' || field.type === 'multiple_choice') && (
                         <div className="space-y-2 pt-1">
                           {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => (
@@ -660,7 +1051,7 @@ export default function PublicFormFillingPage() {
                         </div>
                       )}
 
-                      {/* Checkboxes / Multi-select Options */}
+                      {/* 18. Checkboxes / Multi-select Options */}
                       {(field.type === 'checkbox' || field.type === 'checkboxes') && (
                         <div className="space-y-2 pt-1">
                           {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => {

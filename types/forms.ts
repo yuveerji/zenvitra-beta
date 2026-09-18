@@ -3,7 +3,9 @@ export type ZenFormFieldType =
   | 'short_answer'
   | 'email'
   | 'tel'
+  | 'phone'
   | 'number'
+  | 'url'
   | 'textarea'
   | 'paragraph'
   | 'select'
@@ -13,6 +15,14 @@ export type ZenFormFieldType =
   | 'checkbox'
   | 'checkboxes'
   | 'date'
+  | 'time'
+  | 'rating'
+  | 'linear_scale'
+  | 'ranking'
+  | 'file_upload'
+  | 'signature'
+  | 'wallet_address'
+  | 'custom'
   | 'title_desc'
   | 'image_block'
   | 'video_block'
@@ -34,6 +44,26 @@ export interface ZenFormField {
   sectionTitle?: string;
   sectionDescription?: string;
   alignment?: 'left' | 'center' | 'right';
+  // Linear scale properties
+  scaleMin?: number;
+  scaleMax?: number;
+  scaleMinLabel?: string;
+  scaleMaxLabel?: string;
+  // Rating properties
+  ratingMax?: number;
+  ratingIcon?: 'star' | 'heart' | 'thumb' | 'number';
+  // Custom type properties
+  customInputType?: 'text' | 'number' | 'password' | 'color';
+  customPattern?: string;
+  customPlaceholder?: string;
+  customPrefix?: string;
+  // Quiz & points
+  points?: number;
+  correctAnswer?: string | string[];
+  feedback?: string;
+  // File upload
+  fileTypes?: string[];
+  maxFileSizeMb?: number;
 }
 
 export type ZenFormTheme = 
@@ -120,6 +150,31 @@ export interface ZenFormsAccountSheetsConfig {
   autoSyncAllForms: boolean;
 }
 
+export interface ZenFormSettings {
+  // Quiz Mode
+  isQuiz?: boolean;
+  defaultPointsPerQuestion?: number;
+  showResultsImmediately?: boolean;
+  
+  // Responses
+  collectEmail?: 'none' | 'verified' | 'responder';
+  sendResponseCopy?: 'off' | 'requested' | 'always';
+  allowResponseEditing?: boolean;
+  limitOneResponse?: boolean;
+  autoForwardSheets?: boolean;
+
+  // Presentation
+  showProgressBar?: boolean;
+  shuffleQuestions?: boolean;
+  showSubmitAnotherLink?: boolean;
+  viewResultsSummary?: boolean;
+  disableAutosave?: boolean;
+  
+  // Defaults
+  defaultQuestionsRequired?: boolean;
+  defaultCollectEmail?: boolean;
+}
+
 export interface ZenForm {
   id: string;
   title: string;
@@ -136,6 +191,7 @@ export interface ZenForm {
   isPublished: boolean;
   allowAnonymous: boolean;
   acceptingResponses?: boolean;
+  settings?: ZenFormSettings;
   createdAt: string;
   updatedAt: string;
   googleSheetsConfig?: ZenFormGoogleSheetsConfig;

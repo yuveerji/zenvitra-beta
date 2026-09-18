@@ -38,7 +38,23 @@ import {
   Send,
   Cloud,
   Layers,
-  Code
+  Code,
+  Star,
+  Heart,
+  ThumbsUp,
+  ListOrdered,
+  Clock,
+  Mail,
+  Phone,
+  Globe,
+  UploadCloud,
+  PenTool,
+  Coins,
+  Wrench,
+  HelpCircle,
+  ShieldCheck,
+  Award,
+  SlidersHorizontal
 } from 'lucide-react';
 import {
   ZenForm,
@@ -90,6 +106,9 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
   const [syncToast, setSyncToast] = useState<string | null>(null);
   const [selectedResponse, setSelectedResponse] = useState<ZenFormSubmission | null>(null);
 
+  const [batchPasteFieldId, setBatchPasteFieldId] = useState<string | null>(null);
+  const [batchPasteText, setBatchPasteText] = useState('');
+
   // Undo / Redo History Stack
   const [history, setHistory] = useState<ZenForm[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -111,6 +130,23 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
         isPublished: true,
         allowAnonymous: true,
         acceptingResponses: true,
+        settings: {
+          isQuiz: false,
+          defaultPointsPerQuestion: 5,
+          showResultsImmediately: true,
+          collectEmail: 'none',
+          sendResponseCopy: 'off',
+          allowResponseEditing: false,
+          limitOneResponse: false,
+          autoForwardSheets: true,
+          showProgressBar: true,
+          shuffleQuestions: false,
+          showSubmitAnotherLink: true,
+          viewResultsSummary: false,
+          disableAutosave: false,
+          defaultQuestionsRequired: false,
+          defaultCollectEmail: false,
+        },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         fields: [
@@ -193,11 +229,41 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
     if (!form) return;
     const newField: ZenFormField = {
       id: `q_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      label: type === 'title_desc' ? 'Title block' : type === 'image_block' ? 'Image showcase' : type === 'video_block' ? 'Video overview' : type === 'section_break' ? 'Section header' : 'Untitled Question',
+      label:
+        type === 'title_desc' ? 'Title block' :
+        type === 'image_block' ? 'Image showcase' :
+        type === 'video_block' ? 'Video overview' :
+        type === 'section_break' ? 'Section header' :
+        type === 'rating' ? 'Rate your experience' :
+        type === 'linear_scale' ? 'How would you rate this?' :
+        type === 'ranking' ? 'Rank the following items' :
+        type === 'file_upload' ? 'Upload Document or Portfolio' :
+        type === 'signature' ? 'Digital Signature / Legal Attestation' :
+        type === 'wallet_address' ? 'Web3 / Sovereign Ledger Address' :
+        type === 'custom' ? 'Custom Input Field' :
+        type === 'email' ? 'Email Address' :
+        type === 'phone' ? 'Phone / WhatsApp Number' :
+        type === 'time' ? 'Time Selection' :
+        type === 'url' ? 'Website / Portfolio URL' :
+        'Untitled Question',
       type,
-      required: false,
-      options: ['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select'].includes(type) ? ['Option 1'] : undefined,
+      required: form.settings?.defaultQuestionsRequired ?? false,
+      options: ['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select', 'ranking'].includes(type)
+        ? ['Option 1', 'Option 2', 'Option 3']
+        : undefined,
       hasOtherOption: false,
+      scaleMin: 1,
+      scaleMax: 5,
+      scaleMinLabel: 'Poor',
+      scaleMaxLabel: 'Excellent',
+      ratingMax: 5,
+      ratingIcon: 'star',
+      customInputType: 'text',
+      customPlaceholder: 'Enter custom value...',
+      customPrefix: '',
+      points: form.settings?.isQuiz ? (form.settings.defaultPointsPerQuestion || 5) : undefined,
+      fileTypes: ['PDF', 'Image', 'Document'],
+      maxFileSizeMb: 10,
       mediaUrl: type === 'image_block' ? 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80' : undefined,
       videoUrl: type === 'video_block' ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : undefined,
     };
@@ -593,24 +659,55 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                             const newType = e.target.value as ZenFormFieldType;
                             handleUpdateField(field.id, {
                               type: newType,
-                              options: ['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select'].includes(newType)
-                                ? field.options || ['Option 1']
-                                : undefined
+                              options: ['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select', 'ranking'].includes(newType)
+                                ? field.options || ['Option 1', 'Option 2', 'Option 3']
+                                : undefined,
+                              scaleMin: newType === 'linear_scale' ? (field.scaleMin ?? 1) : field.scaleMin,
+                              scaleMax: newType === 'linear_scale' ? (field.scaleMax ?? 5) : field.scaleMax,
+                              scaleMinLabel: newType === 'linear_scale' ? (field.scaleMinLabel || 'Poor') : field.scaleMinLabel,
+                              scaleMaxLabel: newType === 'linear_scale' ? (field.scaleMaxLabel || 'Excellent') : field.scaleMaxLabel,
+                              ratingMax: newType === 'rating' ? (field.ratingMax ?? 5) : field.ratingMax,
+                              ratingIcon: newType === 'rating' ? (field.ratingIcon || 'star') : field.ratingIcon,
+                              customInputType: newType === 'custom' ? (field.customInputType || 'text') : field.customInputType,
+                              customPlaceholder: newType === 'custom' ? (field.customPlaceholder || 'Enter custom value...') : field.customPlaceholder,
                             });
                           }}
                           className="appearance-none bg-[#080a0f] border border-white/15 hover:border-white/30 text-xs sm:text-sm font-medium text-white px-3.5 py-2.5 pr-8 rounded-lg outline-none cursor-pointer transition font-mono"
                         >
-                          <option value="multiple_choice">● Multiple choice</option>
-                          <option value="checkboxes">■ Checkboxes</option>
-                          <option value="dropdown">▼ Dropdown</option>
-                          <option value="short_answer">─ Short answer</option>
-                          <option value="paragraph">≡ Paragraph</option>
-                          <option value="date">📅 Date</option>
-                          <option value="number"># Number</option>
-                          <option value="title_desc">TT Title & description</option>
-                          <option value="image_block">🖼️ Image</option>
-                          <option value="video_block">📹 Video</option>
-                          <option value="section_break">🟰 Section break</option>
+                          <optgroup label="Standard Inputs">
+                            <option value="short_answer">─ Short answer</option>
+                            <option value="paragraph">≡ Paragraph</option>
+                            <option value="multiple_choice">● Multiple choice</option>
+                            <option value="checkboxes">■ Checkboxes</option>
+                            <option value="dropdown">▼ Dropdown</option>
+                          </optgroup>
+                          <optgroup label="Ratings & Scales">
+                            <option value="rating">★ Star / Heart Rating</option>
+                            <option value="linear_scale">↔ Linear Scale (Likert)</option>
+                            <option value="ranking">↕ Ranking (Preference)</option>
+                          </optgroup>
+                          <optgroup label="Data & Contact">
+                            <option value="email">✉ Email Address</option>
+                            <option value="phone">📞 Phone / WhatsApp</option>
+                            <option value="number"># Number</option>
+                            <option value="date">📅 Date</option>
+                            <option value="time">⏰ Time</option>
+                            <option value="url">🔗 Website / Link</option>
+                          </optgroup>
+                          <optgroup label="Advanced & Sovereign">
+                            <option value="file_upload">☁ File Upload</option>
+                            <option value="signature">✍ Digital Signature</option>
+                            <option value="wallet_address">⟠ Web3 / Crypto Wallet</option>
+                          </optgroup>
+                          <optgroup label="Custom & Developer">
+                            <option value="custom">⚡ Custom Input Field</option>
+                          </optgroup>
+                          <optgroup label="Content Blocks">
+                            <option value="title_desc">TT Title & description</option>
+                            <option value="image_block">🖼️ Image showcase</option>
+                            <option value="video_block">📹 Video embed</option>
+                            <option value="section_break">🟰 Section break</option>
+                          </optgroup>
                         </select>
                         <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-2.5 top-3.5 pointer-events-none" />
                       </div>
@@ -627,45 +724,99 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                       />
                     )}
 
+                    {/* Quiz Points Row (if Quiz Mode Active) */}
+                    {form.settings?.isQuiz && !['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type) && (
+                      <div className="flex items-center gap-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-mono">
+                        <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span className="text-amber-300 font-medium">Quiz Scoring:</span>
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={field.points ?? form.settings?.defaultPointsPerQuestion ?? 5}
+                            onChange={(e) => handleUpdateField(field.id, { points: Number(e.target.value) })}
+                            className="w-14 bg-black/40 border border-white/15 rounded px-2 py-1 text-right text-amber-300 font-bold outline-none"
+                          />
+                          <span className="text-neutral-400">pts</span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Field Content / Option Controls depending on Type */}
                     <div className="pt-2">
-                      {/* 1. Multiple Choice / Checkboxes / Dropdown */}
-                      {['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select'].includes(field.type) && (
+                      {/* 1. Multiple Choice / Checkboxes / Dropdown / Ranking */}
+                      {['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select', 'ranking'].includes(field.type) && (
                         <div className="space-y-2.5 pl-1">
-                          {(field.options || ['Option 1']).map((opt, optIdx) => (
-                            <div key={optIdx} className="flex items-center gap-3 group">
-                              {field.type === 'multiple_choice' || field.type === 'radio' ? (
-                                <div className="w-4 h-4 rounded-full border-2 border-neutral-500 flex-shrink-0" />
-                              ) : field.type === 'checkboxes' || field.type === 'checkbox' ? (
-                                <div className="w-4 h-4 rounded-md border-2 border-neutral-500 flex-shrink-0" />
-                              ) : (
-                                <span className="text-xs font-mono text-neutral-500 w-4">{optIdx + 1}.</span>
-                              )}
+                          {(field.options || ['Option 1', 'Option 2', 'Option 3']).map((opt, optIdx) => {
+                            const isCorrect = Array.isArray(field.correctAnswer)
+                              ? field.correctAnswer.includes(opt)
+                              : field.correctAnswer === opt;
 
-                              <input
-                                type="text"
-                                value={opt}
-                                onChange={(e) => handleUpdateOption(field.id, optIdx, e.target.value)}
-                                className="flex-1 bg-transparent text-sm text-neutral-200 border-b border-transparent hover:border-white/20 focus:border-amber-400 outline-none py-1 transition"
-                              />
+                            return (
+                              <div key={optIdx} className="flex items-center gap-3 group">
+                                {field.type === 'ranking' ? (
+                                  <span className="w-5 h-5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-mono flex items-center justify-center font-bold">
+                                    {optIdx + 1}
+                                  </span>
+                                ) : field.type === 'multiple_choice' || field.type === 'radio' ? (
+                                  <div className="w-4 h-4 rounded-full border-2 border-neutral-500 flex-shrink-0" />
+                                ) : field.type === 'checkboxes' || field.type === 'checkbox' ? (
+                                  <div className="w-4 h-4 rounded-md border-2 border-neutral-500 flex-shrink-0" />
+                                ) : (
+                                  <span className="text-xs font-mono text-neutral-500 w-4">{optIdx + 1}.</span>
+                                )}
 
-                              {(field.options || []).length > 1 && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteOption(field.id, optIdx);
-                                  }}
-                                  className="p-1 rounded text-neutral-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"
-                                  title="Remove option"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          ))}
+                                <input
+                                  type="text"
+                                  value={opt}
+                                  onChange={(e) => handleUpdateOption(field.id, optIdx, e.target.value)}
+                                  className="flex-1 bg-transparent text-sm text-neutral-200 border-b border-transparent hover:border-white/20 focus:border-amber-400 outline-none py-1 transition"
+                                />
 
-                          {/* "Add Option" / "Add Other" Row */}
-                          <div className="flex items-center gap-3 pt-2 text-xs font-medium">
+                                {/* Answer Key Checkmark in Quiz Mode */}
+                                {form.settings?.isQuiz && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (field.type === 'checkboxes') {
+                                        const cur = Array.isArray(field.correctAnswer) ? [...field.correctAnswer] : [];
+                                        const next = cur.includes(opt) ? cur.filter((x) => x !== opt) : [...cur, opt];
+                                        handleUpdateField(field.id, { correctAnswer: next });
+                                      } else {
+                                        handleUpdateField(field.id, { correctAnswer: opt });
+                                      }
+                                    }}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 transition ${
+                                      isCorrect
+                                        ? 'bg-emerald-500 text-black font-bold'
+                                        : 'bg-white/5 text-neutral-500 hover:text-white'
+                                    }`}
+                                    title="Mark as correct answer key"
+                                  >
+                                    <Check className="w-3 h-3" />
+                                    <span>{isCorrect ? 'Correct' : 'Set Key'}</span>
+                                  </button>
+                                )}
+
+                                {(field.options || []).length > 1 && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteOption(field.id, optIdx);
+                                    }}
+                                    className="p-1 rounded text-neutral-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"
+                                    title="Remove option"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+
+                          {/* "Add Option" / "Add Other" / "Batch Paste" Row */}
+                          <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-medium">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -677,7 +828,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                               <span>Add option</span>
                             </button>
 
-                            {field.type !== 'dropdown' && !field.hasOtherOption && (
+                            {field.type !== 'dropdown' && field.type !== 'ranking' && !field.hasOtherOption && (
                               <>
                                 <span className="text-neutral-500">or</span>
                                 <button
@@ -703,40 +854,345 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                                 </button>
                               </div>
                             )}
+
+                            <span className="text-neutral-600">&bull;</span>
+
+                            {/* Batch Paste Options Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setBatchPasteFieldId(batchPasteFieldId === field.id ? null : field.id);
+                              }}
+                              className="text-neutral-400 hover:text-white transition flex items-center gap-1 font-mono text-[11px]"
+                            >
+                              <Sparkles className="w-3 h-3 text-amber-400" />
+                              <span>Paste list</span>
+                            </button>
+                          </div>
+
+                          {/* Batch Paste Drawer Box */}
+                          {batchPasteFieldId === field.id && (
+                            <div className="mt-3 p-3.5 rounded-xl bg-[#080a0f] border border-amber-500/30 space-y-2.5 animate-fadeIn">
+                              <div className="flex items-center justify-between text-xs font-mono text-amber-300">
+                                <span>Paste multiple options (one per line):</span>
+                                <button
+                                  onClick={() => setBatchPasteFieldId(null)}
+                                  className="text-neutral-500 hover:text-white"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <textarea
+                                rows={3}
+                                value={batchPasteText}
+                                onChange={(e) => setBatchPasteText(e.target.value)}
+                                placeholder={"Security Council\nGeneral Assembly\nCrisis Committee"}
+                                className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-xs font-mono text-white outline-none focus:border-amber-400"
+                              />
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => {
+                                    const lines = batchPasteText
+                                      .split('\n')
+                                      .map((l) => l.trim())
+                                      .filter(Boolean);
+                                    if (lines.length > 0) {
+                                      handleUpdateField(field.id, {
+                                        options: [...(field.options || []), ...lines],
+                                      });
+                                    }
+                                    setBatchPasteText('');
+                                    setBatchPasteFieldId(null);
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold font-mono transition"
+                                >
+                                  Add Options
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 2. Linear Scale (Likert 1-5 or 1-10) */}
+                      {field.type === 'linear_scale' && (
+                        <div className="space-y-4 pt-1">
+                          <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-neutral-300">
+                            <span>Scale range:</span>
+                            <select
+                              value={field.scaleMin ?? 1}
+                              onChange={(e) => handleUpdateField(field.id, { scaleMin: Number(e.target.value) })}
+                              className="bg-[#080a0f] border border-white/15 rounded px-2 py-1 text-white outline-none"
+                            >
+                              <option value={0}>0</option>
+                              <option value={1}>1</option>
+                            </select>
+                            <span>to</span>
+                            <select
+                              value={field.scaleMax ?? 5}
+                              onChange={(e) => handleUpdateField(field.id, { scaleMax: Number(e.target.value) })}
+                              className="bg-[#080a0f] border border-white/15 rounded px-2 py-1 text-white outline-none"
+                            >
+                              <option value={3}>3</option>
+                              <option value={4}>4</option>
+                              <option value={5}>5</option>
+                              <option value={7}>7</option>
+                              <option value={10}>10</option>
+                            </select>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div className="space-y-1">
+                              <span className="text-neutral-400 font-mono text-[11px]">Lowest Label (Optional):</span>
+                              <input
+                                type="text"
+                                value={field.scaleMinLabel || ''}
+                                onChange={(e) => handleUpdateField(field.id, { scaleMinLabel: e.target.value })}
+                                placeholder="e.g. Strongly Disagree / Poor"
+                                className="w-full bg-[#080a0f] border border-white/10 rounded-lg px-3 py-2 text-white outline-none text-xs"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-neutral-400 font-mono text-[11px]">Highest Label (Optional):</span>
+                              <input
+                                type="text"
+                                value={field.scaleMaxLabel || ''}
+                                onChange={(e) => handleUpdateField(field.id, { scaleMaxLabel: e.target.value })}
+                                placeholder="e.g. Strongly Agree / Excellent"
+                                className="w-full bg-[#080a0f] border border-white/10 rounded-lg px-3 py-2 text-white outline-none text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Preview of Buttons */}
+                          <div className="flex items-center gap-2 pt-1 overflow-x-auto pb-1">
+                            {Array.from({ length: (field.scaleMax ?? 5) - (field.scaleMin ?? 1) + 1 }).map((_, i) => {
+                              const num = (field.scaleMin ?? 1) + i;
+                              return (
+                                <div
+                                  key={num}
+                                  className="w-8 h-8 rounded-lg border border-white/15 bg-white/5 text-neutral-300 font-mono text-xs flex items-center justify-center font-bold"
+                                >
+                                  {num}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
 
-                      {/* 2. Short Answer */}
+                      {/* 3. Rating (Stars / Hearts) */}
+                      {field.type === 'rating' && (
+                        <div className="space-y-3 pt-1">
+                          <div className="flex items-center gap-4 text-xs font-mono text-neutral-300">
+                            <span>Max Rating:</span>
+                            <div className="flex items-center gap-1.5">
+                              {[5, 10].map((count) => (
+                                <button
+                                  key={count}
+                                  onClick={() => handleUpdateField(field.id, { ratingMax: count })}
+                                  className={`px-2.5 py-1 rounded border text-xs ${
+                                    (field.ratingMax ?? 5) === count
+                                      ? 'border-amber-400 bg-amber-500/20 text-amber-300 font-bold'
+                                      : 'border-white/10 bg-[#080a0f] text-neutral-400'
+                                  }`}
+                                >
+                                  {count}
+                                </button>
+                              ))}
+                            </div>
+
+                            <span className="ml-2">Icon:</span>
+                            <div className="flex items-center gap-1.5">
+                              {(['star', 'heart', 'thumb', 'number'] as const).map((ic) => (
+                                <button
+                                  key={ic}
+                                  onClick={() => handleUpdateField(field.id, { ratingIcon: ic })}
+                                  className={`px-2 py-1 rounded border text-xs capitalize ${
+                                    (field.ratingIcon || 'star') === ic
+                                      ? 'border-amber-400 bg-amber-500/20 text-amber-300 font-bold'
+                                      : 'border-white/10 bg-[#080a0f] text-neutral-400'
+                                  }`}
+                                >
+                                  {ic}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Visual Preview */}
+                          <div className="flex items-center gap-1.5 pt-1 text-amber-400">
+                            {Array.from({ length: field.ratingMax ?? 5 }).map((_, i) => (
+                              <div key={i} className="p-1 rounded hover:scale-110 transition">
+                                {field.ratingIcon === 'heart' ? (
+                                  <Heart className="w-5 h-5 fill-amber-400 text-amber-400" />
+                                ) : field.ratingIcon === 'thumb' ? (
+                                  <ThumbsUp className="w-5 h-5 fill-amber-400 text-amber-400" />
+                                ) : field.ratingIcon === 'number' ? (
+                                  <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs flex items-center justify-center font-bold">
+                                    {i + 1}
+                                  </span>
+                                ) : (
+                                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 4. Short Answer */}
                       {(field.type === 'short_answer' || field.type === 'text') && (
                         <div className="py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-sm">
                           Short-answer text line
                         </div>
                       )}
 
-                      {/* 3. Paragraph */}
+                      {/* 5. Paragraph */}
                       {(field.type === 'paragraph' || field.type === 'textarea') && (
                         <div className="py-4 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-lg">
                           Long-answer multiline text area
                         </div>
                       )}
 
-                      {/* 4. Date */}
+                      {/* 6. Email */}
+                      {field.type === 'email' && (
+                        <div className="flex items-center gap-3 py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-xs">
+                          <Mail className="w-4 h-4 text-cyan-400" />
+                          <span>user@example.com (Valid email address)</span>
+                        </div>
+                      )}
+
+                      {/* 7. Phone */}
+                      {(field.type === 'phone' || field.type === 'tel') && (
+                        <div className="flex items-center gap-3 py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-xs">
+                          <Phone className="w-4 h-4 text-emerald-400" />
+                          <span>+1 (555) 000-0000 / WhatsApp Number</span>
+                        </div>
+                      )}
+
+                      {/* 8. Date */}
                       {field.type === 'date' && (
                         <div className="flex items-center gap-3 py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-xs">
                           <span>Month, day, year</span>
-                          <Calendar className="w-4 h-4 ml-auto" />
+                          <Calendar className="w-4 h-4 ml-auto text-amber-400" />
                         </div>
                       )}
 
-                      {/* 5. Number */}
+                      {/* 9. Time */}
+                      {field.type === 'time' && (
+                        <div className="flex items-center gap-3 py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-xs">
+                          <span>00:00 AM / PM</span>
+                          <Clock className="w-4 h-4 ml-auto text-cyan-400" />
+                        </div>
+                      )}
+
+                      {/* 10. Number */}
                       {field.type === 'number' && (
-                        <div className="py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-xs">
-                          Numeric input (1, 2, 3...)
+                        <div className="flex items-center gap-3 py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-xs">
+                          <Hash className="w-4 h-4 text-amber-400" />
+                          <span>Numeric intake (1, 2, 3...)</span>
                         </div>
                       )}
 
-                      {/* 6. Image Block */}
+                      {/* 11. Website / URL */}
+                      {field.type === 'url' && (
+                        <div className="flex items-center gap-3 py-2 border-b border-dotted border-white/20 text-neutral-500 text-xs font-mono max-w-xs">
+                          <Globe className="w-4 h-4 text-blue-400" />
+                          <span>https://portfolio.com or github.com/...</span>
+                        </div>
+                      )}
+
+                      {/* 12. File Upload */}
+                      {field.type === 'file_upload' && (
+                        <div className="space-y-3 pt-1">
+                          <div className="flex items-center gap-4 text-xs font-mono text-neutral-400">
+                            <span>Max file size:</span>
+                            <select
+                              value={field.maxFileSizeMb ?? 10}
+                              onChange={(e) => handleUpdateField(field.id, { maxFileSizeMb: Number(e.target.value) })}
+                              className="bg-[#080a0f] border border-white/15 rounded px-2 py-1 text-white outline-none"
+                            >
+                              <option value={5}>5 MB</option>
+                              <option value={10}>10 MB</option>
+                              <option value={25}>25 MB</option>
+                              <option value={50}>50 MB</option>
+                            </select>
+                          </div>
+                          <div className="p-4 rounded-xl border border-dashed border-white/20 bg-white/[0.02] flex items-center justify-center gap-3 text-xs font-mono text-neutral-400">
+                            <UploadCloud className="w-5 h-5 text-cyan-400" />
+                            <span>Respondents will upload files up to {field.maxFileSizeMb ?? 10} MB</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 13. Digital Signature */}
+                      {field.type === 'signature' && (
+                        <div className="p-4 rounded-xl border border-dashed border-emerald-500/30 bg-emerald-500/5 space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
+                            <PenTool className="w-4 h-4" />
+                            <span className="font-bold">Cryptographic Signature & Legal Attestation</span>
+                          </div>
+                          <div className="h-16 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center text-xs font-mono text-neutral-500">
+                            Touch / stylus canvas or typed sovereign signature
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 14. Web3 Wallet Address */}
+                      {field.type === 'wallet_address' && (
+                        <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center gap-3 text-xs font-mono text-purple-300">
+                          <Coins className="w-4 h-4" />
+                          <span>0x... or sol... (Ethereum, Solana, Sovereign Zenvitra Ledger)</span>
+                        </div>
+                      )}
+
+                      {/* 15. Custom Configurable Field */}
+                      {field.type === 'custom' && (
+                        <div className="space-y-3 p-4 rounded-xl bg-[#080a0f] border border-amber-500/30">
+                          <div className="flex items-center gap-2 text-xs font-mono text-amber-400 font-bold">
+                            <Wrench className="w-4 h-4" />
+                            <span>Configurable Field Settings</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                            <div className="space-y-1">
+                              <span className="text-neutral-400 font-mono text-[10px]">Input Type:</span>
+                              <select
+                                value={field.customInputType || 'text'}
+                                onChange={(e) => handleUpdateField(field.id, { customInputType: e.target.value as any })}
+                                className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-white outline-none"
+                              >
+                                <option value="text">Text</option>
+                                <option value="number">Number</option>
+                                <option value="password">Password / Protected</option>
+                                <option value="color">Color Picker</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-neutral-400 font-mono text-[10px]">Prefix (Optional):</span>
+                              <input
+                                type="text"
+                                value={field.customPrefix || ''}
+                                onChange={(e) => handleUpdateField(field.id, { customPrefix: e.target.value })}
+                                placeholder="e.g. $, @, ID-"
+                                className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-white outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-neutral-400 font-mono text-[10px]">Placeholder:</span>
+                              <input
+                                type="text"
+                                value={field.customPlaceholder || ''}
+                                onChange={(e) => handleUpdateField(field.id, { customPlaceholder: e.target.value })}
+                                placeholder="Custom cue..."
+                                className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-white outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 16. Image Block */}
                       {field.type === 'image_block' && (
                         <div className="space-y-3 pt-2">
                           <input
@@ -754,7 +1210,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                         </div>
                       )}
 
-                      {/* 7. Video Block */}
+                      {/* 17. Video Block */}
                       {field.type === 'video_block' && (
                         <div className="space-y-3 pt-2">
                           <input
@@ -773,7 +1229,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                         </div>
                       )}
 
-                      {/* 8. Section Break */}
+                      {/* 18. Section Break */}
                       {field.type === 'section_break' && (
                         <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono space-y-1">
                           <span className="font-bold uppercase tracking-wider block">Section Break</span>
@@ -1134,72 +1590,383 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
         </main>
       )}
 
-      {/* ── TAB 3: SETTINGS ── */}
+      {/* ── TAB 3: SETTINGS (Google Forms Superior Experience) ── */}
       {activeTab === 'settings' && (
         <main className="max-w-3xl mx-auto px-4 py-8 w-full space-y-6">
-          {/* General Responses Settings */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-6">
-            <h3 className="text-lg font-bold text-white font-display">Form Intake & Security</h3>
+          {/* Header Title */}
+          <div className="flex items-center justify-between pb-2">
+            <div>
+              <h2 className="text-2xl font-bold text-white font-display">Settings</h2>
+              <p className="text-xs font-mono text-neutral-400">Configure quiz parameters, response intake, presentation, and ledger sync</p>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono">
+              Auto-saved to ledger
+            </span>
+          </div>
 
-            <div className="space-y-4 divide-y divide-white/10">
+          {/* 1. Make this a quiz Card */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1 pr-4">
+                <span className="text-base font-bold text-white block">Make this a quiz</span>
+                <span className="text-xs text-neutral-400 block leading-relaxed">
+                  Assign point values, set answers, and automatically provide feedback to respondents
+                </span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.settings?.isQuiz)}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, isQuiz: e.target.checked }
+                    })
+                  }
+                  className="sr-only"
+                />
+                <div
+                  className={`w-11 h-6 rounded-full transition-colors relative ${
+                    form.settings?.isQuiz ? 'bg-amber-500' : 'bg-white/20'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transition-transform absolute top-0.5 left-0.5 ${
+                      form.settings?.isQuiz ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </div>
+              </label>
+            </div>
+
+            {form.settings?.isQuiz && (
+              <div className="pt-4 border-t border-white/10 space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-medium text-white block">Default point value per question</span>
+                    <span className="text-[11px] text-neutral-400">Assigned automatically when new questions are added</span>
+                  </div>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={form.settings?.defaultPointsPerQuestion ?? 5}
+                    onChange={(e) =>
+                      updateFormState({
+                        ...form,
+                        settings: { ...form.settings, defaultPointsPerQuestion: Number(e.target.value) }
+                      })
+                    }
+                    className="w-16 bg-[#080a0f] border border-white/15 rounded-lg px-2.5 py-1 text-right text-xs font-mono text-amber-300 font-bold outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-medium text-white block">Release score immediately after submission</span>
+                    <span className="text-[11px] text-neutral-400">Respondents can view their total score and answers</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={form.settings?.showResultsImmediately ?? true}
+                    onChange={(e) =>
+                      updateFormState({
+                        ...form,
+                        settings: { ...form.settings, showResultsImmediately: e.target.checked }
+                      })
+                    }
+                    className="w-4 h-4 accent-amber-500"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 2. Responses Card */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-6">
+            <div className="border-b border-white/10 pb-3">
+              <h3 className="text-base font-bold text-white">Responses</h3>
+              <p className="text-xs text-neutral-400">Manage how responses are collected, verified, and protected</p>
+            </div>
+
+            <div className="space-y-5 divide-y divide-white/10">
+              {/* Collect Email Addresses */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                <div>
+                  <span className="text-xs font-medium text-white block">Collect email addresses</span>
+                  <span className="text-[11px] text-neutral-400">Determine how emails are acquired from respondents</span>
+                </div>
+                <select
+                  value={form.settings?.collectEmail || 'none'}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, collectEmail: e.target.value as any }
+                    })
+                  }
+                  className="bg-[#080a0f] border border-white/15 rounded-lg px-3 py-1.5 text-xs text-white outline-none font-mono"
+                >
+                  <option value="none">Do not collect</option>
+                  <option value="verified">Verified (Google / Zenvitra Account)</option>
+                  <option value="responder">Responder input</option>
+                </select>
+              </div>
+
+              {/* Send Copy of Response */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-4">
+                <div>
+                  <span className="text-xs font-medium text-white block">Send responders a copy of their response</span>
+                  <span className="text-[11px] text-neutral-400">Dispatch automated receipt to respondent's email</span>
+                </div>
+                <select
+                  value={form.settings?.sendResponseCopy || 'off'}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, sendResponseCopy: e.target.value as any }
+                    })
+                  }
+                  className="bg-[#080a0f] border border-white/15 rounded-lg px-3 py-1.5 text-xs text-white outline-none font-mono"
+                >
+                  <option value="off">Off</option>
+                  <option value="requested">When requested</option>
+                  <option value="always">Always</option>
+                </select>
+              </div>
+
+              {/* Allow Response Editing */}
               <div className="flex items-center justify-between pt-4">
                 <div>
-                  <span className="text-sm font-medium text-white block">Allow Anonymous Submissions</span>
-                  <span className="text-xs text-neutral-400">Permits users to submit without signing into Zenvitra</span>
+                  <span className="text-xs font-medium text-white block">Allow response editing</span>
+                  <span className="text-[11px] text-neutral-400">Responses can be changed after being submitted</span>
                 </div>
                 <input
                   type="checkbox"
-                  checked={form.allowAnonymous}
-                  onChange={(e) => updateFormState({ ...form, allowAnonymous: e.target.checked })}
+                  checked={Boolean(form.settings?.allowResponseEditing)}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, allowResponseEditing: e.target.checked }
+                    })
+                  }
                   className="w-4 h-4 accent-amber-500"
                 />
               </div>
 
+              {/* Limit to 1 Response */}
               <div className="flex items-center justify-between pt-4">
                 <div>
-                  <span className="text-sm font-medium text-white block">Publicly Published</span>
-                  <span className="text-xs text-neutral-400">Anyone with the link can view and submit</span>
+                  <span className="text-xs font-medium text-white block">Limit to 1 response</span>
+                  <span className="text-[11px] text-neutral-400">Requires Google or Zenvitra account sign-in</span>
                 </div>
                 <input
                   type="checkbox"
-                  checked={form.isPublished}
-                  onChange={(e) => updateFormState({ ...form, isPublished: e.target.checked })}
+                  checked={Boolean(form.settings?.limitOneResponse)}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, limitOneResponse: e.target.checked }
+                    })
+                  }
                   className="w-4 h-4 accent-amber-500"
                 />
               </div>
 
-              <div className="pt-4 space-y-2">
-                <span className="text-sm font-medium text-white block">Success Message</span>
+              {/* Real-time Google Sheets Auto-Forward */}
+              <div className="flex items-center justify-between pt-4">
+                <div>
+                  <span className="text-xs font-medium text-emerald-400 block font-bold">Auto-forward to Google Sheets</span>
+                  <span className="text-[11px] text-neutral-400">Stream every incoming submission directly into linked sheet</span>
+                </div>
                 <input
-                  type="text"
-                  value={form.successMessage}
-                  onChange={(e) => updateFormState({ ...form, successMessage: e.target.value })}
-                  className="w-full bg-[#080a0f] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white outline-none"
-                />
-              </div>
-
-              <div className="pt-4 space-y-2">
-                <span className="text-sm font-medium text-white block">Submit Button Label</span>
-                <input
-                  type="text"
-                  value={form.submitButtonText}
-                  onChange={(e) => updateFormState({ ...form, submitButtonText: e.target.value })}
-                  className="w-full bg-[#080a0f] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white outline-none"
+                  type="checkbox"
+                  checked={form.settings?.autoForwardSheets ?? true}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, autoForwardSheets: e.target.checked }
+                    })
+                  }
+                  className="w-4 h-4 accent-emerald-500"
                 />
               </div>
             </div>
           </div>
 
-          {/* Google Sheets Configuration Card */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#0e111a] border border-emerald-500/30 shadow-xl space-y-6">
+          {/* 3. Presentation Card */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-6">
+            <div className="border-b border-white/10 pb-3">
+              <h3 className="text-base font-bold text-white">Presentation</h3>
+              <p className="text-xs text-neutral-400">Manage how the form questions and responses are displayed</p>
+            </div>
+
+            <div className="space-y-4">
+              <span className="text-xs font-mono uppercase text-amber-400 font-bold block">Form presentation</span>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-medium text-white block">Show progress bar</span>
+                  <span className="text-[11px] text-neutral-400">Display dynamic completion bar as respondent fills fields</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={form.settings?.showProgressBar ?? true}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, showProgressBar: e.target.checked }
+                    })
+                  }
+                  className="w-4 h-4 accent-amber-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-medium text-white block">Shuffle question order</span>
+                  <span className="text-[11px] text-neutral-400">Randomize question sequence for each respondent</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.settings?.shuffleQuestions)}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, shuffleQuestions: e.target.checked }
+                    })
+                  }
+                  className="w-4 h-4 accent-amber-500"
+                />
+              </div>
+
+              <span className="text-xs font-mono uppercase text-amber-400 font-bold block pt-4 border-t border-white/10">
+                After submission
+              </span>
+
+              <div className="space-y-2">
+                <span className="text-xs font-medium text-white block">Confirmation message:</span>
+                <textarea
+                  rows={2}
+                  value={form.successMessage}
+                  onChange={(e) => updateFormState({ ...form, successMessage: e.target.value })}
+                  className="w-full bg-[#080a0f] border border-white/10 rounded-lg p-3 text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div>
+                  <span className="text-xs font-medium text-white block">Show link to submit another response</span>
+                  <span className="text-[11px] text-neutral-400">Allows respondents to easily record another intake</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={form.settings?.showSubmitAnotherLink ?? true}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, showSubmitAnotherLink: e.target.checked }
+                    })
+                  }
+                  className="w-4 h-4 accent-amber-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div>
+                  <span className="text-xs font-medium text-white block">View results summary</span>
+                  <span className="text-[11px] text-neutral-400">Share aggregated chart summaries with respondents</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.settings?.viewResultsSummary)}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, viewResultsSummary: e.target.checked }
+                    })
+                  }
+                  className="w-4 h-4 accent-amber-500"
+                />
+              </div>
+
+              <span className="text-xs font-mono uppercase text-amber-400 font-bold block pt-4 border-t border-white/10">
+                Restrictions
+              </span>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-medium text-white block">Disable autosave for all respondents</span>
+                  <span className="text-[11px] text-neutral-400">Prevent respondents from recovering drafts from browser cache</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.settings?.disableAutosave)}
+                  onChange={(e) =>
+                    updateFormState({
+                      ...form,
+                      settings: { ...form.settings, disableAutosave: e.target.checked }
+                    })
+                  }
+                  className="w-4 h-4 accent-amber-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Defaults Card */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-5">
+            <div className="border-b border-white/10 pb-3">
+              <h3 className="text-base font-bold text-white">Defaults</h3>
+              <p className="text-xs text-neutral-400">Settings applied automatically across this form and new questions</p>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-medium text-white block">Collect email addresses by default</span>
+                <span className="text-[11px] text-neutral-400">Enforces email requirement on new forms</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={Boolean(form.settings?.defaultCollectEmail)}
+                onChange={(e) =>
+                  updateFormState({
+                    ...form,
+                    settings: { ...form.settings, defaultCollectEmail: e.target.checked }
+                  })
+                }
+                className="w-4 h-4 accent-amber-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-white/10">
+              <div>
+                <span className="text-xs font-medium text-white block">Make questions required by default</span>
+                <span className="text-[11px] text-neutral-400">All newly added questions start with Required enabled</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={Boolean(form.settings?.defaultQuestionsRequired)}
+                onChange={(e) =>
+                  updateFormState({
+                    ...form,
+                    settings: { ...form.settings, defaultQuestionsRequired: e.target.checked }
+                  })
+                }
+                className="w-4 h-4 accent-amber-500"
+              />
+            </div>
+          </div>
+
+          {/* 5. Google Sheets Integration Hub */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-emerald-500/30 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
                   <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Personal Google Sheets Sync</h3>
-                  <p className="text-xs text-neutral-400">Stream incoming submissions directly into your Google Spreadsheet</p>
+                  <h3 className="text-base font-bold text-white">Google Sheets Real-time Hub</h3>
+                  <p className="text-xs text-neutral-400">Live bidirectional sync between ZenForms and your spreadsheet</p>
                 </div>
               </div>
               <button
@@ -1214,7 +1981,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
               <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
                 <span className="text-neutral-500 block text-[10px]">WEBHOOK URL</span>
                 <span className="truncate block text-emerald-300">
-                  {form.googleSheetsConfig?.webhookUrl || 'Not configured (Click Configure to link)'}
+                  {form.googleSheetsConfig?.webhookUrl || 'Not configured (Click Configure to link in 10s)'}
                 </span>
               </div>
               <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
