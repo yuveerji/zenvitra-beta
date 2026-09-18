@@ -23,7 +23,8 @@ import {
   Layers,
   Clock,
   Eye,
-  Edit3
+  Edit3,
+  BarChart3
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -53,7 +54,29 @@ export default function ZenFormsHubPage() {
   }, []);
 
   const refreshForms = () => {
-    setForms(getPublicForms());
+    const localForms = getPublicForms();
+    setForms(localForms);
+
+    fetch('/api/forms')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.forms)) {
+          const map = new Map<string, ZenForm>();
+          data.forms.forEach((f: ZenForm) => map.set(f.id, f));
+          localForms.forEach((f: ZenForm) => {
+            if (!map.has(f.id)) map.set(f.id, f);
+            else {
+              const serverForm = map.get(f.id)!;
+              map.set(f.id, {
+                ...f,
+                submissionsCount: Math.max(f.submissionsCount || 0, serverForm.submissionsCount || 0)
+              });
+            }
+          });
+          setForms(Array.from(map.values()));
+        }
+      })
+      .catch(() => {});
   };
 
   const filteredForms = forms.filter((f) =>
@@ -395,6 +418,15 @@ export default function ZenFormsHubPage() {
                               <span>View Public Form</span>
                             </Link>
 
+                            <Link
+                              href={`/forms/${form.slug || form.id}/responses`}
+                              target="_blank"
+                              className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                            >
+                              <BarChart3 className="w-3.5 h-3.5 text-purple-400" />
+                              <span>View Responses</span>
+                            </Link>
+
                             <button
                               onClick={() => {
                                 const url = `${window.location.origin}/forms/${form.slug || form.id}`;
@@ -492,6 +524,14 @@ export default function ZenFormsHubPage() {
                       className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white transition text-xs"
                     >
                       Edit
+                    </Link>
+                    <Link
+                      href={`/forms/${form.slug || form.id}/responses`}
+                      target="_blank"
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-white"
+                      title="View Responses"
+                    >
+                      <BarChart3 className="w-4 h-4 text-purple-400" />
                     </Link>
                     <Link
                       href={`/forms/${form.slug || form.id}`}

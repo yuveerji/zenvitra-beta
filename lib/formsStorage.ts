@@ -185,6 +185,16 @@ export function saveZenForm(form: ZenForm): ZenForm {
   try {
     localStorage.setItem(LS_FORMS_KEY, JSON.stringify(updated));
   } catch {}
+
+  // Sync to server background registry
+  if (typeof window !== 'undefined') {
+    fetch('/api/forms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ form }),
+    }).catch(() => {});
+  }
+
   return form;
 }
 
@@ -194,6 +204,10 @@ export function deleteZenForm(formId: string): boolean {
   try {
     localStorage.setItem(LS_FORMS_KEY, JSON.stringify(filtered));
   } catch {}
+
+  if (typeof window !== 'undefined') {
+    fetch(`/api/forms/${formId}`, { method: 'DELETE' }).catch(() => {});
+  }
   return true;
 }
 
@@ -207,6 +221,67 @@ export function getFormSubmissions(formId: string): ZenFormSubmission[] {
   }
 }
 
+export async function fetchFormSubmissions(formId: string): Promise<ZenFormSubmission[]> {
+  const localSubs = getFormSubmissions(formId);
+  if (typeof window === 'undefined') return localSubs;
+
+  try {
+    const res = await fetch(`/api/forms/${formId}/submissions`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.submissions)) {
+        // Merge server and local without duplicates (keyed by ID)
+        const subMap = new Map<string, ZenFormSubmission>();
+        data.submissions.forEach((s: ZenFormSubmission) => subMap.set(s.id, s));
+        localSubs.forEach((s: ZenFormSubmission) => {
+          if (!subMap.has(s.id)) subMap.set(s.id, s);
+        });
+
+        const merged = Array.from(subMap.values()).sort(
+          (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+        );
+
+        localStorage.setItem(`${LS_SUBMISSIONS_KEY}_${formId}`, JSON.stringify(merged));
+
+        // Update count on form
+        const forms = getPublicForms();
+        const updatedForms = forms.map((f) => 
+          f.id === formId ? { ...f, submissionsCount: merged.length } : f
+        );
+        localStorage.setItem(LS_FORMS_KEY, JSON.stringify(updatedForms));
+
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn('[FETCH-FORM-SUBMISSIONS-WARN]', err);
+  }
+
+  return localSubs;
+}
+
+export async function deleteFormSubmission(formId: string, submissionId: string): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      const subs = getFormSubmissions(formId).filter((s) => s.id !== submissionId);
+      localStorage.setItem(`${LS_SUBMISSIONS_KEY}_${formId}`, JSON.stringify(subs));
+      const forms = getPublicForms();
+      const updatedForms = forms.map((f) => 
+        f.id === formId ? { ...f, submissionsCount: subs.length } : f
+      );
+      localStorage.setItem(LS_FORMS_KEY, JSON.stringify(updatedForms));
+
+      fetch(`/api/forms/${formId}/submissions?submissionId=${submissionId}`, {
+        method: 'DELETE'
+      }).catch(() => {});
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 export function clearFormSubmissions(formId: string): boolean {
   if (typeof window === 'undefined') return false;
   try {
@@ -216,6 +291,8 @@ export function clearFormSubmissions(formId: string): boolean {
       f.id === formId ? { ...f, submissionsCount: 0 } : f
     );
     localStorage.setItem(LS_FORMS_KEY, JSON.stringify(updatedForms));
+
+    fetch(`/api/forms/${formId}/submissions`, { method: 'DELETE' }).catch(() => {});
     return true;
   } catch {
     return false;

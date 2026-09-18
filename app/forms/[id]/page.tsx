@@ -32,14 +32,15 @@ import {
   ChevronDown,
   Award,
   RotateCcw,
-  FileText
+  FileText,
+  BarChart3
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { ZenForm, ZenFormTheme, ZenFormField } from '@/types/forms';
 import { useAuth } from '@/context/AuthContext';
 import { getFontCssFamily, CARD_BORDER_RADIUS_MAP } from '@/lib/formsThemes';
 
-export default function PublicFormFillingPage() {
+export default function ZenFormPublicPage() {
   const params = useParams();
   const router = useRouter();
   const { profile, user, isAuthenticated } = useAuth();
@@ -56,7 +57,16 @@ export default function PublicFormFillingPage() {
   useEffect(() => {
     if (idOrSlug) {
       const found = getZenFormById(idOrSlug);
-      setForm(found);
+      if (found) {
+        setForm(found);
+      } else {
+        fetch(`/api/forms/${idOrSlug}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.form) setForm(data.form);
+          })
+          .catch(() => {});
+      }
     }
   }, [idOrSlug]);
 
@@ -358,6 +368,15 @@ export default function PublicFormFillingPage() {
             </span>
           )}
 
+          <Link
+            href={`/forms/${form.slug || form.id}/responses`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono text-neutral-300 hover:text-white transition"
+            title="View Responses on Website"
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Responses</span>
+          </Link>
+
           <button
             type="button"
             onClick={handleCopyLink}
@@ -440,6 +459,14 @@ export default function PublicFormFillingPage() {
             )}
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href={`/forms/${form.slug || form.id}/responses`}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition flex items-center justify-center gap-2 border border-white/10 shadow-sm"
+              >
+                <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+                <span>See Previous Responses</span>
+              </Link>
+
               {(form.settings?.showSubmitAnotherLink ?? true) && (
                 <button
                   type="button"
@@ -448,7 +475,7 @@ export default function PublicFormFillingPage() {
                     setFormData({});
                     setQuizScore(null);
                   }}
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 font-mono text-xs transition cursor-pointer"
                 >
                   Submit Another Response
                 </button>

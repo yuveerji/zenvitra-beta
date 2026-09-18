@@ -54,7 +54,13 @@ import {
   HelpCircle,
   ShieldCheck,
   Award,
-  SlidersHorizontal
+  SlidersHorizontal,
+  User,
+  ChevronLeft,
+  ChevronRight,
+  BarChart3,
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 import {
   ZenForm,
@@ -69,6 +75,8 @@ import {
   getZenFormById,
   saveZenForm,
   getFormSubmissions,
+  fetchFormSubmissions,
+  deleteFormSubmission,
   clearFormSubmissions,
   exportSubmissionsToCsv,
   syncFormSubmissionsToGoogleSheets,
@@ -101,6 +109,11 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
   const [submissions, setSubmissions] = useState<ZenFormSubmission[]>([]);
+  const [responsesSubTab, setResponsesSubTab] = useState<'summary' | 'question' | 'individual'>('summary');
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
+  const [selectedSubmissionIndex, setSelectedSubmissionIndex] = useState(0);
+  const [isSyncingSheets, setIsSyncingSheets] = useState(false);
+  const [isResponsesMenuOpen, setIsResponsesMenuOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
   const [copiedLink, setCopiedLink] = useState(false);
   const [syncToast, setSyncToast] = useState<string | null>(null);
@@ -187,8 +200,27 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
           setActiveCardId(existing.fields[0].id);
         }
         setSubmissions(getFormSubmissions(existing.id));
+        fetchFormSubmissions(existing.id).then((live) => {
+          if (live && live.length > 0) setSubmissions(live);
+        });
       } else {
-        router.replace('/forms');
+        // Fetch from server registry fallback
+        fetch(`/api/forms/${formId}`)
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.form) {
+              setForm(d.form);
+              setHistory([d.form]);
+              setHistoryIndex(0);
+              if (d.form.fields?.length > 0) setActiveCardId(d.form.fields[0].id);
+              fetchFormSubmissions(d.form.id).then((live) => {
+                if (live && live.length > 0) setSubmissions(live);
+              });
+            } else {
+              router.replace('/forms');
+            }
+          })
+          .catch(() => router.replace('/forms'));
       }
     }
   }, [formId, router]);
@@ -1390,54 +1422,176 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
         </main>
       )}
 
-      {/* ── TAB 2: RESPONSES LEDGER ── */}
+      {/* ── TAB 2: RESPONSES STUDIO (Google Forms Superior Experience) ── */}
       {activeTab === 'responses' && (
         <main className="max-w-4xl mx-auto px-4 py-8 w-full space-y-6">
-          {/* Responses Header Card */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-6">
+          {/* 1. Header Card (Matching & Surpassing Google Forms Reference) */}
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-3xl sm:text-4xl font-black text-white font-display">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl sm:text-4xl font-bold text-white font-display">
                   {submissions.length} responses
                 </span>
-                <p className="text-xs font-mono text-neutral-400 pt-1">
-                  Cryptographically verified on the Zenvitra ledger
-                </p>
+                <button
+                  onClick={async () => {
+                    setSyncToast('Refreshing responses from ledger...');
+                    const live = await fetchFormSubmissions(form.id);
+                    setSubmissions(live);
+                    setTimeout(() => setSyncToast(null), 1500);
+                  }}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition"
+                  title="Refresh responses from server"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
               </div>
 
-              {/* Actions: Google Sheets Link + Accepting Responses Toggle */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Link to Google Sheets Button */}
+              {/* Action Buttons: Sheets Link, Sync Now, More Menu, Accepting Toggle */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Green Google Sheets Button (from Reference Screenshot) */}
+                {form.googleSheetsConfig?.sheetUrl ? (
+                  <a
+                    href={form.googleSheetsConfig.sheetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 hover:bg-emerald-500/25 transition flex items-center gap-2 text-xs font-mono font-medium shadow-lg shadow-emerald-500/10"
+                    title="Open live Google Sheet in new tab"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                    <span>View in Sheets</span>
+                    <ExternalLink className="w-3 h-3 opacity-70" />
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => setIsSheetsModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 hover:bg-emerald-500/25 transition flex items-center gap-2 text-xs font-mono font-medium shadow-lg shadow-emerald-500/10"
+                    title="Connect Google Sheet in 10s"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                    <span>Link to Sheets</span>
+                  </button>
+                )}
+
+                {/* Instant Sync to Sheets Button */}
                 <button
-                  onClick={() => setIsSheetsModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition flex items-center gap-2 text-xs font-mono font-medium shadow-lg shadow-emerald-500/10"
+                  onClick={async () => {
+                    setIsSyncingSheets(true);
+                    setSyncToast('Streaming responses into Google Sheets...');
+                    const res = await syncFormSubmissionsToGoogleSheets(form, submissions);
+                    setIsSyncingSheets(false);
+                    if (res.success) {
+                      setSyncToast(`Successfully synced ${res.count || submissions.length} responses to Google Sheets!`);
+                    } else {
+                      setSyncToast(res.error || 'Sheets sync pending. Check webhook.');
+                    }
+                    setTimeout(() => setSyncToast(null), 3000);
+                  }}
+                  disabled={isSyncingSheets || submissions.length === 0}
+                  className="px-3.5 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-neutral-200 disabled:opacity-40 transition flex items-center gap-1.5 text-xs font-mono"
+                  title="Push all responses to Google Sheets"
                 >
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                  <span>Link to Google Sheets</span>
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSheets ? 'animate-spin text-emerald-400' : ''}`} />
+                  <span>Sync Now</span>
                 </button>
 
-                {/* CSV Download */}
-                <button
-                  onClick={() => {
-                    const csv = exportSubmissionsToCsv(form, submissions);
-                    const blob = new Blob([csv], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${form.slug || 'zenform'}-responses.csv`;
-                    a.click();
-                  }}
-                  disabled={submissions.length === 0}
-                  className="px-3.5 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-neutral-300 disabled:opacity-30 transition flex items-center gap-1.5 text-xs font-mono"
-                  title="Download CSV"
+                {/* View on Public Website Button */}
+                <Link
+                  href={`/forms/${form.slug || form.id}/responses`}
+                  target="_blank"
+                  className="px-3.5 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-neutral-200 transition flex items-center gap-1.5 text-xs font-mono"
+                  title="View how respondents and website visitors see responses"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>CSV</span>
-                </button>
+                  <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="hidden sm:inline">Web Analytics</span>
+                </Link>
+
+                {/* 3-Dot More Actions Menu */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsResponsesMenuOpen(!isResponsesMenuOpen)}
+                    className="p-2 rounded-xl border border-white/10 hover:bg-white/5 text-neutral-300 hover:text-white transition"
+                    title="More actions"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+
+                  {isResponsesMenuOpen && (
+                    <div className="absolute right-0 top-full mt-1.5 w-56 rounded-xl bg-[#141824] border border-white/15 p-1.5 shadow-2xl z-30 space-y-1 text-xs font-mono text-left animate-fadeIn">
+                      <button
+                        onClick={() => {
+                          const csv = exportSubmissionsToCsv(form, submissions);
+                          const blob = new Blob([csv], { type: 'text/csv' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${form.slug || 'zenform'}-responses.csv`;
+                          a.click();
+                          setIsResponsesMenuOpen(false);
+                        }}
+                        disabled={submissions.length === 0}
+                        className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2 disabled:opacity-40"
+                      >
+                        <Download className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Download CSV (.csv)</span>
+                      </button>
+
+                      <Link
+                        href={`/forms/${form.slug || form.id}/responses`}
+                        target="_blank"
+                        onClick={() => setIsResponsesMenuOpen(false)}
+                        className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Public Web View</span>
+                      </Link>
+
+                      <button
+                        onClick={() => {
+                          setIsSheetsModalOpen(true);
+                          setIsResponsesMenuOpen(false);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                      >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Sheets Integration Hub</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          window.print();
+                          setIsResponsesMenuOpen(false);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Print Responses</span>
+                      </button>
+
+                      <div className="border-t border-white/10 my-1" />
+
+                      <button
+                        onClick={() => {
+                          setIsResponsesMenuOpen(false);
+                          if (confirm('Are you sure you want to delete all responses? This cannot be undone.')) {
+                            clearFormSubmissions(form.id);
+                            setSubmissions([]);
+                            setForm({ ...form, submissionsCount: 0 });
+                          }
+                        }}
+                        className="w-full px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-400 flex items-center gap-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete All Responses</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 {/* Accepting Responses Toggle */}
-                <label className="flex items-center gap-2 cursor-pointer select-none pl-2 border-l border-white/10">
-                  <span className="text-xs font-mono text-neutral-300">Accepting responses</span>
+                <label className="flex items-center gap-2 cursor-pointer select-none pl-2 sm:border-l border-white/10">
+                  <span className="text-xs font-mono text-neutral-300 hidden sm:inline">
+                    {form.acceptingResponses !== false ? 'Accepting' : 'Closed'}
+                  </span>
                   <input
                     type="checkbox"
                     checked={form.acceptingResponses !== false}
@@ -1458,134 +1612,542 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                 </label>
               </div>
             </div>
+
+            {/* Sub-Navigation Tabs: Summary | Question | Individual */}
+            {submissions.length > 0 && (
+              <div className="pt-3 border-t border-white/10 flex items-center gap-2 font-mono text-xs">
+                <button
+                  onClick={() => setResponsesSubTab('summary')}
+                  className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                    responsesSubTab === 'summary'
+                      ? 'bg-white text-black font-bold shadow-md'
+                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>Summary</span>
+                </button>
+
+                <button
+                  onClick={() => setResponsesSubTab('question')}
+                  className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                    responsesSubTab === 'question'
+                      ? 'bg-white text-black font-bold shadow-md'
+                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span>Question</span>
+                </button>
+
+                <button
+                  onClick={() => setResponsesSubTab('individual')}
+                  className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                    responsesSubTab === 'individual'
+                      ? 'bg-white text-black font-bold shadow-md'
+                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Individual</span>
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Responses Data List */}
+          {/* 2. Empty State (Matching Google Forms) */}
           {submissions.length === 0 ? (
-            <div className="p-12 rounded-2xl bg-[#0e111a] border border-white/10 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto text-neutral-500">
-                <FileSpreadsheet className="w-6 h-6" />
+            <div className="p-12 sm:p-16 rounded-2xl bg-[#0e111a] border border-white/10 text-center space-y-4 shadow-xl">
+              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
+                <FileSpreadsheet className="w-7 h-7" />
               </div>
-              <h3 className="text-lg font-bold text-white">Waiting for responses</h3>
-              <p className="text-sm text-neutral-400 max-w-md mx-auto">
-                Share your public form link with participants. Every response will immediately stream into this ledger and your connected Google Sheet.
+              <h3 className="text-xl font-bold text-white font-display">No responses yet</h3>
+              <p className="text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
+                Waiting for responses. Publish or share your form to start accepting responses across the web and automatically stream into Google Sheets.
               </p>
-              <button
-                onClick={() => setIsShareModalOpen(true)}
-                className="px-5 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition"
-              >
-                Copy Public Link
-              </button>
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => setIsShareModalOpen(true)}
+                  className="px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition shadow-lg"
+                >
+                  Copy Form Link
+                </button>
+                <Link
+                  href={`/forms/${form.slug || form.id}`}
+                  target="_blank"
+                  className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-neutral-200 hover:bg-white/10 text-xs font-mono transition"
+                >
+                  Submit Sample Response
+                </Link>
+              </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {/* Question Summary Breakdowns */}
-              {form.fields
-                .filter((f) => ['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select'].includes(f.type))
-                .map((field) => {
-                  const options = field.options || [];
-                  const counts: Record<string, number> = {};
-                  options.forEach((opt) => (counts[opt] = 0));
+            <>
+              {/* ── SUB-TAB 1: SUMMARY ── */}
+              {responsesSubTab === 'summary' && (
+                <div className="space-y-6">
+                  {/* Question Summary Breakdowns for all fields */}
+                  {form.fields
+                    .filter((f) => !['title_desc', 'image_block', 'video_block', 'section_break'].includes(f.type))
+                    .map((field, qIdx) => {
+                      const allAnswers = submissions
+                        .map((s) => ({
+                          id: s.id,
+                          submittedAt: s.submittedAt,
+                          submitter: s.submitterHandle || 'Anonymous',
+                          value: s.data[field.id],
+                        }))
+                        .filter((a) => a.value !== undefined && a.value !== null && a.value !== '');
 
-                  submissions.forEach((sub) => {
-                    const ans = sub.data[field.id];
-                    if (Array.isArray(ans)) {
-                      ans.forEach((val) => {
-                        counts[val] = (counts[val] || 0) + 1;
-                      });
-                    } else if (ans) {
-                      counts[ans] = (counts[ans] || 0) + 1;
-                    }
-                  });
-
-                  return (
-                    <div key={field.id} className="p-6 rounded-2xl bg-[#0e111a] border border-white/10 shadow-lg space-y-4">
-                      <h4 className="text-base font-bold text-white">{field.label}</h4>
-                      <p className="text-xs font-mono text-neutral-400">{submissions.length} responses</p>
-
-                      <div className="space-y-2 pt-2">
-                        {options.map((opt) => {
-                          const count = counts[opt] || 0;
-                          const pct = submissions.length > 0 ? Math.round((count / submissions.length) * 100) : 0;
-                          return (
-                            <div key={opt} className="space-y-1">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-neutral-300">{opt}</span>
-                                <span className="font-mono text-neutral-400">
-                                  {count} ({pct}%)
+                      return (
+                        <div
+                          key={field.id}
+                          className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-lg space-y-5"
+                        >
+                          <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-bold">
+                                  Q{qIdx + 1} &bull; {field.type.replace('_', ' ')}
                                 </span>
+                                {field.points && (
+                                  <span className="px-2 py-0.2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-mono">
+                                    {field.points} pts
+                                  </span>
+                                )}
                               </div>
-                              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                                <div
-                                  className="h-full rounded-full transition-all duration-500"
-                                  style={{ width: `${pct}%`, backgroundColor: accentHex }}
-                                />
-                              </div>
+                              <h4 className="text-base font-bold text-white pt-0.5">{field.label}</h4>
                             </div>
-                          );
-                        })}
-                      </div>
+                            <span className="text-xs font-mono text-neutral-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+                              {allAnswers.length} responses
+                            </span>
+                          </div>
+
+                          {/* 1. Choice Options Breakdown */}
+                          {['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select'].includes(field.type) && (
+                            <div className="space-y-2.5">
+                              {(() => {
+                                const options = field.options || [];
+                                const counts: Record<string, number> = {};
+                                options.forEach((opt) => (counts[opt] = 0));
+
+                                allAnswers.forEach((ans) => {
+                                  if (Array.isArray(ans.value)) {
+                                    ans.value.forEach((v) => {
+                                      counts[v] = (counts[v] || 0) + 1;
+                                    });
+                                  } else if (ans.value) {
+                                    counts[ans.value] = (counts[ans.value] || 0) + 1;
+                                  }
+                                });
+
+                                return options.map((opt) => {
+                                  const count = counts[opt] || 0;
+                                  const pct = allAnswers.length > 0 ? Math.round((count / allAnswers.length) * 100) : 0;
+                                  const isCorrect = field.correctAnswer === opt;
+                                  return (
+                                    <div key={opt} className="space-y-1">
+                                      <div className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-neutral-300">{opt}</span>
+                                          {isCorrect && (
+                                            <span className="text-emerald-400 font-bold font-mono text-[10px]">
+                                              ✓ Key
+                                            </span>
+                                          )}
+                                        </div>
+                                        <span className="font-mono text-neutral-400 font-bold">
+                                          {count} ({pct}%)
+                                        </span>
+                                      </div>
+                                      <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
+                                        <div
+                                          className="h-full rounded-full transition-all duration-500"
+                                          style={{
+                                            width: `${pct}%`,
+                                            backgroundColor: isCorrect ? '#10b981' : accentHex,
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
+                          )}
+
+                          {/* 2. Linear Scale & Rating Breakdown */}
+                          {['linear_scale', 'rating'].includes(field.type) && (
+                            <div className="space-y-3">
+                              {(() => {
+                                const maxVal = field.type === 'linear_scale' ? (field.scaleMax || 5) : (field.ratingMax || 5);
+                                const minVal = field.type === 'linear_scale' ? (field.scaleMin || 1) : 1;
+                                const counts: Record<number, number> = {};
+                                for (let i = minVal; i <= maxVal; i++) counts[i] = 0;
+                                let sum = 0;
+                                allAnswers.forEach((ans) => {
+                                  const n = Number(ans.value);
+                                  if (!isNaN(n) && n >= minVal && n <= maxVal) {
+                                    counts[n] = (counts[n] || 0) + 1;
+                                    sum += n;
+                                  }
+                                });
+                                const avg = allAnswers.length > 0 ? (sum / allAnswers.length).toFixed(1) : '0.0';
+
+                                return (
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 w-fit">
+                                      <span className="text-2xl font-black text-white font-mono">{avg}</span>
+                                      <span className="text-xs font-mono text-neutral-400">
+                                        Average Score out of {maxVal}
+                                      </span>
+                                    </div>
+                                    <div className="space-y-1.5 pt-1">
+                                      {Object.keys(counts).map((k) => {
+                                        const num = Number(k);
+                                        const count = counts[num] || 0;
+                                        const pct = allAnswers.length > 0 ? Math.round((count / allAnswers.length) * 100) : 0;
+                                        return (
+                                          <div key={num} className="flex items-center gap-3 text-xs font-mono">
+                                            <span className="w-5 text-neutral-300 font-bold">{num}</span>
+                                            <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+                                              <div
+                                                className="h-full rounded-full"
+                                                style={{ width: `${pct}%`, backgroundColor: accentHex }}
+                                              />
+                                            </div>
+                                            <span className="w-16 text-right text-neutral-400">
+                                              {count} ({pct}%)
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          )}
+
+                          {/* 3. Text Answers Preview */}
+                          {![
+                            'multiple_choice',
+                            'checkboxes',
+                            'dropdown',
+                            'radio',
+                            'checkbox',
+                            'select',
+                            'linear_scale',
+                            'rating',
+                            'ranking'
+                          ].includes(field.type) && (
+                            <div className="max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                              {allAnswers.slice(0, 10).map((a, i) => (
+                                <div
+                                  key={a.id + i}
+                                  className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs"
+                                >
+                                  <span className="text-neutral-200 font-sans truncate pr-2">
+                                    {String(a.value)}
+                                  </span>
+                                  <span className="text-[10px] font-mono text-neutral-500 shrink-0">
+                                    {a.submitter}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                  {/* Submissions Ledger Table */}
+                  <div className="p-6 rounded-2xl bg-[#0e111a] border border-white/10 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-base font-bold text-white">Individual Response Log</h4>
+                      <button
+                        onClick={() => {
+                          if (confirm('Are you sure you want to clear all responses? This cannot be undone.')) {
+                            clearFormSubmissions(form.id);
+                            setSubmissions([]);
+                            setForm({ ...form, submissionsCount: 0 });
+                          }
+                        }}
+                        className="text-xs font-mono text-red-400 hover:text-red-300 transition"
+                      >
+                        Clear All
+                      </button>
                     </div>
-                  );
-                })}
 
-              {/* Submissions Ledger Table */}
-              <div className="p-6 rounded-2xl bg-[#0e111a] border border-white/10 shadow-lg space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-base font-bold text-white">Individual Response Log</h4>
-                  <button
-                    onClick={() => {
-                      if (confirm('Are you sure you want to clear all responses? This cannot be undone.')) {
-                        clearFormSubmissions(form.id);
-                        setSubmissions([]);
-                        setForm({ ...form, submissionsCount: 0 });
-                      }
-                    }}
-                    className="text-xs font-mono text-red-400 hover:text-red-300 transition"
-                  >
-                    Clear All
-                  </button>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs font-mono">
+                        <thead>
+                          <tr className="border-b border-white/10 text-neutral-400">
+                            <th className="py-2.5 pr-4">#</th>
+                            <th className="py-2.5 pr-4">Submitted At</th>
+                            <th className="py-2.5 pr-4">Submitter</th>
+                            <th className="py-2.5 pr-4">Preview</th>
+                            <th className="py-2.5 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 text-neutral-200">
+                          {submissions.map((sub, i) => (
+                            <tr key={sub.id} className="hover:bg-white/[0.02] transition">
+                              <td className="py-3 pr-4 text-neutral-500">{i + 1}</td>
+                              <td className="py-3 pr-4 text-neutral-300">
+                                {new Date(sub.submittedAt).toLocaleString()}
+                              </td>
+                              <td className="py-3 pr-4 text-neutral-400">
+                                {sub.submitterHandle || 'Anonymous'}
+                              </td>
+                              <td className="py-3 pr-4 max-w-xs truncate text-neutral-400">
+                                {Object.values(sub.data)[0] || 'No content'}
+                              </td>
+                              <td className="py-3 text-right">
+                                <button
+                                  onClick={() => {
+                                    setSelectedSubmissionIndex(i);
+                                    setResponsesSubTab('individual');
+                                  }}
+                                  className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-white transition text-[11px]"
+                                >
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
+              )}
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-mono">
-                    <thead>
-                      <tr className="border-b border-white/10 text-neutral-400">
-                        <th className="py-2.5 pr-4">#</th>
-                        <th className="py-2.5 pr-4">Submitted At</th>
-                        <th className="py-2.5 pr-4">Submitter</th>
-                        <th className="py-2.5 pr-4">Preview</th>
-                        <th className="py-2.5 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 text-neutral-200">
-                      {submissions.map((sub, i) => (
-                        <tr key={sub.id} className="hover:bg-white/[0.02] transition">
-                          <td className="py-3 pr-4 text-neutral-500">{i + 1}</td>
-                          <td className="py-3 pr-4 text-neutral-300">
-                            {new Date(sub.submittedAt).toLocaleString()}
-                          </td>
-                          <td className="py-3 pr-4 text-neutral-400">
-                            {sub.submitterHandle || 'Anonymous'}
-                          </td>
-                          <td className="py-3 pr-4 max-w-xs truncate text-neutral-400">
-                            {Object.values(sub.data)[0] || 'No content'}
-                          </td>
-                          <td className="py-3 text-right">
-                            <button
-                              onClick={() => setSelectedResponse(sub)}
-                              className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-white transition text-[11px]"
+              {/* ── SUB-TAB 2: QUESTION ── */}
+              {responsesSubTab === 'question' && (
+                <div className="space-y-6">
+                  {/* Question Navigator */}
+                  {(() => {
+                    const validFields = form.fields.filter(
+                      (f) => !['title_desc', 'image_block', 'video_block', 'section_break'].includes(f.type)
+                    );
+                    const currentField = validFields[selectedQuestionIndex] || validFields[0];
+                    if (!currentField) return null;
+
+                    const allAnswers = submissions
+                      .map((s) => ({
+                        subId: s.id,
+                        submittedAt: s.submittedAt,
+                        submitter: s.submitterHandle || 'Anonymous',
+                        value: s.data[currentField.id],
+                      }))
+                      .filter((a) => a.value !== undefined && a.value !== null && a.value !== '');
+
+                    return (
+                      <div className="space-y-6">
+                        {/* Selector Controls */}
+                        <div className="p-5 rounded-2xl bg-[#0e111a] border border-white/10 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 flex-1">
+                            <select
+                              value={selectedQuestionIndex}
+                              onChange={(e) => setSelectedQuestionIndex(Number(e.target.value))}
+                              className="bg-[#080a0f] border border-white/15 rounded-xl px-4 py-2 text-xs font-mono text-white outline-none w-full max-w-md truncate"
                             >
-                              View
+                              {validFields.map((f, idx) => (
+                                <option key={f.id} value={idx}>
+                                  Q{idx + 1}: {f.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() => setSelectedQuestionIndex(Math.max(0, selectedQuestionIndex - 1))}
+                              disabled={selectedQuestionIndex === 0}
+                              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 transition"
+                              title="Previous question"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
                             </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            <span className="text-xs font-mono text-neutral-400 px-2">
+                              {selectedQuestionIndex + 1} of {validFields.length}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setSelectedQuestionIndex(Math.min(validFields.length - 1, selectedQuestionIndex + 1))
+                              }
+                              disabled={selectedQuestionIndex === validFields.length - 1}
+                              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 transition"
+                              title="Next question"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Question Detail Card */}
+                        <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-4">
+                          <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                            <div>
+                              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-bold block">
+                                Question {selectedQuestionIndex + 1} &bull; {currentField.type}
+                              </span>
+                              <h3 className="text-lg font-bold text-white pt-1">{currentField.label}</h3>
+                            </div>
+                            <span className="text-xs font-mono text-neutral-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+                              {allAnswers.length} responses
+                            </span>
+                          </div>
+
+                          <div className="space-y-2.5 pt-2">
+                            {allAnswers.map((ans, idx) => (
+                              <div
+                                key={ans.subId + idx}
+                                className="p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition flex items-center justify-between gap-4"
+                              >
+                                <div className="space-y-1 flex-1">
+                                  <div className="text-sm text-white font-sans font-medium">
+                                    {Array.isArray(ans.value) ? ans.value.join(', ') : String(ans.value)}
+                                  </div>
+                                  <div className="text-[10px] font-mono text-neutral-500 flex items-center gap-2">
+                                    <span>{ans.submitter}</span>
+                                    <span>&bull;</span>
+                                    <span>{new Date(ans.submittedAt).toLocaleString()}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-              </div>
-            </div>
+              )}
+
+              {/* ── SUB-TAB 3: INDIVIDUAL ── */}
+              {responsesSubTab === 'individual' && (
+                <div className="space-y-6">
+                  {(() => {
+                    const currentSub = submissions[selectedSubmissionIndex] || submissions[0];
+                    if (!currentSub) return null;
+
+                    return (
+                      <div className="space-y-6">
+                        {/* Individual Carousel Header */}
+                        <div className="p-5 rounded-2xl bg-[#0e111a] border border-white/10 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedSubmissionIndex(Math.max(0, selectedSubmissionIndex - 1))}
+                              disabled={selectedSubmissionIndex === 0}
+                              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 transition"
+                              title="Previous submission"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <span className="text-sm font-mono text-white font-bold px-2">
+                              {selectedSubmissionIndex + 1} of {submissions.length}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setSelectedSubmissionIndex(
+                                  Math.min(submissions.length - 1, selectedSubmissionIndex + 1)
+                                )
+                              }
+                              disabled={selectedSubmissionIndex === submissions.length - 1}
+                              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 transition"
+                              title="Next submission"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="text-right text-xs font-mono hidden sm:block">
+                              <span className="text-neutral-400 block">{currentSub.submitterHandle || 'Anonymous'}</span>
+                              <span className="text-neutral-500 text-[10px]">
+                                {new Date(currentSub.submittedAt).toLocaleString()}
+                              </span>
+                            </div>
+
+                            <button
+                              onClick={async () => {
+                                if (confirm('Delete this individual submission?')) {
+                                  await deleteFormSubmission(form.id, currentSub.id);
+                                  const updated = submissions.filter((s) => s.id !== currentSub.id);
+                                  setSubmissions(updated);
+                                  setSelectedSubmissionIndex(Math.max(0, selectedSubmissionIndex - 1));
+                                }
+                              }}
+                              className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition"
+                              title="Delete this submission"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Individual Filled Form Answers */}
+                        <div className="space-y-4">
+                          {form.fields
+                            .filter(
+                              (f) => !['title_desc', 'image_block', 'video_block', 'section_break'].includes(f.type)
+                            )
+                            .map((field) => {
+                              const ans = currentSub.data[field.id];
+                              const isCorrect =
+                                field.correctAnswer &&
+                                ans &&
+                                (Array.isArray(ans)
+                                  ? JSON.stringify(ans.sort()) === JSON.stringify((field.correctAnswer as any).sort())
+                                  : String(ans).trim().toLowerCase() === String(field.correctAnswer).trim().toLowerCase());
+
+                              return (
+                                <div
+                                  key={field.id}
+                                  className="p-6 rounded-2xl bg-[#0e111a] border border-white/10 shadow-lg space-y-3"
+                                >
+                                  <div className="flex items-center justify-between text-xs">
+                                    <h4 className="font-bold text-white">{field.label}</h4>
+                                    {field.points && (
+                                      <span
+                                        className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                                          isCorrect
+                                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                        }`}
+                                      >
+                                        {isCorrect ? `${field.points} / ${field.points} pts` : `0 / ${field.points} pts`}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 text-sm text-neutral-200 font-sans">
+                                    {ans !== undefined && ans !== null && ans !== '' ? (
+                                      Array.isArray(ans) ? (
+                                        ans.join(', ')
+                                      ) : field.type === 'signature' ? (
+                                        <span className="italic font-serif text-amber-300">✍️ {String(ans)}</span>
+                                      ) : field.type === 'wallet_address' ? (
+                                        <span className="font-mono text-emerald-400 text-xs">{String(ans)}</span>
+                                      ) : (
+                                        String(ans)
+                                      )
+                                    ) : (
+                                      <span className="italic text-neutral-500 text-xs">No response provided</span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </>
           )}
         </main>
       )}
