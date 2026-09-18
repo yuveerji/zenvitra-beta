@@ -46,6 +46,7 @@ import SocialHoverMenu from '@/components/home/SocialHoverMenu';
 import { InteractiveWordModal } from '@/components/home/InteractiveWordModal';
 import { InteractiveWordHover, InteractiveWordGroup } from '@/components/home/InteractiveWordHover';
 import { EcosystemMindMapModal } from '@/components/home/EcosystemMindMapModal';
+import { FeaturedEvents } from '@/components/home/FeaturedEvents';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { AnimatedSection, StaggerChildren, StaggerItem } from '@/components/ui/AnimatedSection';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
@@ -740,6 +741,11 @@ export default function HomeClient({ session }: HomeClientProps) {
             })}
           </StaggerChildren>
         </section>
+
+        {/* Real & Raw Events: ZEN.DIPLOMACY MUN 2026 */}
+        <AnimatedSection className="relative z-10">
+          <FeaturedEvents />
+        </AnimatedSection>
 
         {/* 7. The Sovereign Universe Matrix: Three Worlds & Platform Ecosystem */}
         <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-24 space-y-16">

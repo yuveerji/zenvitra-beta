@@ -48,7 +48,29 @@ export function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lo
 
 export const calculateHaversineDistance = calculateDistanceKm;
 
-const INITIAL_DEMO_EVENTS: ZenEvent[] = [];
+export const OFFICIAL_ZEN_DIPLOMACY_EVENT: ZenEvent = {
+  id: 'zen-diplomacy-mun-2026',
+  title: 'ZEN.DIPLOMACY MUN 2026',
+  description: 'Official Online Model United Nations assembly hosted on October 24th & 25th, 2026. Featuring AIPPM, Education Ministry of India, UNESCO, and UNSC chambers with live resolution drafting on ZEN.DOCS.',
+  coverImage: '/assets/events/zen_diplomacy_mun_2026.png',
+  type: 'virtual',
+  location: 'Virtual Sovereign Chambers & Encrypted Dais (Global Online)',
+  city: 'Global Online',
+  date: '2026-10-24T09:00:00.000Z',
+  endDate: '2026-10-25T19:00:00.000Z',
+  time: '09:00 AM – 07:00 PM IST',
+  capacity: 300,
+  attendees: [],
+  organizerId: 'yuveer',
+  organizerName: 'Yuveer',
+  organizerUsername: 'yuveer',
+  category: 'MUN',
+  status: 'upcoming',
+  tags: ['MUN', 'DIPLOMACY', 'ONLINE', 'AIPPM', 'UNSC', 'UNESCO', 'EDUCATION_MINISTRY'],
+  createdAt: '2026-09-19T00:00:00.000Z',
+};
+
+const INITIAL_DEMO_EVENTS: ZenEvent[] = [OFFICIAL_ZEN_DIPLOMACY_EVENT];
 
 /* ─────────── context shape ─────────── */
 
@@ -168,7 +190,10 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
         'pune-open-debate',
         'geneva-unsc-summit'
       ]);
-      const realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id && !DUMMY_EVENT_IDS.has(e.id)) : [];
+      let realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id && !DUMMY_EVENT_IDS.has(e.id)) : [];
+      if (!realEvents.some((e: any) => e.id === OFFICIAL_ZEN_DIPLOMACY_EVENT.id)) {
+        realEvents = [OFFICIAL_ZEN_DIPLOMACY_EVENT, ...realEvents];
+      }
       setAllEvents(realEvents);
       localStorage.setItem(LS_EVENTS, JSON.stringify(realEvents));
 
