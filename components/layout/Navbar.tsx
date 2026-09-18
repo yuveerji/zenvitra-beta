@@ -40,7 +40,21 @@ import { FounderOmniModal } from '@/components/founder/FounderOmniModal';
 import { isFounder as checkIsFounder, isAdmin as checkIsAdmin } from '@/lib/founderControl';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function Navbar({ hasPlatformSidebar = false }: { hasPlatformSidebar?: boolean } = {}) {
+export interface NavbarProps {
+  hasPlatformSidebar?: boolean;
+  onTogglePlatformSidebar?: () => void;
+  onMouseEnterPlatformSidebar?: () => void;
+  onMouseLeavePlatformSidebar?: () => void;
+  isPlatformSidebarExpanded?: boolean;
+}
+
+export function Navbar({
+  hasPlatformSidebar = false,
+  onTogglePlatformSidebar,
+  onMouseEnterPlatformSidebar,
+  onMouseLeavePlatformSidebar,
+  isPlatformSidebarExpanded = false,
+}: NavbarProps = {}) {
   const pathname = usePathname();
   const { profile, isAuthenticated, isMockMode, exitMockMode, signOut } = useAuth();
 
@@ -227,12 +241,28 @@ export function Navbar({ hasPlatformSidebar = false }: { hasPlatformSidebar?: bo
         <div className="absolute bottom-0 left-0 h-[1px] w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
         {/* Navbar Container */}
-        <nav className={`relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3.5 sm:px-6 lg:px-8 ${
-          hasPlatformSidebar ? 'pl-14 sm:pl-16' : ''
-        }`}>
+        <nav className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
 
-          {/* LEFT: Brand Logo & Wordmark */}
-          <div className="flex items-center shrink-0 mr-3 sm:mr-4 lg:mr-6">
+          {/* LEFT: Brand Logo & Wordmark (with integrated Platform Drawer Toggle when hasPlatformSidebar=true) */}
+          <div className="flex items-center shrink-0 mr-3 sm:mr-4 lg:mr-6 gap-2 sm:gap-2.5">
+            {hasPlatformSidebar && (
+              <button
+                type="button"
+                onClick={onTogglePlatformSidebar}
+                onMouseEnter={onMouseEnterPlatformSidebar}
+                onMouseLeave={onMouseLeavePlatformSidebar}
+                className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-md shrink-0 ${
+                  isPlatformSidebarExpanded
+                    ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105'
+                    : 'bg-[#080a10]/90 hover:bg-zinc-800/90 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105'
+                }`}
+                title="Navigation Menu (Hover or click to open)"
+                aria-label="Toggle Navigation Menu"
+              >
+                <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            )}
+
             <Link href="/" className="group flex items-center gap-2 sm:gap-2.5">
               <div className="relative h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
                 <img

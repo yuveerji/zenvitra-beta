@@ -987,7 +987,7 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
           {/* ─────────────────────────────────────────────────────────────
               WYSIWYG FORMATTING TOOLBAR
           ───────────────────────────────────────────────────────────── */}
-          <div className="sticky top-2 z-30 p-2.5 rounded-2xl bg-[#0a0d18]/95 backdrop-blur-xl border border-amber-500/30 shadow-2xl flex items-center justify-between gap-2 overflow-x-auto no-scrollbar font-mono text-xs">
+          <div className="sticky top-16 sm:top-[68px] xl:top-[72px] z-30 p-2.5 rounded-2xl bg-[#0a0d18]/95 backdrop-blur-xl border border-amber-500/30 shadow-2xl flex items-center justify-between gap-2 overflow-x-auto no-scrollbar font-mono text-xs">
             {/* Group 1: History */}
             <div className="flex items-center gap-1 shrink-0 border-r border-white/10 pr-2">
               <button

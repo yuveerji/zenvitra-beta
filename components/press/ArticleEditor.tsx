@@ -418,7 +418,7 @@ export function ArticleEditor() {
       <div className="rounded-3xl card-luxury border border-white/10 overflow-hidden shadow-2xl">
         {/* Floating / Docked Toolbar */}
         {!isPreview && (
-          <div className="sticky top-0 z-20 p-2.5 bg-[#080a12]/95 backdrop-blur-xl border-b border-white/10 flex flex-wrap items-center gap-1">
+          <div className="sticky top-16 sm:top-[68px] xl:top-[72px] z-20 p-2.5 bg-[#080a12]/95 backdrop-blur-xl border-b border-white/10 flex flex-wrap items-center gap-1">
             <button type="button" onClick={() => execCmd('bold')} className="p-2 rounded-xl hover:bg-white/10 text-neutral-300 hover:text-white" title="Bold"><Bold className="w-3.5 h-3.5" /></button>
             <button type="button" onClick={() => execCmd('italic')} className="p-2 rounded-xl hover:bg-white/10 text-neutral-300 hover:text-white" title="Italic"><Italic className="w-3.5 h-3.5" /></button>
             <button type="button" onClick={() => execCmd('underline')} className="p-2 rounded-xl hover:bg-white/10 text-neutral-300 hover:text-white" title="Underline"><Underline className="w-3.5 h-3.5" /></button>

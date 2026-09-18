@@ -68,7 +68,7 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
   };
 
   return (
-    <div className="w-full bg-[#0b0e14]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 sticky top-16 z-30 shadow-2xl">
+    <div className="w-full bg-[#0b0e14]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 sticky top-16 sm:top-[68px] xl:top-[72px] z-30 shadow-2xl">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
         
         {/* Left: Active MUN Selector Dropdown */}

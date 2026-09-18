@@ -164,7 +164,7 @@ export default function ZenFormsHubPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-neutral-100 font-sans selection:bg-amber-500/30 flex flex-col justify-between pt-16 sm:pt-20">
+    <div className="min-h-screen bg-[#07090e] text-neutral-100 font-sans selection:bg-amber-500/30 flex flex-col justify-between pt-20 sm:pt-24">
       <Navbar />
 
       {/* ── TOAST NOTIFICATION ── */}

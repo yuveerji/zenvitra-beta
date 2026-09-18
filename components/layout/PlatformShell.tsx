@@ -259,33 +259,48 @@ export function PlatformShell({
 
   const isActive = (href: string) => pathname === href || (href !== '/' && pathname?.startsWith(href));
 
+  const hasEmbeddedNavbar = !(
+    pathname === '/pulse' || 
+    pathname?.startsWith('/pulse') || 
+    pathname === '/chat' || 
+    pathname?.startsWith('/chat') ||
+    pathname === '/call' || 
+    pathname?.startsWith('/call') ||
+    pathname === '/docs' || 
+    pathname?.startsWith('/docs') ||
+    pathname === '/legislate' || 
+    pathname?.startsWith('/legislate')
+  );
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col md:flex-row font-sans relative selection:bg-white/20 selection:text-white">
-      {/* ─── THREE LINES HAMBURGER TRIGGER BUTTON (COLLAPSED DEFAULT) ─── */}
-      <button
-        type="button"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={() => {
-          if (isExpanded) {
-            setIsHovered(false);
-            setIsPinned(false);
-            setIsMobileOpen(false);
-          } else {
-            setIsHovered(true);
-            setIsMobileOpen(true);
-          }
-        }}
-        className={`fixed top-3.5 left-3.5 z-[105] h-10 w-10 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-xl ${
-          isExpanded
-            ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105'
-            : 'bg-[#080a10]/90 hover:bg-zinc-800/90 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105'
-        }`}
-        title="Navigation Menu (Hover or click to open)"
-        aria-label="Toggle Navigation Menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+      {/* ─── THREE LINES HAMBURGER TRIGGER BUTTON (COLLAPSED DEFAULT - ONLY ON STUDIOS WITHOUT EMBEDDED NAVBAR) ─── */}
+      {!hasEmbeddedNavbar && (
+        <button
+          type="button"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onClick={() => {
+            if (isExpanded) {
+              setIsHovered(false);
+              setIsPinned(false);
+              setIsMobileOpen(false);
+            } else {
+              setIsHovered(true);
+              setIsMobileOpen(true);
+            }
+          }}
+          className={`fixed top-3.5 left-3.5 z-[105] h-10 w-10 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-xl ${
+            isExpanded
+              ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105'
+              : 'bg-[#080a10]/90 hover:bg-zinc-800/90 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105'
+          }`}
+          title="Navigation Menu (Hover or click to open)"
+          aria-label="Toggle Navigation Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      )}
 
       {/* ─── BACKDROP (WHEN EXPANDED ON DESKTOP HOVER OR MOBILE) ─── */}
       <AnimatePresence>
@@ -685,16 +700,24 @@ export function PlatformShell({
         />
 
         {/* Global Constant Homepage Navbar (Consistent across entire app, excluded on full-bleed studios) */}
-        {!(
-          pathname === '/pulse' || 
-          pathname?.startsWith('/pulse') || 
-          pathname === '/chat' || 
-          pathname?.startsWith('/chat') ||
-          pathname === '/docs' || 
-          pathname?.startsWith('/docs')
-        ) && (
+        {hasEmbeddedNavbar && (
           <div className="shrink-0 z-40">
-            <Navbar hasPlatformSidebar={true} />
+            <Navbar 
+              hasPlatformSidebar={true}
+              onTogglePlatformSidebar={() => {
+                if (isExpanded) {
+                  setIsHovered(false);
+                  setIsPinned(false);
+                  setIsMobileOpen(false);
+                } else {
+                  setIsHovered(true);
+                  setIsMobileOpen(true);
+                }
+              }}
+              onMouseEnterPlatformSidebar={handleMouseEnter}
+              onMouseLeavePlatformSidebar={handleMouseLeave}
+              isPlatformSidebarExpanded={isExpanded}
+            />
           </div>
         )}
 
@@ -703,7 +726,11 @@ export function PlatformShell({
           <div className="flex-1 w-full h-[100dvh] min-h-[100dvh] overflow-hidden relative">
             {children}
           </div>
-        ) : pathname === '/docs' || pathname?.startsWith('/docs') ? (
+        ) : pathname === '/call' || pathname?.startsWith('/call') ? (
+          <div className="flex-1 w-full h-[100dvh] min-h-[100dvh] overflow-hidden relative">
+            {children}
+          </div>
+        ) : pathname === '/docs' || pathname?.startsWith('/docs') || pathname === '/legislate' || pathname?.startsWith('/legislate') ? (
           <div className="flex-1 w-full overflow-y-auto relative pb-16 md:pb-4">
             <div className="relative z-10 w-full max-w-[1700px] mx-auto px-1 sm:px-4">
               {children}
@@ -711,12 +738,9 @@ export function PlatformShell({
           </div>
         ) : (
           <div className={`flex-1 p-3 sm:p-6 pb-24 md:pb-6 overflow-y-auto relative ${
-            !(
-              pathname === '/pulse' || 
-              pathname?.startsWith('/pulse')
-            ) ? 'pt-20 sm:pt-24' : ''
+            hasEmbeddedNavbar ? 'pt-20 sm:pt-24' : ''
           }`}>
-            <div className="relative z-10 max-w-6xl mx-auto">
+            <div className="relative z-10 w-full max-w-7xl mx-auto">
               {children}
             </div>
           </div>

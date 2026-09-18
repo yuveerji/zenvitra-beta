@@ -132,7 +132,7 @@ export default function ConstitutionPage() {
   };
 
   return (
-    <div className={`min-h-screen font-sans relative pt-16 sm:pt-20 transition-colors duration-200 ${
+    <div className={`min-h-screen font-sans relative pt-20 sm:pt-24 transition-colors duration-200 ${
       isLight 
         ? 'bg-[#fcfaf7] text-stone-900 selection:bg-amber-200 selection:text-amber-950' 
         : 'bg-[#030405] text-white selection:bg-amber-400 selection:text-black'
