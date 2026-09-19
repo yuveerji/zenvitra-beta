@@ -31,7 +31,8 @@ import {
   UserPlus,
   UserCheck,
   ExternalLink,
-  Lock
+  Lock,
+  Menu
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
@@ -655,42 +656,78 @@ export function ZenPulseCore() {
       {/* ── Main Layout Container (Full Width Responsive 3-Column Grid) ── */}
       <div className="max-w-7xl mx-auto w-full px-2 sm:px-4 space-y-6">
         
-        {/* ── Breaking Directive Live Ticker (Clean Minimalist Glass) ── */}
+        {/* ── Breaking Directive Live Ticker with Integrated Platform Drawer Toggle ── */}
         {navTab !== 'profile' && activeView !== 'profile' && currentTickerItem && (
-          <div 
-            onClick={() => handleTickerClick(currentTickerItem)}
-            className="p-3 rounded-2xl bg-[#090a0f] border border-white/10 hover:border-white/20 hover:bg-[#0c0d14] backdrop-blur-xl flex items-center justify-between gap-3 overflow-hidden cursor-pointer transition-all group select-none shadow-sm"
-            title="Click to inspect full chamber directive & verified dossier"
-          >
-            <div className="flex items-center gap-2.5 shrink-0">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
-              </span>
-              <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-neutral-300 font-mono text-[9px] font-bold uppercase tracking-wider group-hover:bg-white/10 transition">
-                {currentTickerItem.badge}
-              </span>
-            </div>
+          <div className="flex items-center gap-2.5 w-full">
+            {/* Dedicated Sidebar Drawer Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+              }}
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-md shrink-0 bg-[#080a10]/90 hover:bg-zinc-800/90 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105 active:scale-95"
+              title="Toggle Platform Navigation Menu"
+              aria-label="Toggle Platform Navigation Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
 
-            <div className="flex-1 overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={currentTickerItem.id || tickerIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-xs font-mono text-zinc-300 group-hover:text-white truncate tracking-tight"
-                >
-                  {currentTickerItem.text}
-                </motion.p>
-              </AnimatePresence>
-            </div>
+            {/* Live Ticker Capsule */}
+            <div 
+              onClick={() => handleTickerClick(currentTickerItem)}
+              className="flex-1 min-w-0 p-3 rounded-2xl bg-[#090a0f] border border-white/10 hover:border-white/20 hover:bg-[#0c0d14] backdrop-blur-xl flex items-center justify-between gap-3 overflow-hidden cursor-pointer transition-all group select-none shadow-sm min-h-[44px]"
+              title="Click to inspect full chamber directive & verified dossier"
+            >
+              <div className="flex items-center gap-2.5 shrink-0">
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-neutral-300 font-mono text-[9px] font-bold uppercase tracking-wider group-hover:bg-white/10 transition">
+                  {currentTickerItem.badge}
+                </span>
+              </div>
 
-            <div className="flex items-center gap-2 font-mono text-[10px] text-zinc-400 font-medium shrink-0">
-              <span className="hidden sm:inline group-hover:underline">Read Details →</span>
-              <span className="sm:hidden text-zinc-300 text-xs">Details →</span>
+              <div className="flex-1 overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={currentTickerItem.id || tickerIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-xs font-mono text-zinc-300 group-hover:text-white truncate tracking-tight"
+                  >
+                    {currentTickerItem.text}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+
+              <div className="flex items-center gap-2 font-mono text-[10px] text-zinc-400 font-medium shrink-0">
+                <span className="hidden sm:inline group-hover:underline">Read Details →</span>
+                <span className="sm:hidden text-zinc-300 text-xs">Details →</span>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Profile Mode Drawer Trigger */}
+        {(navTab === 'profile' || activeView === 'profile') && (
+          <div className="flex items-center gap-3 pb-2">
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+              }}
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-md shrink-0 bg-[#080a10]/90 hover:bg-zinc-800/90 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105 active:scale-95"
+              title="Toggle Platform Navigation Menu"
+              aria-label="Toggle Platform Navigation Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <span className="font-mono text-xs text-neutral-400 uppercase tracking-widest">
+              Profile &bull; Sovereign Dossier
+            </span>
           </div>
         )}
 

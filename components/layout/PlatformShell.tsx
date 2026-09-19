@@ -236,6 +236,16 @@ export function PlatformShell({
     }
   }, [isHovered, isPinned, isMobileOpen]);
 
+  // Support external / inline platform sidebar toggle triggers
+  useEffect(() => {
+    const handleToggle = () => {
+      setIsMobileOpen((prev) => !prev);
+      setIsHovered((prev) => !prev);
+    };
+    window.addEventListener('zenvitra-toggle-platform-sidebar', handleToggle);
+    return () => window.removeEventListener('zenvitra-toggle-platform-sidebar', handleToggle);
+  }, []);
+
   // Strict Founder Access: Hidden for all regular users, delegates, and core team.
   // ONLY visible when authenticated specifically as founder@zenvitra.org.
   const hasFounderPrivileges = Boolean(
@@ -274,8 +284,8 @@ export function PlatformShell({
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col md:flex-row font-sans relative selection:bg-white/20 selection:text-white">
-      {/* ─── THREE LINES HAMBURGER TRIGGER BUTTON (COLLAPSED DEFAULT - ONLY ON STUDIOS WITHOUT EMBEDDED NAVBAR) ─── */}
-      {!hasEmbeddedNavbar && (
+      {/* ─── THREE LINES HAMBURGER TRIGGER BUTTON (COLLAPSED DEFAULT - ONLY ON STUDIOS WITHOUT EMBEDDED NAVBAR NOR INLINE TOGGLE) ─── */}
+      {!hasEmbeddedNavbar && !pathname?.startsWith('/pulse') && (
         <button
           type="button"
           onMouseEnter={handleMouseEnter}
