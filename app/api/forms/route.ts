@@ -76,6 +76,26 @@ export async function POST(req: NextRequest) {
     }
 
     const forms = getStoredForms();
+
+    // Check if link name (slug) clashes with an existing form
+    if (form.slug) {
+      const cleanSlug = form.slug.trim().toLowerCase();
+      const clashingForm = forms.find(
+        (f) => f.id !== form.id && f.slug && f.slug.trim().toLowerCase() === cleanSlug
+      );
+      if (clashingForm) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Link not allowed: already found. This form URL link is already taken by another form.',
+            clashingFormId: clashingForm.id,
+            clashingFormTitle: clashingForm.title,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     const idx = forms.findIndex((f) => f.id === form.id);
     if (idx >= 0) {
       forms[idx] = { ...form, updatedAt: new Date().toISOString() };

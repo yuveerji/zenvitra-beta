@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="galaBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1026"/>
+      <stop offset="50%" stop-color="#2d133b"/>
+      <stop offset="100%" stop-color="#120619"/>
+    </linearGradient>
+    <linearGradient id="purpleGold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="240" fill="url(#galaBg)"/>
+
+  <!-- Golden Stars & Sparkles -->
+  <g fill="#fbbf24">
+    <circle cx="150" cy="60" r="2" opacity="0.6"/>
+    <circle cx="180" cy="140" r="3" opacity="0.8"/>
+    <circle cx="240" cy="80" r="1.5" opacity="0.5"/>
+    <circle cx="620" cy="70" r="2.5" opacity="0.7"/>
+    <circle cx="670" cy="130" r="1.8" opacity="0.6"/>
+    <polygon points="120,90 123,98 131,98 125,103 127,111 120,106 113,111 115,103 109,98 117,98" opacity="0.6"/>
+    <polygon points="680,85 683,93 691,93 685,98 687,106 680,101 673,106 675,98 669,93 677,93" opacity="0.6"/>
+  </g>
+
+  <!-- Champagne & Banquet Motif -->
+  <g transform="translate(400, 85)">
+    <circle cx="0" cy="0" r="32" fill="#3b0764" stroke="#c084fc" stroke-width="2"/>
+    <!-- Champagne flute outline -->
+    <path d="M-8,-14 L8,-14 L4,4 C4,8 0,10 0,10 L0,18 L-6,18 M6,18 L0,18" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="0" cy="-6" r="2" fill="#fbbf24"/>
+    <circle cx="3" cy="-2" r="1.5" fill="#fbbf24"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="400" y="165" text-anchor="middle" font-family="'Space Grotesk', system-ui, sans-serif" font-size="21" font-weight="800" fill="#ffffff" letter-spacing="3">SUMMIT &amp; GALA DINNER</text>
+  <text x="400" y="190" text-anchor="middle" font-family="'Inter', system-ui, sans-serif" font-size="11" font-weight="600" fill="#f0abfc" letter-spacing="2">DIPLOMATIC BANQUET &amp; GUEST ACCREDITATION</text>
+  
+  <rect x="1" y="1" width="798" height="238" fill="none" stroke="#c084fc" stroke-width="1" stroke-opacity="0.3"/>
+</svg>

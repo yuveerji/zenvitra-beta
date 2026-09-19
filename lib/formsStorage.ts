@@ -42,6 +42,25 @@ export function getPublicForms(): ZenForm[] {
   }
 }
 
+export function checkFormSlugConflict(slug: string, currentFormId?: string): boolean {
+  if (!slug || !slug.trim()) return false;
+  const clean = slug.trim().toLowerCase();
+  const forms = getPublicForms();
+  return forms.some(
+    (f) => (!currentFormId || f.id !== currentFormId) && f.slug?.trim().toLowerCase() === clean
+  );
+}
+
+export function generateUniqueSlug(baseSlug: string, currentFormId?: string): string {
+  let slug = baseSlug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'form';
+  if (!checkFormSlugConflict(slug, currentFormId)) return slug;
+  let counter = 2;
+  while (checkFormSlugConflict(`${slug}-${counter}`, currentFormId)) {
+    counter++;
+  }
+  return `${slug}-${counter}`;
+}
+
 export function getZenFormById(idOrSlug: string): ZenForm | null {
   const forms = getPublicForms();
   return forms.find((f) => f.id === idOrSlug || f.slug === idOrSlug) || null;

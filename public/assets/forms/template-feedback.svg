@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="feedbackBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#180e29"/>
+      <stop offset="50%" stop-color="#24123d"/>
+      <stop offset="100%" stop-color="#0a0512"/>
+    </linearGradient>
+    <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e879f9"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="240" fill="url(#feedbackBg)"/>
+
+  <!-- Aurora curves -->
+  <path d="M0,180 Q200,80 400,160 T800,120 L800,240 L0,240 Z" fill="#a855f7" opacity="0.12"/>
+  <path d="M0,210 Q250,120 500,190 T800,150 L800,240 L0,240 Z" fill="#ec4899" opacity="0.15"/>
+
+  <!-- 5 Star Rating Row -->
+  <g transform="translate(400, 85)">
+    <g transform="translate(-100, 0)">
+      <polygon points="0,-15 4,-4 15,-4 7,3 10,14 0,7 -10,14 -7,3 -15,-4 -4,-4" fill="#fbbf24"/>
+    </g>
+    <g transform="translate(-50, 0)">
+      <polygon points="0,-15 4,-4 15,-4 7,3 10,14 0,7 -10,14 -7,3 -15,-4 -4,-4" fill="#fbbf24"/>
+    </g>
+    <g transform="translate(0, 0)">
+      <polygon points="0,-18 5,-5 18,-5 8,4 12,17 0,9 -12,17 -8,4 -18,-5 -5,-5" fill="#f59e0b"/>
+    </g>
+    <g transform="translate(50, 0)">
+      <polygon points="0,-15 4,-4 15,-4 7,3 10,14 0,7 -10,14 -7,3 -15,-4 -4,-4" fill="#fbbf24"/>
+    </g>
+    <g transform="translate(100, 0)">
+      <polygon points="0,-15 4,-4 15,-4 7,3 10,14 0,7 -10,14 -7,3 -15,-4 -4,-4" fill="#fbbf24"/>
+    </g>
+  </g>
+
+  <!-- Typography -->
+  <text x="400" y="165" text-anchor="middle" font-family="'Space Grotesk', system-ui, sans-serif" font-size="21" font-weight="800" fill="#ffffff" letter-spacing="3">DELEGATE &amp; GUEST FEEDBACK</text>
+  <text x="400" y="190" text-anchor="middle" font-family="'Inter', system-ui, sans-serif" font-size="11" font-weight="600" fill="#e9d5ff" letter-spacing="2">CSAT, COMMITTEE EVALUATION &amp; REVIEWS</text>
+  
+  <rect x="1" y="1" width="798" height="238" fill="none" stroke="#e879f9" stroke-width="1" stroke-opacity="0.3"/>
+</svg>

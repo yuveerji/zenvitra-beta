@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="rsvpBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05192d"/>
+      <stop offset="50%" stop-color="#0c2b48"/>
+      <stop offset="100%" stop-color="#030d17"/>
+    </linearGradient>
+    <linearGradient id="cyanBeam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="240" fill="url(#rsvpBg)"/>
+
+  <!-- Stage Lights & Beams -->
+  <polygon points="120,0 260,240 180,240 80,0" fill="#06b6d4" opacity="0.08"/>
+  <polygon points="680,0 540,240 620,240 720,0" fill="#3b82f6" opacity="0.08"/>
+  <circle cx="400" cy="90" r="140" fill="#06b6d4" opacity="0.12" filter="blur(20px)"/>
+
+  <!-- Geometric Grid Accent -->
+  <g stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.18">
+    <line x1="50" y1="180" x2="750" y2="180"/>
+    <line x1="100" y1="200" x2="700" y2="200"/>
+    <line x1="180" y1="220" x2="620" y2="220"/>
+  </g>
+
+  <!-- Ticket & Calendar Graphic -->
+  <g transform="translate(400, 85)">
+    <rect x="-35" y="-35" width="70" height="70" rx="18" fill="#082f49" stroke="#38bdf8" stroke-width="2"/>
+    <rect x="-24" y="-18" width="48" height="38" rx="6" fill="#0369a1" opacity="0.5"/>
+    <circle cx="-14" cy="-24" r="3" fill="#38bdf8"/>
+    <circle cx="14" cy="-24" r="3" fill="#38bdf8"/>
+    <line x1="-16" y1="-5" x2="16" y2="-5" stroke="#bae6fd" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-16" y1="5" x2="6" y2="5" stroke="#bae6fd" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="400" y="165" text-anchor="middle" font-family="'Space Grotesk', system-ui, sans-serif" font-size="21" font-weight="800" fill="#ffffff" letter-spacing="3">CONFERENCE &amp; SUMMIT RSVP</text>
+  <text x="400" y="190" text-anchor="middle" font-family="'Inter', system-ui, sans-serif" font-size="11" font-weight="600" fill="#7dd3fc" letter-spacing="2">PRIORITY ACCREDITATION &amp; BADGE PASS</text>
+  
+  <rect x="1" y="1" width="798" height="238" fill="none" stroke="#06b6d4" stroke-width="1" stroke-opacity="0.3"/>
+</svg>

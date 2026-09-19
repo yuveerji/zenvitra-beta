@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="munBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329"/>
+      <stop offset="50%" stop-color="#0f1f42"/>
+      <stop offset="100%" stop-color="#070b18"/>
+    </linearGradient>
+    <linearGradient id="goldGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <radialGradient id="sunburst" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#0b1329" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="240" fill="url(#munBg)"/>
+  <circle cx="400" cy="120" r="180" fill="url(#sunburst)"/>
+
+  <!-- Latitude/Longitude Grid Lines -->
+  <ellipse cx="400" cy="120" rx="280" ry="85" fill="none" stroke="#60a5fa" stroke-width="1" stroke-opacity="0.15" stroke-dasharray="4 4"/>
+  <ellipse cx="400" cy="120" rx="190" ry="60" fill="none" stroke="#60a5fa" stroke-width="1" stroke-opacity="0.25"/>
+  <ellipse cx="400" cy="120" rx="100" ry="35" fill="none" stroke="#60a5fa" stroke-width="1" stroke-opacity="0.35"/>
+  <line x1="120" y1="120" x2="680" y2="120" stroke="#60a5fa" stroke-width="1" stroke-opacity="0.2"/>
+  <line x1="400" y1="20" x2="400" y2="220" stroke="#60a5fa" stroke-width="1" stroke-opacity="0.2"/>
+
+  <!-- Laurel Wreath Motif -->
+  <g transform="translate(400, 100)" stroke="url(#goldGlow)" stroke-width="2" fill="none">
+    <path d="M-50,30 C-70,-10 -40,-45 0,-50 C40,-45 70,-10 50,30" stroke-width="2.5"/>
+    <circle cx="-42" cy="10" r="3.5" fill="#f59e0b"/>
+    <circle cx="-52" cy="-15" r="3.5" fill="#fbbf24"/>
+    <circle cx="-32" cy="-35" r="3.5" fill="#f59e0b"/>
+    <circle cx="0" cy="-50" r="4" fill="#fbbf24"/>
+    <circle cx="32" cy="-35" r="3.5" fill="#f59e0b"/>
+    <circle cx="52" cy="-15" r="3.5" fill="#fbbf24"/>
+    <circle cx="42" cy="10" r="3.5" fill="#f59e0b"/>
+  </g>
+
+  <!-- Crest Emblem -->
+  <circle cx="400" cy="100" r="26" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>
+  <polygon points="400,82 406,94 419,94 409,102 413,114 400,106 387,114 391,102 381,94 394,94" fill="#f59e0b"/>
+
+  <!-- Typography -->
+  <text x="400" y="168" text-anchor="middle" font-family="'Space Grotesk', system-ui, sans-serif" font-size="20" font-weight="800" fill="#ffffff" letter-spacing="4">MODEL UNITED NATIONS</text>
+  <text x="400" y="192" text-anchor="middle" font-family="'Inter', system-ui, sans-serif" font-size="11" font-weight="600" fill="#93c5fd" letter-spacing="2">DELEGATE ACCREDITATION &amp; PORTFOLIO ALLOCATION</text>
+  
+  <!-- Subtle Border Glow -->
+  <rect x="1" y="1" width="798" height="238" fill="none" stroke="#f59e0b" stroke-width="1" stroke-opacity="0.3"/>
+</svg>

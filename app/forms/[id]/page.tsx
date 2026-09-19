@@ -33,12 +33,21 @@ import {
   Award,
   RotateCcw,
   FileText,
-  BarChart3
+  BarChart3,
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { ZenForm, ZenFormTheme, ZenFormField } from '@/types/forms';
 import { useAuth } from '@/context/AuthContext';
 import { getFontCssFamily, CARD_BORDER_RADIUS_MAP } from '@/lib/formsThemes';
+
+export interface FormSection {
+  index: number;
+  title: string;
+  description?: string;
+  fields: ZenFormField[];
+}
 
 export default function ZenFormPublicPage() {
   const params = useParams();
@@ -48,11 +57,40 @@ export default function ZenFormPublicPage() {
   const idOrSlug = (params?.id as string) || '';
   const [form, setForm] = useState<ZenForm | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSubId, setSubmittedSubId] = useState<string | null>(null);
   const [quizScore, setQuizScore] = useState<{ total: number; earned: number; pct: number } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Group fields into pages by section_break
+  const sections = React.useMemo<FormSection[]>(() => {
+    if (!form) return [];
+    const result: FormSection[] = [];
+    let current: FormSection = {
+      index: 0,
+      title: form.title,
+      description: form.description,
+      fields: [],
+    };
+
+    for (const field of form.fields) {
+      if (field.type === 'section_break') {
+        result.push(current);
+        current = {
+          index: result.length,
+          title: field.label || field.sectionTitle || `Section ${result.length + 1}`,
+          description: field.description || field.sectionDescription || '',
+          fields: [],
+        };
+      } else {
+        current.fields.push(field);
+      }
+    }
+    result.push(current);
+    return result;
+  }, [form]);
 
   useEffect(() => {
     if (idOrSlug) {
@@ -203,11 +241,11 @@ export default function ZenFormPublicPage() {
     handleInputChange(fieldId, nextList);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleNextPage = () => {
+    const currentSec = sections[currentPageIndex];
+    if (!currentSec) return;
 
-    // Check required fields
-    for (const field of form.fields) {
+    for (const field of currentSec.fields) {
       if (['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type)) continue;
       const val = formData[field.id];
       if (field.required) {
@@ -218,6 +256,54 @@ export default function ZenFormPublicPage() {
         if (Array.isArray(val) && val.length === 0) {
           setValidationError(`Please select at least one option for: "${field.label}"`);
           return;
+        }
+      }
+    }
+
+    setValidationError(null);
+    setCurrentPageIndex((prev) => Math.min(prev + 1, sections.length - 1));
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handlePrevPage = () => {
+    setValidationError(null);
+    setCurrentPageIndex((prev) => Math.max(prev - 1, 0));
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // If multi-page and not on the last page, act as Next
+    if (sections.length > 1 && currentPageIndex < sections.length - 1) {
+      handleNextPage();
+      return;
+    }
+
+    // Check all required fields across all sections
+    for (const sec of sections) {
+      for (const field of sec.fields) {
+        if (['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type)) continue;
+        const val = formData[field.id];
+        if (field.required) {
+          if (val === undefined || val === null || val === '') {
+            setValidationError(`Please complete the required question: "${field.label}"`);
+            if (sec.index !== currentPageIndex) {
+              setCurrentPageIndex(sec.index);
+            }
+            return;
+          }
+          if (Array.isArray(val) && val.length === 0) {
+            setValidationError(`Please select at least one option for: "${field.label}"`);
+            if (sec.index !== currentPageIndex) {
+              setCurrentPageIndex(sec.index);
+            }
+            return;
+          }
         }
       }
     }
@@ -529,7 +615,14 @@ export default function ZenFormPublicPage() {
               return (
                 <div className="border-b border-white/10 bg-white/[0.02]">
                   <div className="px-6 sm:px-10 py-2.5 flex items-center justify-between text-[11px] font-mono text-neutral-400">
-                    <span>Intake Progress</span>
+                    <div className="flex items-center gap-2">
+                      <span>Intake Progress</span>
+                      {sections.length > 1 && (
+                        <span className="px-2 py-0.5 rounded-full bg-white/10 text-white font-bold text-[10px]">
+                          Page {currentPageIndex + 1} of {sections.length}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-3">
                       <span>{done} of {nonContent.length} answered</span>
                       <div className="w-20 sm:w-28 h-1.5 rounded-full bg-white/10 overflow-hidden">
@@ -546,53 +639,94 @@ export default function ZenFormPublicPage() {
             })()}
 
             <div className="p-6 sm:p-10 space-y-8">
-              {/* Form Title & Description Header */}
-              <div className="space-y-4 border-b border-white/10 pb-6 relative">
-                {/* Optional Logo / Crest */}
-                {custom.logoUrl && (
-                  <div className="w-16 h-16 rounded-2xl p-1 bg-black/60 border border-white/20 shadow-xl overflow-hidden mb-2">
-                    <img
-                      src={custom.logoUrl}
-                      alt="Form Crest"
-                      className="w-full h-full object-cover rounded-xl"
-                    />
-                  </div>
-                )}
+              {/* Form Title & Description Header (Page 1 vs Page 2+) */}
+              {currentPageIndex === 0 ? (
+                <div className="space-y-4 border-b border-white/10 pb-6 relative">
+                  {/* Optional Logo / Crest */}
+                  {custom.logoUrl && (
+                    <div className="w-16 h-16 rounded-2xl p-1 bg-black/60 border border-white/20 shadow-xl overflow-hidden mb-2">
+                      <img
+                        src={custom.logoUrl}
+                        alt="Form Crest"
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    </div>
+                  )}
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <div
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider border"
-                    style={{
-                      backgroundColor: `${accentColor}15`,
-                      borderColor: `${accentColor}40`,
-                      color: accentColor,
-                    }}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider border"
+                      style={{
+                        backgroundColor: `${accentColor}15`,
+                        borderColor: `${accentColor}40`,
+                        color: accentColor,
+                      }}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>{form.category.replace('_', ' ')}</span>
+                    </div>
+
+                    {sections.length > 1 && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-white text-[10px] font-mono font-bold">
+                        Section 1 of {sections.length}
+                      </span>
+                    )}
+
+                    {form.googleSheetsConfig?.isConnected && (
+                      <span className="inline-flex sm:hidden items-center gap-1 text-[10px] font-mono text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        <FileSpreadsheet className="w-2.5 h-2.5" />
+                        <span>Sheets Connected</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <h1
+                    className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight"
+                    style={{ fontFamily: displayFont }}
                   >
-                    <Sparkles className="w-3 h-3" />
-                    <span>{form.category.replace('_', ' ')}</span>
-                  </div>
+                    {form.title}
+                  </h1>
 
-                  {form.googleSheetsConfig?.isConnected && (
-                    <span className="inline-flex sm:hidden items-center gap-1 text-[10px] font-mono text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                      <FileSpreadsheet className="w-2.5 h-2.5" />
-                      <span>Sheets Connected</span>
-                    </span>
+                  {form.description && (
+                    <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+                      {form.description}
+                    </p>
                   )}
                 </div>
+              ) : (
+                /* Page 2+ Section Header */
+                <div className="space-y-3 border-b border-white/10 pb-6 relative animate-fadeIn">
+                  <div className="flex items-center justify-between gap-2">
+                    <div
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider border"
+                      style={{
+                        backgroundColor: `${accentColor}15`,
+                        borderColor: `${accentColor}40`,
+                        color: accentColor,
+                      }}
+                    >
+                      <Layers className="w-3 h-3" />
+                      <span>Section {currentPageIndex + 1} of {sections.length}</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-neutral-400 truncate max-w-[200px]">
+                      {form.title}
+                    </span>
+                  </div>
 
-                <h1
-                  className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight"
-                  style={{ fontFamily: displayFont }}
-                >
-                  {form.title}
-                </h1>
+                  <h2
+                    className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight"
+                    style={{ fontFamily: displayFont }}
+                  >
+                    {sections[currentPageIndex]?.title}
+                  </h2>
 
-                {form.description && (
-                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
-                    {form.description}
-                  </p>
-                )}
-              </div>
+                  {sections[currentPageIndex]?.description && (
+                    <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+                      {sections[currentPageIndex]?.description}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Validation Notice */}
               {validationError && (
@@ -602,9 +736,9 @@ export default function ZenFormPublicPage() {
                 </div>
               )}
 
-              {/* Fields List */}
+              {/* Fields List for Current Section / Page */}
               <form onSubmit={handleSubmit} className="space-y-6">
-                {form.fields.map((field) => {
+                {(sections[currentPageIndex]?.fields || []).map((field) => {
                   // 1. Title & Description Block
                   if (field.type === 'title_desc') {
                     return (
@@ -1135,19 +1269,51 @@ export default function ZenFormPublicPage() {
                     <span>Sovereign Ledger Intake &bull; Zero Tracking</span>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full sm:w-auto px-8 py-3.5 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-xl active:scale-95 disabled:opacity-50"
-                    style={{
-                      backgroundColor: accentColor,
-                      color: accentTextColor,
-                      boxShadow: `0 8px 25px ${accentColor}35`,
-                    }}
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>{isSubmitting ? 'Recording...' : (form.submitButtonText || 'Submit Response')}</span>
-                  </button>
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {/* Back Button for Multi-page sections */}
+                    {sections.length > 1 && currentPageIndex > 0 && (
+                      <button
+                        type="button"
+                        onClick={handlePrevPage}
+                        className="px-6 py-3.5 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer border border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Back</span>
+                      </button>
+                    )}
+
+                    {/* Next Button if more sections exist */}
+                    {sections.length > 1 && currentPageIndex < sections.length - 1 ? (
+                      <button
+                        type="button"
+                        onClick={handleNextPage}
+                        className="flex-1 sm:flex-initial px-8 py-3.5 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-xl active:scale-95"
+                        style={{
+                          backgroundColor: accentColor,
+                          color: accentTextColor,
+                          boxShadow: `0 8px 25px ${accentColor}35`,
+                        }}
+                      >
+                        <span>Next</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      /* Final Submit Button */
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1 sm:flex-initial px-8 py-3.5 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-xl active:scale-95 disabled:opacity-50"
+                        style={{
+                          backgroundColor: accentColor,
+                          color: accentTextColor,
+                          boxShadow: `0 8px 25px ${accentColor}35`,
+                        }}
+                      >
+                        <Send className="w-4 h-4" />
+                        <span>{isSubmitting ? 'Recording...' : (form.submitButtonText || 'Submit Response')}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </form>
 

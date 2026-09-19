@@ -61,7 +61,8 @@ import {
   BarChart3,
   RefreshCw,
   FileText,
-  Upload
+  Upload,
+  AlertCircle
 } from 'lucide-react';
 import {
   ZenForm,
@@ -75,6 +76,7 @@ import {
 import {
   getZenFormById,
   saveZenForm,
+  getPublicForms,
   getFormSubmissions,
   fetchFormSubmissions,
   deleteFormSubmission,
@@ -237,6 +239,68 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
       setHistoryIndex(nextHistory.length);
     }
     setTimeout(() => setSaveStatus('saved'), 400);
+  };
+
+  // Load other existing forms to detect link name collisions
+  const [otherForms, setOtherForms] = useState<ZenForm[]>([]);
+  const [slugClashError, setSlugClashError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!form?.id) return;
+    const local = getPublicForms();
+    setOtherForms(local.filter((f: ZenForm) => f.id !== form.id));
+    fetch('/api/forms')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success && Array.isArray(d.forms)) {
+          setOtherForms(d.forms.filter((f: ZenForm) => f.id !== form.id));
+        }
+      })
+      .catch(() => {});
+  }, [form?.id]);
+
+  const checkSlugClash = (testSlug: string): string | null => {
+    if (!testSlug || !testSlug.trim()) return 'Link name cannot be empty';
+    const clean = testSlug.trim().toLowerCase();
+    const clash = otherForms.find((f: ZenForm) => f.slug && f.slug.trim().toLowerCase() === clean);
+    if (clash) {
+      return `Link not allowed: already found! The link "/forms/${clean}" is already in use by "${clash.title}". Please choose a unique name.`;
+    }
+    return null;
+  };
+
+  const handleSlugUpdate = (rawSlug: string) => {
+    if (!form) return;
+    const clean = rawSlug.toLowerCase().replace(/[^a-z0-9-_]+/g, '-').replace(/^-|-$/g, '');
+    const err = checkSlugClash(clean);
+    setSlugClashError(err);
+    updateFormState({ ...form, slug: clean });
+  };
+
+  const handleTitleUpdate = (newTitle: string) => {
+    if (!form) return;
+    const baseSlug = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'form';
+    const clash = otherForms.find((f: ZenForm) => f.slug && f.slug.trim().toLowerCase() === baseSlug);
+    let newSlug = baseSlug;
+    if (clash) {
+      newSlug = `${baseSlug}-${Date.now().toString(36).slice(-4)}`;
+      setSlugClashError(`Link not allowed: already found! Automatically generated unique link "/forms/${newSlug}".`);
+    } else {
+      setSlugClashError(null);
+    }
+    updateFormState({ ...form, title: newTitle, slug: newSlug });
+  };
+
+  const handleAutoFixSlug = () => {
+    if (!form) return;
+    const base = (form.slug || 'form').replace(/-\d+$/, '').replace(/-[a-z0-9]{4}$/, '');
+    let counter = 2;
+    while (otherForms.some((f: ZenForm) => f.slug?.toLowerCase() === `${base}-${counter}`.toLowerCase())) {
+      counter++;
+    }
+    const fixed = `${base}-${counter}`;
+    setSlugClashError(null);
+    updateFormState({ ...form, slug: fixed });
   };
 
   const handleUndo = () => {
@@ -463,11 +527,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
               <input
                 type="text"
                 value={form.title}
-                onChange={(e) => {
-                  const newTitle = e.target.value;
-                  const newSlug = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                  updateFormState({ ...form, title: newTitle, slug: newSlug });
-                }}
+                onChange={(e) => handleTitleUpdate(e.target.value)}
                 className="bg-transparent text-sm sm:text-base font-medium text-white hover:border-b border-white/30 focus:border-b-2 focus:border-amber-400 outline-none px-1 py-0.5 max-w-[200px] sm:max-w-[340px] truncate"
                 placeholder="Untitled form"
               />
@@ -476,6 +536,12 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                 <span className="hidden md:inline">{saveStatus === 'saving' ? 'Saving...' : 'All changes saved to ledger'}</span>
               </div>
             </div>
+            {slugClashError && (
+              <div className="flex items-center gap-1 text-[10px] font-mono text-rose-400 font-semibold truncate max-w-[280px]">
+                <AlertCircle className="w-3 h-3 shrink-0" />
+                <span>Link not allowed: already found</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -627,15 +693,53 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
               <input
                 type="text"
                 value={form.title}
-                onChange={(e) => {
-                  const newTitle = e.target.value;
-                  const newSlug = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                  updateFormState({ ...form, title: newTitle, slug: newSlug });
-                }}
+                onChange={(e) => handleTitleUpdate(e.target.value)}
                 placeholder="Form Title"
                 style={{ fontFamily: displayFontFamily }}
                 className="w-full bg-transparent text-2xl sm:text-4xl font-bold text-white placeholder-neutral-500 outline-none border-b border-transparent focus:border-white/30 pb-2 transition"
               />
+
+              {/* Form Custom Link / Slug Bar with Collision Warning */}
+              <div className="flex flex-col space-y-1.5 pb-2 border-b border-white/5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-mono text-neutral-400">Form Link:</span>
+                  <div className={`flex items-center px-3 py-1.5 rounded-xl bg-[#080a0f] border text-xs font-mono transition ${
+                    slugClashError ? 'border-rose-500 text-rose-300 ring-2 ring-rose-500/20' : 'border-white/15 text-neutral-300 focus-within:border-amber-400'
+                  }`}>
+                    <span className="text-neutral-500 select-none">/forms/</span>
+                    <input
+                      type="text"
+                      value={form.slug || ''}
+                      onChange={(e) => handleSlugUpdate(e.target.value)}
+                      placeholder="custom-link-name"
+                      className="bg-transparent text-white outline-none font-mono text-xs w-44 sm:w-60"
+                    />
+                  </div>
+
+                  {slugClashError ? (
+                    <button
+                      type="button"
+                      onClick={handleAutoFixSlug}
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-mono text-[11px] font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Auto-Fix Link</span>
+                    </button>
+                  ) : (
+                    <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Link Available</span>
+                    </span>
+                  )}
+                </div>
+
+                {slugClashError && (
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono flex items-center gap-2 animate-shake">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <span>{slugClashError}</span>
+                  </div>
+                )}
+              </div>
 
               {/* Form Description Textarea */}
               <textarea
@@ -651,6 +755,20 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
 
           {/* Questions & Content Blocks List */}
           <div className="space-y-4">
+            {/* Section 1 Header indicator if form has multiple sections */}
+            {(() => {
+              const totalSections = form.fields.filter((f) => f.type === 'section_break').length + 1;
+              if (totalSections <= 1) return null;
+              return (
+                <div className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs">
+                  <span className="font-bold flex items-center gap-2">
+                    <Layers className="w-3.5 h-3.5" />
+                    Section 1 of {totalSections} (Page 1)
+                  </span>
+                  <span className="text-[11px] text-neutral-400">Initial page questions</span>
+                </div>
+              );
+            })()}
             {form.fields.map((field, idx) => {
               const isActive = activeCardId === field.id;
 
@@ -670,6 +788,28 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                   </div>
 
                   <div className="px-6 pb-6 space-y-4">
+                    {/* Section Break Visual Header Banner */}
+                    {field.type === 'section_break' && (() => {
+                      const totalSections = form.fields.filter((f) => f.type === 'section_break').length + 1;
+                      const currentSecNum = form.fields.slice(0, idx + 1).filter((f) => f.type === 'section_break').length + 1;
+                      return (
+                        <div className="p-4 rounded-xl bg-purple-500/10 border-2 border-purple-500/40 text-purple-200 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 font-mono text-xs font-bold uppercase tracking-wider">
+                              <Layers className="w-3.5 h-3.5" />
+                              Section {currentSecNum} of {totalSections} &bull; Next Page
+                            </span>
+                            <span className="text-[11px] font-mono text-neutral-400">
+                              Splits form into next page
+                            </span>
+                          </div>
+                          <p className="text-xs text-neutral-300 font-sans pt-1">
+                            Respondents will navigate to this new page after completing the previous section.
+                          </p>
+                        </div>
+                      );
+                    })()}
+
                     {/* Top Row: Question Title & Type Dropdown */}
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       {/* Question Label Input */}
@@ -678,7 +818,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                           type="text"
                           value={field.label}
                           onChange={(e) => handleUpdateField(field.id, { label: e.target.value })}
-                          placeholder="Question"
+                          placeholder={field.type === 'section_break' ? 'Section Title (e.g. Stage 2: Preferences)' : 'Question'}
                           style={{ fontFamily: displayFontFamily }}
                           className="w-full bg-[#080a0f] border border-white/10 focus:border-amber-400/80 rounded-lg px-4 py-3 text-sm sm:text-base font-medium text-white placeholder-neutral-500 outline-none transition"
                         />
@@ -2501,6 +2641,62 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
             </div>
           </div>
 
+          {/* Form URL Slug & Sovereign Link Card */}
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-4">
+            <div className="border-b border-white/10 pb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-white">Form Link &amp; Sovereign URL</h3>
+                <p className="text-xs text-neutral-400">Public accessible link name for sharing and respondent access</p>
+              </div>
+              <Globe className="w-5 h-5 text-amber-400" />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-neutral-300 block">Custom URL Slug</label>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className={`flex-1 flex items-center px-3.5 py-2.5 rounded-xl bg-[#080a0f] border text-xs font-mono transition ${
+                  slugClashError ? 'border-rose-500 ring-2 ring-rose-500/20 text-rose-300' : 'border-white/15 text-neutral-200 focus-within:border-amber-400'
+                }`}>
+                  <span className="text-neutral-500 select-none">{typeof window !== 'undefined' ? `${window.location.origin}/forms/` : '/forms/'}</span>
+                  <input
+                    type="text"
+                    value={form.slug || ''}
+                    onChange={(e) => handleSlugUpdate(e.target.value)}
+                    placeholder="my-form-slug"
+                    className="flex-1 bg-transparent text-white outline-none font-mono text-xs pl-1"
+                  />
+                </div>
+
+                {slugClashError ? (
+                  <button
+                    type="button"
+                    onClick={handleAutoFixSlug}
+                    className="px-4 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Auto-Fix Link</span>
+                  </button>
+                ) : (
+                  <span className="px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-xs flex items-center gap-1.5 shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Available</span>
+                  </span>
+                )}
+              </div>
+
+              {slugClashError ? (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono flex items-center gap-2 animate-shake">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                  <span>{slugClashError}</span>
+                </div>
+              ) : (
+                <p className="text-[11px] text-neutral-400 font-mono">
+                  Respondents can open this form at: <strong className="text-amber-300 font-normal">{typeof window !== 'undefined' ? window.location.origin : ''}/forms/{form.slug || form.id}</strong>
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* 4. Defaults Card */}
           <div className="p-6 sm:p-7 rounded-2xl bg-[#0e111a] border border-white/10 shadow-xl space-y-5">
             <div className="border-b border-white/10 pb-3">
@@ -2979,14 +3175,18 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
             </div>
 
             <div className="space-y-4">
-              <div className="space-y-1.5">
-                <span className="text-xs font-mono text-neutral-400 block">Shareable URL</span>
-                <div className="flex items-center gap-2">
+              <div className="space-y-2">
+                <span className="text-xs font-mono text-neutral-400 block">Shareable Public Link</span>
+                <div className={`flex items-center px-3.5 py-2 rounded-xl bg-[#080a0f] border text-xs font-mono transition ${
+                  slugClashError ? 'border-rose-500 ring-2 ring-rose-500/20 text-rose-300' : 'border-white/15 text-neutral-200 focus-within:border-amber-400'
+                }`}>
+                  <span className="text-neutral-500 select-none text-[11px]">{typeof window !== 'undefined' ? `${window.location.origin}/forms/` : '/forms/'}</span>
                   <input
                     type="text"
-                    readOnly
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/forms/${form.slug || form.id}`}
-                    className="flex-1 bg-[#080a0f] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white outline-none"
+                    value={form.slug || ''}
+                    onChange={(e) => handleSlugUpdate(e.target.value)}
+                    placeholder="my-link"
+                    className="flex-1 bg-transparent text-white outline-none font-mono text-xs pl-0.5"
                   />
                   <button
                     onClick={() => {
@@ -2995,11 +3195,29 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                       setCopiedLink(true);
                       setTimeout(() => setCopiedLink(false), 2000);
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition"
+                    className="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition shrink-0 ml-2 shadow-sm cursor-pointer"
                   >
                     {copiedLink ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
+
+                {slugClashError ? (
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono flex items-center justify-between gap-2">
+                    <span className="truncate">{slugClashError}</span>
+                    <button
+                      type="button"
+                      onClick={handleAutoFixSlug}
+                      className="px-2 py-0.5 rounded bg-rose-500/30 text-[10px] font-bold shrink-0 hover:bg-rose-500/40 transition"
+                    >
+                      Auto-Fix
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Link ready to share</span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-2 flex justify-between items-center">
