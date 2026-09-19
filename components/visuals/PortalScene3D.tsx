@@ -64,7 +64,7 @@ export function PortalScene3D() {
         <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
           {/* Monolith Artwork with Parallax Translation */}
           <motion.img
-            src="/images/new-hero-monolith.webp"
+            src="/assets/new-hero-monolith.png"
             alt="Zenvitra Monolith Portal"
             style={{
               x: parallaxX,

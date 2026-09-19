@@ -76,13 +76,11 @@ export default function MonolithCard() {
         {/* Central Monolith Visual Portal */}
         <div className="relative w-full flex-1 my-3 rounded-lg overflow-hidden border border-white/5 bg-black">
           <Image
-            src="/assets/new-hero-monolith.webp"
+            src="/assets/new-hero-monolith.png"
             alt="Zenvitra Monolith"
             fill
             priority
             sizes="(max-width: 640px) 380px, (max-width: 1024px) 440px, 480px"
-            placeholder="blur"
-            blurDataURL="data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAAAwBACdASoQABwAPu1mqk4ppaOiMAgBMB2JZwDMHB08gMfLNV46i1SUzAAA/vKw3yO5q+33iWscUM2AXwIpNOXkapeQk3zQr0UcWYJnQZMcWhr6m31El9yL8PCTgv1s08XbvOPJNPZXRII/JSZRZx47WD7TaAAA"
             style={{ objectPosition: 'center 65%' }}
             className="object-cover brightness-90 group-hover:scale-105 transition-transform duration-700 ease-out"
           />

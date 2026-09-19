@@ -99,8 +99,8 @@ export default function RootLayout({
         <link
           rel="preload"
           as="image"
-          href="/assets/new-hero-monolith.webp"
-          type="image/webp"
+          href="/assets/new-hero-monolith.png"
+          type="image/png"
         />
       </head>
       <body suppressHydrationWarning className="bg-[#030405] text-white antialiased grain-overlay">
