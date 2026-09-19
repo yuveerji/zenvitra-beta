@@ -221,10 +221,7 @@ export function ZenDocsToolbar({
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
 
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
-  const [imageCaption, setImageCaption] = useState('');
-
+  const imageFileInputRef = useRef<HTMLInputElement>(null);
   const fileMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menus on outside click
@@ -251,13 +248,17 @@ export function ZenDocsToolbar({
     setIsLinkModalOpen(false);
   };
 
-  const handleImageSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!imageUrl.trim()) return;
-    onInsertImage?.(imageUrl.trim(), imageCaption.trim() || undefined);
-    setImageUrl('');
-    setImageCaption('');
-    setIsImageModalOpen(false);
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        if (evt.target?.result) {
+          onInsertImage?.(evt.target.result as string, file.name);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -741,11 +742,18 @@ export function ZenDocsToolbar({
           </button>
 
           {/* Insert Image */}
+          <input
+            ref={imageFileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageFileUpload}
+            className="hidden"
+          />
           <button
             type="button"
-            onClick={() => setIsImageModalOpen(true)}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
-            title="Insert Image"
+            onClick={() => imageFileInputRef.current?.click()}
+            className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition cursor-pointer"
+            title="Upload Image"
           >
             <ImageIcon className="w-3.5 h-3.5" />
           </button>
@@ -1031,60 +1039,6 @@ export function ZenDocsToolbar({
         </div>
       )}
 
-      {/* INSERT IMAGE MODAL */}
-      {isImageModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <form onSubmit={handleImageSubmit} className="w-full max-w-md bg-[#0e121e] border border-white/20 rounded-2xl p-5 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-cyan-400" />
-                <span>Insert Image</span>
-              </h3>
-              <button type="button" onClick={() => setIsImageModalOpen(false)} className="text-neutral-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="text-[11px] font-mono text-neutral-400 block mb-1">Image URL</label>
-                <input
-                  type="url"
-                  required
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400"
-                />
-              </div>
-              <div>
-                <label className="text-[11px] font-mono text-neutral-400 block mb-1">Caption / Alternate Text (Optional)</label>
-                <input
-                  type="text"
-                  value={imageCaption}
-                  onChange={(e) => setImageCaption(e.target.value)}
-                  placeholder="Figure 1: Multilateral Consensus Chart"
-                  className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsImageModalOpen(false)}
-                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-mono"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs font-mono"
-              >
-                Insert Image
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </div>
   );
 }

@@ -391,13 +391,25 @@ export function ArticleEditor() {
               onChange={handleCoverUpload}
             />
 
-            <input
-              type="text"
-              value={coverImage}
-              onChange={(e) => setCoverImage(e.target.value)}
-              placeholder="Paste image URL or click Upload/FX..."
-              className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => coverFileInputRef.current?.click()}
+                className="flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{coverImage ? 'Change Cover Image' : 'Upload Cover Image'}</span>
+              </button>
+              {coverImage && (
+                <button
+                  type="button"
+                  onClick={() => setCoverImage('')}
+                  className="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-xs font-mono transition cursor-pointer"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Tags */}
@@ -492,16 +504,10 @@ export function ArticleEditor() {
             <button
               type="button"
               onClick={() => {
-                const choice = confirm('Click OK to upload an image from your device, or Cancel to paste an image URL.');
-                if (choice) {
-                  bodyImageInputRef.current?.click();
-                } else {
-                  const url = prompt('Enter image URL:');
-                  if (url) execCmd('insertImage', url);
-                }
+                bodyImageInputRef.current?.click();
               }}
               className="p-2 rounded-xl hover:bg-white/10 text-neutral-300 hover:text-white cursor-pointer"
-              title="Insert Image (Upload File or Paste URL)"
+              title="Upload Image"
             >
               <ImageIcon className="w-3.5 h-3.5" />
             </button>

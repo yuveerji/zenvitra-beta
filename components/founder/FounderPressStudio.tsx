@@ -153,6 +153,7 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
 
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inlineImageInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => {
     setFeedback(msg);
@@ -320,16 +321,26 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
   };
 
   const insertImageDialog = () => {
-    const url = prompt('Enter direct image URL (HTTPS):');
-    if (!url) return;
-    const caption = prompt('Enter image caption (optional):') || '';
-    const html = `
-      <figure style="margin: 28px 0; text-align: center;">
-        <img src="${url}" alt="${caption}" style="max-width: 100%; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.8);" />
-        ${caption ? `<figcaption style="margin-top: 8px; font-family: monospace; font-size: 11px; color: #a3a3a3;">${caption}</figcaption>` : ''}
-      </figure><p></p>
-    `;
-    execFormat('insertHTML', html);
+    inlineImageInputRef.current?.click();
+  };
+
+  const handleInlineImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        if (evt.target?.result) {
+          const url = evt.target.result as string;
+          const html = `
+            <figure style="margin: 28px 0; text-align: center;">
+              <img src="${url}" alt="${file.name}" style="max-width: 100%; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.8);" />
+            </figure><p></p>
+          `;
+          execFormat('insertHTML', html);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const insertVideoEmbed = () => {
@@ -917,15 +928,6 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
                   </div>
                 ))}
               </div>
-
-              {/* Direct Cover URL input */}
-              <input
-                type="text"
-                value={coverImage}
-                onChange={(e) => setCoverImage(e.target.value)}
-                placeholder="Or paste custom cover image URL (HTTPS)..."
-                className="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/10 text-neutral-300 font-mono text-xs focus:outline-none focus:border-amber-400/50"
-              />
             </div>
 
             {/* Executive Syndication Toggles */}
@@ -1165,11 +1167,18 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
                 <Lightbulb className="w-3.5 h-3.5" />
                 <span>Policy</span>
               </button>
+              <input
+                ref={inlineImageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleInlineImageUpload}
+                className="hidden"
+              />
               <button
                 type="button"
                 onClick={insertImageDialog}
                 className="p-2 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white cursor-pointer"
-                title="Insert Image"
+                title="Upload Image"
               >
                 <ImageIcon className="w-4 h-4" />
               </button>

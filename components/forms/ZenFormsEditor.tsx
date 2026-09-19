@@ -60,7 +60,8 @@ import {
   ChevronRight,
   BarChart3,
   RefreshCw,
-  FileText
+  FileText,
+  Upload
 } from 'lucide-react';
 import {
   ZenForm,
@@ -1227,13 +1228,38 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                       {/* 16. Image Block */}
                       {field.type === 'image_block' && (
                         <div className="space-y-3 pt-2">
-                          <input
-                            type="text"
-                            value={field.mediaUrl || ''}
-                            onChange={(e) => handleUpdateField(field.id, { mediaUrl: e.target.value })}
-                            placeholder="Image URL (https://...)"
-                            className="w-full bg-[#080a0f] border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-white outline-none"
-                          />
+                          <div className="flex items-center gap-3">
+                            <label className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-mono text-white transition cursor-pointer flex items-center gap-2">
+                              <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>{field.mediaUrl ? 'Change Image' : 'Upload Image'}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (evt) => {
+                                      if (evt.target?.result) {
+                                        handleUpdateField(field.id, { mediaUrl: evt.target.result as string });
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                            {field.mediaUrl && (
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateField(field.id, { mediaUrl: '' })}
+                                className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
                           {field.mediaUrl && (
                             <div className="rounded-xl overflow-hidden border border-white/10 max-h-72">
                               <img src={field.mediaUrl} alt="Block media" className="w-full h-full object-cover" />
@@ -2735,18 +2761,51 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
               <span className="text-xs font-mono text-amber-400 uppercase tracking-wider block font-bold">
                 4. Cover Banner Image
               </span>
-              <input
-                type="text"
-                value={form.customStyle?.coverImageUrl || ''}
-                onChange={(e) => {
-                  updateFormState({
-                    ...form,
-                    customStyle: { ...form.customStyle, coverImageUrl: e.target.value }
-                  });
-                }}
-                placeholder="Image URL (https://...)"
-                className="w-full bg-[#080a0f] border border-white/15 rounded-xl px-4 py-2.5 text-xs font-mono text-white outline-none"
-              />
+              <div className="flex items-center gap-3">
+                <label className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-mono text-white transition cursor-pointer flex items-center gap-2">
+                  <Upload className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{form.customStyle?.coverImageUrl ? 'Change Banner Image' : 'Upload Cover Banner Image'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (evt) => {
+                          if (evt.target?.result) {
+                            updateFormState({
+                              ...form,
+                              customStyle: { ...form.customStyle, coverImageUrl: evt.target.result as string }
+                            });
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+                {form.customStyle?.coverImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateFormState({
+                        ...form,
+                        customStyle: { ...form.customStyle, coverImageUrl: '' }
+                      });
+                    }}
+                    className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {form.customStyle?.coverImageUrl && (
+                <div className="rounded-xl overflow-hidden border border-white/10 max-h-36 mt-2">
+                  <img src={form.customStyle.coverImageUrl} alt="Cover Banner" className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
           </div>
         </div>

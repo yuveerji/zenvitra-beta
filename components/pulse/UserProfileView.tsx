@@ -33,7 +33,8 @@ import {
   Trash2,
   Copy,
   EyeOff,
-  Flag
+  Flag,
+  Upload
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
@@ -1346,17 +1347,20 @@ export function UserProfileView() {
                     Profile Photo / Logo
                   </label>
                   <div className="flex items-center gap-2">
-                    <label className="px-3 py-1.5 rounded-lg bg-white text-black text-xs font-semibold hover:bg-zinc-200 transition cursor-pointer">
-                      <span>Upload</span>
+                    <label className="px-3.5 py-1.5 rounded-lg bg-white text-black text-xs font-semibold hover:bg-zinc-200 transition cursor-pointer flex items-center gap-1.5">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload Image</span>
                       <input type="file" accept="image/*" onChange={handleAvatarFileUpload} className="hidden" />
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Or paste image URL"
-                      value={editAvatar}
-                      onChange={(e) => setEditAvatar(e.target.value)}
-                      className="flex-1 px-3 py-1.5 rounded-lg bg-black border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-white"
-                    />
+                    {editAvatar && (
+                      <button
+                        type="button"
+                        onClick={() => setEditAvatar('')}
+                        className="text-xs text-rose-400 hover:underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1643,13 +1647,29 @@ export function UserProfileView() {
                     </button>
                   ))}
                 </div>
-                <input
-                  type="text"
-                  placeholder="Or paste custom image URL"
-                  value={newEventCoverImage}
-                  onChange={(e) => setNewEventCoverImage(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-cyan-400 mt-1"
-                />
+                <div className="mt-2">
+                  <label className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-mono transition cursor-pointer flex items-center justify-center gap-2">
+                    <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Upload Image from Device</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setNewEventCoverImage(evt.target.result as string);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Description */}

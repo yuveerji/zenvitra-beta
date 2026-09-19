@@ -411,23 +411,24 @@ export function AddMunExperienceModal({ isOpen, onClose }: AddMunExperienceModal
                   onChange={handleCertificateUpload}
                   className="hidden"
                 />
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-black border border-zinc-800">
-                  <LinkIcon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                  <input
-                    type="text"
-                    value={certificateUrl.startsWith('data:') ? 'Certificate file attached (Ready)' : certificateUrl}
-                    onChange={(e) => setCertificateUrl(e.target.value)}
-                    placeholder="Upload file or paste Drive / CDN URL..."
-                    className="w-full bg-transparent text-xs text-white placeholder-zinc-600 focus:outline-none truncate"
-                  />
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => certFileInputRef.current?.click()}
-                    className="p-1 text-zinc-400 hover:text-white cursor-pointer"
-                    title="Upload File"
+                    className="flex-1 py-2 px-3 rounded-xl bg-black border border-zinc-800 hover:border-zinc-700 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2"
                   >
-                    <Upload className="w-3.5 h-3.5" />
+                    <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>{certificateUrl ? 'Certificate Attached (Click to Change)' : 'Upload Certificate / Scan File'}</span>
                   </button>
+                  {certificateUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setCertificateUrl('')}
+                      className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
               </div>
 

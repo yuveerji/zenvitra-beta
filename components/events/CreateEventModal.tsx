@@ -340,24 +340,14 @@ export function CreateEventModal() {
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={customCover}
-                onChange={(e) => {
-                  setCustomCover(e.target.value);
-                  if (e.target.value) setCoverImage(e.target.value);
-                }}
-                placeholder="Or paste custom HTTPS image URL..."
-                className="flex-1 px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
-              />
+            <div>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white transition cursor-pointer shrink-0"
-                title="Upload file"
+                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white text-xs font-mono transition cursor-pointer flex items-center justify-center gap-2"
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-4 h-4 text-cyan-400" />
+                <span>{customCover ? 'Custom Image Attached (Click to Change)' : 'Upload Custom Image from Device'}</span>
               </button>
             </div>
           </div>

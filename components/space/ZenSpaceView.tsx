@@ -2271,11 +2271,11 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-[10px] font-mono text-zinc-400 uppercase">Avatar Photo</label>
-                  <label className="cursor-pointer text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold">
-                    <Upload className="w-3 h-3" />
-                    <span>Upload from Device</span>
+                <label className="text-[10px] font-mono text-zinc-400 uppercase block mb-1">Avatar Photo</label>
+                <div className="flex items-center gap-3">
+                  <label className="flex-1 py-2 px-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2">
+                    <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>{editAvatar ? 'Change Avatar Image' : 'Upload Image from Device'}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -2283,14 +2283,16 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                       className="hidden"
                     />
                   </label>
+                  {editAvatar && (
+                    <button
+                      type="button"
+                      onClick={() => setEditAvatar('')}
+                      className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
-                <input
-                  type="text"
-                  value={editAvatar}
-                  onChange={(e) => setEditAvatar(e.target.value)}
-                  placeholder="https://... or choose photo from device"
-                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono"
-                />
               </div>
 
               {/* Background Visual Style: Theme vs Video vs Image */}
@@ -2344,11 +2346,11 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 {editBgType === 'image' && (
                   <div className="space-y-2">
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-[10px] font-mono text-zinc-400 uppercase">Image Backdrop</label>
-                        <label className="cursor-pointer text-[10px] font-mono text-amber-400 hover:text-amber-300 flex items-center gap-1 font-bold">
-                          <Upload className="w-3 h-3" />
-                          <span>Upload from Device</span>
+                      <label className="text-[10px] font-mono text-zinc-400 uppercase block mb-1">Image Backdrop</label>
+                      <div className="flex items-center gap-3">
+                        <label className="flex-1 py-2 px-3 rounded-xl bg-neutral-950 hover:bg-neutral-900 border border-neutral-800 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2">
+                          <Upload className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{editImageUrl ? 'Change Backdrop Image' : 'Upload Image from Device'}</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -2356,14 +2358,16 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                             className="hidden"
                           />
                         </label>
+                        {editImageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setEditImageUrl('')}
+                            className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
-                      <input
-                        type="text"
-                        value={editImageUrl}
-                        onChange={(e) => setEditImageUrl(e.target.value)}
-                        placeholder="https://... or choose photo from device"
-                        className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none"
-                      />
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
@@ -2684,11 +2688,11 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
 
               {newBlockType === 'image' && (
                 <div className="space-y-1.5 p-3 rounded-2xl bg-neutral-900 border border-neutral-800">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-mono uppercase text-zinc-400">Card Image Source</span>
-                    <label className="cursor-pointer text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold">
-                      <Upload className="w-3 h-3" />
-                      <span>Upload from Device</span>
+                  <span className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Card Image Source</span>
+                  <div className="flex items-center gap-3">
+                    <label className="flex-1 py-2 px-3 rounded-xl bg-neutral-950 hover:bg-neutral-850 border border-neutral-800 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2">
+                      <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>{newBlockImageUrl ? 'Change Block Image' : 'Upload Image from Device'}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -2696,14 +2700,21 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                         className="hidden"
                       />
                     </label>
+                    {newBlockImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setNewBlockImageUrl('')}
+                        className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
-                  <input
-                    type="text"
-                    value={newBlockImageUrl}
-                    onChange={(e) => setNewBlockImageUrl(e.target.value)}
-                    placeholder="https://... or choose photo from your device"
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-mono"
-                  />
+                  {newBlockImageUrl && (
+                    <div className="rounded-xl overflow-hidden border border-neutral-800 max-h-32 mt-2">
+                      <img src={newBlockImageUrl} alt="Card Block" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
               )}
 
