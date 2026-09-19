@@ -31,16 +31,27 @@ import {
   MessageSquare,
   Landmark,
   Share2,
-  BellRing
+  BellRing,
+  Loader2,
+  Search,
+  Send,
+  UserCheck
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
-import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
+import { broadcastActivitySync, subscribeToActivitySync } from '@/lib/reactiveActivityHub';
 import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
+import {
+  registerDelegate,
+  allocatePortfolioAndNotify,
+  getStoredRegistrations,
+  DelegateRegistration,
+  DEFAULT_MATRIX_URL
+} from '@/lib/zenDiplomacyService';
 
 // Default Google Sheet for Portfolio Matrix
-const DEFAULT_MATRIX_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
+const DEFAULT_MATRIX_SHEET_URL = DEFAULT_MATRIX_URL;
 const LS_MATRIX_URL = 'zenvitra_zendiplomacy_matrix_url';
 const LS_REGISTRATIONS = 'zenvitra_zendiplomacy_registrations_v1';
 
@@ -63,6 +74,23 @@ export function ZenDiplomacyPortal() {
   const [regSecondChoice, setRegSecondChoice] = useState('UNSC');
   const [regPortfolios, setRegPortfolios] = useState('');
   const [regSubmitted, setRegSubmitted] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  // Delegate Allocation Status Checker State
+  const [searchEmail, setSearchEmail] = useState('');
+  const [checkedResult, setCheckedResult] = useState<DelegateRegistration | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // Secretariat Allocation Console State
+  const [allRegistrations, setAllRegistrations] = useState<DelegateRegistration[]>([]);
+  const [allocEmail, setAllocEmail] = useState('');
+  const [allocName, setAllocName] = useState('');
+  const [allocCommittee, setAllocCommittee] = useState('AIPPM');
+  const [allocPortfolio, setAllocPortfolio] = useState('');
+  const [allocNotes, setAllocNotes] = useState('');
+  const [isAllocating, setIsAllocating] = useState(false);
+  const [allocationSuccessMsg, setAllocationSuccessMsg] = useState<string | null>(null);
+  const [isSecretariatExpanded, setIsSecretariatExpanded] = useState(false);
 
   // Workshop notification state
   const [workshopEmail, setWorkshopEmail] = useState('');
@@ -127,32 +155,90 @@ export function ZenDiplomacyPortal() {
     setTimeout(() => setCopiedMatrix(false), 2000);
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  // Load initial registrations & keep in sync
+  const refreshAllocations = () => {
+    const list = getStoredRegistrations();
+    setAllRegistrations(list);
+  };
+
+  useEffect(() => {
+    refreshAllocations();
+    const unsub = subscribeToActivitySync(() => {
+      refreshAllocations();
+    });
+    return () => unsub();
+  }, []);
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName.trim() || !regEmail.trim()) return;
 
-    const registrationData = {
-      id: `reg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      name: regName.trim(),
-      email: regEmail.trim(),
-      phone: regPhone.trim(),
-      institution: regInstitution.trim(),
-      experienceLevel: regExperience,
-      firstCommitteeChoice: regFirstChoice,
-      secondCommitteeChoice: regSecondChoice,
-      portfolioPreferences: regPortfolios.trim(),
-      registeredAt: new Date().toISOString(),
-      status: 'UNDER_REVIEW'
-    };
+    setIsRegistering(true);
+    try {
+      const created = await registerDelegate({
+        name: regName.trim(),
+        email: regEmail.trim(),
+        phone: regPhone.trim(),
+        institution: regInstitution.trim(),
+        experienceLevel: regExperience,
+        firstCommitteeChoice: regFirstChoice,
+        secondCommitteeChoice: regSecondChoice,
+        portfolioPreferences: regPortfolios.trim(),
+      });
+      setRegSubmitted(true);
+      refreshAllocations();
+      setSearchEmail(regEmail.trim());
+      setCheckedResult(created);
+      setHasSearched(true);
+    } catch (err) {
+      console.error('Registration failed:', err);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleCheckAllocation = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = (searchEmail || user?.email || profile?.email || '').trim().toLowerCase();
+    if (!query) return;
+    const list = getStoredRegistrations();
+    const found = list.find((r) => r.email.toLowerCase() === query);
+    setCheckedResult(found || null);
+    setHasSearched(true);
+  };
+
+  const handleAllocateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!allocEmail.trim() || !allocPortfolio.trim()) return;
+    setIsAllocating(true);
+    setAllocationSuccessMsg(null);
 
     try {
-      const existing = JSON.parse(localStorage.getItem(LS_REGISTRATIONS) || '[]');
-      existing.unshift(registrationData);
-      localStorage.setItem(LS_REGISTRATIONS, JSON.stringify(existing));
-      broadcastActivitySync({ source: 'event', action: 'rsvp', timestamp: Date.now() });
-    } catch {}
+      const updated = await allocatePortfolioAndNotify({
+        email: allocEmail.trim(),
+        name: allocName.trim() || undefined,
+        committee: allocCommittee,
+        portfolio: allocPortfolio.trim(),
+        allottedBy: 'Executive Secretariat (@yuveer)',
+        notes: allocNotes.trim() || undefined,
+      });
 
-    setRegSubmitted(true);
+      refreshAllocations();
+      if ((searchEmail || '').trim().toLowerCase() === allocEmail.trim().toLowerCase()) {
+        setCheckedResult(updated);
+        setHasSearched(true);
+      }
+
+      setAllocationSuccessMsg(
+        `✓ Success: Portfolio "${allocPortfolio}" in ${allocCommittee} has been officially allocated to ${allocEmail}. Synced with Google Sheets and urgent notification dispatched!`
+      );
+      setAllocPortfolio('');
+      setAllocNotes('');
+    } catch (err) {
+      console.error('Allocation error:', err);
+    } finally {
+      setIsAllocating(false);
+    }
   };
 
   const handleWorkshopSubscribe = (e: React.FormEvent) => {
@@ -349,20 +435,20 @@ export function ZenDiplomacyPortal() {
         </section>
 
         {/* ── 2. PORTFOLIO MATRIX DIRECT REDIRECTION PANEL ── */}
-        <section className="rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-[#0c1424] via-[#080d1a] to-[#0d1627] border border-cyan-500/30 shadow-2xl relative overflow-hidden space-y-6">
+        <section id="matrix" className="rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-[#0c1424] via-[#080d1a] to-[#0d1627] border border-cyan-500/30 shadow-2xl relative overflow-hidden space-y-8">
           <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
           
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] font-bold uppercase tracking-wider">
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Live Google Sheet Ledger</span>
+                <span>Live Google Sheet Ledger &bull; Tab: ZEN_DIPLOMACY_MUN</span>
               </div>
               <h2 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">
                 Official Portfolio Matrix &amp; Allotment Tracker
               </h2>
               <p className="font-sans text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
-                Check vacant countries, ministerial portfolios, and committee allotments in real time. The master portfolio matrix is hosted on Google Sheets and synced with Secretariat approvals.
+                Check vacant countries, ministerial portfolios, and committee allotments in real time. The master portfolio matrix is hosted on Google Sheets, synced automatically upon Secretariat allotment, and dispatches instant notifications to delegates.
               </p>
             </div>
 
@@ -390,19 +476,337 @@ export function ZenDiplomacyPortal() {
           </div>
 
           {/* Matrix Allotment Guidelines Ribbon */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10 font-mono text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-white/10 font-mono text-xs">
             <div className="flex items-start gap-2.5 text-neutral-300">
               <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</div>
               <span>View live sheet to identify available portfolios across AIPPM, Edu Ministry, UNESCO, &amp; UNSC.</span>
             </div>
             <div className="flex items-start gap-2.5 text-neutral-300">
               <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</div>
-              <span>Submit your top 3 preferences through the registration portal on this page.</span>
+              <span>Submit your top preferences through the registration portal on this page.</span>
             </div>
             <div className="flex items-start gap-2.5 text-neutral-300">
               <div className="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</div>
-              <span>Allotments confirmed via WhatsApp / Email on a rolling first-come basis.</span>
+              <span>Upon allocation, Google Sheets updates and an instant notification alerts your bell.</span>
             </div>
+          </div>
+
+          {/* ── 2.A: INTERACTIVE DELEGATE ALLOCATION STATUS CHECKER ── */}
+          <div className="pt-6 border-t border-white/10 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-white font-display font-bold text-lg flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-cyan-400" />
+                  <span>Delegate Portfolio Status &amp; Live Verification</span>
+                </h3>
+                <p className="text-xs text-neutral-400 font-sans">
+                  Query your registered email address to check your allotted committee, portfolio, and Google Sheet sync status.
+                </p>
+              </div>
+
+              {isAuthenticated && (user?.email || profile?.email) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const myEmail = user?.email || profile?.email || '';
+                    setSearchEmail(myEmail);
+                    const list = getStoredRegistrations();
+                    const found = list.find((r) => r.email.toLowerCase() === myEmail.toLowerCase());
+                    setCheckedResult(found || null);
+                    setHasSearched(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-mono transition flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Check My Logged Email ({user?.email || profile?.email})</span>
+                </button>
+              )}
+            </div>
+
+            <form onSubmit={handleCheckAllocation} className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="email"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  placeholder="Enter registered delegate email (e.g. delegate@institution.edu)..."
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-black/40 border border-white/15 text-white placeholder-neutral-500 text-xs font-mono focus:outline-none focus:border-cyan-400 transition"
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              >
+                <span>Check Allocation Status</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+
+            {/* Status Results Display */}
+            {hasSearched && (
+              <div className="mt-4 transition-all duration-300">
+                {checkedResult ? (
+                  checkedResult.status === 'ALLOCATED' ? (
+                    <div className="p-6 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 space-y-4 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold tracking-wider uppercase">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          <span>OFFICIALLY ALLOCATED &amp; RECORDED IN GSHEET</span>
+                        </div>
+                        <span className="text-xs font-mono text-neutral-400">
+                          ID: <span className="text-white">{checkedResult.id}</span>
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2 font-mono text-xs">
+                        <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                          <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Allocated Portfolio</span>
+                          <p className="text-base font-bold text-emerald-300 font-display">{checkedResult.allocatedPortfolio}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                          <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Committee Chamber</span>
+                          <p className="text-base font-bold text-white">{checkedResult.allocatedCommittee}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                          <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Secretariat Authority</span>
+                          <p className="text-sm font-semibold text-cyan-300">{checkedResult.allottedBy || 'Executive Secretariat (@yuveer)'}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                          <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Google Sheets Sync</span>
+                          <p className="text-sm font-semibold text-emerald-400 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Synced to Ledger</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-neutral-300 border-t border-emerald-500/20">
+                        <div className="flex items-center gap-2 text-emerald-400">
+                          <BellRing className="w-4 h-4 text-emerald-400 animate-pulse" />
+                          <span>Notification dispatched to your bell with urgent priority.</span>
+                        </div>
+                        <a
+                          href={matrixUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-bold transition flex items-center gap-1.5"
+                        >
+                          <FileSpreadsheet className="w-3.5 h-3.5" />
+                          <span>Verify in Google Sheet Matrix</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-6 rounded-2xl bg-amber-950/25 border border-amber-500/30 space-y-3 font-mono text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold uppercase tracking-wider">
+                          <Clock className="w-4 h-4 text-amber-400" />
+                          <span>APPLICATION LOGGED &bull; UNDER SECRETARIAT REVIEW</span>
+                        </div>
+                        <span className="text-neutral-400">Delegate: <strong className="text-white">{checkedResult.name}</strong> ({checkedResult.email})</span>
+                      </div>
+                      <p className="text-neutral-300 text-xs font-sans leading-relaxed">
+                        Your application is logged. The Secretariat is matching your committee preferences (<strong className="text-white">{checkedResult.firstCommitteeChoice}</strong> / <strong className="text-white">{checkedResult.secondCommitteeChoice}</strong>) against the live vacancy ledger.
+                      </p>
+                      <p className="text-amber-300/90 text-[11px] flex items-center gap-2 pt-1 border-t border-amber-500/20">
+                        <BellRing className="w-3.5 h-3.5 text-amber-400" />
+                        <span>The moment your seat is assigned, Google Sheets will update automatically and you will receive a real-time notification in your notification bell.</span>
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 text-neutral-400 shrink-0" />
+                      <div>
+                        <p className="text-white font-bold">No Application Found for &quot;{searchEmail}&quot;</p>
+                        <p className="text-neutral-400 text-[11px]">You can register immediately to claim your committee seat.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsRegisterModalOpen(true)}
+                      className="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold uppercase tracking-wider transition cursor-pointer shrink-0"
+                    >
+                      Register Now
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ── 2.B: EXECUTIVE SECRETARIAT ALLOTMENT CONSOLE (@yuveer) ── */}
+          <div className="pt-6 border-t border-white/10 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setIsSecretariatExpanded(!isSecretariatExpanded)}
+                className="inline-flex items-center gap-2 text-left text-neutral-300 hover:text-white transition cursor-pointer group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition">
+                  <Crown className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-display font-bold text-sm text-white flex items-center gap-2">
+                    <span>Executive Secretariat Allotment Console</span>
+                    <span className="px-2 py-0.5 rounded-md bg-white/10 text-cyan-300 font-mono text-[10px]">@yuveer</span>
+                  </span>
+                  <p className="text-[11px] text-neutral-400 font-mono">
+                    {isSecretariatExpanded ? 'Click to collapse Secretariat tools' : 'Assign portfolios, push Google Sheet updates & fire real-time notifications'}
+                  </p>
+                </div>
+              </button>
+
+              <div className="flex items-center gap-2 font-mono text-xs">
+                <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-400">
+                  {allRegistrations.length} Applicant{allRegistrations.length === 1 ? '' : 's'} Total
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                  {allRegistrations.filter(r => r.status === 'ALLOCATED').length} Allocated
+                </span>
+              </div>
+            </div>
+
+            {isSecretariatExpanded && (
+              <div className="p-6 rounded-2xl bg-black/60 border border-cyan-500/30 space-y-6 animate-fadeIn">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 uppercase font-bold tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Real-Time Allotment &amp; GSheet Webhook Trigger</span>
+                  </div>
+                  <p className="text-xs text-neutral-300 font-sans">
+                    Assigning a portfolio updates the sovereign ledger, writes to Google Sheets (tab <strong className="text-emerald-400">ZEN_DIPLOMACY_MUN</strong>), and sends an instantaneous high-priority notification to the delegate&apos;s notification bell.
+                  </p>
+                </div>
+
+                {allocationSuccessMsg && (
+                  <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="flex-1">{allocationSuccessMsg}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleAllocateSubmit} className="space-y-4 font-mono text-xs">
+                  {/* Select from existing applicants or enter manually */}
+                  {allRegistrations.length > 0 && (
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] text-neutral-400 uppercase tracking-wider">
+                        Quick-Select Registered Delegate:
+                      </label>
+                      <select
+                        onChange={(e) => {
+                          const selected = allRegistrations.find(r => r.email === e.target.value);
+                          if (selected) {
+                            setAllocEmail(selected.email);
+                            setAllocName(selected.name);
+                            setAllocCommittee(selected.firstCommitteeChoice || 'AIPPM');
+                            if (selected.allocatedPortfolio) {
+                              setAllocPortfolio(selected.allocatedPortfolio);
+                            }
+                          }
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c101a] border border-white/15 text-white focus:outline-none focus:border-cyan-400 transition"
+                      >
+                        <option value="">-- Choose from {allRegistrations.length} registered delegates --</option>
+                        {allRegistrations.map((reg) => (
+                          <option key={reg.id} value={reg.email}>
+                            {reg.name} &bull; {reg.email} [{reg.status}] ({reg.firstCommitteeChoice} / {reg.secondCommitteeChoice})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Delegate Email *</label>
+                      <input
+                        type="email"
+                        required
+                        value={allocEmail}
+                        onChange={(e) => setAllocEmail(e.target.value)}
+                        placeholder="delegate@institution.edu"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
+                      />
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Delegate Name</label>
+                      <input
+                        type="text"
+                        value={allocName}
+                        onChange={(e) => setAllocName(e.target.value)}
+                        placeholder="Full Delegate Name"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Committee Assignment *</label>
+                      <select
+                        value={allocCommittee}
+                        onChange={(e) => setAllocCommittee(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c101a] border border-white/15 text-white focus:outline-none focus:border-cyan-400 transition"
+                      >
+                        <option value="AIPPM">AIPPM (All India Political Parties Meet)</option>
+                        <option value="EDU.MINISTRY">Education Ministry of India</option>
+                        <option value="UNESCO">UNESCO (Plenary)</option>
+                        <option value="UNSC">UNSC (Security Council)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Allocated Portfolio / Country *</label>
+                      <input
+                        type="text"
+                        required
+                        value={allocPortfolio}
+                        onChange={(e) => setAllocPortfolio(e.target.value)}
+                        placeholder="e.g. Prime Minister Narendra Modi / Delegate of USA / Union Secretary"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-left">
+                    <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Secretariat Directives / Allocation Notes</label>
+                    <input
+                      type="text"
+                      value={allocNotes}
+                      onChange={(e) => setAllocNotes(e.target.value)}
+                      placeholder="Optional notes or guidelines for the delegate..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
+                    />
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between">
+                    <span className="text-[10px] text-neutral-500">
+                      Authorized as: <strong className="text-cyan-400">Executive Secretariat (@yuveer)</strong>
+                    </span>
+                    <button
+                      type="submit"
+                      disabled={isAllocating}
+                      className="px-6 py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {isAllocating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-black" />
+                          <span>Updating GSheet &amp; Notifying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 text-black" />
+                          <span>Allocate, Update GSheet &amp; Notify Delegate</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </section>
 
@@ -778,7 +1182,7 @@ export function ZenDiplomacyPortal() {
                 <div className="space-y-1">
                   <h4 className="font-display font-bold text-lg text-white">Registration Successfully Recorded!</h4>
                   <p className="text-xs text-neutral-300 max-w-md mx-auto">
-                    Your preferences have been cryptographically logged on the Zenvitra ledger. The Secretariat will verify your portfolio choice and send your official confirmation.
+                    Your preferences have been logged on the sovereign ledger and synchronized to Google Sheets (<strong className="text-emerald-300">ZEN_DIPLOMACY_MUN</strong>). The Secretariat will assign your portfolio. Once allocated, you will receive a real-time notification in your bell!
                   </p>
                 </div>
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -797,7 +1201,7 @@ export function ZenDiplomacyPortal() {
                       setIsRegisterModalOpen(false);
                       setRegSubmitted(false);
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs"
+                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs cursor-pointer"
                   >
                     Done
                   </button>
@@ -917,15 +1321,23 @@ export function ZenDiplomacyPortal() {
                   <button
                     type="button"
                     onClick={() => setIsRegisterModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl text-neutral-400 hover:text-white transition"
+                    className="px-4 py-2.5 rounded-xl text-neutral-400 hover:text-white transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold uppercase tracking-wider transition shadow-lg cursor-pointer"
+                    disabled={isRegistering}
+                    className="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold uppercase tracking-wider transition shadow-lg cursor-pointer flex items-center gap-2 disabled:opacity-50"
                   >
-                    Submit Allotment Application
+                    {isRegistering ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-black" />
+                        <span>Syncing to GSheet...</span>
+                      </>
+                    ) : (
+                      <span>Submit Allotment Application</span>
+                    )}
                   </button>
                 </div>
               </form>

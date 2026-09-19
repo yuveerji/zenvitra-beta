@@ -20,10 +20,9 @@ import {
   Video
 } from 'lucide-react';
 import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
-import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
+import { registerDelegate, DEFAULT_MATRIX_URL } from '@/lib/zenDiplomacyService';
 
 const LS_MATRIX_URL = 'zenvitra_zendiplomacy_matrix_url';
-const DEFAULT_MATRIX_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
 const LS_REGISTRATIONS = 'zenvitra_zendiplomacy_registrations_v1';
 
 export function JoinZenDiplomacyCard() {
@@ -122,12 +121,11 @@ export function JoinZenDiplomacyCard() {
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
-    const payload = {
-      id: `reg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    await registerDelegate({
       name: name.trim(),
       email: email.trim(),
       phone: phone.trim(),
@@ -135,16 +133,7 @@ export function JoinZenDiplomacyCard() {
       firstCommitteeChoice: firstChoice,
       secondCommitteeChoice: secondChoice,
       portfolioPreferences: portfolios.trim(),
-      registeredAt: new Date().toISOString(),
-      status: 'UNDER_REVIEW'
-    };
-
-    try {
-      const current = JSON.parse(localStorage.getItem(LS_REGISTRATIONS) || '[]');
-      current.unshift(payload);
-      localStorage.setItem(LS_REGISTRATIONS, JSON.stringify(current));
-      broadcastActivitySync({ source: 'event', action: 'rsvp', timestamp: Date.now() });
-    } catch {}
+    });
 
     setSubmitted(true);
   };
@@ -389,10 +378,10 @@ export function JoinZenDiplomacyCard() {
                 <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                   <Check className="w-6 h-6" />
                 </div>
-                <div className="space-y-1">
-                  <h4 className="font-display font-bold text-lg text-white">Application Recorded</h4>
+                <div className="space-y-1.5">
+                  <h4 className="font-display font-bold text-lg text-white">Application Recorded &amp; Synced</h4>
                   <p className="text-xs text-neutral-300 font-sans leading-relaxed">
-                    Your delegate application has been submitted to the Executive Secretariat. You will receive portfolio allocation and conference directives at <strong className="text-white">{email}</strong>.
+                    Your application has been recorded and synced to the Google Sheet. Once your portfolio is officially allocated by the Secretariat (@yuveer), it will be updated in the Google Sheet Matrix and an alert will be sent directly to your notification bell.
                   </p>
                 </div>
                 <button
