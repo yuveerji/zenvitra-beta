@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
 interface ZenDiplomacyCoverProps {
   variant?: 'hero' | 'card' | 'compact';
@@ -17,6 +18,58 @@ export function ZenDiplomacyCover({
   showBadge = false,
   interactive = true,
 }: ZenDiplomacyCoverProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const mouseX = useMotionValue<number>(600);
+  const mouseY = useMotionValue<number>(300);
+  const normX = useMotionValue<number>(0);
+  const normY = useMotionValue<number>(0);
+
+  const springConfig = { damping: 28, stiffness: 180, mass: 0.6 };
+
+  // Parallax translation layers for cosmic celestial depth
+  const starsParallaxX = useSpring(useTransform(normX, [-0.5, 0.5], [-10, 10]), springConfig);
+  const starsParallaxY = useSpring(useTransform(normY, [-0.5, 0.5], [-7, 7]), springConfig);
+
+  const moonParallaxX = useSpring(useTransform(normX, [-0.5, 0.5], [16, -16]), springConfig);
+  const moonParallaxY = useSpring(useTransform(normY, [-0.5, 0.5], [12, -12]), springConfig);
+
+  const flareParallaxX = useSpring(useTransform(normX, [-0.5, 0.5], [-14, 14]), springConfig);
+  const flareParallaxY = useSpring(useTransform(normY, [-0.5, 0.5], [-10, 10]), springConfig);
+
+  const typographyTiltX = useSpring(useTransform(normY, [-0.5, 0.5], [3.5, -3.5]), springConfig);
+  const typographyTiltY = useSpring(useTransform(normX, [-0.5, 0.5], [-3.5, 3.5]), springConfig);
+
+  const cursorLight = useTransform(
+    [mouseX, mouseY],
+    ([x, y]) =>
+      `radial-gradient(480px circle at ${x}px ${y}px, rgba(165, 180, 252, 0.22) 0%, rgba(34, 211, 238, 0.12) 35%, transparent 70%)`
+  );
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!interactive || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const currentX = e.clientX - rect.left;
+    const currentY = e.clientY - rect.top;
+
+    mouseX.set(currentX);
+    mouseY.set(currentY);
+
+    normX.set(currentX / rect.width - 0.5);
+    normY.set(currentY / rect.height - 0.5);
+  };
+
+  const handleMouseEnter = () => {
+    if (interactive) setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    normX.set(0);
+    normY.set(0);
+  };
+
   // Deterministic starfield for crisp, zero-jitter cosmic background
   const stars = useMemo(() => {
     const starList = [];
@@ -38,6 +91,10 @@ export function ZenDiplomacyCover({
 
   return (
     <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className={`relative w-full overflow-hidden select-none bg-black text-white font-sans ${
         isHero
           ? 'aspect-[16/9] sm:aspect-[21/9] max-h-[540px] min-h-[380px]'
@@ -67,6 +124,18 @@ export function ZenDiplomacyCover({
           background: 'radial-gradient(circle at 85% 20%, rgba(200, 220, 255, 0.15) 0%, transparent 55%)'
         }}
       />
+
+      {/* ── DYNAMIC MOUSE CURSOR LIGHT SHEEN OVERLAY ── */}
+      {interactive && (
+        <motion.div
+          className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300"
+          style={{
+            opacity: isHovered ? 1 : 0,
+            background: cursorLight,
+            mixBlendMode: 'screen',
+          }}
+        />
+      )}
 
       {/* ── 3. CRISP SVG COSMIC LAYER (Stars, Moon, Flares & Terrain) ── */}
       <svg
@@ -129,8 +198,11 @@ export function ZenDiplomacyCover({
           </g>
         </defs>
 
-        {/* ── STARS ── */}
-        <g className="stars-layer">
+        {/* ── STARS (With Parallax Movement) ── */}
+        <motion.g
+          className="stars-layer"
+          style={{ x: starsParallaxX, y: starsParallaxY }}
+        >
           {stars.map((s) => (
             <circle
               key={s.id}
@@ -143,7 +215,7 @@ export function ZenDiplomacyCover({
               style={s.twinkle ? { animationDuration: `${2.5 + (s.id % 3)}s`, animationDelay: `${s.delay}s` } : undefined}
             />
           ))}
-        </g>
+        </motion.g>
 
         {/* ── CORNER / FLANK 4-POINT STARS (Exact match to original artwork) ── */}
         {/* Bottom-Right Prominent Diamond Star */}
@@ -160,8 +232,12 @@ export function ZenDiplomacyCover({
           <use href="#diamondStar" />
         </g>
 
-        {/* ── TOP RIGHT CRESCENT MOON ── */}
-        <g transform="translate(1090, 120)" opacity="0.9">
+        {/* ── TOP RIGHT CRESCENT MOON (With Parallax Movement) ── */}
+        <motion.g
+          transform="translate(1090, 120)"
+          opacity="0.9"
+          style={{ x: moonParallaxX, y: moonParallaxY }}
+        >
           {/* Faint Earthshine Body */}
           <circle cx="0" cy="0" r="48" fill="#0A0F1D" opacity="0.75" />
           <circle cx="0" cy="0" r="48" stroke="#1E293B" strokeWidth="0.75" fill="none" opacity="0.4" />
@@ -177,10 +253,13 @@ export function ZenDiplomacyCover({
           <circle cx="36" cy="10" r="4.5" fill="#475569" opacity="0.3" />
           <circle cx="38" cy="0" r="2.5" fill="#64748B" opacity="0.4" />
           <circle cx="30" cy="22" r="2" fill="#475569" opacity="0.3" />
-        </g>
+        </motion.g>
 
-        {/* ── CENTRAL SOLAR CORONA & SUNBURST FLARE (Behind Planet Crest) ── */}
-        <g transform="translate(600, 435)">
+        {/* ── CENTRAL SOLAR CORONA & SUNBURST FLARE (With Parallax Movement) ── */}
+        <motion.g
+          transform="translate(600, 435)"
+          style={{ x: flareParallaxX, y: flareParallaxY }}
+        >
           {/* Radial Corona Glow */}
           <circle cx="0" cy="0" r="280" fill="url(#sunburstCore)" opacity="0.75" />
           <circle cx="0" cy="0" r="140" fill="url(#sunburstCore)" opacity="0.95" />
@@ -223,7 +302,7 @@ export function ZenDiplomacyCover({
             opacity="0.35"
             filter="blur(2px)"
           />
-        </g>
+        </motion.g>
 
         {/* ── THE MAJESTIC PLANETARY HORIZON ── */}
         <g>
@@ -288,7 +367,14 @@ export function ZenDiplomacyCover({
       </svg>
 
       {/* ── 4. OFFICIAL HIGH-DEFINITION VECTOR TYPOGRAPHY OVERLAY ── */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 pointer-events-none">
+      <motion.div
+        style={{
+          rotateX: typographyTiltX,
+          rotateY: typographyTiltY,
+          transformStyle: 'preserve-3d',
+        }}
+        className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 pointer-events-none"
+      >
         
         {/* TOP BRAND EMBLEM: ZENVITRA */}
         <div className="flex flex-col items-center space-y-1 sm:space-y-1.5 transform translate-y-[-10px] sm:translate-y-[-16px]">
@@ -352,7 +438,7 @@ export function ZenDiplomacyCover({
           </span>
           <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-neutral-300 to-white/70" />
         </div>
-      </div>
+      </motion.div>
 
       {/* ── 5. OPTIONAL FLOATING BADGES ── */}
       {showBadge && (

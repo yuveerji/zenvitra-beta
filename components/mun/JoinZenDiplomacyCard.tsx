@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { 
   Crown, 
   Calendar, 
@@ -17,7 +18,6 @@ import {
   Clock,
   ArrowUpRight
 } from 'lucide-react';
-import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
 
@@ -28,6 +28,57 @@ const LS_REGISTRATIONS = 'zenvitra_zendiplomacy_registrations_v1';
 export function JoinZenDiplomacyCard() {
   const [matrixUrl, setMatrixUrl] = useState(DEFAULT_MATRIX_URL);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+
+  // 3D Tilt & Mouse Cursor Spotlight Tracking
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const x = useMotionValue<number>(0);
+  const y = useMotionValue<number>(0);
+  const mouseX = useMotionValue<number>(0);
+  const mouseY = useMotionValue<number>(0);
+
+  // Smooth spring physics for 3D card tilt & movement
+  const springConfig = { damping: 26, stiffness: 220, mass: 0.5 };
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [4.5, -4.5]), springConfig);
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-4.5, 4.5]), springConfig);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const currentX = e.clientX - rect.left;
+    const currentY = e.clientY - rect.top;
+
+    mouseX.set(currentX);
+    mouseY.set(currentY);
+
+    const normX = currentX / rect.width - 0.5;
+    const normY = currentY / rect.height - 0.5;
+    x.set(normX);
+    y.set(normY);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    x.set(0);
+    y.set(0);
+  };
+
+  const cursorSpotlightBg = useTransform(
+    [mouseX, mouseY],
+    ([latestX, latestY]) =>
+      `radial-gradient(650px circle at ${latestX}px ${latestY}px, rgba(34, 211, 238, 0.16) 0%, rgba(99, 102, 241, 0.10) 30%, rgba(255, 255, 255, 0.04) 55%, transparent 75%)`
+  );
+
+  const borderMask = useTransform(
+    [mouseX, mouseY],
+    ([latestX, latestY]) =>
+      `radial-gradient(420px circle at ${latestX}px ${latestY}px, black 25%, transparent 80%)`
+  );
 
   // Registration modal states
   const [name, setName] = useState('');
@@ -98,8 +149,41 @@ export function JoinZenDiplomacyCard() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 py-10 text-left">
-      <SpotlightCard className="p-0 rounded-3xl border border-cyan-500/35 overflow-hidden shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.15)] bg-[#050711]">
+    <div 
+      style={{ perspective: 1400 }}
+      className="w-full max-w-6xl mx-auto px-4 sm:px-8 py-10 text-left"
+    >
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: 'preserve-3d',
+        }}
+        className="group relative rounded-3xl border border-cyan-500/35 overflow-hidden shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.15)] hover:shadow-[0_35px_90px_rgba(0,0,0,0.95),0_0_75px_rgba(6,182,212,0.25)] bg-[#050711] transition-shadow duration-300"
+      >
+        {/* ── DYNAMIC CURSOR LIGHT SPOTLIGHT SHEEN ── */}
+        <motion.div
+          className="pointer-events-none absolute -inset-px transition-opacity duration-300 z-10"
+          style={{
+            opacity: isHovered ? 1 : 0,
+            background: cursorSpotlightBg,
+          }}
+        />
+
+        {/* ── DYNAMIC BORDER HIGHLIGHT FLARE ── */}
+        <motion.div
+          className="pointer-events-none absolute inset-0 rounded-3xl z-10 transition-opacity duration-300"
+          style={{
+            opacity: isHovered ? 0.9 : 0,
+            border: '1.5px solid rgba(34, 211, 238, 0.75)',
+            maskImage: borderMask,
+            WebkitMaskImage: borderMask,
+          }}
+        />
         
         {/* ── TOP: ULTRA-CRISP RECREATED CODE COVER BANNER ── */}
         <div className="relative group overflow-hidden border-b border-white/10">
@@ -269,7 +353,7 @@ export function JoinZenDiplomacyCard() {
             </Link>
           </div>
         </div>
-      </SpotlightCard>
+      </motion.div>
 
       {/* ── QUICK REGISTRATION MODAL ── */}
       {isRegisterOpen && (
