@@ -68,6 +68,7 @@ import {
   Trash2,
   Wand2,
   Upload,
+  Camera,
   Image as ImageIcon
 } from 'lucide-react';
 
@@ -818,7 +819,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       ...profile,
       displayName: editDisplayName.trim() || profile.displayName,
       bio: editBio.trim() || profile.bio,
-      avatar: editAvatar.trim() || profile.avatar,
+      avatar: editAvatar.trim(),
       role: editRole.trim() || profile.role,
       isOrganization: editIsOrg,
       organizationType: editOrgType,
@@ -921,7 +922,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       username: clean,
       displayName: claimDisplayName.trim() || (claimIsOrg ? 'Sovereign Organisation' : clean.charAt(0).toUpperCase() + clean.slice(1)),
       bio: claimBio.trim() || (claimIsOrg ? 'Official sovereign space & modular portal on Zenvitra.' : 'Civic builder, diplomat, and explorer on Zenvitra Sovereign Cloud.'),
-      avatar: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80`,
+      avatar: '',
       role: claimRole.trim() || (claimIsOrg ? 'Official Forum' : 'Zen Explorer'),
       verified: true,
       badges: claimIsOrg ? ['ORGANIZATION', 'VERIFIED_PORTAL'] : ['SOVEREIGN_NODE', 'VERIFIED_CITIZEN'],
@@ -1195,19 +1196,47 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
           <div className="flex flex-col items-center text-center mb-8">
             {/* Avatar with Halo */}
             <div className="relative mb-4 group">
-              <div className={`absolute -inset-1 rounded-full opacity-60 blur-xs transition-opacity ${
-                isLight ? 'bg-neutral-900/20' : 'bg-gradient-to-r from-cyan-500 to-indigo-500'
+              <div className={`absolute -inset-1 rounded-full opacity-70 blur-xs transition-opacity ${
+                isLight ? 'bg-neutral-900/20' : 'bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600'
               }`} />
-              <img
-                src={profile.avatar}
-                alt={profile.displayName}
-                className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 shadow-xl ${
-                  isLight ? 'border-neutral-900/80 bg-white' : 'border-white/20'
-                }`}
-              />
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-xl">
+                {profile.avatar ? (
+                  <img
+                    src={profile.avatar}
+                    alt={profile.displayName}
+                    className={`w-full h-full object-cover border-2 ${
+                      isLight ? 'border-neutral-900/80 bg-white' : 'border-white/20'
+                    }`}
+                  />
+                ) : (
+                  <div
+                    className={`w-full h-full flex items-center justify-center font-bold text-4xl sm:text-5xl uppercase select-none border-2 ${
+                      isLight
+                        ? 'border-neutral-900/80 bg-neutral-100 text-neutral-900'
+                        : 'border-white/20 bg-zinc-900 text-white'
+                    }`}
+                  >
+                    {profile.displayName?.trim()?.[0]?.toUpperCase() || profile.username?.trim()?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                )}
+
+                {/* Hover overlay to change avatar if owner */}
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditorOpen(true)}
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-white text-[10px] font-semibold cursor-pointer z-10"
+                    title="Change Avatar Photo"
+                  >
+                    <Camera className="w-6 h-6 mb-1 text-white" />
+                    <span>Change Photo</span>
+                  </button>
+                )}
+              </div>
+
               {profile.verified && (
                 <div 
-                  className={`absolute bottom-1 right-1 p-1.5 rounded-full shadow-lg border-2 ${
+                  className={`absolute bottom-1 right-1 p-1.5 rounded-full shadow-lg border-2 z-20 ${
                     isLight ? 'bg-neutral-900 text-white border-white' : 'bg-cyan-500 text-black border-black'
                   }`} 
                   title="Verified Sovereign Identity"
@@ -2273,6 +2302,15 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               <div>
                 <label className="text-[10px] font-mono text-zinc-400 uppercase block mb-1">Avatar Photo</label>
                 <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-900 border border-zinc-700 shrink-0 flex items-center justify-center shadow-md">
+                    {editAvatar ? (
+                      <img src={editAvatar} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-bold text-white text-lg uppercase">
+                        {editDisplayName?.trim()?.[0]?.toUpperCase() || profile.displayName?.trim()?.[0]?.toUpperCase() || 'U'}
+                      </span>
+                    )}
+                  </div>
                   <label className="flex-1 py-2 px-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2">
                     <Upload className="w-3.5 h-3.5 text-cyan-400" />
                     <span>{editAvatar ? 'Change Avatar Image' : 'Upload Image from Device'}</span>

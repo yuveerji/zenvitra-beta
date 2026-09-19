@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${profile.displayName} (@${profile.username}) • ZEN.SPACE`,
       description: profile.bio,
-      images: [profile.avatar],
+      images: profile.avatar ? [profile.avatar] : ['/brand/logo.png'],
     },
   };
 }

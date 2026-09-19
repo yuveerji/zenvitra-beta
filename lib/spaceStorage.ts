@@ -196,7 +196,15 @@ export function getZenSpaceProfile(username: string): ZenSpaceProfile {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_${cleanUser}`);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        // Sanitize legacy seeded unsplash image or misplaced brand logo
+        if (parsed.avatar && (
+          parsed.avatar.includes('photo-1507003211169-0a1dd7228f2d') ||
+          (parsed.avatar === '/brand/logo.png' && cleanUser !== 'zenvitra')
+        )) {
+          parsed.avatar = '';
+        }
+        return parsed;
       }
     } catch (e) {
       console.warn('Failed to load space profile from storage:', e);
@@ -208,7 +216,7 @@ export function getZenSpaceProfile(username: string): ZenSpaceProfile {
   }
 
   // Resolve user avatar dynamically: pulse profile -> session user -> default pulse avatar mark
-  let userAvatar = '/brand/logo.png';
+  let userAvatar = '';
   let userBio = 'Explorer of sovereign cybernetics and open communication protocols on Zenvitra.';
   let userDisplayName = cleanUser ? cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1) : 'Zen Traveler';
 
