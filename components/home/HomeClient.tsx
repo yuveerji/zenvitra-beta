@@ -47,6 +47,7 @@ import { InteractiveWordModal } from '@/components/home/InteractiveWordModal';
 import { InteractiveWordHover, InteractiveWordGroup } from '@/components/home/InteractiveWordHover';
 import { EcosystemMindMapModal } from '@/components/home/EcosystemMindMapModal';
 import { FeaturedEvents } from '@/components/home/FeaturedEvents';
+import { JoinZenDiplomacyCard } from '@/components/mun/JoinZenDiplomacyCard';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { AnimatedSection, StaggerChildren, StaggerItem } from '@/components/ui/AnimatedSection';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
@@ -742,9 +743,9 @@ export default function HomeClient({ session }: HomeClientProps) {
           </StaggerChildren>
         </section>
 
-        {/* Real & Raw Events: ZEN.DIPLOMACY MUN 2026 */}
+        {/* Real & Raw Events: Join ZEN.DIPLOMACY MUN 2026 */}
         <AnimatedSection className="relative z-10">
-          <FeaturedEvents />
+          <JoinZenDiplomacyCard />
         </AnimatedSection>
 
         {/* 7. The Sovereign Universe Matrix: Three Worlds & Platform Ecosystem */}

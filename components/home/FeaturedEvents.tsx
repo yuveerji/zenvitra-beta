@@ -17,6 +17,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
+import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 
 export function FeaturedEvents() {
   const targetDate = useMemo(() => new Date('2026-10-24T09:00:00+05:30').getTime(), []);
@@ -70,21 +71,10 @@ export function FeaturedEvents() {
       <SpotlightCard className="p-0 rounded-3xl border border-cyan-500/30 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(6,182,212,0.12)] bg-[#070912]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-stretch">
           
-          {/* Left: Graphic Banner Area */}
+          {/* Left: Graphic Banner Area (100% Vector Code Recreated) */}
           <div className="lg:col-span-5 relative overflow-hidden bg-black flex items-center justify-center min-h-[260px] sm:min-h-[320px]">
-            <img
-              src="/assets/events/zen_diplomacy_mun_2026.png"
-              alt="ZEN.DIPLOMACY MUN 2026"
-              className="w-full h-full object-cover object-center filter brightness-95 contrast-105 transform hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-black/20 via-transparent to-[#070912] pointer-events-none" />
-            
-            <div className="absolute top-4 left-4 z-10">
-              <span className="px-3 py-1 rounded-full bg-black/80 backdrop-blur-md text-cyan-300 border border-cyan-500/40 text-[10px] font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 shadow-lg">
-                <Crown className="w-3 h-3 text-cyan-400" />
-                FLAGSHIP DIPLOMACY SUMMIT
-              </span>
-            </div>
+            <ZenDiplomacyCover variant="compact" showBadge={true} interactive={true} className="h-full min-h-[280px]" />
+            <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-black/10 via-transparent to-[#070912] pointer-events-none" />
           </div>
 
           {/* Right: Event Information & Actions */}

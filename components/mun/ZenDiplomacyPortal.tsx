@@ -36,6 +36,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
+import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 
 // Default Google Sheet for Portfolio Matrix
 const DEFAULT_MATRIX_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing';
@@ -224,14 +225,10 @@ export function ZenDiplomacyPortal() {
         
         {/* ── 1. OFFICIAL HERO BANNER SECTION ── */}
         <section className="relative rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.9)] bg-black">
-          {/* Official Banner Image */}
-          <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[480px] overflow-hidden bg-black flex items-center justify-center">
-            <img
-              src="/assets/events/zen_diplomacy_mun_2026.png"
-              alt="ZEN.DIPLOMACY MUN 2026 Banner"
-              className="w-full h-full object-cover object-center filter brightness-95 contrast-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#030407] via-black/40 to-transparent" />
+          {/* Official Vector Code Recreated Banner */}
+          <div className="relative w-full overflow-hidden bg-black">
+            <ZenDiplomacyCover variant="hero" showBadge={false} interactive={true} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#030407] via-black/25 to-transparent pointer-events-none" />
           </div>
 
           {/* Hero Header Content Overlay */}

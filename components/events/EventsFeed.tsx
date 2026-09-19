@@ -34,6 +34,7 @@ import { ZenPassScannerModal } from './ZenPassScannerModal';
 import { ZenPassUserPassesModal } from './ZenPassUserPassesModal';
 import { RevenueFeeSimulatorModal } from '@/components/pulse/RevenueFeeSimulatorModal';
 import { useAuth } from '@/context/AuthContext';
+import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 
 const CATEGORIES: (EventCategory | 'ALL')[] = ['ALL', 'SUMMIT', 'WORKSHOP', 'KEYNOTE', 'MEETUP', 'HACKATHON'];
 
@@ -198,7 +199,9 @@ export function EventsFeed() {
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Image */}
             <div className="relative h-64 sm:h-80 lg:h-auto overflow-hidden bg-neutral-900">
-              {featuredEvent.coverImage ? (
+              {featuredEvent.id === 'zen-diplomacy-mun-2026' || (featuredEvent as any).isOfficialZenDiplomacy ? (
+                <ZenDiplomacyCover variant="compact" interactive={false} className="h-full w-full" />
+              ) : featuredEvent.coverImage ? (
                 <img
                   src={featuredEvent.coverImage}
                   alt={featuredEvent.title}

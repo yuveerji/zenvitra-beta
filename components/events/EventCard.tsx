@@ -21,6 +21,7 @@ import { ZenEvent, EventAttendee } from '@/types/events';
 import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { useZenPass } from '@/context/ZenPassContext';
 import { ZenPassBookingModal } from './ZenPassBookingModal';
+import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 
 interface EventCardProps {
   event: ZenEvent;
@@ -107,7 +108,9 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
 
         {/* Cover Image Container */}
         <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-neutral-900 z-[1]">
-          {event.coverImage ? (
+          {event.id === 'zen-diplomacy-mun-2026' || (event as any).isOfficialZenDiplomacy ? (
+            <ZenDiplomacyCover variant="compact" interactive={false} className="h-full w-full" />
+          ) : event.coverImage ? (
             <img
               src={event.coverImage}
               alt={event.title}
