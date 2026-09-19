@@ -10,6 +10,7 @@ import {
   ShieldCheck, 
   Sparkles, 
   ArrowRight, 
+  ArrowUpRight,
   ExternalLink, 
   CheckCircle2, 
   FileSpreadsheet, 
@@ -308,7 +309,10 @@ export function ZenDiplomacyPortal() {
                   Host Platform
                 </span>
                 <p className="font-bold text-white text-sm">Online &bull; Virtual Chambers</p>
-                <p className="text-[11px] text-neutral-400">Google Meet + Zenvitra Dais</p>
+                <Link href="/call" className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1">
+                  <span>ZEN.CALL + Zenvitra Dais</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </Link>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
@@ -581,9 +585,9 @@ export function ZenDiplomacyPortal() {
 
             <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2.5">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-mono text-xs font-bold">02</div>
-              <h4 className="font-display font-bold text-base text-white">Google Meet HD Rooms</h4>
+              <h4 className="font-display font-bold text-base text-white">ZEN.CALL Virtual Chambers</h4>
               <p className="text-xs text-neutral-400 leading-relaxed font-light">
-                Dedicated high-bandwidth video and audio caucusing rooms integrated with Google Meet and ZEN.CALL.
+                Dedicated high-bandwidth encrypted video and audio caucusing chambers natively hosted on ZEN.CALL with live dais integration.
               </p>
             </div>
 

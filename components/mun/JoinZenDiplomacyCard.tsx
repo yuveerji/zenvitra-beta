@@ -16,7 +16,8 @@ import {
   Send,
   Building2,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
+  Video
 } from 'lucide-react';
 import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
@@ -212,6 +213,10 @@ export function JoinZenDiplomacyCard() {
                   <Crown className="w-3.5 h-3.5 text-cyan-400" />
                   FLAGSHIP ONLINE ASSEMBLY
                 </span>
+                <span className="px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
+                  <Video className="w-3.5 h-3.5 text-purple-400" />
+                  HOSTED ON ZEN.CALL
+                </span>
                 <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   APPLICATIONS OPEN
@@ -223,7 +228,7 @@ export function JoinZenDiplomacyCard() {
               </h2>
 
               <p className="font-sans text-sm sm:text-base text-neutral-300 font-light leading-relaxed">
-                Step into sovereign multilateral diplomacy on <strong className="text-white">October 24th &amp; 25th, 2026</strong>. Convening delegates, policy researchers, and student parliamentarians worldwide for zero-scripted debate, real-world draft resolutions, and verifiable credentials.
+                Step into sovereign multilateral diplomacy on <strong className="text-white">October 24th &amp; 25th, 2026</strong>, hosted live on <strong className="text-cyan-300">ZEN.CALL Virtual Chambers</strong>. Convening delegates, policy researchers, and student parliamentarians worldwide for zero-scripted debate, real-world draft resolutions, and verifiable credentials.
               </p>
             </div>
 
@@ -375,7 +380,7 @@ export function JoinZenDiplomacyCard() {
                 ZEN.DIPLOMACY MUN 2026
               </h3>
               <p className="text-xs text-neutral-400 font-sans">
-                October 24th &amp; 25th, 2026 &bull; Online Virtual Assembly &bull; Organizer: Yuveer
+                October 24th &amp; 25th, 2026 &bull; Online on ZEN.CALL Virtual Chambers &bull; Organizer: Yuveer
               </p>
             </div>
 

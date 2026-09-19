@@ -51,10 +51,10 @@ export const calculateHaversineDistance = calculateDistanceKm;
 export const OFFICIAL_ZEN_DIPLOMACY_EVENT: ZenEvent = {
   id: 'zen-diplomacy-mun-2026',
   title: 'ZEN.DIPLOMACY MUN 2026',
-  description: 'Official Online Model United Nations assembly hosted on October 24th & 25th, 2026. Featuring AIPPM, Education Ministry of India, UNESCO, and UNSC chambers with live resolution drafting on ZEN.DOCS.',
+  description: 'Official Online Model United Nations assembly hosted on October 24th & 25th, 2026 live on ZEN.CALL. Featuring AIPPM, Education Ministry of India, UNESCO, and UNSC chambers with live resolution drafting on ZEN.DOCS.',
   coverImage: '/assets/events/zen_diplomacy_mun_2026.png',
   type: 'virtual',
-  location: 'Virtual Sovereign Chambers & Encrypted Dais (Global Online)',
+  location: 'ZEN.CALL Virtual Chambers & Encrypted Dais (Global Online)',
   city: 'Global Online',
   date: '2026-10-24T09:00:00.000Z',
   endDate: '2026-10-25T19:00:00.000Z',
