@@ -31,6 +31,7 @@ import { MusicPickerModal, SelectedTrackPayload } from './MusicPickerModal';
 import { WorldLocationPickerModal } from '@/components/common/WorldLocationPickerModal';
 import { STORY_FONTS, STORY_GRADIENTS, STORY_STICKERS, getStoryFontStyle } from '@/lib/storyFonts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
 
 interface StoryComposerModalProps {
   isOpen: boolean;
@@ -66,6 +67,7 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
   const [selectedSnapFilter, setSelectedSnapFilter] = useState('vintage_cam');
   const [snapLocation, setSnapLocation] = useState('GENESIS ASSEMBLY // UDAIPUR');
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -512,7 +514,17 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
                     className="ml-auto px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-xs font-bold text-white transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Upload Photo</span>
+                    <span>Upload Device Media</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-bold text-amber-300 transition flex items-center gap-1.5 cursor-pointer"
+                    title="Choose GIFs or Emojis"
+                  >
+                    <Smile className="w-3.5 h-3.5" />
+                    <span>GIF &amp; Emoji</span>
                   </button>
 
                   <button
@@ -528,9 +540,22 @@ export function StoryComposerModal({ isOpen, onClose }: StoryComposerModalProps)
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   className="hidden"
                   onChange={handleFileUpload}
+                />
+
+                <UniversalEmojiGifPicker
+                  isOpen={showEmojiPicker}
+                  onClose={() => setShowEmojiPicker(false)}
+                  position="modal"
+                  onSelectEmoji={(emoji) => {
+                    setTitle((prev) => prev + emoji);
+                  }}
+                  onSelectGif={(gifUrl) => {
+                    setCustomImageUrl(gifUrl);
+                    setShowEmojiPicker(false);
+                  }}
                 />
               </div>
 

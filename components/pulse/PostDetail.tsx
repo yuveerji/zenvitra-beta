@@ -19,12 +19,14 @@ import {
   Sparkles,
   ExternalLink,
   Award,
-  MessageSquareShare
+  MessageSquareShare,
+  Smile
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { ImageGrid } from './ImageGrid';
 import { getStoryFontStyle } from '@/lib/storyFonts';
 import { ShareToChatModal } from './ShareToChatModal';
+import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
 
 export function PostDetail() {
   const {
@@ -40,6 +42,7 @@ export function PostDetail() {
   const [bookmarked, setBookmarked] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showShareToChat, setShowShareToChat] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const post = activePostId ? getPostById(activePostId) : undefined;
 
@@ -414,7 +417,7 @@ export function PostDetail() {
       </article>
 
       {/* Reply Input Card */}
-      <form onSubmit={handleReply} className="rounded-2xl p-4 bg-[#080a10] border border-white/10 mb-6 shadow-md">
+      <form onSubmit={handleReply} className="rounded-2xl p-4 bg-[#080a10] border border-white/10 mb-6 shadow-md relative">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center font-display font-bold text-xs text-white uppercase shrink-0">
             {(currentUserName || 'U')[0]?.toUpperCase() || 'U'}
@@ -427,6 +430,14 @@ export function PostDetail() {
             className="flex-1 bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
           />
           <button
+            type="button"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-amber-400 hover:bg-white/5 transition cursor-pointer"
+            title="Add Emoji or GIF"
+          >
+            <Smile className="w-4 h-4" />
+          </button>
+          <button
             type="submit"
             disabled={!replyText.trim()}
             className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold transition disabled:opacity-30 cursor-pointer flex items-center gap-1.5"
@@ -435,6 +446,19 @@ export function PostDetail() {
             <Send className="w-3 h-3 fill-current" />
           </button>
         </div>
+
+        <UniversalEmojiGifPicker
+          isOpen={showEmojiPicker}
+          onClose={() => setShowEmojiPicker(false)}
+          position="modal"
+          onSelectEmoji={(emoji) => {
+            setReplyText((prev) => prev + emoji);
+          }}
+          onSelectGif={(gifUrl) => {
+            setReplyText((prev) => (prev ? prev + ' ' + gifUrl : gifUrl));
+            setShowEmojiPicker(false);
+          }}
+        />
       </form>
 
       {/* Discussion Thread List */}

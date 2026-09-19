@@ -21,7 +21,9 @@ import {
   Wand2,
   Sliders,
   Search,
-  MapPin
+  MapPin,
+  Smile,
+  X
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { auditFluxDispatch, IntegrityCheckResult } from '@/lib/fluxIntegrityGuard';
@@ -29,6 +31,7 @@ import { FONT_OPTIONS, TEXT_EFFECTS, FILTER_PRESETS } from '@/components/creator
 import { STORY_FONTS, getStoryFontStyle } from '@/lib/storyFonts';
 import { MusicPickerModal } from './MusicPickerModal';
 import { WorldLocationPickerModal } from '@/components/common/WorldLocationPickerModal';
+import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
 
 const FLUX_AUDIO_TRACKS = [
   '⚡ Ambient Synthwaves (120 BPM)',
@@ -51,6 +54,7 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
   const [isPrivate, setIsPrivate] = useState(false);
   const [location, setLocation] = useState('');
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Creator FX Studio overlay states for reel
@@ -213,23 +217,26 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
                 <span className="text-[10px] font-mono text-zinc-500">9:16 Reel</span>
               </div>
 
-              <div className="flex items-center gap-2 mb-2">
-                <button
-                  type="button"
-                  onClick={() => videoFileInputRef.current?.click()}
-                  className="px-3.5 py-2 rounded-xl bg-violet-600/30 hover:bg-violet-600/50 border border-violet-400/50 text-xs font-bold text-violet-200 transition flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(139,92,246,0.25)] shrink-0"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Upload Video (MP4)</span>
-                </button>
-
-                <input
-                  type="url"
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="Or paste video URL..."
-                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500"
-                />
+              <div className="space-y-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => videoFileInputRef.current?.click()}
+                    className="flex-1 py-2.5 px-3.5 rounded-xl bg-violet-600/30 hover:bg-violet-600/50 border border-violet-400/50 text-xs font-bold text-violet-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(139,92,246,0.25)]"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-violet-300" />
+                    <span>{videoUrl ? 'Change Video from Device' : 'Upload Video from Device (MP4 / WebM)'}</span>
+                  </button>
+                  {videoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setVideoUrl('')}
+                      className="px-3 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-mono text-rose-300 transition cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
 
               <input
@@ -475,7 +482,18 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
               {/* Caption */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
-                  <span>3. Caption &amp; Key Insight</span>
+                  <div className="flex items-center gap-2">
+                    <span>3. Caption &amp; Key Insight</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-mono font-bold flex items-center gap-1 cursor-pointer transition"
+                      title="Add Emojis & GIFs"
+                    >
+                      <Smile className="w-3 h-3" />
+                      <span>Emoji</span>
+                    </button>
+                  </div>
                   <span className="text-[10px] font-mono">{caption.length} / 280</span>
                 </div>
                 <textarea
@@ -486,6 +504,19 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
                   rows={3}
                   className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500 leading-relaxed resize-none"
                   style={getStoryFontStyle(reelFont)}
+                />
+
+                <UniversalEmojiGifPicker
+                  isOpen={showEmojiPicker}
+                  onClose={() => setShowEmojiPicker(false)}
+                  position="modal"
+                  onSelectEmoji={(emoji) => {
+                    setCaption((prev) => (prev + emoji).slice(0, 280));
+                  }}
+                  onSelectGif={(gifUrl) => {
+                    setCaption((prev) => (prev + ' ' + gifUrl).slice(0, 280));
+                    setShowEmojiPicker(false);
+                  }}
                 />
 
                 {/* ── 10 GOATED TYPOGRAPHY STYLES ── */}

@@ -63,7 +63,8 @@ import {
   ExternalLink,
   ChevronLeft,
   ArrowLeft,
-  Zap
+  Zap,
+  Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
@@ -1033,6 +1034,39 @@ export function ZenChatMesh() {
     setMessageText('');
     setReplyingTo(null);
     setShowEmojiPicker(false);
+  };
+
+  const chatFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleChatFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const isVideo = file.type.startsWith('video');
+      const reader = new FileReader();
+      reader.onload = (loadEvt) => {
+        if (loadEvt.target?.result) {
+          const mediaUrl = loadEvt.target.result as string;
+          const myRole = currentUserUsername === 'yuveer' ? '👑 FOUNDER' : 'DELEGATE';
+          sendMessage(
+            isVideo ? `📹 Shared a video (${file.name})` : `🖼️ Shared a photo (${file.name})`,
+            [{
+              type: isVideo ? 'video' : 'image',
+              url: mediaUrl,
+              name: file.name
+            }],
+            replyingTo ? {
+              id: replyingTo.id,
+              senderName: replyingTo.senderName,
+              snippet: replyingTo.content.slice(0, 80),
+            } : undefined,
+            currentChatContextId,
+            myRole
+          );
+        }
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
   };
 
   /* Start Voice Note Recording */
@@ -3206,6 +3240,22 @@ export function ZenChatMesh() {
                 >
                   <Sparkles className="w-4 h-4" />
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => chatFileInputRef.current?.click()}
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-neutral-400 hover:text-cyan-300 transition-all duration-150 cursor-pointer shadow-sm"
+                  title="Upload Image or Video from Device"
+                >
+                  <Upload className="w-4 h-4 text-cyan-400" />
+                </button>
+                <input
+                  ref={chatFileInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={handleChatFileUpload}
+                />
               </div>
 
               {/* Main Text Input Field */}

@@ -1,19 +1,23 @@
-﻿'use client';
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit3, HelpCircle, FileText, Sparkles, Scale, Send, Image as ImageIcon } from 'lucide-react';
+import { Edit3, HelpCircle, FileText, Sparkles, Scale, Send, Image as ImageIcon, Smile, X, Film, Upload } from 'lucide-react';
+import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
 
 export type PostMode = 'WRITE' | 'ASK' | 'REPORT' | 'CREATE' | 'DEBATE';
 
 interface SpatialPostComposerProps {
-  onPublish?: (post: { mode: PostMode; title: string; content: string }) => void;
+  onPublish?: (post: { mode: PostMode; title: string; content: string; images?: string[] }) => void;
 }
 
 export function SpatialPostComposer({ onPublish }: SpatialPostComposerProps) {
   const [activeMode, setActiveMode] = useState<PostMode>('WRITE');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [mediaList, setMediaList] = useState<string[]>([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modes: { key: PostMode; label: string; icon: any; color: string; placeholder: string }[] = [
     { key: 'WRITE', label: 'WRITE', icon: Edit3, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30', placeholder: 'Draft your perspective, essay, or youth dispatch...' },
@@ -25,14 +29,36 @@ export function SpatialPostComposer({ onPublish }: SpatialPostComposerProps) {
 
   const currentModeInfo = modes.find((m) => m.key === activeMode) || modes[0];
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (loadEvt) => {
+          if (loadEvt.target?.result) {
+            setMediaList((prev) => [...prev, loadEvt.target!.result as string]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = '';
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() && mediaList.length === 0) return;
     if (onPublish) {
-      onPublish({ mode: activeMode, title: title.trim(), content: content.trim() });
+      onPublish({ 
+        mode: activeMode, 
+        title: title.trim(), 
+        content: content.trim(), 
+        images: mediaList 
+      });
     }
     setTitle('');
     setContent('');
+    setMediaList([]);
   };
 
   return (
@@ -89,23 +115,88 @@ export function SpatialPostComposer({ onPublish }: SpatialPostComposerProps) {
           className="w-full px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.08] text-sm text-neutral-200 font-outfit placeholder:text-neutral-600 focus:outline-none focus:border-white/20 resize-none leading-relaxed"
         />
 
+        {/* Uploaded Media Preview Tray */}
+        {mediaList.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto py-2 no-scrollbar">
+            {mediaList.map((media, idx) => {
+              const isVideo = media.startsWith('data:video') || media.includes('.mp4') || media.includes('.webm') || media.includes('.mov');
+              return (
+                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-white/20 shrink-0 bg-black/60 group">
+                  {isVideo ? (
+                    <video src={media} className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={media} alt="Upload Preview" className="w-full h-full object-cover" />
+                  )}
+                  {isVideo && (
+                    <div className="absolute bottom-1 left-1 px-1 py-0.5 rounded bg-black/80 text-[8px] font-mono text-cyan-300 flex items-center gap-0.5">
+                      <Film className="w-2.5 h-2.5" />
+                      <span>VID</span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setMediaList((prev) => prev.filter((_, i) => i !== idx))}
+                    className="absolute top-1 right-1 p-0.5 rounded-full bg-black/80 hover:bg-rose-600 text-white transition cursor-pointer"
+                    title="Remove media"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-2 text-neutral-500">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+
+            {/* Root Upload Media (Image / Video) */}
             <button
               type="button"
-              className="p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-neutral-400 hover:text-white transition"
-              title="Attach Media / Citations"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono cursor-pointer"
+              title="Upload Image or Video from Device"
             >
-              <ImageIcon className="w-4 h-4" />
+              <Upload className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Upload Media</span>
             </button>
-            <span className="font-mono text-[10px] text-neutral-500">
-              ZERO ALGORITHMIC BIAS
-            </span>
+
+            {/* Emojis & GIPHY GIFs Picker */}
+            <button
+              type="button"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono cursor-pointer"
+              title="World Emojis & GIPHY GIFs"
+            >
+              <Smile className="w-3.5 h-3.5 text-amber-400" />
+              <span>GIF &amp; Emoji</span>
+            </button>
+
+            <UniversalEmojiGifPicker
+              isOpen={showEmojiPicker}
+              onClose={() => setShowEmojiPicker(false)}
+              position="modal"
+              onSelectEmoji={(emoji) => {
+                setContent((prev) => prev + emoji);
+              }}
+              onSelectGif={(gifUrl) => {
+                setMediaList((prev) => [...prev, gifUrl]);
+                setShowEmojiPicker(false);
+              }}
+            />
           </div>
 
           <button
             type="submit"
-            disabled={!content.trim()}
+            disabled={!content.trim() && mediaList.length === 0}
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-mono font-bold text-xs hover:bg-neutral-200 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-md cursor-pointer"
           >
             <span>BROADCAST</span>

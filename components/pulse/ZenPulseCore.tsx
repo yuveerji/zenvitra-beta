@@ -850,10 +850,10 @@ export function ZenPulseCore() {
 
                     {/* 2. Multi-Mode Spatial Post Composer (The Primary Dispatch Studio) */}
                     <SpatialPostComposer
-                      onPublish={({ mode, title, content }) => {
+                      onPublish={({ mode, title, content, images }) => {
                         createPost(
                           title ? `${title}\n\n${content}` : content,
-                          [],
+                          images || [],
                           mode === 'DEBATE' ? 'Parliamentary Chamber' : 'Universal Mesh',
                           mode === 'DEBATE' ? ['#debate', '#resolution'] : ['#pulse']
                         );

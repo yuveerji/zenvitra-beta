@@ -518,6 +518,20 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
     reader.readAsDataURL(file);
   };
 
+  const handleBackdropVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setEditVideoUrl(reader.result);
+        setEditBgType('video');
+        showToast('Backdrop video loaded from root device!');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -2369,15 +2383,29 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 </div>
 
                 {editBgType === 'video' && (
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-zinc-400 uppercase">Looping Video URL (.mp4)</label>
-                    <input
-                      type="text"
-                      value={editVideoUrl}
-                      onChange={(e) => setEditVideoUrl(e.target.value)}
-                      placeholder="https://assets.mixkit.co/.../video.mp4"
-                      className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:border-cyan-400 outline-none"
-                    />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-mono text-zinc-400 uppercase block mb-1">Looping Backdrop Video</label>
+                    <div className="flex items-center gap-3">
+                      <label className="flex-1 py-2 px-3 rounded-xl bg-neutral-950 hover:bg-neutral-900 border border-neutral-800 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2">
+                        <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>{editVideoUrl ? 'Change Video from Device' : 'Upload Video from Device'}</span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={handleBackdropVideoUpload}
+                          className="hidden"
+                        />
+                      </label>
+                      {editVideoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setEditVideoUrl('')}
+                          className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -2771,13 +2799,20 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                       />
                     </label>
                   </div>
-                  <input
-                    type="text"
-                    value={newBlockAudioUrl}
-                    onChange={(e) => setNewBlockAudioUrl(e.target.value)}
-                    placeholder="Direct audio preview URL (.mp3) or choose from device"
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-mono"
-                  />
+                  {newBlockAudioUrl ? (
+                    <div className="flex items-center justify-between text-xs font-mono text-cyan-300 bg-neutral-950 px-3 py-2 rounded-xl border border-cyan-500/30">
+                      <span className="truncate">Audio track loaded from device</span>
+                      <button
+                        type="button"
+                        onClick={() => setNewBlockAudioUrl('')}
+                        className="text-rose-400 hover:underline ml-2 shrink-0 cursor-pointer text-[11px]"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] font-mono text-zinc-500 italic">No audio loaded yet. Click Upload above to pick an MP3/WAV from your device.</p>
+                  )}
                 </div>
               )}
 

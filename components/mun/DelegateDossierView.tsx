@@ -20,7 +20,8 @@ import {
   Search,
   Filter,
   FileText,
-  FileCheck
+  FileCheck,
+  Upload
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
 import { useAuth } from '@/context/AuthContext';
@@ -442,16 +443,40 @@ export function DelegateDossierView({ userHandle, isOwner = true }: DelegateDoss
             <form onSubmit={handleQuickVerifySubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-mono uppercase text-zinc-400 font-semibold block">
-                  Certificate Scan / Drive URL
+                  Certificate Scan / Verification Proof
                 </label>
-                <input
-                  type="url"
-                  value={verifyUrlInput}
-                  onChange={(e) => setVerifyUrlInput(e.target.value)}
-                  placeholder="https://drive.google.com/file/..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white/30"
-                  required
-                />
+                <div className="flex items-center gap-2">
+                  <label className="flex-1 py-2 px-3 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2">
+                    <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>{verifyUrlInput ? 'Change Certificate File' : 'Upload Certificate / Scan File'}</span>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            if (typeof reader.result === 'string') {
+                              setVerifyUrlInput(reader.result);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  {verifyUrlInput && (
+                    <button
+                      type="button"
+                      onClick={() => setVerifyUrlInput('')}
+                      className="text-xs font-mono text-rose-400 hover:underline cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1.5">
