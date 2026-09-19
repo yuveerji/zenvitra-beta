@@ -110,7 +110,7 @@ export async function registerDelegate(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        targetTab: 'ZEN_DIPLOMACY_MUN',
+        targetTab: 'ZEN DIPLOMACY MUN',
         data: {
           action: 'NEW_DELEGATE_REGISTRATION',
           registrationId: newReg.id,
@@ -229,7 +229,7 @@ export async function allocatePortfolioAndNotify(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        targetTab: 'ZEN_DIPLOMACY_MUN',
+        targetTab: 'ZEN DIPLOMACY MUN',
         data: {
           action: 'ALLOCATE_PORTFOLIO',
           registrationId: updatedRecord.id,

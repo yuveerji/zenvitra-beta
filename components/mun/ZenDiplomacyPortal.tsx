@@ -442,7 +442,7 @@ export function ZenDiplomacyPortal() {
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] font-bold uppercase tracking-wider">
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Live Google Sheet Ledger &bull; Tab: ZEN_DIPLOMACY_MUN</span>
+                <span>Live Google Sheet Ledger &bull; Tab: ZEN DIPLOMACY MUN</span>
               </div>
               <h2 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">
                 Official Portfolio Matrix &amp; Allotment Tracker
@@ -476,23 +476,25 @@ export function ZenDiplomacyPortal() {
           </div>
 
           {/* Matrix Allotment Guidelines Ribbon */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-white/10 font-mono text-xs">
-            <div className="flex items-start gap-2.5 text-neutral-300">
-              <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</div>
-              <span>View live sheet to identify available portfolios across AIPPM, Edu Ministry, UNESCO, &amp; UNSC.</span>
-            </div>
-            <div className="flex items-start gap-2.5 text-neutral-300">
-              <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</div>
-              <span>Submit your top preferences through the registration portal on this page.</span>
-            </div>
-            <div className="flex items-start gap-2.5 text-neutral-300">
-              <div className="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</div>
-              <span>Upon allocation, Google Sheets updates and an instant notification alerts your bell.</span>
+          <div className="border-y border-white/10 py-5 sm:py-6 my-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 font-mono text-xs">
+              <div className="flex items-center gap-3 text-neutral-300">
+                <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-[11px] shrink-0">1</div>
+                <span className="leading-snug">View live sheet to identify available portfolios across AIPPM, Edu Ministry, UNESCO, &amp; UNSC.</span>
+              </div>
+              <div className="flex items-center gap-3 text-neutral-300">
+                <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-bold text-[11px] shrink-0">2</div>
+                <span className="leading-snug">Submit your top preferences through the registration portal on this page.</span>
+              </div>
+              <div className="flex items-center gap-3 text-neutral-300">
+                <div className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-400 flex items-center justify-center font-bold text-[11px] shrink-0">3</div>
+                <span className="leading-snug">Upon allocation, Google Sheets updates and an instant notification alerts your bell.</span>
+              </div>
             </div>
           </div>
 
           {/* ── 2.A: INTERACTIVE DELEGATE ALLOCATION STATUS CHECKER ── */}
-          <div className="pt-6 border-t border-white/10 space-y-4">
+          <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-white font-display font-bold text-lg flex items-center gap-2">
@@ -678,7 +680,7 @@ export function ZenDiplomacyPortal() {
                     <span>Real-Time Allotment &amp; GSheet Webhook Trigger</span>
                   </div>
                   <p className="text-xs text-neutral-300 font-sans">
-                    Assigning a portfolio updates the sovereign ledger, writes to Google Sheets (tab <strong className="text-emerald-400">ZEN_DIPLOMACY_MUN</strong>), and sends an instantaneous high-priority notification to the delegate&apos;s notification bell.
+                    Assigning a portfolio updates the sovereign ledger, writes to Google Sheets (tab <strong className="text-emerald-400">ZEN DIPLOMACY MUN</strong>), and sends an instantaneous high-priority notification to the delegate&apos;s notification bell.
                   </p>
                 </div>
 
@@ -1182,7 +1184,7 @@ export function ZenDiplomacyPortal() {
                 <div className="space-y-1">
                   <h4 className="font-display font-bold text-lg text-white">Registration Successfully Recorded!</h4>
                   <p className="text-xs text-neutral-300 max-w-md mx-auto">
-                    Your preferences have been logged on the sovereign ledger and synchronized to Google Sheets (<strong className="text-emerald-300">ZEN_DIPLOMACY_MUN</strong>). The Secretariat will assign your portfolio. Once allocated, you will receive a real-time notification in your bell!
+                    Your preferences have been logged on the sovereign ledger and synchronized to Google Sheets (<strong className="text-emerald-300">ZEN DIPLOMACY MUN</strong>). The Secretariat will assign your portfolio. Once allocated, you will receive a real-time notification in your bell!
                   </p>
                 </div>
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
