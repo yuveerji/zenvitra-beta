@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { ZenForm } from '@/types/forms';
+import { DEFAULT_ZEN_FORMS } from '@/lib/formsStorage';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,18 @@ export async function GET() {
         ...f,
         submissionsCount: Math.max(f.submissionsCount || 0, diskCount)
       };
+    });
+
+    // Merge default sovereign templates (Delegate & Secretariat)
+    DEFAULT_ZEN_FORMS.forEach((def) => {
+      const exists = enriched.some((f) => f.id === def.id || f.slug === def.slug);
+      if (!exists) {
+        const diskCount = getSubmissionsCount(def.id);
+        enriched.unshift({
+          ...def,
+          submissionsCount: Math.max(def.submissionsCount || 0, diskCount),
+        });
+      }
     });
 
     return NextResponse.json({ success: true, forms: enriched });

@@ -419,6 +419,14 @@ export default function SecretariatPage() {
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back to MUN Portal</span>
                 </Link>
+                <Link
+                  href="/forms/zen-secretariat-2026"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-xs text-purple-300 font-mono transition"
+                  title="Direct ZenForm Application URL"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Direct ZenForm Link</span>
+                </Link>
                 <span className="px-3 py-1 rounded-full bg-[#e2f952]/15 text-[#e2f952] border border-[#e2f952]/30 text-xs font-mono font-bold uppercase tracking-wider">
                   SECRETARIAT CORPS 2026
                 </span>

@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     const targetTab = mapTabToTarget(rawTab);
     const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
-    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
+    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
     const webhookUrl = targetTab === 'SECRETARIAT' 
       ? SECRETARIAT_WEBHOOK_URL 
       : (process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL);
@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
     const tab = searchParams.get('tab') || 'Register Data Core';
     const action = searchParams.get('action') || 'GET_DATA';
     const query = searchParams.get('q') || '';
-    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
+    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
     const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
 
     if (webhookUrl) {

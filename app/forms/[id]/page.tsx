@@ -38,7 +38,8 @@ import {
   ChevronRight,
   QrCode,
   Ticket,
-  ShieldCheck
+  ShieldCheck,
+  Crown
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { registerDelegate } from '@/lib/zenDiplomacyService';
@@ -377,9 +378,10 @@ export default function ZenFormPublicPage() {
       }
 
       // Background dispatch to Google Sheets webhook
-      if (form.googleSheetsConfig?.webhookUrl && form.settings?.autoForwardSheets !== false) {
+      const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
+      if (webhookUrl && form.settings?.autoForwardSheets !== false) {
         try {
-          fetch(form.googleSheetsConfig.webhookUrl, {
+          fetch(webhookUrl, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
@@ -389,7 +391,8 @@ export default function ZenFormPublicPage() {
               formTitle: form.title,
               timestamp: new Date().toISOString(),
               submitterHandle: submitter,
-              sheetTab: form.googleSheetsConfig.sheetTab || 'ZenForms',
+              sheetTab: form.googleSheetsConfig?.sheetTab || (form.id.includes('secretariat') ? 'Secretariat Applications' : 'ZEN DIPLOMACY MUN'),
+              targetTab: form.googleSheetsConfig?.sheetTab || (form.id.includes('secretariat') ? 'Secretariat Applications' : 'ZEN DIPLOMACY MUN'),
               ...formData,
             }),
           }).catch(() => {});
@@ -729,6 +732,39 @@ export default function ZenFormPublicPage() {
                     <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
                       {form.description}
                     </p>
+                  )}
+
+                  {/* Cross-Link Ribbon between Delegate and Secretariat forms */}
+                  {form.slug === 'zen-diplomacy-2026' && (
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-2xl bg-purple-500/10 border border-purple-500/25 text-xs text-purple-200">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-purple-400 shrink-0" />
+                        <span>Applying for the <strong>Secretariat or Executive Board</strong> instead?</span>
+                      </div>
+                      <Link
+                        href="/forms/zen-secretariat-2026"
+                        className="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-mono text-[11px] font-bold border border-purple-500/40 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Open Secretariat Form</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  )}
+
+                  {form.slug === 'zen-secretariat-2026' && (
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>Looking for <strong>Delegate Committee Registration</strong> instead?</span>
+                      </div>
+                      <Link
+                        href="/forms/zen-diplomacy-2026"
+                        className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-mono text-[11px] font-bold border border-amber-500/40 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Open Delegate Form</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
                   )}
 
                   {/* Top Step Headings Ribbon for Step 1 */}

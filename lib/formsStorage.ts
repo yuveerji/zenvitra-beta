@@ -36,9 +36,21 @@ export function getPublicForms(): ZenForm[] {
           !f.slug?.includes('jharokha') &&
           !f.slug?.includes('horizon')
       );
-      if (cleaned.length !== parsed.length) {
-        localStorage.setItem(LS_FORMS_KEY, JSON.stringify(cleaned));
-      }
+      // Guarantee that all default sovereign forms (Delegate & Secretariat) are always present & updated
+      DEFAULT_ZEN_FORMS.forEach((defForm) => {
+        const foundIdx = cleaned.findIndex((f) => f.id === defForm.id || f.slug === defForm.slug);
+        if (foundIdx === -1) {
+          cleaned.push(defForm);
+        } else {
+          // Merge latest template code attributes while preserving user submission count
+          cleaned[foundIdx] = {
+            ...defForm,
+            submissionsCount: Math.max(cleaned[foundIdx].submissionsCount || 0, defForm.submissionsCount || 0),
+          };
+        }
+      });
+
+      localStorage.setItem(LS_FORMS_KEY, JSON.stringify(cleaned));
       return cleaned;
     }
     return DEFAULT_ZEN_FORMS;

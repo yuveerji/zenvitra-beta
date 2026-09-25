@@ -20,6 +20,7 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
   googleSheetsConfig: {
     isConnected: true,
     sheetTab: 'ZEN DIPLOMACY MUN',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec',
     autoSync: true,
     sheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit'
   },
