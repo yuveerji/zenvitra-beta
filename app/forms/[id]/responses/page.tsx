@@ -87,7 +87,7 @@ export default function ZenFormsPublicResponsesPage() {
   const custom = form?.customStyle || {};
   const accentColor = custom.accentColor || defaultAccents[form?.theme || 'amber'] || '#f59e0b';
   const accentTextColor = custom.accentTextColor || '#000000';
-  const displayFont = getFontCssFamily(custom.displayFont || 'Space Grotesk');
+  const displayFont = getFontCssFamily(custom.displayFont || 'Clash Display');
   const bodyFont = getFontCssFamily(custom.bodyFont || 'Inter');
 
   // Calculate Quiz Statistics if applicable
@@ -168,7 +168,7 @@ export default function ZenFormsPublicResponsesPage() {
       />
 
       {/* Top Header Navigation Bar */}
-      <header className="max-w-4xl mx-auto w-full z-10 flex items-center justify-between pb-6 sm:pb-8 border-b border-white/10">
+      <header className="max-w-4xl lg:max-w-5xl mx-auto w-full z-10 flex items-center justify-between pb-6 sm:pb-8 border-b border-white/10 px-2 sm:px-0">
         <div className="flex items-center gap-3">
           <Link
             href={`/forms/${form.slug || form.id}`}
@@ -238,7 +238,7 @@ export default function ZenFormsPublicResponsesPage() {
       </header>
 
       {/* Main Analytics Content */}
-      <main className="max-w-4xl mx-auto w-full z-10 py-8 space-y-6">
+      <main className="max-w-4xl lg:max-w-5xl mx-auto w-full z-10 py-8 space-y-6">
         {/* Overview Stats Card */}
         <div className="p-6 sm:p-8 rounded-3xl bg-[#0e111a]/90 backdrop-blur-xl border border-white/10 shadow-2xl relative overflow-hidden">
           {/* Accent border strip */}

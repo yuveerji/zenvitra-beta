@@ -35,7 +35,7 @@ export const ZEN_FORM_FONTS: FontOption[] = [
   {
     name: 'Clash Display',
     category: 'Expressive / Headline',
-    cssFamily: "'Clash Display', sans-serif",
+    cssFamily: "'Clash Display', var(--font-space), -apple-system, sans-serif",
     previewSample: 'Bold Editorial Punch',
   },
   {

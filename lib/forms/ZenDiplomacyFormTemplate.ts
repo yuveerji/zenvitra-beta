@@ -24,7 +24,7 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     sheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit'
   },
   customStyle: {
-    displayFont: 'Syne',
+    displayFont: 'Clash Display',
     bodyFont: 'Space Grotesk',
     accentColor: '#f59e0b',
     cardStyle: 'glass-deep',

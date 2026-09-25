@@ -24,7 +24,7 @@ export const ZEN_SECRETARIAT_2026_FORM_TEMPLATE: ZenForm = {
     autoSync: true
   },
   customStyle: {
-    displayFont: 'Syne',
+    displayFont: 'Clash Display',
     bodyFont: 'Space Grotesk',
     accentColor: '#a855f7',
     cardStyle: 'glass-deep',

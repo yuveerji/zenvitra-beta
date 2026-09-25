@@ -221,7 +221,7 @@ export default function ZenFormPublicPage() {
 
   // Custom typography and styling
   const custom = form.customStyle || {};
-  const displayFont = getFontCssFamily(custom.displayFont || 'Space Grotesk');
+  const displayFont = getFontCssFamily(custom.displayFont || 'Clash Display');
   const bodyFont = getFontCssFamily(custom.bodyFont || 'Inter');
   const accentColor = custom.accentColor || currentTheme.accentHex;
   const accentTextColor = custom.accentTextColor || currentTheme.accentText;
@@ -479,7 +479,7 @@ export default function ZenFormPublicPage() {
       )}
 
       {/* ── Top Header Bar ── */}
-      <div className="max-w-2xl mx-auto w-full flex items-center justify-between py-4 border-b border-white/10 relative z-10">
+      <div className="max-w-4xl lg:max-w-5xl mx-auto w-full flex items-center justify-between py-4 border-b border-white/10 relative z-10 px-2 sm:px-0">
         <Link
           href="/forms"
           className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer"
@@ -515,14 +515,14 @@ export default function ZenFormPublicPage() {
       </div>
 
       {/* ── Main Form Box ── */}
-      <main className="max-w-2xl mx-auto w-full my-8 relative z-10 space-y-6">
+      <main className="max-w-4xl lg:max-w-5xl mx-auto w-full my-6 sm:my-8 relative z-10 space-y-6">
         
         {form.acceptingResponses === false ? (
           <div className={`p-8 sm:p-12 ${borderRadiusClass} ${getCardStyleClasses()} text-center space-y-4`}>
             <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center mx-auto">
               <Lock className="w-6 h-6" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white" style={{ fontFamily: displayFont }}>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight" style={{ fontFamily: displayFont }}>
               This form is no longer accepting responses
             </h2>
             <p className="text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
@@ -552,7 +552,7 @@ export default function ZenFormPublicPage() {
 
             <div className="space-y-2">
               <h2
-                className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
+                className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight"
                 style={{ fontFamily: displayFont }}
               >
                 Submission Confirmed
@@ -719,7 +719,7 @@ export default function ZenFormPublicPage() {
                   </div>
 
                   <h1
-                    className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight"
+                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]"
                     style={{ fontFamily: displayFont }}
                   >
                     {form.title}
@@ -751,7 +751,7 @@ export default function ZenFormPublicPage() {
                         </span>
                       </div>
                       {sections[0].stepHeading.headingTitle && (
-                        <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight" style={{ fontFamily: displayFont }}>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight leading-snug" style={{ fontFamily: displayFont }}>
                           {sections[0].stepHeading.headingTitle}
                         </h2>
                       )}
@@ -785,7 +785,7 @@ export default function ZenFormPublicPage() {
                         </span>
                       </div>
                       <h2
-                        className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight"
+                        className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-snug"
                         style={{ fontFamily: displayFont }}
                       >
                         {sections[currentPageIndex].stepHeading?.headingTitle || sections[currentPageIndex]?.title}
@@ -816,7 +816,7 @@ export default function ZenFormPublicPage() {
                       </div>
 
                       <h2
-                        className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight"
+                        className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-snug"
                         style={{ fontFamily: displayFont }}
                       >
                         {sections[currentPageIndex]?.title}
@@ -1608,7 +1608,7 @@ export default function ZenFormPublicPage() {
       </main>
 
       {/* ── Sovereign Guarantee Footer ── */}
-      <div className="max-w-2xl mx-auto w-full text-center py-6 text-[11px] font-mono text-neutral-500 border-t border-white/10 relative z-10">
+      <div className="max-w-4xl lg:max-w-5xl mx-auto w-full text-center py-6 text-[11px] font-mono text-neutral-500 border-t border-white/10 relative z-10 px-2 sm:px-0">
         <span>Powered by <strong className="text-neutral-300">ZenForms</strong> &bull; The Sovereign Multilateral Intake Engine</span>
       </div>
 
