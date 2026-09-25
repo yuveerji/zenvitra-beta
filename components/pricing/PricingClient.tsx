@@ -1404,7 +1404,7 @@ export function PricingClient() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Link
-              href="/signup"
+              href="/register"
               className="px-8 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono text-xs font-bold transition shadow-[0_0_25px_rgba(6,182,212,0.4)] flex items-center gap-2"
             >
               <span>Join ZENVITRA Free</span>

@@ -100,6 +100,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, { status: 307 });
   }
 
+  // Handle /signup redirect to /register (canonical registration route)
+  if (pathname === '/signup' || pathname.startsWith('/signup/')) {
+    const registerUrl = new URL('/register', request.url);
+    registerUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(registerUrl, { status: 308 });
+  }
+
   // Countdown Launch Date: October 2, 2026, 14:00:00 IST (UTC+05:30)
   const LAUNCH_TIMESTAMP_MS = 1790930400000;
   const isPreReleasePeriod = Date.now() < LAUNCH_TIMESTAMP_MS;
