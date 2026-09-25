@@ -38,6 +38,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
+import { registerDelegate } from '@/lib/zenDiplomacyService';
 import { ZenForm, ZenFormTheme, ZenFormField } from '@/types/forms';
 import { useAuth } from '@/context/AuthContext';
 import { getFontCssFamily, CARD_BORDER_RADIUS_MAP } from '@/lib/formsThemes';
@@ -325,6 +326,31 @@ export default function ZenFormPublicPage() {
       const submitter = profile?.username || user?.email?.split('@')[0] || 'anonymous';
       const submission = await recordZenFormSubmission(form.id, formData, submitter);
       setSubmittedSubId(submission.id);
+
+      // If this is the ZEN.DIPLOMACY MUN delegate registration form, record in sovereign delegate ledger
+      const isMunForm = 
+        form.id === 'zen-diplomacy-2026-registration' ||
+        form.id === 'zen-diplomacy-2026' ||
+        form.slug === 'zen-diplomacy-2026' ||
+        form.category === 'MUN_REGISTRATION' ||
+        (form.title && form.title.toLowerCase().includes('diplomacy'));
+
+      if (isMunForm) {
+        try {
+          await registerDelegate({
+            name: formData['step1_fullname'] || submitter || 'Delegate',
+            email: formData['step1_email'] || user?.email || '',
+            phone: formData['step1_phone'] || '',
+            institution: formData['step1_institution'] || '',
+            experienceLevel: formData['step2_experience_level'] || '',
+            firstCommitteeChoice: formData['step3_primary_committee'] || '',
+            secondCommitteeChoice: formData['step4_secondary_committee'] || '',
+            portfolioPreferences: formData['step5_portfolios'] || '',
+          });
+        } catch (munErr) {
+          console.warn('[MUN-REGISTRATION-AUTO-SYNC-WARN]', munErr);
+        }
+      }
 
       // Calculate Quiz score if Quiz mode
       if (form.settings?.isQuiz) {

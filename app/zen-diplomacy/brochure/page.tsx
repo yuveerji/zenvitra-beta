@@ -23,14 +23,35 @@ import {
 export default function ZenDiplomacyBrochurePage() {
   const [viewMode, setViewMode] = useState<'continuous' | 'deck'>('continuous');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
-  // Keyboard navigation for deck mode
+  const handlePrint = () => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      try {
+        iframeRef.current.contentWindow.focus();
+        iframeRef.current.contentWindow.print();
+        return;
+      } catch (e) {
+        console.error('Error invoking iframe print:', e);
+      }
+    }
+    window.open('/zen-diplomacy-brochure.html?print=true', '_blank');
+  };
+
+  // Keyboard navigation for deck mode & print intercept
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Intercept Ctrl+P / Cmd+P to always print full multi-page brochure
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        handlePrint();
+        return;
+      }
+
       if (viewMode !== 'deck') return;
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
         e.preventDefault();
-        setCurrentSlide((prev) => Math.min(prev + 1, 11));
+        setCurrentSlide((prev) => Math.min(prev + 1, 13));
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
         setCurrentSlide((prev) => Math.max(prev - 1, 0));
@@ -39,17 +60,13 @@ export default function ZenDiplomacyBrochurePage() {
         setCurrentSlide(0);
       } else if (e.key === 'End') {
         e.preventDefault();
-        setCurrentSlide(11);
+        setCurrentSlide(13);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewMode]);
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   return (
     <div className="min-h-screen bg-[#030407] text-white selection:bg-[#e2f952] selection:text-black">
@@ -136,12 +153,24 @@ export default function ZenDiplomacyBrochurePage() {
           {/* Print / Save PDF */}
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-bold px-3.5 py-1.5 rounded-full border border-white/15 transition-all shadow-sm hover:border-[#e2f952]/40"
-            title="Export or print entire document to PDF"
+            className="inline-flex items-center gap-2 bg-[#e2f952] hover:bg-[#d6f032] text-black text-xs font-mono font-bold px-3.5 py-1.5 rounded-full border border-[#e2f952] transition-all shadow-md shadow-[#e2f952]/20 hover:scale-105 cursor-pointer"
+            title="Download or Print all 14 pages as complete PDF"
           >
-            <Printer className="w-3.5 h-3.5 text-[#e2f952]" />
-            <span>Print PDF</span>
+            <Printer className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+            <span>Print PDF (All 14 Pages)</span>
           </button>
+
+          {/* Standalone Full-Tab Link */}
+          <a
+            href="/zen-diplomacy-brochure.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-medium px-3 py-1.5 rounded-full border border-white/15 transition-all hover:border-[#e2f952]/40"
+            title="Open document in dedicated tab"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">Full Tab</span>
+          </a>
 
           {/* Secretariat Link */}
           <Link
@@ -154,7 +183,7 @@ export default function ZenDiplomacyBrochurePage() {
           {/* Portal Link */}
           <Link
             href="/zen-diplomacy"
-            className="inline-flex items-center gap-1.5 bg-[#e2f952] hover:bg-[#d6f032] text-black text-xs font-sans font-bold px-4 py-1.5 rounded-full shadow-lg shadow-[#e2f952]/20 transition-all hover:scale-105"
+            className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-sans font-bold px-4 py-1.5 rounded-full border border-white/15 transition-all hover:border-[#e2f952]/40"
           >
             <span>Portal</span>
             <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -165,6 +194,7 @@ export default function ZenDiplomacyBrochurePage() {
       {/* ── EMBEDDED IFRAME OR DIRECT CLEAN VIEW ── */}
       <div className="w-full flex justify-center py-6 px-2 sm:px-6">
         <iframe 
+          ref={iframeRef}
           src="/zen-diplomacy-brochure.html" 
           title="ZEN.DIPLOMACY Brochure"
           className="w-full max-w-[960px] h-[calc(100vh-80px)] border-0 rounded-2xl shadow-2xl bg-black"

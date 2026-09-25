@@ -214,6 +214,22 @@
       box-shadow: 0 0 10px rgba(226, 249, 82, 0.4);
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .corner-seal {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--zen-lime);
+      box-shadow: 0 0 12px rgba(226, 249, 82, 0.4);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
     .page-header .page-index {
       font-weight: 800;
       color: var(--zen-lime);
@@ -797,8 +813,9 @@
 
       .prospectus-wrapper {
         padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
+        margin: 0 auto !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
         gap: 0 !important;
         display: block !important;
       }
@@ -811,10 +828,15 @@
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        min-height: 100vh !important;
-        padding: 38px 46px !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        padding: 36px 44px !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        overflow: hidden !important;
         background-color: #030407 !important;
       }
 
@@ -874,22 +896,17 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">01</div>
+          <div class="header-right">
+            <div class="page-index">01</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 34px; height: 34px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0; padding-top: 15px;">
-          <!-- ── PROMINENT OFFICIAL SEAL MEDALLION ── -->
-          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Official Seal" style="width: 100px; height: 100px; border-radius: 50%; border: 2.5px solid var(--zen-lime); box-shadow: 0 0 40px rgba(226, 249, 82, 0.4);" />
-            <div>
-              <div class="section-tag" style="margin-bottom: 4px;">OFFICIAL PROSPECTUS • 1ST EDITION</div>
-              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cbd5e1; letter-spacing: 0.14em;">ZENVITRA OFFICIAL DIPLOMATIC SEAL</div>
-            </div>
-          </div>
+          <div class="section-tag" style="margin-bottom: 18px;">OFFICIAL PROSPECTUS • 1ST EDITION</div>
           
           <h1 class="title-huge" style="font-size: 74px; margin-bottom: 12px; letter-spacing: -0.04em;">
             ZEN.<br>
@@ -933,11 +950,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">02</div>
+          <div class="header-right">
+            <div class="page-index">02</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -991,11 +1010,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">03</div>
+          <div class="header-right">
+            <div class="page-index">03</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1056,11 +1077,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">04</div>
+          <div class="header-right">
+            <div class="page-index">04</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1141,11 +1164,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">05</div>
+          <div class="header-right">
+            <div class="page-index">05</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1215,11 +1240,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">06</div>
+          <div class="header-right">
+            <div class="page-index">06</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1315,11 +1342,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">07</div>
+          <div class="header-right">
+            <div class="page-index">07</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1420,11 +1449,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">08</div>
+          <div class="header-right">
+            <div class="page-index">08</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1492,11 +1523,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">09</div>
+          <div class="header-right">
+            <div class="page-index">09</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1560,11 +1593,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">10</div>
+          <div class="header-right">
+            <div class="page-index">10</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1630,11 +1665,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">11</div>
+          <div class="header-right">
+            <div class="page-index">11</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1703,11 +1740,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">12</div>
+          <div class="header-right">
+            <div class="page-index">12</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1784,11 +1823,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">13</div>
+          <div class="header-right">
+            <div class="page-index">13</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0;">
@@ -1798,12 +1839,8 @@
             BUILT BY YOUTH.<br><span class="title-gold">FOR YOUTH.</span>
           </h2>
 
-          <!-- ── FOUNDATION SEAL HERO BADGE ── -->
-          <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 22px;">
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Official Seal" style="width: 105px; height: 105px; border-radius: 50%; border: 2.5px solid var(--zen-lime); box-shadow: 0 0 35px rgba(226, 249, 82, 0.35); flex-shrink: 0;" />
-            <div class="quote-lead" style="font-size: 18px; margin-bottom: 0; border-left: 4px solid var(--zen-lime); padding-left: 18px;">
-              ZENVITRA Foundation is a youth-driven platform built around creating spaces where young people can <strong style="color: var(--zen-lime);">Build • Connect • Preserve</strong>.
-            </div>
+          <div class="quote-lead" style="font-size: 19px; margin-bottom: 22px; border-left: 4px solid var(--zen-lime); padding-left: 20px;">
+            ZENVITRA Foundation is a youth-driven platform built around creating spaces where young people can <strong style="color: var(--zen-lime);">Build • Connect • Preserve</strong>.
           </div>
 
           <p class="body-lead" style="margin-bottom: 22px;">
@@ -1855,11 +1892,13 @@
       <div class="page-content">
         <header class="page-header">
           <div class="brand">
-            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
-            ZENVITRA FOUNDATION
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 22px; height: 22px; object-fit: contain;" />
+            <span>ZENVITRA FOUNDATION</span>
           </div>
-          <div class="page-index">14</div>
+          <div class="header-right">
+            <div class="page-index">14</div>
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Diplomatic Seal" class="corner-seal" style="width: 26px; height: 26px;" />
+          </div>
         </header>
 
         <main style="margin: auto 0; padding-top: 15px;">
@@ -1916,5 +1955,16 @@
 
   </div>
 
+  <script>
+    // Handle auto-print query param
+    if (new URLSearchParams(window.location.search).get('print') === 'true') {
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          window.focus();
+          window.print();
+        }, 400);
+      });
+    }
+  </script>
 </body>
 </html>
