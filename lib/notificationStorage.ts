@@ -83,6 +83,13 @@ export function markAllNotificationsAsRead(): NotificationItem[] {
   return updated;
 }
 
+export function deleteStoredNotification(id: string): NotificationItem[] {
+  const current = getStoredNotifications();
+  const updated = current.filter((n) => n.id !== id);
+  saveStoredNotifications(updated);
+  return updated;
+}
+
 export function clearAllStoredNotifications(): NotificationItem[] {
   if (typeof window !== 'undefined') {
     try {

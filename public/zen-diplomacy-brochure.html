@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZEN.DIPLOMACY 2026 — Official Master Brochure & Itinerary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --bg-card: rgba(10, 14, 24, 0.86);
+      --bg-card-hover: rgba(16, 22, 38, 0.94);
+      --border-subtle: rgba(255, 255, 255, 0.16);
+      --border-accent: rgba(226, 249, 82, 0.55);
+      --border-gold: rgba(245, 158, 11, 0.6);
+      --text-white: #ffffff;
+      --text-muted: #cbd5e1;
+      --text-dim: #94a3b8;
+      --zen-lime: #e2f952;
+      --zen-gold: #f59e0b;
+      --zen-cyan: #38bdf8;
+      --zen-purple: #c084fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #030407;
+      color: var(--text-white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* ── ACTION BAR (FLOATING CONTROLS) ── */
+    .action-bar {
+      position: fixed;
+      top: 18px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(8, 12, 22, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(226, 249, 82, 0.15);
+    }
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      text-decoration: none;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--zen-lime);
+      color: var(--zen-lime);
+      transform: translateY(-1px);
+    }
+
+    .action-btn.primary {
+      background: var(--zen-lime);
+      color: #050811;
+      border-color: var(--zen-lime);
+    }
+
+    .action-btn.primary:hover {
+      background: #ffffff;
+      box-shadow: 0 0 25px rgba(226, 249, 82, 0.6);
+      transform: translateY(-2px);
+    }
+
+    /* ── PAGE CONTAINER (A4 PROPORTIONS) ── */
+    .prospectus-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 40px 16px 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .page {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1.4142; /* Strict A4 proportion */
+      min-height: 1140px;
+      background-color: var(--bg-dark);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 35px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 44px 52px 40px;
+    }
+
+    /* ── HIGH-VISIBILITY BACKGROUND IMAGE & GRADIENT ── */
+    .page-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      z-index: 1;
+      opacity: 0.82; /* RICH & VIVID VISIBILITY! */
+      filter: contrast(1.12) brightness(0.92);
+      transition: all 0.5s ease;
+    }
+
+    .page:hover .page-bg {
+      opacity: 0.90;
+      filter: contrast(1.15) brightness(0.98);
+      transform: scale(1.015);
+    }
+
+    .page-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: linear-gradient(180deg, 
+        rgba(5, 7, 12, 0.52) 0%, 
+        rgba(5, 7, 12, 0.70) 35%, 
+        rgba(5, 7, 12, 0.88) 75%, 
+        rgba(5, 7, 12, 0.96) 100%);
+      pointer-events: none;
+    }
+
+    .page-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.75);
+      pointer-events: none;
+    }
+
+    .page-grid-dots {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1.2px, transparent 1.2px);
+      background-size: 32px 32px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    /* Content container */
+    .page-content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    /* ── HEADER TELEMETRY ── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: rgba(8, 12, 20, 0.82);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    .page-header .brand {
+      color: #ffffff;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-seal {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid rgba(226, 249, 82, 0.6);
+      object-fit: cover;
+      box-shadow: 0 0 10px rgba(226, 249, 82, 0.4);
+    }
+
+    .page-header .page-index {
+      font-weight: 800;
+      color: var(--zen-lime);
+      background: rgba(226, 249, 82, 0.15);
+      border: 1px solid rgba(226, 249, 82, 0.4);
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    /* ── FOOTER TELEMETRY ── */
+    .page-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: rgba(8, 12, 20, 0.85);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .page-footer .tagline {
+      color: var(--zen-lime);
+      font-weight: 700;
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .section-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--zen-lime);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(226, 249, 82, 0.12);
+      border: 1px solid rgba(226, 249, 82, 0.35);
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+
+    .title-huge {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 58px;
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    }
+
+    .title-large {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      text-shadow: 0 3px 15px rgba(0, 0, 0, 0.8);
+    }
+
+    .title-gold {
+      background: linear-gradient(135deg, #ffffff 30%, var(--zen-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-lime {
+      color: var(--zen-lime);
+      text-shadow: 0 0 25px rgba(226, 249, 82, 0.4);
+    }
+
+    .quote-lead {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #f8fafc;
+      margin-bottom: 22px;
+      max-width: 720px;
+      border-left: 4px solid var(--zen-lime);
+      padding: 12px 18px;
+      background: rgba(10, 14, 24, 0.75);
+      backdrop-filter: blur(12px);
+      border-radius: 0 10px 10px 0;
+    }
+
+    .body-lead {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #e2e8f0;
+      margin-bottom: 24px;
+      max-width: 720px;
+      background: rgba(10, 14, 24, 0.65);
+      backdrop-filter: blur(8px);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border-left: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* ── GLASS CARDS (LEGIBLE OVER VIVID IMAGERY) ── */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 22px 26px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75);
+      transition: all 0.25s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(226, 249, 82, 0.5);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .date-badge {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(10, 14, 24, 0.9);
+      border: 1px solid rgba(226, 249, 82, 0.45);
+      padding: 16px 24px;
+      border-radius: 12px;
+      margin-top: 14px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .date-badge .date {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .date-badge .badge-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--zen-lime);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ── TIMELINE TABLE (SCHEDULE / ITINERARY) ── */
+    .itinerary-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .itinerary-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 11px 18px;
+      background: rgba(10, 14, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      backdrop-filter: blur(16px);
+      transition: all 0.2s ease;
+    }
+
+    .itinerary-row:hover {
+      border-color: rgba(226, 249, 82, 0.4);
+      background: rgba(18, 24, 38, 0.95);
+      transform: translateX(4px);
+    }
+
+    .itinerary-row.highlight {
+      border: 1px solid rgba(226, 249, 82, 0.5);
+      background: rgba(226, 249, 82, 0.08);
+    }
+
+    .itinerary-row.zen-jam-row {
+      border: 1px solid rgba(192, 132, 252, 0.5);
+      background: linear-gradient(90deg, rgba(192, 132, 252, 0.12) 0%, rgba(10, 14, 24, 0.9) 100%);
+    }
+
+    .itinerary-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--zen-lime);
+      min-width: 155px;
+      letter-spacing: 0.04em;
+    }
+
+    .itinerary-time.alt {
+      color: var(--zen-gold);
+    }
+
+    .itinerary-desc {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .itinerary-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-left: auto;
+    }
+
+    /* ── STAGES FLOW BAR ── */
+    .stages-flow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(10, 14, 24, 0.9);
+      border: 1px solid rgba(226, 249, 82, 0.35);
+      border-radius: 12px;
+      margin-top: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .stages-flow .arrow {
+      color: var(--zen-lime);
+      font-weight: 900;
+    }
+
+    /* ── ZEN JAM FEATURE BOX ── */
+    .zen-jam-box {
+      background: linear-gradient(135deg, rgba(192, 132, 252, 0.15) 0%, rgba(10, 14, 24, 0.92) 100%);
+      border: 1px solid rgba(192, 132, 252, 0.45);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-top: 16px;
+      box-shadow: 0 15px 35px rgba(192, 132, 252, 0.15);
+    }
+
+    .zen-jam-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .zen-jam-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--zen-purple);
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
+    }
+
+    .zen-jam-desc {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+
+    .zen-jam-modes {
+      display: flex;
+      gap: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .zen-jam-modes .mode-off {
+      color: #f87171;
+    }
+
+    .zen-jam-modes .mode-on {
+      color: var(--zen-lime);
+    }
+
+    /* ── COMMITTEE CARDS ── */
+    .committee-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin: 16px 0;
+    }
+
+    .committee-card {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 18px 22px;
+      background: rgba(10, 14, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .committee-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--zen-lime);
+    }
+
+    .committee-abbr {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .committee-badge-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(226, 249, 82, 0.15);
+      color: var(--zen-lime);
+      border: 1px solid rgba(226, 249, 82, 0.35);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .committee-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--zen-lime);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .committee-desc {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    /* ── PILLARS ── */
+    .pillar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .pillar-item {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      padding: 14px 18px;
+      background: rgba(10, 14, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      backdrop-filter: blur(14px);
+    }
+
+    .pillar-term {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--zen-lime);
+      min-width: 140px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pillar-desc {
+      font-size: 14px;
+      color: #e2e8f0;
+    }
+
+    /* ── NUMBERED REASONS GRID ── */
+    .reasons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .reason-box {
+      padding: 18px 20px;
+      background: rgba(10, 14, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+    }
+
+    .reason-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--zen-lime);
+      margin-bottom: 4px;
+      letter-spacing: 0.1em;
+    }
+
+    .reason-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .reason-text {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    /* ── ONLINE PERKS ── */
+    .perks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 22px 0;
+    }
+
+    .perk-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      background: rgba(10, 14, 24, 0.78);
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .perk-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(226, 249, 82, 0.18);
+      border: 1px solid var(--zen-lime);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--zen-lime);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── HIGHLIGHT CARD ── */
+    .highlight-card {
+      background: linear-gradient(135deg, rgba(226, 249, 82, 0.12) 0%, rgba(10, 14, 24, 0.92) 100%);
+      border: 1px solid rgba(226, 249, 82, 0.45);
+      padding: 20px 26px;
+      border-radius: 12px;
+      margin-top: 18px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    }
+
+    .highlight-card p {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1.6;
+      color: #f8fafc;
+      text-transform: uppercase;
+    }
+
+    /* ── ECOSYSTEM WRAP ── */
+    .ecosystem-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 24px;
+    }
+
+    .ecosystem-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(10, 14, 24, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    /* ── CTA ── */
+    .cta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .cta-link-box {
+      background: var(--zen-lime);
+      color: #050811;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(226, 249, 82, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .cta-link-box:hover {
+      background: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.35);
+    }
+
+    /* ── PRINT-SPECIFIC CSS (PERFECT FIDELITY) ── */
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      html, body {
+        background-color: #030407 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .action-bar {
+        display: none !important;
+      }
+
+      .prospectus-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        gap: 0 !important;
+        display: block !important;
+      }
+
+      .page {
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        padding: 38px 46px !important;
+        background-color: #030407 !important;
+      }
+
+      /* CRUCIAL: Solid dark high-contrast fallbacks for printer drivers that ignore backdrop-filter */
+      .glass-card, 
+      .itinerary-container, 
+      .itinerary-row, 
+      .zen-jam-box, 
+      .highlight-card, 
+      .matrix-box, 
+      .pillar-item, 
+      .page-header, 
+      .page-footer {
+        background-color: rgba(9, 13, 24, 0.94) !important;
+        border-color: rgba(255, 255, 255, 0.22) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .page-bg {
+        opacity: 0.86 !important;
+        filter: contrast(1.15) brightness(0.95) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .page-overlay {
+        background: linear-gradient(180deg, 
+          rgba(3, 4, 7, 0.48) 0%, 
+          rgba(3, 4, 7, 0.68) 35%, 
+          rgba(3, 4, 7, 0.86) 75%, 
+          rgba(3, 4, 7, 0.95) 100%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="prospectus-wrapper">
+
+    <!-- ══════════════════════════════════════════
+         PAGE 01 — COVER
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-1">
+      <img src="./assets/brochure/cover.jpg" alt="United Nations Assembly" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">01</div>
+        </header>
+
+        <main style="margin: auto 0; padding-top: 15px;">
+          <!-- ── PROMINENT OFFICIAL SEAL MEDALLION ── -->
+          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Official Seal" style="width: 100px; height: 100px; border-radius: 50%; border: 2.5px solid var(--zen-lime); box-shadow: 0 0 40px rgba(226, 249, 82, 0.4);" />
+            <div>
+              <div class="section-tag" style="margin-bottom: 4px;">OFFICIAL PROSPECTUS • 1ST EDITION</div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cbd5e1; letter-spacing: 0.14em;">ZENVITRA OFFICIAL DIPLOMATIC SEAL</div>
+            </div>
+          </div>
+          
+          <h1 class="title-huge" style="font-size: 74px; margin-bottom: 12px; letter-spacing: -0.04em;">
+            ZEN.<br>
+            <span class="title-gold">DIPLOMACY</span>
+          </h1>
+
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 800; color: var(--zen-lime); letter-spacing: 0.24em; text-transform: uppercase; margin-bottom: 28px;">
+            2026 — 1ST EDITION
+          </div>
+
+          <div style="font-family: 'Space Grotesk', sans-serif; font-size: 34px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; margin-bottom: 24px;">
+            A NEW ZEN BEGINS.
+          </div>
+
+          <div class="glass-card" style="display: inline-block; padding: 18px 28px; border-color: rgba(226, 249, 82, 0.5);">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #ffffff; letter-spacing: 0.1em;">
+              24–25 OCTOBER 2026 <span style="color: var(--zen-lime);">•</span> ONLINE MODEL UNITED NATIONS
+            </div>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" style="width: 18px; height: 18px; border-radius: 50%;" />
+            <span>Presented by ZENVITRA Foundation</span>
+          </div>
+          <div class="tagline">Build • Connect • Preserve</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 02 — 01 / THE BEGINNING
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-2">
+      <img src="./assets/brochure/beginning.jpg" alt="Diplomatic Gavel & Protocol" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">02</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">01 / THE BEGINNING</div>
+          
+          <h2 class="title-huge" style="margin-bottom: 20px;">
+            A NEW ZEN<br>BEGINS.
+          </h2>
+
+          <div class="quote-lead">
+            Diplomacy isn't just about speaking. It's about knowing when to speak, when to listen, and when to act.
+          </div>
+
+          <p class="body-lead">
+            ZEN.DIPLOMACY is ZENVITRA's flagship Model United Nations experience — built to bring together young minds from across schools and cities for two days of debate, negotiation, strategy and diplomacy.
+          </p>
+
+          <div class="glass-card" style="border-left: 4px solid var(--zen-lime); margin-bottom: 24px;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: #ffffff; line-height: 1.45;">
+              This isn't just another conference.<br>
+              <span style="color: var(--zen-lime);">It's where your voice enters the room.</span>
+            </div>
+          </div>
+
+          <div class="date-badge">
+            <span class="date">24–25 OCTOBER 2026</span>
+            <span class="badge-sub">ONLINE • COLLEGE &amp; SCHOOL DELEGATIONS AVAILABLE</span>
+          </div>
+
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cbd5e1; margin-top: 10px; letter-spacing: 0.05em;">
+            Online participation makes school and college students participation easier everywhere — the itinerary tells the rest.
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">02</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 03 — 02 / THE EXPERIENCE
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-3">
+      <img src="./assets/brochure/aippm.jpg" alt="All India Political Parties Meet Parliamentary Chamber" class="page-bg" style="object-position: center bottom; transform: scale(1.2); transform-origin: center bottom;" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">03</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">02 / THE EXPERIENCE</div>
+          
+          <h2 class="title-large" style="margin-bottom: 12px;">
+            MORE THAN A<br>COMMITTEE.
+          </h2>
+
+          <p class="body-lead" style="margin-bottom: 20px;">
+            At ZEN.DIPLOMACY, delegates aren't simply given a portfolio and a speech. They are challenged to think, adapt and lead.
+          </p>
+
+          <div class="pillar-list">
+            <div class="pillar-item">
+              <span class="pillar-term"><span style="color: var(--zen-lime);">●</span> DEBATE</span>
+              <span class="pillar-desc">Put your arguments to the test.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term"><span style="color: var(--zen-lime);">●</span> NEGOTIATE</span>
+              <span class="pillar-desc">Find common ground when none seems obvious.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term"><span style="color: var(--zen-lime);">●</span> STRATEGISE</span>
+              <span class="pillar-desc">Think beyond your next speech.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term"><span style="color: var(--zen-lime);">●</span> LEAD</span>
+              <span class="pillar-desc">Take initiative when the committee needs direction.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term"><span style="color: var(--zen-lime);">●</span> RESPOND</span>
+              <span class="pillar-desc">Adapt when the situation changes.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term"><span style="color: var(--zen-lime);">●</span> REPRESENT</span>
+              <span class="pillar-desc">Step into the shoes of decision-makers.</span>
+            </div>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">03</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 04 — 03 / THE COMMITTEES
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-4">
+      <img src="./assets/brochure/chamber.jpg" alt="Diplomatic Chamber with Seated EB Dais" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">04</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">03 / THE COMMITTEES</div>
+          
+          <h2 class="title-large" style="margin-bottom: 10px;">
+            ENTER THE ROOM.
+          </h2>
+
+          <p class="body-lead" style="margin-bottom: 16px;">
+            Five rooms. Different mandates. Different pressures. One question — <strong style="color: #fff;">what will you do when the decision is yours?</strong>
+          </p>
+
+          <div class="committee-grid">
+            <div class="committee-card">
+              <div class="committee-abbr">
+                AIPPM
+                <span class="committee-badge-tag">Indian Parliamentary</span>
+              </div>
+              <div class="committee-name">ALL INDIA POLITICAL PARTIES MEET</div>
+              <div class="committee-desc">Indian political decision-making, strategy and parliamentary confrontation.</div>
+              <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; font-family: 'JetBrains Mono', monospace; display: flex; flex-direction: column; gap: 3px;">
+                <span style="color: var(--zen-lime); font-weight: 700;">▸ RIGHT WING (TREASURY): Narendra Modi (PM), Amit Shah (HM), Rajnath Singh (DM) &amp; Union Cabinet</span>
+                <span style="color: #cbd5e1;">▸ LEFT WING (OPPOSITION): Leaders of Opposition, Left Parties &amp; Coalition Frontbenchers</span>
+                <span style="color: #94a3b8;">▸ PRESIDING EB: Speaker &amp; Deputy Speaker of Lok Sabha</span>
+              </div>
+            </div>
+
+            <div class="committee-card">
+              <div class="committee-abbr">
+                EMI
+                <span class="committee-badge-tag">National Policy</span>
+              </div>
+              <div class="committee-name">EDUCATION MINISTRY OF INDIA</div>
+              <div class="committee-desc">Policy, institutions, students and the future of Indian education.</div>
+            </div>
+
+            <div class="committee-card">
+              <div class="committee-abbr">
+                UNSC
+                <span class="committee-badge-tag">Global Security</span>
+              </div>
+              <div class="committee-name">UNITED NATIONS SECURITY COUNCIL</div>
+              <div class="committee-desc">International peace, security, conflict and strategic diplomacy.</div>
+            </div>
+
+            <div class="committee-card">
+              <div class="committee-abbr">
+                UNODC
+                <span class="committee-badge-tag">Global Justice</span>
+              </div>
+              <div class="committee-name">UNITED NATIONS OFFICE ON DRUGS AND CRIME</div>
+              <div class="committee-desc">Transnational crime, illicit networks and international cooperation.</div>
+            </div>
+          </div>
+
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cbd5e1; margin-top: 6px; letter-spacing: 0.05em;">
+            * Committee agendas and portfolio details are released through official ZENVITRA communication.
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">04</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 05 — 04 / AGENDAS
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-5">
+      <img src="./assets/brochure/beginning.jpg" alt="Official Treaty Dossiers and Agenda Protocols" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">05</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">04 / AGENDAS</div>
+          
+          <h2 class="title-large" style="margin-bottom: 12px;">
+            THE ISSUES THAT<br>MATTER.
+          </h2>
+
+          <p class="body-lead" style="margin-bottom: 20px;">
+            Concise, high-impact agendas designed to keep the focus on decisions, not paragraphs.
+          </p>
+
+          <div class="committee-grid">
+            <div class="glass-card" style="border-left: 4px solid var(--zen-lime); padding: 18px 24px;">
+              <div style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;">AIPPM</div>
+              <div style="font-size: 14px; color: var(--zen-lime); font-family: 'JetBrains Mono', monospace; font-weight: 600;">
+                Agenda to be announced in the official committee release.
+              </div>
+            </div>
+
+            <div class="glass-card" style="border-left: 4px solid var(--zen-lime); padding: 18px 24px;">
+              <div style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;">EMI</div>
+              <div style="font-size: 14px; color: var(--zen-lime); font-family: 'JetBrains Mono', monospace; font-weight: 600;">
+                Agenda to be announced in the official committee release.
+              </div>
+            </div>
+
+            <div class="glass-card" style="border-left: 4px solid var(--zen-lime); padding: 18px 24px;">
+              <div style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;">UNSC</div>
+              <div style="font-size: 14px; color: var(--zen-lime); font-family: 'JetBrains Mono', monospace; font-weight: 600;">
+                Agenda to be announced in the official committee release.
+              </div>
+            </div>
+
+            <div class="glass-card" style="border-left: 4px solid var(--zen-lime); padding: 18px 24px;">
+              <div style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px;">UNODC</div>
+              <div style="font-size: 14px; color: var(--zen-lime); font-family: 'JetBrains Mono', monospace; font-weight: 600;">
+                Agenda to be announced in the official committee release.
+              </div>
+            </div>
+          </div>
+
+          <div class="highlight-card" style="margin-top: 20px;">
+            <p style="font-size: 13px; line-height: 1.6; text-transform: none; color: #cbd5e1;">
+              Final agenda wording, portfolios and committee-specific rules will be communicated by ZENVITRA before the conference.
+            </p>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">05</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 06 [NEW] — ITINERARY: DAY 01
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-6">
+      <img src="./assets/brochure/beginning.jpg" alt="Day 01 Parliamentary Debates" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">06</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">CONFERENCE ITINERARY // 24 OCTOBER 2026</div>
+          
+          <h2 class="title-large" style="margin-bottom: 8px;">
+            DAY 01 — <span class="title-gold">THE ROOM OPENS</span>
+          </h2>
+
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--zen-lime); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px;">
+            24 OCTOBER 2026 • OFFICIAL SCHEDULE
+          </div>
+
+          <div class="itinerary-container">
+            <div class="itinerary-row">
+              <span class="itinerary-time">03:00 – 03:30 PM</span>
+              <span class="itinerary-desc">🔹 Delegate Check-In &amp; Technical Setup</span>
+              <span class="itinerary-tag">Onboarding</span>
+            </div>
+
+            <div class="itinerary-row highlight">
+              <span class="itinerary-time">03:30 – 04:00 PM</span>
+              <span class="itinerary-desc">🎙️ Opening Ceremony</span>
+              <span class="itinerary-tag" style="background: rgba(226, 249, 82, 0.2); color: var(--zen-lime);">Assembly</span>
+            </div>
+
+            <div class="itinerary-row">
+              <span class="itinerary-time">04:00 – 05:15 PM</span>
+              <span class="itinerary-desc">🏛️ Committee Session I — The First Word</span>
+              <span class="itinerary-tag">Session 01</span>
+            </div>
+
+            <div class="itinerary-row" style="opacity: 0.85;">
+              <span class="itinerary-time alt">05:15 – 05:30 PM</span>
+              <span class="itinerary-desc">☕ Break</span>
+              <span class="itinerary-tag">Recess</span>
+            </div>
+
+            <div class="itinerary-row">
+              <span class="itinerary-time">05:30 – 06:45 PM</span>
+              <span class="itinerary-desc">🏛️ Committee Session II — Positions Collide</span>
+              <span class="itinerary-tag">Session 02</span>
+            </div>
+
+            <div class="itinerary-row" style="opacity: 0.85;">
+              <span class="itinerary-time alt">06:45 – 07:00 PM</span>
+              <span class="itinerary-desc">☕ Break</span>
+              <span class="itinerary-tag">Recess</span>
+            </div>
+
+            <div class="itinerary-row">
+              <span class="itinerary-time">07:00 – 08:00 PM</span>
+              <span class="itinerary-desc">🏛️ Committee Session III — The First Turn</span>
+              <span class="itinerary-tag">Session 03</span>
+            </div>
+
+            <div class="itinerary-row highlight" style="border-color: rgba(255, 255, 255, 0.25);">
+              <span class="itinerary-time" style="color: #fff;">08:00 PM</span>
+              <span class="itinerary-desc">🌙 DAY 01 CONCLUDES</span>
+              <span class="itinerary-tag" style="background: rgba(255, 255, 255, 0.15); color: #fff;">Adjournment</span>
+            </div>
+          </div>
+
+          <div class="stages-flow">
+            <span>Check-In</span>
+            <span class="arrow">→</span>
+            <span>Opening</span>
+            <span class="arrow">→</span>
+            <span>Debate</span>
+            <span class="arrow">→</span>
+            <span>Negotiation</span>
+            <span class="arrow">→</span>
+            <span style="color: var(--zen-lime);">First Developments</span>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">06</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 07 [NEW] — ITINERARY: DAY 02 & ZEN JAM
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-7">
+      <img src="./assets/brochure/chamber.jpg" alt="Day 02 High Decisions" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">07</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">CONFERENCE ITINERARY // 25 OCTOBER 2026</div>
+          
+          <h2 class="title-large" style="margin-bottom: 8px;">
+            DAY 02 — <span class="title-lime">THE DECISION</span>
+          </h2>
+
+          <div class="itinerary-container" style="gap: 6px;">
+            <div class="itinerary-row" style="padding: 8px 16px;">
+              <span class="itinerary-time">09:00 – 09:30 AM</span>
+              <span class="itinerary-desc">🔹 Rooms Open &amp; Delegate Check-In</span>
+            </div>
+
+            <div class="itinerary-row" style="padding: 8px 16px;">
+              <span class="itinerary-time">09:30 – 11:00 AM</span>
+              <span class="itinerary-desc">🏛️ Committee Session IV — No Reset</span>
+            </div>
+
+            <div class="itinerary-row highlight" style="padding: 8px 16px;">
+              <span class="itinerary-time">11:15 AM – 12:45 PM</span>
+              <span class="itinerary-desc">⚡ Committee Session V — The ZEN FILE</span>
+            </div>
+
+            <div class="itinerary-row" style="padding: 8px 16px; opacity: 0.85;">
+              <span class="itinerary-time alt">12:45 – 01:45 PM</span>
+              <span class="itinerary-desc">🍽️ Lunch Break</span>
+            </div>
+
+            <div class="itinerary-row" style="padding: 8px 16px;">
+              <span class="itinerary-time">01:45 – 03:15 PM</span>
+              <span class="itinerary-desc">📝 Committee Session VI — The Final Draft</span>
+            </div>
+
+            <div class="itinerary-row highlight" style="padding: 8px 16px; border-color: rgba(226, 249, 82, 0.6);">
+              <span class="itinerary-time">03:30 – 04:45 PM</span>
+              <span class="itinerary-desc">🗳️ Committee Session VII — The Final Vote</span>
+            </div>
+
+            <div class="itinerary-row zen-jam-row" style="padding: 9px 16px;">
+              <span class="itinerary-time" style="color: var(--zen-purple);">05:15 – 05:45 PM</span>
+              <span class="itinerary-desc" style="color: #fff; font-weight: 700;">🎸 ZEN JAM — Jamming Session</span>
+              <span class="itinerary-tag" style="background: rgba(192, 132, 252, 0.25); color: #fff;">Unplugged</span>
+            </div>
+
+            <div class="itinerary-row highlight" style="padding: 9px 16px; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.5);">
+              <span class="itinerary-time" style="color: var(--zen-gold);">05:45 – 06:45 PM</span>
+              <span class="itinerary-desc">🏆 Closing Ceremony &amp; Awards</span>
+            </div>
+
+            <div class="itinerary-row" style="padding: 7px 16px; border-color: rgba(255, 255, 255, 0.3);">
+              <span class="itinerary-time" style="color: #fff;">06:45 PM</span>
+              <span class="itinerary-desc">🌐 ZEN.DIPLOMACY 2026 CONCLUDES</span>
+            </div>
+          </div>
+
+          <!-- ── ZEN JAM FEATURE ── -->
+          <div class="zen-jam-box">
+            <div class="zen-jam-title">
+              <span>🎸 ZEN JAM</span>
+              <span style="font-size: 13px; font-weight: 700; color: var(--zen-purple); margin-left: auto;">30 MINUTES. NO COMMITTEE. JUST ZEN.</span>
+            </div>
+            <div class="zen-jam-desc">
+              The final half-hour before closing is completely informal — music, performances, open mic, games, delegate interaction and some final moments with the EB and Secretariat.
+            </div>
+            <div class="zen-jam-modes">
+              <span>Committee mode: <strong class="mode-off">OFF</strong></span>
+              <span>•</span>
+              <span>ZEN mode: <strong class="mode-on">ON</strong></span>
+            </div>
+          </div>
+
+          <!-- ── TWO DAYS IN ONE LINE ── -->
+          <div style="margin-top: 10px; padding: 10px 16px; background: rgba(10, 14, 24, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: center; color: #cbd5e1;">
+            <span style="color: var(--zen-gold); font-weight: 700;">DAY 01:</span> The Room Opens &nbsp;•&nbsp; 
+            <span style="color: var(--zen-lime); font-weight: 700;">DAY 02:</span> The Decision &nbsp;•&nbsp; 
+            <span style="color: #fff; font-weight: 700;">END:</span> The Room Becomes a Memory.
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">07</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 08 — 05 / WHY ZEN.DIPLOMACY?
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-8">
+      <img src="./assets/brochure/global.jpg" alt="Global Network" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">08</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">05 / WHY ZEN.DIPLOMACY?</div>
+          
+          <h2 class="title-large" style="margin-bottom: 20px;">
+            WHY BE A<br>DELEGATE?
+          </h2>
+
+          <div class="reasons-grid">
+            <div class="reason-box">
+              <div class="reason-num">01 // IMPACT</div>
+              <div class="reason-title">Real-World Exposure</div>
+              <div class="reason-text">Engage with issues that shape governments, institutions and international relations.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">02 // ORATORY</div>
+              <div class="reason-title">Public Speaking</div>
+              <div class="reason-text">Build the confidence to put your ideas forward under pressure.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">03 // TACTICS</div>
+              <div class="reason-title">Strategic Thinking</div>
+              <div class="reason-text">Go beyond prepared speeches and react to an evolving, unpredictable committee.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">04 // ALLIANCES</div>
+              <div class="reason-title">Networking</div>
+              <div class="reason-text">Meet delegates and young leaders from different institutions and cities.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">05 // AUTHORITY</div>
+              <div class="reason-title">Leadership</div>
+              <div class="reason-text">Learn to influence a room without simply dominating it.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">06 // LEGACY</div>
+              <div class="reason-title">Experience</div>
+              <div class="reason-text">Take home something that extends far beyond a standard certificate.</div>
+            </div>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">08</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 09 — 06 / THE ONLINE EXPERIENCE
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-9">
+      <img src="./assets/brochure/global.jpg" alt="Global Network Connectivity" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">09</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">06 / THE ONLINE EXPERIENCE</div>
+          
+          <h2 class="title-large" style="margin-bottom: 12px;">
+            DIPLOMACY.<br>WITHOUT BORDERS.
+          </h2>
+
+          <p class="body-lead" style="margin-bottom: 20px;">
+            ZEN.DIPLOMACY is designed as an online MUN so students can participate from wherever they are.
+          </p>
+
+          <div class="date-badge" style="margin-bottom: 24px;">
+            <span class="date">24–25 OCTOBER 2026</span>
+            <span class="badge-sub">ONLINE • COLLEGE &amp; SCHOOL DELEGATIONS AVAILABLE</span>
+          </div>
+
+          <div class="perks-list">
+            <div class="perk-item">
+              <div class="perk-icon">✕</div>
+              <span>No travel.</span>
+            </div>
+            <div class="perk-item">
+              <div class="perk-icon">✕</div>
+              <span>No accommodation.</span>
+            </div>
+            <div class="perk-item">
+              <div class="perk-icon">✕</div>
+              <span>No geographical limits.</span>
+            </div>
+            <div class="perk-item" style="color: var(--zen-lime); border-color: rgba(226, 249, 82, 0.4);">
+              <div class="perk-icon" style="background: var(--zen-lime); color: #000; border-color: var(--zen-lime);">✓</div>
+              <span>Just your device, your committee and your voice.</span>
+            </div>
+          </div>
+
+          <div class="highlight-card">
+            <p>
+              ONLINE PARTICIPATION MAKES SCHOOL AND COLLEGE STUDENTS PARTICIPATION EASIER EVERYWHERE — ITINERARY TELLS THE REST.
+            </p>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">09</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 10 — 07 / BEYOND THE COMMITTEE
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-10">
+      <img src="./assets/brochure/press.jpg" alt="Press Conference & Media Room" class="page-bg" style="object-position: center 75%; transform: scale(1.3); transform-origin: center bottom;" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">10</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">07 / BEYOND THE COMMITTEE</div>
+          
+          <h2 class="title-large" style="margin-bottom: 12px;">
+            EVERYTHING HAPPENS.<br>EVERYTHING GETS RECORDED.
+          </h2>
+
+          <p class="body-lead" style="font-size: 14.5px; margin-bottom: 18px;">
+            ZEN.DIPLOMACY isn't limited to what happens inside the committee room. The conference will have a dedicated documentation and editorial ecosystem where the ideas, moments, debates and creative work produced throughout the conference can live beyond the two days.
+          </p>
+
+          <div class="pillar-list" style="gap: 9px; margin: 14px 0;">
+            <div class="pillar-item">
+              <span class="pillar-term" style="min-width: 150px;">DOCUMENTATION</span>
+              <span class="pillar-desc">Committee proceedings, key moments, decisions and developments — documented throughout the conference.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term" style="min-width: 150px;">EDITORIALS</span>
+              <span class="pillar-desc">Independent youth perspectives, analysis and opinion pieces emerging from the discussions.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term" style="min-width: 150px;">CARICATURES</span>
+              <span class="pillar-desc">Creative visual commentary on the politics, personalities and moments of the conference.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term" style="min-width: 150px;">ARTS</span>
+              <span class="pillar-desc">Creative work inspired by the themes, debates and experiences of ZEN.DIPLOMACY.</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-term" style="min-width: 150px;">SOLUTIONS</span>
+              <span class="pillar-desc">Ideas, proposals and innovative approaches developed around the issues being discussed.</span>
+            </div>
+          </div>
+
+          <div class="glass-card" style="border-color: rgba(226, 249, 82, 0.45); margin-top: 12px; padding: 16px 22px;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">
+              THE COMMITTEE ENDS. <span style="color: var(--zen-lime);">THE CONVERSATION DOESN'T.</span>
+            </div>
+            <div style="font-size: 13.5px; color: #cbd5e1;">
+              All of this content will be uploaded and hosted on ZENVITRA, creating a lasting digital record of the conference.
+            </div>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">10</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 11 — 08 / FOR SCHOOLS
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-11">
+      <img src="./assets/brochure/chamber.jpg" alt="Institutional & School Delegations Assembly" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">11</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">08 / FOR SCHOOLS &amp; COLLEGES</div>
+          
+          <h2 class="title-large" style="margin-bottom: 12px;">
+            BRING YOUR INSTITUTION<br>TO THE TABLE.
+          </h2>
+
+          <p class="body-lead" style="margin-bottom: 22px;">
+            College and school delegations available with bulk registration coordination and priority portfolio matrix allocation.
+          </p>
+
+          <div class="reasons-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px;">
+            <div class="reason-box">
+              <div class="reason-num">01 // PRIDE</div>
+              <div class="reason-title">REPRESENT</div>
+              <div class="reason-text">Give students a chance to represent their institution on a premier sovereign stage.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">02 // MASTERY</div>
+              <div class="reason-title">DEVELOP</div>
+              <div class="reason-text">Build communication, negotiation, leadership and rigorous research skills.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">03 // NETWORK</div>
+              <div class="reason-title">CONNECT</div>
+              <div class="reason-text">Interact with talented students and faculty mentors from different schools and universities.</div>
+            </div>
+
+            <div class="reason-box">
+              <div class="reason-num">04 // RIGOR</div>
+              <div class="reason-title">EXPERIENCE</div>
+              <div class="reason-text">Introduce students to a structured, competitive and fair MUN environment.</div>
+            </div>
+          </div>
+
+          <div class="glass-card" style="border-left: 4px solid var(--zen-lime); padding: 20px 24px;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; margin-bottom: 6px; letter-spacing: 0.04em;">
+              COLLEGE &amp; SCHOOL DELEGATIONS AVAILABLE
+            </div>
+            <div style="font-size: 13.5px; color: #cbd5e1; line-height: 1.55;">
+              Bulk participation and institutional delegation passes are available. Online participation makes school and college students participation easier everywhere — the itinerary tells the rest.
+            </div>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">11</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 12 — 09 / SECRETARIAT
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-12">
+      <img src="./assets/brochure/secretariat.jpg" alt="Secretariat Leadership Room" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">12</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">09 / SECRETARIAT</div>
+          
+          <h2 class="title-large" style="margin-bottom: 12px;">
+            DON'T JUST<br>PARTICIPATE. BUILD IT.
+          </h2>
+
+          <div class="quote-lead" style="font-size: 19px; margin-bottom: 18px;">
+            Want to experience an MUN from the other side?
+          </div>
+
+          <p class="body-lead" style="margin-bottom: 22px;">
+            Join the ZEN.DIPLOMACY Secretariat and work behind the scenes to help build the conference.
+          </p>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px;">
+            <div class="glass-card" style="padding: 12px 18px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: #fff;">
+              <span style="color: var(--zen-lime);">●</span> WORK WITH TEAMS
+            </div>
+            <div class="glass-card" style="padding: 12px 18px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: #fff;">
+              <span style="color: var(--zen-lime);">●</span> COORDINATE
+            </div>
+            <div class="glass-card" style="padding: 12px 18px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: #fff;">
+              <span style="color: var(--zen-lime);">●</span> TAKE RESPONSIBILITY
+            </div>
+            <div class="glass-card" style="padding: 12px 18px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: #fff;">
+              <span style="color: var(--zen-lime);">●</span> BUILD THE EXPERIENCE
+            </div>
+            <div class="glass-card" style="padding: 12px 18px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: #fff;">
+              <span style="color: var(--zen-lime);">●</span> LEARN THE SYSTEM
+            </div>
+          </div>
+
+          <div class="highlight-card" style="border-color: rgba(226, 249, 82, 0.5); margin-bottom: 16px;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: 0.04em;">
+              DELEGATE IS WHERE YOU REPRESENT.<br>
+              <span style="color: var(--zen-lime);">SECRETARIAT IS WHERE YOU CREATE.</span>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8; margin-top: 8px;">
+              10 Specialized Sectors: Delegate Affairs • Academic Affairs • Operations • Tech • Design • PR • Marketing • Content • Media • Administration
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <a href="/zen-diplomacy/secretariat" style="display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; border-radius: 999px; background: var(--zen-lime); color: #050811; font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 800; text-transform: uppercase; text-decoration: none; box-shadow: 0 0 25px rgba(226, 249, 82, 0.4); transition: transform 0.2s;">
+              👑 APPLY FOR SECRETARIAT CORPS (/zen-diplomacy/secretariat)
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+            </a>
+          </div>
+
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #cbd5e1; letter-spacing: 0.05em;">
+            * Secretariat applications &amp; interviews are evaluated separately from delegate registrations.
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div>ZENVITRA FOUNDATION</div>
+          <div class="page-index">12</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 13 — 10 / ZENVITRA FOUNDATION
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-13">
+      <img src="./assets/brochure/secretariat.jpg" alt="Foundation Hub" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">13</div>
+        </header>
+
+        <main style="margin: auto 0;">
+          <div class="section-tag">10 / ZENVITRA FOUNDATION</div>
+          
+          <h2 class="title-large" style="margin-bottom: 16px;">
+            BUILT BY YOUTH.<br><span class="title-gold">FOR YOUTH.</span>
+          </h2>
+
+          <!-- ── FOUNDATION SEAL HERO BADGE ── -->
+          <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 22px;">
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Official Seal" style="width: 105px; height: 105px; border-radius: 50%; border: 2.5px solid var(--zen-lime); box-shadow: 0 0 35px rgba(226, 249, 82, 0.35); flex-shrink: 0;" />
+            <div class="quote-lead" style="font-size: 18px; margin-bottom: 0; border-left: 4px solid var(--zen-lime); padding-left: 18px;">
+              ZENVITRA Foundation is a youth-driven platform built around creating spaces where young people can <strong style="color: var(--zen-lime);">Build • Connect • Preserve</strong>.
+            </div>
+          </div>
+
+          <p class="body-lead" style="margin-bottom: 22px;">
+            From diplomacy and debate to youth forums, media and events, ZENVITRA aims to create platforms where young voices don't simply participate — they contribute.
+          </p>
+
+          <div class="glass-card" style="margin-bottom: 18px;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
+              ZEN.DIPLOMACY
+            </div>
+            <div style="font-size: 15px; color: var(--zen-lime); font-weight: 700;">
+              is one part of a much larger ecosystem.
+            </div>
+          </div>
+
+          <div class="ecosystem-wrap">
+            <span class="ecosystem-tag">ZEN.CHAT</span>
+            <span class="ecosystem-tag">ZEN.PULSE</span>
+            <span class="ecosystem-tag">ZEN.FLUX</span>
+            <span class="ecosystem-tag">INTERNATIONAL PRESS</span>
+            <span class="ecosystem-tag">ZEN.SPACE</span>
+            <span class="ecosystem-tag">EVENTS</span>
+          </div>
+
+          <div style="font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: 0.16em; color: #ffffff; text-transform: uppercase;">
+            BUILD • CONNECT • PRESERVE
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            <span>ZENVITRA FOUNDATION</span>
+          </div>
+          <div class="page-index">13</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         PAGE 14 — CLOSING & REGISTRATION
+         ══════════════════════════════════════════ -->
+    <section class="page" id="page-14">
+      <img src="./assets/brochure/closing.jpg" alt="Diplomatic Seal Monument" class="page-bg" />
+      <div class="page-overlay"></div>
+      <div class="page-vignette"></div>
+      <div class="page-grid-dots"></div>
+
+      <div class="page-content">
+        <header class="page-header">
+          <div class="brand">
+            <img src="./assets/logo.png" alt="ZENVITRA Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" class="brand-seal" />
+            ZENVITRA FOUNDATION
+          </div>
+          <div class="page-index">14</div>
+        </header>
+
+        <main style="margin: auto 0; padding-top: 15px;">
+          <h2 class="title-huge" style="font-size: 68px; line-height: 1.05; margin-bottom: 22px;">
+            YOUR VOICE.<br>
+            <span class="title-gold">YOUR ROOM.</span><br>
+            <span class="title-lime">YOUR DECISION.</span>
+          </h2>
+
+          <div style="font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 0.04em; margin-bottom: 8px;">
+            ZEN.DIPLOMACY 2026
+          </div>
+
+          <div class="glass-card" style="display: inline-block; padding: 14px 22px; border-color: rgba(226, 249, 82, 0.45); margin-bottom: 22px;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #ffffff; letter-spacing: 0.08em; line-height: 1.6;">
+              24–25 OCTOBER 2026<br>
+              <span style="color: var(--zen-lime);">ONLINE MODEL UNITED NATIONS</span><br>
+              <span style="color: #e2f952; font-size: 11px;">COLLEGE &amp; SCHOOL DELEGATIONS AVAILABLE</span><br>
+              <span style="color: #94a3b8; font-size: 9.5px; letter-spacing: 0.05em;">ONLINE PARTICIPATION MAKES SCHOOL &amp; COLLEGE STUDENTS PARTICIPATION EASIER EVERYWHERE — ITINERARY TELLS THE REST</span>
+            </div>
+          </div>
+
+          <div class="cta-container" style="gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--zen-lime); box-shadow: 0 0 10px var(--zen-lime);"></span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; letter-spacing: 0.14em; color: var(--zen-lime); text-transform: uppercase;">
+                DELEGATE REGISTRATIONS GO LIVE: 1ST OCTOBER 2026 ONWARDS
+              </span>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px;">
+              <a href="/zen-diplomacy" class="cta-link-box" style="text-decoration: none;">
+                ENTER DELEGATE PORTAL (/zen-diplomacy)
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </a>
+
+              <a href="/zen-diplomacy/secretariat" class="cta-link-box" style="background: rgba(192, 132, 252, 0.16); border-color: rgba(192, 132, 252, 0.5); color: #fff; text-decoration: none;">
+                JOIN SECRETARIAT CORPS
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </main>
+
+        <footer class="page-footer">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="./assets/brochure/zenvitra-seal.png" alt="ZENVITRA Seal" style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--zen-lime);" />
+            <span style="font-weight: 800; color: #fff;">ZENVITRA FOUNDATION</span>
+          </div>
+          <div class="tagline">Build • Connect • Preserve</div>
+        </footer>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

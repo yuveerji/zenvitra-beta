@@ -328,19 +328,37 @@ export function ZenDiplomacyPortal() {
               <span className="px-3 py-1 rounded-full bg-white/10 text-neutral-200 border border-white/15 text-xs font-mono tracking-wider uppercase">
                 OCTOBER 24TH &amp; 25TH, 2026
               </span>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                PORTFOLIO ALLOTMENTS OPEN
+              <span className="px-3 py-1 rounded-full bg-[#e2f952]/15 text-[#e2f952] border border-[#e2f952]/40 text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 animate-pulse shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#e2f952]" />
+                DEL REGISTRATIONS GO LIVE: 1ST OCTOBER ONWARDS
+              </span>
+              <span className="px-3 py-1 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 shadow-sm">
+                COLLEGE &amp; SCHOOL DELEGATIONS AVAILABLE
               </span>
             </div>
 
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-              <div className="space-y-3 max-w-3xl">
-                <h1 className="font-display font-black text-4xl sm:text-6xl text-white tracking-tight leading-none uppercase">
-                  ZEN.DIPLOMACY <span className="text-neutral-400 font-light">MUN 2026</span>
-                </h1>
+              <div className="space-y-4 max-w-3xl">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <img 
+                    src="/assets/logo.png" 
+                    alt="ZENVITRA Logo" 
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] shrink-0"
+                  />
+                  <img 
+                    src="/assets/brochure/zenvitra-seal.png" 
+                    alt="ZENVITRA Official Seal" 
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-[#e2f952]/40 shadow-[0_0_25px_rgba(226,249,82,0.2)] shrink-0 object-cover"
+                  />
+                  <div>
+                    <span className="text-[10px] font-mono tracking-widest text-[#e2f952] uppercase font-bold">ZENVITRA FOUNDATION // SOVEREIGN SEAL</span>
+                    <h1 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight leading-none uppercase">
+                      ZEN.DIPLOMACY <span className="text-neutral-400 font-light">MUN 2026</span>
+                    </h1>
+                  </div>
+                </div>
                 <p className="font-sans text-sm sm:text-base text-neutral-300 font-light leading-relaxed">
-                  The sovereign virtual Model United Nations and parliamentary assembly convening young thinkers, delegates, and policy researchers across the globe. Unscripted debate, verified research, and live collaborative resolution authoring on <strong className="text-white">ZEN.DOCS</strong>.
+                  The sovereign virtual Model United Nations and parliamentary assembly convening young thinkers, delegates, and policy researchers across the globe. Online participation makes school and college students participation easier everywhere; itinerary tells the rest. Live collaborative resolution authoring on <strong className="text-white">ZEN.DOCS</strong>.
                 </p>
               </div>
 
@@ -355,6 +373,16 @@ export function ZenDiplomacyPortal() {
                   <span>Register as Delegate</span>
                 </button>
 
+                <Link
+                  href="/zen-diplomacy/secretariat"
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-500/30 hover:to-indigo-500/30 border border-purple-500/40 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer hover:scale-105"
+                  title="Apply for Secretariat across 10 specialized departments"
+                >
+                  <Crown className="w-4 h-4 text-purple-400" />
+                  <span>Join Secretariat</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
+                </Link>
+
                 <a
                   href={matrixUrl}
                   target="_blank"
@@ -366,6 +394,16 @@ export function ZenDiplomacyPortal() {
                   <span>Portfolio Matrix Sheet</span>
                   <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
                 </a>
+
+                <Link
+                  href="/zen-diplomacy/brochure"
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer hover:scale-105"
+                  title="View official ZEN.DIPLOMACY Brochure & Prospectus"
+                >
+                  <FileText className="w-4 h-4 text-amber-400" />
+                  <span>Official Brochure</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
+                </Link>
 
                 <button
                   type="button"
@@ -1211,6 +1249,14 @@ export function ZenDiplomacyPortal() {
               </div>
             ) : (
               <form onSubmit={handleRegisterSubmit} className="space-y-4 text-xs font-mono">
+                {/* 1st October Live Registration Announcement */}
+                <div className="p-3.5 rounded-xl bg-[#e2f952]/10 border border-[#e2f952]/30 text-[#e2f952] flex items-center gap-3 text-left">
+                  <Calendar className="w-4 h-4 shrink-0 text-[#e2f952]" />
+                  <div className="text-[11px] leading-relaxed">
+                    <strong className="uppercase tracking-wider">OFFICIAL SCHEDULE:</strong> Delegate registrations officially open on <strong>1st October 2026 onwards</strong>. Pre-register your committee &amp; country preferences below to lock your early spot on the review matrix!
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5 text-left">
                     <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Delegate Full Name *</label>

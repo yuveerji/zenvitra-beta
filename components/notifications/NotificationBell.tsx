@@ -18,7 +18,8 @@ import {
   Crown,
   Megaphone,
   ArrowRight,
-  ChevronUp
+  ChevronUp,
+  X
 } from 'lucide-react';
 import {
   NotificationItem,
@@ -26,6 +27,7 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   clearAllStoredNotifications,
+  deleteStoredNotification,
 } from '@/lib/notificationStorage';
 import { subscribeToActivitySync } from '@/lib/reactiveActivityHub';
 import { getFounderDirective, type FounderDirective } from '@/lib/founderControl';
@@ -51,6 +53,12 @@ function getDirectiveNotifications(): NotificationItem[] {
       read: false,
       createdAt: directive.updatedAt ? new Date(directive.updatedAt).getTime() : Date.now(),
     };
+
+    // Check if dismissed
+    try {
+      const dismissed = JSON.parse(localStorage.getItem('zenvitra_dismissed_directives_v1') || '[]');
+      if (dismissed.includes(directiveNotif.id)) return [];
+    } catch {}
 
     // Check if user already read this directive
     try {
@@ -130,6 +138,27 @@ export default function NotificationBell() {
       localStorage.setItem('zenvitra_read_directives_v1', JSON.stringify(merged));
     } catch {}
     refreshNotifications();
+  };
+
+  const handleDeleteSingle = (id: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    if (id.startsWith('directive_')) {
+      try {
+        const raw = localStorage.getItem('zenvitra_dismissed_directives_v1');
+        const dismissed: string[] = raw ? JSON.parse(raw) : [];
+        if (!dismissed.includes(id)) {
+          dismissed.push(id);
+          localStorage.setItem('zenvitra_dismissed_directives_v1', JSON.stringify(dismissed));
+        }
+      } catch {}
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      return;
+    }
+    const updated = deleteStoredNotification(id);
+    setNotifications(updated);
   };
 
   const handleNotificationClick = (item: NotificationItem) => {
@@ -305,16 +334,29 @@ export default function NotificationBell() {
                         {/* Red top accent bar */}
                         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-red-400 to-rose-600" />
 
-                        {!n.read && (
-                          <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-rose-400 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                        )}
+                        {/* Tag row & Actions */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 shadow-[0_0_6px_rgba(244,63,94,0.5)]" />
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-[8px] font-mono font-bold tracking-wider text-rose-300 uppercase">
+                              EXECUTIVE DIRECTIVE • {n.priority || 'CONSTITUTIONAL'}
+                            </span>
+                          </div>
 
-                        {/* Tag row */}
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 shadow-[0_0_6px_rgba(244,63,94,0.5)]" />
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-[8px] font-mono font-bold tracking-wider text-rose-300 uppercase">
-                            EXECUTIVE DIRECTIVE • {n.priority || 'CONSTITUTIONAL'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {!n.read && (
+                              <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" title="Unread Directive" />
+                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteSingle(n.id, e)}
+                              className="p-1 rounded-lg text-rose-400/60 hover:text-rose-300 hover:bg-rose-500/20 transition-all cursor-pointer"
+                              title="Dismiss directive"
+                              aria-label="Dismiss directive"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Title */}
@@ -360,17 +402,37 @@ export default function NotificationBell() {
                           : 'bg-neutral-950/60 border-white/5 hover:border-white/15 text-neutral-400'
                       }`}
                     >
-                      {!n.read && (
-                        <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      )}
-
-                      <div className="flex items-center gap-2">
-                        <div className="p-1 rounded-md bg-white/5 border border-white/10 shrink-0">
-                          {getIconForType(n.type)}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="p-1 rounded-md bg-white/5 border border-white/10 shrink-0">
+                            {getIconForType(n.type)}
+                          </div>
+                          <span className={`font-display font-bold text-xs truncate ${!n.read ? 'text-white' : 'text-neutral-300'}`}>
+                            {n.title}
+                          </span>
                         </div>
-                        <span className={`font-display font-bold text-xs truncate ${!n.read ? 'text-white' : 'text-neutral-300'}`}>
-                          {n.title}
-                        </span>
+
+                        {/* Status indicators & Individual Delete Option */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {/* Glowing Yellow Light for Unread Notifications Only - Removed upon reading */}
+                          {!n.read && (
+                            <span 
+                              className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-pulse" 
+                              title="Unread" 
+                            />
+                          )}
+
+                          {/* Individual Delete Button - User's choice to delete */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteSingle(n.id, e)}
+                            className="p-1.5 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-rose-500/15 transition-all opacity-40 hover:opacity-100 group-hover:opacity-100 cursor-pointer"
+                            title="Delete notification"
+                            aria-label="Delete notification"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
 
                       <p className="text-[11px] leading-relaxed font-sans text-neutral-300 font-light pl-6">

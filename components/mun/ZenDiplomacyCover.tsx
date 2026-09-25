@@ -78,7 +78,7 @@ export function ZenDiplomacyCover({
       style={{ perspective: 1200 }}
       className={`relative w-full overflow-hidden select-none bg-black text-white ${
         isHero
-          ? 'aspect-[16/9] sm:aspect-[21/9] max-h-[540px] min-h-[380px]'
+          ? 'aspect-[16/9] sm:aspect-[18/9] max-h-[560px] min-h-[360px]'
           : isCompact
           ? 'aspect-[16/9] min-h-[220px]'
           : 'aspect-[16/9] min-h-[280px]'
@@ -91,7 +91,7 @@ export function ZenDiplomacyCover({
           rotateY: interactive ? rotateY : 0,
           x: interactive ? parallaxX : 0,
           y: interactive ? parallaxY : 0,
-          scale: interactive ? 1.025 : 1,
+          scale: interactive ? 1.02 : 1,
           transformStyle: 'preserve-3d',
         }}
         className="relative w-full h-full"
@@ -103,7 +103,7 @@ export function ZenDiplomacyCover({
           priority={priority || isHero}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 1200px, 1600px"
           quality={100}
-          className="object-cover object-center"
+          className="object-cover object-top"
         />
 
         {/* ── DYNAMIC MOUSE CURSOR LIGHT SPOTLIGHT SHEEN ── */}

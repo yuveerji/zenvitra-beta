@@ -81,9 +81,9 @@ export function FeaturedEvents() {
           <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold uppercase inline-flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  REGISTRATIONS OPEN &bull; OCTOBER 2026
+                <span className="px-2.5 py-0.5 rounded-full bg-[#e2f952]/15 border border-[#e2f952]/30 text-[#e2f952] font-bold uppercase inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#e2f952] animate-pulse" />
+                  DEL REGISTRATIONS GO LIVE: 1ST OCTOBER 2026
                 </span>
                 <span className="text-neutral-400">
                   Organizer ID: <strong className="text-white">yuveer</strong>
@@ -145,6 +145,15 @@ export function FeaturedEvents() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/zen-diplomacy/secretariat"
+                  className="px-4 py-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                  title="Apply for Secretariat across 10 specialized departments"
+                >
+                  <Crown className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Secretariat</span>
+                </Link>
+
                 <a
                   href="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing"
                   target="_blank"
