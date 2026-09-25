@@ -145,13 +145,10 @@ export default function CountdownPage() {
     playTickSoundRef.current = sovereignAudio.playTickSound;
   }, [sovereignAudio.playTickSound]);
 
-  // First user interaction resumes suspended AudioContext without forcing un-mute
+  // First user interaction resumes suspended AudioContext without changing soundscape mode
   useEffect(() => {
     const handleFirstGesture = () => {
-      // Just unlock AudioContext if needed without overriding isMuted state
-      if (!sovereignAudio.isMuted) {
-        sovereignAudio.cycleSoundscape();
-      }
+      // Keep selected soundscape intact, no auto cycling
     };
     window.addEventListener('click', handleFirstGesture, { once: true });
     window.addEventListener('keydown', handleFirstGesture, { once: true });
@@ -161,7 +158,7 @@ export default function CountdownPage() {
       window.removeEventListener('keydown', handleFirstGesture);
       window.removeEventListener('touchstart', handleFirstGesture);
     };
-  }, [sovereignAudio]);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -218,7 +215,7 @@ export default function CountdownPage() {
       </div>
 
       {/* Header Bar */}
-      <header className="relative z-10 w-full max-w-6xl mx-auto px-3.5 sm:px-6 py-3.5 sm:py-6 flex items-center justify-between border-b border-white/[0.07]">
+      <header className="relative z-50 w-full max-w-6xl mx-auto px-3.5 sm:px-6 py-3.5 sm:py-6 flex items-center justify-between border-b border-white/[0.07]">
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="relative h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0">
             <img
@@ -283,7 +280,6 @@ export default function CountdownPage() {
             isMuted={sovereignAudio.isMuted}
             soundscape={sovereignAudio.soundscape}
             onSelectSoundscape={(mode) => sovereignAudio.setSoundscape(mode)}
-            onClick={() => sovereignAudio.cycleSoundscape()}
             onToggleMute={() => sovereignAudio.toggleMute()}
           />
         </div>

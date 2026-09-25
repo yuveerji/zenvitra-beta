@@ -135,7 +135,7 @@ export function AudioSpectrumVisualizer({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.96 }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
-              className="fixed inset-x-4 top-20 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-[#090b10] border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.98),0_0_35px_rgba(251,191,36,0.15)] p-2 backdrop-blur-2xl text-left overflow-hidden z-50"
+              className="fixed inset-x-4 top-20 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-[#07090e] border border-white/25 shadow-[0_25px_80px_rgba(0,0,0,0.99),0_0_35px_rgba(251,191,36,0.2)] p-2 backdrop-blur-2xl text-left overflow-hidden z-[100]"
             >
               <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
                 <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold flex items-center gap-1.5">

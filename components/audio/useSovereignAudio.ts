@@ -86,12 +86,12 @@ export interface SovereignAudioState {
 }
 
 export function useSovereignAudio(): SovereignAudioState {
-  const [soundscape, setSoundscape] = useState<AmbientSoundscape>('OFF');
+  const [soundscape, setSoundscape] = useState<AmbientSoundscape>('NORMAL');
   const [isMuted, setIsMuted] = useState(true);
   const [frequencyData, setFrequencyData] = useState<Uint8Array>(new Uint8Array(16));
 
   const isMutedRef = useRef(true);
-  const soundscapeRef = useRef<AmbientSoundscape>('OFF');
+  const soundscapeRef = useRef<AmbientSoundscape>('NORMAL');
 
   useEffect(() => {
     isMutedRef.current = isMuted;
