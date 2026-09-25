@@ -670,7 +670,7 @@ export function Navbar({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl overflow-hidden"
+              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain"
             >
               {/* Navigation Links Grid */}
               <div className="grid grid-cols-2 gap-2 font-display text-xs tracking-wider uppercase">

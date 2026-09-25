@@ -26,6 +26,7 @@ import { StatusNotificationModal } from '@/components/navigation/StatusNotificat
 import { useSovereignAudio, SOUNDSCAPE_MODES, AmbientSoundscape } from '@/components/audio/useSovereignAudio';
 import { AudioSpectrumVisualizer } from '@/components/audio/AudioSpectrumVisualizer';
 import { HolographicPassport } from '@/components/visuals/HolographicPassport';
+import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 
 export default function CountdownPage() {
   // Target: October 2, 2026, 14:00:00 IST (UTC+05:30)
@@ -188,14 +189,37 @@ export default function CountdownPage() {
   return (
     <div className="min-h-screen bg-[#020305] text-white flex flex-col justify-between selection:bg-amber-400 selection:text-black font-sans relative overflow-x-hidden">
 
-      {/* Background Ambient Glows & Grid */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:28px_28px] opacity-60 z-0" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[450px] bg-gradient-to-b from-amber-500/[0.08] via-rose-500/[0.04] to-transparent blur-[140px] pointer-events-none z-0" />
-      <div className="fixed bottom-0 right-0 w-[500px] h-[400px] bg-amber-500/[0.04] blur-[120px] pointer-events-none z-0" />
+      {/* Background Ambient Glows, Constellation Canvas & Cyber Grid */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Subtle Cyber Grid */}
+        <div 
+          className="absolute inset-0 opacity-[0.14]" 
+          style={{ 
+            backgroundImage: `linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px)`, 
+            backgroundSize: '48px 48px' 
+          }} 
+        />
+        {/* Multi-layered radial cosmic aura */}
+        <div 
+          className="absolute inset-0" 
+          style={{ 
+            background: 'radial-gradient(circle at 50% 25%, rgba(245, 158, 11, 0.08) 0%, rgba(120, 119, 198, 0.06) 35%, transparent 70%), radial-gradient(circle at 50% 90%, rgba(244, 63, 94, 0.04) 0%, transparent 60%)' 
+          }} 
+        />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[550px] bg-gradient-to-b from-amber-500/[0.14] via-purple-600/[0.06] to-transparent blur-[140px]" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-amber-500/[0.06] rounded-full blur-[140px]" />
+        <div className="absolute bottom-1/4 -left-20 w-[450px] h-[450px] bg-indigo-500/[0.05] rounded-full blur-[150px]" />
+        
+        {/* Interactive Cosmic Constellation Starfield */}
+        <ConstellationCanvas className="absolute inset-0 opacity-45" />
+
+        {/* Deep Horizon Vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,#020305_95%)] pointer-events-none" />
+      </div>
 
       {/* Header Bar */}
-      <header className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/[0.07]">
-        <div className="flex items-center gap-3">
+      <header className="relative z-10 w-full max-w-6xl mx-auto px-3.5 sm:px-6 py-3.5 sm:py-6 flex items-center justify-between border-b border-white/[0.07]">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="relative h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0">
             <img
               src="/assets/logo.png"
@@ -212,13 +236,13 @@ export default function CountdownPage() {
             >
               ZENVITRA
             </div>
-            <div className="font-mono text-[9px] tracking-widest text-amber-400/90 uppercase mt-1">
+            <div className="font-mono text-[8px] sm:text-[9px] tracking-wider sm:tracking-widest text-amber-400/90 uppercase mt-0.5 sm:mt-1">
               SYSTEM CONCURRENCY HARDENING
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-3">
           {/* Sign In & Register Navigation */}
           <Link
             href="/statussignin"
@@ -247,7 +271,7 @@ export default function CountdownPage() {
 
           <button
             onClick={() => setIsClearanceModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/[0.08] hover:bg-amber-500/[0.15] border border-amber-500/30 text-xs font-mono text-amber-300 transition cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-amber-500/[0.08] hover:bg-amber-500/[0.15] border border-amber-500/30 text-xs font-mono text-amber-300 transition cursor-pointer"
           >
             <KeyRound className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Check Clearance</span>
@@ -272,29 +296,29 @@ export default function CountdownPage() {
       />
 
       {/* Main Center Content */}
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex-1 flex flex-col items-center justify-center text-center space-y-10">
+      <main className="relative z-10 max-w-4xl mx-auto px-3.5 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col items-center justify-center text-center space-y-8 sm:space-y-10">
         {/* Status Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/[0.07] border border-amber-400/30 text-xs font-mono tracking-widest text-amber-300 uppercase shadow-[0_0_20px_rgba(251,191,36,0.15)]">
-          <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
-          <span>GLOBAL PLATFORM RE-ARCHITECTING UNDERWAY</span>
+        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-amber-400/[0.07] border border-amber-400/30 text-[9px] sm:text-xs font-mono tracking-wider sm:tracking-widest text-amber-300 uppercase shadow-[0_0_20px_rgba(251,191,36,0.15)] max-w-full">
+          <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400 shrink-0" />
+          <span className="truncate">GLOBAL PLATFORM RE-ARCHITECTING UNDERWAY</span>
         </div>
 
         {/* Hero Title */}
-        <div className="space-y-4 max-w-2xl">
+        <div className="space-y-3 sm:space-y-4 max-w-2xl px-1 sm:px-0">
           <h1 
-            className="text-4xl sm:text-6xl text-white tracking-tight leading-[1.1] font-semibold"
+            className="text-2xl xs:text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.15] sm:leading-[1.1] font-semibold break-words"
             style={{ fontFamily: 'Clash Display, var(--font-space), sans-serif' }}
           >
             Calibrating the <br />
             <span className="font-serif italic font-normal text-amber-200">ZENVITRA</span> Ecosystem.
           </h1>
-          <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed">
+          <p className="text-xs sm:text-base text-neutral-400 font-light leading-relaxed max-w-xl mx-auto">
             Following our initial deployment, our engineering &amp; secretariat council has initiated a temporary systemic freeze to eradicate anomalies, harden protocols, and scale our core infrastructure.
           </p>
         </div>
 
         {/* Hero Monolith Interactive 3D Card with Mouse Cursor Effect */}
-        <div className="w-full max-w-xs sm:max-w-sm mx-auto my-2">
+        <div className="w-full max-w-[280px] xs:max-w-xs sm:max-w-sm mx-auto my-2">
           <div
             style={{ perspective: 1200 }}
             className="relative w-full aspect-[4/5.2] select-none py-2"
@@ -308,7 +332,7 @@ export default function CountdownPage() {
                 transition: 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
                 transformStyle: 'preserve-3d',
               }}
-              className="relative w-full h-full rounded-[2.2rem] bg-[#050608] border border-white/15 p-6 sm:p-7 flex flex-col justify-between overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.95)] hover:shadow-[0_0_50px_rgba(251,191,36,0.15)] transition-shadow duration-300 group cursor-pointer"
+              className="relative w-full h-full rounded-[2rem] sm:rounded-[2.2rem] bg-[#050608] border border-white/15 p-5 sm:p-7 flex flex-col justify-between overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.95)] hover:shadow-[0_0_50px_rgba(251,191,36,0.15)] transition-shadow duration-300 group cursor-pointer"
             >
               {/* Dynamic Cursor Spotlight Radial Glow Sheen */}
               <div
@@ -326,7 +350,7 @@ export default function CountdownPage() {
                   alt="Zenvitra Monolith Portal"
                   fill
                   priority
-                  sizes="(max-width: 640px) 380px, (max-width: 1024px) 440px, 480px"
+                  sizes="(max-width: 640px) 320px, (max-width: 1024px) 440px, 480px"
                   style={{ objectPosition: 'center 65%' }}
                   className="object-cover brightness-[0.92] contrast-[1.08] group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
@@ -354,8 +378,8 @@ export default function CountdownPage() {
                   </div>
                 </div>
 
-                <div className="px-3 py-1 rounded-full border border-white/15 bg-black/70 backdrop-blur-md shadow-sm">
-                  <span className="text-[8px] font-mono tracking-[0.22em] text-neutral-300 uppercase font-medium">
+                <div className="px-2.5 sm:px-3 py-1 rounded-full border border-white/15 bg-black/70 backdrop-blur-md shadow-sm">
+                  <span className="text-[7px] sm:text-[8px] font-mono tracking-[0.22em] text-neutral-300 uppercase font-medium">
                     ARCHETYPE 01
                   </span>
                 </div>
@@ -366,9 +390,9 @@ export default function CountdownPage() {
                 style={{ transform: 'translateZ(25px)' }}
                 className="relative z-10 flex flex-col items-start gap-2 text-left pb-1 pointer-events-none"
               >
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/85 border border-amber-400/30 backdrop-blur-md shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#fbbf24]" />
-                  <span className="text-[9px] font-mono tracking-[0.22em] text-amber-300 uppercase font-semibold">
+                <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/85 border border-amber-400/30 backdrop-blur-md shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+                  <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#fbbf24]" />
+                  <span className="text-[8px] sm:text-[9px] font-mono tracking-[0.22em] text-amber-300 uppercase font-semibold">
                     STATUS
                   </span>
                 </div>
@@ -386,31 +410,31 @@ export default function CountdownPage() {
 
         {/* Countdown Grid */}
         <div className="w-full max-w-3xl">
-          <div className="p-8 sm:p-10 rounded-[2.5rem] bg-[#07090f]/90 border border-white/[0.1] shadow-[0_30px_100px_rgba(0,0,0,0.95)] backdrop-blur-xl space-y-8">
-            <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-              <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.25em] text-neutral-400 uppercase">
+          <div className="p-4 xs:p-6 sm:p-8 lg:p-10 rounded-2xl sm:rounded-[2.5rem] bg-[#07090f]/90 border border-white/[0.1] shadow-[0_30px_100px_rgba(0,0,0,0.95)] backdrop-blur-xl space-y-6 sm:space-y-8">
+            <div className="flex flex-col xs:flex-row items-center justify-between gap-1.5 border-b border-white/[0.06] pb-3 sm:pb-4 text-center xs:text-left">
+              <span className="font-mono text-[9px] sm:text-[11px] tracking-[0.2em] sm:tracking-[0.25em] text-neutral-400 uppercase">
                 TARGET PROTOCOL UNLOCK
               </span>
-              <span className="font-mono text-[10px] sm:text-[11px] text-amber-400 tracking-wider">
+              <span className="font-mono text-[9px] sm:text-[11px] text-amber-400 tracking-wider font-semibold">
                 02 OCT 2026 // 14:00 IST
               </span>
             </div>
 
-            <div className="grid grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-4 gap-1.5 xs:gap-2 sm:gap-4 lg:gap-6">
               {[
                 { label: 'DAYS', value: timeLeft.days },
                 { label: 'HOURS', value: timeLeft.hours },
-                { label: 'MINUTES', value: timeLeft.minutes },
-                { label: 'SECONDS', value: timeLeft.seconds },
+                { label: 'MINS', value: timeLeft.minutes },
+                { label: 'SECS', value: timeLeft.seconds },
               ].map((item, index) => (
                 <div 
                   key={index}
-                  className="flex flex-col items-center justify-center p-4 sm:p-6 rounded-2xl bg-black/60 border border-white/[0.06] shadow-inner"
+                  className="flex flex-col items-center justify-center p-2 xs:p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-black/60 border border-white/[0.06] shadow-inner"
                 >
-                  <span className="font-mono text-3xl sm:text-6xl font-bold text-white tracking-tight tabular-nums">
+                  <span className="font-mono text-xl xs:text-2xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight tabular-nums">
                     {String(item.value).padStart(2, '0')}
                   </span>
-                  <span className="font-mono text-[9px] sm:text-[11px] text-neutral-500 tracking-[0.2em] uppercase mt-2">
+                  <span className="font-mono text-[7px] xs:text-[8px] sm:text-[11px] text-neutral-500 tracking-wider sm:tracking-[0.2em] uppercase mt-1 sm:mt-2">
                     {item.label}
                   </span>
                 </div>
@@ -418,8 +442,8 @@ export default function CountdownPage() {
             </div>
 
             {/* Ticking Audio Indicator Notice & Soundscape Selector */}
-            <div className="pt-4 border-t border-white/[0.06] space-y-3">
-              <div className="text-[11px] font-mono text-neutral-400 flex flex-wrap items-center justify-between gap-3">
+            <div className="pt-3 sm:pt-4 border-t border-white/[0.06] space-y-3">
+              <div className="text-[10px] sm:text-[11px] font-mono text-neutral-400 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                 <span className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full ${
@@ -438,7 +462,7 @@ export default function CountdownPage() {
 
                 <button
                   onClick={() => sovereignAudio.toggleMute()}
-                  className="text-amber-400 hover:text-amber-300 underline underline-offset-4 cursor-pointer font-semibold text-xs"
+                  className="text-amber-400 hover:text-amber-300 underline underline-offset-4 cursor-pointer font-semibold text-[11px] sm:text-xs"
                 >
                   {sovereignAudio.isMuted ? 'Unmute Audio' : 'Mute Audio'}
                 </button>
@@ -453,7 +477,7 @@ export default function CountdownPage() {
                       key={mode.id}
                       onClick={() => sovereignAudio.setSoundscape(mode.id)}
                       type="button"
-                      className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer border ${
+                      className={`px-2.5 sm:px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-mono uppercase tracking-wider transition-all duration-200 cursor-pointer border ${
                         isActive
                           ? 'bg-amber-400/20 border-amber-400/60 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)] font-bold scale-105'
                           : 'bg-white/[0.03] border-white/10 text-neutral-400 hover:text-white hover:bg-white/[0.08]'
@@ -486,22 +510,22 @@ export default function CountdownPage() {
 
         {/* Founder's Note / Sovereign Communiqué */}
         <div className="w-full max-w-3xl text-left">
-          <div className="relative rounded-[2.5rem] bg-[#07090e]/95 border border-white/15 p-8 sm:p-10 space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.9)] overflow-hidden">
+          <div className="relative rounded-2xl sm:rounded-[2.5rem] bg-[#07090e]/95 border border-white/15 p-5 xs:p-6 sm:p-10 space-y-5 sm:space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.9)] overflow-hidden">
             {/* Ambient Corner Accent */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-500/[0.08] to-transparent blur-2xl pointer-events-none" />
             
             {/* Note Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-4 sm:pb-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-400/[0.08] border border-amber-400/30 flex items-center justify-center text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.15)]">
-                  <Quote className="w-5 h-5 text-amber-400" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-400/[0.08] border border-amber-400/30 flex items-center justify-center text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.15)] shrink-0">
+                  <Quote className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-mono tracking-widest text-amber-400 uppercase">
+                  <div className="text-[9px] sm:text-[10px] font-mono tracking-widest text-amber-400 uppercase">
                     GENESIS COMMUNIQUÉ // ARCHIVE NO. 01
                   </div>
                   <h2 
-                    className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5"
+                    className="text-lg sm:text-2xl font-bold text-white tracking-tight mt-0.5"
                     style={{ fontFamily: 'Clash Display, sans-serif' }}
                   >
                     A Note From The Founders
@@ -509,33 +533,33 @@ export default function CountdownPage() {
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/[0.08] border border-amber-400/20 font-mono text-[10px] text-amber-300 self-start sm:self-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/[0.08] border border-amber-400/20 font-mono text-[9px] sm:text-[10px] text-amber-300 self-start sm:self-auto">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span>SCHEDULE UPDATE • 2ND OCT 2026</span>
+                <span>SCHEDULE UPDATE &bull; 2ND OCT 2026</span>
               </div>
             </div>
 
             {/* Delay Notification Banner */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 space-y-2 relative overflow-hidden">
+            <div className="p-3.5 sm:p-5 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 space-y-2 relative overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/20 pb-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                   SYSTEM SCHEDULE UPDATE // DELAY NOTIFICATION
                 </span>
-                <span className="text-[10px] font-mono text-amber-400/90 font-bold">
-                  OCTOBER 2, 2026 • 2:00 PM IST
+                <span className="text-[9px] sm:text-[10px] font-mono text-amber-400/90 font-bold">
+                  OCTOBER 2, 2026 &bull; 2:00 PM IST
                 </span>
               </div>
-              <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+              <h3 className="text-xs sm:text-base font-bold text-white tracking-tight">
                 Public Platform Ignition Rescheduled to 2nd October 2026, 2:00 PM IST
               </h3>
-              <p className="text-xs text-neutral-300 font-sans leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-neutral-300 font-sans leading-relaxed">
                 To guarantee zero latency under peak multilateral caucuses, complete SHA-256 cryptographic verification of delegate resolutions, and verify the offline video proof distribution rails for our 25% civic profit mandate, the Founding Directorate has re-calibrated our launch window. All pre-registered delegates, study guides, and matrix assignments remain securely locked and reserved.
               </p>
             </div>
 
             {/* Note Prose */}
-            <div className="space-y-4 text-xs sm:text-sm text-neutral-300 font-outfit font-normal tracking-wide leading-relaxed">
+            <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-neutral-300 font-outfit font-normal tracking-wide leading-relaxed">
               <p>
                 When we set out to build <span className="text-white font-medium">Zenvitra</span>, we didn&apos;t want to build another bureaucratic simulator or superficial conferencing tool. We envisioned an uncompromising, sovereign operating system for the next generation of global statesmen, jurists, and policy architects.
               </p>
@@ -544,7 +568,7 @@ export default function CountdownPage() {
                 During our initial closed deployments, the demand exceeded our telemetry thresholds by over <span className="text-amber-300 font-mono font-medium">400%</span>. We witnessed extraordinary working papers drafted in real-time, high-stakes crisis caucuses, and debates that matched the intellectual rigor of real sovereign chambers.
               </p>
 
-              <blockquote className="my-3 pl-4 border-l-2 border-amber-400/60 font-serif italic text-sm sm:text-base text-amber-100/90 py-1">
+              <blockquote className="my-2.5 sm:my-3 pl-3 sm:pl-4 border-l-2 border-amber-400/60 font-serif italic text-xs sm:text-base text-amber-100/90 py-1">
                 &ldquo;Great institutions are not manufactured overnight. They are carved through discipline, architectural integrity, and absolute fidelity to the civic trust.&rdquo;
               </blockquote>
 
@@ -562,21 +586,21 @@ export default function CountdownPage() {
             </div>
 
             {/* Signature & Seal */}
-            <div className="pt-4 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-mono text-xs">
-              <div className="space-y-1">
+            <div className="pt-4 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 font-mono text-xs">
+              <div className="space-y-0.5 sm:space-y-1">
                 <div 
-                  className="text-base text-white tracking-wide font-bold"
+                  className="text-sm sm:text-base text-white tracking-wide font-bold"
                   style={{ fontFamily: 'Clash Display, sans-serif' }}
                 >
                   The Directorate &amp; Founding Council
                 </div>
-                <div className="text-[11px] text-neutral-500 tracking-wider uppercase">
+                <div className="text-[10px] sm:text-[11px] text-neutral-500 tracking-wider uppercase">
                   Zenvitra Foundation &bull; Udaipur // Global Dais
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 text-amber-300 text-[10px] tracking-widest uppercase">
-                <Shield className="w-3.5 h-3.5 text-amber-400" />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 text-amber-300 text-[9px] sm:text-[10px] tracking-widest uppercase">
+                <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>CRYPTOGRAPHICALLY RATIFIED</span>
               </div>
             </div>
@@ -584,14 +608,14 @@ export default function CountdownPage() {
         </div>
 
         {/* Dedicated Callout: Join Core Team ONLY */}
-        <div className="w-full max-w-2xl p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-white/[0.04] via-white/[0.02] to-white/[0.04] border border-white/[0.12] space-y-5 text-center shadow-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/[0.08] border border-emerald-400/30 text-[10px] font-mono tracking-widest text-emerald-300 uppercase">
+        <div className="w-full max-w-2xl p-5 xs:p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-white/[0.04] via-white/[0.02] to-white/[0.04] border border-white/[0.12] space-y-4 sm:space-y-5 text-center shadow-xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/[0.08] border border-emerald-400/30 text-[9px] sm:text-[10px] font-mono tracking-widest text-emerald-300 uppercase">
             <Users className="w-3 h-3" />
             <span>EXCLUSIVE CLEARANCE PORTAL</span>
           </div>
 
-          <div className="space-y-1.5">
-            <h3 className="font-display font-medium text-xl sm:text-2xl text-white">
+          <div className="space-y-1 sm:space-y-1.5">
+            <h3 className="font-display font-medium text-lg sm:text-2xl text-white">
               Core Team Ingestion Remains Open
             </h3>
             <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
@@ -599,10 +623,10 @@ export default function CountdownPage() {
             </p>
           </div>
 
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3">
             <Link
               href="/forms"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 text-black font-mono text-xs font-bold hover:from-cyan-400 hover:to-teal-400 transition shadow-[0_0_25px_rgba(6,182,212,0.4)] cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 text-black font-mono text-xs font-bold hover:from-cyan-400 hover:to-teal-400 transition shadow-[0_0_25px_rgba(6,182,212,0.4)] cursor-pointer"
             >
               <FileText className="w-4 h-4 text-black" />
               <span>Open Public ZenForms (MUN Hub)</span>
@@ -610,7 +634,7 @@ export default function CountdownPage() {
 
             <Link
               href="/join-core-team"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition shadow-[0_0_30px_rgba(255,255,255,0.25)] group cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition shadow-[0_0_30px_rgba(255,255,255,0.25)] group cursor-pointer"
             >
               <span>Apply for Core Team</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -618,7 +642,7 @@ export default function CountdownPage() {
 
             <button
               onClick={() => setIsClearanceModalOpen(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs transition cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs transition cursor-pointer"
             >
               <KeyRound className="w-3.5 h-3.5 text-amber-400" />
               <span>Sovereign Clearance</span>
@@ -628,9 +652,9 @@ export default function CountdownPage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-neutral-500">
+      <footer className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-[10px] sm:text-[11px] font-mono text-neutral-500 text-center sm:text-left">
         <span>ZENVITRA PROTOCOL &copy; 2026</span>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
           <Link href="/forms" className="hover:text-cyan-300 transition text-cyan-400">
             Public ZenForms
           </Link>
@@ -639,7 +663,7 @@ export default function CountdownPage() {
             Join Core Team
           </Link>
           <span className="text-neutral-700">//</span>
-          <span className="text-amber-400/90 font-mono text-[10px] tracking-widest uppercase">
+          <span className="text-amber-400/90 font-mono text-[9px] sm:text-[10px] tracking-widest uppercase">
             PRE-RELEASE ACTIVE
           </span>
         </div>

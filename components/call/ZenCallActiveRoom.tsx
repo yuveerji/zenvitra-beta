@@ -1468,7 +1468,7 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
       </div>
 
       {/* 4. FLOATING CYBER-GLASS CONTROL DOCK */}
-      <footer className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[96vw] px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-slate-950/85 backdrop-blur-3xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(6,182,212,0.18)] flex items-center gap-1.5 sm:gap-2.5 transition-all">
+      <footer className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[96vw] overflow-x-auto no-scrollbar px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-slate-950/85 backdrop-blur-3xl border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(6,182,212,0.18)] flex items-center gap-1.5 sm:gap-2.5 transition-all">
         {/* Device Toggles (Mic & Camera) */}
         <button
           onClick={() => setIsMicOn(!isMicOn)}

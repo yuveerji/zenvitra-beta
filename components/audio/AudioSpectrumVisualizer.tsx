@@ -120,22 +120,32 @@ export function AudioSpectrumVisualizer({
       {/* Floating Audio Modes Selector Menu */}
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 6, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.96 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute right-0 top-full mt-2 w-72 sm:w-80 rounded-2xl bg-[#0a0c12]/98 border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_30px_rgba(251,191,36,0.06)] p-2 backdrop-blur-2xl text-left overflow-hidden z-50"
-          >
-            <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold flex items-center gap-1.5">
-                <Disc3 className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
-                <span>Audio Soundscapes</span>
-              </span>
-              <span className="text-[9px] font-mono text-neutral-500 uppercase">
-                {SOUNDSCAPE_MODES.filter((m) => m.id !== 'OFF').length} Modes
-              </span>
-            </div>
+          <>
+            {/* Mobile backdrop scrim to dismiss on tap and prevent background bleed */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm sm:hidden"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, y: 6, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.96 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="fixed inset-x-4 top-20 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-[#090b10] border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.98),0_0_35px_rgba(251,191,36,0.15)] p-2 backdrop-blur-2xl text-left overflow-hidden z-50"
+            >
+              <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold flex items-center gap-1.5">
+                  <Disc3 className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
+                  <span>Audio Soundscapes</span>
+                </span>
+                <span className="text-[9px] font-mono text-neutral-500 uppercase">
+                  {SOUNDSCAPE_MODES.filter((m) => m.id !== 'OFF').length} Modes
+                </span>
+              </div>
 
             <div className="py-1 space-y-0.5 max-h-[380px] overflow-y-auto">
               {SOUNDSCAPE_MODES.map((mode) => {
@@ -196,8 +206,9 @@ export function AudioSpectrumVisualizer({
               </button>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </>
+      )}
+    </AnimatePresence>
     </div>
   );
 }
