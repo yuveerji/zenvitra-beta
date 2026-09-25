@@ -22,6 +22,11 @@ const nextConfig = {
         destination: '/register',
         permanent: true,
       },
+      {
+        source: '/preregister',
+        destination: '/statusregister',
+        permanent: true,
+      },
     ];
   },
   webpack: (config) => {

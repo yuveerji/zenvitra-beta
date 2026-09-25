@@ -138,43 +138,13 @@ interface MunContextType {
   stageReactions: Array<{ id: string; emoji: string; count: number; x?: number }>;
 }
 
-/* ─────────── LIVE DEFAULT PLATFORM DATA ─────────── */
+/* ─────────── LIVE ZERO-SEEDED PLATFORM DATA ─────────── */
 
 export const DEFAULT_CONFERENCES: MunConference[] = [];
 
-const DEFAULT_COMMITTEES: MunCommittee[] = [
-  {
-    id: 'custom-chamber-other',
-    eventId: 'evt_custom_chamber',
-    name: 'Universal Youth Assembly & Multidisciplinary Forum',
-    shortName: 'OTHER',
-    type: 'OTHER',
-    agenda: 'Open Consensus Deliberation, Cross-Sector Direct Policy & Innovation',
-    totalDelegates: 25,
-    presentCount: 0,
-    presentAndVotingCount: 0,
-    quorumNeeded: 12,
-    dais: { chair: 'Session Moderator', viceChair: 'Assembly Secretary' }
-  }
-];
+const DEFAULT_COMMITTEES: MunCommittee[] = [];
 
-const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
-  {
-    id: 'custom-chamber-other',
-    title: 'Universal Youth Assembly & Multidisciplinary Forum',
-    category: 'OTHER',
-    agenda: 'Open Consensus Deliberation, Cross-Sector Direct Policy & Innovation',
-    shortCode: 'YOUTH-01',
-    hostName: 'Assembly Moderator',
-    hostHandle: 'moderator',
-    isLive: true,
-    activeVotingSession: null,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: new Date().toISOString()
-  }
-];
+const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [];
 
 const INITIAL_COMMITTEES: MunCommittee[] = DEFAULT_COMMITTEES;
 const INITIAL_INVITES: MunInvite[] = [];
@@ -204,7 +174,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   const [activeConferenceId, setActiveConferenceIdState] = useState<string>('');
 
   const [committees, setCommittees] = useState<MunCommittee[]>(INITIAL_COMMITTEES);
-  const [activeCommitteeId, setActiveCommitteeId] = useState<string>('custom-chamber-other');
+  const [activeCommitteeId, setActiveCommitteeId] = useState<string>('');
   const [selectedInviteModal, setSelectedInviteModal] = useState<MunInvite | null>(null);
 
   const activeConference = useMemo(() => {
@@ -446,11 +416,14 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
               c &&
               c.eventId !== 'mun_jharokha_2026' &&
               c.eventId !== 'mun_horizon_2026' &&
+              c.id !== 'custom-chamber-other' &&
               !['lok-sabha-2026', 'unsc-2026', 'unga-plenary', 'unhrc-2026', 'constituent-assembly-2026'].includes(c.id)
           );
-          const finalComms = cleaned.length > 0 ? cleaned : DEFAULT_COMMITTEES;
-          setCommittees(finalComms);
-          localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(finalComms));
+          setCommittees(cleaned);
+          if (cleaned.length > 0) {
+            setActiveCommitteeId((prev) => prev || cleaned[0].id);
+          }
+          localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(cleaned));
         }
       }
 
@@ -461,11 +434,11 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
           const cleaned = parsed.filter(
             (r: any) =>
               r &&
+              r.id !== 'custom-chamber-other' &&
               !['lok-sabha-2026', 'unsc-2026', 'unga-plenary', 'unhrc-2026'].includes(r.id)
           );
-          const finalRooms = cleaned.length > 0 ? cleaned : DEFAULT_CHAMBER_ROOMS;
-          setChamberRooms(finalRooms);
-          localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(finalRooms));
+          setChamberRooms(cleaned);
+          localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(cleaned));
         }
       }
 

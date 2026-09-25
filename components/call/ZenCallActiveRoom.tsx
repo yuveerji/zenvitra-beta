@@ -46,7 +46,8 @@ import {
   RotateCcw,
   Compass,
   ExternalLink,
-  QrCode
+  QrCode,
+  Upload
 } from 'lucide-react';
 
 const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -91,6 +92,8 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   const [isMicOn, setIsMicOn] = useState(searchParams.get('mic') !== 'false');
   const [isCamOn, setIsCamOn] = useState(searchParams.get('cam') !== 'false');
   const [virtualBg, setVirtualBg] = useState<string>(searchParams.get('bg') || 'none');
+  const [customBgImage, setCustomBgImage] = useState<string | null>(null);
+  const [showBgSelector, setShowBgSelector] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isHandRaised, setIsHandRaised] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -369,6 +372,98 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
       default:
         return 'bg-slate-900';
     }
+  };
+
+  const renderLocalVideoTile = (containerClassName = "w-full h-full") => {
+    if (!isCamOn) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-2 w-full h-full bg-slate-900 text-cyan-300">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xl font-bold shadow-inner">
+            YOU
+          </div>
+          <span className="text-xs text-slate-400">Camera Off</span>
+        </div>
+      );
+    }
+
+    if (virtualBg === 'blur') {
+      return (
+        <div className={`relative ${containerClassName} overflow-hidden bg-slate-950`}>
+          {/* Blurred Background Layer (Preserves outer environment blur) */}
+          <video
+            autoPlay
+            playsInline
+            muted
+            ref={(el) => {
+              if (el && mediaStreamRef.current && el.srcObject !== mediaStreamRef.current) {
+                el.srcObject = mediaStreamRef.current;
+              }
+            }}
+            className="absolute inset-0 w-full h-full object-cover -scale-x-100 filter blur-2xl scale-110 opacity-80"
+          />
+          {/* Crisp Foreground Layer (Preserves face/head/torso sharpness in center aperture) */}
+          <video
+            autoPlay
+            playsInline
+            muted
+            ref={(el) => {
+              if (el && mediaStreamRef.current && el.srcObject !== mediaStreamRef.current) {
+                el.srcObject = mediaStreamRef.current;
+              }
+            }}
+            className="absolute inset-0 w-full h-full object-cover -scale-x-100 z-10"
+            style={{
+              WebkitMaskImage: 'radial-gradient(ellipse 52% 72% at 50% 48%, black 60%, transparent 95%)',
+              maskImage: 'radial-gradient(ellipse 52% 72% at 50% 48%, black 60%, transparent 95%)',
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (virtualBg === 'geneva' || customBgImage) {
+      return (
+        <div className={`relative ${containerClassName} overflow-hidden bg-black`}>
+          {/* Rear Virtual Backdrop: Geneva UN Palais or Custom Photo */}
+          <img
+            src={customBgImage || '/assets/call/geneva-un.jpg'}
+            alt="Virtual Background"
+            className="absolute inset-0 w-full h-full object-cover filter brightness-95"
+          />
+          {/* Foreground Face Layer: user stream ahead of the photo */}
+          <video
+            autoPlay
+            playsInline
+            muted
+            ref={(el) => {
+              if (el && mediaStreamRef.current && el.srcObject !== mediaStreamRef.current) {
+                el.srcObject = mediaStreamRef.current;
+              }
+            }}
+            className="absolute inset-0 w-full h-full object-cover -scale-x-100 z-10"
+            style={{
+              WebkitMaskImage: 'radial-gradient(ellipse 48% 68% at 50% 48%, black 65%, transparent 92%)',
+              maskImage: 'radial-gradient(ellipse 48% 68% at 50% 48%, black 65%, transparent 92%)',
+            }}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <video
+        autoPlay
+        playsInline
+        muted
+        ref={(el) => {
+          localVideoRef.current = el;
+          if (el && mediaStreamRef.current && el.srcObject !== mediaStreamRef.current) {
+            el.srcObject = mediaStreamRef.current;
+          }
+        }}
+        className="w-full h-full object-cover -scale-x-100"
+      />
+    );
   };
 
   const getPipClasses = () => {
@@ -772,13 +867,9 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
               <div className="w-full md:w-72 flex md:flex-col gap-2.5 overflow-y-auto shrink-0 pb-16 md:pb-0">
                 {/* Local user tile in filmstrip if not floating */}
                 {!isPipFloating && (
-                  <div className={`relative h-36 rounded-2xl overflow-hidden border border-white/10 bg-slate-900/90 flex flex-col items-center justify-center shrink-0 ${getBgClass()}`}>
-                    {isCamOn ? (
-                      <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover -scale-x-100" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center text-xs">YOU</div>
-                    )}
-                    <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-white">You</span>
+                  <div className={`relative h-36 rounded-2xl overflow-hidden border border-white/10 bg-slate-900/90 flex flex-col items-center justify-center shrink-0`}>
+                    {renderLocalVideoTile()}
+                    <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-white z-20">You</span>
                   </div>
                 )}
 
@@ -830,24 +921,9 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
                     isMicOn && micLevel > 30
                       ? 'border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.35)] ring-2 ring-emerald-400/80'
                       : 'border-white/10 bg-slate-900/90'
-                  } ${getBgClass()}`}
+                  }`}
                 >
-                  {isCamOn ? (
-                    <video
-                      ref={localVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover -scale-x-100"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 font-bold text-xl md:text-2xl shadow-inner">
-                        YOU
-                      </div>
-                      <span className="text-xs text-slate-400">Camera Off</span>
-                    </div>
-                  )}
+                  {renderLocalVideoTile()}
 
                   {/* Top status badges */}
                   <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
@@ -1506,6 +1582,69 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
           <MonitorUp className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
+        {/* Virtual Background & Shaders */}
+        <div className="relative">
+          <button
+            onClick={() => setShowBgSelector(!showBgSelector)}
+            className={`p-2.5 sm:p-3 rounded-full transition-all flex items-center justify-center ${
+              virtualBg !== 'none' || customBgImage
+                ? 'bg-cyan-500 text-slate-950 font-bold shadow-lg shadow-cyan-500/30'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title="Virtual Background & Smart Blur"
+          >
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
+          {showBgSelector && (
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-64 bg-slate-950 border border-white/20 rounded-2xl p-3 shadow-2xl z-50 backdrop-blur-2xl space-y-2">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400 px-1">Virtual Background</div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { id: 'none', label: 'None' },
+                  { id: 'blur', label: 'Smart Blur' },
+                  { id: 'geneva', label: 'Geneva UN' },
+                  { id: 'stage', label: 'Stage' },
+                ].map((bg) => (
+                  <button
+                    key={bg.id}
+                    onClick={() => {
+                      setVirtualBg(bg.id);
+                      if (bg.id !== 'geneva') setCustomBgImage(null);
+                      setShowBgSelector(false);
+                    }}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                      virtualBg === bg.id && !customBgImage
+                        ? 'bg-cyan-500 text-slate-950 font-bold'
+                        : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                    }`}
+                  >
+                    {bg.label}
+                  </button>
+                ))}
+              </div>
+              <label className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-dashed border-white/20 cursor-pointer text-xs text-cyan-400 hover:text-cyan-300">
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload Custom Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const url = URL.createObjectURL(file);
+                      setCustomBgImage(url);
+                      setVirtualBg('custom');
+                      setShowBgSelector(false);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          )}
+        </div>
+
         <div className="h-6 w-px bg-white/15 mx-0.5 sm:mx-1" />
 
         {/* Hand Raise */}
@@ -1626,22 +1765,7 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
       {/* FLOATING PICTURE-IN-PICTURE (PiP) SELF-VIEW */}
       {(isPipFloating || layoutMode === 'whatsapp') && (
         <div className={`fixed z-40 ${getPipClasses()} w-40 h-56 sm:w-52 sm:h-64 rounded-3xl overflow-hidden border-2 border-cyan-400/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] bg-slate-950 transition-all duration-300 group`}>
-          {isCamOn ? (
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover -scale-x-100"
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-cyan-300 font-bold">
-              <div className="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-lg">
-                YOU
-              </div>
-              <span className="text-[10px] text-slate-400 mt-2">Camera Off</span>
-            </div>
-          )}
+          {renderLocalVideoTile()}
 
           {/* PiP Overlay Controls */}
           <div className="absolute top-2 left-2 right-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-md p-1 rounded-xl">

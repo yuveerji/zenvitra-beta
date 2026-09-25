@@ -850,6 +850,7 @@ export function ZenPulseCore() {
 
                     {/* 2. Multi-Mode Spatial Post Composer (The Primary Dispatch Studio) */}
                     <SpatialPostComposer
+                      onOpenFluxComposer={() => setShowFluxComposerModal(true)}
                       onPublish={({ mode, title, content, images }) => {
                         createPost(
                           title ? `${title}\n\n${content}` : content,

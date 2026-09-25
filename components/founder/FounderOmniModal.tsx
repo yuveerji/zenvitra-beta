@@ -131,6 +131,10 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
   const [directiveAuthor, setDirectiveAuthor] = useState(directive.author);
   const [directivePriority, setDirectivePriority] = useState<FounderDirective['priority']>(directive.priority);
   const [directiveActive, setDirectiveActive] = useState(directive.isActive);
+  const [mutePulseWire, setMutePulseWire] = useState(directive.mutePulseWire ?? false);
+  const [muteNotifications, setMuteNotifications] = useState(directive.muteNotifications ?? false);
+  const [muteTicker, setMuteTicker] = useState(directive.muteTicker ?? false);
+  const [showGranularMuteDialog, setShowGranularMuteDialog] = useState(false);
 
   /* Protocol State */
   const [protocols, setProtocols] = useState<ProtocolControls>(getProtocolControls());
@@ -205,6 +209,9 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
       setDirectiveAuthor(d.author);
       setDirectivePriority(d.priority);
       setDirectiveActive(d.isActive);
+      setMutePulseWire(d.mutePulseWire ?? false);
+      setMuteNotifications(d.muteNotifications ?? false);
+      setMuteTicker(d.muteTicker ?? false);
       setProtocols(getProtocolControls());
       setSubscriptionsList(getAllSubscriptions());
       setUserOverridesList(getAllUserOverrides());
@@ -262,6 +269,9 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
       author: directiveAuthor.trim(),
       priority: directivePriority,
       isActive: directiveActive,
+      mutePulseWire,
+      muteNotifications,
+      muteTicker,
     });
     setDirective(updated);
     showToast('👑 Founder Directive synchronized across Home, Pulse & Hubs!');
@@ -674,13 +684,26 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-mono text-neutral-400 uppercase font-bold">Broadcast Status</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-mono text-neutral-400 uppercase font-bold">Broadcast Status</label>
+                      <button
+                        type="button"
+                        onClick={() => setShowGranularMuteDialog(!showGranularMuteDialog)}
+                        className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+                      >
+                        ⚙️ Granular Channels
+                      </button>
+                    </div>
                     <div className="flex items-center gap-3 pt-2">
                       <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
                         <input
                           type="checkbox"
                           checked={directiveActive}
-                          onChange={(e) => setDirectiveActive(e.target.checked)}
+                          onChange={(e) => {
+                            const next = e.target.checked;
+                            setDirectiveActive(next);
+                            if (!next) setShowGranularMuteDialog(true);
+                          }}
                           className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
                         />
                         <span className={directiveActive ? 'text-emerald-400 font-bold' : 'text-neutral-500'}>
@@ -690,6 +713,97 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
                     </div>
                   </div>
                 </div>
+
+                {/* Granular Directive Muting Dialog (Multi-Select) */}
+                {showGranularMuteDialog && (
+                  <div className="p-4 rounded-2xl bg-black/80 border border-cyan-500/40 space-y-3">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                      <div className="flex items-center gap-2 text-cyan-300 text-xs font-bold font-mono">
+                        <Sliders className="w-4 h-4" />
+                        <span>Granular Directive Channel Muting (Multi-Select)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowGranularMuteDialog(false)}
+                        className="text-neutral-400 hover:text-white p-1 text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-neutral-400 font-mono">
+                      Select which distribution channels to mute. When active, only unmuted channels will receive broadcasts.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                      <label className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-start gap-2.5 cursor-pointer hover:bg-white/10 transition">
+                        <input
+                          type="checkbox"
+                          checked={mutePulseWire}
+                          onChange={(e) => setMutePulseWire(e.target.checked)}
+                          className="mt-0.5 rounded text-cyan-500 accent-cyan-500 cursor-pointer"
+                        />
+                        <div>
+                          <div className="text-xs font-bold text-white">Mute Pulse Wire</div>
+                          <div className="text-[10px] text-neutral-400">Hide from Pulse Feed top slot</div>
+                        </div>
+                      </label>
+
+                      <label className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-start gap-2.5 cursor-pointer hover:bg-white/10 transition">
+                        <input
+                          type="checkbox"
+                          checked={muteNotifications}
+                          onChange={(e) => setMuteNotifications(e.target.checked)}
+                          className="mt-0.5 rounded text-cyan-500 accent-cyan-500 cursor-pointer"
+                        />
+                        <div>
+                          <div className="text-xs font-bold text-white">Mute Notifications</div>
+                          <div className="text-[10px] text-neutral-400">Suppress broadcast push alerts</div>
+                        </div>
+                      </label>
+
+                      <label className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-start gap-2.5 cursor-pointer hover:bg-white/10 transition">
+                        <input
+                          type="checkbox"
+                          checked={muteTicker}
+                          onChange={(e) => setMuteTicker(e.target.checked)}
+                          className="mt-0.5 rounded text-cyan-500 accent-cyan-500 cursor-pointer"
+                        />
+                        <div>
+                          <div className="text-xs font-bold text-white">Mute Ticker &amp; Siren</div>
+                          <div className="text-[10px] text-neutral-400">Remove from breaking news wire</div>
+                        </div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMutePulseWire(true);
+                          setMuteNotifications(true);
+                          setMuteTicker(true);
+                          setDirectiveActive(false);
+                          showToast('All directive channels muted');
+                        }}
+                        className="text-rose-400 hover:underline font-mono text-[11px]"
+                      >
+                        Mute All Channels
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMutePulseWire(false);
+                          setMuteNotifications(false);
+                          setMuteTicker(false);
+                          setDirectiveActive(true);
+                          showToast('All directive channels unmuted');
+                        }}
+                        className="text-emerald-400 hover:underline font-mono text-[11px]"
+                      >
+                        Unmute All Channels
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">

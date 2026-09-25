@@ -120,6 +120,7 @@ export interface ZenSpaceProfile {
   customBackgroundColor?: string;
   isOrganization?: boolean;
   organizationType?: string;
+  isPrivate?: boolean;
   ownerId?: string;
   ownerUsername?: string;
   socials: ZenSpaceSocials;

@@ -42,6 +42,7 @@ import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { broadcastActivitySync, subscribeToActivitySync } from '@/lib/reactiveActivityHub';
 import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
+import { PortfolioMatrixView } from '@/components/mun/PortfolioMatrixView';
 import {
   registerDelegate,
   allocatePortfolioAndNotify,
@@ -472,64 +473,18 @@ export function ZenDiplomacyPortal() {
           </div>
         </section>
 
-        {/* ── 2. PORTFOLIO MATRIX DIRECT REDIRECTION PANEL ── */}
-        <section id="matrix" className="rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-[#0c1424] via-[#080d1a] to-[#0d1627] border border-cyan-500/30 shadow-2xl relative overflow-hidden space-y-8">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
-          
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] font-bold uppercase tracking-wider">
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Live Google Sheet Ledger &bull; Tab: ZEN DIPLOMACY MUN</span>
-              </div>
-              <h2 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">
-                Official Portfolio Matrix &amp; Allotment Tracker
-              </h2>
-              <p className="font-sans text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
-                Check vacant countries, ministerial portfolios, and committee allotments in real time. The master portfolio matrix is hosted on Google Sheets, synced automatically upon Secretariat allotment, and dispatches instant notifications to delegates.
-              </p>
-            </div>
+        {/* ── 2. IN-APP INTERACTIVE PORTFOLIO MATRIX & ALLOTMENT TRACKER ── */}
+        <section id="matrix" className="space-y-6">
+          <PortfolioMatrixView 
+            onSelectPortfolio={(portfolioTitle, committee) => {
+              setRegFirstChoice(committee);
+              setRegPortfolios(portfolioTitle);
+              setIsRegisterModalOpen(true);
+            }} 
+          />
 
-            <div className="flex flex-wrap items-center gap-3">
-              <a
-                href={matrixUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_30px_rgba(52,211,153,0.3)] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
-              >
-                <FileSpreadsheet className="w-4 h-4 text-black" />
-                <span>Open Google Sheet Matrix</span>
-                <ExternalLink className="w-4 h-4 text-black" />
-              </a>
-
-              <button
-                type="button"
-                onClick={handleCopyMatrixLink}
-                className="px-4 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-neutral-200 hover:text-white font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer"
-              >
-                {copiedMatrix ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                <span>{copiedMatrix ? 'Link Copied!' : 'Copy Sheet URL'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Matrix Allotment Guidelines Ribbon */}
-          <div className="border-y border-white/10 py-5 sm:py-6 my-1">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 font-mono text-xs">
-              <div className="flex items-center gap-3 text-neutral-300">
-                <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-[11px] shrink-0">1</div>
-                <span className="leading-snug">View live sheet to identify available portfolios across AIPPM, Edu Ministry, UNESCO, &amp; UNSC.</span>
-              </div>
-              <div className="flex items-center gap-3 text-neutral-300">
-                <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-bold text-[11px] shrink-0">2</div>
-                <span className="leading-snug">Submit your top preferences through the registration portal on this page.</span>
-              </div>
-              <div className="flex items-center gap-3 text-neutral-300">
-                <div className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-400 flex items-center justify-center font-bold text-[11px] shrink-0">3</div>
-                <span className="leading-snug">Upon allocation, Google Sheets updates and an instant notification alerts your bell.</span>
-              </div>
-            </div>
-          </div>
+          {/* Additional Delegate Status Lookup Container */}
+          <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-[#0c1424] via-[#080d1a] to-[#0d1627] border border-cyan-500/30 shadow-2xl relative overflow-hidden space-y-6">
 
           {/* ── 2.A: INTERACTIVE DELEGATE ALLOCATION STATUS CHECKER ── */}
           <div className="space-y-4">
@@ -847,6 +802,7 @@ export function ZenDiplomacyPortal() {
                 </form>
               </div>
             )}
+          </div>
           </div>
         </section>
 

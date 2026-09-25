@@ -47,6 +47,13 @@ export interface FormSection {
   title: string;
   description?: string;
   fields: ZenFormField[];
+  stepHeading?: {
+    enabled?: boolean;
+    stepBadge?: string;
+    stepNumber?: string;
+    headingTitle?: string;
+    description?: string;
+  };
 }
 
 export default function ZenFormPublicPage() {
@@ -73,6 +80,7 @@ export default function ZenFormPublicPage() {
       title: form.title,
       description: form.description,
       fields: [],
+      stepHeading: form.fields[0]?.stepHeading?.enabled ? form.fields[0].stepHeading : undefined,
     };
 
     for (const field of form.fields) {
@@ -83,9 +91,13 @@ export default function ZenFormPublicPage() {
           title: field.label || field.sectionTitle || `Section ${result.length + 1}`,
           description: field.description || field.sectionDescription || '',
           fields: [],
+          stepHeading: field.stepHeading?.enabled ? field.stepHeading : undefined,
         };
       } else {
         current.fields.push(field);
+        if (!current.stepHeading && field.stepHeading?.enabled) {
+          current.stepHeading = field.stepHeading;
+        }
       }
     }
     result.push(current);
@@ -692,38 +704,104 @@ export default function ZenFormPublicPage() {
                       {form.description}
                     </p>
                   )}
+
+                  {/* Top Step Headings Ribbon for Step 1 */}
+                  {sections[0]?.stepHeading?.enabled && (
+                    <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/[0.08] via-white/[0.02] to-transparent border border-amber-500/30 space-y-2 relative overflow-hidden shadow-lg animate-fadeIn text-left">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span 
+                          className="px-3 py-1 rounded-full text-black font-mono text-[10px] font-black uppercase tracking-wider shadow-sm"
+                          style={{ backgroundColor: accentColor }}
+                        >
+                          {sections[0].stepHeading.stepBadge || 'STEP 1'}
+                        </span>
+                        {sections[0].stepHeading.stepNumber && (
+                          <span className="text-amber-300 font-mono text-xs font-semibold uppercase tracking-wider">
+                            {sections[0].stepHeading.stepNumber}
+                          </span>
+                        )}
+                        <span className="text-neutral-500 text-xs font-mono ml-auto">
+                          Page 1 of {sections.length}
+                        </span>
+                      </div>
+                      {sections[0].stepHeading.headingTitle && (
+                        <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight" style={{ fontFamily: displayFont }}>
+                          {sections[0].stepHeading.headingTitle}
+                        </h2>
+                      )}
+                      {sections[0].stepHeading.description && (
+                        <p className="text-xs text-neutral-300 leading-relaxed font-normal">
+                          {sections[0].stepHeading.description}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
-                /* Page 2+ Section Header */
-                <div className="space-y-3 border-b border-white/10 pb-6 relative animate-fadeIn">
-                  <div className="flex items-center justify-between gap-2">
-                    <div
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider border"
-                      style={{
-                        backgroundColor: `${accentColor}15`,
-                        borderColor: `${accentColor}40`,
-                        color: accentColor,
-                      }}
-                    >
-                      <Layers className="w-3 h-3" />
-                      <span>Section {currentPageIndex + 1} of {sections.length}</span>
+                /* Page 2+ Section Header with Top Step Headings Ribbon */
+                <div className="space-y-4 border-b border-white/10 pb-6 relative animate-fadeIn text-left">
+                  {sections[currentPageIndex]?.stepHeading?.enabled ? (
+                    <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-amber-500/[0.08] via-white/[0.02] to-transparent border border-amber-500/30 space-y-2.5 relative overflow-hidden shadow-lg">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span 
+                          className="px-3 py-1 rounded-full text-black font-mono text-[10px] font-black uppercase tracking-wider shadow-sm"
+                          style={{ backgroundColor: accentColor }}
+                        >
+                          {sections[currentPageIndex].stepHeading?.stepBadge || `STEP ${currentPageIndex + 1}`}
+                        </span>
+                        {sections[currentPageIndex].stepHeading?.stepNumber && (
+                          <span className="text-amber-300 font-mono text-xs font-semibold uppercase tracking-wider">
+                            {sections[currentPageIndex].stepHeading?.stepNumber}
+                          </span>
+                        )}
+                        <span className="text-neutral-500 text-xs font-mono ml-auto">
+                          Page {currentPageIndex + 1} of {sections.length}
+                        </span>
+                      </div>
+                      <h2
+                        className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight"
+                        style={{ fontFamily: displayFont }}
+                      >
+                        {sections[currentPageIndex].stepHeading?.headingTitle || sections[currentPageIndex]?.title}
+                      </h2>
+                      {(sections[currentPageIndex].stepHeading?.description || sections[currentPageIndex]?.description) && (
+                        <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+                          {sections[currentPageIndex].stepHeading?.description || sections[currentPageIndex]?.description}
+                        </p>
+                      )}
                     </div>
-                    <span className="text-[11px] font-mono text-neutral-400 truncate max-w-[200px]">
-                      {form.title}
-                    </span>
-                  </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between gap-2">
+                        <div
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider border"
+                          style={{
+                            backgroundColor: `${accentColor}15`,
+                            borderColor: `${accentColor}40`,
+                            color: accentColor,
+                          }}
+                        >
+                          <Layers className="w-3 h-3" />
+                          <span>Section {currentPageIndex + 1} of {sections.length}</span>
+                        </div>
+                        <span className="text-[11px] font-mono text-neutral-400 truncate max-w-[200px]">
+                          {form.title}
+                        </span>
+                      </div>
 
-                  <h2
-                    className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight"
-                    style={{ fontFamily: displayFont }}
-                  >
-                    {sections[currentPageIndex]?.title}
-                  </h2>
+                      <h2
+                        className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight"
+                        style={{ fontFamily: displayFont }}
+                      >
+                        {sections[currentPageIndex]?.title}
+                      </h2>
 
-                  {sections[currentPageIndex]?.description && (
-                    <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
-                      {sections[currentPageIndex]?.description}
-                    </p>
+                      {sections[currentPageIndex]?.description && (
+                        <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+                          {sections[currentPageIndex]?.description}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -1294,7 +1372,7 @@ export default function ZenFormPublicPage() {
                           boxShadow: `0 8px 25px ${accentColor}35`,
                         }}
                       >
-                        <span>Next</span>
+                        <span>Continue to Page {currentPageIndex + 2}</span>
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     ) : (

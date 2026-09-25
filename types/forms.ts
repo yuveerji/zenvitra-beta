@@ -64,6 +64,22 @@ export interface ZenFormField {
   // File upload
   fileTypes?: string[];
   maxFileSizeMb?: number;
+  // Top Step Headings Ribbon (Optional)
+  stepHeading?: {
+    enabled?: boolean;
+    stepBadge?: string;    // e.g. "STEP 1"
+    stepNumber?: string;   // e.g. "01 / Sector Selection"
+    headingTitle?: string; // e.g. "Primary Delegation Sector"
+    description?: string;  // Optional description
+  };
+}
+
+export interface ZenFormStepHeading {
+  enabled: boolean;
+  stepBadge?: string;
+  stepNumber?: string;
+  headingTitle?: string;
+  description?: string;
 }
 
 export type ZenFormTheme = 
@@ -192,6 +208,7 @@ export interface ZenForm {
   allowAnonymous: boolean;
   acceptingResponses?: boolean;
   settings?: ZenFormSettings;
+  stepHeadingsEnabled?: boolean;
   createdAt: string;
   updatedAt: string;
   googleSheetsConfig?: ZenFormGoogleSheetsConfig;

@@ -6,12 +6,13 @@ import {
   ZenFormsAccountSheetsConfig, 
   ZenFormGoogleSheetsConfig 
 } from '@/types/forms';
+import { ZEN_DIPLOMACY_2026_FORM_TEMPLATE } from '@/lib/forms/ZenDiplomacyFormTemplate';
 
 const LS_FORMS_KEY = 'zenvitra_public_forms_v1';
 const LS_SUBMISSIONS_KEY = 'zenvitra_form_submissions_v1';
 const LS_ZENFORMS_SHEETS_KEY = 'zenvitra_forms_sheets_config_v1';
 
-export const DEFAULT_ZEN_FORMS: ZenForm[] = [];
+export const DEFAULT_ZEN_FORMS: ZenForm[] = [ZEN_DIPLOMACY_2026_FORM_TEMPLATE];
 
 export function getPublicForms(): ZenForm[] {
   if (typeof window === 'undefined') return DEFAULT_ZEN_FORMS;
@@ -63,7 +64,12 @@ export function generateUniqueSlug(baseSlug: string, currentFormId?: string): st
 
 export function getZenFormById(idOrSlug: string): ZenForm | null {
   const forms = getPublicForms();
-  return forms.find((f) => f.id === idOrSlug || f.slug === idOrSlug) || null;
+  const found = forms.find((f) => f.id === idOrSlug || f.slug === idOrSlug);
+  if (found) return found;
+  if (idOrSlug === 'zen-diplomacy-2026' || idOrSlug === 'zen-diplomacy-2026-registration') {
+    return ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
+  }
+  return null;
 }
 
 export function saveZenForm(form: ZenForm): ZenForm {

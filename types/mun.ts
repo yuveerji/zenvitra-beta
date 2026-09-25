@@ -145,6 +145,7 @@ export interface MunSpeaker {
   status: 'queued' | 'speaking' | 'completed' | 'yielded';
   yieldType?: 'chair' | 'points_of_info' | 'another_delegate';
   timeRemaining?: number;
+  timeRemainingSeconds?: number;
   speakingSeconds?: number;
   hasSpoken?: boolean;
   day?: number;

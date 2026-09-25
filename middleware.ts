@@ -107,6 +107,52 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(registerUrl, { status: 308 });
   }
 
+  // Handle /preregister redirect to /statusregister
+  if (pathname === '/preregister' || pathname.startsWith('/preregister/')) {
+    const preregisterUrl = new URL('/statusregister', request.url);
+    preregisterUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(preregisterUrl, { status: 308 });
+  }
+
+  // Handle /pulse?user=xxx redirect to /space/xxx
+  if (pathname === '/pulse' && request.nextUrl.searchParams.has('user')) {
+    const targetUser = request.nextUrl.searchParams.get('user')?.replace(/^@/, '').trim();
+    if (targetUser) {
+      const spaceUrl = new URL(`/space/${encodeURIComponent(targetUser)}`, request.url);
+      return NextResponse.redirect(spaceUrl, { status: 307 });
+    }
+  }
+
+  // Handle /pulse/xxx redirect to /space/xxx (excluding /pulse/create-story)
+  if (pathname.startsWith('/pulse/') && pathname !== '/pulse/create-story') {
+    const subPath = pathname.replace(/^\/pulse\//, '').split('/')[0]?.replace(/^@/, '').trim();
+    if (subPath) {
+      const spaceUrl = new URL(`/space/${encodeURIComponent(subPath)}`, request.url);
+      return NextResponse.redirect(spaceUrl, { status: 307 });
+    }
+  }
+
+  // Handle root single-segment user handles (e.g. /yuveer, /abc) redirecting to /space/xxx
+  const singleSegments = pathname.split('/').filter(Boolean);
+  if (singleSegments.length === 1 && !pathname.includes('.')) {
+    const candidateHandle = singleSegments[0].toLowerCase();
+    const KNOWN_ROUTES = new Set([
+      'about', 'admin-access', 'auth', 'campus-ambassador', 'chamber', 'committee',
+      'constitution', 'contact', 'countdown', 'discussions', 'docs', 'donate',
+      'enclave-access', 'events', 'faq', 'forms', 'f', 'guidelines', 'impact',
+      'invest-donate', 'join', 'join-core-team', 'legal', 'legislate', 'login',
+      'manifesto', 'mission', 'mun', 'news', 'onboarding', 'payments', 'pricing',
+      'privacy', 'profile', 'pulse', 'register', 'solutions', 'space',
+      'statusregister', 'statussignin', 'summits', 'terms', 'vision',
+      'zen-diplomacy', 'chat', 'call', 'dashboard', 'settings', 'matrix', 'signup', 'preregister'
+    ]);
+
+    if (!KNOWN_ROUTES.has(candidateHandle) && !PUBLIC_PREFIXES.some((p) => p === `/${candidateHandle}`)) {
+      const spaceUrl = new URL(`/space/${encodeURIComponent(singleSegments[0])}`, request.url);
+      return NextResponse.redirect(spaceUrl, { status: 307 });
+    }
+  }
+
   // Countdown Launch Date: October 2, 2026, 14:00:00 IST (UTC+05:30)
   const LAUNCH_TIMESTAMP_MS = 1790930400000;
   const isPreReleasePeriod = Date.now() < LAUNCH_TIMESTAMP_MS;

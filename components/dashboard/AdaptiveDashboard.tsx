@@ -46,7 +46,7 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
   const { escrowMandateActive } = useProtocolControls();
   const { user, profile, isAuthenticated } = useAuth();
   const { currentUserName, currentUserUsername, myPosts, myFluxVideos, savedPostIds } = useZenPulse();
-  const { registrations, invites } = useMun();
+  const { registrations, invites, getUserExperiences } = useMun();
   const { events } = useZenEvents();
 
   const [dashboardMode, setDashboardMode] = useState<'user' | 'pro'>(initialMode);
@@ -69,6 +69,13 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
   const savedCount = savedPostIds?.length || 0;
   const passesCount = registrations?.length || 0;
   const publishedCount = (myPosts?.length || 0) + (myFluxVideos?.length || 0);
+
+  const targetHandle = currentUserUsername || profile?.username || 'delegate';
+  const userExperiences = getUserExperiences ? getUserExperiences(targetHandle) : [];
+  const verifiedCertificates = userExperiences.filter(
+    (e) => e.certificateId || e.verificationProofUrl || e.verificationStatus.startsWith('VERIFIED')
+  );
+  const certificateCount = verifiedCertificates.length;
   
   // Real 10% protocol calculation based on user's actual registered passes
   const totalPassSpend = passesCount * 1500; // standard registration unit
@@ -201,6 +208,21 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
               </div>
               <p className="text-[11px] text-zinc-400 font-medium">
                 {passesCount > 0 ? (registrations[0]?.committeePreference || registrations[0]?.eventName || `${passesCount} active pass`) : 'No active assembly passes'}
+              </p>
+            </div>
+
+            {/* Dynamic Verified Certificates Record (ZEN.CERTIFY) */}
+            <div className="p-5 rounded-3xl bg-[#07080b] border border-amber-500/30 space-y-2 relative overflow-hidden shadow-[0_0_25px_rgba(245,158,11,0.06)]">
+              <div className="flex items-center justify-between text-xs text-zinc-400">
+                <span className="font-mono uppercase tracking-wider text-[10px] text-amber-400 font-bold">ZEN.CERTIFY Records</span>
+                <Award className="w-4 h-4 text-amber-400" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display font-extrabold text-3xl text-amber-300">{certificateCount}</span>
+                <span className="text-xs text-zinc-400">certificates</span>
+              </div>
+              <p className="text-[11px] text-zinc-400 font-medium">
+                {certificateCount > 0 ? `${certificateCount} verified cryptographic certificates` : 'Dynamic ledger increases with awards'}
               </p>
             </div>
           </div>
@@ -373,14 +395,17 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                   <span className="font-mono text-[10px] text-cyan-300 uppercase tracking-widest font-bold">
-                    Sovereign Credentials
+                    Sovereign Credentials &amp; Ratified Proof
                   </span>
                 </div>
                 <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                  <span>Diplomatic Track Record &amp; MUN Dossier</span>
+                  <span>Diplomatic Track Record &amp; Verified Certificates</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold">
+                    {certificateCount} Ratified
+                  </span>
                 </h3>
                 <p className="text-xs text-zinc-400">
-                  Verifiable Model UN conferences attended as Delegate/EB or hosted as Secretariat.
+                  Verifiable Model UN conferences, cryptographic certificates (ZEN.CERTIFY), and honors. As records increase, every newly verified certificate dynamically populates here.
                 </p>
               </div>
             </div>

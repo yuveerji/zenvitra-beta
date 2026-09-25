@@ -58,6 +58,7 @@ import {
   List,
   CheckCircle2,
   Lock,
+  LayoutDashboard,
   Phone,
   Building2,
   Edit3,
@@ -1313,8 +1314,8 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               )}
             </div>
 
-            {/* Quick Action Matrix (Direct Call & Chat) */}
-            <div className="grid grid-cols-2 gap-2.5 w-full max-w-md mb-6">
+            {/* Quick Action Matrix (Direct Call, Chat, & Dashboard) */}
+            <div className={`grid gap-2.5 w-full max-w-md mb-6 ${(!profile.isPrivate || isOwner) ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}>
               <Link
                 href={`/call/${profile.username}-chamber`}
                 className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-semibold text-xs tracking-wide shadow-md transition-all group ${
@@ -1338,6 +1339,22 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 <MessageSquare className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 <span>Message</span>
               </Link>
+
+              {/* Strict Privacy: If profile is private and visitor is not owner, Dashboard button is HIDDEN */}
+              {(!profile.isPrivate || isOwner) && (
+                <Link
+                  href={isOwner ? '/dashboard' : `/dashboard?user=${profile.username}`}
+                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-semibold text-xs tracking-wide transition-all group border col-span-2 sm:col-span-1 ${
+                    isLight 
+                      ? 'bg-white text-cyan-800 border-cyan-800/30 hover:bg-neutral-50' 
+                      : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/30 text-cyan-300'
+                  }`}
+                  title="View Platform Dashboard"
+                >
+                  <LayoutDashboard className="w-4 h-4 group-hover:scale-110 transition-transform text-cyan-400" />
+                  <span>Dashboard</span>
+                </Link>
+              )}
             </div>
 
             {/* Social Icons Row (with Instagram, Phone, WhatsApp) */}

@@ -88,6 +88,9 @@ export interface FounderDirective {
   priority: 'NORMAL' | 'URGENT' | 'CONSTITUTIONAL';
   isActive: boolean;
   updatedAt: string;
+  mutePulseWire?: boolean;
+  muteNotifications?: boolean;
+  muteTicker?: boolean;
 }
 
 export interface ProtocolControls {

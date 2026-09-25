@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Video, 
@@ -150,6 +151,7 @@ export function ZenCallLobby() {
   const [isCamOn, setIsCamOn] = useState(true);
   const [micLevel, setMicLevel] = useState(30);
   const [selectedBg, setSelectedBg] = useState<'none' | 'blur' | 'geneva' | 'stage'>('none');
+  const [customBgImage, setCustomBgImage] = useState<string | null>(null);
   const [selectedMode, setSelectedMode] = useState<CallMode>('GROUP');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -294,19 +296,21 @@ export function ZenCallLobby() {
       {/* ── TOP HEADER (Google Meet Parity) ── */}
       <header className="h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-white dark:bg-black/60 backdrop-blur-xl sticky top-0 z-30">
         
-        {/* Left: Brand with Google Meet Style Multi-Color Camera */}
+        {/* Left: Official ZEN.CALL Brand */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('meetings')}>
-            <GoogleMeetCameraIcon className="w-8 h-8 drop-shadow-sm" />
+          <Link href="/pulse" className="flex items-center gap-2.5 cursor-pointer group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 flex items-center justify-center p-1.5 shadow-sm group-hover:scale-105 transition">
+              <img src="/assets/logo.png" alt="Zenvitra" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]" />
+            </div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-medium tracking-tight text-slate-800 dark:text-white" style={{ fontFamily: 'Google Sans, Roboto, Inter, sans-serif' }}>
-                Google Meet
+              <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-white font-display">
+                ZEN<span className="text-cyan-400">.CALL</span>
               </span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
-                ZEN.CALL
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                ENCRYPTED
               </span>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Center: Action Pill (Enter code or link + Join + + New) */}
@@ -719,38 +723,66 @@ export function ZenCallLobby() {
                 </p>
               </div>
 
-              {/* Speed Dial Chambers Grid */}
+              {/* Custom Instant Chamber Launcher & Room Input */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { id: 'zen-unsc-chamber', name: 'UNSC Plenary Chamber', desc: 'Permanent 5 + Elected 10 delegates caucus', mode: 'COMMITTEE', icon: '🇺🇳' },
-                  { id: 'zen-diplomacy-lounge', name: 'Bilateral Diplomacy Lounge', desc: 'Encrypted 1:1 state consultations', mode: 'CALL', icon: '🤝' },
-                  { id: 'zen-press-briefing', name: 'Press & Media Studio', desc: 'Broadcast address & accredited reporter Q&A', mode: 'EVENT', icon: '🎙️' },
-                  { id: 'zen-climate-working-group', name: 'Climate & Tech Taskforce', desc: 'Multilateral working group draft room', mode: 'GROUP', icon: '🌱' }
-                ].map((room) => (
-                  <div
-                    key={room.id}
-                    className="p-5 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-xs hover:border-blue-500/50 transition-all flex flex-col justify-between"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">{room.icon}</span>
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">{room.name}</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{room.desc}</p>
-                      </div>
+                <div className="p-6 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between space-y-4">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                      <Video className="w-6 h-6" />
                     </div>
-
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase text-slate-400">Mode: {room.mode}</span>
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/call/${room.id}?mode=${room.mode}&mic=${isMicOn}&cam=${isCamOn}&bg=${selectedBg}`)}
-                        className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors"
-                      >
-                        Enter Chamber
-                      </button>
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white font-display">Create Instant Chamber</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Start an encrypted bilateral or multilateral meeting instantly with room key generation.
+                      </p>
                     </div>
                   </div>
-                ))}
+
+                  <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase text-cyan-400 font-bold">SOVEREIGN CALL</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newRoomId = `zen-${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}`;
+                        router.push(`/call/${newRoomId}?mode=CALL&mic=${isMicOn}&cam=${isCamOn}&bg=${selectedBg}`);
+                      }}
+                      className="px-5 py-2 rounded-full bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold font-mono transition-all shadow-md cursor-pointer"
+                    >
+                      Launch Room Now &rarr;
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-xs flex flex-col justify-between space-y-4">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                      <Keyboard className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white font-display">Join Existing Chamber</h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                        Enter a diplomatic room code or invitation URL to enter an ongoing session.
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleJoinCall} className="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. zen-482-911"
+                      value={joinCode}
+                      onChange={(e) => setJoinCode(e.target.value)}
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-black/60 border border-slate-300 dark:border-white/10 text-xs font-mono text-white placeholder:text-neutral-500 focus:outline-none focus:border-cyan-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!joinCode.trim()}
+                      className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-bold font-mono transition cursor-pointer"
+                    >
+                      Join
+                    </button>
+                  </form>
+                </div>
               </div>
 
               {/* WhatsApp 1-Click Generator */}
@@ -770,8 +802,7 @@ export function ZenCallLobby() {
                   onClick={() => {
                     const randomCode = `zen-${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}`;
                     const inviteUrl = typeof window !== 'undefined' ? `${window.location.origin}/call/${randomCode}` : `https://zenvitra.xyz/call/${randomCode}`;
-                    const text = encodeURIComponent(`Join my live encrypted room on Zenvitra Meet:
-${inviteUrl}`);
+                    const text = encodeURIComponent(`Join my live encrypted room on ZEN.CALL:\n${inviteUrl}`);
                     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
                   }}
                   className="px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm"
@@ -789,22 +820,72 @@ ${inviteUrl}`);
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Camera &amp; Audio Check</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Preview your video stream, check audio levels, and pick a virtual shader before entering.
+                  Preview your video stream, test smart background blur (preserves your face), or pick Geneva Palais des Nations.
                 </p>
               </div>
 
-              {/* Video Preview Box */}
+              {/* Video Preview Box with Smart Face Preservation */}
               <div className="relative aspect-video rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-white/15 shadow-xl flex items-center justify-center">
                 {isCamOn ? (
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className={`w-full h-full object-cover -scale-x-100 ${
-                      selectedBg === 'blur' ? 'blur-sm' : ''
-                    }`}
-                  />
+                  selectedBg === 'blur' ? (
+                    /* SMART BACKGROUND BLUR: Face remains crisp in center, surrounding environment is heavily blurred */
+                    <div className="relative w-full h-full overflow-hidden bg-slate-950">
+                      {/* Background Layer: heavily blurred surroundings */}
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="absolute inset-0 w-full h-full object-cover -scale-x-100 filter blur-2xl scale-110 opacity-80"
+                      />
+                      {/* Foreground Layer: crisp face and torso with feathered oval portrait aperture */}
+                      <video
+                        autoPlay
+                        playsInline
+                        muted
+                        ref={(el) => {
+                          if (el && videoRef.current && el.srcObject !== videoRef.current.srcObject) {
+                            el.srcObject = videoRef.current.srcObject;
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-full object-cover -scale-x-100 z-10"
+                        style={{
+                          WebkitMaskImage: 'radial-gradient(ellipse 52% 72% at 50% 48%, black 60%, transparent 95%)',
+                          maskImage: 'radial-gradient(ellipse 52% 72% at 50% 48%, black 60%, transparent 95%)',
+                        }}
+                      />
+                    </div>
+                  ) : selectedBg === 'geneva' || customBgImage ? (
+                    /* GENEVA / CUSTOM VIRTUAL BACKGROUND: Photo in the background, face ahead in foreground */
+                    <div className="relative w-full h-full overflow-hidden bg-black">
+                      {/* Rear Layer: Geneva UN Assembly or custom uploaded photo */}
+                      <img
+                        src={customBgImage || '/assets/call/geneva-un.jpg'}
+                        alt="Geneva Virtual Background"
+                        className="absolute inset-0 w-full h-full object-cover filter brightness-95"
+                      />
+                      {/* Foreground Layer: User stream masked with soft portrait aperture ahead of the backdrop */}
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="absolute inset-0 w-full h-full object-cover -scale-x-100 z-10"
+                        style={{
+                          WebkitMaskImage: 'radial-gradient(ellipse 48% 68% at 50% 48%, black 65%, transparent 92%)',
+                          maskImage: 'radial-gradient(ellipse 48% 68% at 50% 48%, black 65%, transparent 92%)',
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover -scale-x-100"
+                    />
+                  )
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-slate-500">
                     <VideoOff className="w-12 h-12" />
@@ -813,7 +894,7 @@ ${inviteUrl}`);
                 )}
 
                 {/* Bottom Video Controls */}
-                <div className="absolute bottom-4 inset-x-4 flex items-center justify-between bg-black/70 backdrop-blur-md p-2.5 rounded-2xl border border-white/10">
+                <div className="absolute bottom-4 inset-x-4 flex items-center justify-between bg-black/70 backdrop-blur-md p-2.5 rounded-2xl border border-white/10 z-20">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -851,24 +932,50 @@ ${inviteUrl}`);
                 </div>
               </div>
 
-              {/* Background Shader Pills */}
-              <div className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
+              {/* Background Shader Pills with Geneva and Custom Upload */}
+              <div className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs font-mono text-slate-600 dark:text-slate-300">Virtual Background:</span>
-                <div className="flex items-center gap-2 text-xs font-mono">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
                   {(['none', 'blur', 'geneva', 'stage'] as const).map((bg) => (
                     <button
                       key={bg}
                       type="button"
-                      onClick={() => setSelectedBg(bg)}
-                      className={`px-3 py-1 rounded-xl capitalize transition cursor-pointer border ${
-                        selectedBg === bg
-                          ? 'bg-blue-600 text-white border-blue-500 font-semibold'
-                          : 'border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400'
+                      onClick={() => {
+                        setSelectedBg(bg);
+                        if (bg !== 'geneva') setCustomBgImage(null);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl capitalize transition cursor-pointer border ${
+                        selectedBg === bg && !customBgImage
+                          ? 'bg-blue-600 text-white border-blue-500 font-semibold shadow-sm'
+                          : 'border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-white'
                       }`}
                     >
-                      {bg}
+                      {bg === 'blur' ? 'Smart Blur (Face Safe)' : bg === 'geneva' ? 'Geneva Palais' : bg}
                     </button>
                   ))}
+
+                  {/* Custom Background Upload */}
+                  <label className="px-3 py-1.5 rounded-xl border border-dashed border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 cursor-pointer flex items-center gap-1.5">
+                    <span>+ Custom Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (loadEvt) => {
+                            if (loadEvt.target?.result) {
+                              setCustomBgImage(loadEvt.target.result as string);
+                              setSelectedBg('geneva');
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
               </div>
 
@@ -894,10 +1001,10 @@ ${inviteUrl}`);
             </div>
             <div>
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
-                Receive desktop notifications from Meet
+                Receive desktop notifications from ZEN.CALL
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
-                Allowing notifications lets Meet alert you about incoming calls and updates that occur while you&apos;re in another tab
+                Allowing notifications lets ZEN.CALL alert you about incoming calls and diplomatic chamber updates that occur while you&apos;re in another tab
               </p>
             </div>
           </div>

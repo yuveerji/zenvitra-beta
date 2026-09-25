@@ -34,7 +34,8 @@ import {
   Copy,
   EyeOff,
   Flag,
-  Upload
+  Upload,
+  LayoutDashboard
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
@@ -351,6 +352,15 @@ export function UserProfileView() {
                   <Plus className="w-3.5 h-3.5 text-rose-400" />
                   <span>Add Relay</span>
                 </button>
+                <Link href="/dashboard">
+                  <button
+                    className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-bold text-cyan-300 transition cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
+                    title="Platform Dashboard & Credentials"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Dashboard</span>
+                  </button>
+                </Link>
                 <button
                   onClick={() => setShowEditModal(true)}
                   className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-xs font-bold text-white transition cursor-pointer backdrop-blur-md"
@@ -375,6 +385,18 @@ export function UserProfileView() {
               </div>
             ) : (
               <div className="flex items-center gap-2.5">
+                {/* Privacy Rule: If profile is private, outsiders CANNOT see the dashboard button */}
+                {!profile.isPrivate && (
+                  <Link href={`/dashboard?user=${profile.username}`}>
+                    <button
+                      className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-bold text-cyan-300 transition cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
+                      title="View Sovereign Dashboard & Track Record"
+                    >
+                      <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Dashboard</span>
+                    </button>
+                  </Link>
+                )}
                 <button
                   onClick={() => toggleFollow(profile.username)}
                   className={`px-5 py-2 rounded-xl font-bold text-xs transition cursor-pointer ${

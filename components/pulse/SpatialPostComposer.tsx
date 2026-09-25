@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Edit3, HelpCircle, FileText, Sparkles, Scale, Send, Image as ImageIcon, Smile, X, Film, Upload } from 'lucide-react';
 import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
@@ -9,10 +10,12 @@ export type PostMode = 'WRITE' | 'ASK' | 'REPORT' | 'CREATE' | 'DEBATE';
 
 interface SpatialPostComposerProps {
   onPublish?: (post: { mode: PostMode; title: string; content: string; images?: string[] }) => void;
+  onOpenFluxComposer?: () => void;
 }
 
-export function SpatialPostComposer({ onPublish }: SpatialPostComposerProps) {
-  const [activeMode, setActiveMode] = useState<PostMode>('WRITE');
+export function SpatialPostComposer({ onPublish, onOpenFluxComposer }: SpatialPostComposerProps) {
+  const router = useRouter();
+  const [activeMode, setActiveMode] = useState<PostMode>('ASK');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [mediaList, setMediaList] = useState<string[]>([]);
@@ -28,6 +31,26 @@ export function SpatialPostComposer({ onPublish }: SpatialPostComposerProps) {
   ];
 
   const currentModeInfo = modes.find((m) => m.key === activeMode) || modes[0];
+
+  const handleModeSelect = (key: PostMode) => {
+    if (key === 'REPORT') {
+      router.push('/press');
+      return;
+    }
+    if (key === 'DEBATE') {
+      router.push('/discussions');
+      return;
+    }
+    if (key === 'WRITE') {
+      router.push('/press');
+      return;
+    }
+    if (key === 'ASK') {
+      setActiveMode('ASK');
+      return;
+    }
+    setActiveMode(key);
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -81,7 +104,7 @@ export function SpatialPostComposer({ onPublish }: SpatialPostComposerProps) {
             <button
               key={m.key}
               type="button"
-              onClick={() => setActiveMode(m.key)}
+              onClick={() => handleModeSelect(m.key)}
               className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-[10px] font-mono tracking-wider transition-all duration-200 cursor-pointer ${
                 isActive
                   ? 'bg-white text-black font-bold shadow-md'
@@ -194,14 +217,32 @@ export function SpatialPostComposer({ onPublish }: SpatialPostComposerProps) {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={!content.trim() && mediaList.length === 0}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-mono font-bold text-xs hover:bg-neutral-200 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-md cursor-pointer"
-          >
-            <span>BROADCAST</span>
-            <Send className="w-3 h-3" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenFluxComposer) {
+                  onOpenFluxComposer();
+                } else {
+                  fileInputRef.current?.click();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-fuchsia-600/30 to-purple-600/30 hover:from-fuchsia-600/50 hover:to-purple-600/50 text-fuchsia-200 border border-fuchsia-500/40 text-xs font-mono font-bold transition shadow-sm cursor-pointer"
+              title="Post FLUX Reel (Video)"
+            >
+              <Film className="w-3.5 h-3.5 text-fuchsia-400" />
+              <span>POST FLUX</span>
+            </button>
+
+            <button
+              type="submit"
+              disabled={!content.trim() && mediaList.length === 0}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-black font-mono font-bold text-xs hover:bg-neutral-200 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-md cursor-pointer"
+            >
+              <span>POST DISPATCH</span>
+              <Send className="w-3 h-3" />
+            </button>
+          </div>
         </div>
       </form>
     </div>

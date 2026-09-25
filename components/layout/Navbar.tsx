@@ -240,8 +240,8 @@ export function Navbar({
         <div className="absolute inset-0 bg-[#030405]/92 backdrop-blur-2xl" />
         <div className="absolute bottom-0 left-0 h-[1px] w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-        {/* Navbar Container */}
-        <nav className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3.5 sm:px-6 lg:px-8">
+        {/* Navbar Container with 90% Zoom on Desktop to Prevent Overlap */}
+        <nav className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 lg:[zoom:0.90] xl:[zoom:0.95] 2xl:[zoom:1]">
 
           {/* LEFT: Brand Logo & Wordmark (with integrated Platform Drawer Toggle when hasPlatformSidebar=true) */}
           <div className="flex items-center shrink-0 mr-3 sm:mr-4 lg:mr-6 gap-2 sm:gap-2.5">

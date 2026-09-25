@@ -93,6 +93,7 @@ import {
   APPS_SCRIPT_TEMPLATE,
   getFontCssFamily
 } from '@/lib/formsThemes';
+import { ZEN_DIPLOMACY_2026_FORM_TEMPLATE } from '@/lib/forms/ZenDiplomacyFormTemplate';
 
 interface ZenFormsEditorProps {
   formId: string;
@@ -458,7 +459,12 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
   const handleImportTemplate = (templateName: string) => {
     if (!form) return;
     let importedQuestions: ZenFormField[] = [];
-    if (templateName === 'mun_delegate') {
+    if (templateName === 'zen_diplomacy_15_section') {
+      importedQuestions = ZEN_DIPLOMACY_2026_FORM_TEMPLATE.fields.map((f, i) => ({
+        ...f,
+        id: `q_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`
+      }));
+    } else if (templateName === 'mun_delegate') {
       importedQuestions = [
         { id: `q_${Date.now()}_1`, label: 'Delegate Full Legal Name', type: 'short_answer', required: true },
         { id: `q_${Date.now()}_2`, label: 'Institutional Email Address', type: 'short_answer', required: true },
@@ -884,6 +890,103 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                         </select>
                         <ChevronDown className="w-3.5 h-3.5 text-neutral-400 absolute right-2.5 top-3.5 pointer-events-none" />
                       </div>
+                    </div>
+
+                    {/* Top Step Heading Ribbon Controls (Optional) */}
+                    <div className="pt-2 border-t border-white/5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const isCurrentlyEnabled = field.stepHeading?.enabled;
+                            handleUpdateField(field.id, {
+                              stepHeading: {
+                                enabled: !isCurrentlyEnabled,
+                                stepBadge: field.stepHeading?.stepBadge || `STEP ${idx + 1}`,
+                                stepNumber: field.stepHeading?.stepNumber || `${String(idx + 1).padStart(2, '0')} / Section`,
+                                headingTitle: field.stepHeading?.headingTitle || field.label || '',
+                                description: field.stepHeading?.description || field.description || '',
+                              }
+                            });
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition cursor-pointer border ${
+                            field.stepHeading?.enabled
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
+                              : 'bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white border-white/10'
+                          }`}
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{field.stepHeading?.enabled ? '✓ Top Step Heading Ribbon Active' : '+ Add Top Step Heading Ribbon (Optional)'}</span>
+                        </button>
+                        {field.stepHeading?.enabled && (
+                          <span className="text-[10px] font-mono text-amber-400/80">Matches SEC & Multilateral Step Headers</span>
+                        )}
+                      </div>
+
+                      {field.stepHeading?.enabled && (
+                        <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/[0.08] via-white/[0.02] to-transparent border border-amber-500/30 space-y-3 animate-fadeIn text-left">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                            <div>
+                              <label className="text-[10px] text-amber-400 uppercase tracking-wider block mb-1">
+                                Step Badge Tag (e.g. STEP 1)
+                              </label>
+                              <input
+                                type="text"
+                                value={field.stepHeading.stepBadge || ''}
+                                onChange={(e) => handleUpdateField(field.id, {
+                                  stepHeading: { ...field.stepHeading!, stepBadge: e.target.value }
+                                })}
+                                placeholder="STEP 1"
+                                className="w-full px-3 py-1.5 rounded-lg bg-black/60 border border-white/15 text-white focus:border-amber-400 outline-none text-xs font-mono"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-amber-400 uppercase tracking-wider block mb-1">
+                                Step Number / Category (e.g. 01 / Sector Selection)
+                              </label>
+                              <input
+                                type="text"
+                                value={field.stepHeading.stepNumber || ''}
+                                onChange={(e) => handleUpdateField(field.id, {
+                                  stepHeading: { ...field.stepHeading!, stepNumber: e.target.value }
+                                })}
+                                placeholder="01 / Sector Selection"
+                                className="w-full px-3 py-1.5 rounded-lg bg-black/60 border border-white/15 text-white focus:border-amber-400 outline-none text-xs font-mono"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] text-amber-400 uppercase tracking-wider block mb-1 font-mono">
+                              Section Heading Title
+                            </label>
+                            <input
+                              type="text"
+                              value={field.stepHeading.headingTitle || ''}
+                              onChange={(e) => handleUpdateField(field.id, {
+                                stepHeading: { ...field.stepHeading!, headingTitle: e.target.value }
+                              })}
+                              placeholder="e.g. Primary Delegation Sector & Track"
+                              className="w-full px-3 py-1.5 rounded-lg bg-black/60 border border-white/15 text-white focus:border-amber-400 outline-none text-xs font-semibold"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] text-amber-400 uppercase tracking-wider block mb-1 font-mono">
+                              Section Description (Optional)
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={field.stepHeading.description || ''}
+                              onChange={(e) => handleUpdateField(field.id, {
+                                stepHeading: { ...field.stepHeading!, description: e.target.value }
+                              })}
+                              placeholder="Optional instructions, eligibility criteria, or guidance for this section..."
+                              className="w-full px-3 py-1.5 rounded-lg bg-black/60 border border-white/15 text-white focus:border-amber-400 outline-none text-xs font-sans"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Question Description / Subtitle (if added) */}
@@ -3027,10 +3130,24 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
 
             <div className="space-y-3">
               <button
+                onClick={() => handleImportTemplate('zen_diplomacy_15_section')}
+                className="w-full p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent border-2 border-amber-500/50 text-left hover:border-amber-400 transition space-y-1 group cursor-pointer shadow-lg"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-amber-300 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition" />
+                    <span>ZEN.DIPLOMACY 2026 (15 Sections with Top Step Headings Ribbon)</span>
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black text-[9px] font-mono font-black uppercase">RECOMMENDED</span>
+                </div>
+                <span className="text-xs text-neutral-300 block">Complete national assembly registration: personal credentials, sector track, primary/secondary committees, top 3 portfolios, accolades, statement of purpose, stay, and code of conduct.</span>
+              </button>
+
+              <button
                 onClick={() => handleImportTemplate('mun_delegate')}
                 className="w-full p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-left hover:bg-amber-500/20 transition space-y-1"
               >
-                <span className="font-bold text-sm text-amber-300 block">MUN Delegate Registration (7 Questions)</span>
+                <span className="font-bold text-sm text-amber-300 block">Standard MUN Delegate Registration (7 Questions)</span>
                 <span className="text-xs text-neutral-300 block">Name, Email, WhatsApp, Committee Preference, Portfolio, Experience, Gala Dietary.</span>
               </button>
 
