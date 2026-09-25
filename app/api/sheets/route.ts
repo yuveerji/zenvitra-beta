@@ -27,6 +27,7 @@ function mapTabToTarget(rawTab: string): string {
   if (upper.includes('CONTACT')) return 'CONTACT';
   if (upper.includes('NEWSLETTER')) return 'NEWSLETTER';
   if (upper.includes('COLLAB') || upper.includes('PARTNER')) return 'COLLAB';
+  if (upper.includes('SECRETARIAT') || upper.includes('SEC_APP')) return 'SECRETARIAT';
   if (upper.includes('CORE_TEAM') || upper.includes('TEAM') || upper.includes('CAREER')) return 'CORE_TEAM';
   if (upper.includes('COMMUNITY')) return 'COMMUNITY';
   if (upper.includes('AMBASSADOR') || upper.includes('CAMPUS')) return 'CAMPUS_AMBASSADOR';
@@ -55,8 +56,11 @@ export async function POST(req: NextRequest) {
     }
 
     const targetTab = mapTabToTarget(rawTab);
+    const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
     const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
+    const webhookUrl = targetTab === 'SECRETARIAT' 
+      ? SECRETARIAT_WEBHOOK_URL 
+      : (process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL);
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || 'Browser Client';
 

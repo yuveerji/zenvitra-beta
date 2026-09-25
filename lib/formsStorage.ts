@@ -7,12 +7,16 @@ import {
   ZenFormGoogleSheetsConfig 
 } from '@/types/forms';
 import { ZEN_DIPLOMACY_2026_FORM_TEMPLATE } from '@/lib/forms/ZenDiplomacyFormTemplate';
+import { ZEN_SECRETARIAT_2026_FORM_TEMPLATE } from '@/lib/forms/ZenSecretariatFormTemplate';
 
 const LS_FORMS_KEY = 'zenvitra_public_forms_v1';
 const LS_SUBMISSIONS_KEY = 'zenvitra_form_submissions_v1';
 const LS_ZENFORMS_SHEETS_KEY = 'zenvitra_forms_sheets_config_v1';
 
-export const DEFAULT_ZEN_FORMS: ZenForm[] = [ZEN_DIPLOMACY_2026_FORM_TEMPLATE];
+export const DEFAULT_ZEN_FORMS: ZenForm[] = [
+  ZEN_DIPLOMACY_2026_FORM_TEMPLATE,
+  ZEN_SECRETARIAT_2026_FORM_TEMPLATE
+];
 
 export function getPublicForms(): ZenForm[] {
   if (typeof window === 'undefined') return DEFAULT_ZEN_FORMS;
@@ -66,11 +70,21 @@ export function getZenFormById(idOrSlug: string): ZenForm | null {
   if (idOrSlug === 'zen-diplomacy-2026' || idOrSlug === 'zen-diplomacy-2026-registration') {
     return ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
   }
+  if (
+    idOrSlug === 'zen-secretariat-2026' ||
+    idOrSlug === 'zen-secretariat-2026-application' ||
+    idOrSlug === 'secretariat'
+  ) {
+    return ZEN_SECRETARIAT_2026_FORM_TEMPLATE;
+  }
   const forms = getPublicForms();
   const found = forms.find((f) => f.id === idOrSlug || f.slug === idOrSlug);
   if (found) {
     if (found.id === 'zen-diplomacy-2026-registration' || found.slug === 'zen-diplomacy-2026') {
       return ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
+    }
+    if (found.id === 'zen-secretariat-2026-application' || found.slug === 'zen-secretariat-2026') {
+      return ZEN_SECRETARIAT_2026_FORM_TEMPLATE;
     }
     return found;
   }

@@ -1493,7 +1493,8 @@ export default function ZenFormPublicPage() {
                             </div>
                           )}
                         </div>
-                      ))}
+                      )
+                    )}
 
                       {/* 18. Checkboxes / Multi-select Options */}
                       {(field.type === 'checkbox' || field.type === 'checkboxes') && (

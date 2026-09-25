@@ -328,6 +328,35 @@ export default function SecretariatPage() {
       ticketId: `SEC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
     };
 
+    const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
+
+    const secPayload = {
+      action: 'add_row',
+      targetTab: 'Secretariat Applications',
+      timestamp: new Date().toISOString(),
+      ticketId: submissionPayload.ticketId,
+      fullName: formData.fullName,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      institution: formData.institution,
+      gradeOrYear: formData.gradeOrYear,
+      cityCountry: formData.cityCountry,
+      preferredSector: selectedSector.name,
+      secondarySector: formData.secondarySector,
+      priorMunExperience: formData.priorMunExperience,
+      numberOfMunsAttended: formData.numberOfMunsAttended,
+      priorOrganizingExperience: formData.priorOrganizingExperience,
+      weeklyBandwidth: formData.weeklyBandwidth,
+      availabilityOct2425: formData.availabilityOct2425 ? 'YES' : 'NO',
+      statementOfPurpose: formData.statementOfPurpose,
+      practicalTaskResponse: formData.practicalTaskResponse,
+      portfolioUrl: formData.portfolioUrl || formData.linkedinOrResumeUrl,
+      linkedinOrResumeUrl: formData.linkedinOrResumeUrl,
+      discordHandle: formData.discordHandle,
+      sovereignAccordAccepted: formData.sovereignAccordAccepted ? 'ACCEPTED' : 'PENDING',
+      status: 'PENDING_REVIEW'
+    };
+
     try {
       // 1. Local backup
       if (typeof window !== 'undefined') {
@@ -336,20 +365,29 @@ export default function SecretariatPage() {
         localStorage.setItem('zen_secretariat_applications', JSON.stringify(existing));
       }
 
-      // 2. Google Sheets sync
-      await sheetSync.coreTeam({
-        fullName: formData.fullName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        roleAppliedFor: selectedSector.name,
-        department: `Secretariat: ${selectedSector.name}`,
-        portfolioUrl: formData.portfolioUrl || formData.linkedinOrResumeUrl,
-        weeklyBandwidth: formData.weeklyBandwidth,
-        motivationStatement: `[SOP]: ${formData.statementOfPurpose} \n[PRACTICAL]: ${formData.practicalTaskResponse} \n[INSTITUTION]: ${formData.institution}`,
-        constitutionalAccord: formData.sovereignAccordAccepted ? 'ACCEPTED' : 'PENDING',
-        handle: formData.discordHandle || formData.fullName.toLowerCase().replace(/\s+/g, '_'),
-        applicationStatus: 'PENDING_REVIEW'
-      });
+      // 2. Direct Secretariat Google Apps Script Webhook Dispatch
+      try {
+        await fetch(SECRETARIAT_WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(secPayload),
+        });
+      } catch (directErr) {
+        console.warn('[SEC-DIRECT-WEBHOOK-WARN]', directErr);
+      }
+
+      // 3. Server-side API dispatch backup
+      try {
+        await fetch('/api/sheets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetTab: 'SECRETARIAT',
+            data: secPayload,
+          }),
+        });
+      } catch (_) {}
 
       setIsSuccess(true);
     } catch (err: any) {

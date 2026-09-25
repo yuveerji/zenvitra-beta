@@ -185,9 +185,9 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   }
 
   // 2. Server-Side Direct Webhook Dispatch
+  const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
   const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCit4ReokFJY2qZcIgzeZ0FuuU8wsYVSaaEopmGfpzKKbo1-_yCTedzc0qa3-Maaqr/exec';
-  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || DEFAULT_WEBHOOK_URL;
-
+  
   // Normalize tab string to match Apps Script expected targetTab
   const rawTab = (payload.tab || '').toUpperCase();
   let targetTab = 'CORE_TEAM';
@@ -196,6 +196,7 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   else if (rawTab.includes('CONTACT')) targetTab = 'CONTACT';
   else if (rawTab.includes('NEWSLETTER')) targetTab = 'NEWSLETTER';
   else if (rawTab.includes('COLLAB') || rawTab.includes('PARTNER')) targetTab = 'COLLAB';
+  else if (rawTab.includes('SECRETARIAT') || rawTab.includes('SEC_APP')) targetTab = 'SECRETARIAT';
   else if (rawTab.includes('CORE') || rawTab.includes('TEAM') || rawTab.includes('CAREER')) targetTab = 'CORE_TEAM';
   else if (rawTab.includes('COMMUNITY')) targetTab = 'COMMUNITY';
   else if (rawTab.includes('AMBASSADOR') || rawTab.includes('CAMPUS')) targetTab = 'CAMPUS_AMBASSADOR';
@@ -204,6 +205,10 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   else if (rawTab.includes('IMPACT') || rawTab.includes('LEDGER')) targetTab = 'IMPACT_LEDGER';
   else if (rawTab.includes('FEEDBACK') || rawTab.includes('GRIEVANCE')) targetTab = 'FEEDBACK';
   else if (rawTab.includes('PULSE') || rawTab.includes('POST')) targetTab = 'PULSE_POSTS';
+
+  const webhookUrl = targetTab === 'SECRETARIAT' 
+    ? SECRETARIAT_WEBHOOK_URL 
+    : (process.env.GOOGLE_SHEETS_WEBHOOK_URL || DEFAULT_WEBHOOK_URL);
 
   const outgoingPayload = {
     targetTab,
@@ -227,6 +232,9 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
 // ─── CONVENIENCE DISPATCHERS FOR EACH DOMAIN ───
 
 export const sheetSync = {
+  secretariat: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Secretariat Applications' as any, data: record }),
+
   login: (record: LoginRecord) =>
     dispatchToGoogleSheets({ tab: 'Login Data Core', data: record }),
 
