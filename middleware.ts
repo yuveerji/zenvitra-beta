@@ -114,21 +114,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(preregisterUrl, { status: 308 });
   }
 
-  // Handle /pulse?user=xxx redirect to /space/xxx
-  if (pathname === '/pulse' && request.nextUrl.searchParams.has('user')) {
-    const targetUser = request.nextUrl.searchParams.get('user')?.replace(/^@/, '').trim();
-    if (targetUser) {
-      const spaceUrl = new URL(`/space/${encodeURIComponent(targetUser)}`, request.url);
-      return NextResponse.redirect(spaceUrl, { status: 307 });
-    }
-  }
-
-  // Handle /pulse/xxx redirect to /space/xxx (excluding /pulse/create-story)
+  // Handle /pulse/xxx redirect to /pulse?user=xxx (excluding /pulse/create-story)
   if (pathname.startsWith('/pulse/') && pathname !== '/pulse/create-story') {
     const subPath = pathname.replace(/^\/pulse\//, '').split('/')[0]?.replace(/^@/, '').trim();
     if (subPath) {
-      const spaceUrl = new URL(`/space/${encodeURIComponent(subPath)}`, request.url);
-      return NextResponse.redirect(spaceUrl, { status: 307 });
+      const pulseUserUrl = new URL(`/pulse?user=${encodeURIComponent(subPath)}`, request.url);
+      return NextResponse.redirect(pulseUserUrl, { status: 307 });
     }
   }
 

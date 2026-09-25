@@ -70,7 +70,8 @@ import {
   Wand2,
   Upload,
   Camera,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Radio
 } from 'lucide-react';
 
 const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -1314,8 +1315,8 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               )}
             </div>
 
-            {/* Quick Action Matrix (Direct Call, Chat, & Dashboard) */}
-            <div className={`grid gap-2.5 w-full max-w-md mb-6 ${(!profile.isPrivate || isOwner) ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}>
+            {/* Quick Action Matrix (Direct Call, Pulse Social, Chat, & Dashboard) */}
+            <div className={`grid gap-2.5 w-full max-w-md mb-6 ${(!profile.isPrivate || isOwner) ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'}`}>
               <Link
                 href={`/call/${profile.username}-chamber`}
                 className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-semibold text-xs tracking-wide shadow-md transition-all group ${
@@ -1326,6 +1327,19 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               >
                 <Video className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 <span>Call on ZEN.CALL</span>
+              </Link>
+
+              <Link
+                href={`/pulse?user=${profile.username}`}
+                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-semibold text-xs tracking-wide transition-all group border ${
+                  isLight 
+                    ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100' 
+                    : 'bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/30 text-rose-300'
+                }`}
+                title="View Sovereign Pulse Social Profile & Dispatches"
+              >
+                <Radio className="w-4 h-4 group-hover:scale-110 transition-transform text-rose-400 animate-pulse" />
+                <span>Pulse Profile</span>
               </Link>
 
               <Link
@@ -1344,7 +1358,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
               {(!profile.isPrivate || isOwner) && (
                 <Link
                   href={isOwner ? '/dashboard' : `/dashboard?user=${profile.username}`}
-                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-semibold text-xs tracking-wide transition-all group border col-span-2 sm:col-span-1 ${
+                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-semibold text-xs tracking-wide transition-all group border ${
                     isLight 
                       ? 'bg-white text-cyan-800 border-cyan-800/30 hover:bg-neutral-50' 
                       : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/30 text-cyan-300'

@@ -147,13 +147,16 @@ export function ZenPulseCore() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
+  const userParam = searchParams.get('user');
   const directiveParam = searchParams.get('directive');
   const flexParam = searchParams.get('flex') || searchParams.get('spark');
   const postParam = searchParams.get('id') || searchParams.get('post');
 
   /* Main Navigation: 'feed' | 'explore' | 'flux' | 'saved' | 'profile' */
   const [navTab, setNavTab] = useState<'feed' | 'explore' | 'flux' | 'saved' | 'profile'>(
-    tabParam === 'flux' || tabParam === 'reels'
+    userParam
+      ? 'profile'
+      : tabParam === 'flux' || tabParam === 'reels'
       ? 'flux'
       : tabParam === 'explore'
       ? 'explore'
@@ -164,8 +167,23 @@ export function ZenPulseCore() {
       : 'feed'
   );
 
+  /* Deep-link to User Pulse Social Profile via /pulse?user=xxx */
   useEffect(() => {
-    if (tabParam === 'flux' || tabParam === 'reels') {
+    if (userParam) {
+      const cleanUser = userParam.replace(/^@/, '').trim();
+      if (cleanUser) {
+        setSelectedProfileUsername(cleanUser);
+        setActiveView('profile');
+        setNavTab('profile');
+      }
+    }
+  }, [userParam, setSelectedProfileUsername, setActiveView]);
+
+  useEffect(() => {
+    if (userParam) {
+      setNavTab('profile');
+      setActiveView('profile');
+    } else if (tabParam === 'flux' || tabParam === 'reels') {
       setNavTab('flux');
       setActiveView('flux');
     } else if (tabParam === 'explore') {
@@ -180,7 +198,7 @@ export function ZenPulseCore() {
       setNavTab('feed');
       setActiveView('feed');
     }
-  }, [tabParam, setActiveView]);
+  }, [tabParam, userParam, setActiveView]);
 
   useEffect(() => {
     if (activeView === 'profile') {

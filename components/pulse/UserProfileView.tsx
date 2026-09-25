@@ -361,6 +361,15 @@ export function UserProfileView() {
                     <span>Dashboard</span>
                   </button>
                 </Link>
+                <Link href={`/space/${displayHandle}`}>
+                  <button
+                    className="px-3.5 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:text-purple-200 text-xs font-bold font-mono transition flex items-center gap-1.5 backdrop-blur-md cursor-pointer"
+                    title="Open Your Sovereign ZenSpace (Linktree)"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                    <span>ZenSpace</span>
+                  </button>
+                </Link>
                 <button
                   onClick={() => setShowEditModal(true)}
                   className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-xs font-bold text-white transition cursor-pointer backdrop-blur-md"
@@ -385,6 +394,17 @@ export function UserProfileView() {
               </div>
             ) : (
               <div className="flex items-center gap-2.5">
+                {/* ZenSpace linktree button */}
+                <Link href={`/space/${profile.username}`}>
+                  <button
+                    className="px-3.5 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:text-purple-200 text-xs font-bold font-mono transition flex items-center gap-1.5 backdrop-blur-md cursor-pointer"
+                    title="Open Citizen's ZenSpace (Linktree)"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                    <span>ZenSpace</span>
+                  </button>
+                </Link>
+
                 {/* Privacy Rule: If profile is private, outsiders CANNOT see the dashboard button */}
                 {!profile.isPrivate && (
                   <Link href={`/dashboard?user=${profile.username}`}>
