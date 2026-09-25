@@ -1624,26 +1624,91 @@ export default function ZenFormPublicPage() {
                         </div>
                       )}
 
-                      {/* 12. File Upload */}
+                      {/* 12. File Upload / Image Upload */}
                       {field.type === 'file_upload' && (
-                        <div className="pt-2">
-                          <label className="p-6 rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] hover:bg-white/[0.04] transition flex flex-col items-center justify-center gap-2 cursor-pointer text-center">
-                            <UploadCloud className="w-8 h-8 text-neutral-400" />
-                            <span className="text-xs font-medium text-white">
-                              {formData[field.id] ? `Selected: ${formData[field.id]}` : 'Click or drop files here to attach'}
-                            </span>
-                            <span className="text-[10px] font-mono text-neutral-500">
-                              Max file size: {field.maxFileSizeMb ?? 10} MB &bull; PDF, Images, Documents
-                            </span>
-                            <input
-                              type="file"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleInputChange(field.id, file.name);
-                              }}
-                            />
-                          </label>
+                        <div className="pt-2 space-y-3">
+                          {formData[field.id] ? (
+                            <div className="p-4 sm:p-5 rounded-2xl bg-black/60 border border-emerald-500/40 space-y-3 shadow-lg">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                  <span>Payment Proof / Receipt Attached</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleInputChange(field.id, '');
+                                    handleInputChange(`${field.id}_name`, '');
+                                  }}
+                                  className="text-[11px] font-mono text-rose-400 hover:text-rose-300 underline cursor-pointer"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+
+                              {/* Live Image Preview if image or data URL */}
+                              {typeof formData[field.id] === 'string' && (formData[field.id].startsWith('data:image') || formData[field.id].startsWith('http') || formData[field.id].startsWith('blob:')) && (
+                                <div className="max-h-64 w-full rounded-xl overflow-hidden border border-white/10 bg-black/80 flex items-center justify-center p-2">
+                                  <img
+                                    src={formData[field.id]}
+                                    alt="Payment Screenshot Preview"
+                                    className="max-h-60 w-auto object-contain rounded-lg shadow-md"
+                                  />
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 px-1">
+                                <span className="truncate max-w-xs">{formData[`${field.id}_name`] || 'Screenshot Attached'}</span>
+                                <label className="text-amber-400 hover:text-amber-300 underline cursor-pointer">
+                                  Change Screenshot
+                                  <input
+                                    type="file"
+                                    accept="image/*,application/pdf"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = (re) => {
+                                          handleInputChange(field.id, re.target?.result as string);
+                                          handleInputChange(`${field.id}_name`, file.name);
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          ) : (
+                            <label className="p-6 sm:p-8 rounded-2xl border-2 border-dashed border-amber-500/40 bg-gradient-to-b from-amber-500/[0.04] to-black/40 hover:bg-amber-500/[0.08] transition flex flex-col items-center justify-center gap-2.5 cursor-pointer text-center group">
+                              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition">
+                                <UploadCloud className="w-6 h-6" />
+                              </div>
+                              <span className="text-sm font-semibold text-white group-hover:text-amber-300 transition">
+                                Click or drag & drop payment screenshot here
+                              </span>
+                              <span className="text-[11px] font-mono text-neutral-400 max-w-sm leading-relaxed">
+                                Upload JPG, PNG, or WEBP screenshot of your completed transaction receipt (Max {field.maxFileSizeMb ?? 10} MB)
+                              </span>
+                              <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (re) => {
+                                      handleInputChange(field.id, re.target?.result as string);
+                                      handleInputChange(`${field.id}_name`, file.name);
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          )}
                         </div>
                       )}
 

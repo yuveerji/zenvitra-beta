@@ -61,19 +61,21 @@ export async function GET() {
       };
     });
 
-    // Merge default sovereign templates (Delegate & Secretariat)
-    DEFAULT_ZEN_FORMS.forEach((def) => {
-      const exists = enriched.some((f) => f.id === def.id || f.slug === def.slug);
-      if (!exists) {
-        const diskCount = getSubmissionsCount(def.id);
-        enriched.unshift({
-          ...def,
-          submissionsCount: Math.max(def.submissionsCount || 0, diskCount),
-        });
-      }
-    });
+    // Filter out any default/seeded templates from recent forms registry
+    const filtered = enriched.filter(
+      (f) =>
+        f &&
+        f.id !== 'zen-diplomacy-2026-registration' &&
+        f.slug !== 'zen-diplomacy-2026' &&
+        f.id !== 'zen-secretariat-2026-application' &&
+        f.slug !== 'zen-secretariat-2026' &&
+        f.id !== 'form_jharokha_delegate_2026' &&
+        f.id !== 'form_horizon_eb_2026' &&
+        !f.slug?.includes('jharokha') &&
+        !f.slug?.includes('horizon')
+    );
 
-    return NextResponse.json({ success: true, forms: enriched });
+    return NextResponse.json({ success: true, forms: filtered });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

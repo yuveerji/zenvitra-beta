@@ -502,11 +502,11 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
     {
       id: 'step15_receipt_link',
-      label: 'Payment Screenshot / Proof Link (Optional)',
-      type: 'text',
-      placeholder: 'https://drive.google.com/... or paste image URL',
-      description: 'Optional confirmation receipt proof for institutional batch delegations.',
-      required: false
+      label: 'Upload Payment Screenshot / Receipt Proof *',
+      type: 'file_upload',
+      description: 'Upload an image screenshot or receipt of your completed payment (JPG, PNG, or WEBP). Immediate verification by dais officers.',
+      required: true,
+      maxFileSizeMb: 10
     },
 
     /* ══════════════════════════════════════════════════════════════════

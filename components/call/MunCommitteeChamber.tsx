@@ -28,49 +28,21 @@ export function MunCommitteeChamber({
   committeeName = 'United Nations Security Council',
   isChair = true,
 }: MunCommitteeChamberProps) {
-  // GSL (General Speaker's List)
-  const [speakers, setSpeakers] = useState<MunSpeakerItem[]>([
-    { id: 'spk-1', country: '🇫🇷 France', delegateName: 'Ambassador Laurent', timeLeft: 90, isSpeaking: true },
-    { id: 'spk-2', country: '🇬🇧 United Kingdom', delegateName: 'Lord Sterling', timeLeft: 90, isSpeaking: false },
-    { id: 'spk-3', country: '🇯🇵 Japan', delegateName: 'Delegate Tanaka', timeLeft: 90, isSpeaking: false },
-    { id: 'spk-4', country: '🇧🇷 Brazil', delegateName: 'Delegate Silva', timeLeft: 90, isSpeaking: false },
-  ]);
+  // GSL (General Speaker's List) - Starts empty, populated dynamically by session delegates
+  const [speakers, setSpeakers] = useState<MunSpeakerItem[]>([]);
 
   const [gslTimerRunning, setGslTimerRunning] = useState(false);
   const [activeSpeakerTime, setActiveSpeakerTime] = useState(90);
 
   // Caucus Timer
   const [caucusMode, setCaucusMode] = useState<'MODERATED' | 'UNMODERATED' | 'CONSULTATION'>('MODERATED');
-  const [caucusTopic, setCaucusTopic] = useState('Framework for Multilateral Tech Safeguards');
+  const [caucusTopic, setCaucusTopic] = useState('');
   const [caucusTotalTime, setCaucusTotalTime] = useState(600); // 10 mins in seconds
   const [caucusTimeLeft, setCaucusTimeLeft] = useState(600);
   const [caucusRunning, setCaucusRunning] = useState(false);
 
-  // Motions
-  const [motions, setMotions] = useState<MunMotionItem[]>([
-    {
-      id: 'mot-1',
-      proposer: '🇫🇷 France',
-      topic: 'Moderated Caucus: Verification Mechanisms',
-      totalTime: 10,
-      speakingTime: 60,
-      type: 'MODERATED',
-      status: 'PENDING',
-      votesFor: 8,
-      votesAgainst: 2,
-    },
-    {
-      id: 'mot-2',
-      proposer: '🇧🇷 Brazil',
-      topic: 'Unmoderated Caucus: Resolution Drafting',
-      totalTime: 15,
-      speakingTime: 0,
-      type: 'UNMODERATED',
-      status: 'PENDING',
-      votesFor: 5,
-      votesAgainst: 5,
-    },
-  ]);
+  // Motions - Starts empty, introduced dynamically during session
+  const [motions, setMotions] = useState<MunMotionItem[]>([]);
 
   // GSL Timer interval
   useEffect(() => {
@@ -170,8 +142,13 @@ export function MunCommitteeChamber({
           <span className="text-[10px] font-mono text-zinc-400">{speakers.length} Delegates Queued</span>
         </div>
 
-        {/* Active Speaker Spotlight Box */}
-        {speakers[0] && (
+        {speakers.length === 0 ? (
+          <div className="p-4 rounded-xl border border-dashed border-white/10 bg-white/[0.02] text-center space-y-1">
+            <p className="text-xs text-neutral-400">No delegates on the Speaker&apos;s List.</p>
+            <p className="text-[10px] font-mono text-neutral-500">Delegates can request the floor to speak.</p>
+          </div>
+        ) : (
+          /* Active Speaker Spotlight Box */
           <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/10 via-black to-cyan-500/10 border border-amber-500/30 space-y-2">
             <div className="flex items-center justify-between">
               <div>
@@ -212,21 +189,23 @@ export function MunCommitteeChamber({
         )}
 
         {/* Up Next List */}
-        <div className="space-y-1">
-          <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block">Next in Queue</span>
-          {speakers.slice(1, 4).map((spk, idx) => (
-            <div
-              key={spk.id}
-              className="px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-zinc-500">#{idx + 2}</span>
-                <span className="font-semibold text-zinc-200">{spk.country}</span>
+        {speakers.length > 1 && (
+          <div className="space-y-1">
+            <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 block">Next in Queue</span>
+            {speakers.slice(1, 4).map((spk, idx) => (
+              <div
+                key={spk.id}
+                className="px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-zinc-500">#{idx + 2}</span>
+                  <span className="font-semibold text-zinc-200">{spk.country}</span>
+                </div>
+                <span className="text-[10px] font-mono text-zinc-500">90s</span>
               </div>
-              <span className="text-[10px] font-mono text-zinc-500">90s</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── SECTION 2: CAUCUS CLOCK ── */}
@@ -289,50 +268,57 @@ export function MunCommitteeChamber({
         </div>
 
         <div className="space-y-2">
-          {motions.map((motion) => (
-            <div
-              key={motion.id}
-              className="p-3 rounded-2xl bg-black/60 border border-white/10 space-y-2"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span className="text-[10px] font-mono text-zinc-400">{motion.proposer} moves for</span>
-                  <p className="text-xs font-bold text-white font-display leading-tight">{motion.topic}</p>
-                </div>
-                <span
-                  className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase ${
-                    motion.status === 'PASSED'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  }`}
-                >
-                  {motion.status}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] font-mono">
-                <span className="text-zinc-400">
-                  {motion.totalTime}m Total • {motion.speakingTime}s Speaking
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleVoteMotion(motion.id, 'for')}
-                    className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 cursor-pointer"
-                  >
-                    Aye ({motion.votesFor})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleVoteMotion(motion.id, 'against')}
-                    className="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 cursor-pointer"
-                  >
-                    Nay ({motion.votesAgainst})
-                  </button>
-                </div>
-              </div>
+          {motions.length === 0 ? (
+            <div className="p-4 rounded-xl border border-dashed border-white/10 bg-white/[0.02] text-center space-y-1">
+              <p className="text-xs text-neutral-400">No active caucus motions on the floor.</p>
+              <p className="text-[10px] font-mono text-neutral-500">Delegates can table procedural caucus motions.</p>
             </div>
-          ))}
+          ) : (
+            motions.map((motion) => (
+              <div
+                key={motion.id}
+                className="p-3 rounded-2xl bg-black/60 border border-white/10 space-y-2"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-mono text-zinc-400">{motion.proposer} moves for</span>
+                    <p className="text-xs font-bold text-white font-display leading-tight">{motion.topic}</p>
+                  </div>
+                  <span
+                    className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase ${
+                      motion.status === 'PASSED'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    }`}
+                  >
+                    {motion.status}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] font-mono">
+                  <span className="text-zinc-400">
+                    {motion.totalTime}m Total • {motion.speakingTime}s Speaking
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleVoteMotion(motion.id, 'for')}
+                      className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 cursor-pointer"
+                    >
+                      Aye ({motion.votesFor})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleVoteMotion(motion.id, 'against')}
+                      className="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 cursor-pointer"
+                    >
+                      Nay ({motion.votesAgainst})
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

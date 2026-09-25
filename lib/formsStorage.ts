@@ -19,43 +19,33 @@ export const DEFAULT_ZEN_FORMS: ZenForm[] = [
 ];
 
 export function getPublicForms(): ZenForm[] {
-  if (typeof window === 'undefined') return DEFAULT_ZEN_FORMS;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LS_FORMS_KEY);
-    if (!raw) {
-      localStorage.setItem(LS_FORMS_KEY, JSON.stringify(DEFAULT_ZEN_FORMS));
-      return DEFAULT_ZEN_FORMS;
-    }
+    if (!raw) return [];
     const parsed: ZenForm[] = JSON.parse(raw);
     if (Array.isArray(parsed)) {
+      // Filter out any default/seeded forms from user's recent forms ledger
       const cleaned = parsed.filter(
         (f) =>
           f &&
+          f.id !== 'zen-diplomacy-2026-registration' &&
+          f.slug !== 'zen-diplomacy-2026' &&
+          f.id !== 'zen-secretariat-2026-application' &&
+          f.slug !== 'zen-secretariat-2026' &&
           f.id !== 'form_jharokha_delegate_2026' &&
           f.id !== 'form_horizon_eb_2026' &&
           !f.slug?.includes('jharokha') &&
           !f.slug?.includes('horizon')
       );
-      // Guarantee that all default sovereign forms (Delegate & Secretariat) are always present & updated
-      DEFAULT_ZEN_FORMS.forEach((defForm) => {
-        const foundIdx = cleaned.findIndex((f) => f.id === defForm.id || f.slug === defForm.slug);
-        if (foundIdx === -1) {
-          cleaned.push(defForm);
-        } else {
-          // Merge latest template code attributes while preserving user submission count
-          cleaned[foundIdx] = {
-            ...defForm,
-            submissionsCount: Math.max(cleaned[foundIdx].submissionsCount || 0, defForm.submissionsCount || 0),
-          };
-        }
-      });
-
-      localStorage.setItem(LS_FORMS_KEY, JSON.stringify(cleaned));
+      if (cleaned.length !== parsed.length) {
+        localStorage.setItem(LS_FORMS_KEY, JSON.stringify(cleaned));
+      }
       return cleaned;
     }
-    return DEFAULT_ZEN_FORMS;
+    return [];
   } catch {
-    return DEFAULT_ZEN_FORMS;
+    return [];
   }
 }
 

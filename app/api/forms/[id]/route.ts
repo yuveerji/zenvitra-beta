@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { ZenForm } from '@/types/forms';
+import { DEFAULT_ZEN_FORMS } from '@/lib/formsStorage';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +44,23 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const clean = id.trim().toLowerCase();
+
+    // Check default sovereign templates first
+    const defaultTemplate = DEFAULT_ZEN_FORMS.find(
+      (f) => f.id.toLowerCase() === clean || f.slug?.toLowerCase() === clean
+    );
+    if (defaultTemplate) {
+      const count = getSubmissionsCount(defaultTemplate.id);
+      return NextResponse.json({
+        success: true,
+        form: {
+          ...defaultTemplate,
+          submissionsCount: Math.max(defaultTemplate.submissionsCount || 0, count)
+        }
+      });
+    }
+
     const forms = getStoredForms();
     const form = forms.find((f) => f.id === id || f.slug === id);
 

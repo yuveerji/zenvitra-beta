@@ -668,14 +668,83 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
       {/* ── TAB 1: QUESTIONS CANVAS ── */}
       {activeTab === 'questions' && (
         <main className="max-w-3xl mx-auto px-4 py-8 w-full space-y-4 relative">
-          {/* Header Cover Banner (if configured) */}
-          {form.customStyle?.coverImageUrl && (
-            <div className="w-full h-36 sm:h-48 rounded-2xl overflow-hidden border border-white/10 relative shadow-xl">
+          {/* Header Cover Banner (Configurable directly on canvas) */}
+          {form.customStyle?.coverImageUrl ? (
+            <div className="w-full h-36 sm:h-48 rounded-2xl overflow-hidden border border-white/15 relative shadow-xl group">
               <img
                 src={form.customStyle.coverImageUrl}
                 alt="Form Cover"
                 className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end p-3 gap-2">
+                <label className="px-3 py-1.5 rounded-xl bg-black/80 hover:bg-black border border-white/20 text-white font-mono text-xs flex items-center gap-1.5 cursor-pointer shadow-lg backdrop-blur-md transition hover:scale-105">
+                  <Upload className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Change Banner</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (re) => {
+                          updateFormState({
+                            ...form,
+                            customStyle: {
+                              ...form.customStyle,
+                              coverImageUrl: re.target?.result as string
+                            }
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => updateFormState({
+                    ...form,
+                    customStyle: {
+                      ...form.customStyle,
+                      coverImageUrl: ''
+                    }
+                  })}
+                  className="px-3 py-1.5 rounded-xl bg-rose-500/80 hover:bg-rose-500 text-white font-mono text-xs flex items-center gap-1.5 cursor-pointer shadow-lg backdrop-blur-md transition hover:scale-105"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-end pb-1">
+              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-amber-400/40 text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer shadow-sm">
+                <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>+ Add Header Banner</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (re) => {
+                        updateFormState({
+                          ...form,
+                          customStyle: {
+                            ...form.customStyle,
+                            coverImageUrl: re.target?.result as string
+                          }
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
             </div>
           )}
 
@@ -3294,28 +3363,36 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
             <div className="space-y-4">
               <div className="space-y-2">
                 <span className="text-xs font-mono text-neutral-400 block">Shareable Public Link</span>
-                <div className={`flex items-center px-3.5 py-2 rounded-xl bg-[#080a0f] border text-xs font-mono transition ${
-                  slugClashError ? 'border-rose-500 ring-2 ring-rose-500/20 text-rose-300' : 'border-white/15 text-neutral-200 focus-within:border-amber-400'
-                }`}>
-                  <span className="text-neutral-500 select-none text-[11px]">{typeof window !== 'undefined' ? `${window.location.origin}/forms/` : '/forms/'}</span>
-                  <input
-                    type="text"
-                    value={form.slug || ''}
-                    onChange={(e) => handleSlugUpdate(e.target.value)}
-                    placeholder="my-link"
-                    className="flex-1 bg-transparent text-white outline-none font-mono text-xs pl-0.5"
-                  />
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/forms/${form.slug || form.id}`;
-                      navigator.clipboard.writeText(url);
-                      setCopiedLink(true);
-                      setTimeout(() => setCopiedLink(false), 2000);
-                    }}
-                    className="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition shrink-0 ml-2 shadow-sm cursor-pointer"
-                  >
-                    {copiedLink ? 'Copied!' : 'Copy'}
-                  </button>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-[#080a0f] border border-white/15 focus-within:border-amber-400">
+                    <div className="flex-1 px-2.5 py-1 text-xs font-mono text-neutral-200 truncate select-all">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/forms/${form.slug || form.id}` : `/forms/${form.slug || form.id}`}
+                    </div>
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/forms/${form.slug || form.id}`;
+                        navigator.clipboard.writeText(url);
+                        setCopiedLink(true);
+                        setTimeout(() => setCopiedLink(false), 2000);
+                      }}
+                      className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shrink-0 shadow-md cursor-pointer flex items-center gap-1.5"
+                    >
+                      {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedLink ? 'Copied!' : 'Copy'}</span>
+                    </button>
+                  </div>
+
+                  {/* Slug Customizer */}
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-mono">
+                    <span className="text-neutral-500 select-none text-[11px]">Customize: /forms/</span>
+                    <input
+                      type="text"
+                      value={form.slug || ''}
+                      onChange={(e) => handleSlugUpdate(e.target.value)}
+                      placeholder="custom-slug"
+                      className="flex-1 bg-transparent text-white outline-none font-mono text-xs"
+                    />
+                  </div>
                 </div>
 
                 {slugClashError ? (

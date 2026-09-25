@@ -73,15 +73,32 @@ export default function ZenFormsHubPage() {
               });
             }
           });
-          setForms(Array.from(map.values()));
+          const userForms = Array.from(map.values()).filter(
+            (f) =>
+              f &&
+              f.id !== 'zen-diplomacy-2026-registration' &&
+              f.slug !== 'zen-diplomacy-2026' &&
+              f.id !== 'zen-secretariat-2026-application' &&
+              f.slug !== 'zen-secretariat-2026' &&
+              f.id !== 'form_jharokha_delegate_2026' &&
+              f.id !== 'form_horizon_eb_2026' &&
+              !f.slug?.includes('jharokha') &&
+              !f.slug?.includes('horizon')
+          );
+          setForms(userForms);
         }
       })
       .catch(() => {});
   };
 
   const filteredForms = forms.filter((f) =>
-    f.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (f.description && f.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    f &&
+    f.id !== 'zen-diplomacy-2026-registration' &&
+    f.slug !== 'zen-diplomacy-2026' &&
+    f.id !== 'zen-secretariat-2026-application' &&
+    f.slug !== 'zen-secretariat-2026' &&
+    (f.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (f.description && f.description.toLowerCase().includes(searchQuery.toLowerCase())))
   );
 
   interface TemplateDef {
@@ -416,6 +433,23 @@ export default function ZenFormsHubPage() {
 
             <div className="flex items-center gap-3 text-xs font-mono text-neutral-400">
               <span className="cursor-pointer hover:text-white">Owned by anyone</span>
+              {filteredForms.length > 0 && (
+                <>
+                  <div className="h-4 w-px bg-white/10" />
+                  <button
+                    onClick={() => {
+                      if (confirm('Clear all recent forms from this device?')) {
+                        localStorage.removeItem('zenvitra_public_forms_v1');
+                        setForms([]);
+                      }
+                    }}
+                    className="text-[11px] text-neutral-500 hover:text-rose-400 transition cursor-pointer"
+                    title="Clear recent forms ledger from browser"
+                  >
+                    Clear Ledger
+                  </button>
+                </>
+              )}
               <div className="h-4 w-px bg-white/10" />
               <button
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}

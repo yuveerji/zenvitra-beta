@@ -109,9 +109,7 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   const [showShareModal, setShowShareModal] = useState(false);
 
   // Drawers and Modals
-  const [activeDrawer, setActiveDrawer] = useState<'chat' | 'participants' | 'polls' | 'breakout' | 'mun' | null>(
-    paramMode === 'COMMITTEE' ? 'mun' : null
-  );
+  const [activeDrawer, setActiveDrawer] = useState<'chat' | 'participants' | 'polls' | 'breakout' | 'mun' | null>(null);
   const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -144,6 +142,8 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   // Video Refs
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const screenVideoRef = useRef<HTMLVideoElement | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
 
   // Timer counter
   useEffect(() => {
@@ -214,14 +214,26 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   // Handle Screen Share
   const handleToggleScreenShare = async () => {
     if (isScreenSharing) {
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach((t) => t.stop());
+        screenStreamRef.current = null;
+      }
       setIsScreenSharing(false);
       return;
     }
     try {
       if (navigator?.mediaDevices?.getDisplayMedia) {
         const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        screenStreamRef.current = displayStream;
         setIsScreenSharing(true);
+        if (screenVideoRef.current) {
+          screenVideoRef.current.srcObject = displayStream;
+        }
         displayStream.getVideoTracks()[0].onended = () => {
+          if (screenStreamRef.current) {
+            screenStreamRef.current.getTracks().forEach((t) => t.stop());
+            screenStreamRef.current = null;
+          }
           setIsScreenSharing(false);
         };
       } else {
@@ -231,6 +243,13 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
       setIsScreenSharing(false);
     }
   };
+
+  // Keep screen video element attached if ref mounts after state change
+  useEffect(() => {
+    if (isScreenSharing && screenVideoRef.current && screenStreamRef.current) {
+      screenVideoRef.current.srcObject = screenStreamRef.current;
+    }
+  }, [isScreenSharing]);
 
   // Add floating reaction
   const triggerReaction = (emoji: string) => {
@@ -666,65 +685,141 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
       <div className="relative flex-1 flex overflow-hidden">
         {/* VIDEO VIEWPORT */}
         <main className="flex-1 relative flex flex-col p-3 md:p-4 overflow-y-auto">
-          {/* SCREEN SHARE PRESENTATION OVERLAY (If active) */}
-          {isScreenSharing && (
-            <div className="relative w-full h-80 md:h-[65%] bg-slate-900 rounded-2xl border-2 border-cyan-500/50 shadow-2xl overflow-hidden mb-3 flex flex-col">
-              <div className="h-9 bg-slate-950/80 px-3 flex items-center justify-between text-xs text-slate-300 border-b border-white/10">
-                <div className="flex items-center gap-2">
-                  <MonitorUp className="w-4 h-4 text-cyan-400" />
-                  <span className="font-semibold text-white">Presenting Screen: You</span>
+          {/* SCREEN SHARE PRESENTATION STAGE OR NORMAL CALL LAYOUTS */}
+          {isScreenSharing ? (
+            /* DEDICATED SCREEN PRESENTATION VIEWPORT (Replaces "You're the only one here") */
+            <div className="flex-1 w-full flex flex-col gap-3 h-full overflow-hidden">
+              {/* Top: Large Shared Screen Viewport */}
+              <div className="flex-1 min-h-[300px] w-full bg-slate-950 rounded-3xl border-2 border-cyan-500/40 shadow-2xl overflow-hidden flex flex-col relative group">
+                <div className="h-10 bg-slate-900/90 backdrop-blur-md px-4 flex items-center justify-between text-xs text-slate-300 border-b border-white/10 z-10 shrink-0">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                    <MonitorUp className="w-4 h-4 text-cyan-400" />
+                    <span className="font-semibold text-white">Presenting Screen: You (Host)</span>
+                    <span className="hidden sm:inline text-[11px] font-mono text-cyan-400/80 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
+                      Live Broadcast
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleToggleScreenShare}
+                      className="px-3 py-1 bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white rounded-lg transition-all text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <PhoneOff className="w-3 h-3" />
+                      <span>Stop Presenting</span>
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setIsScreenSharing(false)}
-                  className="px-2 py-0.5 bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white rounded transition-colors text-[11px]"
-                >
-                  Stop Presenting
-                </button>
+
+                {/* Presentation Canvas / Live Screen Video */}
+                <div className="flex-1 w-full h-full relative flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+                  {screenStreamRef.current ? (
+                    <video
+                      ref={screenVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-8 text-center">
+                      <div className="w-20 h-20 rounded-3xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-4 shadow-[0_0_40px_rgba(6,182,212,0.25)]">
+                        <MonitorUp className="w-10 h-10 text-cyan-400 animate-pulse" />
+                      </div>
+                      <h4 className="text-lg font-bold text-white tracking-tight">Active Screen Broadcast</h4>
+                      <p className="text-xs text-slate-400 mt-1.5 max-w-md leading-relaxed">
+                        You are presenting your screen to chamber <span className="font-mono text-cyan-300 font-semibold">{roomId}</span>. All participants view this stream synchronously.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 to-slate-900 p-6 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-3">
-                  <MonitorUp className="w-8 h-8 text-cyan-400" />
+
+              {/* Bottom: Video Profiles Strip Beneath the Shared Screen */}
+              <div className="h-32 sm:h-36 w-full flex items-center gap-3 overflow-x-auto pb-1 shrink-0">
+                {/* Local user profile tile (You) */}
+                <div className="relative h-full w-48 sm:w-56 shrink-0 rounded-2xl overflow-hidden border border-cyan-500/40 bg-slate-900 shadow-lg flex flex-col items-center justify-center">
+                  {renderLocalVideoTile()}
+                  <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-semibold text-white border border-white/10 z-10 flex items-center gap-1">
+                    <span>You (Host)</span>
+                  </div>
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between z-10">
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-black/70 text-[10px] text-white">
+                      {isMicOn ? <Mic className="w-3 h-3 text-emerald-400" /> : <MicOff className="w-3 h-3 text-rose-400" />}
+                      <span>You</span>
+                    </div>
+                  </div>
                 </div>
-                <h4 className="text-base font-semibold text-white">Live Screen Broadcast Active</h4>
-                <p className="text-xs text-slate-400 mt-1 max-w-md">
-                  All participants in room <span className="font-mono text-cyan-400">{roomId}</span> are viewing your shared window.
-                </p>
+
+                {/* Remote Participants profile tiles */}
+                {participants.map((peer) => (
+                  <div
+                    key={peer.id}
+                    className={`relative h-full w-48 sm:w-56 shrink-0 rounded-2xl overflow-hidden border transition-all bg-slate-900 shadow-lg flex flex-col items-center justify-center ${
+                      peer.isSpeaking ? 'border-emerald-400 ring-2 ring-emerald-400/50' : 'border-white/10'
+                    }`}
+                  >
+                    {peer.isCameraOff ? (
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <div className="w-12 h-12 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-sm font-bold text-white">
+                          {peer.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <span className="text-[11px] text-slate-300 font-medium truncate max-w-[120px]">{peer.name}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <img src={peer.avatar} alt={peer.name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                      </>
+                    )}
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between z-10">
+                      <span className="text-[10px] font-medium text-white truncate max-w-[100px]">{peer.name}</span>
+                      {peer.isSpeaking && (
+                        <div className="flex items-end gap-0.5 h-2.5">
+                          <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-bounce" />
+                          <span className="w-0.5 h-2.5 bg-emerald-400 rounded-full animate-bounce delay-100" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-
-          {/* VIDEO TILES VIEWPORT WITH GOOGLE MEET & WHATSAPP LAYOUT MODES */}
-          {layoutMode === 'whatsapp' ? (
+          ) : layoutMode === 'whatsapp' ? (
             /* WHATSAPP 1:1 IMMERSIVE MOBILE / CINEMATIC VIEW */
             <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-slate-950 shadow-2xl">
               {!participants[0] ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center max-w-md">
-                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
+                <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center max-w-md w-full">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4 shadow-lg shadow-emerald-500/10">
                     <WhatsAppIcon className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl font-bold text-white">You&apos;re the only one here</h3>
+                  <h3 className="text-xl font-bold text-white tracking-tight">You&apos;re the only one here</h3>
                   <p className="text-xs text-slate-400 mt-2 leading-relaxed">
                     Share this meeting link with others to start your 1:1 WhatsApp or Sovereign session.
                   </p>
-                  <div className="mt-5 w-full flex items-center gap-2 p-1.5 rounded-2xl bg-black/70 border border-white/15">
-                    <div className="flex-1 px-3 py-1 text-xs font-mono text-emerald-400 truncate text-left">
-                      {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                  
+                  {/* Fixed, high-contrast link card */}
+                  <div className="mt-5 w-full bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-2.5 shadow-xl flex flex-col gap-2">
+                    <div className="flex items-center gap-2 bg-black/70 rounded-xl px-3 py-2 border border-white/10">
+                      <div className="flex-1 text-xs font-mono text-emerald-400 truncate text-left select-all">
+                        {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                      </div>
+                      <button
+                        onClick={handleCopyLink}
+                        className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-md shadow-emerald-500/20"
+                      >
+                        {isCopied ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                      </button>
                     </div>
                     <button
-                      onClick={handleCopyLink}
-                      className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      onClick={() => setShowShareModal(true)}
+                      className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/25 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
-                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                      <WhatsAppIcon className="w-4 h-4" />
+                      <span>Invite via WhatsApp</span>
                     </button>
                   </div>
-                  <button
-                    onClick={() => setShowShareModal(true)}
-                    className="mt-3 w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-500/20"
-                  >
-                    <WhatsAppIcon className="w-4 h-4" />
-                    <span>Invite via WhatsApp</span>
-                  </button>
                 </div>
               ) : (
                 <div className="relative w-full h-full flex items-center justify-center">
@@ -797,24 +892,35 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
                   const mainPeer = participants.find((p) => (pinnedId ? p.id === pinnedId : p.isSpeaking)) || participants[0];
                   if (!mainPeer) {
                     return (
-                      <div className="flex flex-col items-center justify-center p-8 text-center max-w-md">
-                        <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-3">
+                      <div className="flex flex-col items-center justify-center p-6 sm:p-8 text-center max-w-md w-full">
+                        <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-3 shadow-lg">
                           <Users className="w-7 h-7" />
                         </div>
-                        <h3 className="text-lg font-bold text-white">You&apos;re the only one here</h3>
+                        <h3 className="text-lg font-bold text-white tracking-tight">You&apos;re the only one here</h3>
                         <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
                           Share this meeting link with others you want in the meeting.
                         </p>
-                        <div className="mt-4 w-full flex items-center gap-2 p-1.5 rounded-2xl bg-black/70 border border-white/15">
-                          <div className="flex-1 px-3 py-1 text-xs font-mono text-cyan-300 truncate text-left">
-                            {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                        
+                        {/* High-contrast link card */}
+                        <div className="mt-4 w-full bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-2.5 shadow-xl flex flex-col gap-2">
+                          <div className="flex items-center gap-2 bg-black/70 rounded-xl px-3 py-2 border border-white/10">
+                            <div className="flex-1 text-xs font-mono text-cyan-300 truncate text-left select-all">
+                              {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                            </div>
+                            <button
+                              onClick={handleCopyLink}
+                              className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-md shadow-cyan-500/20"
+                            >
+                              {isCopied ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Copy className="w-3.5 h-3.5" />}
+                              <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                            </button>
                           </div>
                           <button
-                            onClick={handleCopyLink}
-                            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold flex items-center gap-1 transition-colors"
+                            onClick={() => setShowShareModal(true)}
+                            className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 border border-white/10 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
                           >
-                            {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                            <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
+                            <span>Invite via WhatsApp</span>
                           </button>
                         </div>
                       </div>
@@ -1006,25 +1112,25 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
                     Share this meeting link with others you want in the meeting.
                   </p>
 
-                  <div className="mt-4 w-full max-w-md flex items-center gap-2 p-1.5 rounded-2xl bg-black/70 border border-white/15">
-                    <div className="flex-1 px-3 py-1 text-xs font-mono text-cyan-300 truncate text-left">
-                      {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                  {/* High-contrast link card */}
+                  <div className="mt-4 w-full max-w-md bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-2.5 shadow-xl flex flex-col gap-2">
+                    <div className="flex items-center gap-2 bg-black/70 rounded-xl px-3 py-2 border border-white/10">
+                      <div className="flex-1 text-xs font-mono text-cyan-300 truncate text-left select-all">
+                        {typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
+                      </div>
+                      <button
+                        onClick={handleCopyLink}
+                        className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-md shadow-cyan-500/20"
+                      >
+                        {isCopied ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{isCopied ? 'Copied' : 'Copy'}</span>
+                      </button>
                     </div>
                     <button
-                      onClick={handleCopyLink}
-                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                    >
-                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{isCopied ? 'Copied' : 'Copy'}</span>
-                    </button>
-                  </div>
-
-                  <div className="mt-3 flex items-center gap-2">
-                    <button
                       onClick={() => setShowShareModal(true)}
-                      className="px-4 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
+                      className="w-full py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
-                      <WhatsAppIcon className="w-4 h-4" />
+                      <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
                       <span>Invite via WhatsApp</span>
                     </button>
                   </div>
@@ -1879,19 +1985,20 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
             </div>
             <div className="space-y-1.5">
               <label className="text-[11px] font-mono text-slate-400">Direct Room URL</label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-black/70 border border-white/15 rounded-2xl p-1.5 shadow-inner">
                 <input
                   type="text"
                   readOnly
                   value={typeof window !== 'undefined' ? `${window.location.origin}/call/${roomId}` : `https://zenvitra.xyz/call/${roomId}`}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 outline-none"
+                  className="flex-1 bg-transparent px-3 py-1.5 text-xs font-mono text-cyan-300 outline-none select-all"
                 />
                 <button
                   onClick={handleCopyLink}
-                  className="p-2.5 bg-white/10 hover:bg-white/15 text-white rounded-xl transition-colors shrink-0"
+                  className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-md shadow-cyan-500/25"
                   title="Copy Link"
                 >
-                  {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {isCopied ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{isCopied ? 'Copied!' : 'Copy'}</span>
                 </button>
               </div>
             </div>
