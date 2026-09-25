@@ -28,6 +28,7 @@ export interface EventAttendee {
 
 export interface ZenEvent {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   coverImage?: string;

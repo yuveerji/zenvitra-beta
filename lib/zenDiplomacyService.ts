@@ -93,7 +93,7 @@ export async function registerDelegate(
   try {
     pushLiveNotification({
       title: '📜 Delegate Application Recorded',
-      message: `Your application for ZEN.DIPLOMACY MUN 2026 has been submitted. Preferences: ${newReg.firstCommitteeChoice} & ${newReg.secondCommitteeChoice}. You will receive a notification here once your portfolio is officially allocated in the Google Sheet Matrix.`,
+      message: `Your application for ZEN.DIPLOMACY MUN 2026 has been submitted. Preferences: ${newReg.firstCommitteeChoice} & ${newReg.secondCommitteeChoice}. You will receive a notification here once your portfolio is officially allocated in the Sovereign Assembly Matrix.`,
       type: 'mun',
       priority: 'NORMAL',
       link: '/zen-diplomacy',
@@ -204,10 +204,10 @@ export async function allocatePortfolioAndNotify(
   try {
     pushLiveNotification({
       title: '🏛️ ZEN.DIPLOMACY: Portfolio Officially Allocated!',
-      message: `Congratulations ${delegateDisplayName}! You have been officially allocated "${portfolio}" in ${committee}. Directives and the live Portfolio Matrix have been updated in Google Sheets.`,
+      message: `Congratulations ${delegateDisplayName}! You have been officially allocated "${portfolio}" in ${committee}. Directives and the live Portfolio Matrix have been ratified on the sovereign ledger.`,
       type: 'mun',
       priority: 'URGENT',
-      link: '/zen-diplomacy#matrix',
+      link: '/matrix',
       author: allottedBy || 'Executive Secretariat (@yuveer)',
       timestamp: 'Just now'
     });
@@ -215,7 +215,7 @@ export async function allocatePortfolioAndNotify(
     // Native browser push notification if permitted
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('ZEN.DIPLOMACY: Portfolio Allocated!', {
-        body: `${delegateDisplayName}, your portfolio "${portfolio}" in ${committee} is live in the Google Sheet Matrix!`,
+        body: `${delegateDisplayName}, your portfolio "${portfolio}" in ${committee} is live in the Assembly Matrix!`,
         icon: '/assets/logo.png'
       });
     }

@@ -193,7 +193,18 @@ export function EventsFeed() {
       {/* Hero Featured Summit Card */}
       {featuredEvent && (
         <div
-          onClick={() => { setActiveEventId(featuredEvent.id); setActiveView('detail'); }}
+          onClick={() => {
+            const isOurMun = 
+              featuredEvent.id === 'zen-diplomacy-mun-2026' || 
+              (featuredEvent as any).isOfficialZenDiplomacy || 
+              (featuredEvent.title && featuredEvent.title.toLowerCase().includes('zen.diplomacy')) || 
+              (featuredEvent.title && featuredEvent.title.toLowerCase().includes('diplomacy mun'));
+            if (isOurMun) {
+              window.location.href = '/zen-diplomacy';
+              return;
+            }
+            window.location.href = `/events/${featuredEvent.slug || featuredEvent.id}`;
+          }}
           className="group relative rounded-3xl overflow-hidden card-luxury border border-cyan-500/30 hover:border-cyan-400/60 transition-all duration-500 cursor-pointer shadow-[0_0_40px_rgba(0,242,254,0.15)]"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2">

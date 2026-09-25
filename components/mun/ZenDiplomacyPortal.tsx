@@ -13,7 +13,7 @@ import {
   ArrowUpRight,
   ExternalLink, 
   CheckCircle2, 
-  FileSpreadsheet, 
+  Grid,
   Scale, 
   BookOpen, 
   Award, 
@@ -61,21 +61,8 @@ export function ZenDiplomacyPortal() {
   const [matrixUrl, setMatrixUrl] = useState<string>(DEFAULT_MATRIX_SHEET_URL);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedMatrix, setCopiedMatrix] = useState(false);
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
   const [selectedCommitteeModal, setSelectedCommitteeModal] = useState<string | null>(null);
-
-  // Registration Form State
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPhone, setRegPhone] = useState('');
-  const [regInstitution, setRegInstitution] = useState('');
-  const [regExperience, setRegExperience] = useState('INTERMEDIATE');
-  const [regFirstChoice, setRegFirstChoice] = useState('AIPPM');
-  const [regSecondChoice, setRegSecondChoice] = useState('UNSC');
-  const [regPortfolios, setRegPortfolios] = useState('');
-  const [regSubmitted, setRegSubmitted] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false);
 
   // Delegate Allocation Status Checker State
   const [searchEmail, setSearchEmail] = useState('');
@@ -107,13 +94,6 @@ export function ZenDiplomacyPortal() {
     } catch {}
   }, []);
 
-  // Autofill user details if signed in
-  useEffect(() => {
-    if (profile || user) {
-      if (!regName) setRegName(profile?.display_name || user?.name || '');
-      if (!regEmail) setRegEmail(user?.email || profile?.email || '');
-    }
-  }, [profile, user]);
 
   // Countdown to October 24, 2026, 09:00 AM IST
   const targetDate = useMemo(() => new Date('2026-10-24T09:00:00+05:30').getTime(), []);
@@ -170,34 +150,6 @@ export function ZenDiplomacyPortal() {
     return () => unsub();
   }, []);
 
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regName.trim() || !regEmail.trim()) return;
-
-    setIsRegistering(true);
-    try {
-      const created = await registerDelegate({
-        name: regName.trim(),
-        email: regEmail.trim(),
-        phone: regPhone.trim(),
-        institution: regInstitution.trim(),
-        experienceLevel: regExperience,
-        firstCommitteeChoice: regFirstChoice,
-        secondCommitteeChoice: regSecondChoice,
-        portfolioPreferences: regPortfolios.trim(),
-      });
-      setRegSubmitted(true);
-      refreshAllocations();
-      setSearchEmail(regEmail.trim());
-      setCheckedResult(created);
-      setHasSearched(true);
-    } catch (err) {
-      console.error('Registration failed:', err);
-    } finally {
-      setIsRegistering(false);
-    }
-  };
-
   const handleCheckAllocation = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const query = (searchEmail || user?.email || profile?.email || '').trim().toLowerCase();
@@ -231,7 +183,7 @@ export function ZenDiplomacyPortal() {
       }
 
       setAllocationSuccessMsg(
-        `✓ Success: Portfolio "${allocPortfolio}" in ${allocCommittee} has been officially allocated to ${allocEmail}. Synced with Google Sheets and urgent notification dispatched!`
+        `✓ Success: Portfolio "${allocPortfolio}" in ${allocCommittee} has been officially allocated to ${allocEmail}. Recorded on Sovereign Assembly Matrix and urgent notification dispatched!`
       );
       setAllocPortfolio('');
       setAllocNotes('');
@@ -365,14 +317,13 @@ export function ZenDiplomacyPortal() {
 
               {/* Action Buttons Stack */}
               <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterModalOpen(true)}
+                <Link
+                  href="/forms/zen-diplomacy-2026"
                   className="px-6 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(255,255,255,0.3)] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
                 >
                   <Sparkles className="w-4 h-4 text-black" />
                   <span>Register as Delegate</span>
-                </button>
+                </Link>
 
                 <Link
                   href="/zen-diplomacy/secretariat"
@@ -384,17 +335,15 @@ export function ZenDiplomacyPortal() {
                   <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
                 </Link>
 
-                <a
-                  href={matrixUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/matrix"
                   className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer hover:scale-105"
-                  title="Open live Google Sheets Portfolio Matrix"
+                  title="Open live Interactive Portfolio Matrix"
                 >
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                  <span>Portfolio Matrix Sheet</span>
-                  <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
-                </a>
+                  <Grid className="w-4 h-4 text-emerald-400" />
+                  <span>Live Portfolio Matrix</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
+                </Link>
 
                 <Link
                   href="/zen-diplomacy/brochure"
@@ -477,9 +426,7 @@ export function ZenDiplomacyPortal() {
         <section id="matrix" className="space-y-6">
           <PortfolioMatrixView 
             onSelectPortfolio={(portfolioTitle, committee) => {
-              setRegFirstChoice(committee);
-              setRegPortfolios(portfolioTitle);
-              setIsRegisterModalOpen(true);
+              window.location.href = `/forms/zen-diplomacy-2026?committee=${committee}&portfolio=${encodeURIComponent(portfolioTitle)}`;
             }} 
           />
 
@@ -495,7 +442,7 @@ export function ZenDiplomacyPortal() {
                   <span>Delegate Portfolio Status &amp; Live Verification</span>
                 </h3>
                 <p className="text-xs text-neutral-400 font-sans">
-                  Query your registered email address to check your allotted committee, portfolio, and Google Sheet sync status.
+                  Query your registered email address to check your allotted committee, portfolio, and sovereign allotment status.
                 </p>
               </div>
 
@@ -547,7 +494,7 @@ export function ZenDiplomacyPortal() {
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold tracking-wider uppercase">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                          <span>OFFICIALLY ALLOCATED &amp; RECORDED IN GSHEET</span>
+                          <span>OFFICIALLY ALLOCATED &amp; RATIFIED</span>
                         </div>
                         <span className="text-xs font-mono text-neutral-400">
                           ID: <span className="text-white">{checkedResult.id}</span>
@@ -568,10 +515,10 @@ export function ZenDiplomacyPortal() {
                           <p className="text-sm font-semibold text-cyan-300">{checkedResult.allottedBy || 'Executive Secretariat (@yuveer)'}</p>
                         </div>
                         <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
-                          <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Google Sheets Sync</span>
+                          <span className="text-[10px] text-neutral-400 uppercase tracking-wider">Assembly Ledger Sync</span>
                           <p className="text-sm font-semibold text-emerald-400 flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>Synced to Ledger</span>
+                            <span>Synchronized &amp; Ratified</span>
                           </p>
                         </div>
                       </div>
@@ -581,16 +528,14 @@ export function ZenDiplomacyPortal() {
                           <BellRing className="w-4 h-4 text-emerald-400 animate-pulse" />
                           <span>Notification dispatched to your bell with urgent priority.</span>
                         </div>
-                        <a
-                          href={matrixUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <Link
+                          href="/matrix"
                           className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-bold transition flex items-center gap-1.5"
                         >
-                          <FileSpreadsheet className="w-3.5 h-3.5" />
-                          <span>Verify in Google Sheet Matrix</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
+                          <Grid className="w-3.5 h-3.5" />
+                          <span>Verify in Portfolio Matrix</span>
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </Link>
                       </div>
                     </div>
                   ) : (
@@ -607,7 +552,7 @@ export function ZenDiplomacyPortal() {
                       </p>
                       <p className="text-amber-300/90 text-[11px] flex items-center gap-2 pt-1 border-t border-amber-500/20">
                         <BellRing className="w-3.5 h-3.5 text-amber-400" />
-                        <span>The moment your seat is assigned, Google Sheets will update automatically and you will receive a real-time notification in your notification bell.</span>
+                        <span>The moment your seat is assigned, the Assembly Matrix will update live and you will receive a real-time notification in your notification bell.</span>
                       </p>
                     </div>
                   )
@@ -620,13 +565,12 @@ export function ZenDiplomacyPortal() {
                         <p className="text-neutral-400 text-[11px]">You can register immediately to claim your committee seat.</p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsRegisterModalOpen(true)}
+                    <Link
+                      href="/forms/zen-diplomacy-2026"
                       className="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold uppercase tracking-wider transition cursor-pointer shrink-0"
                     >
-                      Register Now
-                    </button>
+                      Register Now &rarr;
+                    </Link>
                   </div>
                 )}
               </div>
@@ -650,7 +594,7 @@ export function ZenDiplomacyPortal() {
                     <span className="px-2 py-0.5 rounded-md bg-white/10 text-cyan-300 font-mono text-[10px]">@yuveer</span>
                   </span>
                   <p className="text-[11px] text-neutral-400 font-mono">
-                    {isSecretariatExpanded ? 'Click to collapse Secretariat tools' : 'Assign portfolios, push Google Sheet updates & fire real-time notifications'}
+                    {isSecretariatExpanded ? 'Click to collapse Secretariat tools' : 'Assign portfolios, push ledger updates & fire real-time notifications'}
                   </p>
                 </div>
               </button>
@@ -670,10 +614,10 @@ export function ZenDiplomacyPortal() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 uppercase font-bold tracking-wider">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Real-Time Allotment &amp; GSheet Webhook Trigger</span>
+                    <span>Real-Time Allotment &amp; Dais Ledger Ratification</span>
                   </div>
                   <p className="text-xs text-neutral-300 font-sans">
-                    Assigning a portfolio updates the sovereign ledger, writes to Google Sheets (tab <strong className="text-emerald-400">ZEN DIPLOMACY MUN</strong>), and sends an instantaneous high-priority notification to the delegate&apos;s notification bell.
+                    Assigning a portfolio updates the sovereign ledger, updates the Assembly Matrix, and sends an instantaneous high-priority notification to the delegate&apos;s notification bell.
                   </p>
                 </div>
 
@@ -789,12 +733,12 @@ export function ZenDiplomacyPortal() {
                       {isAllocating ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin text-black" />
-                          <span>Updating GSheet &amp; Notifying...</span>
+                          <span>Ratifying Allotment &amp; Notifying...</span>
                         </>
                       ) : (
                         <>
                           <Send className="w-4 h-4 text-black" />
-                          <span>Allocate, Update GSheet &amp; Notify Delegate</span>
+                          <span>Allocate, Ratify Allotment &amp; Notify Delegate</span>
                         </>
                       )}
                     </button>
@@ -877,26 +821,20 @@ export function ZenDiplomacyPortal() {
                 </div>
 
                 <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
-                  <a
-                    href={matrixUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                  <Link
+                    href="/matrix"
+                    className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5"
                   >
-                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <Grid className="w-3.5 h-3.5" />
                     <span>Check Available Portfolios &rarr;</span>
-                  </a>
+                  </Link>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRegFirstChoice(comm.code);
-                      setIsRegisterModalOpen(true);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold transition cursor-pointer"
+                  <Link
+                    href={`/forms/zen-diplomacy-2026?committee=${comm.code}`}
+                    className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold transition cursor-pointer inline-flex items-center gap-1"
                   >
-                    Apply for {comm.code}
-                  </button>
+                    Apply for {comm.code} &rarr;
+                  </Link>
                 </div>
               </div>
             ))}
@@ -1133,222 +1071,18 @@ export function ZenDiplomacyPortal() {
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
 
-            <button
-              type="button"
-              onClick={() => setIsRegisterModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-md"
+            <Link
+              href="/forms/zen-diplomacy-2026"
+              className="px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-md inline-block cursor-pointer"
             >
-              Apply Now
-            </button>
+              Register as Delegate &rarr;
+            </Link>
           </div>
         </section>
 
       </main>
 
       <Footer />
-
-      {/* ── 9. DELEGATE REGISTRATION MODAL ── */}
-      {isRegisterModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-xl rounded-3xl bg-[#0a0d16] border border-white/15 p-6 sm:p-8 shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold">
-                  OCTOBER 24TH &amp; 25TH, 2026
-                </span>
-                <h3 className="font-display font-bold text-xl sm:text-2xl text-white">
-                  ZEN.DIPLOMACY Delegate Registration
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRegisterModalOpen(false);
-                  setRegSubmitted(false);
-                }}
-                className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {regSubmitted ? (
-              <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
-                <div className="space-y-1">
-                  <h4 className="font-display font-bold text-lg text-white">Registration Successfully Recorded!</h4>
-                  <p className="text-xs text-neutral-300 max-w-md mx-auto">
-                    Your preferences have been logged on the sovereign ledger and synchronized to Google Sheets (<strong className="text-emerald-300">ZEN DIPLOMACY MUN</strong>). The Secretariat will assign your portfolio. Once allocated, you will receive a real-time notification in your bell!
-                  </p>
-                </div>
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <a
-                    href={matrixUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-mono text-xs font-bold transition flex items-center gap-2"
-                  >
-                    <FileSpreadsheet className="w-4 h-4" />
-                    <span>Track on Portfolio Matrix</span>
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsRegisterModalOpen(false);
-                      setRegSubmitted(false);
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs cursor-pointer"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleRegisterSubmit} className="space-y-4 text-xs font-mono">
-                {/* 1st October Live Registration Announcement */}
-                <div className="p-3.5 rounded-xl bg-[#e2f952]/10 border border-[#e2f952]/30 text-[#e2f952] flex items-center gap-3 text-left">
-                  <Calendar className="w-4 h-4 shrink-0 text-[#e2f952]" />
-                  <div className="text-[11px] leading-relaxed">
-                    <strong className="uppercase tracking-wider">OFFICIAL SCHEDULE:</strong> Delegate registrations officially open on <strong>1st October 2026 onwards</strong>. Pre-register your committee &amp; country preferences below to lock your early spot on the review matrix!
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Delegate Full Name *</label>
-                    <input
-                      type="text"
-                      required
-                      value={regName}
-                      onChange={(e) => setRegName(e.target.value)}
-                      placeholder="e.g. Advait Sharma"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Official Email *</label>
-                    <input
-                      type="email"
-                      required
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="delegate@institution.edu"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] text-neutral-400 uppercase tracking-wider">WhatsApp Contact Number</label>
-                    <input
-                      type="text"
-                      value={regPhone}
-                      onChange={(e) => setRegPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] text-neutral-400 uppercase tracking-wider">School / College / Affiliation</label>
-                    <input
-                      type="text"
-                      value={regInstitution}
-                      onChange={(e) => setRegInstitution(e.target.value)}
-                      placeholder="Institution / Independent"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Prior MUN Experience Level</label>
-                  <select
-                    value={regExperience}
-                    onChange={(e) => setRegExperience(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e121c] border border-white/15 text-white focus:outline-none focus:border-cyan-400 transition"
-                  >
-                    <option value="FIRST_TIMER">First Timer / Novice (Zero prior MUNs)</option>
-                    <option value="INTERMEDIATE">Intermediate (1 – 3 Conferences)</option>
-                    <option value="ADVANCED">Advanced / Veteran (4+ Conferences)</option>
-                    <option value="CHAIR_FACULTY">Dais / Executive Board Aspirant</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] text-neutral-400 uppercase tracking-wider">First Committee Choice *</label>
-                    <select
-                      value={regFirstChoice}
-                      onChange={(e) => setRegFirstChoice(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e121c] border border-white/15 text-white focus:outline-none focus:border-cyan-400 transition"
-                    >
-                      <option value="AIPPM">AIPPM (All India Political Parties Meet)</option>
-                      <option value="EDU.MINISTRY">Education Ministry of India</option>
-                      <option value="UNESCO">UNESCO</option>
-                      <option value="UNSC">UNSC (Security Council)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Second Committee Choice *</label>
-                    <select
-                      value={regSecondChoice}
-                      onChange={(e) => setRegSecondChoice(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0e121c] border border-white/15 text-white focus:outline-none focus:border-cyan-400 transition"
-                    >
-                      <option value="UNSC">UNSC (Security Council)</option>
-                      <option value="AIPPM">AIPPM</option>
-                      <option value="EDU.MINISTRY">Education Ministry of India</option>
-                      <option value="UNESCO">UNESCO</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] text-neutral-400 uppercase tracking-wider">Top 3 Portfolio / Country Preferences</label>
-                  <input
-                    type="text"
-                    value={regPortfolios}
-                    onChange={(e) => setRegPortfolios(e.target.value)}
-                    placeholder="e.g. 1. Narendra Modi (AIPPM) / 2. USA (UNSC) / 3. Education Secretary"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 transition"
-                  />
-                  <p className="text-[10px] text-neutral-500 font-sans">
-                    Refer to the live <a href={matrixUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-400 underline">Google Sheet Matrix</a> to ensure chosen portfolios are currently vacant.
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsRegisterModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl text-neutral-400 hover:text-white transition cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isRegistering}
-                    className="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold uppercase tracking-wider transition shadow-lg cursor-pointer flex items-center gap-2 disabled:opacity-50"
-                  >
-                    {isRegistering ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin text-black" />
-                        <span>Syncing to GSheet...</span>
-                      </>
-                    ) : (
-                      <span>Submit Allotment Application</span>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

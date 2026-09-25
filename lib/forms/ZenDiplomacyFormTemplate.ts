@@ -191,7 +191,7 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
         stepBadge: 'STEP 5',
         stepNumber: '05 / Portfolio Allotment',
         headingTitle: 'Top 3 Portfolio / Country Preferences',
-        description: 'Inspect the live Google Sheets Matrix to ensure preferred countries or ministers are vacant.'
+        description: 'Inspect the live Sovereign Assembly Matrix at /matrix to ensure preferred countries or ministers are vacant.'
       }
     },
     {
@@ -446,22 +446,85 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 15: FINAL DECLARATION & RATIFICATION
+       STEP 15: PARTICIPATION TIER & PASS PAYMENT (DELEGATES & PARTICIPANTS)
        ══════════════════════════════════════════════════════════════════ */
     {
       id: 'step_break_15',
       type: 'section_break',
-      label: 'Final Ratification',
+      label: 'Accreditation Pass & Registration Fee',
+      sectionTitle: 'Accreditation Tier & Fee Settlement',
       stepHeading: {
         enabled: true,
         stepBadge: 'STEP 15',
-        stepNumber: '15 / Ratification',
+        stepNumber: '15 / Pass & Fee Settlement',
+        headingTitle: 'Participation Pass & Registration Fee',
+        description: 'Select your participation pass tier (Delegate vs Observer) and record your settlement reference.'
+      }
+    },
+    {
+      id: 'step15_participation_tier',
+      label: 'Select Delegation Pass Tier',
+      type: 'radio',
+      options: [
+        'Delegate Pass (₹499 / $6 USD) — Full Parliamentary Rights, Voting & Speaking Floor Access, Official Placard, Awards Contention & Sovereign Credentials',
+        'Participant / Observer Pass (₹199 / $2.5 USD) — Plenary Floor Observer Access, Moderated Caucus Attendance, Observer Certificate & Masterclasses',
+        'Executive Double Delegation Pass (₹899 / $11 USD) — Paired Delegate Seat for 2 Diplomats (UNSC/UNODC), Dual Placards & Co-Sponsorship'
+      ],
+      description: 'Choose whether you are participating as an accredited voting Delegate or an attending Observer.',
+      required: true
+    },
+    {
+      id: 'step15_payment_method',
+      label: 'Preferred Payment Mode',
+      type: 'radio',
+      options: [
+        'UPI / Instant QR Code Scan (Official ID: zenvitra@upi)',
+        'Card / NetBanking / Razorpay Sovereign Gateway',
+        'School / Institutional Delegation Sponsorship Waiver'
+      ],
+      description: 'Zero transaction surcharge on UPI transfers. Official foundation UPI: zenvitra@upi',
+      required: true
+    },
+    {
+      id: 'step15_payment_instruction',
+      type: 'title_desc',
+      label: 'UPI Payment Instructions & Gateway Verification',
+      description: 'Transfer the corresponding registration fee (₹499 for Delegate, ₹199 for Participant/Observer) to UPI ID: zenvitra@upi (ZENVITRA FOUNDATION). After paying, enter your 12-digit UPI Reference / UTR Number below for immediate Secretariat verification.'
+    },
+    {
+      id: 'step15_utr_reference',
+      label: '12-Digit UPI Transaction ID / UTR Number *',
+      type: 'text',
+      placeholder: 'e.g. 427819203819 or TXN-89214710',
+      description: 'Located in Google Pay, PhonePe, Paytm, or your banking app confirmation screen.',
+      required: true
+    },
+    {
+      id: 'step15_receipt_link',
+      label: 'Payment Screenshot / Proof Link (Optional)',
+      type: 'text',
+      placeholder: 'https://drive.google.com/... or paste image URL',
+      description: 'Optional confirmation receipt proof for institutional batch delegations.',
+      required: false
+    },
+
+    /* ══════════════════════════════════════════════════════════════════
+       STEP 16: FINAL RATIFICATION & DIGITAL SUBMISSION
+       ══════════════════════════════════════════════════════════════════ */
+    {
+      id: 'step_break_16',
+      type: 'section_break',
+      label: 'Final Ratification',
+      stepHeading: {
+        enabled: true,
+        stepBadge: 'STEP 16',
+        stepNumber: '16 / Ratification',
         headingTitle: 'Final Ratification & Digital Submission',
         description: 'Confirm all details are true and authenticate your submission to the sovereign ledger.'
       }
     },
     {
-      id: 'step15_signature',
+      id: 'step16_signature',
       label: 'Digital Signature (Type Full Legal Name)',
       type: 'text',
       placeholder: 'e.g. Ananya Sharma',
@@ -469,7 +532,7 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
       required: true
     },
     {
-      id: 'step15_submission_date',
+      id: 'step16_submission_date',
       label: 'Date of Submission',
       type: 'date',
       required: true

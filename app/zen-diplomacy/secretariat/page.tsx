@@ -123,7 +123,7 @@ const SECRETARIAT_SECTORS: SectorDefinition[] = [
     icon: Cpu,
     responsibilities: [
       'ZEN.DIPLOMACY web portal maintenance',
-      'Real-time registration & Google Sheet live synchronization',
+      'Real-time registration & sovereign matrix synchronization',
       'Digital attendance & QR security verification',
       'Delegate and EB interactive dashboards',
       'Live conference telemetry displays & audio visualizers',

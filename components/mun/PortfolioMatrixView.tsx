@@ -284,14 +284,14 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
 
   return (
     <div className={`space-y-6 text-left ${standalone ? 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8' : ''}`}>
-      {/* ── TOP HEADER & GOOGLE SHEETS LIVE TWO-WAY SYNC BAR ── */}
+      {/* ── TOP HEADER & SOVEREIGN CHAMBERS LIVE MATRIX BAR ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl bg-[#090d16] border border-cyan-500/30 relative overflow-hidden shadow-xl">
         <div className="space-y-1 z-10">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono text-[10px] text-emerald-300 uppercase tracking-widest font-bold flex items-center gap-1.5">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Two-Way Google Sheets Synchronized &bull; Tab: ZEN DIPLOMACY MUN</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="font-mono text-[10px] text-cyan-300 uppercase tracking-widest font-bold flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Sovereign Dais Matrix &bull; Live Real-Time Synchronized</span>
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black font-display text-white tracking-tight">
@@ -310,19 +310,16 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
             className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'Syncing...' : 'Sync from Sheets'}</span>
+            <span>{isSyncing ? 'Refreshing...' : 'Refresh Matrix'}</span>
           </button>
 
-          <a
-            href="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-md"
+          <Link
+            href="/forms/zen-diplomacy-2026"
+            className="px-4 py-2 rounded-xl bg-[#e2f952] hover:bg-[#d6f03d] text-black font-display font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-md"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-black" />
-            <span>Open Master Sheet</span>
-            <ExternalLink className="w-3 h-3 text-black" />
-          </a>
+            <Sparkles className="w-3.5 h-3.5 text-black" />
+            <span>Register Delegate Seat</span>
+          </Link>
         </div>
       </div>
 

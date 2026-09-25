@@ -50,8 +50,18 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
     });
   };
 
+  const isOurMun = 
+    event.id === 'zen-diplomacy-mun-2026' || 
+    (event as any).isOfficialZenDiplomacy || 
+    (event.title && event.title.toLowerCase().includes('zen.diplomacy')) || 
+    (event.title && event.title.toLowerCase().includes('diplomacy mun'));
+
   const handlePassButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isOurMun) {
+      window.location.href = '/zen-diplomacy';
+      return;
+    }
     if (myPass) {
       setActivePassForModal(myPass);
     } else {
@@ -60,11 +70,14 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
   };
 
   const openDetail = () => {
+    if (isOurMun) {
+      window.location.href = '/zen-diplomacy';
+      return;
+    }
     if (onOpenModal) {
       onOpenModal(event);
     } else {
-      setActiveEventId(event.id);
-      setActiveView('detail');
+      window.location.href = `/events/${event.slug || event.id}`;
     }
   };
 

@@ -63,11 +63,16 @@ export function generateUniqueSlug(baseSlug: string, currentFormId?: string): st
 }
 
 export function getZenFormById(idOrSlug: string): ZenForm | null {
-  const forms = getPublicForms();
-  const found = forms.find((f) => f.id === idOrSlug || f.slug === idOrSlug);
-  if (found) return found;
   if (idOrSlug === 'zen-diplomacy-2026' || idOrSlug === 'zen-diplomacy-2026-registration') {
     return ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
+  }
+  const forms = getPublicForms();
+  const found = forms.find((f) => f.id === idOrSlug || f.slug === idOrSlug);
+  if (found) {
+    if (found.id === 'zen-diplomacy-2026-registration' || found.slug === 'zen-diplomacy-2026') {
+      return ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
+    }
+    return found;
   }
   return null;
 }

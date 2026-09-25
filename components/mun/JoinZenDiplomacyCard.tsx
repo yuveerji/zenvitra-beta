@@ -379,9 +379,9 @@ export function JoinZenDiplomacyCard() {
                   <Check className="w-6 h-6" />
                 </div>
                 <div className="space-y-1.5">
-                  <h4 className="font-display font-bold text-lg text-white">Application Recorded &amp; Synced</h4>
+                  <h4 className="font-display font-bold text-lg text-white">Application Recorded &amp; Ratified</h4>
                   <p className="text-xs text-neutral-300 font-sans leading-relaxed">
-                    Your application has been recorded and synced to the Google Sheet. Once your portfolio is officially allocated by the Secretariat (@yuveer), it will be updated in the Google Sheet Matrix and an alert will be sent directly to your notification bell.
+                    Your application has been recorded on the sovereign ledger. Once your portfolio is officially allocated by the Secretariat (@yuveer), it will be updated in the live Assembly Matrix and an alert will be sent directly to your notification bell.
                   </p>
                 </div>
                 <button

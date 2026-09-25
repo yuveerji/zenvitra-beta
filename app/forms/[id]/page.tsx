@@ -35,7 +35,10 @@ import {
   FileText,
   BarChart3,
   Layers,
-  ChevronRight
+  ChevronRight,
+  QrCode,
+  Ticket,
+  ShieldCheck
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { registerDelegate } from '@/lib/zenDiplomacyService';
@@ -70,6 +73,7 @@ export default function ZenFormPublicPage() {
   const [submittedSubId, setSubmittedSubId] = useState<string | null>(null);
   const [quizScore, setQuizScore] = useState<{ total: number; earned: number; pct: number } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
   // Group fields into pages by section_break
@@ -485,12 +489,10 @@ export default function ZenFormPublicPage() {
         </Link>
 
         <div className="flex items-center gap-2">
-          {form.googleSheetsConfig?.isConnected && (
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <FileSpreadsheet className="w-3 h-3" />
-              <span>Google Sheets Linked</span>
-            </span>
-          )}
+          <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-cyan-400 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+            <Shield className="w-3 h-3 text-cyan-400" />
+            <span>Sovereign Ledger Protected</span>
+          </span>
 
           <Link
             href={`/forms/${form.slug || form.id}/responses`}
@@ -710,12 +712,10 @@ export default function ZenFormPublicPage() {
                       </span>
                     )}
 
-                    {form.googleSheetsConfig?.isConnected && (
-                      <span className="inline-flex sm:hidden items-center gap-1 text-[10px] font-mono text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <FileSpreadsheet className="w-2.5 h-2.5" />
-                        <span>Sheets Connected</span>
-                      </span>
-                    )}
+                    <span className="inline-flex sm:hidden items-center gap-1 text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                      <Shield className="w-2.5 h-2.5 text-cyan-400" />
+                      <span>Sovereign Ledger</span>
+                    </span>
                   </div>
 
                   <h1
@@ -845,6 +845,65 @@ export default function ZenFormPublicPage() {
                 {(sections[currentPageIndex]?.fields || []).map((field) => {
                   // 1. Title & Description Block
                   if (field.type === 'title_desc') {
+                    if (field.id === 'step15_payment_instruction' || field.label?.toLowerCase().includes('upi payment')) {
+                      return (
+                        <div key={field.id} className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-amber-500/[0.12] via-[#090d18] to-black border border-amber-500/30 space-y-5 shadow-2xl relative overflow-hidden text-left">
+                          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3.5">
+                            <div className="flex items-center gap-2 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider">
+                              <QrCode className="w-4 h-4 text-amber-400" />
+                              <span>Official Foundation UPI Payment Gateway</span>
+                            </div>
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-bold">
+                              Zero Surcharge &bull; Instant Verification
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-center">
+                            {/* Visual QR Card */}
+                            <div className="p-3.5 rounded-2xl bg-white flex flex-col items-center justify-center text-center shadow-xl mx-auto sm:mx-0 w-36 h-36">
+                              <QrCode className="w-24 h-24 text-black" />
+                              <span className="font-mono text-[9px] font-black text-black uppercase tracking-wider mt-1">zenvitra@upi</span>
+                            </div>
+
+                            {/* Beneficiary Details & 1-Click Copy */}
+                            <div className="sm:col-span-2 space-y-3 font-mono">
+                              <div>
+                                <span className="text-[10px] text-neutral-400 uppercase tracking-widest block">Beneficiary Entity:</span>
+                                <p className="text-white font-bold text-sm sm:text-base font-display">ZENVITRA FOUNDATION</p>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-[10px] text-neutral-400 uppercase tracking-widest block">Official VPA / UPI ID:</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="px-3.5 py-2 rounded-xl bg-black/60 border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-bold select-all flex-1 truncate font-mono">
+                                    zenvitra@upi
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (typeof window !== 'undefined') {
+                                        navigator.clipboard.writeText('zenvitra@upi');
+                                        setCopiedUpi(true);
+                                        setTimeout(() => setCopiedUpi(false), 2000);
+                                      }
+                                    }}
+                                    className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-md"
+                                  >
+                                    {copiedUpi ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                    <span>{copiedUpi ? 'Copied!' : 'Copy UPI'}</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              <p className="text-[11px] text-neutral-300 font-sans leading-relaxed">
+                                Pay via Google Pay, PhonePe, Paytm, or BHIM. After payment, enter your <strong className="text-white font-mono">12-Digit UTR Number</strong> in the field below to verify and lock your seat.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
                       <div key={field.id} className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
                         <h3 className="text-lg sm:text-xl font-bold text-white" style={{ fontFamily: displayFont }}>
@@ -1269,38 +1328,158 @@ export default function ZenFormPublicPage() {
 
                       {/* 17. Multiple Choice / Radio Options */}
                       {(field.type === 'radio' || field.type === 'multiple_choice') && (
-                        <div className="space-y-2 pt-1">
-                          {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => (
-                            <label
-                              key={opt}
-                              className={`flex items-center gap-3 p-3 rounded-xl border transition cursor-pointer ${
-                                formData[field.id] === opt
-                                  ? 'bg-white/10 border-white/40'
-                                  : 'bg-white/[0.02] border-white/10 hover:bg-white/5'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={field.id}
-                                value={opt}
-                                checked={formData[field.id] === opt}
-                                onChange={() => handleInputChange(field.id, opt)}
-                                className="hidden"
-                              />
-                              <div
-                                className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
-                                style={{
-                                  borderColor: formData[field.id] === opt ? accentColor : 'rgba(255,255,255,0.3)',
-                                  backgroundColor: formData[field.id] === opt ? accentColor : 'transparent',
-                                }}
+                        field.id === 'step15_participation_tier' ? (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
+                            {(field.options || []).map((opt) => {
+                              const isSelected = formData[field.id] === opt;
+                              const isDelegate = opt.includes('Delegate Pass') && !opt.includes('Double');
+                              const isObserver = opt.includes('Observer') || opt.includes('Participant');
+                              const isDouble = opt.includes('Double');
+
+                              const tierTitle = isDelegate
+                                ? 'Delegate Pass'
+                                : isObserver
+                                ? 'Participant / Observer Pass'
+                                : 'Executive Double Pass';
+
+                              const tierPrice = isDelegate ? '₹499' : isObserver ? '₹199' : '₹899';
+                              const tierUsd = isDelegate ? '$6 USD' : isObserver ? '$2.5 USD' : '$11 USD';
+                              const tierBadge = isDelegate
+                                ? 'RECOMMENDED • OFFICIAL'
+                                : isObserver
+                                ? 'ENTRY LEVEL PASS'
+                                : 'DUAL DIPLOMATS';
+
+                              const tierPerks = isDelegate
+                                ? [
+                                    'Full Parliamentary & Voting Rights',
+                                    'Speaking Floor & Unmoderated Caucus',
+                                    'Official Placard & Dossier',
+                                    'All Awards Contention (Best Del)',
+                                    'Sovereign Blockchain Credential',
+                                  ]
+                                : isObserver
+                                ? [
+                                    'Plenary Observation Access',
+                                    'Moderated Caucus Attendance',
+                                    'Official Observer Certificate',
+                                    'Diplomatic Masterclass Entry',
+                                    'Delegate Networking Access',
+                                  ]
+                                : [
+                                    'Paired Seat for 2 Diplomats',
+                                    'Dual Placards & Official Dossiers',
+                                    'Working Paper Co-Sponsorship',
+                                    'Joint Best Delegation Contention',
+                                    'Dual Verified Credentials',
+                                  ];
+
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleInputChange(field.id, opt)}
+                                  className={`relative text-left p-5 rounded-2xl border transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
+                                    isSelected
+                                      ? 'bg-gradient-to-b from-white/[0.12] to-white/[0.04] border-amber-400/80 shadow-[0_0_30px_rgba(251,191,36,0.18)] scale-[1.02]'
+                                      : 'bg-[#090d16]/70 border-white/10 hover:border-white/25 hover:bg-white/[0.04]'
+                                  }`}
+                                >
+                                  {/* Top badge */}
+                                  <div className="flex items-center justify-between gap-2 mb-3">
+                                    <span
+                                      className={`text-[9px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full font-bold border ${
+                                        isSelected
+                                          ? 'bg-amber-400/20 text-amber-300 border-amber-400/40'
+                                          : isDelegate
+                                          ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+                                          : isObserver
+                                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                                          : 'bg-purple-500/10 text-purple-300 border-purple-500/30'
+                                      }`}
+                                    >
+                                      {tierBadge}
+                                    </span>
+                                    <div
+                                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition shrink-0 ${
+                                        isSelected
+                                          ? 'border-amber-400 bg-amber-400 text-black'
+                                          : 'border-white/20 group-hover:border-white/40'
+                                      }`}
+                                    >
+                                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                    </div>
+                                  </div>
+
+                                  {/* Title & Price */}
+                                  <div className="space-y-1 mb-4">
+                                    <h4 className="font-display font-bold text-white text-base leading-tight">
+                                      {tierTitle}
+                                    </h4>
+                                    <div className="flex items-baseline gap-1.5 pt-1">
+                                      <span className="text-2xl font-black text-white font-mono tracking-tight">
+                                        {tierPrice}
+                                      </span>
+                                      <span className="text-[11px] text-neutral-400 font-mono">
+                                        / {tierUsd}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Perk list */}
+                                  <ul className="space-y-1.5 pt-3 border-t border-white/10 text-xs font-sans text-neutral-300">
+                                    {tierPerks.map((perk) => (
+                                      <li key={perk} className="flex items-start gap-2 text-[11px] leading-snug">
+                                        <span className="text-amber-400 font-bold shrink-0 mt-0.5">&bull;</span>
+                                        <span>{perk}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+
+                                  {/* Selection indicator footer */}
+                                  <div className="mt-4 pt-3 border-t border-white/5 text-[10px] font-mono flex items-center justify-between">
+                                    <span className={isSelected ? 'text-amber-300 font-bold' : 'text-neutral-500'}>
+                                      {isSelected ? '✓ Pass Selected' : 'Click to Select Pass'}
+                                    </span>
+                                    <Ticket className={`w-3.5 h-3.5 ${isSelected ? 'text-amber-300' : 'text-neutral-500'}`} />
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pt-1">
+                            {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((opt) => (
+                              <label
+                                key={opt}
+                                className={`flex items-center gap-3 p-3 rounded-xl border transition cursor-pointer ${
+                                  formData[field.id] === opt
+                                    ? 'bg-white/10 border-white/40'
+                                    : 'bg-white/[0.02] border-white/10 hover:bg-white/5'
+                                }`}
                               >
-                                {formData[field.id] === opt && (
-                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentTextColor }} />
-                                )}
-                              </div>
-                              <span className="text-xs sm:text-sm text-neutral-200">{opt}</span>
-                            </label>
-                          ))}
+                                <input
+                                  type="radio"
+                                  name={field.id}
+                                  value={opt}
+                                  checked={formData[field.id] === opt}
+                                  onChange={() => handleInputChange(field.id, opt)}
+                                  className="hidden"
+                                />
+                                <div
+                                  className="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
+                                  style={{
+                                    borderColor: formData[field.id] === opt ? accentColor : 'rgba(255,255,255,0.3)',
+                                    backgroundColor: formData[field.id] === opt ? accentColor : 'transparent',
+                                  }}
+                                >
+                                  {formData[field.id] === opt && (
+                                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentTextColor }} />
+                                  )}
+                                </div>
+                                <span className="text-xs sm:text-sm text-neutral-200">{opt}</span>
+                              </label>
+                            ))}
 
                           {field.hasOtherOption && (
                             <div className="flex items-center gap-3 p-2">
@@ -1314,7 +1493,7 @@ export default function ZenFormPublicPage() {
                             </div>
                           )}
                         </div>
-                      )}
+                      ))}
 
                       {/* 18. Checkboxes / Multi-select Options */}
                       {(field.type === 'checkbox' || field.type === 'checkboxes') && (
