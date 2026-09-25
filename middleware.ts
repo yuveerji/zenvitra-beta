@@ -203,6 +203,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/f/') ||
     pathname === '/space' ||
     pathname.startsWith('/space/') ||
+    pathname === '/pulse' ||
+    pathname.startsWith('/pulse/') ||
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/statusregister' ||
