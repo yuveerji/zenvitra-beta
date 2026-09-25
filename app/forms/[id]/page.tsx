@@ -39,7 +39,20 @@ import {
   QrCode,
   Ticket,
   ShieldCheck,
-  Crown
+  Crown,
+  Users,
+  GraduationCap,
+  Building,
+  Cpu,
+  Palette,
+  Megaphone,
+  TrendingUp,
+  Briefcase,
+  Camera,
+  Compass,
+  BookOpen,
+  ExternalLink,
+  Grid
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { registerDelegate } from '@/lib/zenDiplomacyService';
@@ -60,6 +73,292 @@ export interface FormSection {
     description?: string;
   };
 }
+
+export interface SecretariatDept {
+  id: string;
+  index: string;
+  name: string;
+  label: string;
+  badge: string;
+  badgeColor: string;
+  iconName: string;
+  focus: string;
+  responsibilities: string[];
+  skills: string[];
+  practicalTask: string;
+}
+
+export const SECRETARIAT_DEPARTMENTS: SecretariatDept[] = [
+  {
+    id: 'delegate-affairs',
+    index: '01',
+    name: 'Delegate Affairs',
+    label: 'Delegate Affairs (Delegate relations, registrations & queries)',
+    badge: 'DELEGATE RELATIONS',
+    badgeColor: 'border-cyan-500/30 text-cyan-300 bg-cyan-500/10',
+    iconName: 'Users',
+    focus: 'Delegate onboarding, query helpline, preference matching & master allocation database.',
+    responsibilities: [
+      'Master delegate database management',
+      'Portfolio allocation & preference matching',
+      'Delegate helpline & query escalation'
+    ],
+    skills: ['Communication', 'Data Management', 'MUN Protocol'],
+    practicalTask: 'Simulated assessment: Outline how you would de-escalate and resolve a frustrated delegate complaint regarding a duplicate portfolio allotment 1 hour before committee begins.'
+  },
+  {
+    id: 'academic-affairs',
+    index: '02',
+    name: 'Academic Affairs',
+    label: 'Academic Affairs (Background guides, agendas & study materials)',
+    badge: 'ACADEMIC EXCELLENCE',
+    badgeColor: 'border-emerald-500/30 text-emerald-300 bg-emerald-500/10',
+    iconName: 'GraduationCap',
+    focus: 'Committee agenda framing, study dossiers, study kits & RoP formulation.',
+    responsibilities: [
+      'Committee background guides curation',
+      'Rules of Procedure (UN4MUN & Classical RoP)',
+      'Academic quality control & resolution vetting'
+    ],
+    skills: ['Research', 'Foreign Policy', 'RoP Oversight'],
+    practicalTask: 'Simulated assessment: Review and propose 2 substantive improvements or crisis inflection points for an international territorial sovereignty committee agenda.'
+  },
+  {
+    id: 'operations-logistics',
+    index: '03',
+    name: 'Delegate Logistics',
+    label: 'Delegate Logistics (Virtual rooms, timing & scheduling)',
+    badge: 'LOGISTICS & TIMETABLE',
+    badgeColor: 'border-amber-500/30 text-amber-300 bg-amber-500/10',
+    iconName: 'Building',
+    focus: 'Virtual assembly room management, timing enforcement, caucus movement & access keys.',
+    responsibilities: [
+      'Digital assembly rooms allocation',
+      'Session timings & caucus scheduling',
+      'Virtual credentials & breakout triage'
+    ],
+    skills: ['Time Management', 'Coordination', 'Pressure Resilience'],
+    practicalTask: 'Simulated assessment: Solve a scheduling overlap where an unmoderated caucus overruns by 25 minutes while a joint crisis communique is waiting for presidential broadcast.'
+  },
+  {
+    id: 'tech-affairs',
+    index: '04',
+    name: 'Tech Affairs',
+    label: 'Tech Affairs (Platform bots, portals & live telemetry)',
+    badge: 'PLATFORM INFRASTRUCTURE',
+    badgeColor: 'border-sky-500/30 text-sky-300 bg-sky-500/10',
+    iconName: 'Cpu',
+    focus: 'Live telemetry, real-time matrix sync, Discord bot integration & network triage.',
+    responsibilities: [
+      'ZEN.DIPLOMACY portal maintenance',
+      'Real-time sovereign matrix synchronization',
+      'Technical support for audio/video dropouts'
+    ],
+    skills: ['Next.js/React', 'APIs', 'Network Triage'],
+    practicalTask: 'Simulated assessment: Describe your protocol for diagnosing and resolving a sudden socket / audio lag disconnect affecting 15 delegates in an active council chamber.'
+  },
+  {
+    id: 'design-creative',
+    index: '05',
+    name: 'Design & Creative',
+    label: 'Design & Creative (Visual assets, brochures & branding)',
+    badge: 'CINEMATIC ART DIRECTION',
+    badgeColor: 'border-purple-500/30 text-purple-300 bg-purple-500/10',
+    iconName: 'Palette',
+    focus: 'Official conference banners, social creatives, certificates, placards & brand identity.',
+    responsibilities: [
+      'Official conference posters & delegate plaques',
+      'Brochures, prospectus releases & editorial layout',
+      'Certificates of Merit & Delegation Accords'
+    ],
+    skills: ['Figma', 'Typography', 'Visual Branding'],
+    practicalTask: 'Simulated assessment: Provide a link to your design portfolio / Behance / Drive demonstrating typographic hierarchy and dark-mode brand consistency.'
+  },
+  {
+    id: 'public-relations',
+    index: '06',
+    name: 'Outreach & PR',
+    label: 'Outreach & PR (School partnerships & institutional delegations)',
+    badge: 'DIPLOMATIC EXPANSION',
+    badgeColor: 'border-rose-500/30 text-rose-300 bg-rose-500/10',
+    iconName: 'Megaphone',
+    focus: 'School and university institutional outreach, Faculty Advisor liaison & media releases.',
+    responsibilities: [
+      'School & institutional delegation pitches',
+      'Faculty advisor & circuit communication',
+      'Official diplomatic announcements'
+    ],
+    skills: ['Outreach', 'Networking', 'Pitching'],
+    practicalTask: 'Simulated assessment: Draft a 3-paragraph executive outreach invitation to a premier school’s MUN Faculty Advisor pitching a 15-delegate school delegation.'
+  },
+  {
+    id: 'marketing-growth',
+    index: '07',
+    name: 'Finance & Sponsorships',
+    label: 'Finance & Sponsorships (Budgeting & brand partnerships)',
+    badge: 'GROWTH & REVENUE',
+    badgeColor: 'border-lime-500/30 text-lime-300 bg-lime-500/10',
+    iconName: 'TrendingUp',
+    focus: 'Brand sponsorships, delegate kits, financial planning & partner alliance management.',
+    responsibilities: [
+      'Corporate & educational brand sponsorships',
+      'Budget allocation & cashflow management',
+      'Delegate value kit procurement'
+    ],
+    skills: ['Sponsorships', 'Financial Planning', 'Pitch Decks'],
+    practicalTask: 'Simulated assessment: Formulate a compelling sponsorship pitch tiering structure for an ed-tech or consumer brand sponsor for ZEN.DIPLOMACY.'
+  },
+  {
+    id: 'crisis-operations',
+    index: '08',
+    name: 'Crisis Operations',
+    label: 'Crisis Operations (Simulated crisis plots & dynamic updates)',
+    badge: 'DYNAMIC DIRECTIVES',
+    badgeColor: 'border-red-500/30 text-red-300 bg-red-500/10',
+    iconName: 'Wrench',
+    focus: 'Midnight crisis releases, dynamic intelligence leaks, backchannel letters & twists.',
+    responsibilities: [
+      'Dynamic crisis tree & branch storyline design',
+      'Midnight intelligence flash directives',
+      'Backchannel espionage & portfolio challenges'
+    ],
+    skills: ['Crisis Simulation', 'Geopolitics', 'Rapid Writing'],
+    practicalTask: 'Simulated assessment: Draft a breaking news flash bulletin regarding an unexpected naval blockade that forces council chambers into an emergency session.'
+  },
+  {
+    id: 'media-documentation',
+    index: '09',
+    name: 'Media & Documentation',
+    label: 'Media & Documentation (Press releases, photography & archives)',
+    badge: 'PRESS & RECAPS',
+    badgeColor: 'border-indigo-500/30 text-indigo-300 bg-indigo-500/10',
+    iconName: 'Camera',
+    focus: 'Keynote recap videos, daily summit reports, press releases & digital media archives.',
+    responsibilities: [
+      'Video editing, reels & cinematic teasers',
+      'Daily conference reports & documentation',
+      'Keynote speaker & best delegate interviews'
+    ],
+    skills: ['Video Editing', 'Journalism', 'Rapid Turnaround'],
+    practicalTask: 'Simulated assessment: Write a high-impact 120-word press announcement covering a dramatic deadlock break during UNSC midnight negotiations.'
+  },
+  {
+    id: 'directorate',
+    index: '10',
+    name: 'Directorate & Administration',
+    label: 'Secretary-General Directorate (Master timetable & cross-team ops)',
+    badge: 'EXECUTIVE LEADERSHIP',
+    badgeColor: 'border-yellow-500/30 text-yellow-300 bg-yellow-500/10',
+    iconName: 'Crown',
+    focus: 'Cross-team timetable enforcement, inter-department conflict triage & executive oversight.',
+    responsibilities: [
+      'Cross-departmental project tracking',
+      'Secretariat accountability oversight',
+      'Executive coordination with Directorate'
+    ],
+    skills: ['Leadership', 'Accountability', 'High EQ'],
+    practicalTask: 'Simulated assessment: How would you maintain morale and performance across two Secretariat departments facing conflicting deadlines 48 hours before the conference?'
+  }
+];
+
+export interface CommitteeChamber {
+  id: string;
+  code: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+  badgeColor: string;
+  agenda: string;
+  format: string;
+  tags: string[];
+}
+
+export const COMMITTEE_CHAMBERS: CommitteeChamber[] = [
+  {
+    id: 'aippm',
+    code: 'AIPPM',
+    title: 'All India Political Parties Meet (AIPPM)',
+    subtitle: 'National Parliamentary Council',
+    badge: 'HISTORIC & POLICY COUNCIL',
+    badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+    agenda: 'National Security, Electoral Integrity & Cooperative Federalism in Modern India',
+    format: 'Moderated Parliamentary Debate & Legislative Bill Tabling',
+    tags: ['Lok Sabha ROP', 'Crisis Inflections', 'Domestic Policy']
+  },
+  {
+    id: 'education-ministry',
+    code: 'Education Ministry (EMI)',
+    title: 'Education Ministry of India (EMI)',
+    subtitle: 'Special Ministerial Assembly',
+    badge: 'MINISTERIAL OVERSIGHT',
+    badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    agenda: 'NEP 2020 Reforms, AI Integration in Classrooms & Youth Skill Equitization',
+    format: 'Sovereign Ministerial Council & Direct Policy Blueprints',
+    tags: ['Policy Whitepapers', 'Examination Integrity', 'Priority Allotment']
+  },
+  {
+    id: 'unesco',
+    code: 'UNESCO',
+    title: 'UNESCO',
+    subtitle: 'Specialized UN Agency',
+    badge: 'MULTILATERAL PLENARY',
+    badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+    agenda: 'Protection of Cultural Heritage in Conflict Zones & Universal AI Ethics in Education',
+    format: 'UNGA Rules of Procedure (ROP) & Draft Resolution Tabling',
+    tags: ['Draft Resolutions', 'Consensus Building', 'Diplomatic Decorum']
+  },
+  {
+    id: 'unsc',
+    code: 'UNSC',
+    title: 'United Nations Security Council (UNSC)',
+    subtitle: 'Flagship Crisis & Security Body',
+    badge: 'CRISIS & SECURITY COUNCIL',
+    badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+    agenda: 'Geopolitical De-escalation in the Middle East, Sovereignty & Non-Proliferation Treaties',
+    format: 'Continuous Crisis Procedure (CCP) & Presidential Directives',
+    tags: ['P5 Veto Dynamics', 'Binding Directives', 'High Experience Tier']
+  }
+];
+
+export const BANDWIDTH_TIERS = [
+  {
+    id: 'standard',
+    label: '5–8 hours / week (Core tasks & weekly synces)',
+    title: '5–8 Hours / Week',
+    tier: 'STANDARD TRACK',
+    desc: 'Attend weekly syncs, deliver departmental sprint tasks, and assist on assembly days.'
+  },
+  {
+    id: 'recommended',
+    label: '10–15 hours / week (Active departmental operations)',
+    title: '10–15 Hours / Week',
+    tier: 'RECOMMENDED TRACK',
+    desc: 'Drive daily team execution, formulate dossiers, coordinate delegate queries and logistics.'
+  },
+  {
+    id: 'executive',
+    label: '15–20+ hours / week (Department Lead / Intensive)',
+    title: '15–20+ Hours / Week',
+    tier: 'LEADERSHIP TRACK',
+    desc: 'Direct high-impact leadership, cross-department coordination and executive board briefings.'
+  }
+];
+
+export const getDeptIcon = (iconName: string) => {
+  switch (iconName) {
+    case 'Users': return <Users className="w-5 h-5" />;
+    case 'GraduationCap': return <GraduationCap className="w-5 h-5" />;
+    case 'Wrench': return <Wrench className="w-5 h-5" />;
+    case 'Cpu': return <Cpu className="w-5 h-5" />;
+    case 'Palette': return <Palette className="w-5 h-5" />;
+    case 'Megaphone': return <Megaphone className="w-5 h-5" />;
+    case 'TrendingUp': return <TrendingUp className="w-5 h-5" />;
+    case 'Building': return <Building className="w-5 h-5" />;
+    case 'Camera': return <Camera className="w-5 h-5" />;
+    case 'Crown': return <Crown className="w-5 h-5" />;
+    default: return <Briefcase className="w-5 h-5" />;
+  }
+};
 
 export default function ZenFormPublicPage() {
   const params = useParams();
@@ -1110,13 +1409,80 @@ export default function ZenFormPublicPage() {
 
                       {/* 8. Paragraph / Textarea */}
                       {(field.type === 'textarea' || field.type === 'paragraph') && (
-                        <textarea
-                          rows={3}
-                          placeholder={field.placeholder || 'Enter your detailed thoughts...'}
-                          value={formData[field.id] || ''}
-                          onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed font-sans"
-                        />
+                        <div className="space-y-3">
+                          {/* Live Dais Matrix Peeker HUD for Delegate Portfolios */}
+                          {field.id === 'step5_portfolios' && (
+                            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-cyan-500/10 border border-amber-500/30 space-y-3 shadow-lg">
+                              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="relative flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                  </span>
+                                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300">
+                                    Live Dais Matrix HUD &bull; Vacancy Peeker
+                                  </span>
+                                </div>
+                                <Link
+                                  href="/matrix"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[10px] font-bold transition shadow-sm cursor-pointer"
+                                >
+                                  <Grid className="w-3.5 h-3.5" />
+                                  <span>Open Live Matrix in New Tab</span>
+                                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                                </Link>
+                              </div>
+                              <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                                Inspect live occupancy across <strong>AIPPM, EMI, UNESCO & UNSC</strong> on the sovereign ledger before entering your preferences. Cross-reference vacant countries, portfolios, or ministerial seats to guarantee allotment priority.
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-neutral-400">
+                                <span className="px-2.5 py-1 rounded bg-black/40 border border-white/10 text-neutral-300">
+                                  Recommended format: 1. Country / Seat, 2. Country / Seat, 3. Country / Seat
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Dynamic Secretariat Practical Simulation Challenge HUD */}
+                          {field.id === 'step3_practical_response' && (() => {
+                            const chosenDeptStr = formData['step1_primary_sector'] || '';
+                            const matchedDept = SECRETARIAT_DEPARTMENTS.find(d => 
+                              chosenDeptStr.toLowerCase().includes(d.name.toLowerCase()) || 
+                              d.label.toLowerCase() === chosenDeptStr.toLowerCase()
+                            );
+                            return (
+                              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-500/15 via-purple-500/5 to-cyan-500/10 border border-purple-500/30 space-y-2.5 shadow-lg">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                                    <span>Department Simulation Brief &bull; {matchedDept ? matchedDept.name : 'Selected Department'}</span>
+                                  </span>
+                                  {matchedDept && (
+                                    <span className={`text-[9px] font-mono uppercase px-2.5 py-0.5 rounded-full border ${matchedDept.badgeColor}`}>
+                                      {matchedDept.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="p-3 rounded-xl bg-black/40 border border-purple-500/20 text-xs text-purple-100 font-sans leading-relaxed">
+                                  {matchedDept ? matchedDept.practicalTask : 'Simulated assessment: Formulate a concrete strategy and actionable execution protocol for high-pressure conference scenarios in your chosen department.'}
+                                </div>
+                                <div className="text-[10px] font-mono text-neutral-400">
+                                  Deliver your concrete operational strategy, rapid-response protocol, or execution blueprint below.
+                                </div>
+                              </div>
+                            );
+                          })()}
+
+                          <textarea
+                            rows={3}
+                            placeholder={field.placeholder || 'Enter your detailed thoughts...'}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed font-sans"
+                          />
+                        </div>
                       )}
 
                       {/* 9. Linear Scale (Likert) */}
@@ -1348,18 +1714,147 @@ export default function ZenFormPublicPage() {
 
                       {/* 16. Dropdown Select */}
                       {(field.type === 'select' || field.type === 'dropdown') && (
-                        <select
-                          value={formData[field.id] || ''}
-                          onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer font-sans"
-                        >
-                          <option value="" disabled>Select an option...</option>
-                          {(field.options || []).map((opt) => (
-                            <option key={opt} value={opt} className="bg-[#0e111a] text-white">
-                              {opt}
-                            </option>
-                          ))}
-                        </select>
+                        (field.id === 'step1_primary_sector' || field.id === 'step1_preferred_department') ? (
+                          <div className="space-y-3 pt-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                              {SECRETARIAT_DEPARTMENTS.map((dept) => {
+                                const isSelected = formData[field.id] === dept.label || formData[field.id] === dept.name;
+                                return (
+                                  <button
+                                    key={dept.id}
+                                    type="button"
+                                    onClick={() => handleInputChange(field.id, dept.label)}
+                                    className={`p-4 sm:p-5 rounded-2xl border text-left transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden ${
+                                      isSelected
+                                        ? 'bg-gradient-to-b from-purple-500/25 via-white/[0.08] to-purple-950/40 border-purple-400 ring-2 ring-purple-400/40 shadow-[0_0_30px_rgba(168,85,247,0.25)] scale-[1.01]'
+                                        : 'bg-[#090d16]/80 border-white/10 hover:border-purple-400/40 hover:bg-white/[0.04]'
+                                    }`}
+                                  >
+                                    <div>
+                                      {/* Header: index, badge and radio checkmark */}
+                                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-mono text-xs font-bold text-neutral-400">{dept.index}</span>
+                                          <span className={`text-[9px] font-mono tracking-widest uppercase px-2 py-0.5 rounded-full font-bold border ${dept.badgeColor}`}>
+                                            {dept.badge}
+                                          </span>
+                                        </div>
+                                        <div
+                                          className={`w-5 h-5 rounded-full border flex items-center justify-center transition shrink-0 ${
+                                            isSelected
+                                              ? 'border-purple-400 bg-purple-400 text-black'
+                                              : 'border-white/20 group-hover:border-purple-400/50'
+                                          }`}
+                                        >
+                                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                        </div>
+                                      </div>
+
+                                      {/* Icon and Title */}
+                                      <div className="flex items-center gap-2.5 mb-2">
+                                        <div className={`p-2 rounded-xl border shrink-0 ${isSelected ? 'bg-purple-500/30 border-purple-400/50 text-purple-200' : 'bg-white/5 border-white/10 text-neutral-300'}`}>
+                                          {getDeptIcon(dept.iconName)}
+                                        </div>
+                                        <h4 className="font-display font-bold text-white text-base leading-snug group-hover:text-purple-200 transition">
+                                          {dept.name}
+                                        </h4>
+                                      </div>
+
+                                      {/* Department Focus */}
+                                      <p className="text-xs text-neutral-300 leading-relaxed font-sans mb-3">
+                                        {dept.focus}
+                                      </p>
+
+                                      {/* Key Directives */}
+                                      <div className="space-y-1 mb-3 pt-2.5 border-t border-white/10">
+                                        <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 font-semibold mb-1">Directives:</div>
+                                        {dept.responsibilities.map((resp, rIdx) => (
+                                          <div key={rIdx} className="flex items-start gap-1.5 text-[11px] text-neutral-300 leading-tight">
+                                            <span className="text-purple-400 shrink-0 mt-0.5">&bull;</span>
+                                            <span>{resp}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Skills and selection footer */}
+                                    <div className="pt-2.5 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 mt-auto">
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {dept.skills.map((skill) => (
+                                          <span key={skill} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-300">
+                                            {skill}
+                                          </span>
+                                        ))}
+                                      </div>
+                                      <span className={`text-[10px] font-mono font-bold ${isSelected ? 'text-purple-300' : 'text-neutral-500'}`}>
+                                        {isSelected ? '✓ Department Selected' : 'Click to Select'}
+                                      </span>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : (field.id === 'step1_secondary_sector' || field.id === 'step1_secondary_department') ? (
+                          <div className="space-y-2 pt-1">
+                            <p className="text-[11px] text-neutral-400 font-sans">
+                              Select a fallback department if your primary choice is already fully staffed:
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {SECRETARIAT_DEPARTMENTS.map((dept) => {
+                                const isSelected = formData[field.id] === dept.name || formData[field.id] === dept.label;
+                                const isPrimary = formData['step1_primary_sector'] === dept.label || formData['step1_primary_sector'] === dept.name;
+                                return (
+                                  <button
+                                    key={dept.id}
+                                    type="button"
+                                    disabled={isPrimary}
+                                    onClick={() => handleInputChange(field.id, dept.name)}
+                                    className={`p-3 rounded-xl border text-left transition flex items-center justify-between cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-purple-500/20 border-purple-400 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                                        : isPrimary
+                                        ? 'bg-white/[0.01] border-white/5 opacity-40 cursor-not-allowed'
+                                        : 'bg-[#090d16]/60 border-white/10 hover:border-white/25 text-neutral-300 hover:text-white'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2.5 truncate">
+                                      <div className="p-1.5 rounded-lg bg-white/5 text-purple-300 shrink-0">
+                                        {getDeptIcon(dept.iconName)}
+                                      </div>
+                                      <div className="truncate">
+                                        <div className="text-xs font-semibold truncate">{dept.name}</div>
+                                        <div className="text-[10px] font-mono text-neutral-400 truncate">
+                                          {isPrimary ? 'Selected as 1st Choice' : dept.badge}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div
+                                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                                        isSelected ? 'border-purple-400 bg-purple-400 text-black' : 'border-white/20'
+                                      }`}
+                                    >
+                                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : (
+                          <select
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer font-sans"
+                          >
+                            <option value="" disabled>Select an option...</option>
+                            {(field.options || []).map((opt) => (
+                              <option key={opt} value={opt} className="bg-[#0e111a] text-white">
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        )
                       )}
 
                       {/* 17. Multiple Choice / Radio Options */}
@@ -1479,6 +1974,275 @@ export default function ZenFormPublicPage() {
                                     </span>
                                     <Ticket className={`w-3.5 h-3.5 ${isSelected ? 'text-amber-300' : 'text-neutral-500'}`} />
                                   </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : field.id === 'step3_primary_committee' ? (
+                          <div className="space-y-3.5 pt-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {COMMITTEE_CHAMBERS.map((chamber) => {
+                                const matchingOpt = (field.options || []).find((o) =>
+                                  o.toLowerCase().includes(chamber.code.toLowerCase()) ||
+                                  o.toLowerCase().includes(chamber.id.toLowerCase())
+                                ) || chamber.title;
+                                const isSelected = formData[field.id] === matchingOpt || formData[field.id]?.toLowerCase().includes(chamber.code.toLowerCase());
+
+                                return (
+                                  <button
+                                    key={chamber.id}
+                                    type="button"
+                                    onClick={() => handleInputChange(field.id, matchingOpt)}
+                                    className={`relative text-left p-5 rounded-2xl border transition-all duration-300 flex flex-col justify-between cursor-pointer group overflow-hidden ${
+                                      isSelected
+                                        ? 'bg-gradient-to-b from-amber-500/20 via-white/[0.08] to-amber-950/30 border-amber-400 ring-2 ring-amber-400/40 shadow-[0_0_30px_rgba(245,158,11,0.22)] scale-[1.01]'
+                                        : 'bg-[#090d16]/80 border-white/10 hover:border-amber-400/40 hover:bg-white/[0.04]'
+                                    }`}
+                                  >
+                                    <div>
+                                      {/* Top Badges & Radio Indicator */}
+                                      <div className="flex items-center justify-between gap-2 mb-3">
+                                        <div className="flex items-center gap-2">
+                                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-xs font-bold border border-amber-500/30">
+                                            {chamber.code}
+                                          </span>
+                                          <span className={`text-[9px] font-mono tracking-widest uppercase px-2.5 py-0.5 rounded-full font-bold border ${chamber.badgeColor}`}>
+                                            {chamber.badge}
+                                          </span>
+                                        </div>
+                                        <div
+                                          className={`w-5 h-5 rounded-full border flex items-center justify-center transition shrink-0 ${
+                                            isSelected
+                                              ? 'border-amber-400 bg-amber-400 text-black'
+                                              : 'border-white/20 group-hover:border-amber-400/50'
+                                          }`}
+                                        >
+                                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                        </div>
+                                      </div>
+
+                                      {/* Title & Subtitle */}
+                                      <h4 className="font-display font-bold text-white text-base leading-snug group-hover:text-amber-200 transition">
+                                        {chamber.title}
+                                      </h4>
+                                      <p className="text-xs text-neutral-400 font-mono mb-3">
+                                        {chamber.subtitle}
+                                      </p>
+
+                                      {/* Agenda Box */}
+                                      <div className="p-3 rounded-xl bg-black/50 border border-white/10 mb-3 space-y-1">
+                                        <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-semibold">
+                                          Official Simulated Agenda:
+                                        </div>
+                                        <div className="text-xs text-neutral-200 font-sans leading-relaxed">
+                                          {chamber.agenda}
+                                        </div>
+                                      </div>
+
+                                      {/* Format ROP */}
+                                      <div className="text-[11px] font-mono text-neutral-400 mb-3">
+                                        <span className="text-neutral-500">Rules of Procedure:</span> {chamber.format}
+                                      </div>
+                                    </div>
+
+                                    {/* Footer with Tags and Matrix Link */}
+                                    <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 mt-auto">
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {chamber.tags.map((tag) => (
+                                          <span key={tag} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-300">
+                                            {tag}
+                                          </span>
+                                        ))}
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Link
+                                          href="/matrix"
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-amber-300 font-mono text-[10px] border border-white/10 transition"
+                                        >
+                                          <Grid className="w-3 h-3" />
+                                          <span>Matrix</span>
+                                          <ExternalLink className="w-2.5 h-2.5" />
+                                        </Link>
+                                        <span className={`text-[10px] font-mono font-bold ${isSelected ? 'text-amber-300' : 'text-neutral-500'}`}>
+                                          {isSelected ? '✓ Chamber Selected' : 'Click to Select'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : field.id === 'step4_secondary_committee' ? (
+                          <div className="space-y-2 pt-1">
+                            <p className="text-[11px] text-neutral-400 font-sans">
+                              Select a fallback committee chamber if your primary choice is fully subscribed:
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {COMMITTEE_CHAMBERS.map((chamber) => {
+                                const matchingOpt = (field.options || []).find((o) =>
+                                  o.toLowerCase().includes(chamber.code.toLowerCase()) ||
+                                  o.toLowerCase().includes(chamber.id.toLowerCase())
+                                ) || chamber.title;
+                                const isSelected = formData[field.id] === matchingOpt || formData[field.id]?.toLowerCase().includes(chamber.code.toLowerCase());
+                                const isPrimary = formData['step3_primary_committee']?.toLowerCase().includes(chamber.code.toLowerCase());
+
+                                return (
+                                  <button
+                                    key={chamber.id}
+                                    type="button"
+                                    disabled={isPrimary}
+                                    onClick={() => handleInputChange(field.id, matchingOpt)}
+                                    className={`p-3.5 rounded-xl border text-left transition flex items-center justify-between cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-amber-500/20 border-amber-400 text-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                                        : isPrimary
+                                        ? 'bg-white/[0.01] border-white/5 opacity-40 cursor-not-allowed'
+                                        : 'bg-[#090d16]/60 border-white/10 hover:border-white/25 text-neutral-300 hover:text-white'
+                                    }`}
+                                  >
+                                    <div className="truncate">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-mono text-xs font-bold text-amber-400">{chamber.code}</span>
+                                        <span className="text-xs font-semibold text-white truncate">{chamber.title}</span>
+                                      </div>
+                                      <div className="text-[10px] font-mono text-neutral-400 truncate mt-0.5">
+                                        {isPrimary ? 'Selected as 1st Preference' : chamber.badge}
+                                      </div>
+                                    </div>
+                                    <div
+                                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                                        isSelected ? 'border-amber-400 bg-amber-400 text-black' : 'border-white/20'
+                                      }`}
+                                    >
+                                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : field.id === 'step3_weekly_bandwidth' ? (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
+                            {BANDWIDTH_TIERS.map((tier) => {
+                              const matchingOpt = (field.options || []).find((o) =>
+                                o.toLowerCase().includes(tier.id.toLowerCase()) ||
+                                o.toLowerCase().includes(tier.title.toLowerCase())
+                              ) || tier.label;
+                              const isSelected = formData[field.id] === matchingOpt || formData[field.id] === tier.label;
+
+                              return (
+                                <button
+                                  key={tier.id}
+                                  type="button"
+                                  onClick={() => handleInputChange(field.id, matchingOpt)}
+                                  className={`p-4 sm:p-5 rounded-2xl border text-left transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
+                                    isSelected
+                                      ? 'bg-gradient-to-b from-purple-500/25 via-white/[0.08] to-purple-950/30 border-purple-400 ring-2 ring-purple-400/40 shadow-[0_0_25px_rgba(168,85,247,0.25)] scale-[1.01]'
+                                      : 'bg-[#090d16]/70 border-white/10 hover:border-purple-400/40 hover:bg-white/[0.04]'
+                                  }`}
+                                >
+                                  <div>
+                                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                                      <span className="text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full border border-purple-500/30 text-purple-300 bg-purple-500/10 font-bold">
+                                        {tier.tier}
+                                      </span>
+                                      <div
+                                        className={`w-5 h-5 rounded-full border flex items-center justify-center transition shrink-0 ${
+                                          isSelected ? 'border-purple-400 bg-purple-400 text-black' : 'border-white/20'
+                                        }`}
+                                      >
+                                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                      </div>
+                                    </div>
+                                    <h4 className="font-display font-bold text-white text-base mb-1.5">
+                                      {tier.title}
+                                    </h4>
+                                    <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                                      {tier.desc}
+                                    </p>
+                                  </div>
+                                  <div className="pt-3 border-t border-white/10 mt-4 text-[10px] font-mono flex items-center justify-between">
+                                    <span className={isSelected ? 'text-purple-300 font-bold' : 'text-neutral-500'}>
+                                      {isSelected ? '✓ Track Committed' : 'Click to Commit'}
+                                    </span>
+                                    <Clock className={`w-3.5 h-3.5 ${isSelected ? 'text-purple-300' : 'text-neutral-500'}`} />
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : field.id === 'step4_accord_agreement' ? (
+                          <div className="space-y-4 pt-2">
+                            {/* Sovereign Accord Constitutional Pillars HUD */}
+                            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-purple-500/15 via-black/60 to-purple-950/20 border border-purple-500/30 space-y-4 shadow-xl">
+                              <div className="flex items-center justify-between gap-2 border-b border-purple-500/20 pb-3">
+                                <div className="flex items-center gap-2">
+                                  <ShieldCheck className="w-5 h-5 text-purple-400" />
+                                  <span className="font-display font-bold text-white text-sm uppercase tracking-wider">
+                                    The ZENVITRA Sovereign Secretariat Accord
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                                  CONSTITUTIONAL PILLARS
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1">
+                                  <div className="font-bold text-purple-300 font-mono text-[11px]">I. Sovereign Neutrality</div>
+                                  <p className="text-neutral-300 text-[11px] leading-relaxed">
+                                    Absolute impartiality across all committee allocations, dispute arbitrations, and award adjudications with zero institutional bias.
+                                  </p>
+                                </div>
+                                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1">
+                                  <div className="font-bold text-purple-300 font-mono text-[11px]">II. Executive Responsiveness</div>
+                                  <p className="text-neutral-300 text-[11px] leading-relaxed">
+                                    Strict &lt; 2-hour response latency during conference sprint cycles, active attendance in Secretariat syncs and war rooms.
+                                  </p>
+                                </div>
+                                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1">
+                                  <div className="font-bold text-purple-300 font-mono text-[11px]">III. Data Sanctity & Nondisclosure</div>
+                                  <p className="text-neutral-300 text-[11px] leading-relaxed">
+                                    Delegate PII, private crisis storylines, and dais deliberation notes remain confidential and cryptographically safeguarded.
+                                  </p>
+                                </div>
+                                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1">
+                                  <div className="font-bold text-purple-300 font-mono text-[11px]">IV. Diplomatic Decorum</div>
+                                  <p className="text-neutral-300 text-[11px] leading-relaxed">
+                                    Upholding exemplary diplomatic etiquette, intellectual rigor, and fraternal leadership across all multilateral sessions.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Ratification Option */}
+                            {(field.options || []).map((opt) => {
+                              const isSelected = formData[field.id] === opt;
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleInputChange(field.id, opt)}
+                                  className={`w-full p-4 rounded-xl border text-left transition flex items-start gap-3 cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-purple-500/20 border-purple-400 text-purple-200 ring-2 ring-purple-400/30 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+                                      : 'bg-white/[0.02] border-white/15 hover:bg-white/[0.05] text-neutral-300'
+                                  }`}
+                                >
+                                  <div
+                                    className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 mt-0.5 ${
+                                      isSelected ? 'border-purple-400 bg-purple-400 text-black' : 'border-white/30'
+                                    }`}
+                                  >
+                                    {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                  </div>
+                                  <span className="text-xs sm:text-sm font-medium leading-relaxed">
+                                    {opt}
+                                  </span>
                                 </button>
                               );
                             })}

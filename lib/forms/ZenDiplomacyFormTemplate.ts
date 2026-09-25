@@ -144,10 +144,10 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
       label: 'Select Your 1st Preference Committee Chamber',
       type: 'radio',
       options: [
-        'All India Political Parties Meet (AIPPM) — Electoral & Governance Frameworks',
-        'Ministry of Education (EMI) — NEP 2020 Review & Higher Education Policy',
-        'United Nations Security Council (UNSC) — Autonomous Warfare & Cyber Conflict',
-        'UN Office on Drugs & Crime (UNODC) — Transnational Synthetic Narcotics Supply Chains'
+        'All India Political Parties Meet (AIPPM) — National Security & Electoral Reforms',
+        'Education Ministry of India (EMI) — NEP 2020 Reforms & Youth Skill Equitization',
+        'UNESCO — Cultural Heritage Protection & Universal AI Ethics in Education',
+        'United Nations Security Council (UNSC) — Middle East De-escalation & Sovereignty'
       ],
       required: true
     },
@@ -173,9 +173,9 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
       type: 'radio',
       options: [
         'All India Political Parties Meet (AIPPM)',
-        'Ministry of Education (EMI)',
-        'United Nations Security Council (UNSC)',
-        'UN Office on Drugs & Crime (UNODC)'
+        'Education Ministry of India (EMI)',
+        'UNESCO',
+        'United Nations Security Council (UNSC)'
       ],
       required: true
     },
