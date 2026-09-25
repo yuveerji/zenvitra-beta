@@ -199,6 +199,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/countdown/') ||
     pathname === '/zen-diplomacy' ||
     pathname.startsWith('/zen-diplomacy/') ||
+    pathname === '/matrix' ||
+    pathname.startsWith('/matrix/') ||
+    pathname === '/call' ||
+    pathname.startsWith('/call/') ||
     pathname === '/events' ||
     pathname.startsWith('/events/') ||
     pathname === '/mun' ||
@@ -210,6 +214,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/space/') ||
     pathname === '/login' ||
     pathname === '/register' ||
+    pathname === '/statusregister' ||
+    pathname.startsWith('/statusregister/') ||
+    pathname === '/statussignin' ||
+    pathname.startsWith('/statussignin/') ||
     pathname.startsWith('/auth/');
 
   // PRE-RELEASE LOCKDOWN:
