@@ -224,7 +224,7 @@ export function CinematicPortal() {
             <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4 shadow-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[10px] tracking-widest uppercase">
                 <Shield className="w-3 h-3" />
-                <span>THE 25% CONSTITUTIONAL ESCROW</span>
+                <span>THE 10% CONSTITUTIONAL ESCROW</span>
               </div>
               <h3
                 className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
@@ -233,7 +233,7 @@ export function CinematicPortal() {
                 Technology Rooted in Civic Trust
               </h3>
               <p className="font-outfit text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                25% of all net platform profits are permanently bound to student scholarships, classroom kits, and computer labs every four months—backed by public receipts and verifiable video proofs.
+                10% of all net platform profits are permanently bound to student scholarships, classroom kits, and computer labs every four months—backed by public receipts and verifiable video proofs.
               </p>
             </div>
           )}

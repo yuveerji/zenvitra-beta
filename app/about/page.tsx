@@ -65,8 +65,8 @@ export default function AboutUsPage() {
     {
       icon: HeartHandshake,
       num: '04',
-      title: '25% Profit Civic Endowment',
-      desc: 'A permanent constitutional covenant: 25% of all net profits are directly disbursed every 4 months to student scholarships and study kits, verified with offline handover videos and public receipts.',
+      title: '10% Profit Civic Endowment',
+      desc: 'A permanent constitutional covenant: 10% of all net profits are directly disbursed every 4 months to student scholarships and study kits, verified with offline handover videos and public receipts.',
       color: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300',
       tag: 'CONSTITUTIONAL PROFIT ENDOWMENT',
       termKey: 'escrow'
@@ -85,8 +85,8 @@ export default function AboutUsPage() {
       icon: Lock,
     },
     {
-      title: 'Constitutional 25% Profit Endowment',
-      desc: 'Executed every 4 months: 25% of profits fund student supplies, Model UN scholarships, and computer labs with offline video proof on ZEN.FLUX and socials.',
+      title: 'Constitutional 10% Profit Endowment',
+      desc: 'Executed every 4 months: 10% of profits fund student supplies, Model UN scholarships, and computer labs with offline video proof on ZEN.FLUX and socials.',
       icon: HeartHandshake,
     },
     {
@@ -106,7 +106,7 @@ export default function AboutUsPage() {
         'Decentralized Matrix Core & Dual-Key Identity deployment',
         'Model UN Assembly Chamber & Policy Draft Engine live',
         'Founding Ambassador Corps across 50+ universities',
-        '25% Escrow Charter: First ₹50,000 deployment threshold target',
+        '10% Escrow Charter: First ₹50,000 deployment threshold target',
       ],
       color: 'border-amber-400/40 bg-amber-500/5 text-amber-300',
     },
@@ -231,17 +231,17 @@ export default function AboutUsPage() {
           </div>
         </section>
 
-        {/* ── 3. THE CONSTITUTIONAL 25% ESCROW CHARTER ── */}
+        {/* ── 3. THE CONSTITUTIONAL 10% ESCROW CHARTER ── */}
         <section className="p-8 sm:p-12 rounded-[2.8rem] bg-gradient-to-b from-[#0c0e14] to-[#06070a] border border-emerald-500/25 shadow-2xl relative overflow-hidden space-y-6">
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/[0.06] rounded-full blur-3xl pointer-events-none" />
 
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-bold uppercase">
             <HeartHandshake className="w-3.5 h-3.5" />
-            <span>CONSTITUTIONAL MANDATE &bull; 25% PROFIT COVENANT</span>
+            <span>CONSTITUTIONAL MANDATE &bull; 10% PROFIT COVENANT</span>
           </div>
 
           <h2 className="font-display font-black text-3xl sm:text-5xl text-white uppercase tracking-tight leading-tight">
-            25% of All Profits <br />
+            10% of All Profits <br />
             <InteractiveWordHover termKey="escrow">
               <span className="font-serif italic font-normal text-emerald-300 underline decoration-emerald-400/50 underline-offset-8 hover:decoration-emerald-300 cursor-pointer transition">
                 Directly Funds Public Education.
@@ -256,13 +256,13 @@ export default function AboutUsPage() {
                 Zenvitra Constitutional Charter
               </span>
             </InteractiveWordHover>
-            , an immutable <strong className="text-white font-semibold">25% of all net platform profits</strong> is distributed <strong className="text-amber-300 font-semibold">every 4 months</strong> directly to student scholarships, school study kits, and rural computer labs. Every single distribution is held to radical accountability through itemized purchase receipts and offline on-the-ground giveaway videos broadcast publicly on <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
+            , an immutable <strong className="text-white font-semibold">10% of all net platform profits</strong> is distributed <strong className="text-amber-300 font-semibold">every 4 months</strong> directly to student scholarships, school study kits, and rural computer labs. Every single distribution is held to radical accountability through itemized purchase receipts and offline on-the-ground giveaway videos broadcast publicly on <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10 font-mono text-xs">
             <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-1">
               <span className="text-neutral-500 text-[10px] uppercase">PROFIT ENDOWMENT RATIO</span>
-              <p className="text-lg font-bold text-emerald-400">25.0% Net Profit</p>
+              <p className="text-lg font-bold text-emerald-400">10.0% Net Profit</p>
             </div>
             <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-1">
               <span className="text-neutral-500 text-[10px] uppercase">TARGET INFRASTRUCTURE</span>
@@ -387,7 +387,7 @@ export default function AboutUsPage() {
         </div>
         <div className="flex items-center gap-5 text-neutral-400 font-medium">
           <Link href="/manifesto" className="hover:text-white transition">Manifesto</Link>
-          <Link href="/donate/govt-schools" className="hover:text-white transition">25% Escrow</Link>
+          <Link href="/donate/govt-schools" className="hover:text-white transition">10% Escrow</Link>
           <Link href="/campus-ambassador" className="hover:text-white transition">Ambassadors</Link>
           <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
         </div>

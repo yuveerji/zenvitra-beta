@@ -260,7 +260,7 @@ export function useEditorCommands({
     const sealHtml = `<div style="margin: 32px 0; padding: 16px 20px; border-radius: 12px; border: 1.5px solid #06b6d4; background: ${paperMode === 'light' ? '#f0fdf4' : '#082f49'}; font-family: monospace; font-size: 11px;">
   <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 8px; margin-bottom: 8px;">
     <span style="font-weight: 800; color: #0891b2;">🛡️ ZENVITRA CONSTITUTIONAL SOVEREIGN SEAL &bull; RATIFIED</span>
-    <span style="color: #059669; font-weight: bold;">25% CIVIC ENDOWMENT LOCKED</span>
+    <span style="color: #059669; font-weight: bold;">10% CIVIC ENDOWMENT LOCKED</span>
   </div>
   <p style="margin: 4px 0; color: ${paperMode === 'light' ? '#374151' : '#93c5fd'};"><strong>SHA-256 HASH:</strong> ${hash}</p>
   <p style="margin: 4px 0; color: ${paperMode === 'light' ? '#4b5563' : '#60a5fa'};"><strong>PLENIPOTENTIARY STAMP:</strong> Authenticated by Sovereign Authority on ${new Date().toISOString()}</p>

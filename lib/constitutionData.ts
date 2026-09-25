@@ -83,33 +83,33 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
   {
     id: 'article-2',
     articleNumber: 'ARTICLE II',
-    title: 'THE 25% PROFIT CIVIC ENDOWMENT & RADICAL ACCOUNTABILITY PROTOCOL',
-    badge: '25% PROFIT ENDOWMENT',
+    title: 'THE 10% PROFIT CIVIC ENDOWMENT & RADICAL ACCOUNTABILITY PROTOCOL',
+    badge: '10% PROFIT ENDOWMENT',
     badgeColor: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30',
-    summary: 'Hardcodes an unalterable 25.0% profit covenant dedicated to student scholarships, educational kits, and rural school labs—executed on a strict 4-month distribution cadence with transparent receipts and offline distribution videos broadcast across ZEN.FLUX and social platforms.',
+    summary: 'Hardcodes an unalterable 10.0% profit covenant dedicated to student scholarships, educational kits, and rural school labs—executed on a strict 4-month distribution cadence with transparent receipts and offline distribution videos broadcast across ZEN.FLUX and social platforms.',
     sections: [
       {
         sectionNumber: 'Section 2.01',
-        heading: 'The Mandatory 25.0% Net Profit Covenant',
+        heading: 'The Mandatory 10.0% Net Profit Covenant',
         operationalTag: 'CONSTITUTIONAL COVENANT',
         content: [
-          'A mandatory, non-negotiable twenty-five percent (25.0%) of all net platform profits generated across the ZENVITRA ecosystem—inclusive of memberships, summit passes, organizer licenses, and merchandise—shall be irreversibly partitioned into the Zenvitra Civic Endowment Vault.',
+          'A mandatory, non-negotiable ten percent (10.0%) of all net platform profits generated across the ZENVITRA ecosystem—inclusive of memberships, summit passes, organizer licenses, and merchandise—shall be irreversibly partitioned into the Zenvitra Civic Endowment Vault.',
           'This capital is held in trust exclusively for educational welfare, grassroots school delegate sponsorships, study kits, and school technology infrastructure. This covenant is structurally unalterable by any founder directive, board vote, or corporate restructuring.'
         ],
-        callout: 'The 25% Profit Invariant: Exactly 25% of every rupee and dollar of profit earned by ZENVITRA is returned directly to youth education, delegate scholarships, and underprivileged students.'
+        callout: 'The 10% Profit Invariant: Exactly 10% of every rupee and dollar of profit earned by ZENVITRA is returned directly to youth education, delegate scholarships, and underprivileged students.'
       },
       {
         sectionNumber: 'Section 2.02',
         heading: 'Triannual Cadence: Every 4 Months Distribution Mandate',
         operationalTag: 'TRIANNUAL CYCLE',
         content: [
-          'The accounting, procurement, and physical distribution of the 25% profit endowment shall execute without exception every four (4) months across three annual trimesters:',
+          'The accounting, procurement, and physical distribution of the 10% profit endowment shall execute without exception every four (4) months across three annual trimesters:',
           '• Trimester 1 (Jan – Apr): Profit computation, procurement of supplies, and field giveaway distribution.',
           '• Trimester 2 (May – Aug): Mid-year youth summit delegate scholarships, computer lab dispatches, and student kit distribution.',
           '• Trimester 3 (Sep – Dec): Annual educational grant distribution, winter study materials, and annual transparent reconciliation.',
           'No endowment funds may be rolled over or deferred beyond its designated 4-month distribution cycle.'
         ],
-        callout: 'Strict 4-Month Clock: Every 120 days, 25% of profits must be fully converted into physical supplies, scholarships, or infrastructure and placed directly into students\' hands.'
+        callout: 'Strict 4-Month Clock: Every 120 days, 10% of profits must be fully converted into physical supplies, scholarships, or infrastructure and placed directly into students\' hands.'
       },
       {
         sectionNumber: 'Section 2.03',
@@ -580,7 +580,7 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
         content: [
           'The following three foundational provisions constitute the Zenvitra Genesis Lock and are declared eternal, unalterable, and immune to repeal under any circumstances:',
           '1. The Zero-Surveillance and Anti-Behavioral Advertising Mandate (Article I, Section 1.01).',
-          '2. The Mandatory 25.0% Net Profit Civic Endowment for Rural Public Schools & Scholarships (Article II, Section 2.01).',
+          '2. The Mandatory 10.0% Net Profit Civic Endowment for Rural Public Schools & Scholarships (Article II, Section 2.01).',
           '3. The Strict Secular Demarcation and Non-Sectarian Civic Standard (Article IX, Section 9.01).',
           'Any amendment, legislative motion, or board vote attempting to dilute, lower, or abolish these three pillars is constitutionally void ab initio.'
         ],

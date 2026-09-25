@@ -27,13 +27,13 @@ export default function ImpactPage() {
         <AnimatedSection className="space-y-6 text-left">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-mono">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>THE 25% PROFIT CIVIC ENDOWMENT</span>
+            <span>THE 10% PROFIT CIVIC ENDOWMENT</span>
           </div>
           <h1 className="font-display font-bold text-4xl sm:text-6xl text-white tracking-tight leading-[1.08]">
             Audited, verifiable <span className="text-neutral-300 font-serif italic font-light">youth grants ledger.</span>
           </h1>
           <p className="text-neutral-300 text-base sm:text-lg max-w-2xl font-light leading-relaxed font-sans">
-            Exactly <strong className="text-white font-semibold">25% of all net platform profits</strong> on ZENVITRA is directly returned to students, rural school computer labs, and delegate scholarships. Executed <strong className="text-amber-300 font-semibold">every 4 months</strong> with radical accountability: offline handover videos and itemized purchase receipts broadcast publicly across <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
+            Exactly <strong className="text-white font-semibold">10% of all net platform profits</strong> on ZENVITRA is directly returned to students, rural school computer labs, and delegate scholarships. Executed <strong className="text-amber-300 font-semibold">every 4 months</strong> with radical accountability: offline handover videos and itemized purchase receipts broadcast publicly across <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
           </p>
         </AnimatedSection>
 
@@ -44,7 +44,7 @@ export default function ImpactPage() {
               <div className="space-y-1">
                 <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">PROFIT ENDOWMENT RATIO</span>
                 <div className="font-display font-bold text-3xl sm:text-4xl text-emerald-400">
-                  25.0%
+                  10.0%
                 </div>
                 <p className="text-[11px] font-mono text-neutral-400">Net Platform Profits</p>
               </div>
@@ -85,7 +85,7 @@ export default function ImpactPage() {
                           <Icon className="w-5 h-5" />
                         </div>
                         <span className="font-mono text-xs text-emerald-300 font-bold px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-                          25% ALLOCATION
+                          10% ALLOCATION
                         </span>
                       </div>
                       <div className="space-y-1">

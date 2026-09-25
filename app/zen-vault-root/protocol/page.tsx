@@ -181,7 +181,7 @@ export default function ProtocolMatrixPage() {
           { key: 'chatMeshEnabled', label: 'Real-Time Chat & Plenary Relays', desc: 'Enable socket streaming and active chambers' },
           { key: 'fluxReelsEnabled', label: 'Flux Reels & Multimedia Engine', desc: 'Enable video feeds, reels, and stories' },
           { key: 'assemblyOsEnabled', label: 'Assembly OS Voting & Resolutions', desc: 'Allow binding constitutional voting rounds' },
-          { key: 'escrowMandateActive', label: '25% Constitutional Escrow Enforcement', desc: 'Enforce non-custodial treasury locking' },
+          { key: 'escrowMandateActive', label: '10% Constitutional Escrow Enforcement', desc: 'Enforce non-custodial treasury locking' },
           { key: 'zeroSurveillanceActive', label: 'Zero-Surveillance Cryptographic Shredder', desc: 'Enable automatic log burning post-session' },
         ].map((circuit) => {
           const isEnabled = controls[circuit.key as keyof ProtocolControls];

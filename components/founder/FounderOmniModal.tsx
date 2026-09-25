@@ -601,7 +601,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
             { id: 'subscriptions', label: '💳 VIP Subscriptions', icon: CreditCard },
             { id: 'parliament', label: '🏛️ Parliament & Crisis', icon: Flame },
             { id: 'media', label: '🎙️ Audio, Songs & FLUX', icon: Music },
-            { id: 'escrow', label: '🪙 25% Escrow & Grants', icon: Coins },
+            { id: 'escrow', label: '🪙 10% Escrow & Grants', icon: Coins },
             { id: 'terminal', label: '💻 Root CLI (Terminal)', icon: Terminal },
             { id: 'protocol', label: '⚙️ Killswitches & Citadel', icon: Sliders },
             { id: 'audit', label: '📜 Audit Ledger', icon: Activity },
@@ -1136,15 +1136,15 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
             </div>
           )}
 
-          {/* ── 7. 25% CONSTITUTIONAL ESCROW & GRANTS ── */}
+          {/* ── 7. 10% CONSTITUTIONAL ESCROW & GRANTS ── */}
           {activeTab === 'escrow' && (
             <form onSubmit={handleSaveSiteOverrides} className="p-5 rounded-2xl bg-black border border-white/10 space-y-4 font-mono text-xs">
               <div className="flex items-center gap-2 text-emerald-300 font-bold">
                 <Coins className="w-4 h-4 text-emerald-400" />
-                <span>CONSTITUTIONAL 25% PROFIT ENDOWMENT &amp; RADICAL ACCOUNTABILITY</span>
+                <span>CONSTITUTIONAL 10% PROFIT ENDOWMENT &amp; RADICAL ACCOUNTABILITY</span>
               </div>
               <p className="text-neutral-400">
-                Mandatory 25% allocation of all net platform profits distributed every 4 months directly to student scholarships and rural school labs—verified with offline giveaway videos on ZEN.FLUX and public receipts.
+                Mandatory 10% allocation of all net platform profits distributed every 4 months directly to student scholarships and rural school labs—verified with offline giveaway videos on ZEN.FLUX and public receipts.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -1253,7 +1253,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
                   { key: 'fluxReelsEnabled', label: 'ZEN.FLUX Vertical Video Wire', desc: 'Enable 9:16 vertical video feed' },
                   { key: 'registrationsOpen', label: 'Open Public Registrations', desc: 'Allow new accounts on platform' },
                   { key: 'assemblyOsEnabled', label: 'Assembly OS & Live Voting', desc: 'Enable parliamentary caucus engine' },
-                  { key: 'escrowMandateActive', label: 'Constitutional 25% Profit Endowment', desc: 'Disburse 25% profits every 4 months with video proof' },
+                  { key: 'escrowMandateActive', label: 'Constitutional 10% Profit Endowment', desc: 'Disburse 10% profits every 4 months with video proof' },
                   { key: 'zeroSurveillanceActive', label: 'Zero Surveillance Enforcement', desc: 'Block tracking scripts & ads' },
                   { key: 'maintenanceMode', label: 'Protocol Omega (Citadel Lockout)', desc: 'Put entire platform into read-only' },
                 ].map((item) => {

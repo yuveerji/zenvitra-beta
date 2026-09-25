@@ -56,8 +56,8 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     tag: 'CIVIC TECH & PUBLIC BUILDERS',
     icon: Heart,
     definition: 'Youth builders, researchers, programmers, and grassroots social entrepreneurs turning community debate into actionable civic projects and public digital goods.',
-    platformRelation: 'Backed by ZEN.IMPACT — a constitutional endowment guaranteeing 25% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN.FLUX.',
-    protocolBadge: 'ZEN.IMPACT // 25% PROFIT FUND',
+    platformRelation: 'Backed by ZEN.IMPACT — a constitutional endowment guaranteeing 10% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN.FLUX.',
+    protocolBadge: 'ZEN.IMPACT // 10% PROFIT FUND',
     ctaText: 'View Civic Impact Fund',
     ctaHref: '/impact',
     accentColor: 'from-emerald-400/20 via-emerald-500/10 to-transparent text-emerald-300 border-emerald-500/30',
@@ -136,12 +136,12 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
   },
   escrow: {
     id: 'escrow',
-    term: 'Constitutional 25% Profit Endowment',
+    term: 'Constitutional 10% Profit Endowment',
     tag: 'PUBLIC BENEFIT CHARTER',
     icon: Heart,
-    definition: 'An immutable constitutional mandate: exactly 25% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs.',
+    definition: 'An immutable constitutional mandate: exactly 10% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs.',
     platformRelation: 'Audited every 4 months through public itemized receipts and unedited offline giveaway videos broadcast on ZEN.FLUX and social platforms.',
-    protocolBadge: 'ZEN.IMPACT // 25% PROFIT MANDATE',
+    protocolBadge: 'ZEN.IMPACT // 10% PROFIT MANDATE',
     ctaText: 'View Escrow Allocations',
     ctaHref: '/impact',
     accentColor: 'from-emerald-400/20 via-emerald-500/10 to-transparent text-emerald-300 border-emerald-500/30',
@@ -378,7 +378,7 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     tag: 'DIRECT IMPACT',
     icon: Heart,
     definition: 'Solar-powered computer laboratories, open-source STEM libraries, and high-speed satellite connectivity installed in underserved government schools.',
-    platformRelation: 'Funded autonomously via our 25% constitutional escrow and tracked live on our public grant ledger.',
+    platformRelation: 'Funded autonomously via our 10% constitutional escrow and tracked live on our public grant ledger.',
     protocolBadge: 'ZEN.IMPACT // SMART LAB ENDOWMENT',
     ctaText: 'View Smart Lab Deployments',
     ctaHref: '/donate/govt-schools',
@@ -416,12 +416,12 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
   },
   'educational-endowment': {
     id: 'educational-endowment',
-    term: '25% Profit Educational Endowment',
+    term: '10% Profit Educational Endowment',
     tag: 'IMMUTABLE ESCROW',
     icon: Heart,
-    definition: 'A hardcoded constitutional mandate dedicating 25% of net platform profits every 4 months to student study kits, Model UN scholarships, and solar school labs.',
+    definition: 'A hardcoded constitutional mandate dedicating 10% of net platform profits every 4 months to student study kits, Model UN scholarships, and solar school labs.',
     platformRelation: 'Audited every 4 months with offline handover videos on ZEN.FLUX and public ledger receipts; unalterable by any board decision.',
-    protocolBadge: 'CONSTITUTION // ARTICLE II (25% PROFIT)',
+    protocolBadge: 'CONSTITUTION // ARTICLE II (10% PROFIT)',
     ctaText: 'Read Constitution Article II',
     ctaHref: '/constitution#article-2',
     accentColor: 'from-emerald-400/20 via-emerald-500/10 to-transparent text-emerald-300 border-emerald-500/30',
@@ -453,7 +453,7 @@ export function InteractiveWordModal({ termKey, onClose }: InteractiveWordModalP
   const controls = useProtocolControls();
   if (!termKey || !GLOSSARY_TERMS[termKey]) return null;
 
-  // When 25% Profit/Escrow is toggled off, suppress 25% profit popups completely
+  // When 10% Profit/Escrow is toggled off, suppress 10% profit popups completely
   if (!controls.escrowMandateActive && (termKey === 'escrow' || termKey === 'educational-endowment')) {
     return null;
   }
@@ -467,12 +467,12 @@ export function InteractiveWordModal({ termKey, onClose }: InteractiveWordModalP
 
   if (!controls.escrowMandateActive) {
     displayDefinition = displayDefinition
-      .replace(/exactly 25% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
-      .replace(/25% of net platform profits every 4 months to student study kits/gi, 'student study kits');
+      .replace(/exactly 10% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
+      .replace(/10% of net platform profits every 4 months to student study kits/gi, 'student study kits');
     displayRelation = displayRelation
-      .replace(/guaranteeing 25% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
-      .replace(/via our 25% constitutional escrow/gi, 'via our civic grant fund');
-    displayBadge = displayBadge.replace(/\/\/ 25% PROFIT (FUND|MANDATE)/gi, '// CIVIC IMPACT FUND').replace(/\(25% PROFIT\)/gi, '');
+      .replace(/guaranteeing 10% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
+      .replace(/via our 10% constitutional escrow/gi, 'via our civic grant fund');
+    displayBadge = displayBadge.replace(/\/\/ 10% PROFIT (FUND|MANDATE)/gi, '// CIVIC IMPACT FUND').replace(/\(10% PROFIT\)/gi, '');
   }
 
   return (

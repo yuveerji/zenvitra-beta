@@ -302,7 +302,7 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
     } else if (type === 'article') {
       html = `
         <div style="border-left: 3px solid #c084fc; padding-left: 16px; margin: 20px 0; font-family: monospace; font-size: 13px; color: #e9d5ff;">
-          <strong style="color: #f3e8ff;">ARTICLE REFERENCE:</strong> "Cite specific clauses of the Zenvitra Sovereign Charter or 25% Profit Endowment Mandate."
+          <strong style="color: #f3e8ff;">ARTICLE REFERENCE:</strong> "Cite specific clauses of the Zenvitra Sovereign Charter or 10% Profit Endowment Mandate."
         </div><p></p>
       `;
     }
@@ -819,7 +819,7 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
                   type="text"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="e.g. An executive memorandum tabling 100% secular governance and hardcoded 25% profit educational endowment."
+                  placeholder="e.g. An executive memorandum tabling 100% secular governance and hardcoded 10% profit educational endowment."
                   className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-white/10 text-neutral-200 text-xs font-mono placeholder-neutral-600 focus:outline-none focus:border-amber-400/50"
                 />
               </div>

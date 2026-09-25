@@ -70,9 +70,9 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
   const passesCount = registrations?.length || 0;
   const publishedCount = (myPosts?.length || 0) + (myFluxVideos?.length || 0);
   
-  // Real 25% protocol calculation based on user's actual registered passes
+  // Real 10% protocol calculation based on user's actual registered passes
   const totalPassSpend = passesCount * 1500; // standard registration unit
-  const escrowContribution = Math.round(totalPassSpend * 0.25);
+  const escrowContribution = Math.round(totalPassSpend * 0.10);
   const mySpace = getZenSpaceProfile(currentUserUsername || profile?.username || 'yuveer');
 
   // Pro mode real stats
@@ -157,11 +157,11 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
               </p>
             </div>
 
-            {/* Real 25% Escrow Contribution */}
+            {/* Real 10% Escrow Contribution */}
             {escrowMandateActive && (
               <div className="p-5 rounded-3xl bg-[#07080b] border border-white/10 space-y-2 relative overflow-hidden">
                 <div className="flex items-center justify-between text-xs text-zinc-400">
-                  <span className="font-mono uppercase tracking-wider text-[10px]">25% Civic Escrow</span>
+                  <span className="font-mono uppercase tracking-wider text-[10px]">10% Civic Escrow</span>
                   <HeartHandshake className="w-4 h-4 text-rose-400" />
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -169,7 +169,7 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
                   <span className="text-xs text-zinc-400">directed to grants</span>
                 </div>
                 <p className="text-[11px] text-zinc-400 font-medium">
-                  {escrowContribution > 0 ? 'From your active pass allocation' : '25% allocated on each pass / ticket'}
+                  {escrowContribution > 0 ? 'From your active pass allocation' : '10% allocated on each pass / ticket'}
                 </p>
               </div>
             )}
@@ -527,7 +527,7 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
                 </div>
                 {escrowMandateActive && (
                   <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 space-y-1">
-                    <p className="text-white font-bold">25% Sovereign Escrow Protocol</p>
+                    <p className="text-white font-bold">10% Sovereign Escrow Protocol</p>
                     <p className="text-[10px] text-zinc-500">Live Dual-Key Routing Active</p>
                   </div>
                 )}

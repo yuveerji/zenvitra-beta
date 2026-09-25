@@ -2196,7 +2196,7 @@ export function VaultDashboardClient({
               { key: 'fluxReelsEnabled', label: 'ZEN.FLUX Vertical Video Wire', desc: 'Enable 9:16 vertical video feed' },
               { key: 'registrationsOpen', label: 'Open Public Registrations', desc: 'Allow new accounts on platform' },
               { key: 'assemblyOsEnabled', label: 'Assembly OS & Live Voting', desc: 'Enable parliamentary caucus engine' },
-              { key: 'escrowMandateActive', label: 'Constitutional 25% Profit Endowment', desc: 'Disburse 25% profits every 4 months with video proof' },
+              { key: 'escrowMandateActive', label: 'Constitutional 10% Profit Endowment', desc: 'Disburse 10% profits every 4 months with video proof' },
               { key: 'zeroSurveillanceActive', label: 'Zero Surveillance Enforcement', desc: 'Block tracking scripts & ads' },
             ].map((item) => {
               const k = item.key as keyof ProtocolControls;

@@ -179,7 +179,7 @@ export function ZenDocsCanvas({
               : 'border-white/[0.06] text-neutral-700'
           }`}>
             <span>ZENVITRA SOVEREIGN MESH • ZERO AD SURVEILLANCE</span>
-            <span>25% CIVIC ENDOWMENT RATIFIED</span>
+            <span>10% CIVIC ENDOWMENT RATIFIED</span>
           </div>
         </div>
       </div>

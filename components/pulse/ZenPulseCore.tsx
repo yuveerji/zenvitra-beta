@@ -479,7 +479,7 @@ export function ZenPulseCore() {
 
     // Official platform directives (indices map directly to DIRECTIVE_DOSSIERS in ChamberDirectiveModal)
     // 0: directive-mesh ('ZENVITRA MESH')
-    // 1: directive-civic ('Constitutional 25% Profit Civic Treasury Allocation')
+    // 1: directive-civic ('Constitutional 10% Profit Civic Treasury Allocation')
     // 2: directive-sovereign ('Sovereign Identity Shield')
     const officialDirectives: TickerItem[] = [
       {
@@ -491,7 +491,7 @@ export function ZenPulseCore() {
       {
         id: 'directive-civic',
         badge: 'CIVIC COVENANT',
-        text: 'CONSTITUTIONAL INVARIANT • 25% Platform Profit Reserved for Public Schools & Scholarships',
+        text: 'CONSTITUTIONAL INVARIANT • 10% Platform Profit Reserved for Public Schools & Scholarships',
         directiveIndex: 1,
       },
       {

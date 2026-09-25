@@ -234,9 +234,9 @@ export const INITIAL_DOCUMENTS: ZenDocument[] = [
 <p style="font-size: 14px; line-height: 1.8; color: #374151; margin-bottom: 16px;">
   Every sovereign node retains unalienable rights to verify, audit, and inspect all computational instruments applied to its citizenry. No synthetic intelligence model may be imposed without reproducible safety telemetry and open audit keys.
 </p>
-<h2 style="font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom: 8px; color: #111827;">Article II: The 25% Civic Endowment Covenant</h2>
+<h2 style="font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom: 8px; color: #111827;">Article II: The 10% Civic Endowment Covenant</h2>
 <p style="font-size: 14px; line-height: 1.8; color: #374151; margin-bottom: 16px;">
-  Under the ZENVITRA constitutional covenant, 25% of all net platform revenue is irrevocably locked and distributed triannually toward student scholarships, civic hardware, and youth debate councils with cryptographic proof and public video audits.
+  Under the ZENVITRA constitutional covenant, 10% of all net platform revenue is irrevocably locked and distributed triannually toward student scholarships, civic hardware, and youth debate councils with cryptographic proof and public video audits.
 </p>
 <h2 style="font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom: 8px; color: #111827;">Article III: Real-Time Chamber Telemetry</h2>
 <p style="font-size: 14px; line-height: 1.8; color: #374151; margin-bottom: 16px;">
@@ -396,7 +396,7 @@ export const DOC_TEMPLATES: DocTemplateDefinition[] = [
 <h3 style="font-size: 14px; font-weight: bold; color: #111827;">1. Key Decisions Ratified</h3>
 <ul style="font-size: 13px; line-height: 1.8; color: #374151;">
   <li><strong>Motion 1:</strong> Conference venue confirmed at Jaipur International Centre.</li>
-  <li><strong>Motion 2:</strong> 25% Civic Endowment treasury allocation approved.</li>
+  <li><strong>Motion 2:</strong> 10% Civic Endowment treasury allocation approved.</li>
 </ul>
 <h3 style="font-size: 14px; font-weight: bold; color: #111827; margin-top: 18px;">2. Action Items &amp; Deadlines</h3>
 <p style="font-size: 13px; line-height: 1.8; color: #374151;">&bull; Complete country matrix allocations (Due: Friday)<br />&bull; Issue delegate handbook &amp; rules of procedure</p>`

@@ -245,7 +245,7 @@ Citations: ${citations || 'N/A'}`;
                   <div className="space-y-1">
                     <p className="font-bold text-amber-300">GENESIS LOCK INVARIANT (Section 7.01)</p>
                     <p className="text-[11px] leading-relaxed text-amber-200/90 font-light font-sans">
-                      This article is permanently protected against dilution or repeal. Petitions may only propose enhanced cryptographic enforcement or stronger transparency. Any proposal reducing zero-surveillance, 25% escrow, or secular neutrality will be void.
+                      This article is permanently protected against dilution or repeal. Petitions may only propose enhanced cryptographic enforcement or stronger transparency. Any proposal reducing zero-surveillance, 10% escrow, or secular neutrality will be void.
                     </p>
                   </div>
                 </div>

@@ -66,7 +66,7 @@ export default function CampusAmbassadorPage() {
     },
     {
       title: 'Direct Diplomatic Grants',
-      desc: 'Access seed funding & 25% Profit Endowment support for public school library and lab initiatives.',
+      desc: 'Access seed funding & 10% Profit Endowment support for public school library and lab initiatives.',
       icon: Award,
     },
     {

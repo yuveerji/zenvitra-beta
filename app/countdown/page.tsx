@@ -554,7 +554,7 @@ export default function CountdownPage() {
                 Public Platform Ignition Rescheduled to 2nd October 2026, 2:00 PM IST
               </h3>
               <p className="text-[11px] sm:text-xs text-neutral-300 font-sans leading-relaxed">
-                To guarantee zero latency under peak multilateral caucuses, complete SHA-256 cryptographic verification of delegate resolutions, and verify the offline video proof distribution rails for our 25% civic profit mandate, the Founding Directorate has re-calibrated our launch window. All pre-registered delegates, study guides, and matrix assignments remain securely locked and reserved.
+                To guarantee zero latency under peak multilateral caucuses, complete SHA-256 cryptographic verification of delegate resolutions, and verify the offline video proof distribution rails for our 10% civic profit mandate, the Founding Directorate has re-calibrated our launch window. All pre-registered delegates, study guides, and matrix assignments remain securely locked and reserved.
               </p>
             </div>
 

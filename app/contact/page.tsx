@@ -190,7 +190,7 @@ export default function ContactPage() {
                       <option>General Inquiries & Partnerships</option>
                       <option>Model UN & Summit OS Inquiries</option>
                       <option>ZEN.PRESS Journalistic Submissions</option>
-                      <option>Government School Grants & 25% Ledger</option>
+                      <option>Government School Grants & 10% Ledger</option>
                       <option>Genesis Council Executive Inquiry</option>
                     </select>
                   </div>

@@ -68,7 +68,7 @@ export default function InvestDonatePage() {
       utrTransactionId: `DON-${Date.now().toString().slice(-6)}`,
       targetProjectStream: donateData.foundation,
       auditStatus: 'QUEUED_FOR_AUDIT',
-      verificationDetails: '25% Profit Civic Endowment Allocation',
+      verificationDetails: '10% Profit Civic Endowment Allocation',
       paymentMode: 'DIRECT_FOUNDATION_ESCROW',
     };
     sheetSync.impactLedger(donationRecord);
@@ -98,7 +98,7 @@ export default function InvestDonatePage() {
               <p className="text-sm text-neutral-400 font-light leading-relaxed">
                 {activeTab === 'invest'
                   ? 'Our capital deployment committee will review your inquiry and reach out securely.'
-                  : 'Thank you for supporting verified charity foundations. Your payment screenshot is queued for audit under the 25% Impact Principle.'}
+                  : 'Thank you for supporting verified charity foundations. Your payment screenshot is queued for audit under the 10% Impact Principle.'}
               </p>
               <button
                 onClick={() => {

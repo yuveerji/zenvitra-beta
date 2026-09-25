@@ -144,7 +144,7 @@ export default function JoinCoreTeamPage() {
     },
     {
       id: 'impact',
-      title: 'Head of Impact & The 25% Principle',
+      title: 'Head of Impact & The 10% Principle',
       tagline: 'Directing the public ledger, managing youth civic grants, and auditing real-world deployments.',
       badge: 'IMPACT LEDGER',
       icon: Shield,
@@ -883,7 +883,7 @@ export default function JoinCoreTeamPage() {
                                 I ratify the Zenvitra Founding Invariants
                               </span>
                               <p className="text-xs text-neutral-400 leading-relaxed font-light">
-                                I agree that Zenvitra will never sell user data, will maintain 100% editorial freedom for the Press, and will direct at least 25% of proceeds to verified impact.
+                                I agree that Zenvitra will never sell user data, will maintain 100% editorial freedom for the Press, and will direct at least 10% of proceeds to verified impact.
                               </p>
                             </div>
                           </label>

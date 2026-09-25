@@ -15,7 +15,7 @@ export interface AiCopilotModalProps {
 
 const POLICY_SUGGESTIONS = [
   'Independent AI audit nodes and neutral telemetry',
-  '25% civic endowment allocation for youth debaters',
+  '10% civic endowment allocation for youth debaters',
   'Multilateral compute subsidies for global south delegations',
   'Cryptographic verifiability of parliamentary notifications'
 ];

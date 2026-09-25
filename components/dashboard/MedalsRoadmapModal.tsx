@@ -354,17 +354,17 @@ export function MedalsRoadmapModal({ isOpen, onClose }: MedalsRoadmapModalProps)
       actionLink: '/solutions',
     },
 
-    /* ── 4. IMPACT & 25% CIVIC ESCROW ── */
+    /* ── 4. IMPACT & 10% CIVIC ESCROW ── */
     {
       id: 'escrow-patron',
-      title: '25% Civic Escrow Patron',
+      title: '10% Civic Escrow Patron',
       category: 'IMPACT',
       icon: '💖',
       rarity: 'EPIC',
-      description: 'Directed funds to the permanent 25% escrow protocol funding govt schools.',
+      description: 'Directed funds to the permanent 10% escrow protocol funding govt schools.',
       isUnlocked: hasEscrowContribution,
       progressText: hasEscrowContribution ? 'Escrow Active' : '₹0 Allocated',
-      howToEarn: 'Register for an assembly pass or donate directly to the 25% govt school grant fund.',
+      howToEarn: 'Register for an assembly pass or donate directly to the 10% govt school grant fund.',
       actionLabel: 'Support School Grants',
       actionLink: '/donate/govt-schools',
     },
@@ -403,7 +403,7 @@ export function MedalsRoadmapModal({ isOpen, onClose }: MedalsRoadmapModalProps)
       description: 'Audited transparent on-chain and banking allocation statements for youth grants.',
       isUnlocked: isAuthenticated,
       progressText: 'Public Ledger Verified',
-      howToEarn: 'Review the public 25% grant allocation ledger and transparency receipts.',
+      howToEarn: 'Review the public 10% grant allocation ledger and transparency receipts.',
       actionLabel: 'Audit Impact Ledger',
       actionLink: '/impact',
     },

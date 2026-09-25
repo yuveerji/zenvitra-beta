@@ -76,7 +76,7 @@ export function Navbar({
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },
     { name: 'Conference OS', href: '/mun/conference', icon: Layers, tag: 'Secretariat', desc: 'Secretariat Command Center & Liveboard' },
     { name: 'Manifesto', href: '/manifesto', icon: Flame, tag: 'Declaration', desc: 'Declaration of Youth Digital Sovereignty' },
-    { name: 'Impact', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '25% Profit Endowment Distributed Every 4 Months with Video Proof' },
+    { name: 'Impact', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 4 Months with Video Proof' },
     { name: 'Solutions', href: '/solutions', icon: Sparkles, tag: 'Architecture', desc: 'Civic, Tech & Media Architecture' },
     { name: 'About', href: '/about', icon: Compass, tag: 'Governance', desc: 'Our Mission, Founders & Global Secretariat' },
   ];

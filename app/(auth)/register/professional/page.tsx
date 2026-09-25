@@ -781,7 +781,7 @@ export default function ProfessionalEventRegisterPage() {
                 </div>
               </label>
 
-              {/* 25% AID & ZERO SURVEILLANCE COVENANT */}
+              {/* 10% AID & ZERO SURVEILLANCE COVENANT */}
               <label className="flex items-start gap-3 p-4 rounded-2xl bg-black/60 border border-white/10 cursor-pointer hover:bg-white/5 transition">
                 <input
                   type="checkbox"
@@ -795,7 +795,7 @@ export default function ProfessionalEventRegisterPage() {
                     I accept the Sovereign Organizer Accord &amp; Transparency Covenant.
                   </p>
                   <p className="text-[11px] text-neutral-400 font-sans">
-                    I agree to transparent ticketing escrow settlement, commit to the 25% platform support clause for underserved government schools if conducting philanthropic fundraising, and agree to zero surveillance of delegate personal data.
+                    I agree to transparent ticketing escrow settlement, commit to the 10% platform support clause for underserved government schools if conducting philanthropic fundraising, and agree to zero surveillance of delegate personal data.
                   </p>
                 </div>
               </label>

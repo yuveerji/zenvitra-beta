@@ -24,7 +24,7 @@ export default function VisionPage() {
       heading: 'Sovereign Core & Pulse Deployment',
       termKey: 'pulse-protocol',
       description:
-        'Establishing the zero-tracker social architecture (ZEN.PULSE), the independent journalistic dispatch wire (ZEN.PRESS), and launching the public 25% grant allocation ledger.',
+        'Establishing the zero-tracker social architecture (ZEN.PULSE), the independent journalistic dispatch wire (ZEN.PRESS), and launching the public 10% grant allocation ledger.',
     },
     {
       epoch: 'PHASE II // SCALING (2026 - 2027)',

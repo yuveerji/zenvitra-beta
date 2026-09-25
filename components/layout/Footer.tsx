@@ -360,7 +360,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/impact" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>25% Profit Endowment</span>
+                  <span>10% Profit Endowment</span>
                 </Link>
               </li>
               <li>

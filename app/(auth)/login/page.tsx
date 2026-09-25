@@ -94,7 +94,7 @@ const SOVEREIGN_TRACKS: SovereignTrack[] = [
     title: 'Civic & Tech Architect',
     badge: 'PROTOCOL ENGINE',
     icon: Terminal,
-    tagline: 'Engineer civic technologies, govern smart assemblies, and audit the 25% public school treasury ledger.',
+    tagline: 'Engineer civic technologies, govern smart assemblies, and audit the 10% public school treasury ledger.',
     capabilities: ['Decentralized Identity', 'Public Ledger Audits', 'Open Source Tooling']
   }
 ];

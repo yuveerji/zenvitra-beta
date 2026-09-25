@@ -32,7 +32,7 @@ export function LiveActivity() {
     },
     {
       id: 'f2',
-      category: '25% ESCROW MANDATE',
+      category: '10% ESCROW MANDATE',
       icon: HeartHandshake,
       text: 'Constitutional Charter Active: First grant cycle unlocks at ₹50,000 milestone for Rural School Labs',
       time: 'In Progress',
@@ -79,7 +79,7 @@ export function LiveActivity() {
   const stats = [
     { label: 'NETWORK STAGE', value: 'PHASE 01', sub: 'Genesis Assembly Initialized', icon: Globe },
     { label: 'POLICY REPOSITORY', value: 'OPEN', sub: 'Accepting Youth Draft Briefs', icon: FileText },
-    { label: '25% ESCROW TARGET', value: '₹50,000', sub: 'Cycle 1 Rural School Lab Fund Goal', icon: HeartHandshake },
+    { label: '10% ESCROW TARGET', value: '₹50,000', sub: 'Cycle 1 Rural School Lab Fund Goal', icon: HeartHandshake },
     { label: 'SOVEREIGN CORE', value: '100% OPEN', sub: 'Zero tracking • Fully transparent', icon: Zap },
   ];
 

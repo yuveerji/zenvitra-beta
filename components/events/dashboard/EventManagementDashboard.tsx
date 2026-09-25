@@ -133,7 +133,7 @@ export const EventManagementDashboard: React.FC = () => {
             Summit Operations & Role Delegation
           </h1>
           <p className="text-xs sm:text-sm text-neutral-400">
-            Real-time delegate accreditation, 25% civic escrow reserve ledger, gate security, and dais access handover.
+            Real-time delegate accreditation, 10% civic escrow reserve ledger, gate security, and dais access handover.
           </p>
         </div>
 
@@ -207,11 +207,11 @@ export const EventManagementDashboard: React.FC = () => {
           <div className="text-[11px] text-neutral-400">Net payout: ₹{metrics.netPayout.toLocaleString('en-IN')}</div>
         </div>
 
-        {/* 25% Civic Escrow Reserve */}
+        {/* 10% Civic Escrow Reserve */}
         {escrowMandateActive && (
           <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/40 via-[#0e111d] to-[#0e111d] border border-cyan-500/30 space-y-2">
             <div className="flex items-center justify-between text-cyan-300 text-xs font-mono uppercase">
-              <span>25% Civic Escrow</span>
+              <span>10% Civic Escrow</span>
               <ShieldCheck className="w-4 h-4 text-cyan-400" />
             </div>
             <div className="text-2xl sm:text-3xl font-black text-cyan-300 font-mono">

@@ -74,17 +74,17 @@ export const DIRECTIVE_DOSSIERS: DirectiveDossier[] = [
     id: 'directive-civic',
     tag: 'CIVIC COVENANT',
     badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
-    title: 'Constitutional 25% Profit Civic Treasury Allocation Invariant',
+    title: 'Constitutional 10% Profit Civic Treasury Allocation Invariant',
     chamber: 'Public School Treasury & Scholarship Desk',
     location: 'Immutable Governance Ledger',
     timestamp: 'Quadrennial Distribution Invariant',
-    summary: 'Hardcoded constitutional rule allocating 25% of all platform revenues and summit fees every 4 months to student scholarships, classroom computer labs, and supplies—verified with offline video proof and public receipts.',
-    fullDossier: `Under the Zenvitra Constitutional Covenant, 25% of all net platform surplus is permanently ring-fenced for public education development and student opportunity grants.\n\nEvery four months, disbursements are made directly to underfunded government schools for computer lab hardware, textbooks, and full merit scholarships.\n\nEvery handover is recorded on video, published transparently on ZEN.FLUX, and cross-verified with bank transaction hashes accessible to all delegates.`,
+    summary: 'Hardcoded constitutional rule allocating 10% of all platform revenues and summit fees every 4 months to student scholarships, classroom computer labs, and supplies—verified with offline video proof and public receipts.',
+    fullDossier: `Under the Zenvitra Constitutional Covenant, 10% of all net platform surplus is permanently ring-fenced for public education development and student opportunity grants.\n\nEvery four months, disbursements are made directly to underfunded government schools for computer lab hardware, textbooks, and full merit scholarships.\n\nEvery handover is recorded on video, published transparently on ZEN.FLUX, and cross-verified with bank transaction hashes accessible to all delegates.`,
     clauses: [
       {
         number: 'Clause 2.1',
-        title: '25% Surplus Ring-Fence',
-        text: '25% of net proceeds from subscriptions, summit fees, and sponsorships are locked into the public civic pool.'
+        title: '10% Surplus Ring-Fence',
+        text: '10% of net proceeds from subscriptions, summit fees, and sponsorships are locked into the public civic pool.'
       },
       {
         number: 'Clause 2.2',
@@ -94,7 +94,7 @@ export const DIRECTIVE_DOSSIERS: DirectiveDossier[] = [
       {
         number: 'Clause 2.3',
         title: 'Zero Overhead Deduction',
-        text: 'No administrative or marketing fees may be subtracted from the 25% civic pool.'
+        text: 'No administrative or marketing fees may be subtracted from the 10% civic pool.'
       }
     ],
     signatoriesCount: 1,

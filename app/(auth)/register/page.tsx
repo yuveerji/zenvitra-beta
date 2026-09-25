@@ -77,7 +77,7 @@ const REGISTER_TRACKS: SovereignTrack[] = [
     title: 'Civic & Tech Architect',
     badge: 'PROTOCOL ENGINE',
     icon: Terminal,
-    tagline: 'Build civic micro-tools, participate in campus hackathons, and audit the 25% transparent school aid treasury.',
+    tagline: 'Build civic micro-tools, participate in campus hackathons, and audit the 10% transparent school aid treasury.',
     requirements: ['Open protocol tooling access', 'Treasury ledger audit rights', 'Hackathon & project stage'],
     color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30'
   },

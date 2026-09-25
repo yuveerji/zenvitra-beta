@@ -76,7 +76,7 @@ export default function GovtSchoolsDonationPage() {
       utrTransactionId: formData.utrOrTxnId || `TXN-${Date.now().toString().slice(-6)}`,
       targetProjectStream: formData.dedicatedProject || 'Govt School Solar & Lab Fund',
       auditStatus: 'PENDING_BANK_RECONCILIATION',
-      verificationDetails: '25% Civic Escrow Direct Public Education Allocation',
+      verificationDetails: '10% Civic Escrow Direct Public Education Allocation',
       paymentMode: 'UPI_DIRECT_GOVT_FUND',
       wantsAnonymous: formData.wantsAnonymous,
     };
@@ -488,7 +488,7 @@ export default function GovtSchoolsDonationPage() {
         <footer className="pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-neutral-500">
           <span>ZENVITRA &copy; 2026 // GOVT SCHOOLS REFORM INITIATIVE</span>
           <span className="uppercase tracking-widest text-neutral-400">
-            AUDITED UNDER THE 25% IMPACT PRINCIPLE
+            AUDITED UNDER THE 10% IMPACT PRINCIPLE
           </span>
         </footer>
       </div>

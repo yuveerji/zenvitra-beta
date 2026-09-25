@@ -140,7 +140,7 @@ export default function HomeClient({ session }: HomeClientProps) {
     {
       icon: Sparkles,
       title: 'Real-World Impact',
-      desc: 'Creating tangible change through youth-led dialogue, civic innovation, and a guaranteed 25% of profits allocated every 4 months to student scholarships and rural school labs.',
+      desc: 'Creating tangible change through youth-led dialogue, civic innovation, and a guaranteed 10% of profits allocated every 4 months to student scholarships and rural school labs.',
     },
   ];
 
@@ -150,7 +150,7 @@ export default function HomeClient({ session }: HomeClientProps) {
     { title: 'Events & Summits', desc: 'Assemblies, conferences, summits, and open gatherings.', icon: Calendar },
     { title: 'Leadership', desc: 'Develop skills. Lead initiatives. Inspire others.', icon: Crown },
     { title: 'Innovation', desc: 'Turn ideas into actionable projects and public solutions.', icon: Lightbulb },
-    { title: 'Social Good', desc: '25% of all profits directly fund student education & civic kits every 4 months.', icon: Heart },
+    { title: 'Social Good', desc: '10% of all profits directly fund student education & civic kits every 4 months.', icon: Heart },
   ];
 
   const sovereignWorlds = [
@@ -259,10 +259,10 @@ export default function HomeClient({ session }: HomeClientProps) {
     },
     ...(escrowMandateActive ? [{
       title: 'ZEN.IMPACT',
-      subtitle: '25% Profit Escrow & Ledger',
-      description: 'Hardcoded constitutional treasury allocating 25% of all profits every 4 months with public video proof.',
+      subtitle: '10% Profit Escrow & Ledger',
+      description: 'Hardcoded constitutional treasury allocating 10% of all profits every 4 months with public video proof.',
       icon: Heart,
-      badge: '25% ESCROW',
+      badge: '10% ESCROW',
       accentColor: 'text-teal-400 bg-teal-500/10 border-teal-500/25',
       badgeColor: 'text-teal-300 border-teal-500/30 bg-teal-500/10',
       arrowColor: 'group-hover:text-teal-300',
@@ -298,14 +298,14 @@ export default function HomeClient({ session }: HomeClientProps) {
     },
     ...(escrowMandateActive ? [{
       icon: Lock,
-      title: 'Guaranteed 25% Profit Impact Invariant',
-      detail: 'Hardcoded constitutional mandate distributing 25% of profits every 4 months with video proof.',
+      title: 'Guaranteed 10% Profit Impact Invariant',
+      detail: 'Hardcoded constitutional mandate distributing 10% of profits every 4 months with video proof.',
     }] : []),
   ];
 
   const milestones = [
     { metric: '100%', label: 'Sovereign Codebase' },
-    ...(escrowMandateActive ? [{ metric: '25%', label: 'Profits to Youth Grants' }] : []),
+    ...(escrowMandateActive ? [{ metric: '10%', label: 'Profits to Youth Grants' }] : []),
     { metric: '0', label: 'Algorithmic Feeds' },
     { metric: '0', label: 'Data Brokers / Trackers' },
   ];
@@ -517,7 +517,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                           &bull; Our Constitutional Pledge:
                         </span>
                         <p className="text-neutral-400">
-                          Words mean little without structural action. That is why <strong className="text-white">25% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 4 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
+                          Words mean little without structural action. That is why <strong className="text-white">10% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 4 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
                         </p>
                       </div>
                     )}
@@ -1097,7 +1097,7 @@ export default function HomeClient({ session }: HomeClientProps) {
             </div>
           </AnimatedSection>
 
-          {/* Master 25% Sovereign Pledge Bento Hero */}
+          {/* Master 10% Sovereign Pledge Bento Hero */}
           {escrowMandateActive && (
             <div className="relative rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-[#1a1408] via-[#0d0d14] to-[#120a1c] border border-amber-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_50px_rgba(245,158,11,0.1)] overflow-hidden">
               {/* Ambient Background Glow */}
@@ -1108,13 +1108,13 @@ export default function HomeClient({ session }: HomeClientProps) {
                 <div className="lg:col-span-8 space-y-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold uppercase tracking-wider">
                     <Coins className="w-3.5 h-3.5 text-amber-400" />
-                    <span>The 25% Profit Endowment Pledge</span>
+                    <span>The 10% Profit Endowment Pledge</span>
                   </div>
                   <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
                     Every Summit. Every Community Action. Direct Educational Capital.
                   </h3>
                   <p className="text-xs sm:text-sm text-neutral-300 font-sans font-light leading-relaxed max-w-2xl">
-                    A guaranteed 25% of all net platform profits are distributed every 4 months into verified school laboratories, curriculum kits, and delegate grants—verified with unedited offline giveaway videos and public receipts broadcast on ZEN.FLUX and social platforms.
+                    A guaranteed 10% of all net platform profits are distributed every 4 months into verified school laboratories, curriculum kits, and delegate grants—verified with unedited offline giveaway videos and public receipts broadcast on ZEN.FLUX and social platforms.
                   </p>
                   <div className="flex flex-wrap gap-4 pt-2">
                     <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">

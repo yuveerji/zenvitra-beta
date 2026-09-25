@@ -29,16 +29,16 @@ export default function MissionPage() {
     },
     {
       code: 'OBJ-03',
-      title: 'Deploy the 25% Profit Civic Mandate',
+      title: 'Deploy the 10% Profit Civic Mandate',
       termKey: 'escrow',
-      desc: 'Permanently dedicate 25% of all net platform profits to student scholarships, study kits, and school computer labs—distributed every 4 months with unedited offline handover videos on ZEN.FLUX and public receipts.',
+      desc: 'Permanently dedicate 10% of all net platform profits to student scholarships, study kits, and school computer labs—distributed every 4 months with unedited offline handover videos on ZEN.FLUX and public receipts.',
       icon: Scale,
     },
   ];
 
   const milestones = [
     { target: '100%', detail: 'Sovereign codebase with zero third-party behavioral trackers.' },
-    { target: '25%', detail: '25% of all profits disbursed every 4 months with offline video proof and public receipts.' },
+    { target: '10%', detail: '10% of all profits disbursed every 4 months with offline video proof and public receipts.' },
     { target: 'Zero', detail: 'External advertiser profiling or sale of student discourse data.' },
     { target: 'Global', detail: 'Accessible summit operating systems for schools and collegiate MUNs.' },
   ];
@@ -158,7 +158,7 @@ export default function MissionPage() {
       {/* Footer */}
       <footer className="relative z-10 max-w-6xl w-full mx-auto px-6 sm:px-12 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/[0.06] text-[11px] font-mono text-neutral-500">
         <span>&copy; 2026 Zenvitra Foundation</span>
-        <span className="uppercase tracking-widest text-neutral-400">THE 25% IMPACT PRINCIPLE</span>
+        <span className="uppercase tracking-widest text-neutral-400">THE 10% IMPACT PRINCIPLE</span>
       </footer>
     </div>
   );

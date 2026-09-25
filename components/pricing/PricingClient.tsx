@@ -649,7 +649,7 @@ export function PricingClient() {
             </span>
           </div>
 
-          {/* Dual Constitutional Pillars: Golden Principle + 25% Escrow Mandate */}
+          {/* Dual Constitutional Pillars: Golden Principle + 10% Escrow Mandate */}
           <div className="mt-8 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 text-left relative z-10">
             {/* Pillar 1: The Golden Principle */}
             <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-cyan-950/20 via-black to-[#080910] border border-cyan-500/20 flex items-start gap-3.5 shadow-lg">
@@ -667,7 +667,7 @@ export function PricingClient() {
               </div>
             </div>
 
-            {/* Pillar 2: 25% Constitutional Escrow Mandate */}
+            {/* Pillar 2: 10% Constitutional Escrow Mandate */}
             <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-950/20 via-black to-[#080910] border border-amber-500/25 flex items-start gap-3.5 shadow-lg">
               <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0 mt-0.5">
                 <Shield className="w-5 h-5 text-amber-400" />
@@ -675,7 +675,7 @@ export function PricingClient() {
               <div className="space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
-                    25% Profit Endowment
+                    10% Profit Endowment
                   </h4>
                   <Link href="/constitution" className="text-[10px] font-mono text-amber-400 hover:text-amber-300 flex items-center gap-0.5">
                     <span>Charter</span>
@@ -683,7 +683,7 @@ export function PricingClient() {
                   </Link>
                 </div>
                 <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                  An immutable <strong className="text-white font-semibold">25% of all profits</strong> is distributed <strong className="text-amber-300">every 4 months</strong> to student scholarships and school supplies—verified with public receipts and offline giveaway videos broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> &amp; socials.
+                  An immutable <strong className="text-white font-semibold">10% of all profits</strong> is distributed <strong className="text-amber-300">every 4 months</strong> to student scholarships and school supplies—verified with public receipts and offline giveaway videos broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> &amp; socials.
                 </p>
               </div>
             </div>

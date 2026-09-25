@@ -18,7 +18,7 @@ interface ConversationMemoryProps {
 const DEFAULT_CHAMBER_DATA: ChamberSummaryData = {
   chamberName: 'CHAMBER 07 // FUTURE OF YOUTH DIPLOMACY',
   agreements: [
-    '25% civic profit mandate must remain permanently constitutionally bound in all future iterations.',
+    '10% civic profit mandate must remain permanently constitutionally bound in all future iterations.',
     'Diplomatic resolutions drafted in ZEN.DOCS require dual-signatory cryptographic hash verification.',
     'Chamber discussion archives will publish quarterly public digests with verified receipts.',
   ],

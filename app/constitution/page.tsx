@@ -203,7 +203,7 @@ export default function ConstitutionPage() {
               , and an unbreachable{' '}
               <InteractiveWordHover termKey="educational-endowment" side="bottom">
                 <span className="text-emerald-500 font-medium underline decoration-emerald-400/60 underline-offset-4 hover:decoration-emerald-300 cursor-pointer">
-                  25% profit educational endowment
+                  10% profit educational endowment
                 </span>
               </InteractiveWordHover>{' '}
               distributed every 4 months with offline video proof and public receipts.
@@ -223,7 +223,7 @@ export default function ConstitutionPage() {
               isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/[0.05] border-emerald-500/20'
             }`}>
               <span className={`text-[10px] font-mono uppercase tracking-widest ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>PROFIT ESCROW</span>
-              <p className={`text-xl font-bold font-display ${isLight ? 'text-emerald-900' : 'text-emerald-300'}`}>25.0% Profit</p>
+              <p className={`text-xl font-bold font-display ${isLight ? 'text-emerald-900' : 'text-emerald-300'}`}>10.0% Profit</p>
               <p className={`text-[11px] font-mono ${isLight ? 'text-emerald-600' : 'text-emerald-500/80'}`}>Every 4 Mos + Video Proof</p>
             </div>
             <div className={`p-4 rounded-2xl border space-y-1 ${
@@ -697,7 +697,7 @@ export default function ConstitutionPage() {
                 <span className="text-emerald-500 font-bold">IMMUTABLE</span>
               </div>
               <p className={`text-lg font-serif italic font-bold ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>
-                25.0% Guaranteed
+                10.0% Guaranteed
               </p>
               <p className={`text-[10px] ${isLight ? 'text-stone-500' : 'text-neutral-500'}`}>
                 Zero Surveillance &bull; Rural School Labs
@@ -744,7 +744,7 @@ export default function ConstitutionPage() {
           <Link href="/manifesto" className="hover:text-amber-600 transition">Manifesto</Link>
           <Link href="/about" className="hover:text-amber-600 transition">About</Link>
           <Link href="/pulse" className="hover:text-amber-600 transition">Pulse Feed</Link>
-          <Link href="/donate/govt-schools" className="hover:text-amber-600 transition">25% Escrow</Link>
+          <Link href="/donate/govt-schools" className="hover:text-amber-600 transition">10% Escrow</Link>
           <Link href="/privacy" className="hover:text-amber-600 transition">Privacy</Link>
         </div>
       </footer>

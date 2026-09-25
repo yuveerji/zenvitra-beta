@@ -432,12 +432,12 @@ export const DEFAULT_PROTOCOL_CONTROLS: ProtocolControls = {
 };
 
 export const DEFAULT_SITE_OVERRIDES: GlobalSiteOverrides = {
-  tickerText: '⚡ SOVEREIGN WIRE LIVE • ZERO AD SURVEILLANCE • 25% ENDOWMENT LOCK',
+  tickerText: '⚡ SOVEREIGN WIRE LIVE • ZERO AD SURVEILLANCE • 10% ENDOWMENT LOCK',
   tickerActive: true,
   bannerNotice: '',
   bannerActive: false,
   targetLaunchDate: '2026-11-08T00:00:00+05:30',
-  escrowPercentage: 25,
+  escrowPercentage: 10,
   headlineOverride: '',
   subheadlineOverride: '',
 };
