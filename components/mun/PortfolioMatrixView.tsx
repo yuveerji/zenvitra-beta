@@ -49,7 +49,7 @@ export interface MatrixPortfolioItem {
 const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = [
   /* ── AIPPM ── */
   { id: 'aippm_1', committee: 'AIPPM', title: 'Narendra Modi', subTitle: 'Prime Minister of India / Varanasi MP', category: 'Government & Cabinet', status: 'Reserved', difficulty: 'Advanced' },
-  { id: 'aippm_2', committee: 'AIPPM', title: 'Amit Shah', subTitle: 'Minister of Home Affairs / Gandhinagar MP', category: 'Government & Cabinet', status: 'Allocated', allocatedTo: 'Yuveer Ji', allocatedEmail: 'yuveerji@gmail.com', difficulty: 'Advanced' },
+  { id: 'aippm_2', committee: 'AIPPM', title: 'Amit Shah', subTitle: 'Minister of Home Affairs / Gandhinagar MP', category: 'Government & Cabinet', status: 'Based on Experience', difficulty: 'Advanced' },
   { id: 'aippm_3', committee: 'AIPPM', title: 'Rahul Gandhi', subTitle: 'Leader of Opposition (Lok Sabha)', category: 'Opposition Alliance', status: '4 people waiting', waitingCount: 4, difficulty: 'Advanced' },
   { id: 'aippm_4', committee: 'AIPPM', title: 'Rajnath Singh', subTitle: 'Minister of Defence', category: 'Government & Cabinet', status: 'Based on Experience', difficulty: 'Intermediate' },
   { id: 'aippm_5', committee: 'AIPPM', title: 'Nirmala Sitharaman', subTitle: 'Minister of Finance', category: 'Government & Cabinet', status: 'FCFS', difficulty: 'Intermediate' },
@@ -60,7 +60,7 @@ const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = [
   { id: 'aippm_10', committee: 'AIPPM', title: 'Asaduddin Owaisi', subTitle: 'AIMIM Chief / Hyderabad MP', category: 'Independent MPs', status: 'Based on Experience', difficulty: 'Crisis' },
 
   /* ── EMI (Ministry of Education) ── */
-  { id: 'emi_1', committee: 'EMI', title: 'Dharmendra Pradhan', subTitle: 'Union Minister of Education', category: 'Union Ministry', status: 'Allocated', allocatedTo: 'Devansh K.', allocatedEmail: 'devansh@zenvitra.org', difficulty: 'Advanced' },
+  { id: 'emi_1', committee: 'EMI', title: 'Dharmendra Pradhan', subTitle: 'Union Minister of Education', category: 'Union Ministry', status: 'Allocated', allocatedTo: 'Accredited Delegate', difficulty: 'Advanced' },
   { id: 'emi_2', committee: 'EMI', title: 'Prof. M. Jagadesh Kumar', subTitle: 'Chairman, University Grants Commission (UGC)', category: 'Statutory Regulatory Authority', status: 'Based on Experience', difficulty: 'Advanced' },
   { id: 'emi_3', committee: 'EMI', title: 'Prof. T.G. Sitharam', subTitle: 'Chairman, AICTE', category: 'Technical Regulatory Authority', status: 'Vacant', difficulty: 'Intermediate' },
   { id: 'emi_4', committee: 'EMI', title: 'Director, NCERT', subTitle: 'Curriculum & Textbook Framework Directorate', category: 'Academic Directorate', status: 'FCFS', difficulty: 'Beginner' },
@@ -70,12 +70,12 @@ const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = [
   { id: 'emi_8', committee: 'EMI', title: 'National Student Union Representative', subTitle: 'Youth Democratic Student Body', category: 'Student Federation', status: 'Vacant', difficulty: 'Beginner' },
 
   /* ── UNSC (UN Security Council) ── */
-  { id: 'unsc_1', committee: 'UNSC', title: 'United States of America', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Allocated', allocatedTo: 'Alexander V.', allocatedEmail: 'alexander@zenvitra.org', difficulty: 'Crisis' },
+  { id: 'unsc_1', committee: 'UNSC', title: 'United States of America', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Allocated', allocatedTo: 'Accredited Delegate', difficulty: 'Crisis' },
   { id: 'unsc_2', committee: 'UNSC', title: 'United Kingdom', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: '4 people waiting', waitingCount: 4, difficulty: 'Advanced' },
   { id: 'unsc_3', committee: 'UNSC', title: 'French Republic', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Based on Experience', difficulty: 'Advanced' },
   { id: 'unsc_4', committee: 'UNSC', title: 'Russian Federation', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Reserved', difficulty: 'Crisis' },
   { id: 'unsc_5', committee: 'UNSC', title: 'People’s Republic of China', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Based on Experience', difficulty: 'Crisis' },
-  { id: 'unsc_6', committee: 'UNSC', title: 'Republic of India', subTitle: 'Special Invitee & G4 Candidate Member', category: 'Elected Members & Observers', status: 'Allocated', allocatedTo: 'Priya N.', allocatedEmail: 'priya@zenvitra.org', difficulty: 'Advanced' },
+  { id: 'unsc_6', committee: 'UNSC', title: 'Republic of India', subTitle: 'Special Invitee & G4 Candidate Member', category: 'Elected Members & Observers', status: 'Allocated', allocatedTo: 'Accredited Delegate', difficulty: 'Advanced' },
   { id: 'unsc_7', committee: 'UNSC', title: 'Japan', subTitle: 'Non-Permanent Member (Asia-Pacific)', category: 'Elected Members (E10)', status: 'FCFS', difficulty: 'Intermediate' },
   { id: 'unsc_8', committee: 'UNSC', title: 'Republic of Korea', subTitle: 'Non-Permanent Member (Asia-Pacific)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Intermediate' },
   { id: 'unsc_9', committee: 'UNSC', title: 'Swiss Confederation', subTitle: 'Non-Permanent Member (WEOG)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
@@ -87,7 +87,7 @@ const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = [
   { id: 'unodc_3', committee: 'UNODC', title: 'Kingdom of the Netherlands', subTitle: 'Port of Rotterdam Interception Directorate', category: 'European Gateway States', status: 'FCFS', difficulty: 'Intermediate' },
   { id: 'unodc_4', committee: 'UNODC', title: 'Republic of the Union of Myanmar', subTitle: 'Golden Triangle Synthetic Drug Precursor Taskforce', category: 'Southeast Asia Transit', status: 'Vacant', difficulty: 'Advanced' },
   { id: 'unodc_5', committee: 'UNODC', title: 'Federal Republic of Nigeria', subTitle: 'West African Transshipment Command', category: 'African Transit Hubs', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'unodc_6', committee: 'UNODC', title: 'INTERPOL Secretariat', subTitle: 'Transnational Organized Crime Taskforce', category: 'International Observer Agencies', status: 'Allocated', allocatedTo: 'Marcus L.', allocatedEmail: 'marcus@zenvitra.org', difficulty: 'Advanced' },
+  { id: 'unodc_6', committee: 'UNODC', title: 'INTERPOL Secretariat', subTitle: 'Transnational Organized Crime Taskforce', category: 'International Observer Agencies', status: 'Allocated', allocatedTo: 'Accredited Observer', difficulty: 'Advanced' },
   { id: 'unodc_7', committee: 'UNODC', title: 'Islamic Republic of Afghanistan', subTitle: 'Opiate Eradication Directorate', category: 'Central Asian Production Corridor', status: 'Reserved', difficulty: 'Crisis' },
   { id: 'unodc_8', committee: 'UNODC', title: 'Commonwealth of Australia', subTitle: 'Pacific Border & Darknet Interdiction Branch', category: 'Destination & Consumer States', status: 'FCFS', difficulty: 'Beginner' },
 ];
@@ -470,7 +470,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
                       type="text"
                       value={editDelegateName}
                       onChange={(e) => setEditDelegateName(e.target.value)}
-                      placeholder="e.g. Yuveer Ji"
+                      placeholder="e.g. Full Delegate Name"
                       className="w-full px-3 py-2 rounded-xl bg-black border border-white/15 text-white focus:border-cyan-400 outline-none"
                     />
                   </div>
