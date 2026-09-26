@@ -52,16 +52,16 @@ export const ZEN_SECRETARIAT_2026_FORM_TEMPLATE: ZenForm = {
       label: 'Primary Department Choice *',
       type: 'select',
       options: [
-        'Delegate Affairs (Delegate relations, registrations & queries)',
-        'Academic Affairs (Background guides, agendas & study materials)',
-        'Crisis Operations (Simulated crisis plots & dynamic updates)',
-        'Tech Affairs (Platform bots, portals & live telemetry)',
-        'Design & Creative (Visual assets, brochures & branding)',
-        'Outreach & PR (School partnerships & institutional delegations)',
-        'Finance & Sponsorships (Budgeting & brand partnerships)',
-        'Delegate Logistics (Virtual rooms, timing & scheduling)',
-        'Media & Documentation (Press releases, photography & archives)',
-        'Secretary-General Directorate (Master timetable & cross-team ops)'
+        'Delegate Affairs',
+        'Academic Affairs',
+        'Operations & Logistics',
+        'Tech Affairs',
+        'Design & Creative',
+        'Public Relations (PR)',
+        'Marketing & Growth',
+        'Content & Editorial',
+        'Media & Documentation',
+        'Secretariat & Administration'
       ],
       description: 'Your primary operational preference for the conference.',
       required: true
@@ -72,15 +72,15 @@ export const ZEN_SECRETARIAT_2026_FORM_TEMPLATE: ZenForm = {
       type: 'select',
       options: [
         'Academic Affairs',
-        'Crisis Operations',
+        'Operations & Logistics',
         'Tech Affairs',
         'Design & Creative',
-        'Outreach & PR',
-        'Finance & Sponsorships',
-        'Delegate Logistics',
+        'Public Relations (PR)',
+        'Marketing & Growth',
+        'Content & Editorial',
         'Media & Documentation',
         'Delegate Affairs',
-        'Secretary-General Directorate'
+        'Secretariat & Administration'
       ],
       description: 'Secondary preference if your first department is fully staffed.',
       required: false

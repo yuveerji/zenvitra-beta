@@ -97,13 +97,13 @@ export const SECRETARIAT_DEPARTMENTS: SecretariatDept[] = [
     badge: 'DELEGATE RELATIONS',
     badgeColor: 'border-cyan-500/30 text-cyan-300 bg-cyan-500/10',
     iconName: 'Users',
-    focus: 'Delegate onboarding, query helpline, preference matching & master allocation database.',
+    focus: 'Delegate experience, portfolio allocation & communications',
     responsibilities: [
-      'Master delegate database management',
-      'Portfolio allocation & preference matching',
-      'Delegate helpline & query escalation'
+      'Delegate communication & helpline',
+      'Registration support & verification',
+      'Portfolio allocation & preference matching'
     ],
-    skills: ['Communication', 'Data Management', 'MUN Protocol'],
+    skills: ['Communication', 'Organisation', 'Patience', 'Problem-solving'],
     practicalTask: 'Simulated assessment: Outline how you would de-escalate and resolve a frustrated delegate complaint regarding a duplicate portfolio allotment 1 hour before committee begins.'
   },
   {
@@ -114,30 +114,30 @@ export const SECRETARIAT_DEPARTMENTS: SecretariatDept[] = [
     badge: 'ACADEMIC EXCELLENCE',
     badgeColor: 'border-emerald-500/30 text-emerald-300 bg-emerald-500/10',
     iconName: 'GraduationCap',
-    focus: 'Committee agenda framing, study dossiers, study kits & RoP formulation.',
+    focus: 'Academic excellence, background guides & committee quality',
     responsibilities: [
-      'Committee background guides curation',
-      'Rules of Procedure (UN4MUN & Classical RoP)',
-      'Academic quality control & resolution vetting'
+      'Committee agenda framing & crisis briefs',
+      'Background guides & research dossiers curation',
+      'Rules of Procedure (UN4MUN & Classical RoP) oversight'
     ],
-    skills: ['Research', 'Foreign Policy', 'RoP Oversight'],
+    skills: ['Research', 'Writing', 'Critical thinking', 'MUN knowledge'],
     practicalTask: 'Simulated assessment: Review and propose 2 substantive improvements or crisis inflection points for an international territorial sovereignty committee agenda.'
   },
   {
     id: 'operations-logistics',
     index: '03',
-    name: 'Delegate Logistics',
-    label: 'Delegate Logistics (Virtual rooms, timing & scheduling)',
+    name: 'Operations & Logistics',
+    label: 'Operations & Logistics (Flawless execution, room management & technical schedules)',
     badge: 'LOGISTICS & TIMETABLE',
     badgeColor: 'border-amber-500/30 text-amber-300 bg-amber-500/10',
     iconName: 'Building',
-    focus: 'Virtual assembly room management, timing enforcement, caucus movement & access keys.',
+    focus: 'Flawless execution, room management & technical schedules',
     responsibilities: [
-      'Digital assembly rooms allocation',
-      'Session timings & caucus scheduling',
-      'Virtual credentials & breakout triage'
+      'Digital assembly rooms allocation & access keys',
+      'Virtual registration desk & verification flow',
+      'Session timings, movement & caucus scheduling'
     ],
-    skills: ['Time Management', 'Coordination', 'Pressure Resilience'],
+    skills: ['Organisation', 'Time management', 'Crisis management', 'Team coordination'],
     practicalTask: 'Simulated assessment: Solve a scheduling overlap where an unmoderated caucus overruns by 25 minutes while a joint crisis communique is waiting for presidential broadcast.'
   },
   {
@@ -148,13 +148,13 @@ export const SECRETARIAT_DEPARTMENTS: SecretariatDept[] = [
     badge: 'PLATFORM INFRASTRUCTURE',
     badgeColor: 'border-sky-500/30 text-sky-300 bg-sky-500/10',
     iconName: 'Cpu',
-    focus: 'Live telemetry, real-time matrix sync, Discord bot integration & network triage.',
+    focus: 'Technology systems, digital infrastructure & platform bots',
     responsibilities: [
-      'ZEN.DIPLOMACY portal maintenance',
-      'Real-time sovereign matrix synchronization',
-      'Technical support for audio/video dropouts'
+      'ZEN.DIPLOMACY web portal maintenance',
+      'Real-time registration & sovereign matrix synchronization',
+      'Digital attendance & QR security verification'
     ],
-    skills: ['Next.js/React', 'APIs', 'Network Triage'],
+    skills: ['Next.js/React', 'UI/UX', 'Troubleshooting', 'APIs'],
     practicalTask: 'Simulated assessment: Describe your protocol for diagnosing and resolving a sudden socket / audio lag disconnect affecting 15 delegates in an active council chamber.'
   },
   {
@@ -165,98 +165,98 @@ export const SECRETARIAT_DEPARTMENTS: SecretariatDept[] = [
     badge: 'CINEMATIC ART DIRECTION',
     badgeColor: 'border-purple-500/30 text-purple-300 bg-purple-500/10',
     iconName: 'Palette',
-    focus: 'Official conference banners, social creatives, certificates, placards & brand identity.',
+    focus: 'Visual identity, cinematic art direction & branding',
     responsibilities: [
+      'Official social media creatives & motion graphics',
       'Official conference posters & delegate plaques',
-      'Brochures, prospectus releases & editorial layout',
       'Certificates of Merit & Delegation Accords'
     ],
-    skills: ['Figma', 'Typography', 'Visual Branding'],
+    skills: ['Figma', 'Photoshop', 'Illustrator', 'Typography'],
     practicalTask: 'Simulated assessment: Provide a link to your design portfolio / Behance / Drive demonstrating typographic hierarchy and dark-mode brand consistency.'
   },
   {
     id: 'public-relations',
     index: '06',
-    name: 'Outreach & PR',
-    label: 'Outreach & PR (School partnerships & institutional delegations)',
+    name: 'Public Relations (PR)',
+    label: 'Public Relations (PR) (External partnerships & institutional outreach)',
     badge: 'DIPLOMATIC EXPANSION',
     badgeColor: 'border-rose-500/30 text-rose-300 bg-rose-500/10',
     iconName: 'Megaphone',
-    focus: 'School and university institutional outreach, Faculty Advisor liaison & media releases.',
+    focus: 'External partnerships, institutional outreach & media relations',
     responsibilities: [
-      'School & institutional delegation pitches',
-      'Faculty advisor & circuit communication',
-      'Official diplomatic announcements'
+      'School and university institutional outreach',
+      'Faculty advisor & MUN circuit communication',
+      'Media relations & press agency releases'
     ],
-    skills: ['Outreach', 'Networking', 'Pitching'],
+    skills: ['Communication', 'Public speaking', 'Networking', 'Negotiation'],
     practicalTask: 'Simulated assessment: Draft a 3-paragraph executive outreach invitation to a premier school’s MUN Faculty Advisor pitching a 15-delegate school delegation.'
   },
   {
     id: 'marketing-growth',
     index: '07',
-    name: 'Finance & Sponsorships',
-    label: 'Finance & Sponsorships (Budgeting & brand partnerships)',
+    name: 'Marketing & Growth',
+    label: 'Marketing & Growth (Reach, delegate acquisition & community engagement)',
     badge: 'GROWTH & REVENUE',
     badgeColor: 'border-lime-500/30 text-lime-300 bg-lime-500/10',
     iconName: 'TrendingUp',
-    focus: 'Brand sponsorships, delegate kits, financial planning & partner alliance management.',
+    focus: 'Reach, delegate acquisition & community engagement',
     responsibilities: [
-      'Corporate & educational brand sponsorships',
-      'Budget allocation & cashflow management',
-      'Delegate value kit procurement'
+      'Multi-channel social media growth strategy',
+      'Targeted delegate acquisition campaigns',
+      'Editorial content calendars & announcement pacing'
     ],
-    skills: ['Sponsorships', 'Financial Planning', 'Pitch Decks'],
-    practicalTask: 'Simulated assessment: Formulate a compelling sponsorship pitch tiering structure for an ed-tech or consumer brand sponsor for ZEN.DIPLOMACY.'
+    skills: ['Digital marketing', 'Social media strategy', 'Audience growth', 'Copywriting'],
+    practicalTask: 'Simulated assessment: Outline a 7-day countdown growth campaign plan designed to drive 50+ delegate registrations from October 1st onwards.'
   },
   {
-    id: 'crisis-operations',
+    id: 'content-editorial',
     index: '08',
-    name: 'Crisis Operations',
-    label: 'Crisis Operations (Simulated crisis plots & dynamic updates)',
-    badge: 'DYNAMIC DIRECTIVES',
-    badgeColor: 'border-red-500/30 text-red-300 bg-red-500/10',
-    iconName: 'Wrench',
-    focus: 'Midnight crisis releases, dynamic intelligence leaks, backchannel letters & twists.',
+    name: 'Content & Editorial',
+    label: 'Content & Editorial (Written publications, conference gazette & journalism)',
+    badge: 'PUBLICATIONS & GAZETTE',
+    badgeColor: 'border-yellow-500/30 text-yellow-300 bg-yellow-500/10',
+    iconName: 'FileText',
+    focus: 'Written publications, conference gazette & journalism',
     responsibilities: [
-      'Dynamic crisis tree & branch storyline design',
-      'Midnight intelligence flash directives',
-      'Backchannel espionage & portfolio challenges'
+      'Compelling social captions & long-form articles',
+      'Official press releases & executive communiqués',
+      'Daily conference reports & committee documentation'
     ],
-    skills: ['Crisis Simulation', 'Geopolitics', 'Rapid Writing'],
-    practicalTask: 'Simulated assessment: Draft a breaking news flash bulletin regarding an unexpected naval blockade that forces council chambers into an emergency session.'
+    skills: ['Writing', 'Editing', 'Storytelling', 'Journalism'],
+    practicalTask: 'Simulated assessment: Write a high-impact 120-word press announcement covering a dramatic deadlock break during UNSC midnight negotiations.'
   },
   {
     id: 'media-documentation',
     index: '09',
     name: 'Media & Documentation',
-    label: 'Media & Documentation (Press releases, photography & archives)',
+    label: 'Media & Documentation (Capturing the event: reels, interviews & video archive)',
     badge: 'PRESS & RECAPS',
     badgeColor: 'border-indigo-500/30 text-indigo-300 bg-indigo-500/10',
     iconName: 'Camera',
-    focus: 'Keynote recap videos, daily summit reports, press releases & digital media archives.',
+    focus: 'Capturing the event: reels, interviews & video archive',
     responsibilities: [
       'Video editing, reels & cinematic teasers',
-      'Daily conference reports & documentation',
-      'Keynote speaker & best delegate interviews'
+      'Live photo capture, screenshot curation & audio logs',
+      'Delegate and Executive Board spotlight interviews'
     ],
-    skills: ['Video Editing', 'Journalism', 'Rapid Turnaround'],
-    practicalTask: 'Simulated assessment: Write a high-impact 120-word press announcement covering a dramatic deadlock break during UNSC midnight negotiations.'
+    skills: ['Premiere Pro / DaVinci / CapCut', 'Videography', 'Video editing', 'Composition'],
+    practicalTask: 'Simulated assessment: Provide a link to your video reel or showreel, showing rhythm, audio synchronization, and color grading.'
   },
   {
-    id: 'directorate',
+    id: 'secretariat-admin',
     index: '10',
-    name: 'Directorate & Administration',
-    label: 'Secretary-General Directorate (Master timetable & cross-team ops)',
+    name: 'Secretariat & Administration',
+    label: 'Secretariat & Administration (Internal coordination & cross-department leadership)',
     badge: 'EXECUTIVE LEADERSHIP',
-    badgeColor: 'border-yellow-500/30 text-yellow-300 bg-yellow-500/10',
+    badgeColor: 'border-white/30 text-white bg-white/10',
     iconName: 'Crown',
-    focus: 'Cross-team timetable enforcement, inter-department conflict triage & executive oversight.',
+    focus: 'Internal coordination, cross-department leadership & operations',
     responsibilities: [
-      'Cross-departmental project tracking',
-      'Secretariat accountability oversight',
-      'Executive coordination with Directorate'
+      'Cross-departmental project tracking & meeting agendas',
+      'Secretariat task allocation & accountability oversight',
+      'Internal documentation & master timetable enforcement'
     ],
-    skills: ['Leadership', 'Accountability', 'High EQ'],
+    skills: ['Leadership', 'Organisation', 'Communication', 'Delegation'],
     practicalTask: 'Simulated assessment: How would you maintain morale and performance across two Secretariat departments facing conflicting deadlines 48 hours before the conference?'
   }
 ];
@@ -356,8 +356,25 @@ export const getDeptIcon = (iconName: string) => {
     case 'Building': return <Building className="w-5 h-5" />;
     case 'Camera': return <Camera className="w-5 h-5" />;
     case 'Crown': return <Crown className="w-5 h-5" />;
+    case 'FileText': return <FileText className="w-5 h-5" />;
     default: return <Briefcase className="w-5 h-5" />;
   }
+};
+
+export const isValidEmail = (email: string): boolean => {
+  if (!email || typeof email !== 'string') return false;
+  const trimmed = email.trim();
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmed);
+};
+
+export const isValidPhone = (phone: string): boolean => {
+  if (!phone || typeof phone !== 'string') return false;
+  const trimmed = phone.trim();
+  if (!/^[+]?[(]?[0-9\s\-().]{7,20}$/.test(trimmed)) {
+    return false;
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15;
 };
 
 export default function ZenFormPublicPage() {
@@ -368,6 +385,8 @@ export default function ZenFormPublicPage() {
   const idOrSlug = (params?.id as string) || '';
   const [form, setForm] = useState<ZenForm | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedSubId, setSubmittedSubId] = useState<string | null>(null);
@@ -390,14 +409,23 @@ export default function ZenFormPublicPage() {
 
     for (const field of form.fields) {
       if (field.type === 'section_break') {
-        result.push(current);
-        current = {
-          index: result.length,
-          title: field.label || field.sectionTitle || `Section ${result.length + 1}`,
-          description: field.description || field.sectionDescription || '',
-          fields: [],
-          stepHeading: field.stepHeading?.enabled ? field.stepHeading : undefined,
-        };
+        if (current.fields.length > 0) {
+          result.push(current);
+          current = {
+            index: result.length,
+            title: field.label || field.sectionTitle || `Section ${result.length + 1}`,
+            description: field.description || field.sectionDescription || '',
+            fields: [],
+            stepHeading: field.stepHeading?.enabled ? field.stepHeading : undefined,
+          };
+        } else {
+          // If leading section_break before any inputs, inherit title/stepHeading to current section 0
+          current.title = field.label || field.sectionTitle || current.title;
+          current.description = field.description || field.sectionDescription || current.description;
+          if (field.stepHeading?.enabled) {
+            current.stepHeading = field.stepHeading;
+          }
+        }
       } else {
         current.fields.push(field);
         if (!current.stepHeading && field.stepHeading?.enabled) {
@@ -545,9 +573,74 @@ export default function ZenFormPublicPage() {
     }
   };
 
+  const validateSingleField = (field: ZenFormField, val: any): string | null => {
+    if (['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type)) return null;
+
+    const isEmail = field.type === 'email' || 
+      field.id.toLowerCase().includes('email') || 
+      field.label.toLowerCase().includes('email') || 
+      field.label.toLowerCase().includes('gmail');
+
+    const isPhone = field.type === 'phone' || 
+      field.type === 'tel' || 
+      field.id.toLowerCase().includes('phone') || 
+      field.id.toLowerCase().includes('mobile') || 
+      field.id.toLowerCase().includes('whatsapp') || 
+      field.label.toLowerCase().includes('phone') || 
+      field.label.toLowerCase().includes('mobile') || 
+      field.label.toLowerCase().includes('whatsapp');
+
+    // Required check
+    if (field.required) {
+      if (val === undefined || val === null || val === '') {
+        return `Please complete the required question: "${field.label}"`;
+      }
+      if (Array.isArray(val) && val.length === 0) {
+        return `Please select at least one option for: "${field.label}"`;
+      }
+    }
+
+    // Strict format check for non-empty text
+    if (val && typeof val === 'string' && val.trim() !== '') {
+      if (isEmail && !isValidEmail(val)) {
+        return `Please enter a valid email address (e.g. name@gmail.com) for: "${field.label}"`;
+      }
+      if (isPhone && !isValidPhone(val)) {
+        return `Please enter a valid 10-digit mobile number (e.g. +91 98765 43210) for: "${field.label}"`;
+      }
+    }
+
+    return null;
+  };
+
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData((prev) => ({ ...prev, [fieldId]: value }));
     setValidationError(null);
+
+    const targetField = form?.fields.find((f) => f.id === fieldId);
+    if (targetField) {
+      const err = validateSingleField(targetField, value);
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        if (err) next[fieldId] = err;
+        else delete next[fieldId];
+        return next;
+      });
+    }
+  };
+
+  const handleFieldBlur = (fieldId: string) => {
+    setTouchedFields((prev) => ({ ...prev, [fieldId]: true }));
+    const targetField = form?.fields.find((f) => f.id === fieldId);
+    if (targetField) {
+      const err = validateSingleField(targetField, formData[fieldId]);
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        if (err) next[fieldId] = err;
+        else delete next[fieldId];
+        return next;
+      });
+    }
   };
 
   const handleCheckboxToggle = (fieldId: string, option: string) => {
@@ -563,17 +656,12 @@ export default function ZenFormPublicPage() {
     if (!currentSec) return;
 
     for (const field of currentSec.fields) {
-      if (['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type)) continue;
       const val = formData[field.id];
-      if (field.required) {
-        if (val === undefined || val === null || val === '') {
-          setValidationError(`Please complete the required question: "${field.label}"`);
-          return;
-        }
-        if (Array.isArray(val) && val.length === 0) {
-          setValidationError(`Please select at least one option for: "${field.label}"`);
-          return;
-        }
+      const err = validateSingleField(field, val);
+      if (err) {
+        setFieldErrors((prev) => ({ ...prev, [field.id]: err }));
+        setValidationError(err);
+        return;
       }
     }
 
@@ -601,26 +689,18 @@ export default function ZenFormPublicPage() {
       return;
     }
 
-    // Check all required fields across all sections
+    // Check all required fields across all sections with strict format validation
     for (const sec of sections) {
       for (const field of sec.fields) {
-        if (['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type)) continue;
         const val = formData[field.id];
-        if (field.required) {
-          if (val === undefined || val === null || val === '') {
-            setValidationError(`Please complete the required question: "${field.label}"`);
-            if (sec.index !== currentPageIndex) {
-              setCurrentPageIndex(sec.index);
-            }
-            return;
+        const err = validateSingleField(field, val);
+        if (err) {
+          setFieldErrors((prev) => ({ ...prev, [field.id]: err }));
+          setValidationError(err);
+          if (sec.index !== currentPageIndex) {
+            setCurrentPageIndex(sec.index);
           }
-          if (Array.isArray(val) && val.length === 0) {
-            setValidationError(`Please select at least one option for: "${field.label}"`);
-            if (sec.index !== currentPageIndex) {
-              setCurrentPageIndex(sec.index);
-            }
-            return;
-          }
+          return;
         }
       }
     }
@@ -1348,66 +1428,131 @@ export default function ZenFormPublicPage() {
 
                       {/* 1. Short Text */}
                       {(field.type === 'text' || field.type === 'short_answer') && (
-                        <input
-                          type="text"
-                          placeholder={field.placeholder || 'Your answer'}
-                          value={formData[field.id] || ''}
-                          onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans"
-                        />
+                        <div>
+                          <input
+                            type="text"
+                            placeholder={field.placeholder || 'Your answer'}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            onBlur={() => handleFieldBlur(field.id)}
+                            className={`w-full px-4 py-3 rounded-xl bg-black/40 border ${
+                              fieldErrors[field.id]
+                                ? 'border-rose-500 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-400'
+                                : 'border-white/15 focus:border-amber-400/80'
+                            } text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans`}
+                          />
+                          {fieldErrors[field.id] && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs font-mono text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                              <span>{fieldErrors[field.id]}</span>
+                            </div>
+                          )}
+                        </div>
                       )}
 
                       {/* 2. Email */}
                       {field.type === 'email' && (
-                        <div className="relative">
-                          <input
-                            type="email"
-                            placeholder={field.placeholder || 'email@example.com'}
-                            value={formData[field.id] || ''}
-                            onChange={(e) => handleInputChange(field.id, e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans"
-                          />
-                          <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                        <div>
+                          <div className="relative">
+                            <input
+                              type="email"
+                              placeholder={field.placeholder || 'name@gmail.com'}
+                              value={formData[field.id] || ''}
+                              onChange={(e) => handleInputChange(field.id, e.target.value)}
+                              onBlur={() => handleFieldBlur(field.id)}
+                              className={`w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border ${
+                                fieldErrors[field.id]
+                                  ? 'border-rose-500 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-400'
+                                  : 'border-white/15 focus:border-amber-400/80'
+                              } text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans`}
+                            />
+                            <Mail className={`w-4 h-4 absolute left-3.5 top-3.5 pointer-events-none ${fieldErrors[field.id] ? 'text-rose-400' : 'text-neutral-500'}`} />
+                          </div>
+                          {fieldErrors[field.id] && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs font-mono text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                              <span>{fieldErrors[field.id]}</span>
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {/* 3. Telephone / Phone */}
                       {(field.type === 'tel' || field.type === 'phone') && (
-                        <div className="relative">
-                          <input
-                            type="tel"
-                            placeholder={field.placeholder || '+1 (555) 000-0000'}
-                            value={formData[field.id] || ''}
-                            onChange={(e) => handleInputChange(field.id, e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono"
-                          />
-                          <Phone className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                        <div>
+                          <div className="relative">
+                            <input
+                              type="tel"
+                              placeholder={field.placeholder || '+91 98765 43210'}
+                              value={formData[field.id] || ''}
+                              onChange={(e) => handleInputChange(field.id, e.target.value)}
+                              onBlur={() => handleFieldBlur(field.id)}
+                              className={`w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border ${
+                                fieldErrors[field.id]
+                                  ? 'border-rose-500 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-400'
+                                  : 'border-white/15 focus:border-amber-400/80'
+                              } text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono`}
+                            />
+                            <Phone className={`w-4 h-4 absolute left-3.5 top-3.5 pointer-events-none ${fieldErrors[field.id] ? 'text-rose-400' : 'text-neutral-500'}`} />
+                          </div>
+                          {fieldErrors[field.id] && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs font-mono text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                              <span>{fieldErrors[field.id]}</span>
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {/* 4. Website / URL */}
                       {field.type === 'url' && (
-                        <div className="relative">
-                          <input
-                            type="url"
-                            placeholder={field.placeholder || 'https://...'}
-                            value={formData[field.id] || ''}
-                            onChange={(e) => handleInputChange(field.id, e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans"
-                          />
-                          <Globe className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                        <div>
+                          <div className="relative">
+                            <input
+                              type="url"
+                              placeholder={field.placeholder || 'https://...'}
+                              value={formData[field.id] || ''}
+                              onChange={(e) => handleInputChange(field.id, e.target.value)}
+                              onBlur={() => handleFieldBlur(field.id)}
+                              className={`w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border ${
+                                fieldErrors[field.id]
+                                  ? 'border-rose-500 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-400'
+                                  : 'border-white/15 focus:border-amber-400/80'
+                              } text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-sans`}
+                            />
+                            <Globe className={`w-4 h-4 absolute left-3.5 top-3.5 pointer-events-none ${fieldErrors[field.id] ? 'text-rose-400' : 'text-neutral-500'}`} />
+                          </div>
+                          {fieldErrors[field.id] && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs font-mono text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                              <span>{fieldErrors[field.id]}</span>
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {/* 5. Number */}
                       {field.type === 'number' && (
-                        <input
-                          type="number"
-                          placeholder={field.placeholder || '0'}
-                          value={formData[field.id] || ''}
-                          onChange={(e) => handleInputChange(field.id, e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono"
-                        />
+                        <div>
+                          <input
+                            type="number"
+                            placeholder={field.placeholder || '0'}
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            onBlur={() => handleFieldBlur(field.id)}
+                            className={`w-full px-4 py-3 rounded-xl bg-black/40 border ${
+                              fieldErrors[field.id]
+                                ? 'border-rose-500 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-400'
+                                : 'border-white/15 focus:border-amber-400/80'
+                            } text-white text-xs sm:text-sm focus:outline-none transition shadow-inner font-mono`}
+                          />
+                          {fieldErrors[field.id] && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs font-mono text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                              <span>{fieldErrors[field.id]}</span>
+                            </div>
+                          )}
+                        </div>
                       )}
 
                       {/* 6. Date */}
@@ -1503,12 +1648,23 @@ export default function ZenFormPublicPage() {
                           })()}
 
                           <textarea
-                            rows={3}
+                            rows={4}
                             placeholder={field.placeholder || 'Enter your detailed thoughts...'}
                             value={formData[field.id] || ''}
                             onChange={(e) => handleInputChange(field.id, e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed font-sans"
+                            onBlur={() => handleFieldBlur(field.id)}
+                            className={`w-full min-h-[110px] p-4 rounded-xl bg-black/40 border ${
+                              fieldErrors[field.id]
+                                ? 'border-rose-500 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-400'
+                                : 'border-white/15 focus:border-amber-400/80'
+                            } text-white text-xs sm:text-sm focus:outline-none transition shadow-inner leading-relaxed font-sans`}
                           />
+                          {fieldErrors[field.id] && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs font-mono text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                              <span>{fieldErrors[field.id]}</span>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -1804,129 +1960,143 @@ export default function ZenFormPublicPage() {
                         </div>
                       )}
 
-                      {/* 16. Dropdown Select */}
-                      {(field.type === 'select' || field.type === 'dropdown') && (
+                      {/* 16. Dropdown Select / Secretariat Sector Selector */}
+                      {(field.type === 'select' || field.type === 'dropdown' || field.type === 'radio') && (
                         (field.id === 'step1_primary_sector' || field.id === 'step1_preferred_department') ? (
-                          <div className="space-y-3 pt-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                          <div className="space-y-4 pt-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
+                              <span className="text-xs font-mono text-[#e2f952] uppercase tracking-wider font-bold">
+                                10 Dedicated Departments Available
+                              </span>
+                              <span className="text-[11px] font-mono text-neutral-400">
+                                Click a sector card to select your primary appointment
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {SECRETARIAT_DEPARTMENTS.map((dept) => {
-                                const isSelected = formData[field.id] === dept.label || formData[field.id] === dept.name;
+                                const isSelected = 
+                                  formData[field.id] === dept.name || 
+                                  formData[field.id] === dept.label || 
+                                  formData[field.id] === dept.id || 
+                                  (typeof formData[field.id] === 'string' && formData[field.id].toLowerCase().includes(dept.name.toLowerCase()));
+
                                 return (
-                                  <button
+                                  <div
                                     key={dept.id}
-                                    type="button"
-                                    onClick={() => handleInputChange(field.id, dept.label)}
-                                    className={`p-4 sm:p-5 rounded-2xl border text-left transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden ${
+                                    onClick={() => handleInputChange(field.id, dept.name)}
+                                    className={`group relative p-5 sm:p-6 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
                                       isSelected
-                                        ? 'bg-gradient-to-b from-purple-500/25 via-white/[0.08] to-purple-950/40 border-purple-400 ring-2 ring-purple-400/40 shadow-[0_0_30px_rgba(168,85,247,0.25)] scale-[1.01]'
-                                        : 'bg-[#090d16]/80 border-white/10 hover:border-purple-400/40 hover:bg-white/[0.04]'
+                                        ? 'bg-[#0f172a] border-[#e2f952] shadow-[0_0_30px_rgba(226,249,82,0.15)] ring-1 ring-[#e2f952]'
+                                        : 'bg-[#060911]/80 hover:bg-[#0c1222] border-white/10 hover:border-white/20'
                                     }`}
                                   >
                                     <div>
-                                      {/* Header: index, badge and radio checkmark */}
-                                      <div className="flex items-center justify-between gap-2 mb-2.5">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-mono text-xs font-bold text-neutral-400">{dept.index}</span>
-                                          <span className={`text-[9px] font-mono tracking-widest uppercase px-2 py-0.5 rounded-full font-bold border ${dept.badgeColor}`}>
-                                            {dept.badge}
+                                      <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${dept.badgeColor}`}>
+                                            {getDeptIcon(dept.iconName)}
+                                          </div>
+                                          <div>
+                                            <span className="text-[10px] font-mono tracking-widest text-neutral-400 uppercase">
+                                              SECTOR {dept.index}
+                                            </span>
+                                            <h3 className="font-display font-bold text-base sm:text-lg text-white group-hover:text-[#e2f952] transition-colors">
+                                              {dept.name}
+                                            </h3>
+                                          </div>
+                                        </div>
+                                        {isSelected && (
+                                          <span className="w-6 h-6 rounded-full bg-[#e2f952] text-black flex items-center justify-center font-bold text-xs shadow-md shrink-0">
+                                            ✓
                                           </span>
-                                        </div>
-                                        <div
-                                          className={`w-5 h-5 rounded-full border flex items-center justify-center transition shrink-0 ${
-                                            isSelected
-                                              ? 'border-purple-400 bg-purple-400 text-black'
-                                              : 'border-white/20 group-hover:border-purple-400/50'
-                                          }`}
-                                        >
-                                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                                        </div>
+                                        )}
                                       </div>
 
-                                      {/* Icon and Title */}
-                                      <div className="flex items-center gap-2.5 mb-2">
-                                        <div className={`p-2 rounded-xl border shrink-0 ${isSelected ? 'bg-purple-500/30 border-purple-400/50 text-purple-200' : 'bg-white/5 border-white/10 text-neutral-300'}`}>
-                                          {getDeptIcon(dept.iconName)}
-                                        </div>
-                                        <h4 className="font-display font-bold text-white text-base leading-snug group-hover:text-purple-200 transition">
-                                          {dept.name}
-                                        </h4>
-                                      </div>
-
-                                      {/* Department Focus */}
-                                      <p className="text-xs text-neutral-300 leading-relaxed font-sans mb-3">
+                                      <p className="text-neutral-300 text-xs mt-3 leading-relaxed">
                                         {dept.focus}
                                       </p>
 
-                                      {/* Key Directives */}
-                                      <div className="space-y-1 mb-3 pt-2.5 border-t border-white/10">
-                                        <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 font-semibold mb-1">Directives:</div>
-                                        {dept.responsibilities.map((resp, rIdx) => (
-                                          <div key={rIdx} className="flex items-start gap-1.5 text-[11px] text-neutral-300 leading-tight">
-                                            <span className="text-purple-400 shrink-0 mt-0.5">&bull;</span>
-                                            <span>{resp}</span>
-                                          </div>
-                                        ))}
+                                      <div className="mt-4 pt-3 border-t border-white/5 space-y-2">
+                                        <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                                          Key Responsibilities:
+                                        </div>
+                                        <ul className="text-[11px] text-neutral-300 space-y-1 list-disc list-inside">
+                                          {dept.responsibilities.slice(0, 3).map((r, i) => (
+                                            <li key={i} className="truncate">{r}</li>
+                                          ))}
+                                        </ul>
                                       </div>
                                     </div>
 
-                                    {/* Skills and selection footer */}
-                                    <div className="pt-2.5 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 mt-auto">
+                                    <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2">
                                       <div className="flex flex-wrap gap-1.5">
-                                        {dept.skills.map((skill) => (
-                                          <span key={skill} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-300">
+                                        {dept.skills.slice(0, 4).map((skill, i) => (
+                                          <span
+                                            key={i}
+                                            className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-400"
+                                          >
                                             {skill}
                                           </span>
                                         ))}
                                       </div>
-                                      <span className={`text-[10px] font-mono font-bold ${isSelected ? 'text-purple-300' : 'text-neutral-500'}`}>
-                                        {isSelected ? '✓ Department Selected' : 'Click to Select'}
+                                      <span className={`text-[10px] font-mono font-bold ${isSelected ? 'text-[#e2f952]' : 'text-neutral-500'}`}>
+                                        {isSelected ? '✓ Sector Selected' : 'Click to Select'}
                                       </span>
                                     </div>
-                                  </button>
+                                  </div>
                                 );
                               })}
                             </div>
                           </div>
                         ) : (field.id === 'step1_secondary_sector' || field.id === 'step1_secondary_department') ? (
-                          <div className="space-y-2 pt-1">
+                          <div className="space-y-3 pt-1">
                             <p className="text-[11px] text-neutral-400 font-sans">
                               Select a fallback department if your primary choice is already fully staffed:
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                               {SECRETARIAT_DEPARTMENTS.map((dept) => {
-                                const isSelected = formData[field.id] === dept.name || formData[field.id] === dept.label;
-                                const isPrimary = formData['step1_primary_sector'] === dept.label || formData['step1_primary_sector'] === dept.name;
+                                const isSelected = 
+                                  formData[field.id] === dept.name || 
+                                  formData[field.id] === dept.label || 
+                                  formData[field.id] === dept.id;
+                                const isPrimary = 
+                                  formData['step1_primary_sector'] === dept.name || 
+                                  formData['step1_primary_sector'] === dept.label || 
+                                  formData['step1_primary_sector'] === dept.id ||
+                                  (typeof formData['step1_primary_sector'] === 'string' && formData['step1_primary_sector'].toLowerCase().includes(dept.name.toLowerCase()));
+
                                 return (
                                   <button
                                     key={dept.id}
                                     type="button"
                                     disabled={isPrimary}
                                     onClick={() => handleInputChange(field.id, dept.name)}
-                                    className={`p-3 rounded-xl border text-left transition flex items-center justify-between cursor-pointer ${
+                                    className={`p-3.5 rounded-xl border text-left transition flex items-center justify-between cursor-pointer ${
                                       isSelected
-                                        ? 'bg-purple-500/20 border-purple-400 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                                        ? 'bg-[#e2f952]/15 border-[#e2f952] text-white ring-1 ring-[#e2f952]/50 shadow-[0_0_15px_rgba(226,249,82,0.2)]'
                                         : isPrimary
                                         ? 'bg-white/[0.01] border-white/5 opacity-40 cursor-not-allowed'
                                         : 'bg-[#090d16]/60 border-white/10 hover:border-white/25 text-neutral-300 hover:text-white'
                                     }`}
                                   >
                                     <div className="flex items-center gap-2.5 truncate">
-                                      <div className="p-1.5 rounded-lg bg-white/5 text-purple-300 shrink-0">
+                                      <div className={`p-1.5 rounded-lg border shrink-0 ${dept.badgeColor}`}>
                                         {getDeptIcon(dept.iconName)}
                                       </div>
                                       <div className="truncate">
-                                        <div className="text-xs font-semibold truncate">{dept.name}</div>
+                                        <div className="text-xs font-semibold truncate text-white">{dept.name}</div>
                                         <div className="text-[10px] font-mono text-neutral-400 truncate">
-                                          {isPrimary ? 'Selected as 1st Choice' : dept.badge}
+                                          {isPrimary ? 'Primary Sector Choice' : `Sector ${dept.index}`}
                                         </div>
                                       </div>
                                     </div>
                                     <div
-                                      className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
-                                        isSelected ? 'border-purple-400 bg-purple-400 text-black' : 'border-white/20'
+                                      className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
+                                        isSelected ? 'border-[#e2f952] bg-[#e2f952] text-black font-bold text-xs' : 'border-white/20'
                                       }`}
                                     >
-                                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                      {isSelected && '✓'}
                                     </div>
                                   </button>
                                 );
@@ -1937,6 +2107,7 @@ export default function ZenFormPublicPage() {
                           <select
                             value={formData[field.id] || ''}
                             onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            onBlur={() => handleFieldBlur(field.id)}
                             className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer font-sans"
                           >
                             <option value="" disabled>Select an option...</option>
