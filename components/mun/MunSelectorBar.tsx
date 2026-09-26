@@ -89,7 +89,7 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
                 </div>
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span className="truncate max-w-[220px] sm:max-w-[320px]">
-                    {activeConference?.name || 'Select Conference'}
+                    {(activeConference || conferences[0])?.name || 'Zen Diplomacy 2026'}
                   </span>
                   <ChevronDown className="w-4 h-4 text-neutral-400 group-hover:text-white transition-transform" />
                 </div>
@@ -104,7 +104,7 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
                 </div>
                 <div className="space-y-1 mt-1">
                   {conferences.map((conf) => {
-                    const isSelected = conf.id === activeConferenceId;
+                    const isSelected = conf.id === (activeConferenceId || conferences[0]?.id);
                     return (
                       <button
                         key={conf.id}
@@ -141,7 +141,7 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
 
           {/* Current Status Badge */}
           <div className="hidden sm:block">
-            {activeConference && getStatusBadge(activeConference.status)}
+            {(activeConference || conferences[0]) && getStatusBadge((activeConference || conferences[0]).status, currentConferenceDay)}
           </div>
         </div>
 

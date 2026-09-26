@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -28,33 +28,84 @@ type AttendanceStatus = 'present_voting' | 'present' | 'absent';
 interface CountryRollCallEntry {
   country: string;
   flag: string;
+  subTitle?: string;
   isP5?: boolean;
   status: AttendanceStatus;
 }
 
+const COMMITTEE_ROSTERS: Record<string, CountryRollCallEntry[]> = {
+  UNSC: [
+    { country: 'United States of America', flag: '🇺🇸', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
+    { country: 'United Kingdom', flag: '🇬🇧', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
+    { country: 'French Republic', flag: '🇫🇷', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
+    { country: 'Russian Federation', flag: '🇷🇺', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
+    { country: 'People’s Republic of China', flag: '🇨🇳', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
+    { country: 'Republic of India', flag: '🇮🇳', subTitle: 'Special Invitee & G4 Candidate', status: 'absent' },
+    { country: 'Japan', flag: '🇯🇵', subTitle: 'Elected Member (Asia-Pacific)', status: 'absent' },
+    { country: 'Republic of Korea', flag: '🇰🇷', subTitle: 'Elected Member (Asia-Pacific)', status: 'absent' },
+    { country: 'Swiss Confederation', flag: '🇨🇭', subTitle: 'Elected Member (WEOG)', status: 'absent' },
+    { country: 'Republic of Sierra Leone', flag: '🇸🇱', subTitle: 'Elected Member (African Group)', status: 'absent' },
+    { country: 'People’s Democratic Republic of Algeria', flag: '🇩🇿', subTitle: 'Elected Member (Arab Group)', status: 'absent' },
+    { country: 'Co-operative Republic of Guyana', flag: '🇬🇾', subTitle: 'Elected Member (GRULAC)', status: 'absent' },
+    { country: 'Republic of Malta', flag: '🇲🇹', subTitle: 'Elected Member (WEOG)', status: 'absent' },
+    { country: 'Republic of Mozambique', flag: '🇲🇿', subTitle: 'Elected Member (African Group)', status: 'absent' },
+    { country: 'Republic of Slovenia', flag: '🇸🇮', subTitle: 'Elected Member (Eastern Europe)', status: 'absent' },
+  ],
+  AIPPM: [
+    { country: 'Narendra Modi', flag: '🇮🇳', subTitle: 'Prime Minister of India / Varanasi MP', status: 'absent' },
+    { country: 'Amit Shah', flag: '🇮🇳', subTitle: 'Minister of Home Affairs / Gandhinagar MP', status: 'absent' },
+    { country: 'Rahul Gandhi', flag: '🇮🇳', subTitle: 'Leader of Opposition (Lok Sabha)', status: 'absent' },
+    { country: 'Rajnath Singh', flag: '🇮🇳', subTitle: 'Minister of Defence', status: 'absent' },
+    { country: 'Nirmala Sitharaman', flag: '🇮🇳', subTitle: 'Minister of Finance', status: 'absent' },
+    { country: 'Mallikarjun Kharge', flag: '🇮🇳', subTitle: 'Leader of Opposition (Rajya Sabha)', status: 'absent' },
+    { country: 'Akhilesh Yadav', flag: '🇮🇳', subTitle: 'Samajwadi Party Chief / Kannauj MP', status: 'absent' },
+    { country: 'Mamata Banerjee', flag: '🇮🇳', subTitle: 'All India Trinamool Congress (TMC)', status: 'absent' },
+    { country: 'Nitin Gadkari', flag: '🇮🇳', subTitle: 'Minister of Road Transport & Highways', status: 'absent' },
+    { country: 'Asaduddin Owaisi', flag: '🇮🇳', subTitle: 'AIMIM Chief / Hyderabad MP', status: 'absent' },
+  ],
+  EMI: [
+    { country: 'Dharmendra Pradhan', flag: '🇮🇳', subTitle: 'Union Minister of Education', status: 'absent' },
+    { country: 'Prof. M. Jagadesh Kumar', flag: '🇮🇳', subTitle: 'Chairman, University Grants Commission (UGC)', status: 'absent' },
+    { country: 'Prof. T.G. Sitharam', flag: '🇮🇳', subTitle: 'Chairman, AICTE', status: 'absent' },
+    { country: 'Director, NCERT', flag: '🇮🇳', subTitle: 'Curriculum & Textbook Framework Directorate', status: 'absent' },
+    { country: 'Director, IIT Delhi', flag: '🇮🇳', subTitle: 'Institutes of National Importance (INIs)', status: 'absent' },
+    { country: 'Vice-Chancellor, Delhi University', flag: '🇮🇳', subTitle: 'Central Universities Consortium', status: 'absent' },
+    { country: 'State Education Secretary (Tamil Nadu)', flag: '🇮🇳', subTitle: 'State Language & Curriculum Autonomy', status: 'absent' },
+    { country: 'National Student Union Representative', flag: '🇮🇳', subTitle: 'Youth Democratic Student Body', status: 'absent' },
+  ],
+  UNODC: [
+    { country: 'Republic of Colombia', flag: '🇨🇴', subTitle: 'Andean Narcotics & Crop Substitution Board', status: 'absent' },
+    { country: 'United Mexican States', flag: '🇲🇽', subTitle: 'Transnational Cartel Border & Maritime Taskforce', status: 'absent' },
+    { country: 'Kingdom of the Netherlands', flag: '🇳🇱', subTitle: 'Port of Rotterdam Interception Directorate', status: 'absent' },
+    { country: 'Republic of the Union of Myanmar', flag: '🇲🇲', subTitle: 'Golden Triangle Synthetic Drug Precursor Taskforce', status: 'absent' },
+    { country: 'Federal Republic of Nigeria', flag: '🇳🇬', subTitle: 'West African Transshipment Command', status: 'absent' },
+    { country: 'INTERPOL Secretariat', flag: '🌐', subTitle: 'Transnational Organized Crime Taskforce', status: 'absent' },
+    { country: 'Islamic Republic of Afghanistan', flag: '🇦🇫', subTitle: 'Opiate Eradication Directorate', status: 'absent' },
+    { country: 'Commonwealth of Australia', flag: '🇦🇺', subTitle: 'Pacific Border & Darknet Interdiction Branch', status: 'absent' },
+  ],
+};
+
+function getRosterForCommittee(committee: any): CountryRollCallEntry[] {
+  const norm = String(committee?.shortName || committee?.id || committee?.name || '').toUpperCase();
+  if (norm.includes('UNSC')) return COMMITTEE_ROSTERS.UNSC;
+  if (norm.includes('AIPPM')) return COMMITTEE_ROSTERS.AIPPM;
+  if (norm.includes('EMI')) return COMMITTEE_ROSTERS.EMI;
+  if (norm.includes('UNODC')) return COMMITTEE_ROSTERS.UNODC;
+  return COMMITTEE_ROSTERS.UNSC;
+}
+
 export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementModalProps) {
-  const { activeCommitteeId, getCommitteeById, committees } = useMun();
+  const { activeCommitteeId, getCommitteeById, committees, updateCommitteeDetails } = useMun();
   const committee = getCommitteeById(activeCommitteeId) || committees[0];
 
-  const INITIAL_COUNTRIES: CountryRollCallEntry[] = [
-    { country: 'United States', flag: '🇺🇸', isP5: true, status: 'present_voting' },
-    { country: 'United Kingdom', flag: '🇬🇧', isP5: true, status: 'present_voting' },
-    { country: 'France', flag: '🇫🇷', isP5: true, status: 'present_voting' },
-    { country: 'China', flag: '🇨🇳', isP5: true, status: 'present_voting' },
-    { country: 'Russian Federation', flag: '🇷🇺', isP5: true, status: 'present_voting' },
-    { country: 'India', flag: '🇮🇳', status: 'present_voting' },
-    { country: 'Japan', flag: '🇯🇵', status: 'present' },
-    { country: 'Germany', flag: '🇩🇪', status: 'present' },
-    { country: 'Brazil', flag: '🇧🇷', status: 'present_voting' },
-    { country: 'South Africa', flag: '🇿🇦', status: 'present' },
-    { country: 'United Arab Emirates', flag: '🇦🇪', status: 'present_voting' },
-    { country: 'Switzerland', flag: '🇨🇭', status: 'present' },
-    { country: 'Republic of Korea', flag: '🇰🇷', status: 'present_voting' },
-    { country: 'Ghana', flag: '🇬🇭', status: 'present' },
-    { country: 'Ecuador', flag: '🇪🇨', status: 'present' }
-  ];
+  const [delegations, setDelegations] = useState<CountryRollCallEntry[]>([]);
 
-  const [delegations, setDelegations] = useState<CountryRollCallEntry[]>(INITIAL_COUNTRIES);
+  useEffect(() => {
+    if (isOpen && committee) {
+      const roster = getRosterForCommittee(committee);
+      setDelegations(roster.map(r => ({ ...r, status: 'absent' })));
+    }
+  }, [isOpen, committee?.id]);
 
   if (!isOpen) return null;
 
@@ -68,14 +119,38 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
   const twoThirdsMajority = Math.ceil((totalPresent * 2) / 3);
   const quorumMet = totalPresent >= Math.ceil(totalDelegates / 3);
 
+  const syncAttendanceToContext = (currentList: CountryRollCallEntry[]) => {
+    if (!committee?.id) return;
+    const pVoting = currentList.filter((d) => d.status === 'present_voting').length;
+    const pNormal = currentList.filter((d) => d.status === 'present').length;
+    const tPresent = pVoting + pNormal;
+    updateCommitteeDetails(committee.id, {
+      presentCount: tPresent,
+      presentAndVotingCount: pVoting,
+      totalDelegates: currentList.length,
+      quorumNeeded: Math.ceil(currentList.length / 3),
+    });
+  };
+
   const setCountryStatus = (country: string, status: AttendanceStatus) => {
-    setDelegations((prev) =>
-      prev.map((d) => (d.country === country ? { ...d, status } : d))
-    );
+    setDelegations((prev) => {
+      const updated = prev.map((d) => (d.country === country ? { ...d, status } : d));
+      syncAttendanceToContext(updated);
+      return updated;
+    });
   };
 
   const markAll = (status: AttendanceStatus) => {
-    setDelegations((prev) => prev.map((d) => ({ ...d, status })));
+    setDelegations((prev) => {
+      const updated = prev.map((d) => ({ ...d, status }));
+      syncAttendanceToContext(updated);
+      return updated;
+    });
+  };
+
+  const handleSaveAndClose = () => {
+    syncAttendanceToContext(delegations);
+    onClose();
   };
 
   return (
@@ -105,7 +180,7 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
                 <h2 className="font-display font-bold text-lg text-white flex items-center gap-2">
                   <span>Roll Call &amp; Quorum Intelligence</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">
-                    MUN Command
+                    {committee?.shortName || 'CHAMBER'}
                   </span>
                 </h2>
                 <p className="text-xs text-neutral-400">
@@ -192,12 +267,12 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
                 onClick={() => markAll('absent')}
                 className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 border border-white/10 text-xs font-mono transition cursor-pointer"
               >
-                Reset All
+                Reset All (0 Present)
               </button>
             </div>
           </div>
 
-          {/* Country Delegation List */}
+          {/* Country / Portfolio Delegation List */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-2.5 max-h-[50vh]">
             {delegations.map((d) => (
               <div
@@ -215,6 +290,9 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
                         </span>
                       )}
                     </div>
+                    {d.subTitle && (
+                      <p className="text-[11px] font-mono text-neutral-400 truncate">{d.subTitle}</p>
+                    )}
                   </div>
                 </div>
 
@@ -268,7 +346,7 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleSaveAndClose}
               className="px-6 py-2.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black font-display font-bold text-xs shadow-md transition cursor-pointer"
             >
               Save &amp; Update Dais Quorum

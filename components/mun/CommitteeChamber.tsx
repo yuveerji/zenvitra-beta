@@ -110,13 +110,15 @@ export function CommitteeChamber() {
   } = useMun();
 
   const DEFAULT_COMMITTEE = {
-    id: 'general-assembly',
-    name: 'UN General Assembly Plenary',
-    shortName: 'UNGA',
-    type: 'DISEC' as const,
-    agenda: 'Strengthening Multilateral Frameworks & Sustainable Global Youth Action',
-    presentCount: 24,
-    totalDelegates: 30,
+    id: 'unsc-2026',
+    name: 'United Nations Security Council (UNSC)',
+    shortName: 'UNSC',
+    type: 'UNSC' as const,
+    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
+    presentCount: 0,
+    presentAndVotingCount: 0,
+    totalDelegates: 15,
+    quorumNeeded: 9,
     dais: {
       chair: 'Presiding Officer',
       coChair: 'Rapporteur',
@@ -311,32 +313,38 @@ export function CommitteeChamber() {
 
         <div className="space-y-4 relative z-10 w-full">
           {/* Back & Breadcrumb & Format Tags */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <Link
-              href="/events"
-              className="p-1.5 px-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white transition flex items-center gap-1.5 text-xs font-mono"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Events</span>
-            </Link>
-            <span className="text-neutral-700">&bull;</span>
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono text-emerald-400 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              SESSION #{sessionState.sessionNumber} &bull; IN ORDER
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <Link
+                href="/events"
+                className="p-1.5 px-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white transition flex items-center gap-1.5 text-xs font-mono"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Events</span>
+              </Link>
+              <span className="text-neutral-700">&bull;</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-mono text-emerald-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                SESSION #{sessionState.sessionNumber} &bull; IN ORDER
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono text-neutral-300 font-medium">
+                {committee.type || 'PARLIAMENTARY'}
+              </span>
             </div>
-            {/* Format Badge */}
-            <span className="px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono text-neutral-300 font-medium">
-              {committee.type || 'PARLIAMENTARY'}
-            </span>
+
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-white/[0.03] border border-white/10 text-xs font-mono text-neutral-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span>{activeConference?.shortName || 'ZEN DIPLOMACY'} &bull; DAY {currentConferenceDay}</span>
+            </div>
           </div>
 
-          {/* Committee Name Selector & Passports */}
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-            <div className="relative max-w-full">
+          {/* Committee Name Selector & Action Controls */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="relative w-full lg:w-auto min-w-[280px]">
               <select
                 value={activeCommitteeId}
                 onChange={(e) => setActiveCommitteeId(e.target.value)}
-                className="appearance-none max-w-full bg-[#111319] border border-white/15 hover:border-white/30 text-white font-display font-semibold text-base sm:text-2xl px-3.5 sm:px-4 py-2 pr-9 sm:pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
+                className="appearance-none w-full lg:w-auto bg-[#111319] border border-white/15 hover:border-white/30 text-white font-display font-semibold text-base sm:text-2xl px-3.5 sm:px-4 py-2 pr-9 sm:pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
               >
                 {committees.map((c) => {
                   const isOther = c.id === 'custom-chamber-other' || c.type === 'OTHER';
@@ -353,69 +361,72 @@ export function CommitteeChamber() {
               <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
-            {/* Delegate Passport Badge */}
-            {userAcceptedInvite ? (
-              <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-200 font-mono text-xs font-medium flex items-center gap-2 shadow-sm">
-                <span>{userAcceptedInvite.flagEmoji}</span>
-                <span>{userAcceptedInvite.portfolio} (You)</span>
-              </div>
-            ) : (
-              <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-400 font-mono text-xs flex items-center gap-1.5">
-                <Globe2 className="w-3.5 h-3.5 text-neutral-400" />
-                <span>Observer Node</span>
-              </div>
-            )}
-
-            {/* Interactive Dais Gavel Button */}
-            <button
-              type="button"
-              onClick={playGavelSound}
-              className={`p-2 px-3.5 rounded-2xl border font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
-                gavelActive
-                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-neutral-300 hover:border-white/20'
-              }`}
-              title="Strike Dais Gavel (Call Floor to Order)"
-            >
-              {gavelActive ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-                  </span>
-                  <Gavel className="w-3.5 h-3.5 text-emerald-300 rotate-[-15deg] transition-transform" />
-                  <span>In Order</span>
+            {/* Action Bar (Observer, Gavel, Edit Details, Secretariat) */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {/* Delegate Passport Badge */}
+              {userAcceptedInvite ? (
+                <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-200 font-mono text-xs font-medium flex items-center gap-2 shadow-sm">
+                  <span>{userAcceptedInvite.flagEmoji}</span>
+                  <span>{userAcceptedInvite.portfolio} (You)</span>
                 </div>
               ) : (
-                <>
-                  <Gavel className="w-3.5 h-3.5 text-neutral-400 transition-transform" />
-                  <span>Dais Gavel</span>
-                </>
+                <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-400 font-mono text-xs flex items-center gap-1.5">
+                  <Globe2 className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Observer Node</span>
+                </div>
               )}
-            </button>
 
-            {/* Customize Committee, Agenda & Portfolios Button */}
-            <button
-              type="button"
-              onClick={() => setShowEditChamberModal(true)}
-              className="p-2 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs font-medium transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-              title="Customize Committee Name, Set Agenda & Define Portfolios"
-            >
-              <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
-              <span>Edit Details</span>
-            </button>
-
-            {/* Direct Connect to Secretariat Command Center (Restricted to verified Secretariat team only) */}
-            {isSecTeam && (
-              <Link
-                href="/mun/conference"
-                className="p-2 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-                title="Return to Secretariat Conference Command Center"
+              {/* Interactive Dais Gavel Button */}
+              <button
+                type="button"
+                onClick={playGavelSound}
+                className={`p-2 px-3.5 rounded-2xl border font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
+                  gavelActive
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-neutral-300 hover:border-white/20'
+                }`}
+                title="Strike Dais Gavel (Call Floor to Order)"
               >
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
-                <span>Secretariat</span>
-              </Link>
-            )}
+                {gavelActive ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                    </span>
+                    <Gavel className="w-3.5 h-3.5 text-emerald-300 rotate-[-15deg] transition-transform" />
+                    <span>In Order</span>
+                  </div>
+                ) : (
+                  <>
+                    <Gavel className="w-3.5 h-3.5 text-neutral-400 transition-transform" />
+                    <span>Dais Gavel</span>
+                  </>
+                )}
+              </button>
+
+              {/* Customize Committee, Agenda & Portfolios Button */}
+              <button
+                type="button"
+                onClick={() => setShowEditChamberModal(true)}
+                className="p-2 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs font-medium transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                title="Customize Committee Name, Set Agenda & Define Portfolios"
+              >
+                <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
+                <span>Edit Details</span>
+              </button>
+
+              {/* Direct Connect to Secretariat Command Center */}
+              {isSecTeam && (
+                <Link
+                  href="/mun/conference"
+                  className="p-2 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  title="Return to Secretariat Conference Command Center"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Secretariat</span>
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Quick Custom Committee / Event Name Placeholder & Save Preset Bar */}
@@ -482,12 +493,14 @@ export function CommitteeChamber() {
             </motion.div>
           )}
 
-          {/* Agenda Mandate */}
-          <div className="flex items-start gap-2 w-full">
-            <p className="text-xs sm:text-sm text-neutral-300 font-mono flex items-start gap-2">
-              <strong className="text-neutral-400 uppercase shrink-0 font-semibold">AGENDA:</strong>
-              <span className="text-neutral-200 leading-snug">{committee.agenda}</span>
-            </p>
+          {/* Agenda Mandate Banner */}
+          <div className="p-3.5 px-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-start gap-3 shadow-inner">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 shrink-0 mt-0.5 px-2.5 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+              AGENDA
+            </span>
+            <span className="text-xs sm:text-sm text-neutral-200 font-mono leading-relaxed">
+              {committee.agenda}
+            </span>
           </div>
         </div>
       </div>
@@ -511,7 +524,11 @@ export function CommitteeChamber() {
                 QUORUM
               </span>
               <span className="font-mono font-semibold text-xs text-neutral-200">
-                {committee.presentCount}/{committee.totalDelegates} Present
+                {committee.presentCount > 0 ? (
+                  `${committee.presentCount}/${committee.totalDelegates || 15} Present`
+                ) : (
+                  `Roll Call (0/${committee.totalDelegates || 15})`
+                )}
               </span>
             </div>
           </button>

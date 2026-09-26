@@ -581,7 +581,7 @@ export default function ZenMunPortalPage() {
 
                       <div className="pt-2 flex items-center justify-between border-t border-white/5 gap-2">
                         <span className="text-[11px] text-neutral-400 font-mono">
-                          {c.presentCount || c.totalDelegates || 35} Present
+                          {c.presentCount > 0 ? `${c.presentCount}/${c.totalDelegates || 15} Present` : `${c.totalDelegates || 15} Seats`}
                         </span>
                         <div className="flex items-center gap-2">
                           {isLok && (

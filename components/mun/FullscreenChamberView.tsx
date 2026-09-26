@@ -120,7 +120,7 @@ export function FullscreenChamberView({ isOpen, onClose }: FullscreenChamberView
 
           <div className="flex items-center gap-3">
             <div className="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] font-mono text-xs text-neutral-300">
-              Quorum: <strong className="text-emerald-400 font-semibold">{committee?.presentCount || 15}/{committee?.totalDelegates || 15}</strong> &bull; Majority: <strong className="text-white font-medium">8</strong>
+              Quorum: <strong className="text-emerald-400 font-semibold">{committee?.presentCount ?? 0}/{committee?.totalDelegates || 15}</strong> &bull; Majority: <strong className="text-white font-medium">{Math.floor((committee?.presentCount ?? 0) / 2) + 1}</strong>
             </div>
 
             <button

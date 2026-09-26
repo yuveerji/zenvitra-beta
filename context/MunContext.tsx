@@ -79,7 +79,10 @@ interface MunContextType {
   getCommitteeById: (id: string) => MunCommittee | undefined;
   activeCommitteeId: string;
   setActiveCommitteeId: (id: string) => void;
-  updateCommitteeDetails: (id: string, data: Partial<Pick<MunCommittee, 'name' | 'shortName' | 'type' | 'agenda' | 'totalDelegates'>>) => void;
+  updateCommitteeDetails: (
+    id: string,
+    data: Partial<Pick<MunCommittee, 'name' | 'shortName' | 'type' | 'agenda' | 'totalDelegates' | 'presentCount' | 'presentAndVotingCount' | 'quorumNeeded'>>
+  ) => void;
   addCustomCommittee: (customData: { name: string; shortName?: string; agenda: string; type?: MunCommitteeType }) => MunCommittee;
   sessionState: MunSessionState;
   
@@ -140,11 +143,137 @@ interface MunContextType {
 
 /* ─────────── LIVE ZERO-SEEDED PLATFORM DATA ─────────── */
 
-export const DEFAULT_CONFERENCES: MunConference[] = [];
+export const DEFAULT_CONFERENCES: MunConference[] = [
+  {
+    id: 'zen-diplomacy-2026',
+    name: 'Zen Diplomacy 2026 — National Youth Assembly',
+    shortName: 'ZEN DIPLOMACY',
+    tagline: 'Sovereign Youth Diplomacy & Parliamentary Chambers',
+    startDate: '2026-10-24',
+    endDate: '2026-10-25',
+    status: 'DAY_1',
+    currentDay: 1,
+    totalDays: 2,
+    conveningDate: '2026-10-24T09:00:00.000Z',
+    secretariatChair: 'Yuveer',
+    location: 'Sovereign Digital Enclave & Live Chambers',
+    committees: ['unsc-2026', 'aippm-2026', 'emi-2026', 'unodc-2026'],
+  }
+];
 
-const DEFAULT_COMMITTEES: MunCommittee[] = [];
+const DEFAULT_COMMITTEES: MunCommittee[] = [
+  {
+    id: 'unsc-2026',
+    eventId: 'zen-diplomacy-2026',
+    name: 'United Nations Security Council (UNSC)',
+    shortName: 'UNSC',
+    type: 'UNSC',
+    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
+    totalDelegates: 15,
+    presentCount: 0,
+    presentAndVotingCount: 0,
+    quorumNeeded: 9,
+    dais: { chair: 'Presiding Officer', viceChair: 'Rapporteur' },
+  },
+  {
+    id: 'aippm-2026',
+    eventId: 'zen-diplomacy-2026',
+    name: 'All India Political Parties Meet (AIPPM)',
+    shortName: 'AIPPM',
+    type: 'AIPPM',
+    agenda: 'National Security Reforms, Uniform Civil Framework & Federal Fiscal Devolution',
+    totalDelegates: 20,
+    presentCount: 0,
+    presentAndVotingCount: 0,
+    quorumNeeded: 10,
+    dais: { chair: "Hon'ble Speaker of the House", viceChair: 'Deputy Speaker' },
+  },
+  {
+    id: 'emi-2026',
+    eventId: 'zen-diplomacy-2026',
+    name: 'Executive Ministry of India (EMI)',
+    shortName: 'EMI',
+    type: 'PARLIAMENTARY',
+    agenda: 'National AI Compute Sovereignty, Higher Education & Youth Employment Strategy',
+    totalDelegates: 16,
+    presentCount: 0,
+    presentAndVotingCount: 0,
+    quorumNeeded: 8,
+    dais: { chair: 'Union Minister of Education', viceChair: 'Principal Secretary' },
+  },
+  {
+    id: 'unodc-2026',
+    eventId: 'zen-diplomacy-2026',
+    name: 'UN Office on Drugs and Crime (UNODC)',
+    shortName: 'UNODC',
+    type: 'ECOSOC',
+    agenda: 'Countering Transnational Cyber-Cartels & Illicit Synthetic Narcotics Networks',
+    totalDelegates: 16,
+    presentCount: 0,
+    presentAndVotingCount: 0,
+    quorumNeeded: 8,
+    dais: { chair: 'Executive Director', viceChair: 'Rapporteur' },
+  },
+];
 
-const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [];
+const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
+  {
+    id: 'unsc-2026',
+    title: 'UN Security Council (UNSC) Plenary',
+    category: 'MUN_COMMITTEE',
+    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
+    shortCode: 'UNSC',
+    hostName: 'Presiding Officer',
+    hostHandle: 'dais_unsc',
+    isLive: true,
+    votingHistory: [],
+    performersQueue: [],
+    reactions: [],
+    createdAt: '2026-10-24T09:00:00.000Z',
+  },
+  {
+    id: 'aippm-2026',
+    title: 'All India Political Parties Meet (AIPPM)',
+    category: 'LOK_SABHA',
+    agenda: 'National Security Reforms, Uniform Civil Framework & Federal Fiscal Devolution',
+    shortCode: 'AIPPM',
+    hostName: "Hon'ble Speaker",
+    hostHandle: 'speaker_aippm',
+    isLive: true,
+    votingHistory: [],
+    performersQueue: [],
+    reactions: [],
+    createdAt: '2026-10-24T09:00:00.000Z',
+  },
+  {
+    id: 'emi-2026',
+    title: 'Executive Ministry of India (EMI)',
+    category: 'LOK_SABHA',
+    agenda: 'National AI Compute Sovereignty, Higher Education & Youth Employment Strategy',
+    shortCode: 'EMI',
+    hostName: 'Union Minister',
+    hostHandle: 'minister_emi',
+    isLive: true,
+    votingHistory: [],
+    performersQueue: [],
+    reactions: [],
+    createdAt: '2026-10-24T09:00:00.000Z',
+  },
+  {
+    id: 'unodc-2026',
+    title: 'UN Office on Drugs and Crime (UNODC)',
+    category: 'MUN_COMMITTEE',
+    agenda: 'Countering Transnational Cyber-Cartels & Illicit Synthetic Narcotics Networks',
+    shortCode: 'UNODC',
+    hostName: 'Executive Director',
+    hostHandle: 'director_unodc',
+    isLive: true,
+    votingHistory: [],
+    performersQueue: [],
+    reactions: [],
+    createdAt: '2026-10-24T09:00:00.000Z',
+  },
+];
 
 const INITIAL_COMMITTEES: MunCommittee[] = DEFAULT_COMMITTEES;
 const INITIAL_INVITES: MunInvite[] = [];
@@ -387,26 +516,50 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   // Load from localStorage on client mount & scrub any legacy seeded data
   useEffect(() => {
     try {
+      const BANNED_SEEDED_COMMITTEE_IDS = [
+        'open-mic-stage',
+        'pitch-arena',
+        'general-assembly',
+        'lok-sabha-2026',
+        'unga-plenary',
+        'unhrc-2026',
+        'constituent-assembly-2026',
+        'custom-chamber-other'
+      ];
+
+      // 1. Conferences
       const storedConfs = localStorage.getItem(LS_MUN_CONFERENCES);
       if (storedConfs) {
         const parsed = JSON.parse(storedConfs);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           const cleaned = parsed.filter(
             (c: any) => c && c.id !== 'mun_jharokha_2026' && c.id !== 'mun_horizon_2026'
           );
-          setConferences(cleaned);
-          localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(cleaned));
+          if (cleaned.length > 0) {
+            setConferences(cleaned);
+          } else {
+            setConferences(DEFAULT_CONFERENCES);
+            localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(DEFAULT_CONFERENCES));
+          }
+        } else {
+          setConferences(DEFAULT_CONFERENCES);
+          localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(DEFAULT_CONFERENCES));
         }
+      } else {
+        setConferences(DEFAULT_CONFERENCES);
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(DEFAULT_CONFERENCES));
       }
 
+      // 2. Active Conference
       const storedActiveConf = localStorage.getItem(LS_ACTIVE_CONFERENCE);
       if (storedActiveConf && storedActiveConf !== 'mun_jharokha_2026' && storedActiveConf !== 'mun_horizon_2026') {
         setActiveConferenceIdState(storedActiveConf);
       } else {
-        localStorage.removeItem(LS_ACTIVE_CONFERENCE);
-        setActiveConferenceIdState('');
+        setActiveConferenceIdState('zen-diplomacy-2026');
+        localStorage.setItem(LS_ACTIVE_CONFERENCE, 'zen-diplomacy-2026');
       }
 
+      // 3. Committees
       const storedCommittees = localStorage.getItem(LS_MUN_COMMITTEES);
       if (storedCommittees) {
         const parsed = JSON.parse(storedCommittees);
@@ -416,17 +569,26 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
               c &&
               c.eventId !== 'mun_jharokha_2026' &&
               c.eventId !== 'mun_horizon_2026' &&
-              c.id !== 'custom-chamber-other' &&
-              !['lok-sabha-2026', 'unsc-2026', 'unga-plenary', 'unhrc-2026', 'constituent-assembly-2026'].includes(c.id)
+              !BANNED_SEEDED_COMMITTEE_IDS.includes(c.id) &&
+              !BANNED_SEEDED_COMMITTEE_IDS.includes(c.name?.toLowerCase())
           );
-          setCommittees(cleaned);
           if (cleaned.length > 0) {
-            setActiveCommitteeId((prev) => prev || cleaned[0].id);
+            setCommittees(cleaned);
+            localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(cleaned));
+            setActiveCommitteeId((prev) => (prev && cleaned.some(c => c.id === prev)) ? prev : cleaned[0].id);
+          } else {
+            setCommittees(DEFAULT_COMMITTEES);
+            localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(DEFAULT_COMMITTEES));
+            setActiveCommitteeId(DEFAULT_COMMITTEES[0].id);
           }
-          localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(cleaned));
         }
+      } else {
+        setCommittees(DEFAULT_COMMITTEES);
+        localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(DEFAULT_COMMITTEES));
+        setActiveCommitteeId(DEFAULT_COMMITTEES[0].id);
       }
 
+      // 4. Chamber Rooms
       const storedRooms = localStorage.getItem(LS_CHAMBER_ROOMS);
       if (storedRooms) {
         const parsed = JSON.parse(storedRooms);
@@ -434,12 +596,21 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
           const cleaned = parsed.filter(
             (r: any) =>
               r &&
-              r.id !== 'custom-chamber-other' &&
-              !['lok-sabha-2026', 'unsc-2026', 'unga-plenary', 'unhrc-2026'].includes(r.id)
+              !BANNED_SEEDED_COMMITTEE_IDS.includes(r.id) &&
+              r.eventId !== 'mun_jharokha_2026' &&
+              r.eventId !== 'mun_horizon_2026'
           );
-          setChamberRooms(cleaned);
-          localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(cleaned));
+          if (cleaned.length > 0) {
+            setChamberRooms(cleaned);
+            localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(cleaned));
+          } else {
+            setChamberRooms(DEFAULT_CHAMBER_ROOMS);
+            localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(DEFAULT_CHAMBER_ROOMS));
+          }
         }
+      } else {
+        setChamberRooms(DEFAULT_CHAMBER_ROOMS);
+        localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(DEFAULT_CHAMBER_ROOMS));
       }
 
       const storedVotes = localStorage.getItem(LS_CHAMBER_VOTES);
@@ -676,8 +847,8 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
         type: customData.type || 'OTHER',
         agenda: customData.agenda.trim(),
         totalDelegates: 25,
-        presentCount: 20,
-        presentAndVotingCount: 18,
+        presentCount: 0,
+        presentAndVotingCount: 0,
         quorumNeeded: 13,
         dais: {
           chair: 'Session Moderator',
@@ -1238,10 +1409,10 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
       shortName: newRoom.shortCode,
       agenda: agenda.trim(),
       type: category === 'MUN_COMMITTEE' ? 'DISEC' : category === 'OPEN_MIC' ? 'CRISIS' : 'ECOSOC',
-      totalDelegates: 30,
-      presentCount: 20,
-      presentAndVotingCount: 18,
-      quorumNeeded: 10,
+      totalDelegates: 25,
+      presentCount: 0,
+      presentAndVotingCount: 0,
+      quorumNeeded: 9,
       dais: { chair: currentUserName, viceChair: 'Co-Host / Rapporteur' },
     };
 
@@ -1254,7 +1425,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
   const updateCommitteeDetails = useCallback((
     id: string,
-    data: Partial<Pick<MunCommittee, 'name' | 'shortName' | 'type' | 'agenda' | 'totalDelegates'>>
+    data: Partial<Pick<MunCommittee, 'name' | 'shortName' | 'type' | 'agenda' | 'totalDelegates' | 'presentCount' | 'presentAndVotingCount' | 'quorumNeeded'>>
   ) => {
     setCommittees((prev) => {
       const updated = prev.map((c) => (c.id === id ? { ...c, ...data } : c));
