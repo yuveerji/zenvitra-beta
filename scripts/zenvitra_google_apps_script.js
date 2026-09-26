@@ -75,9 +75,70 @@ var INITIAL_MATRIX_PORTFOLIOS = [
   { id: 'unodc_8', committee: 'UNODC', title: 'Commonwealth of Australia', subTitle: 'Pacific Border & Darknet Interdiction Branch', category: 'Destination & Consumer States', status: 'Vacant', difficulty: 'Beginner' }
 ];
 
-// ── CANONICAL SCHEMAS & COLUMN HEADERS FOR ALL 15 STREAMS ──
+// ── CANONICAL SCHEMAS & COLUMN HEADERS FOR ALL 19 STREAMS ──
 var TAB_SCHEMAS = {
-  // 1. ZEN DIPLOMACY MUN (DELEGATE REGISTRATIONS)
+  // ── COMMITTEE DELEGATE TABS (AIPPM, EMI, UNSC, UNODC) ──
+  AIPPM: {
+    sheetName: 'AIPPM',
+    headers: [
+      'Timestamp', 'Full Name', 'Email Address', 'WhatsApp / Phone',
+      'Institution / School / University', 'City & State', 'Participation Track',
+      'Experience Level', 'Primary Committee Choice', 'Secondary Committee Choice',
+      'Portfolio Preferences', 'Prior Accolades & MUN Count', 'Resolution Drafting Experience',
+      'Research Dossier Link', 'Placard Accreditation Name', 'Motivation Statement',
+      'Accommodation Assistance', 'Emergency Contact', 'Dietary Preference',
+      'Participation Pass Tier', 'Payment UTR / Ref Number', 'Payment Screenshot Link',
+      'Code of Conduct Accord', 'Allocation Status', 'Allocated Committee',
+      'Allocated Portfolio', 'Submitter Handle', 'Form ID'
+    ]
+  },
+
+  EMI: {
+    sheetName: 'EMI',
+    headers: [
+      'Timestamp', 'Full Name', 'Email Address', 'WhatsApp / Phone',
+      'Institution / School / University', 'City & State', 'Participation Track',
+      'Experience Level', 'Primary Committee Choice', 'Secondary Committee Choice',
+      'Portfolio Preferences', 'Prior Accolades & MUN Count', 'Resolution Drafting Experience',
+      'Research Dossier Link', 'Placard Accreditation Name', 'Motivation Statement',
+      'Accommodation Assistance', 'Emergency Contact', 'Dietary Preference',
+      'Participation Pass Tier', 'Payment UTR / Ref Number', 'Payment Screenshot Link',
+      'Code of Conduct Accord', 'Allocation Status', 'Allocated Committee',
+      'Allocated Portfolio', 'Submitter Handle', 'Form ID'
+    ]
+  },
+
+  UNSC: {
+    sheetName: 'UNSC',
+    headers: [
+      'Timestamp', 'Full Name', 'Email Address', 'WhatsApp / Phone',
+      'Institution / School / University', 'City & State', 'Participation Track',
+      'Experience Level', 'Primary Committee Choice', 'Secondary Committee Choice',
+      'Portfolio Preferences', 'Prior Accolades & MUN Count', 'Resolution Drafting Experience',
+      'Research Dossier Link', 'Placard Accreditation Name', 'Motivation Statement',
+      'Accommodation Assistance', 'Emergency Contact', 'Dietary Preference',
+      'Participation Pass Tier', 'Payment UTR / Ref Number', 'Payment Screenshot Link',
+      'Code of Conduct Accord', 'Allocation Status', 'Allocated Committee',
+      'Allocated Portfolio', 'Submitter Handle', 'Form ID'
+    ]
+  },
+
+  UNODC: {
+    sheetName: 'UNODC',
+    headers: [
+      'Timestamp', 'Full Name', 'Email Address', 'WhatsApp / Phone',
+      'Institution / School / University', 'City & State', 'Participation Track',
+      'Experience Level', 'Primary Committee Choice', 'Secondary Committee Choice',
+      'Portfolio Preferences', 'Prior Accolades & MUN Count', 'Resolution Drafting Experience',
+      'Research Dossier Link', 'Placard Accreditation Name', 'Motivation Statement',
+      'Accommodation Assistance', 'Emergency Contact', 'Dietary Preference',
+      'Participation Pass Tier', 'Payment UTR / Ref Number', 'Payment Screenshot Link',
+      'Code of Conduct Accord', 'Allocation Status', 'Allocated Committee',
+      'Allocated Portfolio', 'Submitter Handle', 'Form ID'
+    ]
+  },
+
+  // 1. ZEN DIPLOMACY MUN (MASTER DELEGATE REGISTRATIONS)
   ZEN_DIPLOMACY_MUN: {
     sheetName: 'ZEN DIPLOMACY MUN',
     headers: [
@@ -263,6 +324,10 @@ function resolveSchemaKey(raw) {
   if (!raw) return 'DONATIONS';
   var s = String(raw).toUpperCase().trim();
 
+  if (s === 'AIPPM' || s.indexOf('AIPPM') !== -1) return 'AIPPM';
+  if (s === 'EMI' || s.indexOf('EMI') !== -1) return 'EMI';
+  if (s === 'UNSC' || s.indexOf('UNSC') !== -1) return 'UNSC';
+  if (s === 'UNODC' || s.indexOf('UNODC') !== -1) return 'UNODC';
   if (s.indexOf('MATRIX') !== -1 || s.indexOf('PORTFOLIO') !== -1) return 'MATRIX_PORTFOLIOS';
   if (s.indexOf('SECRETARIAT') !== -1 || s.indexOf('SEC_APP') !== -1) return 'SECRETARIAT';
   if (s.indexOf('MUN') !== -1 || s.indexOf('DIPLOMACY') !== -1) return 'ZEN_DIPLOMACY_MUN';
@@ -396,6 +461,10 @@ function mapPayloadToRow(schemaKey, data) {
   var device = data.deviceInfo || data.deviceBrowserInfo || data.userAgent || 'Web Browser';
 
   switch (schemaKey) {
+    case 'AIPPM':
+    case 'EMI':
+    case 'UNSC':
+    case 'UNODC':
     case 'ZEN_DIPLOMACY_MUN':
       return [
         now,
@@ -790,9 +859,15 @@ function doPost(e) {
       } else if (
         formId.indexOf('zen-diplomacy') !== -1 ||
         payload.step1_fullname ||
-        payload.step3_primary_committee
+        payload.step3_primary_committee ||
+        payload.firstCommitteeChoice
       ) {
-        schemaKey = 'ZEN_DIPLOMACY_MUN';
+        var commChoice = String(payload.step3_primary_committee || payload.firstCommitteeChoice || rawTab).toUpperCase();
+        if (commChoice.indexOf('AIPPM') !== -1) schemaKey = 'AIPPM';
+        else if (commChoice.indexOf('EMI') !== -1) schemaKey = 'EMI';
+        else if (commChoice.indexOf('UNSC') !== -1) schemaKey = 'UNSC';
+        else if (commChoice.indexOf('UNODC') !== -1) schemaKey = 'UNODC';
+        else schemaKey = 'ZEN_DIPLOMACY_MUN';
       }
     }
 
@@ -842,6 +917,28 @@ function doPost(e) {
     }
 
     sheet.appendRow(row);
+
+    // Dual-log: If delegate registered into specific committee tab (AIPPM/EMI/UNSC/UNODC), also record in master ZEN DIPLOMACY MUN
+    if (schemaKey === 'AIPPM' || schemaKey === 'EMI' || schemaKey === 'UNSC' || schemaKey === 'UNODC') {
+      try {
+        var masterSheet = getOrCreateSheet(TAB_SCHEMAS.ZEN_DIPLOMACY_MUN);
+        masterSheet.appendRow(row);
+      } catch (_) {}
+    } else if (schemaKey === 'ZEN_DIPLOMACY_MUN') {
+      // If submitted directly with target ZEN_DIPLOMACY_MUN, also mirror into the specific committee tab
+      var commChoice2 = String(payload.step3_primary_committee || payload.firstCommitteeChoice || '').toUpperCase();
+      var cKey = null;
+      if (commChoice2.indexOf('AIPPM') !== -1) cKey = 'AIPPM';
+      else if (commChoice2.indexOf('EMI') !== -1) cKey = 'EMI';
+      else if (commChoice2.indexOf('UNSC') !== -1) cKey = 'UNSC';
+      else if (commChoice2.indexOf('UNODC') !== -1) cKey = 'UNODC';
+      if (cKey && TAB_SCHEMAS[cKey]) {
+        try {
+          var cSheet = getOrCreateSheet(TAB_SCHEMAS[cKey]);
+          cSheet.appendRow(row);
+        } catch (_) {}
+      }
+    }
 
     return ContentService.createTextOutput(JSON.stringify({
       status: 'SUCCESS',

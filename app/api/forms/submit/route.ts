@@ -59,7 +59,17 @@ export async function POST(req: NextRequest) {
     const isSec = formId?.toLowerCase().includes('secretariat') || formSlug?.toLowerCase().includes('secretariat');
     const isMun = formId?.toLowerCase().includes('diplomacy') || formId?.toLowerCase().includes('mun') || formSlug?.toLowerCase().includes('diplomacy');
 
-    const targetTab = body.targetTab || body.sheetTab || (isSec ? 'Secretariat Applications' : (isMun ? 'ZEN DIPLOMACY MUN' : (formSlug ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS')));
+    const rawData = data || {};
+    let committeeTab = '';
+    if (isMun) {
+      const commChoice = String(rawData.step3_primary_committee || rawData.firstCommitteeChoice || '').toUpperCase();
+      if (commChoice.includes('AIPPM')) committeeTab = 'AIPPM';
+      else if (commChoice.includes('EMI')) committeeTab = 'EMI';
+      else if (commChoice.includes('UNSC')) committeeTab = 'UNSC';
+      else if (commChoice.includes('UNODC')) committeeTab = 'UNODC';
+    }
+
+    const targetTab = body.targetTab || body.sheetTab || (isSec ? 'Secretariat Applications' : (committeeTab || (isMun ? 'ZEN DIPLOMACY MUN' : (formSlug ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS'))));
     const sheetTab = targetTab;
 
     const timestamp = submittedAt || new Date().toISOString();
@@ -76,7 +86,6 @@ export async function POST(req: NextRequest) {
     // 1. Save structured submission for web responses viewer
     saveStructuredSubmission(formId, structuredSub);
 
-    const rawData = data || {};
     const ledgerEntry = {
       timestamp,
       action: 'add_row',

@@ -22,6 +22,10 @@ function appendToLocalLedger(entry: Record<string, any>) {
  */
 function mapTabToTarget(rawTab: string): string {
   const upper = (rawTab || '').toUpperCase().trim();
+  if (upper === 'AIPPM' || upper.includes('AIPPM')) return 'AIPPM';
+  if (upper === 'EMI' || upper.includes('EMI')) return 'EMI';
+  if (upper === 'UNSC' || upper.includes('UNSC')) return 'UNSC';
+  if (upper === 'UNODC' || upper.includes('UNODC')) return 'UNODC';
   if (upper.includes('MATRIX') || upper.includes('PORTFOLIO')) return 'Matrix Portfolios';
   if (upper.includes('EVENT') || upper.includes('PASS') || upper.includes('TICKET')) return 'Event Registrations';
   if (upper.includes('SECRETARIAT') || upper.includes('SEC_APP')) return 'Secretariat Applications';

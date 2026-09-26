@@ -759,7 +759,17 @@ export default function ZenFormPublicPage() {
       // Server-side robust dispatch to Google Sheets webhook
       const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
       const isSecForm = form.id.includes('secretariat') || form.slug?.includes('secretariat');
-      const targetSheetTab = form.googleSheetsConfig?.sheetTab || (isSecForm ? 'Secretariat Applications' : 'ZEN DIPLOMACY MUN');
+      
+      let committeeTab = '';
+      if (!isSecForm && isMunForm) {
+        const commChoice = String(formData['step3_primary_committee'] || '').toUpperCase();
+        if (commChoice.includes('AIPPM')) committeeTab = 'AIPPM';
+        else if (commChoice.includes('EMI')) committeeTab = 'EMI';
+        else if (commChoice.includes('UNSC')) committeeTab = 'UNSC';
+        else if (commChoice.includes('UNODC')) committeeTab = 'UNODC';
+      }
+
+      const targetSheetTab = form.googleSheetsConfig?.sheetTab || (isSecForm ? 'Secretariat Applications' : (committeeTab || 'ZEN DIPLOMACY MUN'));
 
       try {
         await fetch('/api/forms/submit', {
