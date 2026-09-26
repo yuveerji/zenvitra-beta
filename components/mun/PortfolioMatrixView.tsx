@@ -105,12 +105,16 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
       const res = await fetch('/api/matrix/sync', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        if (data.success && Array.isArray(data.portfolios) && data.portfolios.length > 0) {
+        // Safety: only accept if API returned at least 200 portfolios (canonical is 240)
+        // This prevents stale/partial Google Sheets data from replacing the full matrix
+        if (data.success && Array.isArray(data.portfolios) && data.portfolios.length >= 200) {
           setMatrixData(data.portfolios);
           if (data.spreadsheetUrl) setSpreadsheetUrl(data.spreadsheetUrl);
           if (data.syncedWithGoogleSheets !== undefined) {
             setIsSheetsConnected(Boolean(data.syncedWithGoogleSheets));
           }
+        } else {
+          console.warn('[MATRIX-FETCH-WARN] API returned only', data.portfolios?.length, 'portfolios — keeping canonical 240');
         }
       }
     } catch (err) {

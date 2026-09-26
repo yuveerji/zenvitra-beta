@@ -72,9 +72,35 @@ export async function GET(req: NextRequest) {
         if (res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data.portfolios) && data.portfolios.length > 0) {
-            portfolios = data.portfolios;
+            const sheetPortfolios = data.portfolios as MatrixPortfolioItem[];
             syncedWithGoogleSheets = true;
             spreadsheetUrl = data.spreadsheetUrl || '';
+
+            // If sheets has all 240+, use it directly; otherwise merge onto canonical 240
+            if (sheetPortfolios.length >= DEFAULT_PORTFOLIOS.length) {
+              portfolios = sheetPortfolios;
+            } else {
+              // Build lookup from sheet data by id or title for fast merging
+              const sheetMap = new Map<string, MatrixPortfolioItem>();
+              for (const sp of sheetPortfolios) {
+                if (sp.id) sheetMap.set(sp.id, sp);
+                if (sp.title) sheetMap.set(sp.title.toLowerCase(), sp);
+              }
+              // Merge: overlay sheet statuses onto canonical 240 baseline
+              portfolios = DEFAULT_PORTFOLIOS.map((canonical) => {
+                const match = sheetMap.get(canonical.id) || sheetMap.get(canonical.title.toLowerCase());
+                if (match) {
+                  return {
+                    ...canonical,
+                    status: match.status || canonical.status,
+                    allocatedTo: match.allocatedTo || canonical.allocatedTo,
+                    allocatedEmail: match.allocatedEmail || canonical.allocatedEmail,
+                    waitingCount: match.waitingCount ?? canonical.waitingCount,
+                  };
+                }
+                return canonical;
+              });
+            }
             writeLocalPortfolios(portfolios);
           }
         }
