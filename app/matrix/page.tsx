@@ -46,7 +46,7 @@ export default function MatrixPage() {
             </h1>
             
             <p className="text-neutral-300 text-sm sm:text-base font-light leading-relaxed">
-              Explore open ministerial portfolios, member states, and stakeholder seats across <strong>AIPPM</strong>, <strong>Education Ministry of India (EMI)</strong>, <strong>UNSC</strong>, and <strong>UNODC</strong>. Track allotments, submit delegate preferences, and view live status updates.
+              Explore open ministerial portfolios, member states, and stakeholder seats across <strong>AIPPM</strong>, <strong>Education Ministry of India (EMI)</strong>, <strong>UNSC</strong>, and <strong>ECOSOC</strong>. Track allotments, submit delegate preferences, and view live status updates.
             </p>
           </div>
         </div>

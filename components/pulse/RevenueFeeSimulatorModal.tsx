@@ -7,6 +7,7 @@ import {
   Coins, 
   TrendingUp, 
   ShieldCheck, 
+  ShieldAlert,
   Zap, 
   DollarSign, 
   ArrowRight, 
@@ -16,6 +17,7 @@ import {
   Users
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface RevenueFeeSimulatorModalProps {
   isOpen: boolean;
@@ -24,6 +26,17 @@ interface RevenueFeeSimulatorModalProps {
 
 export function RevenueFeeSimulatorModal({ isOpen, onClose }: RevenueFeeSimulatorModalProps) {
   const { civicPointsBalance } = useZenPulse();
+  const { user, profile } = useAuth();
+
+  const isEventManager = Boolean(
+    profile?.role === 'admin' || 
+    (profile?.role as string) === 'organizer' || 
+    (profile?.role as string) === 'secretariat' || 
+    profile?.email?.toLowerCase() === 'founder@zenvitra.org' || 
+    (profile as any)?.badge === 'ORGANIZER' || 
+    (profile as any)?.badge === 'FOUNDER' ||
+    (typeof window !== 'undefined' && localStorage.getItem('zenvitra_mock_role') === 'organizer')
+  );
 
   /* Simulator States */
   const [ticketPrice, setTicketPrice] = useState(1500);
@@ -33,13 +46,42 @@ export function RevenueFeeSimulatorModal({ isOpen, onClose }: RevenueFeeSimulato
 
   if (!isOpen) return null;
 
+  if (!isEventManager) {
+    return (
+      <div 
+        className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-2xl"
+        onClick={onClose}
+      >
+        <div 
+          className="relative w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#0b0d13] border border-amber-500/30 text-center space-y-5 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-display font-bold text-white">Organizer Restricted Tool</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed font-sans">
+              The Dual-Sided Settlement Simulator is accessible only to verified <strong className="text-white">Event Host &amp; Secretariat</strong> accounts. Register or switch to an organizer profile to run event escrow and payout simulations.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-semibold transition cursor-pointer"
+          >
+            Acknowledge &amp; Return
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   /* Fee Calculations */
   const grossGMV = ticketPrice * ticketCount;
 
-  // Attendee Take-Rate (Reduced to 0.5% + Rs 19 for transparent civic pricing)
-  const attendeeFeeRate = attendeeTier === 'elite' ? 0 : attendeeTier === 'pass' ? 0.0025 : 0.005;
-  const attendeeFixedFee = attendeeTier === 'elite' ? 0 : attendeeTier === 'pass' ? 10 : 19;
-  const totalAttendeeFee = (grossGMV * attendeeFeeRate) + (ticketCount * attendeeFixedFee);
+  // Attendee Platform Fee: Standard ₹9 flat, Pulse Pass ₹5 flat, Pulse Elite ₹0 (Waived)
+  const attendeeFixedFee = attendeeTier === 'elite' ? 0 : attendeeTier === 'pass' ? 5 : 9;
+  const totalAttendeeFee = ticketCount * attendeeFixedFee;
 
   // Host Take-Rate
   const hostFeeRate = hostTier === 'institutional' ? 0 : hostTier === 'pro' ? 0.0075 : 0.015;
@@ -130,9 +172,9 @@ export function RevenueFeeSimulatorModal({ isOpen, onClose }: RevenueFeeSimulato
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: 'standard', label: 'Standard (0.5% + ₹19)' },
-                  { id: 'pass', label: 'Pulse Pass (0.25% + ₹10)' },
-                  { id: 'elite', label: 'Pulse Elite (0%)' },
+                  { id: 'standard', label: 'Standard (Flat ₹9)' },
+                  { id: 'pass', label: 'Pulse Pass (Flat ₹5)' },
+                  { id: 'elite', label: 'Pulse Elite (₹0)' },
                 ].map((tier) => (
                   <button
                     key={tier.id}

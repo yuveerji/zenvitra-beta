@@ -132,10 +132,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      const activeBase = process.env.NEXTAUTH_URL || process.env.AUTH_URL || baseUrl;
-      if (url.startsWith('/')) return `${activeBase}${url}`;
-      if (new URL(url).origin === new URL(activeBase).origin) return url;
-      return `${activeBase}/pulse`;
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      try {
+        if (new URL(url).origin === new URL(baseUrl).origin) return url;
+      } catch (_) {}
+      return `${baseUrl}/pulse`;
     },
     async jwt({ token, user }) {
       if (user) {

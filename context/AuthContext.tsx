@@ -23,7 +23,7 @@ interface AuthContextType {
   
   // Auth Actions
   signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: any | null }>;
-  signInWithEmail: (email: string, password?: string) => Promise<{ error: any | null }>;
+  signInWithEmail: (email: string, password?: string, options?: { skipSession?: boolean }) => Promise<{ error: any | null }>;
   signUpWithEmail: (email: string, password: string, displayName: string, username: string, role?: UserRole) => Promise<{ error: any | null }>;
   signOut: () => Promise<void>;
   exitMockMode: () => Promise<void>;
@@ -298,7 +298,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (_) {}
     }, 4000);
 
-    // 2. Check live Supabase session
+    // 2. Check NextAuth session (for Google/GitHub OAuth logins)
+    if (typeof window !== 'undefined') {
+      fetch('/api/auth/session')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!mounted) return;
+          if (data?.user?.email) {
+            const stored = localStorage.getItem('zenvitra_session_user');
+            if (!stored) {
+              const email = data.user.email;
+              const cleanUsername = (data.user.username || email.split('@')[0] || 'user')
+                .toLowerCase()
+                .replace(/[^a-zA-Z0-9_]/g, '');
+              const isFounder = cleanUsername === 'yuveer' || email.includes('founder@zenvitra');
+              const oAuthProf: UserProfile = {
+                id: (data.user as any).id || (isFounder ? 'zen_founder_root' : `zen_user_${cleanUsername}`),
+                username: cleanUsername,
+                display_name: data.user.name || cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
+                email: email,
+                role: isFounder ? 'admin' : ((data.user as any).role || 'delegate'),
+                avatar_url: data.user.image || undefined,
+                impact_score: isFounder ? 9999 : 100,
+                followers_count: isFounder ? 5400 : 0,
+                following_count: isFounder ? 24 : 0,
+                is_verified: true,
+                is_onboarded: true,
+                created_at: new Date().toISOString(),
+              };
+              localStorage.setItem('zenvitra_session_user', JSON.stringify(oAuthProf));
+              recordSavedSession(oAuthProf);
+              setUser({ id: oAuthProf.id, email: oAuthProf.email });
+              setProfile(oAuthProf);
+              setIsLoading(false);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    // 3. Check live Supabase session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!mounted) return;
       if (currentSession?.user) {
@@ -381,7 +420,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Email / Username Password / Magic Link Sign In
-  const signInWithEmail = async (email: string, password?: string) => {
+  const signInWithEmail = async (email: string, password?: string, options?: { skipSession?: boolean }) => {
     setError(null);
     const cleanIdentifier = email.trim().replace(/^@/, '').toLowerCase();
 
@@ -410,6 +449,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const err = new Error('Invalid founder credentials. Access denied.');
         setError(err.message);
         return { error: err };
+      }
+
+      if (options?.skipSession) {
+        return { error: null };
       }
 
       const founderProf: UserProfile = {
@@ -453,6 +496,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (err || !data?.user) {
           // Standard local user fallback (Real user session, NOT mock mode)
+          if (options?.skipSession) {
+            return { error: null };
+          }
+
           const username = isEmailFormat ? cleanIdentifier.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') : cleanIdentifier;
           const normalUserProf: UserProfile = {
             id: `zen_user_${username}`,
@@ -474,6 +521,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser({ id: normalUserProf.id, email: normalUserProf.email });
           setProfile(normalUserProf);
           setIsLoading(false);
+          return { error: null };
+        }
+
+        if (options?.skipSession) {
           return { error: null };
         }
 

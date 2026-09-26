@@ -19,33 +19,46 @@ export const DEFAULT_ZEN_FORMS: ZenForm[] = [
 ];
 
 export function getPublicForms(): ZenForm[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return DEFAULT_ZEN_FORMS;
   try {
     const raw = localStorage.getItem(LS_FORMS_KEY);
-    if (!raw) return [];
-    const parsed: ZenForm[] = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      // Filter out any default/seeded forms from user's recent forms ledger
-      const cleaned = parsed.filter(
-        (f) =>
-          f &&
-          f.id !== 'zen-diplomacy-2026-registration' &&
-          f.slug !== 'zen-diplomacy-2026' &&
-          f.id !== 'zen-secretariat-2026-application' &&
-          f.slug !== 'zen-secretariat-2026' &&
-          f.id !== 'form_jharokha_delegate_2026' &&
-          f.id !== 'form_horizon_eb_2026' &&
-          !f.slug?.includes('jharokha') &&
-          !f.slug?.includes('horizon')
-      );
-      if (cleaned.length !== parsed.length) {
-        localStorage.setItem(LS_FORMS_KEY, JSON.stringify(cleaned));
-      }
-      return cleaned;
+    let parsed: ZenForm[] = [];
+    if (raw) {
+      try {
+        const json = JSON.parse(raw);
+        if (Array.isArray(json)) parsed = json;
+      } catch {}
     }
-    return [];
+
+    // Filter out old test forms from past sessions if any
+    const cleaned = parsed.filter(
+      (f) =>
+        f &&
+        f.id !== 'form_jharokha_delegate_2026' &&
+        f.id !== 'form_horizon_eb_2026' &&
+        !f.slug?.includes('jharokha') &&
+        !f.slug?.includes('horizon')
+    );
+
+    // Ensure Secretariat and Diplomacy are available for editing and management
+    const hasDiplomacy = cleaned.some(
+      (f) => f.id === 'zen-diplomacy-2026-registration' || f.slug === 'zen-diplomacy-2026'
+    );
+    const hasSecretariat = cleaned.some(
+      (f) => f.id === 'zen-secretariat-2026-application' || f.slug === 'zen-secretariat-2026' || f.id === 'secretariat'
+    );
+
+    const merged = [...cleaned];
+    if (!hasDiplomacy) {
+      merged.unshift(ZEN_DIPLOMACY_2026_FORM_TEMPLATE);
+    }
+    if (!hasSecretariat) {
+      merged.unshift(ZEN_SECRETARIAT_2026_FORM_TEMPLATE);
+    }
+
+    return merged;
   } catch {
-    return [];
+    return DEFAULT_ZEN_FORMS;
   }
 }
 
@@ -69,26 +82,42 @@ export function generateUniqueSlug(baseSlug: string, currentFormId?: string): st
 }
 
 export function getZenFormById(idOrSlug: string): ZenForm | null {
-  if (idOrSlug === 'zen-diplomacy-2026' || idOrSlug === 'zen-diplomacy-2026-registration') {
+  const clean = idOrSlug.trim().toLowerCase();
+  const forms = getPublicForms();
+
+  // 1. Check user-configured / saved forms first (so any changes made in builder take immediate effect!)
+  const found = forms.find(
+    (f) => f.id.toLowerCase() === clean || f.slug?.toLowerCase() === clean
+  );
+  if (found) {
+    return found;
+  }
+
+  // 2. Default fallbacks if not yet initialized in storage
+  if (clean === 'zen-diplomacy-2026' || clean === 'zen-diplomacy-2026-registration') {
     return ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
   }
   if (
-    idOrSlug === 'zen-secretariat-2026' ||
-    idOrSlug === 'zen-secretariat-2026-application' ||
-    idOrSlug === 'secretariat'
+    clean === 'zen-secretariat-2026' ||
+    clean === 'zen-secretariat-2026-application' ||
+    clean === 'secretariat'
   ) {
     return ZEN_SECRETARIAT_2026_FORM_TEMPLATE;
   }
-  const forms = getPublicForms();
-  const found = forms.find((f) => f.id === idOrSlug || f.slug === idOrSlug);
-  if (found) {
-    if (found.id === 'zen-diplomacy-2026-registration' || found.slug === 'zen-diplomacy-2026') {
-      return ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
-    }
-    if (found.id === 'zen-secretariat-2026-application' || found.slug === 'zen-secretariat-2026') {
-      return ZEN_SECRETARIAT_2026_FORM_TEMPLATE;
-    }
-    return found;
+
+  return null;
+}
+
+export function resetZenFormToDefault(idOrSlug: string): ZenForm | null {
+  const clean = idOrSlug.trim().toLowerCase();
+  let defaultForm: ZenForm | null = null;
+  if (clean === 'zen-diplomacy-2026' || clean === 'zen-diplomacy-2026-registration') {
+    defaultForm = ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
+  } else if (clean === 'zen-secretariat-2026' || clean === 'zen-secretariat-2026-application' || clean === 'secretariat') {
+    defaultForm = ZEN_SECRETARIAT_2026_FORM_TEMPLATE;
+  }
+  if (defaultForm) {
+    return saveZenForm(defaultForm);
   }
   return null;
 }
@@ -219,10 +248,20 @@ export function clearFormSubmissions(formId: string): boolean {
   }
 }
 
+export interface RecordSubmissionOptions {
+  skipApiDispatch?: boolean;
+  formSlug?: string;
+  formTitle?: string;
+  sheetTab?: string;
+  targetTab?: string;
+  webhookUrl?: string;
+}
+
 export async function recordZenFormSubmission(
   formId: string, 
   data: Record<string, any>, 
-  submitterHandle?: string
+  submitterHandle?: string,
+  options?: RecordSubmissionOptions
 ): Promise<ZenFormSubmission> {
   const newSub: ZenFormSubmission = {
     id: `sub_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -249,29 +288,35 @@ export async function recordZenFormSubmission(
     }
   }
 
-  // 2. Dispatch to server ledger API (and forward to Google Sheets if connected)
-  try {
-    const sheetsConfig = getZenFormsSheetsConfig();
-    const currentForm = getZenFormById(formId);
-    const formWebhook = currentForm?.googleSheetsConfig?.webhookUrl;
-    const customSheetUrl = currentForm?.googleSheetsConfig?.sheetUrl || sheetsConfig?.defaultSheetUrl;
+  // 2. Dispatch to server ledger API only if caller did not skip it
+  if (!options?.skipApiDispatch) {
+    try {
+      const sheetsConfig = getZenFormsSheetsConfig();
+      const currentForm = getZenFormById(formId);
+      const formWebhook = options?.webhookUrl || currentForm?.googleSheetsConfig?.webhookUrl;
+      const customSheetUrl = currentForm?.googleSheetsConfig?.sheetUrl || sheetsConfig?.defaultSheetUrl;
 
-    fetch('/api/forms/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        formId,
-        submissionId: newSub.id,
-        submittedAt: newSub.submittedAt,
-        data,
-        submitterHandle,
-        googleSheetsConnected: Boolean(sheetsConfig?.isConnected || formWebhook),
-        googleUserEmail: sheetsConfig?.userEmail,
-        customSheetUrl,
-        webhookUrl: formWebhook,
-      }),
-    }).catch(() => {});
-  } catch {}
+      fetch('/api/forms/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formId,
+          formSlug: options?.formSlug || currentForm?.slug,
+          formTitle: options?.formTitle || currentForm?.title,
+          submissionId: newSub.id,
+          submittedAt: newSub.submittedAt,
+          data,
+          submitterHandle,
+          sheetTab: options?.sheetTab || options?.targetTab || currentForm?.googleSheetsConfig?.sheetTab,
+          targetTab: options?.targetTab || options?.sheetTab || currentForm?.googleSheetsConfig?.sheetTab,
+          googleSheetsConnected: Boolean(sheetsConfig?.isConnected || formWebhook),
+          googleUserEmail: sheetsConfig?.userEmail,
+          customSheetUrl,
+          webhookUrl: formWebhook,
+        }),
+      }).catch(() => {});
+    } catch {}
+  }
 
   return newSub;
 }

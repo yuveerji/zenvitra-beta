@@ -68,6 +68,25 @@ export default function ZenDiplomacyBrochurePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewMode]);
 
+  // Sync slide changes to iframe page scroll
+  useEffect(() => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      try {
+        const targetPage = iframeRef.current.contentWindow.document.getElementById(`page-${currentSlide + 1}`);
+        if (targetPage) {
+          targetPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (e) {
+        // Fallback: hash navigation
+        try {
+          if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.location.hash = `#page-${currentSlide + 1}`;
+          }
+        } catch (_) {}
+      }
+    }
+  }, [currentSlide]);
+
   return (
     <div className="min-h-screen bg-[#030407] text-white selection:bg-[#e2f952] selection:text-black">
       {/* ── TOP FLOATING CONTROL BAR ── */}

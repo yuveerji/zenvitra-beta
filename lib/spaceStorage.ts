@@ -116,7 +116,7 @@ export const DEFAULT_PROFILES: Record<string, ZenSpaceProfile> = {
         type: 'press',
         title: 'Zenvitra Unveils Sovereign Protocol v2.0',
         subtitle: 'Geneva Digital Gazette • Sept 2026',
-        url: '/press',
+        url: '/news',
         clicks: 0,
         bentoSpan: '1',
         metadata: {

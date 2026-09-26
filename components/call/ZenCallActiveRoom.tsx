@@ -1931,7 +1931,7 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
               {[
                 { id: 'zen-unsc-chamber', name: 'UN Security Council (UNSC) Plenary', mode: 'COMMITTEE', icon: '🇺🇳' },
                 { id: 'zen-diplomacy-lounge', name: 'High-Level Bilateral Lounge', mode: 'CALL', icon: '🤝' },
-                { id: 'zen-press-briefing', name: 'International Press Briefing Studio', mode: 'EVENT', icon: '🎙️' },
+                { id: 'zen-crisis-dais', name: 'Crisis & Emergency Dais Chamber', mode: 'COMMITTEE', icon: '⚡' },
                 { id: 'zen-climate-working-group', name: 'Youth Climate Action Taskforce', mode: 'GROUP', icon: '🌱' },
                 { id: 'zen-ai-governance', name: 'Global AI Ethics Assembly', mode: 'ROOM', icon: '🤖' }
               ].map((room) => (

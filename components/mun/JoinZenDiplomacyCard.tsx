@@ -23,7 +23,56 @@ import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 import { registerDelegate, DEFAULT_MATRIX_URL } from '@/lib/zenDiplomacyService';
 
 const LS_MATRIX_URL = 'zenvitra_zendiplomacy_matrix_url';
-const LS_REGISTRATIONS = 'zenvitra_zendiplomacy_registrations_v1';
+// Reusable localized subcard with smooth mouse cursor spotlight & border glow
+export function SpotlightSubcard({
+  children,
+  className = '',
+  glowColor = 'rgba(6, 182, 212, 0.18)',
+  borderColor = 'rgba(34, 211, 238, 0.45)',
+}: {
+  children: React.ReactNode;
+  className?: string;
+  glowColor?: string;
+  borderColor?: string;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`relative overflow-hidden transition-all duration-300 ${className}`}
+    >
+      <div
+        className="pointer-events-none absolute -inset-px transition-opacity duration-300 z-0"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          background: `radial-gradient(220px circle at ${pos.x}px ${pos.y}px, ${glowColor}, transparent 70%)`,
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300 z-0"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          border: `1.5px solid ${borderColor}`,
+          maskImage: `radial-gradient(160px circle at ${pos.x}px ${pos.y}px, black 30%, transparent 80%)`,
+          WebkitMaskImage: `radial-gradient(160px circle at ${pos.x}px ${pos.y}px, black 30%, transparent 80%)`,
+        }}
+      />
+      <div className="relative z-10 w-full h-full">{children}</div>
+    </div>
+  );
+}
 
 export function JoinZenDiplomacyCard() {
   const [matrixUrl, setMatrixUrl] = useState(DEFAULT_MATRIX_URL);
@@ -153,28 +202,8 @@ export function JoinZenDiplomacyCard() {
           rotateY,
           transformStyle: 'preserve-3d',
         }}
-        className="group relative rounded-3xl border border-cyan-500/35 overflow-hidden shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.15)] hover:shadow-[0_35px_90px_rgba(0,0,0,0.95),0_0_75px_rgba(6,182,212,0.25)] bg-[#050711] transition-shadow duration-300"
+        className="group relative rounded-3xl border border-cyan-500/35 overflow-hidden shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.15)] hover:shadow-[0_35px_90px_rgba(0,0,0,0.95),0_0_75px_rgba(6,182,212,0.22)] bg-[#050711] transition-shadow duration-300"
       >
-        {/* ── DYNAMIC CURSOR LIGHT SPOTLIGHT SHEEN ── */}
-        <motion.div
-          className="pointer-events-none absolute -inset-px transition-opacity duration-300 z-10"
-          style={{
-            opacity: isHovered ? 1 : 0,
-            background: cursorSpotlightBg,
-          }}
-        />
-
-        {/* ── DYNAMIC BORDER HIGHLIGHT FLARE ── */}
-        <motion.div
-          className="pointer-events-none absolute inset-0 rounded-3xl z-10 transition-opacity duration-300"
-          style={{
-            opacity: isHovered ? 0.9 : 0,
-            border: '1.5px solid rgba(34, 211, 238, 0.75)',
-            maskImage: borderMask,
-            WebkitMaskImage: borderMask,
-          }}
-        />
-        
         {/* ── TOP: ULTRA-CRISP RECREATED CODE COVER BANNER ── */}
         <div className="relative group overflow-hidden border-b border-white/10">
           <ZenDiplomacyCover variant="compact" showBadge={true} interactive={true} />
@@ -222,7 +251,11 @@ export function JoinZenDiplomacyCard() {
             </div>
 
             {/* Live Countdown Clock */}
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col items-start sm:items-end justify-center space-y-2 shrink-0">
+            <SpotlightSubcard
+              glowColor="rgba(34, 211, 238, 0.22)"
+              borderColor="rgba(34, 211, 238, 0.5)"
+              className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col items-start sm:items-end justify-center space-y-2 shrink-0"
+            >
               <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
                 <Clock className="w-3 h-3 text-cyan-400" />
                 CONFERENCE COMMENCES IN
@@ -248,14 +281,14 @@ export function JoinZenDiplomacyCard() {
                   <span className="text-[9px] block text-neutral-400 font-normal">SEC</span>
                 </div>
               </div>
-            </div>
+            </SpotlightSubcard>
           </div>
 
           {/* Committees Grid Preview */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-widest text-neutral-400 font-semibold">
-                4 CONVENED COMMITTEES &bull; AGENDAS REVEALING SOON
+                4 CONVENED COMMITTEES &bull; ALL 240 PORTFOLIOS VACANT
               </span>
               <span className="text-[11px] font-mono text-cyan-400">
                 Organizer: <strong className="text-white">yuveer (@yuveer)</strong>
@@ -263,78 +296,125 @@ export function JoinZenDiplomacyCard() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-2xl bg-amber-500/[0.04] border border-amber-500/20 space-y-1 hover:border-amber-500/40 transition">
-                <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider block">
-                  AIPPM
-                </span>
-                <h4 className="font-display font-bold text-sm text-white">
-                  All India Political Parties Meet
-                </h4>
-                <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
-                  National parliamentary council &bull; Agenda revealing soon
-                </p>
-              </div>
+              {/* AIPPM */}
+              <Link href="/matrix?committee=aippm" className="block group">
+                <SpotlightSubcard
+                  glowColor="rgba(245, 158, 11, 0.22)"
+                  borderColor="rgba(245, 158, 11, 0.55)"
+                  className="p-3.5 rounded-2xl bg-amber-500/[0.04] border border-amber-500/20 space-y-1 hover:border-amber-500/50 transition cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider block">
+                      AIPPM
+                    </span>
+                    <span className="text-[9px] font-mono text-amber-300/80 group-hover:text-amber-200">See Matrix &rarr;</span>
+                  </div>
+                  <h4 className="font-display font-bold text-sm text-white group-hover:text-amber-200 transition-colors">
+                    All India Political Parties Meet
+                  </h4>
+                  <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
+                    National parliamentary council &bull; 60 Portfolios Vacant
+                  </p>
+                </SpotlightSubcard>
+              </Link>
 
-              <div className="p-3.5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/20 space-y-1 hover:border-cyan-500/40 transition">
-                <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider block">
-                  EDU.MINISTRY
-                </span>
-                <h4 className="font-display font-bold text-sm text-white">
-                  Education Ministry of India
-                </h4>
-                <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
-                  National pedagogical overhaul &bull; Agenda revealing soon
-                </p>
-              </div>
+              {/* EMI */}
+              <Link href="/matrix?committee=emi" className="block group">
+                <SpotlightSubcard
+                  glowColor="rgba(6, 182, 212, 0.22)"
+                  borderColor="rgba(6, 182, 212, 0.55)"
+                  className="p-3.5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/20 space-y-1 hover:border-cyan-500/50 transition cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider block">
+                      EDU.MINISTRY
+                    </span>
+                    <span className="text-[9px] font-mono text-cyan-300/80 group-hover:text-cyan-200">See Matrix &rarr;</span>
+                  </div>
+                  <h4 className="font-display font-bold text-sm text-white group-hover:text-cyan-200 transition-colors">
+                    Education Ministry of India
+                  </h4>
+                  <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
+                    National pedagogical overhaul &bull; 60 Portfolios Vacant
+                  </p>
+                </SpotlightSubcard>
+              </Link>
 
-              <div className="p-3.5 rounded-2xl bg-purple-500/[0.04] border border-purple-500/20 space-y-1 hover:border-purple-500/40 transition">
-                <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider block">
-                  UNESCO
-                </span>
-                <h4 className="font-display font-bold text-sm text-white">
-                  UN Educational, Scientific &amp; Cultural
-                </h4>
-                <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
-                  Heritage, science ethics &amp; AI &bull; Agenda revealing soon
-                </p>
-              </div>
+              {/* ECOSOC */}
+              <Link href="/matrix?committee=ecosoc" className="block group">
+                <SpotlightSubcard
+                  glowColor="rgba(168, 85, 247, 0.22)"
+                  borderColor="rgba(168, 85, 247, 0.55)"
+                  className="p-3.5 rounded-2xl bg-purple-500/[0.04] border border-purple-500/20 space-y-1 hover:border-purple-500/50 transition cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider block">
+                      ECOSOC
+                    </span>
+                    <span className="text-[9px] font-mono text-purple-300/80 group-hover:text-purple-200">See Matrix &rarr;</span>
+                  </div>
+                  <h4 className="font-display font-bold text-sm text-white group-hover:text-purple-200 transition-colors">
+                    Economic &amp; Social Council
+                  </h4>
+                  <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
+                    Global fiscal architecture &bull; 60 Portfolios Vacant
+                  </p>
+                </SpotlightSubcard>
+              </Link>
 
-              <div className="p-3.5 rounded-2xl bg-rose-500/[0.04] border border-rose-500/20 space-y-1 hover:border-rose-500/40 transition">
-                <span className="text-[10px] font-mono font-bold text-rose-400 uppercase tracking-wider block">
-                  UNSC
-                </span>
-                <h4 className="font-display font-bold text-sm text-white">
-                  UN Security Council
-                </h4>
-                <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
-                  International crisis &amp; security &bull; Agenda revealing soon
-                </p>
-              </div>
+              {/* UNSC */}
+              <Link href="/matrix?committee=unsc" className="block group">
+                <SpotlightSubcard
+                  glowColor="rgba(244, 63, 94, 0.22)"
+                  borderColor="rgba(244, 63, 94, 0.55)"
+                  className="p-3.5 rounded-2xl bg-rose-500/[0.04] border border-rose-500/20 space-y-1 hover:border-rose-500/50 transition cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-rose-400 uppercase tracking-wider block">
+                      UNSC
+                    </span>
+                    <span className="text-[9px] font-mono text-rose-300/80 group-hover:text-rose-200">See Matrix &rarr;</span>
+                  </div>
+                  <h4 className="font-display font-bold text-sm text-white group-hover:text-rose-200 transition-colors">
+                    UN Security Council
+                  </h4>
+                  <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">
+                    Arctic conflict &amp; peace &bull; 60 Portfolios Vacant
+                  </p>
+                </SpotlightSubcard>
+              </Link>
             </div>
           </div>
 
           {/* Action Row */}
           <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsRegisterOpen(true)}
+              <Link
+                href="/forms/zen-diplomacy-2026"
                 className="px-6 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(255,255,255,0.25)] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-black" />
                 <span>Join as Delegate</span>
-              </button>
+              </Link>
+
+              <Link
+                href="/matrix"
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer hover:scale-105"
+                title="View 240-seat live portfolio matrix"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                <span>View 240-Seat Matrix</span>
+              </Link>
 
               <a
                 href={matrixUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer hover:scale-105"
-                title="View live country portfolio matrix"
+                className="px-3.5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 font-mono text-xs transition flex items-center gap-1.5 cursor-pointer"
+                title="Open Google Sheets Ledger"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                <span>Portfolio Matrix Sheet</span>
-                <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+                <span>Google Sheet</span>
+                <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
               </a>
             </div>
 

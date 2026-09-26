@@ -19,6 +19,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { useZenPass } from '@/context/ZenPassContext';
+import { useAuth } from '@/context/AuthContext';
 import { ZenPassTier } from '@/types/zenpass';
 import { ZenEvent } from '@/types/events';
 
@@ -96,7 +97,12 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
   const [attendeeAge, setAttendeeAge] = useState<number>(17);
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
 
+  const { user, profile } = useAuth();
+
   if (!isOpen) return null;
+
+  const isPulseElite = (profile as any)?.isElite || profile?.role === 'admin' || (profile as any)?.membershipTier === 'elite';
+  const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || (typeof window !== 'undefined' && localStorage.getItem('zenvitra_pulse_pass') === 'active'));
 
   const finalPortfolio = portfolioPreference === 'CUSTOM'
     ? (customPortfolio.trim() || 'General Delegate')
@@ -104,8 +110,11 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
 
   const totalBasePrice = selectedTier.price * quantity;
   
-  // Tax formula:
-  // - 0.5% + 19rs protocol gateway tax
+  // Platform Fee formula:
+  // - Standard: ₹9 flat
+  // - Pulse Pass: ₹5 flat
+  // - Pulse Elite: ₹0 (Waived)
+  // GST rules:
   // - Age <= 18: 0% GST (Exempt)
   // - Age 19 to 21 OR College Student (> 18): 5% GST (Concessional)
   // - Age > 21 Non-College Adult: 12% GST (Statutory)
@@ -124,9 +133,9 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
       : '5% Concessional GST (Ages 19-21 / College)';
   }
 
-  const transactionTax = totalBasePrice > 0 ? Math.round(((totalBasePrice * 0.005) + 19) * 100) / 100 : 0;
+  const platformFee = totalBasePrice > 0 ? (isPulseElite ? 0 : isPulsePass ? 5 : 9) : 0;
   const gstAmount = totalBasePrice > 0 ? Math.round((totalBasePrice * gstRate) * 100) / 100 : 0;
-  const finalPayable = Math.round((totalBasePrice + transactionTax + gstAmount) * 100) / 100;
+  const finalPayable = Math.round((totalBasePrice + platformFee + gstAmount) * 100) / 100;
 
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault();
@@ -441,8 +450,8 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                 <span>₹{totalBasePrice.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between text-neutral-400">
-                <span>Protocol &amp; Gateway Tax (0.5% + ₹19)</span>
-                <span className="text-amber-300 font-semibold">+₹{transactionTax.toFixed(2)}</span>
+                <span>Platform Fee {isPulseElite ? '(Pulse Elite: ₹0)' : isPulsePass ? '(Pulse Pass: ₹5)' : '(Flat ₹9)'}</span>
+                <span className="text-amber-300 font-semibold">{platformFee === 0 ? '₹0.00 (Waived)' : `+₹${platformFee.toFixed(2)}`}</span>
               </div>
               <div className="flex items-center justify-between text-neutral-400">
                 <span>

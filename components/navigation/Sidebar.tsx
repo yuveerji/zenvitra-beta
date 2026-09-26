@@ -4,7 +4,7 @@ import {
   Radio, 
   MessageSquare, 
   Calendar, 
-  Newspaper, 
+  CreditCard, 
   Terminal, 
   ShieldCheck, 
   LogOut,
@@ -29,7 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'CHAT', href: '/chat', icon: MessageSquare },
     { label: 'CALL', href: '/call', icon: PhoneCall },
     { label: 'EVENTS', href: '/events', icon: Calendar },
-    { label: 'PRESS', href: '/press', icon: Newspaper },
+    { label: 'PAYMENTS', href: '/payments', icon: CreditCard },
   ];
 
   return (

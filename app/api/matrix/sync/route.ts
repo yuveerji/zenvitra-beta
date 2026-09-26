@@ -4,64 +4,11 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-export interface MatrixPortfolioItem {
-  id: string;
-  committee: 'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC' | 'UNODC';
-  title: string;
-  subTitle?: string;
-  category: string;
-  status: string;
-  allocatedTo?: string;
-  allocatedEmail?: string;
-  waitingCount?: number;
-  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced' | 'Crisis';
-}
+import { OFFICIAL_240_PORTFOLIOS, MatrixPortfolioItem } from '@/lib/matrixPortfoliosData';
 
-const DEFAULT_PORTFOLIOS: MatrixPortfolioItem[] = [
-  // AIPPM
-  { id: 'aippm_1', committee: 'AIPPM', title: 'Narendra Modi', subTitle: 'Prime Minister of India / Varanasi MP', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'aippm_2', committee: 'AIPPM', title: 'Amit Shah', subTitle: 'Minister of Home Affairs / Gandhinagar MP', category: 'Government & Cabinet', status: 'Allocated', allocatedTo: 'Assigned Delegate', difficulty: 'Advanced' },
-  { id: 'aippm_3', committee: 'AIPPM', title: 'Rahul Gandhi', subTitle: 'Leader of Opposition (Lok Sabha)', category: 'Opposition Alliance', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'aippm_4', committee: 'AIPPM', title: 'Rajnath Singh', subTitle: 'Minister of Defence', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_5', committee: 'AIPPM', title: 'Nirmala Sitharaman', subTitle: 'Minister of Finance', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_6', committee: 'AIPPM', title: 'Mallikarjun Kharge', subTitle: 'Leader of Opposition (Rajya Sabha)', category: 'Opposition Alliance', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_7', committee: 'AIPPM', title: 'Akhilesh Yadav', subTitle: 'Samajwadi Party Chief / Kannauj MP', category: 'Regional Opposition', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_8', committee: 'AIPPM', title: 'Mamata Banerjee', subTitle: 'All India Trinamool Congress (TMC)', category: 'Regional Alliance', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'aippm_9', committee: 'AIPPM', title: 'Nitin Gadkari', subTitle: 'Minister of Road Transport & Highways', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'aippm_10', committee: 'AIPPM', title: 'Asaduddin Owaisi', subTitle: 'AIMIM Chief / Hyderabad MP', category: 'Independent MPs', status: 'Vacant', difficulty: 'Crisis' },
+export type { MatrixPortfolioItem };
 
-  // EMI
-  { id: 'emi_1', committee: 'EMI', title: 'Dharmendra Pradhan', subTitle: 'Union Minister of Education', category: 'Union Ministry', status: 'Allocated', allocatedTo: 'Assigned Delegate', difficulty: 'Advanced' },
-  { id: 'emi_2', committee: 'EMI', title: 'Prof. M. Jagadesh Kumar', subTitle: 'Chairman, University Grants Commission (UGC)', category: 'Statutory Regulatory Authority', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'emi_3', committee: 'EMI', title: 'Prof. T.G. Sitharam', subTitle: 'Chairman, AICTE', category: 'Technical Regulatory Authority', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'emi_4', committee: 'EMI', title: 'Director, NCERT', subTitle: 'Curriculum & Textbook Framework Directorate', category: 'Academic Directorate', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'emi_5', committee: 'EMI', title: 'Director, IIT Delhi', subTitle: 'Institutes of National Importance (INIs)', category: 'Higher Education Leadership', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'emi_6', committee: 'EMI', title: 'Vice-Chancellor, Delhi University', subTitle: 'Central Universities Consortium', category: 'Higher Education Leadership', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'emi_7', committee: 'EMI', title: 'State Education Secretary (Tamil Nadu)', subTitle: 'State Language & Curriculum Autonomy Board', category: 'State Stakeholder', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'emi_8', committee: 'EMI', title: 'National Student Union Representative', subTitle: 'Youth Democratic Student Body', category: 'Student Federation', status: 'Vacant', difficulty: 'Beginner' },
-
-  // UNSC
-  { id: 'unsc_1', committee: 'UNSC', title: 'United States of America', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Allocated', allocatedTo: 'Confirmed P5 Diplomat', difficulty: 'Crisis' },
-  { id: 'unsc_2', committee: 'UNSC', title: 'United Kingdom', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'unsc_3', committee: 'UNSC', title: 'French Republic', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'unsc_4', committee: 'UNSC', title: 'Russian Federation', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unsc_5', committee: 'UNSC', title: 'People’s Republic of China', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unsc_6', committee: 'UNSC', title: 'Republic of India', subTitle: 'Special Invitee & G4 Candidate Member', category: 'Elected Members & Observers', status: 'Allocated', allocatedTo: 'Assigned Delegate', difficulty: 'Advanced' },
-  { id: 'unsc_7', committee: 'UNSC', title: 'Japan', subTitle: 'Non-Permanent Member (Asia-Pacific)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'unsc_8', committee: 'UNSC', title: 'Republic of Korea', subTitle: 'Non-Permanent Member (Asia-Pacific)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'unsc_9', committee: 'UNSC', title: 'Swiss Confederation', subTitle: 'Non-Permanent Member (WEOG)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'unsc_10', committee: 'UNSC', title: 'Republic of Sierra Leone', subTitle: 'Non-Permanent Member (African Group)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
-
-  // ECOSOC
-  { id: 'ecosoc_1', committee: 'ECOSOC', title: 'Republic of India', subTitle: 'President of ECOSOC Bureau / Global South Anchor', category: 'Bureau & G20 Leadership', status: 'Allocated', allocatedTo: 'Assigned Delegate', difficulty: 'Advanced' },
-  { id: 'ecosoc_2', committee: 'ECOSOC', title: 'United States of America', subTitle: 'Development Finance & Multilateral Aid Directorate', category: 'Major Donor Economies (OECD)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'ecosoc_3', committee: 'ECOSOC', title: 'Federal Republic of Germany', subTitle: 'Climate Adaptation & Green Transition Envoy', category: 'European Donor Economies', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'ecosoc_4', committee: 'ECOSOC', title: 'Federative Republic of Brazil', subTitle: 'Troika / Global Alliance Against Hunger & Poverty', category: 'Emerging Economies (G20/BRICS)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'ecosoc_5', committee: 'ECOSOC', title: 'Republic of South Africa', subTitle: 'African Union Debt Relief & Financing Caucus', category: 'African Group Leadership', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'ecosoc_6', committee: 'ECOSOC', title: 'Barbados (Prime Minister Envoy)', subTitle: 'Bridgetown Initiative on Climate Finance Architecture', category: 'Small Island Developing States (SIDS)', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'ecosoc_7', committee: 'ECOSOC', title: 'Republic of Kenya', subTitle: 'East African Energy Transition & Digital Development', category: 'Developing Economies', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'ecosoc_8', committee: 'ECOSOC', title: 'Japan', subTitle: 'SDGs Financing & International Development Agency (JICA)', category: 'Asia-Pacific Donor Economies', status: 'Vacant', difficulty: 'Beginner' },
-];
+const DEFAULT_PORTFOLIOS: MatrixPortfolioItem[] = OFFICIAL_240_PORTFOLIOS;
 
 function getLedgerPath(): string {
   const dir = path.join(process.cwd(), 'data');
@@ -162,7 +109,50 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { portfolioId, portfolioTitle, title, status, allocatedTo, allocatedEmail, committee } = body;
+    const { action, portfolioId, portfolioTitle, title, status, allocatedTo, allocatedEmail, committee } = body;
+
+    // A. Reset all portfolios to vacant
+    if (action === 'RESET_ALL_VACANT' || action === 'SEED_OFFICIAL_MATRIX') {
+      const resetPortfolios = OFFICIAL_240_PORTFOLIOS.map((item) => ({
+        ...item,
+        status: 'Vacant',
+        allocatedTo: undefined,
+        allocatedEmail: undefined,
+        waitingCount: 0,
+      }));
+      writeLocalPortfolios(resetPortfolios);
+
+      // Notify Google Sheets
+      const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || DEFAULT_WEBHOOK_URL;
+      let sheetUpdated = false;
+      if (webhookUrl) {
+        try {
+          const gRes = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'SYNC_ALL_PORTFOLIOS',
+              portfolios: resetPortfolios,
+              totalCount: resetPortfolios.length,
+            }),
+            redirect: 'follow',
+            cache: 'no-store'
+          });
+          if (gRes.ok) sheetUpdated = true;
+        } catch (err: any) {
+          console.warn('[MATRIX-RESET-SHEETS-WARN]', err?.message);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'All 240 portfolios reset to Vacant across AIPPM, EMI, UNSC & ECOSOC',
+        count: resetPortfolios.length,
+        portfolios: resetPortfolios,
+        sheetUpdated,
+        syncedAt: new Date().toISOString()
+      });
+    }
 
     const targetId = (portfolioId || '').toLowerCase();
     const targetTitle = (portfolioTitle || title || '').toLowerCase();

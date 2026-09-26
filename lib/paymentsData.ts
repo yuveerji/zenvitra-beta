@@ -154,8 +154,14 @@ export const INITIAL_PAYOUTS: PayoutRecord[] = [
   }
 ];
 
-// Helper: Calculate tax formula
-export function computeTax(baseAmount: number, userAge: number = 17, isCollegeStudent: boolean = false, currency: 'INR' | 'USD' = 'INR'): TaxBreakdown {
+// Helper: Calculate tax formula (₹9 Flat Platform Fee; ₹5 for Pulse Pass; ₹0 for Pulse Elite)
+export function computeTax(
+  baseAmount: number,
+  userAge: number = 17,
+  isCollegeStudent: boolean = false,
+  currency: 'INR' | 'USD' = 'INR',
+  passTier?: 'standard' | 'pass' | 'elite' | string
+): TaxBreakdown {
   if (baseAmount <= 0) {
     return {
       baseAmount: 0,
@@ -167,10 +173,14 @@ export function computeTax(baseAmount: number, userAge: number = 17, isCollegeSt
     };
   }
 
-  // 0.5% + ₹19 (or $0.25 if USD)
-  const gatewayTax = currency === 'INR'
-    ? Math.round(((baseAmount * 0.005) + 19) * 100) / 100
-    : Math.round(((baseAmount * 0.005) + 0.25) * 100) / 100;
+  // Flat Platform Fee: Standard ₹9, Pulse Pass ₹5, Pulse Elite ₹0
+  const normalizedTier = (passTier || '').toLowerCase();
+  let gatewayTax = currency === 'INR' ? 9 : 0.15;
+  if (normalizedTier.includes('elite')) {
+    gatewayTax = 0;
+  } else if (normalizedTier.includes('pass')) {
+    gatewayTax = currency === 'INR' ? 5 : 0.08;
+  }
 
   let gstRate = 0.12;
   let gstLabel = '12% Statutory GST';

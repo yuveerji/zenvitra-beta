@@ -18,6 +18,34 @@ export type GoogleSheetTab =
   | 'Donations & Relief'
   | 'Feedback & Grievance';
 
+/**
+ * Sanitizes values dispatched to Google Sheets to prevent formula injection or #ERROR!
+ * (e.g. phone numbers starting with '+' or values starting with '=', '@', '-')
+ */
+export function sanitizeForGoogleSheets<T>(input: T): T {
+  if (typeof input === 'string') {
+    const trimmed = input.trim();
+    if (trimmed.startsWith('+') || trimmed.startsWith('=') || trimmed.startsWith('@')) {
+      return `'${trimmed.replace(/^'+/, '')}` as unknown as T;
+    }
+    if (trimmed.startsWith('-') && trimmed.length > 1 && !isNaN(Number(trimmed.slice(1)))) {
+      return `'${trimmed.replace(/^'+/, '')}` as unknown as T;
+    }
+    return input;
+  }
+  if (Array.isArray(input)) {
+    return input.map(sanitizeForGoogleSheets) as unknown as T;
+  }
+  if (input !== null && typeof input === 'object') {
+    const res: Record<string, any> = {};
+    for (const [key, value] of Object.entries(input)) {
+      res[key] = sanitizeForGoogleSheets(value);
+    }
+    return res as unknown as T;
+  }
+  return input;
+}
+
 export interface SheetDispatchPayload {
   tab: GoogleSheetTab;
   data: Record<string, any>;
@@ -161,10 +189,11 @@ export interface FeedbackGrievanceRecord {
  */
 export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Promise<boolean> {
   const timestamp = new Date().toISOString();
-  const enrichedData = {
+  const rawEnriched = {
     timestamp,
     ...payload.data,
   };
+  const enrichedData = sanitizeForGoogleSheets(rawEnriched);
 
   // 1. Client-Side API Route Call (prevents exposing secret webhook URL)
   if (typeof window !== 'undefined') {

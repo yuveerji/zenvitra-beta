@@ -11,7 +11,11 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
-  AlignJustify
+  AlignJustify,
+  Copy,
+  Check,
+  Sparkles,
+  Quote
 } from 'lucide-react';
 
 export interface ZenDocsBubbleMenuProps {
@@ -23,6 +27,7 @@ export interface ZenDocsBubbleMenuProps {
   onTextColor: (color: string) => void;
   onHighlight: (color: string) => void;
   onAlignment: (align: 'left' | 'center' | 'right' | 'justify') => void;
+  onAskAi?: (selectedText: string) => void;
 }
 
 export function ZenDocsBubbleMenu({
@@ -33,11 +38,39 @@ export function ZenDocsBubbleMenu({
   onStrikethrough,
   onTextColor,
   onHighlight,
-  onAlignment
+  onAlignment,
+  onAskAi
 }: ZenDocsBubbleMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const handleCopySelection = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const selection = window.getSelection();
+    if (selection) {
+      const text = selection.toString();
+      if (text) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text);
+        } else {
+          document.execCommand('copy');
+        }
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  };
+
+  const handleAskAiClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const selection = window.getSelection();
+    const text = selection ? selection.toString() : '';
+    if (onAskAi) {
+      onAskAi(text);
+    }
+  };
 
   const updatePosition = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -73,16 +106,16 @@ export function ZenDocsBubbleMenu({
     }
 
     // Determine bubble dimensions (or sensible defaults before DOM measure)
-    const menuWidth = menuRef.current?.offsetWidth || 380;
-    const menuHeight = menuRef.current?.offsetHeight || 44;
+    const menuWidth = menuRef.current?.offsetWidth || 440;
+    const menuHeight = menuRef.current?.offsetHeight || 80;
 
-    // Position 8px above selection, centered horizontally
+    // Position 10px above selection, centered horizontally
     let x = rect.left + rect.width / 2 - menuWidth / 2;
-    let y = rect.top - menuHeight - 8;
+    let y = rect.top - menuHeight - 10;
 
-    // If overflowing above viewport, flip 8px below selection
+    // If overflowing above viewport, flip 10px below selection
     if (y < 8) {
-      y = rect.bottom + 8;
+      y = rect.bottom + 10;
     }
 
     // Clamp horizontally and vertically within viewport bounds
@@ -119,7 +152,7 @@ export function ZenDocsBubbleMenu({
   }, []);
 
   const actionButtonClass =
-    'p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition cursor-pointer flex items-center justify-center w-8 h-8';
+    'p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition cursor-pointer flex items-center justify-center w-7 h-7';
 
   return (
     <AnimatePresence>
@@ -137,8 +170,44 @@ export function ZenDocsBubbleMenu({
             top: `${position.y}px`
           }}
           onMouseDown={(e) => e.preventDefault()}
-          className="fixed z-40 rounded-xl bg-[#0e121e]/95 backdrop-blur-2xl border border-white/15 shadow-2xl p-1 flex items-center gap-0.5 select-none pointer-events-auto"
+          className="fixed z-50 rounded-2xl bg-[#0a0d16]/95 backdrop-blur-2xl border border-blue-500/30 shadow-[0_12px_36px_rgba(0,0,0,0.65),0_0_24px_rgba(37,99,235,0.2)] p-2 select-none pointer-events-auto flex flex-col gap-1.5"
         >
+          {/* Top Interactive Bar: What do you want to do with it? */}
+          <div className="flex items-center justify-between gap-3 px-1.5 pb-1 border-b border-white/10 text-[11px] font-mono">
+            <span className="text-blue-300 font-semibold flex items-center gap-1.5 tracking-tight">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              What do you want to do with it?
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleCopySelection}
+                className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-all flex items-center gap-1 cursor-pointer font-bold ${
+                  copied
+                    ? 'bg-emerald-500/25 border border-emerald-500/50 text-emerald-300'
+                    : 'bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/40 text-blue-200'
+                }`}
+                title="Copy selected text to clipboard"
+              >
+                {copied ? <Check className="w-3 h-3 text-emerald-300" /> : <Copy className="w-3 h-3" />}
+                <span>{copied ? 'Copied!' : 'Copy'}</span>
+              </button>
+              {onAskAi && (
+                <button
+                  type="button"
+                  onClick={handleAskAiClick}
+                  className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-500/25 hover:bg-indigo-500/40 border border-indigo-500/40 text-indigo-200 transition-all flex items-center gap-1 cursor-pointer font-bold"
+                  title="Ask AI to analyze or rephrase this selection"
+                >
+                  <Sparkles className="w-3 h-3 text-indigo-300" />
+                  <span>Ask AI</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Formatting Controls Row */}
+          <div className="flex items-center gap-0.5">
           {/* Formatting Group */}
           <button
             type="button"
@@ -322,6 +391,7 @@ export function ZenDocsBubbleMenu({
           >
             <AlignJustify className="w-4 h-4" />
           </button>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

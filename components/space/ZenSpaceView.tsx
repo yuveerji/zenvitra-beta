@@ -27,6 +27,7 @@ import {
   Share2, 
   Check, 
   ExternalLink, 
+  ArrowUpRight,
   Video, 
   MessageSquare, 
   Music, 
@@ -357,7 +358,6 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
   const [formSubmitted, setFormSubmitted] = useState<Record<string, boolean>>({});
   const [formValues, setFormValues] = useState<Record<string, Record<string, string>>>({});
 
-  // Editor states
   const [newBlockType, setNewBlockType] = useState<ZenSpaceBlockType>('link');
   const [newBlockTitle, setNewBlockTitle] = useState('');
   const [newBlockUrl, setNewBlockUrl] = useState('');
@@ -366,6 +366,12 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
   const [newBlockFormMode, setNewBlockFormMode] = useState<'embed' | 'modal' | 'redirect'>('embed');
   const [newBlockAudioUrl, setNewBlockAudioUrl] = useState('');
   const [newBlockImageUrl, setNewBlockImageUrl] = useState('');
+  const [newBlockButtonStyle, setNewBlockButtonStyle] = useState<'glow' | 'glass' | 'neon' | 'gradient' | 'minimal'>('glow');
+  const [newBlockButtonAction, setNewBlockButtonAction] = useState<'link' | 'whatsapp' | 'call' | 'email' | 'form'>('link');
+  const [newBlockButtonBadge, setNewBlockButtonBadge] = useState('');
+  const [newBlockFormSubmitText, setNewBlockFormSubmitText] = useState('Submit Application');
+  const [newBlockFormSuccessMsg, setNewBlockFormSuccessMsg] = useState('Thank you! Your submission has been received.');
+  const [newBlockFormInstructions, setNewBlockFormInstructions] = useState('');
 
   // Space Profile Edit states (for owner)
   const [editDisplayName, setEditDisplayName] = useState('');
@@ -880,16 +886,24 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       highlight: newBlockHighlight,
       clicks: 0,
       bentoSpan: newBlockType === 'form' || newBlockType === 'donate' ? '2' : '1',
-      metadata: newBlockType === 'form' ? {
-        formSubmitText: 'Submit Inquiry',
-        formSuccessMsg: 'Thank you! Your submission has been received.',
+      metadata: newBlockType === 'button' ? {
+        buttonStyle: newBlockButtonStyle,
+        buttonAction: newBlockButtonAction,
+        buttonBadge: newBlockButtonBadge || undefined,
+        formSubmitText: newBlockTitle,
+      } : newBlockType === 'form' ? {
+        formSubmitText: newBlockFormSubmitText || 'Submit Inquiry',
+        formSuccessMsg: newBlockFormSuccessMsg || 'Thank you! Your submission has been received.',
+        formInstructions: newBlockFormInstructions || undefined,
         formWebhookTab: 'INTEREST',
         formMode: newBlockFormMode,
         formExternalUrl: newBlockFormMode === 'redirect' ? newBlockUrl : undefined,
         formFields: [
-          { id: 'name', label: 'Name', placeholder: 'Your Name', type: 'text', required: true },
-          { id: 'email', label: 'Email', placeholder: 'your@email.com', type: 'email', required: true },
-          { id: 'message', label: 'Message', placeholder: 'How can we collaborate?', type: 'textarea' }
+          { id: 'name', label: 'Full Name', placeholder: 'Your Name', type: 'text', required: true },
+          { id: 'email', label: 'Email Address', placeholder: 'your@email.com', type: 'email', required: true },
+          { id: 'phone', label: 'Phone / WhatsApp', placeholder: '+91...', type: 'text', required: false },
+          { id: 'institution', label: 'Institution / Organisation', placeholder: 'College, School or Firm', type: 'text', required: false },
+          { id: 'message', label: 'Message / Proposal', placeholder: 'How can we collaborate?', type: 'textarea', required: false }
         ]
       } : newBlockType === 'music' ? {
         artist: newBlockSub || profile.displayName,
@@ -1146,18 +1160,19 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
             {layoutMode === 'stream' ? <LayoutGrid className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
           </button>
 
-          {/* Mobile Preview Frame Toggle */}
+          {/* Quick Action: Add Links & Buttons */}
           <button
-            onClick={() => setMobilePreview(!mobilePreview)}
-            className={`px-3 py-1.5 rounded-full text-xs font-mono flex items-center gap-1.5 transition-all border ${
-              mobilePreview 
-                ? isLight ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-cyan-500/20 border-cyan-400 text-cyan-300' 
-                : isLight ? 'bg-white/60 border-black/10 text-neutral-700 hover:text-black' : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+            type="button"
+            onClick={() => setIsEditorOpen(true)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
+              isLight 
+                ? 'bg-neutral-900 hover:bg-black text-white' 
+                : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold'
             }`}
-            title="Toggle Device Preview Frame"
+            title="Add Link or Interactive Button to your Space"
           >
-            {mobilePreview ? <Monitor className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{mobilePreview ? 'Full View' : 'Phone View'}</span>
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Add Links &amp; Buttons</span>
           </button>
 
           {/* Theme & Customizer Trigger */}
@@ -1889,6 +1904,64 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                     <span className="text-[10px] font-mono uppercase tracking-widest opacity-70">
                       — {block.subtitle}
                     </span>
+                  </div>
+                );
+              }
+
+              // DEDICATED HIGH-CONVERTING BUTTON BLOCK
+              if (block.type === 'button') {
+                const bStyle = block.metadata?.buttonStyle || 'glow';
+                const bAction = block.metadata?.buttonAction || 'link';
+                const bBadge = block.metadata?.buttonBadge;
+
+                return (
+                  <div
+                    key={block.id}
+                    onClick={() => {
+                      if (bAction === 'whatsapp' && block.url) {
+                        const cleanNum = block.url.replace(/[^0-9]/g, '');
+                        window.open(`https://wa.me/${cleanNum}`, '_blank', 'noopener,noreferrer');
+                      } else if (bAction === 'call' && block.url) {
+                        window.location.href = `tel:${block.url}`;
+                      } else if (bAction === 'email' && block.url) {
+                        window.location.href = `mailto:${block.url}`;
+                      } else {
+                        handleBlockClick(block);
+                      }
+                    }}
+                    className={`cursor-pointer rounded-2xl p-4 text-center font-display font-bold text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] active:scale-98 flex items-center justify-between gap-3 shadow-lg ${bentoSpanClass} ${
+                      bStyle === 'glow'
+                        ? 'bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(6,182,212,0.35)] hover:shadow-[0_0_35px_rgba(6,182,212,0.5)] border border-cyan-400/40'
+                        : bStyle === 'glass'
+                        ? 'bg-white/10 hover:bg-white/15 text-white backdrop-blur-2xl border border-white/20 shadow-xl'
+                        : bStyle === 'neon'
+                        ? 'bg-black/60 hover:bg-black/80 text-cyan-300 border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+                        : bStyle === 'gradient'
+                        ? 'bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white shadow-xl'
+                        : 'bg-white hover:bg-neutral-200 text-black shadow-md border border-neutral-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Sparkles className="w-4 h-4 shrink-0" />
+                      <span className="text-left font-bold">{block.title}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {bBadge && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/40 text-white uppercase tracking-wider">
+                          {bBadge}
+                        </span>
+                      )}
+                      {bAction === 'whatsapp' ? (
+                        <WhatsAppIcon className="w-4 h-4" />
+                      ) : bAction === 'call' ? (
+                        <Phone className="w-4 h-4" />
+                      ) : bAction === 'email' ? (
+                        <Mail className="w-4 h-4" />
+                      ) : (
+                        <ArrowUpRight className="w-4 h-4" />
+                      )}
+                    </div>
                   </div>
                 );
               }
@@ -2710,8 +2783,8 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 Add New Modular Block
               </h3>
 
-              <div className="grid grid-cols-5 gap-1.5 text-xs font-mono">
-                {(['link', 'form', 'image', 'music', 'quote'] as ZenSpaceBlockType[]).map((bt) => (
+              <div className="grid grid-cols-6 gap-1.5 text-xs font-mono">
+                {(['link', 'button', 'form', 'image', 'music', 'quote'] as ZenSpaceBlockType[]).map((bt) => (
                   <button
                     key={bt}
                     type="button"
@@ -2727,37 +2800,139 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 ))}
               </div>
 
+              {newBlockType === 'button' && (
+                <div className="p-3 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-3">
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-mono uppercase text-cyan-300 font-bold block">Interactive Button Style</span>
+                    <div className="grid grid-cols-5 gap-1 text-[10px] font-mono">
+                      {[
+                        { id: 'glow', label: 'Glow Aura' },
+                        { id: 'glass', label: 'Frosted Glass' },
+                        { id: 'neon', label: 'Neon Outline' },
+                        { id: 'gradient', label: 'Gradient Solid' },
+                        { id: 'minimal', label: 'Minimal Clean' },
+                      ].map((st) => (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => setNewBlockButtonStyle(st.id as any)}
+                          className={`py-1.5 px-1 rounded-lg border text-center cursor-pointer transition ${
+                            newBlockButtonStyle === st.id
+                              ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 font-bold'
+                              : 'border-neutral-800 bg-neutral-950 text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          {st.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-mono uppercase text-cyan-300 font-bold block">Action Dispatch Type</span>
+                    <div className="grid grid-cols-4 gap-1 text-[10px] font-mono">
+                      {[
+                        { id: 'link', label: 'Web URL' },
+                        { id: 'whatsapp', label: 'WhatsApp' },
+                        { id: 'call', label: 'Phone Call' },
+                        { id: 'email', label: 'Email' },
+                      ].map((act) => (
+                        <button
+                          key={act.id}
+                          type="button"
+                          onClick={() => setNewBlockButtonAction(act.id as any)}
+                          className={`py-1.5 px-1 rounded-lg border text-center cursor-pointer transition ${
+                            newBlockButtonAction === act.id
+                              ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 font-bold'
+                              : 'border-neutral-800 bg-neutral-950 text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          {act.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Badge Tag (Optional)</label>
+                    <input
+                      type="text"
+                      value={newBlockButtonBadge}
+                      onChange={(e) => setNewBlockButtonBadge(e.target.value)}
+                      placeholder="e.g. VIP, OFFICIAL, 24/7, INSTANT"
+                      className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                </div>
+              )}
+
               {newBlockType === 'form' && (
-                <div className="p-3 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-2">
-                  <span className="text-[11px] font-mono uppercase text-cyan-300 font-bold block">Form Interaction Mode</span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setNewBlockFormMode('embed')}
-                      className={`py-1 rounded text-[10px] font-mono border cursor-pointer ${
-                        newBlockFormMode === 'embed' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-neutral-800 text-zinc-400'
-                      }`}
-                    >
-                      In-Card Accordion
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNewBlockFormMode('modal')}
-                      className={`py-1 rounded text-[10px] font-mono border cursor-pointer ${
-                        newBlockFormMode === 'modal' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-neutral-800 text-zinc-400'
-                      }`}
-                    >
-                      Popup Modal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNewBlockFormMode('redirect')}
-                      className={`py-1 rounded text-[10px] font-mono border cursor-pointer ${
-                        newBlockFormMode === 'redirect' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-neutral-800 text-zinc-400'
-                      }`}
-                    >
-                      External Redirect
-                    </button>
+                <div className="p-3 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-3">
+                  <div>
+                    <span className="text-[11px] font-mono uppercase text-cyan-300 font-bold block mb-1.5">Form Interaction Mode</span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setNewBlockFormMode('embed')}
+                        className={`py-1 rounded text-[10px] font-mono border cursor-pointer ${
+                          newBlockFormMode === 'embed' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-neutral-800 text-zinc-400'
+                        }`}
+                      >
+                        In-Card Accordion
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewBlockFormMode('modal')}
+                        className={`py-1 rounded text-[10px] font-mono border cursor-pointer ${
+                          newBlockFormMode === 'modal' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-neutral-800 text-zinc-400'
+                        }`}
+                      >
+                        Popup Modal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewBlockFormMode('redirect')}
+                        className={`py-1 rounded text-[10px] font-mono border cursor-pointer ${
+                          newBlockFormMode === 'redirect' ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300' : 'border-neutral-800 text-zinc-400'
+                        }`}
+                      >
+                        External Redirect
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Submit Button Text</label>
+                      <input
+                        type="text"
+                        value={newBlockFormSubmitText}
+                        onChange={(e) => setNewBlockFormSubmitText(e.target.value)}
+                        placeholder="e.g. Register Portfolio Now"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Success Message</label>
+                      <input
+                        type="text"
+                        value={newBlockFormSuccessMsg}
+                        onChange={(e) => setNewBlockFormSuccessMsg(e.target.value)}
+                        placeholder="e.g. Application confirmed!"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Instructions / Note</label>
+                    <input
+                      type="text"
+                      value={newBlockFormInstructions}
+                      onChange={(e) => setNewBlockFormInstructions(e.target.value)}
+                      placeholder="e.g. Fill accurately. All fields encrypted and synced to sheets."
+                      className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+                    />
                   </div>
                 </div>
               )}
@@ -2767,7 +2942,15 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                   type="text"
                   value={newBlockTitle}
                   onChange={(e) => setNewBlockTitle(e.target.value)}
-                  placeholder={newBlockType === 'form' ? 'Form Title (e.g. Delegate Registration)' : newBlockType === 'image' ? 'Image Title / Label' : 'Block Title'}
+                  placeholder={
+                    newBlockType === 'button'
+                      ? 'Button Label (e.g. Connect on WhatsApp, Join Secretariat)'
+                      : newBlockType === 'form'
+                      ? 'Form Title (e.g. Delegate Registration Form)'
+                      : newBlockType === 'image'
+                      ? 'Image Title / Label'
+                      : 'Block Title'
+                  }
                   className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
                   required
                 />
@@ -2853,7 +3036,19 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                     type="text"
                     value={newBlockUrl}
                     onChange={(e) => setNewBlockUrl(e.target.value)}
-                    placeholder={newBlockFormMode === 'redirect' ? "External Form URL (Google Forms / Typeform)" : "Destination URL (e.g. https://... or /call/...)"}
+                    placeholder={
+                      newBlockType === 'button'
+                        ? newBlockButtonAction === 'whatsapp'
+                          ? 'WhatsApp Number (+91 9876543210) or wa.me Link'
+                          : newBlockButtonAction === 'call'
+                          ? 'Phone Number to dial (e.g. +91 9876543210)'
+                          : newBlockButtonAction === 'email'
+                          ? 'Recipient Email (e.g. contact@zenvitra.com)'
+                          : 'Destination URL (e.g. https://... or /forms/...)'
+                        : newBlockType === 'form' && newBlockFormMode === 'redirect'
+                        ? 'External Form URL (Google Forms / Typeform)'
+                        : 'Destination URL (e.g. https://... or /call/...)'
+                    }
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
                   />
                 </div>

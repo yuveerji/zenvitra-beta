@@ -26,7 +26,65 @@ export type ZenFormFieldType =
   | 'title_desc'
   | 'image_block'
   | 'video_block'
-  | 'section_break';
+  | 'section_break'
+  // Specialized diplomacy, secretariat & conference blocks
+  | 'committee_selector'
+  | 'department_selector'
+  | 'bandwidth_tier'
+  | 'simulation_challenge'
+  | 'matrix_peeker';
+
+export interface ZenCommitteeChamber {
+  id: string;
+  code: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  badgeColor?: string;
+  agenda?: string;
+  format?: string;
+  tags?: string[];
+  matrixUrl?: string;
+}
+
+export interface ZenSecretariatDept {
+  id: string;
+  index: string;
+  name: string;
+  label: string;
+  badge: string;
+  badgeColor?: string;
+  iconName?: string;
+  focus: string;
+  responsibilities: string[];
+  skills: string[];
+  practicalTask?: string;
+}
+
+export interface ZenBandwidthTier {
+  id: string;
+  label: string;
+  title: string;
+  tier: string;
+  desc: string;
+  badgeColor?: string;
+}
+
+export interface ZenSimulationConfig {
+  linkedFieldId?: string;
+  defaultPrompt?: string;
+  tasksByOption?: Record<string, string>;
+}
+
+export interface ZenMatrixConfig {
+  title?: string;
+  subtitle?: string;
+  matrixUrl?: string;
+  buttonText?: string;
+  instructions?: string;
+  recommendedFormat?: string;
+  liveBadgeText?: string;
+}
 
 export interface ZenFormField {
   id: string;
@@ -72,6 +130,12 @@ export interface ZenFormField {
     headingTitle?: string; // e.g. "Primary Delegation Sector"
     description?: string;  // Optional description
   };
+  // Specialized block configurations
+  chambers?: ZenCommitteeChamber[];
+  departments?: ZenSecretariatDept[];
+  bandwidthTiers?: ZenBandwidthTier[];
+  simulationConfig?: ZenSimulationConfig;
+  matrixConfig?: ZenMatrixConfig;
 }
 
 export interface ZenFormStepHeading {
@@ -212,4 +276,22 @@ export interface ZenForm {
   createdAt: string;
   updatedAt: string;
   googleSheetsConfig?: ZenFormGoogleSheetsConfig;
+}
+
+export interface ZenFormTemplate {
+  id: string;
+  title: string;
+  slug?: string;
+  description: string;
+  category: ZenForm['category'];
+  theme: ZenFormTheme;
+  tags?: string[];
+  author?: string;
+  authorHandle?: string;
+  featured?: boolean;
+  isCommunity?: boolean;
+  shareUrl?: string;
+  previewImage?: string;
+  accentColor?: string;
+  form: ZenForm;
 }

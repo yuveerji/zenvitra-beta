@@ -102,16 +102,18 @@ export function EventsFeed() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          {/* Dual-Sided Take-Rate Settlement Simulator Button (Events exclusive) */}
-          <button
-            type="button"
-            onClick={() => setShowRevenueSimulatorModal(true)}
-            className="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold transition shadow-sm cursor-pointer"
-            title="Open Dual-Sided Take-Rate Settlement Simulator (0.5% + ₹19 Take-Rate)"
-          >
-            <Calculator className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="truncate">Settlement Sim</span>
-          </button>
+          {/* Dual-Sided Take-Rate Settlement Simulator Button (STRICTLY ORGANIZER / EVENT MANAGER ONLY) */}
+          {isEventManager && (
+            <button
+              type="button"
+              onClick={() => setShowRevenueSimulatorModal(true)}
+              className="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold transition shadow-sm cursor-pointer"
+              title="Open Dual-Sided Take-Rate Settlement Simulator (₹9 Platform Fee · ₹5 Pass · ₹0 Elite)"
+            >
+              <Calculator className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="truncate">Settlement Sim</span>
+            </button>
+          )}
 
           {/* My ZenPass Wallet Button */}
           <button

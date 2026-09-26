@@ -179,14 +179,14 @@ export default function ZenNewsPage() {
             <div className="space-y-2">
               <h3 className="font-display font-bold text-xl text-white">No Live Wire Dispatches Yet</h3>
               <p className="text-xs sm:text-sm text-neutral-400 font-light max-w-md mx-auto leading-relaxed font-sans">
-                Real journalistic accountability only. Check back for verified press updates, or explore live parliamentary archives in ZEN.PRESS.
+                Real civic accountability only. Check back for verified updates, or explore live conference deliberations in ZEN.EVENTS.
               </p>
             </div>
             <Link
-              href="/press"
+              href="/events"
               className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
             >
-              Explore ZEN.PRESS Dispatches &rarr;
+              Explore Verified Events &rarr;
             </Link>
           </div>
         ) : (

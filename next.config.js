@@ -27,6 +27,16 @@ const nextConfig = {
         destination: '/statusregister',
         permanent: true,
       },
+      {
+        source: '/brochure',
+        destination: '/zen-diplomacy/brochure',
+        permanent: false,
+      },
+      {
+        source: '/prospectus',
+        destination: '/zen-diplomacy/brochure',
+        permanent: false,
+      },
     ];
   },
   webpack: (config) => {

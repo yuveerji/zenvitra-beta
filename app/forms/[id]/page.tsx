@@ -344,7 +344,7 @@ export const BANDWIDTH_TIERS = [
   }
 ];
 
-export const getDeptIcon = (iconName: string) => {
+export const getDeptIcon = (iconName?: string) => {
   switch (iconName) {
     case 'Users': return <Users className="w-5 h-5" />;
     case 'GraduationCap': return <GraduationCap className="w-5 h-5" />;
@@ -705,13 +705,21 @@ export default function ZenFormPublicPage() {
       }
     }
 
+    if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       const submitter = profile?.username || user?.email?.split('@')[0] || 'anonymous';
-      const submission = await recordZenFormSubmission(form.id, formData, submitter);
+
+      // Secretariat / Ticket ID generation (ensures identical ticket across local storage, ledger, and sheets)
+      const isSecForm = form.id.includes('secretariat') || form.slug?.includes('secretariat');
+      const ticketId = formData.ticketId || (isSecForm ? `SEC-${Math.random().toString(36).substring(2, 8).toUpperCase()}` : undefined);
+      const enrichedFormData: Record<string, any> = { ...formData, ...(ticketId ? { ticketId } : {}) };
+
+      // 1. Record in local storage (skip internal dispatch so we perform exactly one authoritative server dispatch)
+      const submission = await recordZenFormSubmission(form.id, enrichedFormData, submitter, { skipApiDispatch: true });
       setSubmittedSubId(submission.id);
 
-      // If this is the ZEN.DIPLOMACY MUN delegate registration form, record in sovereign delegate ledger
+      // 2. If this is the ZEN.DIPLOMACY MUN delegate registration form, record in sovereign delegate ledger
       const isMunForm = 
         form.id === 'zen-diplomacy-2026-registration' ||
         form.id === 'zen-diplomacy-2026' ||
@@ -722,28 +730,28 @@ export default function ZenFormPublicPage() {
       if (isMunForm) {
         try {
           await registerDelegate({
-            name: formData['step1_fullname'] || submitter || 'Delegate',
-            email: formData['step1_email'] || user?.email || '',
-            phone: formData['step1_phone'] || '',
-            institution: formData['step1_institution'] || '',
-            experienceLevel: formData['step2_experience_level'] || '',
-            firstCommitteeChoice: formData['step3_primary_committee'] || '',
-            secondCommitteeChoice: formData['step4_secondary_committee'] || '',
-            portfolioPreferences: formData['step5_portfolios'] || '',
+            name: enrichedFormData['step1_fullname'] || submitter || 'Delegate',
+            email: enrichedFormData['step1_email'] || user?.email || '',
+            phone: enrichedFormData['step1_phone'] || '',
+            institution: enrichedFormData['step1_institution'] || '',
+            experienceLevel: enrichedFormData['step2_experience_level'] || '',
+            firstCommitteeChoice: enrichedFormData['step3_primary_committee'] || '',
+            secondCommitteeChoice: enrichedFormData['step4_secondary_committee'] || '',
+            portfolioPreferences: enrichedFormData['step5_portfolios'] || '',
           });
         } catch (munErr) {
           console.warn('[MUN-REGISTRATION-AUTO-SYNC-WARN]', munErr);
         }
       }
 
-      // Calculate Quiz score if Quiz mode
+      // 3. Calculate Quiz score if Quiz mode
       if (form.settings?.isQuiz) {
         let total = 0;
         let earned = 0;
         form.fields.forEach((f) => {
           if (f.points && f.points > 0) {
             total += f.points;
-            const ans = formData[f.id];
+            const ans = enrichedFormData[f.id];
             if (Array.isArray(f.correctAnswer)) {
               if (Array.isArray(ans) && ans.length === f.correctAnswer.length && ans.every((x) => f.correctAnswer!.includes(x))) {
                 earned += f.points;
@@ -756,13 +764,12 @@ export default function ZenFormPublicPage() {
         setQuizScore({ total, earned, pct: total > 0 ? Math.round((earned / total) * 100) : 0 });
       }
 
-      // Server-side robust dispatch to Google Sheets webhook
+      // 4. Single authoritative server-side dispatch to Ledger and Google Sheets webhook
       const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
-      const isSecForm = form.id.includes('secretariat') || form.slug?.includes('secretariat');
       
       let committeeTab = '';
       if (!isSecForm && isMunForm) {
-        const commChoice = String(formData['step3_primary_committee'] || '').toUpperCase();
+        const commChoice = String(enrichedFormData['step3_primary_committee'] || '').toUpperCase();
         if (commChoice.includes('AIPPM')) committeeTab = 'AIPPM';
         else if (commChoice.includes('EMI') || commChoice.includes('EDUCATION')) committeeTab = 'EMI';
         else if (commChoice.includes('UNSC')) committeeTab = 'UNSC';
@@ -781,7 +788,7 @@ export default function ZenFormPublicPage() {
             formTitle: form.title,
             submissionId: submission.id,
             submittedAt: submission.submittedAt,
-            data: formData,
+            data: enrichedFormData,
             submitterHandle: submitter,
             sheetTab: targetSheetTab,
             targetTab: targetSheetTab,
@@ -790,27 +797,6 @@ export default function ZenFormPublicPage() {
         });
       } catch (submitErr) {
         console.warn('[SERVER-DISPATCH-WARN]', submitErr);
-      }
-
-      // Fallback direct browser dispatch to Google Apps Script
-      if (webhookUrl && form.settings?.autoForwardSheets !== false) {
-        try {
-          fetch(webhookUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'add_row',
-              formId: form.id,
-              formTitle: form.title,
-              timestamp: new Date().toISOString(),
-              submitterHandle: submitter,
-              sheetTab: targetSheetTab,
-              targetTab: targetSheetTab,
-              ...formData,
-            }),
-          }).catch(() => {});
-        } catch {}
       }
     } catch {
       setValidationError('Failed to record submission. Please check your connection.');
@@ -1590,50 +1576,67 @@ export default function ZenFormPublicPage() {
                       )}
 
                       {/* 8. Paragraph / Textarea */}
-                      {(field.type === 'textarea' || field.type === 'paragraph') && (
+                      {(field.type === 'textarea' || field.type === 'paragraph' || field.type === 'matrix_peeker' || field.type === 'simulation_challenge') && (
                         <div className="space-y-3">
                           {/* Live Dais Matrix Peeker HUD for Delegate Portfolios */}
-                          {field.id === 'step5_portfolios' && (
-                            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-cyan-500/10 border border-amber-500/30 space-y-3 shadow-lg">
-                              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                                <div className="flex items-center gap-2">
-                                  <span className="relative flex h-2.5 w-2.5">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                                  </span>
-                                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300">
-                                    Live Dais Matrix HUD &bull; Vacancy Peeker
+                          {(field.type === 'matrix_peeker' || Boolean(field.matrixConfig) || field.id === 'step5_portfolios') && (() => {
+                            const mCfg = field.matrixConfig || {};
+                            const mTitle = mCfg.title || 'Live Dais Matrix HUD • Vacancy Peeker';
+                            const mUrl = mCfg.matrixUrl || '/matrix';
+                            const mBtn = mCfg.buttonText || 'Open Live Matrix in New Tab';
+                            const mInst = mCfg.instructions || 'Inspect live occupancy across AIPPM, EMI, ECOSOC & UNSC on the sovereign ledger before entering your preferences. Cross-reference vacant countries, portfolios, or ministerial seats to guarantee allotment priority.';
+                            const mFmt = mCfg.recommendedFormat || 'Recommended format: 1. Country / Seat, 2. Country / Seat, 3. Country / Seat';
+
+                            return (
+                              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-cyan-500/10 border border-amber-500/30 space-y-3 shadow-lg">
+                                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="relative flex h-2.5 w-2.5">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                    </span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-300">
+                                      {mTitle}
+                                    </span>
+                                  </div>
+                                  <Link
+                                    href={mUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[10px] font-bold transition shadow-sm cursor-pointer"
+                                  >
+                                    <Grid className="w-3.5 h-3.5" />
+                                    <span>{mBtn}</span>
+                                    <ExternalLink className="w-3 h-3 ml-0.5" />
+                                  </Link>
+                                </div>
+                                <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                                  {mInst}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-neutral-400">
+                                  <span className="px-2.5 py-1 rounded bg-black/40 border border-white/10 text-neutral-300">
+                                    {mFmt}
                                   </span>
                                 </div>
-                                <Link
-                                  href="/matrix"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[10px] font-bold transition shadow-sm cursor-pointer"
-                                >
-                                  <Grid className="w-3.5 h-3.5" />
-                                  <span>Open Live Matrix in New Tab</span>
-                                  <ExternalLink className="w-3 h-3 ml-0.5" />
-                                </Link>
                               </div>
-                              <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                                Inspect live occupancy across <strong>AIPPM, EMI, ECOSOC & UNSC</strong> on the sovereign ledger before entering your preferences. Cross-reference vacant countries, portfolios, or ministerial seats to guarantee allotment priority.
-                              </p>
-                              <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-neutral-400">
-                                <span className="px-2.5 py-1 rounded bg-black/40 border border-white/10 text-neutral-300">
-                                  Recommended format: 1. Country / Seat, 2. Country / Seat, 3. Country / Seat
-                                </span>
-                              </div>
-                            </div>
-                          )}
+                            );
+                          })()}
 
                           {/* Dynamic Secretariat Practical Simulation Challenge HUD */}
-                          {field.id === 'step3_practical_response' && (() => {
-                            const chosenDeptStr = formData['step1_primary_sector'] || '';
-                            const matchedDept = SECRETARIAT_DEPARTMENTS.find(d => 
+                          {(field.type === 'simulation_challenge' || Boolean(field.simulationConfig) || field.id === 'step3_practical_response') && (() => {
+                            const simCfg = field.simulationConfig;
+                            const linkedId = simCfg?.linkedFieldId || 'step1_primary_sector';
+                            const chosenDeptStr = formData[linkedId] || formData['step1_primary_sector'] || '';
+                            const deptSource = form.fields.find(f => f.departments && f.departments.length > 0)?.departments || SECRETARIAT_DEPARTMENTS;
+                            const matchedDept = deptSource.find(d => 
                               chosenDeptStr.toLowerCase().includes(d.name.toLowerCase()) || 
                               d.label.toLowerCase() === chosenDeptStr.toLowerCase()
                             );
+                            const practicalPrompt = (simCfg?.tasksByOption && chosenDeptStr && simCfg.tasksByOption[chosenDeptStr]) ||
+                              (matchedDept ? matchedDept.practicalTask : null) ||
+                              simCfg?.defaultPrompt ||
+                              'Simulated assessment: Formulate a concrete strategy and actionable execution protocol for high-pressure conference scenarios in your chosen department.';
+
                             return (
                               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-500/15 via-purple-500/5 to-cyan-500/10 border border-purple-500/30 space-y-2.5 shadow-lg">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1642,13 +1645,13 @@ export default function ZenFormPublicPage() {
                                     <span>Department Simulation Brief &bull; {matchedDept ? matchedDept.name : 'Selected Department'}</span>
                                   </span>
                                   {matchedDept && (
-                                    <span className={`text-[9px] font-mono uppercase px-2.5 py-0.5 rounded-full border ${matchedDept.badgeColor}`}>
+                                    <span className={`text-[9px] font-mono uppercase px-2.5 py-0.5 rounded-full border ${matchedDept.badgeColor || 'border-purple-500/40 text-purple-300'}`}>
                                       {matchedDept.badge}
                                     </span>
                                   )}
                                 </div>
                                 <div className="p-3 rounded-xl bg-black/40 border border-purple-500/20 text-xs text-purple-100 font-sans leading-relaxed">
-                                  {matchedDept ? matchedDept.practicalTask : 'Simulated assessment: Formulate a concrete strategy and actionable execution protocol for high-pressure conference scenarios in your chosen department.'}
+                                  {practicalPrompt}
                                 </div>
                                 <div className="text-[10px] font-mono text-neutral-400">
                                   Deliver your concrete operational strategy, rapid-response protocol, or execution blueprint below.
@@ -1971,8 +1974,8 @@ export default function ZenFormPublicPage() {
                       )}
 
                       {/* 16. Dropdown Select / Secretariat Sector Selector */}
-                      {(field.type === 'select' || field.type === 'dropdown' || field.type === 'radio') && (
-                        (field.id === 'step1_primary_sector' || field.id === 'step1_preferred_department') ? (
+                      {(field.type === 'select' || field.type === 'dropdown' || field.type === 'radio' || field.type === 'department_selector') && (
+                        (field.type === 'department_selector' || (field.departments && field.departments.length > 0) || field.id === 'step1_primary_sector' || field.id === 'step1_preferred_department') ? (
                           <div className="space-y-4 pt-2">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-white/10">
                               <span className="text-xs font-mono text-[#e2f952] uppercase tracking-wider font-bold">
@@ -1984,7 +1987,7 @@ export default function ZenFormPublicPage() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {SECRETARIAT_DEPARTMENTS.map((dept) => {
+                              {(field.departments && field.departments.length > 0 ? field.departments : SECRETARIAT_DEPARTMENTS).map((dept) => {
                                 const isSelected = 
                                   formData[field.id] === dept.name || 
                                   formData[field.id] === dept.label || 
@@ -2131,7 +2134,7 @@ export default function ZenFormPublicPage() {
                       )}
 
                       {/* 17. Multiple Choice / Radio Options */}
-                      {(field.type === 'radio' || field.type === 'multiple_choice') && (
+                      {(field.type === 'radio' || field.type === 'multiple_choice' || field.type === 'committee_selector' || field.type === 'bandwidth_tier') && (
                         field.id === 'step15_participation_tier' ? (
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
                             {(field.options || []).map((opt) => {
@@ -2251,10 +2254,10 @@ export default function ZenFormPublicPage() {
                               );
                             })}
                           </div>
-                        ) : field.id === 'step3_primary_committee' ? (
+                        ) : (field.type === 'committee_selector' || (field.chambers && field.chambers.length > 0) || field.id === 'step3_primary_committee') ? (
                           <div className="space-y-3.5 pt-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {COMMITTEE_CHAMBERS.map((chamber) => {
+                              {(field.chambers && field.chambers.length > 0 ? field.chambers : COMMITTEE_CHAMBERS).map((chamber) => {
                                 const matchingOpt = (field.options || []).find((o) =>
                                   o.toLowerCase().includes(chamber.code.toLowerCase()) ||
                                   o.toLowerCase().includes(chamber.id.toLowerCase())
@@ -2321,7 +2324,7 @@ export default function ZenFormPublicPage() {
                                     {/* Footer with Tags and Matrix Link */}
                                     <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 mt-auto">
                                       <div className="flex flex-wrap gap-1.5">
-                                        {chamber.tags.map((tag) => (
+                                        {(chamber.tags || []).map((tag) => (
                                           <span key={tag} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-300">
                                             {tag}
                                           </span>
@@ -2398,9 +2401,9 @@ export default function ZenFormPublicPage() {
                               })}
                             </div>
                           </div>
-                        ) : field.id === 'step3_weekly_bandwidth' ? (
+                        ) : (field.type === 'bandwidth_tier' || (field.bandwidthTiers && field.bandwidthTiers.length > 0) || field.id === 'step3_weekly_bandwidth') ? (
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
-                            {BANDWIDTH_TIERS.map((tier) => {
+                            {(field.bandwidthTiers && field.bandwidthTiers.length > 0 ? field.bandwidthTiers : BANDWIDTH_TIERS).map((tier) => {
                               const matchingOpt = (field.options || []).find((o) =>
                                 o.toLowerCase().includes(tier.id.toLowerCase()) ||
                                 o.toLowerCase().includes(tier.title.toLowerCase())

@@ -185,18 +185,26 @@ function LoginForm() {
     ? rawRedirect 
     : '/pulse';
 
-  // Instant redirect if user is already logged in!
+  // 2FA Code Auth State
+  const [is2FAStep, setIs2FAStep] = useState(false);
+  const [securityCodeInput, setSecurityCodeInput] = useState('');
+  const [targetUserId, setTargetUserId] = useState('');
+
+  // Instant redirect if user is already logged in (ONLY if not in middle of 2FA verification!)
   useEffect(() => {
+    if (is2FAStep) return;
     try {
       const stored = typeof window !== 'undefined' ? localStorage.getItem('zenvitra_session_user') : null;
-      if (isAuthenticated || profile || stored) {
+      if ((isAuthenticated || profile || stored) && !is2FAStep) {
         const timer = setTimeout(() => {
-          router.replace(targetDestination);
-        }, 50);
+          if (!is2FAStep) {
+            router.replace(targetDestination);
+          }
+        }, 100);
         return () => clearTimeout(timer);
       }
     } catch (_) {}
-  }, [isAuthenticated, profile, targetDestination, router]);
+  }, [isAuthenticated, profile, targetDestination, router, is2FAStep]);
 
   const [selectedTrack, setSelectedTrack] = useState<string>('delegate');
   const [showPassword, setShowPassword] = useState(false);
@@ -273,11 +281,6 @@ function LoginForm() {
     }
   };
 
-  // 2FA Code Auth State
-  const [is2FAStep, setIs2FAStep] = useState(false);
-  const [securityCodeInput, setSecurityCodeInput] = useState('');
-  const [targetUserId, setTargetUserId] = useState('');
-  
   // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -290,14 +293,19 @@ function LoginForm() {
     setErrorMessage(null);
     setLoading(true);
     try {
-      const result = (await nextAuthSignIn(provider, { callbackUrl: targetDestination, redirect: true })) as any;
-      if (result?.error) {
-        throw new Error(result.error);
-      }
+      await nextAuthSignIn(provider, { 
+        redirectTo: targetDestination, 
+        callbackUrl: targetDestination 
+      });
     } catch (err: any) {
-      const res = await signInWithOAuth(provider);
-      if (res?.error) {
-        setErrorMessage(res.error.message);
+      console.warn('NextAuth OAuth notice, attempting Supabase OAuth fallback:', err);
+      try {
+        const res = await signInWithOAuth(provider);
+        if (res?.error) {
+          setErrorMessage(res.error.message || `Unable to complete ${provider} sign-in.`);
+        }
+      } catch (fallbackErr: any) {
+        setErrorMessage(fallbackErr.message || `Unable to connect with ${provider}. Please sign in directly with your credentials below.`);
       }
     } finally {
       setLoading(false);
@@ -326,22 +334,28 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      // First verify credentials via signInWithEmail
-      const { error: authError } = await signInWithEmail(email, password);
-      if (authError) {
-        throw new Error(authError.message || 'Invalid credentials.');
-      }
-
-      // Check 2FA requirement for login
+      // Check 2FA requirement for login BEFORE establishing any session!
       const secProfile = getSecurityProfile(cleanUser);
-      if (secProfile.isTwoFactorEnabled) {
+      const isTwoFactorRequired = secProfile.isTwoFactorEnabled;
+
+      if (isTwoFactorRequired) {
+        // Validate password credentials first WITHOUT creating a session
+        const { error: authError } = await signInWithEmail(email, password, { skipSession: true });
+        if (authError) {
+          throw new Error(authError.message || 'Invalid credentials.');
+        }
         setIs2FAStep(true);
         setLoading(false);
         setSuccessMessage('Sovereign 2FA Challenge: Enter your Master PIN, Sovereign Code, or Emergency Passkey.');
         return;
       }
 
-      // Direct Sign In (no 2FA required)
+      // Direct Sign In (no 2FA required on this account)
+      const { error: authError } = await signInWithEmail(email, password);
+      if (authError) {
+        throw new Error(authError.message || 'Invalid credentials.');
+      }
+
       sheetSync.login({
         userId: cleanUser,
         fullName: cleanUser,

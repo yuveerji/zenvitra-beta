@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { sanitizeForGoogleSheets } from '@/lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
     const userAgent = req.headers.get('user-agent') || 'Browser Client';
 
     // Standardized payload matching Apps Script doPost(e)
-    const appsScriptPayload = {
+    const appsScriptPayload = sanitizeForGoogleSheets({
       ...(action ? { action } : {}),
       ...(targetTab ? { targetTab, tab: targetTab } : {}),
       ...rawData,
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
       deviceInfo: rawData.deviceInfo || rawData.deviceBrowserInfo || userAgent,
       sourceUrl: rawData.sourceUrl || req.headers.get('referer') || '/',
       timestamp: new Date().toISOString()
-    };
+    });
 
     // 1. Immediately persist to local zero-loss ledger
     appendToLocalLedger(appsScriptPayload);

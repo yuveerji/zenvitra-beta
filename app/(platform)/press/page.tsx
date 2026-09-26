@@ -70,20 +70,20 @@ function PressNavBar() {
   );
 }
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function PressPage() {
-  const { activeView, currentUserUsername } = useZenPress();
-  const { user, profile } = useAuth();
-  const effectiveUsername = (currentUserUsername || profile?.username || user?.email?.split('@')[0] || '').toLowerCase().replace(/^@/, '');
-  const isFounderUser = isFounder(effectiveUsername, (profile?.role as any) || (profile as any)?.badge);
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/pulse');
+  }, [router]);
 
   return (
-    <div className="w-full">
-      <PressNavBar />
-      {activeView === 'feed' && <PressFeed />}
-      {activeView === 'article' && <ArticleReader />}
-      {activeView === 'editor' && (isFounderUser ? <FounderPressStudio /> : <ArticleEditor />)}
-      {activeView === 'bookmarks' && <BookmarksList />}
-      {activeView === 'my-articles' && <MyArticles />}
+    <div className="w-full min-h-[50vh] flex flex-col items-center justify-center p-8 text-center space-y-3">
+      <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+      <p className="font-mono text-xs text-neutral-400">Redirecting to Pulse Feed...</p>
     </div>
   );
 }

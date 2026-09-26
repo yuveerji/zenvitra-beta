@@ -457,6 +457,7 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
         onTextColor={commands.setTextColor}
         onHighlight={commands.setHighlight}
         onAlignment={commands.setAlignment}
+        onAskAi={() => setIsAiModalOpen(true)}
       />
 
       {/* Floating Slash Command Menu */}

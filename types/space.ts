@@ -41,6 +41,7 @@ export interface ZenSpaceSocials {
 
 export type ZenSpaceBlockType = 
   | 'link'
+  | 'button'
   | 'video'
   | 'image'
   | 'music'
@@ -94,6 +95,10 @@ export interface ZenSpaceBlock {
     donateGoal?: string;
     donateUrl?: string;
     bookingDuration?: string;
+    buttonStyle?: 'glow' | 'glass' | 'neon' | 'gradient' | 'minimal';
+    buttonAction?: 'link' | 'whatsapp' | 'call' | 'email' | 'form';
+    buttonBadge?: string;
+    buttonColor?: string;
   };
 }
 

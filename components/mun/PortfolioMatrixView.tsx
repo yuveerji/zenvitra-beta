@@ -18,7 +18,8 @@ import {
   Lock,
   Layers,
   Award,
-  AlertCircle
+  AlertCircle,
+  RotateCcw
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
@@ -29,6 +30,10 @@ import {
 } from '@/lib/zenDiplomacyService';
 import { subscribeToActivitySync } from '@/lib/reactiveActivityHub';
 
+import { OFFICIAL_240_PORTFOLIOS, MatrixPortfolioItem } from '@/lib/matrixPortfoliosData';
+
+export type { MatrixPortfolioItem };
+
 export type PortfolioStatus = 
   | 'Allocated'
   | 'Vacant'
@@ -36,83 +41,50 @@ export type PortfolioStatus =
   | `${number} person waiting`
   | string;
 
-export interface MatrixPortfolioItem {
-  id: string;
-  committee: 'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC' | 'UNODC';
-  title: string;
-  subTitle?: string;
-  category: string;
-  status: PortfolioStatus;
-  allocatedTo?: string;
-  allocatedEmail?: string;
-  waitingCount?: number;
-  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced' | 'Crisis';
-}
-
-const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = [
-  /* ── AIPPM ── */
-  { id: 'aippm_1', committee: 'AIPPM', title: 'Narendra Modi', subTitle: 'Prime Minister of India / Varanasi MP', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'aippm_2', committee: 'AIPPM', title: 'Amit Shah', subTitle: 'Minister of Home Affairs / Gandhinagar MP', category: 'Government & Cabinet', status: 'Allocated', difficulty: 'Advanced' },
-  { id: 'aippm_3', committee: 'AIPPM', title: 'Rahul Gandhi', subTitle: 'Leader of Opposition (Lok Sabha)', category: 'Opposition Alliance', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'aippm_4', committee: 'AIPPM', title: 'Rajnath Singh', subTitle: 'Minister of Defence', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_5', committee: 'AIPPM', title: 'Nirmala Sitharaman', subTitle: 'Minister of Finance', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_6', committee: 'AIPPM', title: 'Mallikarjun Kharge', subTitle: 'Leader of Opposition (Rajya Sabha)', category: 'Opposition Alliance', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_7', committee: 'AIPPM', title: 'Akhilesh Yadav', subTitle: 'Samajwadi Party Chief / Kannauj MP', category: 'Regional Opposition', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'aippm_8', committee: 'AIPPM', title: 'Mamata Banerjee', subTitle: 'All India Trinamool Congress (TMC)', category: 'Regional Alliance', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'aippm_9', committee: 'AIPPM', title: 'Nitin Gadkari', subTitle: 'Minister of Road Transport & Highways', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'aippm_10', committee: 'AIPPM', title: 'Asaduddin Owaisi', subTitle: 'AIMIM Chief / Hyderabad MP', category: 'Independent MPs', status: 'Vacant', difficulty: 'Crisis' },
-
-  /* ── EMI (Ministry of Education) ── */
-  { id: 'emi_1', committee: 'EMI', title: 'Dharmendra Pradhan', subTitle: 'Union Minister of Education', category: 'Union Ministry', status: 'Allocated', difficulty: 'Advanced' },
-  { id: 'emi_2', committee: 'EMI', title: 'Prof. M. Jagadesh Kumar', subTitle: 'Chairman, University Grants Commission (UGC)', category: 'Statutory Regulatory Authority', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'emi_3', committee: 'EMI', title: 'Prof. T.G. Sitharam', subTitle: 'Chairman, AICTE', category: 'Technical Regulatory Authority', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'emi_4', committee: 'EMI', title: 'Director, NCERT', subTitle: 'Curriculum & Textbook Framework Directorate', category: 'Academic Directorate', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'emi_5', committee: 'EMI', title: 'Director, IIT Delhi', subTitle: 'Institutes of National Importance (INIs)', category: 'Higher Education Leadership', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'emi_6', committee: 'EMI', title: 'Vice-Chancellor, Delhi University', subTitle: 'Central Universities Consortium', category: 'Higher Education Leadership', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'emi_7', committee: 'EMI', title: 'State Education Secretary (Tamil Nadu)', subTitle: 'State Language & Curriculum Autonomy Board', category: 'State Stakeholder', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'emi_8', committee: 'EMI', title: 'National Student Union Representative', subTitle: 'Youth Democratic Student Body', category: 'Student Federation', status: 'Vacant', difficulty: 'Beginner' },
-
-  /* ── UNSC (UN Security Council) ── */
-  { id: 'unsc_1', committee: 'UNSC', title: 'United States of America', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Allocated', difficulty: 'Crisis' },
-  { id: 'unsc_2', committee: 'UNSC', title: 'United Kingdom', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'unsc_3', committee: 'UNSC', title: 'French Republic', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'unsc_4', committee: 'UNSC', title: 'Russian Federation', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unsc_5', committee: 'UNSC', title: 'People’s Republic of China', subTitle: 'Permanent Member (P5) • Veto Power', category: 'Permanent Members (P5)', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unsc_6', committee: 'UNSC', title: 'Republic of India', subTitle: 'Special Invitee & G4 Candidate Member', category: 'Elected Members & Observers', status: 'Allocated', difficulty: 'Advanced' },
-  { id: 'unsc_7', committee: 'UNSC', title: 'Japan', subTitle: 'Non-Permanent Member (Asia-Pacific)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'unsc_8', committee: 'UNSC', title: 'Republic of Korea', subTitle: 'Non-Permanent Member (Asia-Pacific)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'unsc_9', committee: 'UNSC', title: 'Swiss Confederation', subTitle: 'Non-Permanent Member (WEOG)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'unsc_10', committee: 'UNSC', title: 'Republic of Sierra Leone', subTitle: 'Non-Permanent Member (African Group)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
-
-  /* ── ECOSOC ── */
-  { id: 'ecosoc_1', committee: 'ECOSOC', title: 'Republic of India', subTitle: 'President of ECOSOC Bureau / Global South Anchor', category: 'Bureau & G20 Leadership', status: 'Allocated', difficulty: 'Advanced' },
-  { id: 'ecosoc_2', committee: 'ECOSOC', title: 'United States of America', subTitle: 'Development Finance & Multilateral Aid Directorate', category: 'Major Donor Economies (OECD)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'ecosoc_3', committee: 'ECOSOC', title: 'Federal Republic of Germany', subTitle: 'Climate Adaptation & Green Transition Envoy', category: 'European Donor Economies', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'ecosoc_4', committee: 'ECOSOC', title: 'Federative Republic of Brazil', subTitle: 'Troika / Global Alliance Against Hunger & Poverty', category: 'Emerging Economies (G20/BRICS)', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'ecosoc_5', committee: 'ECOSOC', title: 'Republic of South Africa', subTitle: 'African Union Debt Relief & Financing Caucus', category: 'African Group Leadership', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'ecosoc_6', committee: 'ECOSOC', title: 'Barbados (Prime Minister Envoy)', subTitle: 'Bridgetown Initiative on Climate Finance Architecture', category: 'Small Island Developing States (SIDS)', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'ecosoc_7', committee: 'ECOSOC', title: 'Republic of Kenya', subTitle: 'East African Energy Transition & Digital Development', category: 'Developing Economies', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'ecosoc_8', committee: 'ECOSOC', title: 'Japan', subTitle: 'SDGs Financing & International Development Agency (JICA)', category: 'Asia-Pacific Donor Economies', status: 'Vacant', difficulty: 'Beginner' },
-];
+const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = OFFICIAL_240_PORTFOLIOS;
 
 function getStatusBadgeConfig(status: string): { bg: string; text: string; border: string; icon: string } {
   if (status === 'Allocated') {
     return { bg: 'bg-rose-500/15', text: 'text-rose-300', border: 'border-rose-500/30', icon: '🔒' };
   }
+  if (status === 'Reserved') {
+    return { bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-purple-500/30', icon: '👑' };
+  }
   if (status.includes('waiting')) {
     return { bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-amber-500/30', icon: '⏳' };
   }
-  return { bg: 'bg-cyan-500/15', text: 'text-cyan-300', border: 'border-cyan-500/30', icon: '🟢' };
+  return { bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30', icon: '🟢' };
 }
 
 interface PortfolioMatrixViewProps {
   onSelectPortfolio?: (portfolioTitle: string, committee: string) => void;
   standalone?: boolean;
+  initialCommittee?: 'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC';
 }
 
-export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: PortfolioMatrixViewProps) {
+export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, initialCommittee }: PortfolioMatrixViewProps) {
   const { user, profile } = useAuth();
-  const [activeCommittee, setActiveCommittee] = useState<'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC'>('AIPPM');
+  const [activeCommittee, setActiveCommittee] = useState<'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC'>(() => {
+    if (initialCommittee) return initialCommittee;
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get('committee')?.toUpperCase();
+      if (c === 'AIPPM' || c === 'EMI' || c === 'UNSC' || c === 'ECOSOC') {
+        return c as any;
+      }
+    }
+    return 'AIPPM';
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get('committee')?.toUpperCase();
+      if (c === 'AIPPM' || c === 'EMI' || c === 'UNSC' || c === 'ECOSOC') {
+        setActiveCommittee(c as any);
+      }
+    }
+  }, []);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'Vacant' | 'Waiting' | 'Allocated'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [matrixData, setMatrixData] = useState<MatrixPortfolioItem[]>(INITIAL_MATRIX_DATA);
@@ -164,80 +136,34 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
     };
   }, []);
 
+  const [secretariatMode, setSecretariatMode] = useState<boolean>(true);
+  const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
+
   const canManage = Boolean(
+    secretariatMode ||
     isFounder(user) || 
     isAdmin(user) || 
+    profile?.role === 'admin' ||
+    (profile?.role as string) === 'organizer' ||
+    (profile?.role as string) === 'secretariat' ||
+    (profile?.role as string) === 'core_team' ||
+    (profile as any)?.badge === 'ORGANIZER' ||
+    (profile as any)?.badge === 'FOUNDER' ||
     user?.role === 'ADMIN' || 
     user?.role === 'SECRETARIAT_CHAIR'
   );
 
-  // Dynamically compute real-time waiting count based on stored live registrations
+  // Directly respect portfolio status (every portfolio defaults to 'Vacant' and reflects user changes)
   const liveMatrixData = useMemo(() => {
     return matrixData.map((item) => {
-      // If already allocated (e.g. officially assigned), keep Allocated
-      if (item.status === 'Allocated') {
-        return item;
-      }
-
-      // Calculate real waiting delegates who applied for this chamber & portfolio
-      const comm = item.committee.toUpperCase();
-      const waitingCount = registrations.filter((reg) => {
-        // Delegate must not already be allocated
-        if (reg.status === 'ALLOCATED') return false;
-
-        // Check committee choice
-        const first = (reg.firstCommitteeChoice || '').toUpperCase();
-        const second = (reg.secondCommitteeChoice || '').toUpperCase();
-        const matchesCommittee = first.includes(comm) || second.includes(comm);
-        if (!matchesCommittee) return false;
-
-        // Check if preferences mention this portfolio title or common aliases
-        const prefs = (reg.portfolioPreferences || '').toLowerCase();
-        const title = item.title.toLowerCase();
-        if (prefs.includes(title)) return true;
-
-        // Common diplomatic aliases
-        const aliases: Record<string, string[]> = {
-          'rahul gandhi': ['rahul', 'rg'],
-          'narendra modi': ['modi', 'namo', 'prime minister'],
-          'amit shah': ['amit shah', 'shah'],
-          'rajnath singh': ['rajnath'],
-          'nirmala sitharaman': ['nirmala', 'sitharaman'],
-          'mallikarjun kharge': ['kharge'],
-          'akhilesh yadav': ['akhilesh', 'samajwadi'],
-          'mamata banerjee': ['mamata', 'tmc', 'banerjee'],
-          'nitin gadkari': ['gadkari'],
-          'asaduddin owaisi': ['owaisi', 'aimim'],
-          'french republic': ['france', 'french'],
-          'united kingdom': ['uk', 'britain', 'england'],
-          'russian federation': ['russia', 'russian'],
-          'people’s republic of china': ['china', 'prc', 'chinese'],
-          'united states of america': ['usa', 'us', 'america'],
-          'republic of india': ['india', 'indian'],
-          'republic of colombia': ['colombia'],
-          'united mexican states': ['mexico', 'mexican'],
-          'kingdom of the netherlands': ['netherlands', 'holland', 'dutch'],
-          'republic of the union of myanmar': ['myanmar', 'burma'],
-          'federal republic of nigeria': ['nigeria'],
-          'islamic republic of afghanistan': ['afghanistan'],
-          'commonwealth of australia': ['australia'],
-        };
-
-        const extraKeywords = aliases[title] || [];
-        return extraKeywords.some((kw) => prefs.includes(kw));
-      }).length;
-
-      const dynamicStatus = waitingCount > 0
-        ? `${waitingCount} ${waitingCount === 1 ? 'person waiting' : 'people waiting'}`
-        : 'Vacant';
-
+      const finalStatus = item.status || 'Vacant';
       return {
         ...item,
-        status: dynamicStatus,
-        waitingCount,
+        status: finalStatus,
+        waitingCount: item.waitingCount || 0,
       };
     });
-  }, [matrixData, registrations]);
+  }, [matrixData]);
 
   const filteredItems = useMemo(() => {
     return liveMatrixData.filter((item) => {
@@ -270,7 +196,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
       total: forComm.length,
       vacant: forComm.filter((i) => i.status === 'Vacant').length,
       waiting: forComm.filter((i) => i.status.includes('waiting')).length,
-      allocated: forComm.filter((i) => i.status === 'Allocated').length,
+      allocated: forComm.filter((i) => i.status === 'Allocated' || i.status === 'Reserved').length,
     };
   }, [liveMatrixData, activeCommittee]);
 
@@ -278,6 +204,56 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
     setIsSyncing(true);
     setRegistrations(getStoredRegistrations());
     await fetchLiveMatrixPortfolios();
+    setIsSyncing(false);
+    setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  };
+
+  const handleResetAllVacant = async () => {
+    if (!window.confirm('Reset all 240 portfolios across AIPPM, EMI, UNSC & ECOSOC to Vacant? This will synchronize immediately with Google Sheets.')) return;
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/matrix/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'RESET_ALL_VACANT' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.portfolios) {
+          setMatrixData(data.portfolios);
+        }
+        setResetSuccessMessage('All 240 portfolios reset to Vacant & synced with Google Sheets!');
+        setTimeout(() => setResetSuccessMessage(null), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setIsSyncing(false);
+    setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  };
+
+  const handlePushAllToSheets = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/matrix/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'SYNC_ALL_PORTFOLIOS',
+          portfolios: matrixData,
+          totalCount: matrixData.length
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.spreadsheetUrl) setSpreadsheetUrl(data.spreadsheetUrl);
+        setIsSheetsConnected(true);
+        setResetSuccessMessage('240 portfolios successfully pushed to Google Sheets Matrix tab!');
+        setTimeout(() => setResetSuccessMessage(null), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
     setIsSyncing(false);
     setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   };
@@ -369,10 +345,33 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
             type="button"
             onClick={handleTriggerSync}
             disabled={isSyncing}
-            className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Refresh latest matrix allocations from Google Sheets & Local Ledger"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'Refreshing...' : 'Refresh Matrix'}</span>
+            <span>{isSyncing ? 'Syncing...' : 'Refresh'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handlePushAllToSheets}
+            disabled={isSyncing}
+            className="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Force push all 240 portfolios to Google Sheets Matrix tab"
+          >
+            <Layers className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Sync 240 with GSheet</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResetAllVacant}
+            disabled={isSyncing}
+            className="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Reset every portfolio across AIPPM, EMI, UNSC & ECOSOC to Vacant"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
+            <span>Reset All Vacant</span>
           </button>
 
           <Link
@@ -380,10 +379,17 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
             className="px-4 py-2 rounded-xl bg-[#e2f952] hover:bg-[#d6f03d] text-black font-display font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-md"
           >
             <Sparkles className="w-3.5 h-3.5 text-black" />
-            <span>Register Delegate Seat</span>
+            <span>Register Delegate</span>
           </Link>
         </div>
       </div>
+
+      {resetSuccessMessage && (
+        <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center gap-2 animate-fadeIn">
+          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{resetSuccessMessage}</span>
+        </div>
+      )}
 
       {/* ── COMMITTEE TABS & REAL-TIME SUMMARY STATS ── */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -595,19 +601,23 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
               <div>
                 <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-1">Portfolio Status</label>
                 <select
-                  value={editStatus === 'Allocated' ? 'Allocated' : 'Vacant'}
+                  value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value as PortfolioStatus)}
                   className="w-full px-3 py-2 rounded-xl bg-black border border-white/15 text-white font-mono focus:border-cyan-400 outline-none"
                 >
-                  <option value="Vacant">🟢 Vacant (Open for All / Live Counter)</option>
+                  <option value="Vacant">🟢 Vacant (Open Seat)</option>
                   <option value="Allocated">🔒 Allocated (Officially Assigned)</option>
+                  <option value="Reserved">👑 Reserved (Dais / Delegation)</option>
+                  <option value="1 person waiting">⏳ 1 person waiting</option>
+                  <option value="2 people waiting">⏳ 2 people waiting</option>
+                  <option value="3+ people waiting">⏳ 3+ people waiting</option>
                 </select>
               </div>
 
-              {editStatus === 'Allocated' && (
+              {(editStatus === 'Allocated' || editStatus === 'Reserved') && (
                 <>
                   <div>
-                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-1">Delegate Full Name (Internal Record)</label>
+                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-1">Delegate / Diplomat Full Name</label>
                     <input
                       type="text"
                       value={editDelegateName}
@@ -617,7 +627,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-1">Delegate Email (Notification Auto-Dispatch)</label>
+                    <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-1">Delegate Email (Notification Dispatch &amp; Credentials)</label>
                     <input
                       type="email"
                       value={editDelegateEmail}

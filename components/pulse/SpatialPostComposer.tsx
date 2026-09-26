@@ -33,20 +33,8 @@ export function SpatialPostComposer({ onPublish, onOpenFluxComposer }: SpatialPo
   const currentModeInfo = modes.find((m) => m.key === activeMode) || modes[0];
 
   const handleModeSelect = (key: PostMode) => {
-    if (key === 'REPORT') {
-      router.push('/press');
-      return;
-    }
     if (key === 'DEBATE') {
       router.push('/discussions');
-      return;
-    }
-    if (key === 'WRITE') {
-      router.push('/press');
-      return;
-    }
-    if (key === 'ASK') {
-      setActiveMode('ASK');
       return;
     }
     setActiveMode(key);

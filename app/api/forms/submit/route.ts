@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { sanitizeForGoogleSheets } from '@/lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,13 +114,10 @@ export async function POST(req: NextRequest) {
       priorAccolades: rawData.step6_prior_accolades || rawData.priorAccolades || '',
       resolutionExperience: rawData.step7_resolution_experience || rawData.resolutionExperience || '',
       researchLink: rawData.step8_research_paper_link || rawData.researchLink || '',
-      accreditationPlacard: rawData.step9_accreditation_dossier || rawData.accreditationPlacard || '',
       motivation: rawData.step10_motivation_statement || rawData.motivation || '',
-      accommodation: rawData.step11_accommodation_assistance || rawData.accommodation || 'NO',
-      emergencyContact: rawData.step12_emergency_contact || rawData.emergencyContact || '',
-      dietaryPreference: rawData.step13_dietary_pref || rawData.dietaryPreference || 'Vegetarian',
-      participationTier: rawData.step15_participation_tier || rawData.participationTier || rawData.passTier || 'Delegate Pass (₹499)',
-      utr: rawData.step15_payment_reference || rawData.utr || '',
+      emergencyContact: rawData.step8_guardian_phone || rawData.step12_emergency_contact || rawData.emergencyContact || '',
+      participationTier: rawData.step13_participation_tier || rawData.step15_participation_tier || rawData.participationTier || rawData.passTier || 'Delegate Pass (₹499)',
+      utr: rawData.step15_payment_reference || rawData.step15_utr_reference || rawData.utr || '',
       paymentScreenshot: rawData.step15_receipt_link || rawData.step15_payment_screenshot || rawData.paymentScreenshot || '',
       // Secretariat Aliases
       preferredSector: rawData.step1_primary_sector || rawData.step1_preferred_department || rawData.preferredSector || '',
@@ -137,8 +135,10 @@ export async function POST(req: NextRequest) {
       ...rawData,
     };
 
+    const sanitizedLedgerEntry = sanitizeForGoogleSheets(ledgerEntry);
+
     // 2. Always persist to backup ledger immediately
-    appendToLocalLedger(ledgerEntry);
+    appendToLocalLedger(sanitizedLedgerEntry);
 
     // 3. Forward to Google Sheets webhook
     const targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
         await fetch(targetWebhook, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(ledgerEntry),
+          body: JSON.stringify(sanitizedLedgerEntry),
         });
       } catch (webhookErr: any) {
         console.warn('[SHEETS-ZENFORMS-WEBHOOK-WARN]', webhookErr?.message);

@@ -679,7 +679,7 @@ export default function ProfessionalEventRegisterPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { id: 'free', label: 'Free Admission Only', desc: 'Zero ticketing charges, 100% free passes' },
-                    { id: 'escrow', label: 'Paid Escrow Settlement', desc: '0.5% + ₹19 take-rate, automated escrow payouts' },
+                    { id: 'escrow', label: 'Paid Escrow Settlement', desc: 'Flat ₹9 platform fee (₹5 Pass · ₹0 Elite), automated escrow payouts' },
                     { id: 'hybrid', label: 'Hybrid & Sponsor Passes', desc: 'Free delegate admission + paid VIP tiers' }
                   ].map((t) => (
                     <button

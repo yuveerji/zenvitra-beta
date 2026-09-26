@@ -25,6 +25,7 @@ import {
   Check
 } from 'lucide-react';
 import { computeTax, LS_ZEN_TXNS } from '@/lib/paymentsData';
+import { useAuth } from '@/context/AuthContext';
 import { PaymentTransaction, PaymentReceipt, PaymentMethodType, PaymentProduct } from '@/types/payments';
 
 interface ZenCheckoutModalProps {
@@ -75,7 +76,31 @@ export function ZenCheckoutModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const tax = computeTax(baseAmount, userAge, isCollegeStudent, currency);
+  const { user, profile } = useAuth();
+  const isPulseElite = (profile as any)?.isElite || profile?.role === 'admin' || (profile as any)?.membershipTier === 'elite';
+  const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || (typeof window !== 'undefined' && localStorage.getItem('zenvitra_pulse_pass') === 'active'));
+  const userTier = isPulseElite ? 'elite' : isPulsePass ? 'pass' : 'standard';
+
+  // Auto-read pre-verified student status if available
+  useEffect(() => {
+    try {
+      const savedStudent = localStorage.getItem('zenvitra_student_verification');
+      if (savedStudent) {
+        const parsed = JSON.parse(savedStudent);
+        if (parsed?.verified || parsed?.status === 'VERIFIED') {
+          setIsCollegeStudent(true);
+          setStudentIdFile({
+            name: parsed.fileName || 'Verified_Student_ID.pdf',
+            size: parsed.fileSize || '142.0 KB'
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const tax = computeTax(baseAmount, userAge, isCollegeStudent, currency, userTier);
 
   // Real UPI Payload string: upi://pay?pa=...
   const upiPayPayload = `upi://pay?pa=zenvitra@upi&pn=ZENVITRA%20NETWORKS&am=${tax.totalPayable}&cu=INR&tn=Order%20${product}`;
@@ -114,11 +139,23 @@ export function ZenCheckoutModal({
         setStudentIdError('File size exceeds 5MB limit.');
         return;
       }
-      setStudentIdFile({
+      const filePayload = {
         name: file.name,
         size: `${(file.size / 1024).toFixed(1)} KB`,
-      });
+      };
+      setStudentIdFile(filePayload);
       setStudentIdError(null);
+      try {
+        localStorage.setItem('zenvitra_student_verification', JSON.stringify({
+          verified: true,
+          status: 'VERIFIED',
+          fileName: file.name,
+          fileSize: filePayload.size,
+          uploadedAt: new Date().toISOString()
+        }));
+      } catch {
+        // ignore
+      }
     }
   };
 
@@ -323,8 +360,8 @@ export function ZenCheckoutModal({
                     <span className="text-neutral-200">₹{tax.baseAmount}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Platform &amp; Gateway Tax (0.5% + ₹19)</span>
-                    <span className="text-neutral-200">+₹{tax.gatewayTax}</span>
+                    <span>Platform Fee ({userTier === 'elite' ? 'Pulse Elite: ₹0' : userTier === 'pass' ? 'Pulse Pass: ₹5' : 'Flat ₹9'})</span>
+                    <span className="text-neutral-200">{tax.gatewayTax === 0 ? '₹0 (WAIVED)' : `+₹${tax.gatewayTax}`}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{tax.gstLabel}</span>

@@ -61,14 +61,10 @@ export async function GET() {
       };
     });
 
-    // Filter out any default/seeded templates from recent forms registry
+    // Filter out old test forms from past sessions if any
     const filtered = enriched.filter(
       (f) =>
         f &&
-        f.id !== 'zen-diplomacy-2026-registration' &&
-        f.slug !== 'zen-diplomacy-2026' &&
-        f.id !== 'zen-secretariat-2026-application' &&
-        f.slug !== 'zen-secretariat-2026' &&
         f.id !== 'form_jharokha_delegate_2026' &&
         f.id !== 'form_horizon_eb_2026' &&
         !f.slug?.includes('jharokha') &&

@@ -91,7 +91,7 @@ export const DATA_LIFECYCLE_EXPLAINERS: DataLifecycleExplainer[] = [
     title: 'ZEN.PAYMENTS & Tax Invoices',
     product: 'ZEN.PAYMENTS',
     icon: 'CreditCard',
-    purpose: 'Process membership subscriptions, conference passes, and calculate student tax exemption (0.5% + ₹19) or tiered GST (5% / 12%).',
+    purpose: 'Process membership subscriptions, conference passes, and calculate student tax exemption (flat ₹9 platform fee; ₹5 for Pulse Pass, ₹0 for Pulse Elite) or tiered GST (5% / 12%).',
     permission: 'Required to execute a paid transaction.',
     access: 'ZENVITRA Financial Ledger, verified payment gateway tokenization, and statutory tax auditing.',
     security: 'PCI-DSS certified gateway tokenization; complete card numbers are never stored on ZENVITRA servers.',

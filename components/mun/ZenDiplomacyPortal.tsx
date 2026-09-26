@@ -35,9 +35,11 @@ import {
   Loader2,
   Search,
   Send,
-  UserCheck
+  UserCheck,
+  Lock
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import { SpotlightSubcard } from '@/components/mun/JoinZenDiplomacyCard';
 import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { broadcastActivitySync, subscribeToActivitySync } from '@/lib/reactiveActivityHub';
@@ -767,77 +769,96 @@ export function ZenDiplomacyPortal() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {committees.map((comm) => (
-              <div
-                key={comm.id}
-                className="rounded-3xl p-6 sm:p-8 bg-[#090c14] border border-white/10 hover:border-white/20 transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xl relative overflow-hidden group hover:-translate-y-1"
-              >
-                <div className="space-y-5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={`px-3 py-1 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider ${comm.badgeColor}`}>
-                      {comm.badge}
-                    </span>
-                    <span className="font-mono text-xs text-neutral-500 uppercase font-bold">
-                      {comm.code}
-                    </span>
-                  </div>
+            {committees.map((comm) => {
+              const glowColor = comm.code === 'AIPPM' 
+                ? 'rgba(245, 158, 11, 0.22)' 
+                : comm.code === 'EMI' 
+                ? 'rgba(6, 182, 212, 0.22)' 
+                : comm.code === 'ECOSOC' 
+                ? 'rgba(168, 85, 247, 0.22)' 
+                : 'rgba(244, 63, 94, 0.22)';
+              const borderColor = comm.code === 'AIPPM' 
+                ? 'rgba(245, 158, 11, 0.5)' 
+                : comm.code === 'EMI' 
+                ? 'rgba(6, 182, 212, 0.5)' 
+                : comm.code === 'ECOSOC' 
+                ? 'rgba(168, 85, 247, 0.5)' 
+                : 'rgba(244, 63, 94, 0.5)';
 
-                  <div className="space-y-1.5">
-                    <h3 className="font-display font-bold text-xl sm:text-2xl text-white tracking-tight group-hover:text-cyan-200 transition-colors">
-                      {comm.title}
-                    </h3>
-                    <p className="text-xs font-mono text-neutral-400">
-                      {comm.subtitle} &bull; {comm.format}
-                    </p>
-                  </div>
-
-                  {/* Official Ratified Agenda Banner */}
-                  <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-mono font-bold text-cyan-300">
-                      <span className="flex items-center gap-1.5">
-                        <Flame className="w-3.5 h-3.5 text-cyan-400" />
-                        AGENDA MANDATE
+              return (
+                <SpotlightSubcard
+                  key={comm.id}
+                  glowColor={glowColor}
+                  borderColor={borderColor}
+                  className="rounded-3xl p-6 sm:p-8 bg-[#090c14] border border-white/10 hover:border-white/20 transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xl relative group hover:-translate-y-1"
+                >
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`px-3 py-1 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider ${comm.badgeColor}`}>
+                        {comm.badge}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-cyan-400/80 px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/30">
-                        RATIFIED
+                      <span className="font-mono text-xs text-neutral-500 uppercase font-bold">
+                        {comm.code}
                       </span>
                     </div>
-                    <p className="text-xs text-neutral-200 leading-relaxed font-sans font-normal italic">
-                      {comm.agendaDescription}
-                    </p>
+
+                    <div className="space-y-1.5">
+                      <h3 className="font-display font-bold text-xl sm:text-2xl text-white tracking-tight group-hover:text-cyan-200 transition-colors">
+                        {comm.title}
+                      </h3>
+                      <p className="text-xs font-mono text-neutral-400">
+                        {comm.subtitle} &bull; {comm.format}
+                      </p>
+                    </div>
+
+                    {/* Official Ratified Agenda Banner */}
+                    <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-mono font-bold text-cyan-300">
+                        <span className="flex items-center gap-1.5">
+                          <Flame className="w-3.5 h-3.5 text-cyan-400" />
+                          AGENDA MANDATE
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-cyan-400/80 px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/30">
+                          RATIFIED
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-200 leading-relaxed font-sans font-normal italic">
+                        {comm.agendaDescription}
+                      </p>
+                    </div>
+
+                    {/* Portfolios & Format breakdown */}
+                    <div className="space-y-2 pt-2 text-xs font-mono text-neutral-400">
+                      <div>
+                        <span className="text-neutral-500 block uppercase text-[10px] tracking-wider">Eligible Portfolios</span>
+                        <span className="text-neutral-200 font-sans text-xs">{comm.portfolios} (60 Vacant)</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500 block uppercase text-[10px] tracking-wider">Delegation Rules</span>
+                        <span className="text-cyan-300 text-xs">{comm.delegates}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Portfolios & Format breakdown */}
-                  <div className="space-y-2 pt-2 text-xs font-mono text-neutral-400">
-                    <div>
-                      <span className="text-neutral-500 block uppercase text-[10px] tracking-wider">Eligible Portfolios</span>
-                      <span className="text-neutral-200 font-sans text-xs">{comm.portfolios}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-500 block uppercase text-[10px] tracking-wider">Delegation Rules</span>
-                      <span className="text-cyan-300 text-xs">{comm.delegates}</span>
-                    </div>
+                  <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-2">
+                    <Link
+                      href={`/matrix?committee=${comm.code.toLowerCase()}`}
+                      className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5"
+                    >
+                      <Grid className="w-3.5 h-3.5" />
+                      <span>Check Available Portfolios ({comm.code}) &rarr;</span>
+                    </Link>
+
+                    <Link
+                      href={`/forms/zen-diplomacy-2026?committee=${comm.code}`}
+                      className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold transition cursor-pointer inline-flex items-center gap-1 shrink-0"
+                    >
+                      Apply for {comm.code} &rarr;
+                    </Link>
                   </div>
-                </div>
-
-                <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
-                  <Link
-                    href="/matrix"
-                    className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5"
-                  >
-                    <Grid className="w-3.5 h-3.5" />
-                    <span>Check Available Portfolios &rarr;</span>
-                  </Link>
-
-                  <Link
-                    href={`/forms/zen-diplomacy-2026?committee=${comm.code}`}
-                    className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold transition cursor-pointer inline-flex items-center gap-1"
-                  >
-                    Apply for {comm.code} &rarr;
-                  </Link>
-                </div>
-              </div>
-            ))}
+                </SpotlightSubcard>
+              );
+            })}
           </div>
         </section>
 
@@ -947,51 +968,65 @@ export function ZenDiplomacyPortal() {
           </div>
         </section>
 
-        {/* ── 6. PRE-CONFERENCE WORKSHOP UPDATES (COMING SOON) ── */}
-        <section className="rounded-3xl p-8 sm:p-10 bg-gradient-to-r from-[#17122a] via-[#0e0c1a] to-[#17122a] border border-purple-500/30 shadow-2xl relative overflow-hidden space-y-6">
+        {/* ── 6. PRE-CONFERENCE WORKSHOP (LOCKED: AVAILABLE ONLY AFTER REGISTRATION & PAYMENT) ── */}
+        <section className="rounded-3xl p-8 sm:p-10 bg-gradient-to-r from-[#17122a] via-[#0e0c1a] to-[#17122a] border border-rose-500/30 shadow-2xl relative overflow-hidden space-y-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
             <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[11px] font-mono font-bold uppercase tracking-wider">
-                <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
-                <span>Pre-Conference Training</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[11px] font-mono font-bold uppercase tracking-wider">
+                <Lock className="w-3.5 h-3.5 text-rose-400" />
+                <span>AVAILABLE ONLY AFTER REGISTRATION &amp; PAYMENT</span>
               </div>
               <h2 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">
-                Delegate Training Workshop &bull; Updates Coming Soon
+                Pre-Conference Training Workshop &bull; Restricted Masterclass
               </h2>
               <p className="font-sans text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
-                Prior to Day 1, the Secretariat will host an intensive orientation masterclass covering Rules of Procedure (ROP), foreign policy citation standards, bilateral lobbying tactics, and draft resolution composition.
+                Prior to Day 1, the Secretariat will host an intensive orientation masterclass covering Rules of Procedure (ROP), foreign policy citation standards, bilateral lobbying tactics, and draft resolution composition. <strong className="text-white">This training room and preparation dossiers are accessible strictly to delegates with confirmed registration and verified payment pass.</strong>
               </p>
             </div>
 
-            {/* Notification Subscription Box */}
-            <div className="w-full lg:w-96 p-5 rounded-2xl bg-black/60 border border-white/10 space-y-3">
-              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
-                <BellRing className="w-3.5 h-3.5 text-purple-400" />
-                Get Notified on Workshop Release
-              </span>
+            {/* Locked Gate Card */}
+            <div className="w-full lg:w-96 p-5 rounded-2xl bg-black/70 border border-rose-500/30 space-y-3 text-left">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono text-rose-400 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+                  <Lock className="w-3.5 h-3.5 text-rose-400" />
+                  RESTRICTED PASS
+                </span>
+                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/30 text-rose-300">
+                  LOCKED
+                </span>
+              </div>
 
-              {workshopNotified ? (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>You are on the priority workshop notification list!</span>
+              {checkedResult?.status === 'ALLOCATED' ? (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-xs space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="font-bold">Access Unlocked! Verified Pass</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-300 font-sans">
+                    Welcome delegate <strong>{checkedResult.name}</strong>. Your training access is confirmed for {checkedResult.allocatedCommittee}.
+                  </p>
                 </div>
               ) : (
-                <form onSubmit={handleWorkshopSubscribe} className="space-y-2">
-                  <input
-                    type="email"
-                    required
-                    value={workshopEmail}
-                    onChange={(e) => setWorkshopEmail(e.target.value)}
-                    placeholder="Enter your email for dates & schedule..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-purple-400 transition font-mono"
-                  />
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-mono text-xs font-bold uppercase tracking-wider transition shadow-md cursor-pointer"
-                  >
-                    Subscribe for Workshop Alert
-                  </button>
-                </form>
+                <div className="space-y-3">
+                  <p className="text-xs text-neutral-300 font-sans leading-relaxed">
+                    Register as a delegate and complete payment reference verification to automatically unlock session links, speaker kits, and committee research dossiers.
+                  </p>
+                  <div className="space-y-2">
+                    <Link
+                      href="/forms/zen-diplomacy-2026"
+                      className="w-full py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold uppercase tracking-wider transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-black" />
+                      <span>Register as Delegate &rarr;</span>
+                    </Link>
+                    <a
+                      href="#matrix"
+                      className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white font-mono text-[11px] transition flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>Check Existing Pass Status</span>
+                    </a>
+                  </div>
+                </div>
               )}
             </div>
           </div>

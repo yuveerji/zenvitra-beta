@@ -62,11 +62,18 @@ import {
   RefreshCw,
   FileText,
   Upload,
-  AlertCircle
+  AlertCircle,
+  Building2,
+  Users
 } from 'lucide-react';
 import {
   ZenForm,
   ZenFormField,
+  ZenCommitteeChamber,
+  ZenSecretariatDept,
+  ZenBandwidthTier,
+  ZenSimulationConfig,
+  ZenMatrixConfig,
   ZenFormFieldType,
   ZenFormTheme,
   ZenFormSubmission,
@@ -96,6 +103,16 @@ import {
   getFontCssFamily
 } from '@/lib/formsThemes';
 import { ZEN_DIPLOMACY_2026_FORM_TEMPLATE } from '@/lib/forms/ZenDiplomacyFormTemplate';
+import {
+  exportTemplateAsJson,
+  downloadTemplateJsonFile,
+  generateShareableTemplateUrl,
+  saveCommunityTemplate,
+  unpackTemplateFromData,
+  importTemplateFromJson,
+  getTemplateById,
+  createFormFromTemplate
+} from '@/lib/formsTemplates';
 
 interface ZenFormsEditorProps {
   formId: string;
@@ -111,6 +128,13 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
   const [form, setForm] = useState<ZenForm | null>(null);
   const [activeCardId, setActiveCardId] = useState<string>('header');
   const [isThemeDrawerOpen, setIsThemeDrawerOpen] = useState(false);
+  const [isShareTemplateModalOpen, setIsShareTemplateModalOpen] = useState(false);
+  const [isImportTemplateModalOpen, setIsImportTemplateModalOpen] = useState(false);
+  const [importTemplateInput, setImportTemplateInput] = useState('');
+  const [importTemplateError, setImportTemplateError] = useState<string | null>(null);
+  const [copiedTemplateLink, setCopiedTemplateLink] = useState(false);
+  const [copiedTemplateJson, setCopiedTemplateJson] = useState(false);
+  const [publishedToCommunity, setPublishedToCommunity] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
@@ -135,6 +159,43 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
   // Load Form on mount
   useEffect(() => {
     if (formId === 'new') {
+      // Check if template data or template ID was provided via URL
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const templateDataParam = urlParams.get('templateData');
+        const templateParam = urlParams.get('template');
+
+        if (templateDataParam) {
+          const unpacked = unpackTemplateFromData(templateDataParam);
+          if (unpacked) {
+            saveZenForm(unpacked);
+            setForm(unpacked);
+            setHistory([unpacked]);
+            setHistoryIndex(0);
+            if (unpacked.fields.length > 0) setActiveCardId(unpacked.fields[0].id);
+            setSyncToast('✓ Template loaded from shared link!');
+            setTimeout(() => setSyncToast(null), 3500);
+            router.replace(`/forms/edit/${unpacked.id}`);
+            return;
+          }
+        }
+
+        if (templateParam) {
+          const tmpl = getTemplateById(templateParam);
+          if (tmpl) {
+            const spawned = createFormFromTemplate(tmpl);
+            saveZenForm(spawned);
+            setForm(spawned);
+            setHistory([spawned]);
+            setHistoryIndex(0);
+            if (spawned.fields.length > 0) setActiveCardId(spawned.fields[0].id);
+            setSyncToast(`✓ Created new form from template: "${tmpl.title}"`);
+            setTimeout(() => setSyncToast(null), 3500);
+            router.replace(`/forms/edit/${spawned.id}`);
+            return;
+          }
+        }
+      }
       const newForm: ZenForm = {
         id: `form_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         title: 'Untitled form',
@@ -354,10 +415,15 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
         type === 'phone' ? 'Phone / WhatsApp Number' :
         type === 'time' ? 'Time Selection' :
         type === 'url' ? 'Website / Portfolio URL' :
+        type === 'committee_selector' ? 'Select Committee / Council Chamber' :
+        type === 'department_selector' ? 'Secretariat Department Allocation' :
+        type === 'bandwidth_tier' ? 'Weekly Bandwidth & Workload Commitment' :
+        type === 'simulation_challenge' ? 'Department Simulation & Scenario Response' :
+        type === 'matrix_peeker' ? 'Live Dais Matrix HUD • Vacancy Peeker' :
         'Untitled Question',
       type,
       required: form.settings?.defaultQuestionsRequired ?? false,
-      options: ['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select', 'ranking'].includes(type)
+      options: ['multiple_choice', 'checkboxes', 'dropdown', 'radio', 'checkbox', 'select', 'ranking', 'committee_selector', 'department_selector', 'bandwidth_tier'].includes(type)
         ? ['Option 1', 'Option 2', 'Option 3']
         : undefined,
       hasOtherOption: false,
@@ -375,6 +441,153 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
       maxFileSizeMb: 10,
       mediaUrl: type === 'image_block' ? 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80' : undefined,
       videoUrl: type === 'video_block' ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : undefined,
+      chambers: type === 'committee_selector' ? [
+        {
+          id: 'aippm',
+          code: 'AIPPM',
+          title: 'All India Political Parties Meet (AIPPM)',
+          subtitle: 'National Parliamentary Council',
+          badge: 'HISTORIC & POLICY COUNCIL',
+          badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+          agenda: 'Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India...',
+          format: 'Moderated Parliamentary Debate & Legislative Bill Tabling',
+          tags: ['Lok Sabha ROP', 'Crisis Inflections', 'Domestic Policy']
+        },
+        {
+          id: 'education-ministry',
+          code: 'EMI',
+          title: 'Education Ministry of India (EMI)',
+          subtitle: 'Special Ministerial Assembly',
+          badge: 'MINISTERIAL OVERSIGHT',
+          badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+          agenda: 'Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026...',
+          format: 'Sovereign Ministerial Council & Direct Policy Blueprints',
+          tags: ['NEP 2026 Roadmap', 'Examination Integrity', 'Priority Allotment']
+        },
+        {
+          id: 'ecosoc',
+          code: 'ECOSOC',
+          title: 'United Nations Economic and Social Council (ECOSOC)',
+          subtitle: 'Principal UN Organ for Sustainable Development & Economic Cooperation',
+          badge: 'MULTILATERAL DEVELOPMENT PLENARY',
+          badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+          agenda: 'Deliberation upon Building an Equitable and Sustainable Global Development Framework...',
+          format: 'UN Rules of Procedure (ROP) & Draft Resolution Tabling',
+          tags: ['SDGs Financing', 'Global South Cooperation', 'Equitable Development']
+        },
+        {
+          id: 'unsc',
+          code: 'UNSC',
+          title: 'United Nations Security Council (UNSC)',
+          subtitle: 'Flagship Crisis & Security Body',
+          badge: 'CRISIS & SECURITY COUNCIL',
+          badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+          agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation...',
+          format: 'Continuous Crisis Procedure (CCP) & Presidential Directives',
+          tags: ['P5 Veto Dynamics', 'Binding Directives', 'High Experience Tier']
+        }
+      ] : undefined,
+      departments: type === 'department_selector' ? [
+        {
+          id: 'delegate-affairs',
+          index: '01',
+          name: 'Delegate Affairs',
+          label: 'Delegate Affairs (Delegate relations, registrations & queries)',
+          badge: 'DELEGATE RELATIONS',
+          badgeColor: 'border-cyan-500/30 text-cyan-300 bg-cyan-500/10',
+          iconName: 'Users',
+          focus: 'Delegate experience, portfolio allocation & communications',
+          responsibilities: ['Delegate communication & helpline', 'Registration support & verification', 'Portfolio allocation & preference matching'],
+          skills: ['Communication', 'Organisation', 'Patience', 'Problem-solving'],
+          practicalTask: 'Simulated assessment: Outline how you would de-escalate and resolve a frustrated delegate complaint regarding a duplicate portfolio allotment 1 hour before committee begins.'
+        },
+        {
+          id: 'academic-affairs',
+          index: '02',
+          name: 'Academic Affairs',
+          label: 'Academic Affairs (Background guides, agendas & study materials)',
+          badge: 'ACADEMIC EXCELLENCE',
+          badgeColor: 'border-emerald-500/30 text-emerald-300 bg-emerald-500/10',
+          iconName: 'GraduationCap',
+          focus: 'Academic excellence, background guides & committee quality',
+          responsibilities: ['Committee agenda framing & crisis briefs', 'Background guides & research dossiers curation', 'Rules of Procedure oversight'],
+          skills: ['Research', 'Writing', 'Critical thinking', 'MUN knowledge'],
+          practicalTask: 'Simulated assessment: Review and propose 2 substantive improvements or crisis inflection points for an international territorial sovereignty committee agenda.'
+        },
+        {
+          id: 'operations-logistics',
+          index: '03',
+          name: 'Operations & Logistics',
+          label: 'Operations & Logistics (Flawless execution, room management & schedules)',
+          badge: 'LOGISTICS & TIMETABLE',
+          badgeColor: 'border-amber-500/30 text-amber-300 bg-amber-500/10',
+          iconName: 'Building',
+          focus: 'Flawless execution, room management & technical schedules',
+          responsibilities: ['Digital assembly rooms allocation', 'Virtual registration desk & verification', 'Session timings, movement & caucus scheduling'],
+          skills: ['Organisation', 'Time management', 'Crisis management', 'Team coordination'],
+          practicalTask: 'Simulated assessment: Solve a scheduling overlap where an unmoderated caucus overruns by 25 minutes while a joint crisis communique is waiting for broadcast.'
+        },
+        {
+          id: 'tech-affairs',
+          index: '04',
+          name: 'Tech Affairs',
+          label: 'Tech Affairs (Platform bots, portals & live telemetry)',
+          badge: 'PLATFORM INFRASTRUCTURE',
+          badgeColor: 'border-sky-500/30 text-sky-300 bg-sky-500/10',
+          iconName: 'Cpu',
+          focus: 'Technology systems, digital infrastructure & platform bots',
+          responsibilities: ['ZEN.DIPLOMACY web portal maintenance', 'Real-time registration & sovereign matrix sync', 'Digital attendance & QR security verification'],
+          skills: ['Next.js/React', 'UI/UX', 'Troubleshooting', 'APIs'],
+          practicalTask: 'Simulated assessment: Describe your protocol for diagnosing and resolving a sudden socket / audio lag disconnect affecting 15 delegates in an active council chamber.'
+        },
+        {
+          id: 'design-creative',
+          index: '05',
+          name: 'Design & Creative',
+          label: 'Design & Creative (Visual assets, brochures & branding)',
+          badge: 'CINEMATIC ART DIRECTION',
+          badgeColor: 'border-purple-500/30 text-purple-300 bg-purple-500/10',
+          iconName: 'Palette',
+          focus: 'Visual identity, cinematic art direction & branding',
+          responsibilities: ['Official social media creatives & motion graphics', 'Official conference posters & delegate plaques', 'Certificates of Merit & Accords'],
+          skills: ['Figma', 'Photoshop', 'Illustrator', 'Typography'],
+          practicalTask: 'Simulated assessment: Provide a link to your design portfolio / Behance / Drive demonstrating typographic hierarchy and dark-mode brand consistency.'
+        }
+      ] : undefined,
+      bandwidthTiers: type === 'bandwidth_tier' ? [
+        {
+          id: 'standard',
+          label: '5–8 hours / week (Core tasks & weekly syncs)',
+          title: '5–8 Hours / Week',
+          tier: 'STANDARD TRACK',
+          desc: 'Attend weekly syncs, deliver departmental sprint tasks, and assist on assembly days.'
+        },
+        {
+          id: 'recommended',
+          label: '10–15 hours / week (Active departmental operations)',
+          title: '10–15 Hours / Week',
+          tier: 'RECOMMENDED TRACK',
+          desc: 'Drive daily team execution, formulate dossiers, coordinate delegate queries and logistics.'
+        },
+        {
+          id: 'executive',
+          label: '15–20+ hours / week (Department Lead / Intensive)',
+          title: '15–20+ Hours / Week',
+          tier: 'LEADERSHIP TRACK',
+          desc: 'Direct high-impact leadership, cross-department coordination and executive board briefings.'
+        }
+      ] : undefined,
+      simulationConfig: type === 'simulation_challenge' ? {
+        linkedFieldId: 'step1_primary_sector',
+        defaultPrompt: 'Simulated assessment: Formulate a concrete strategy and actionable execution protocol for high-pressure conference scenarios in your chosen department.'
+      } : undefined,
+      matrixConfig: type === 'matrix_peeker' ? {
+        title: 'Live Dais Matrix HUD • Vacancy Peeker',
+        matrixUrl: '/matrix',
+        buttonText: 'Open Live Matrix in New Tab',
+        instructions: 'Inspect live occupancy across AIPPM, EMI, ECOSOC & UNSC on the sovereign ledger before entering your preferences. Cross-reference vacant countries, portfolios, or ministerial seats to guarantee allotment priority.',
+        recommendedFormat: 'Recommended format: 1. Country / Seat, 2. Country / Seat, 3. Country / Seat'
+      } : undefined,
     };
 
     // Insert directly below active card, or append at end
@@ -483,7 +696,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
         { id: `q_${Date.now()}_4`, label: 'Primary Committee Preference', type: 'dropdown', required: true, options: ['UN Security Council', 'UN General Assembly Plenary', 'UN Human Rights Council', 'Historic Crisis'] },
         { id: `q_${Date.now()}_5`, label: 'First Portfolio Choice', type: 'short_answer', required: true },
         { id: `q_${Date.now()}_6`, label: 'Past MUN / Debate Experience & Accolades', type: 'paragraph', required: true },
-        { id: `q_${Date.now()}_7`, label: 'Dietary Preferences for Gala Dinner', type: 'multiple_choice', required: false, options: ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Jain Meal'] }
+        { id: `q_${Date.now()}_7`, label: 'Primary Policy Interest / Caucus Track', type: 'multiple_choice', required: false, options: ['International Security', 'Global Economy & Trade', 'Human Rights & Refugee Law', 'Technology & AI Ethics'] }
       ];
     } else if (templateName === 'executive_board') {
       importedQuestions = [
@@ -1765,6 +1978,45 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
               <Equal className="w-5 h-5 text-neutral-800 group-hover:scale-110 transition-transform" />
               <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded bg-neutral-800 text-white font-sans text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition shadow-lg">
                 Add section
+              </span>
+            </button>
+
+            {/* Divider */}
+            <div className="w-full h-px bg-neutral-200 my-0.5" />
+
+            {/* 7. Add Committee Chamber Selector */}
+            <button
+              onClick={() => handleAddQuestion('committee_selector')}
+              className="p-2.5 rounded-xl hover:bg-amber-50 hover:text-amber-600 transition group relative"
+              title="Add Committee Chamber Selector"
+            >
+              <Building2 className="w-5 h-5 text-amber-600 group-hover:scale-110 transition-transform" />
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded bg-neutral-800 text-white font-sans text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition shadow-lg">
+                Add Committee Chamber Cards
+              </span>
+            </button>
+
+            {/* 8. Add Department Leadership Selector */}
+            <button
+              onClick={() => handleAddQuestion('department_selector')}
+              className="p-2.5 rounded-xl hover:bg-purple-50 hover:text-purple-600 transition group relative"
+              title="Add Secretariat Department Cards"
+            >
+              <Users className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform" />
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded bg-neutral-800 text-white font-sans text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition shadow-lg">
+                Add Secretariat Leadership Wings
+              </span>
+            </button>
+
+            {/* 9. Add Bandwidth Tiers */}
+            <button
+              onClick={() => handleAddQuestion('bandwidth_tier')}
+              className="p-2.5 rounded-xl hover:bg-cyan-50 hover:text-cyan-600 transition group relative"
+              title="Add Bandwidth Tiers"
+            >
+              <Clock className="w-5 h-5 text-cyan-600 group-hover:scale-110 transition-transform" />
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded bg-neutral-800 text-white font-sans text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition shadow-lg">
+                Add Bandwidth Commitment Tiers
               </span>
             </button>
           </div>
@@ -3221,7 +3473,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                 className="w-full p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-left hover:bg-amber-500/20 transition space-y-1"
               >
                 <span className="font-bold text-sm text-amber-300 block">Standard MUN Delegate Registration (7 Questions)</span>
-                <span className="text-xs text-neutral-300 block">Name, Email, WhatsApp, Committee Preference, Portfolio, Experience, Gala Dietary.</span>
+                <span className="text-xs text-neutral-300 block">Name, Email, WhatsApp, Committee Preference, Portfolio, Experience, Policy Track.</span>
               </button>
 
               <button

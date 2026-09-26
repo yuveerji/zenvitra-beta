@@ -55,9 +55,13 @@ const PUBLIC_EXACT = new Set([
   '/robots.txt',
   '/sitemap.xml',
   '/favicon.ico',
+  '/zen-diplomacy-brochure.html',
 ]);
 
 const STATIC_EXTENSIONS = [
+  '.html',
+  '.htm',
+  '.pdf',
   '.png',
   '.jpg',
   '.jpeg',
@@ -114,6 +118,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(preregisterUrl, { status: 308 });
   }
 
+  // Handle /brochure or /prospectus redirect to /zen-diplomacy/brochure
+  if (pathname === '/brochure' || pathname.startsWith('/brochure/') || pathname === '/prospectus' || pathname.startsWith('/prospectus/')) {
+    const brochureUrl = new URL('/zen-diplomacy/brochure', request.url);
+    brochureUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(brochureUrl, { status: 307 });
+  }
+
   // Handle /pulse/xxx redirect to /pulse?user=xxx (excluding /pulse/create-story)
   if (pathname.startsWith('/pulse/') && pathname !== '/pulse/create-story') {
     const subPath = pathname.replace(/^\/pulse\//, '').split('/')[0]?.replace(/^@/, '').trim();
@@ -156,7 +167,8 @@ export function middleware(request: NextRequest) {
     pathname === '/favicon.ico' ||
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
-    pathname === '/manifest.json'
+    pathname === '/manifest.json' ||
+    pathname === '/zen-diplomacy-brochure.html'
   ) {
     return NextResponse.next();
   }
@@ -190,6 +202,11 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/countdown/') ||
     pathname === '/zen-diplomacy' ||
     pathname.startsWith('/zen-diplomacy/') ||
+    pathname === '/zen-diplomacy-brochure.html' ||
+    pathname === '/brochure' ||
+    pathname.startsWith('/brochure/') ||
+    pathname === '/prospectus' ||
+    pathname.startsWith('/prospectus/') ||
     pathname === '/matrix' ||
     pathname.startsWith('/matrix/') ||
     pathname === '/call' ||

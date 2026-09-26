@@ -163,8 +163,8 @@ export function ZenDocsCanvas({
               contentEditable={!isReaderMode}
               suppressContentEditableWarning
               onInput={onInput}
-              className={`flex-1 outline-none min-h-[850px] leading-relaxed px-3 sm:px-8 md:px-10 pb-20 ${
-                isLight ? 'selection:bg-cyan-400/20' : 'selection:bg-cyan-500/20'
+              className={`flex-1 outline-none min-h-[850px] leading-relaxed px-3 sm:px-8 md:px-10 pb-20 selection:bg-blue-600 selection:text-white ${
+                !isLight ? '[&_*]:!text-neutral-100 [&_h1]:!text-white [&_h2]:!text-white [&_h3]:!text-white [&_p]:!text-neutral-200 [&_hr]:!border-white/20 [&_table]:!text-neutral-100 [&_td]:!border-white/20 [&_th]:!border-white/20 [&_strong]:!text-white [&_em]:!text-neutral-200 [&_li]:!text-neutral-200' : ''
               } ${isReaderMode ? 'cursor-default' : 'cursor-text'}`}
               style={{
                 fontSize: isReaderMode ? `${Math.max(13, fontSize + 1)}pt` : `${fontSize}pt`,

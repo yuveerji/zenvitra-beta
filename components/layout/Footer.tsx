@@ -240,27 +240,39 @@ export function Footer() {
             </p>
             <ul className="space-y-2.5 text-xs font-mono text-neutral-400">
               <li>
-                <Link href="/pulse" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-cyan-400 group-hover:scale-150 transition-transform" />
-                  <span>ZEN.PULSE Feed</span>
+                <Link href="/forms" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-cyan-300 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
+                  <span>ZEN.FORMS Studio</span>
                 </Link>
               </li>
               <li>
-                <Link href="/pulse?tab=flux" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-rose-400 group-hover:scale-150 transition-transform" />
-                  <span>ZEN.SPARK Reels</span>
+                <Link href="/space" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-emerald-300 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                  <span>ZEN.SPACE Civic Hub</span>
                 </Link>
               </li>
               <li>
-                <Link href="/events" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-amber-400 group-hover:scale-150 transition-transform" />
-                  <span>ZEN.EVENTS Dais</span>
+                <Link href="/matrix" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-amber-300 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
+                  <span>PORTFOLIO MATRIX</span>
                 </Link>
               </li>
               <li>
-                <Link href="/press" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-violet-400 group-hover:scale-150 transition-transform" />
-                  <span>ZEN.PRESS Wire</span>
+                <Link href="/call" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
+                  <span className="w-1 h-1 rounded-full bg-purple-400 group-hover:scale-150 transition-transform" />
+                  <span>ZEN.CALL Encrypted AV</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/legislate" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
+                  <span className="w-1 h-1 rounded-full bg-blue-400 group-hover:scale-150 transition-transform" />
+                  <span>ZEN.LEGISLATE Lok Sabha</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/docs" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
+                  <span className="w-1 h-1 rounded-full bg-indigo-400 group-hover:scale-150 transition-transform" />
+                  <span>ZEN.DOCS Drafting</span>
                 </Link>
               </li>
               <li>
@@ -270,27 +282,15 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/solutions" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-blue-400 group-hover:scale-150 transition-transform" />
-                  <span>ZEN.SOLUTIONS</span>
+                <Link href="/pulse" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
+                  <span className="w-1 h-1 rounded-full bg-cyan-400 group-hover:scale-150 transition-transform" />
+                  <span>ZEN.PULSE Feed</span>
                 </Link>
               </li>
               <li>
                 <Link href="/payments" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400 group-hover:scale-150 transition-transform" />
-                  <span>ZEN.PAYMENTS Hub</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/mun/conference" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-purple-400 group-hover:scale-150 transition-transform" />
-                  <span>Conference Command</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/discussions" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
-                  <span className="w-1 h-1 rounded-full bg-indigo-400 group-hover:scale-150 transition-transform" />
-                  <span>Civic Assemblies</span>
+                  <span className="w-1 h-1 rounded-full bg-amber-400 group-hover:scale-150 transition-transform" />
+                  <span>ZEN.PAYMENTS Layer</span>
                 </Link>
               </li>
             </ul>
@@ -304,8 +304,25 @@ export function Footer() {
             </p>
             <ul className="space-y-2.5 text-xs font-mono text-neutral-400">
               <li>
-                <Link href="/mun" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 font-bold text-amber-300">
-                  <span>ZEN.MUN Operating System</span>
+                <Link href="/zen-diplomacy" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 font-bold text-cyan-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
+                  <span>ZEN.DIPLOMACY MUN 2026</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/matrix" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-amber-300 font-semibold">
+                  <span className="w-1 h-1 rounded-full bg-amber-400" />
+                  <span>Live 240-Seat Matrix</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/forms/zen-diplomacy-2026" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-emerald-300">
+                  <span>Delegate Application &rarr;</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/forms/zen-secretariat-2026" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-purple-300">
+                  <span>Secretariat Recruitment &rarr;</span>
                 </Link>
               </li>
               <li>
@@ -314,33 +331,23 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/committee/unsc-2026" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>UN Security Council</span>
+                <Link href="/matrix?committee=aippm" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
+                  <span>AIPPM Parliamentary Dais</span>
                 </Link>
               </li>
               <li>
-                <Link href="/committee/unga-plenary" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>UNGA Plenary Dais</span>
+                <Link href="/matrix?committee=emi" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
+                  <span>Education Ministry (EMI)</span>
                 </Link>
               </li>
               <li>
-                <Link href="/committee/unhrc-2026" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>Human Rights Council</span>
+                <Link href="/matrix?committee=ecosoc" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
+                  <span>ECOSOC Sovereign Council</span>
                 </Link>
               </li>
               <li>
-                <Link href="/press" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>International Press Bureau</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/events" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>Speaker Order Engine</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/events" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>Draft Resolutions</span>
+                <Link href="/matrix?committee=unsc" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
+                  <span>UN Security Council (UNSC)</span>
                 </Link>
               </li>
             </ul>

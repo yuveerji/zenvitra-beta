@@ -307,7 +307,7 @@ export function CommitteeChamber() {
       {/* ─────────────────────────────────────────────────────────────
           1. TOP DAIS BANNER & COMMITTEE SELECTOR
       ───────────────────────────────────────────────────────────── */}
-      <div className="relative p-5 sm:p-7 rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl backdrop-blur-3xl overflow-hidden">
+      <div className="relative p-5 sm:p-7 rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl backdrop-blur-3xl overflow-visible">
         {/* Subtle Ambient Light */}
         <div className="absolute -top-16 left-1/4 w-96 h-32 bg-white/[0.02] blur-[90px] rounded-full pointer-events-none" />
 

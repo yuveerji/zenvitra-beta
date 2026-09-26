@@ -516,7 +516,7 @@ export function PricingClient() {
     }
   };
 
-  /* ── TAX CALCULATION FORMULA (0.5% + ₹19 Tax; 0% GST for students/<=18, 12% GST for >18) ── */
+  /* ── TAX CALCULATION FORMULA (Flat ₹9 Platform Fee; ₹5 for Pulse Pass, ₹0 for Elite; 0% GST for students/<=18, 12% GST for >18) ── */
   const calculatePlanTaxes = (plan: Plan) => {
     let baseAmount = 0;
     if (!plan.isCustom && plan.priceINR > 0) {
@@ -531,10 +531,8 @@ export function PricingClient() {
       return { baseAmount: 0, transactionTax: 0, gstAmount: 0, totalPayable: 0, isGstExempt: true };
     }
 
-    // 0.5% + ₹19 (or $0.25 if USD)
-    const transactionTax = currency === 'INR'
-      ? Math.round(((baseAmount * 0.005) + 19) * 100) / 100
-      : Math.round(((baseAmount * 0.005) + 0.25) * 100) / 100;
+    // Flat Platform Fee: ₹9 (or $0.15 if USD)
+    const transactionTax = currency === 'INR' ? 9 : 0.15;
 
     // GST Rule:
     // - Age <= 18 (School / Minor): 0% GST (Exempt)
@@ -1588,8 +1586,8 @@ export function PricingClient() {
                       <>
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="text-neutral-400 flex items-center gap-1">
-                            <span>Transaction &amp; Gateway Protocol Tax:</span>
-                            <span className="text-neutral-500 text-[10px]">(0.5% + {currency === 'INR' ? '₹19' : '$0.25'})</span>
+                            <span>Platform Surcharge:</span>
+                            <span className="text-neutral-500 text-[10px]">(Flat {currency === 'INR' ? '₹9' : '$0.15'} · ₹5 with Pass · ₹0 Elite)</span>
                           </span>
                           <span className="text-amber-300 font-semibold">
                             +{currSymbol}{transactionTax.toFixed(2)}

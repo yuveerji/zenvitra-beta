@@ -150,7 +150,7 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
   },
   'take-rate': {
     id: 'take-rate',
-    term: 'Ethical 0.5% + ₹19 Settlement',
+    term: 'Ethical Flat ₹9 Platform Fee',
     tag: 'TRANSPARENT COMMERCE',
     icon: Sparkles,
     definition: 'An ethical alternative to predatory 10%-15% ticketing platforms. Organizers keep maximum funds for delegate experience while funding civic education.',

@@ -24,7 +24,16 @@ import {
   Clock,
   Eye,
   Edit3,
-  BarChart3
+  BarChart3,
+  Building2,
+  Users,
+  Code,
+  Check,
+  X,
+  Upload,
+  UploadCloud,
+  FileDown,
+  RefreshCw
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -35,8 +44,24 @@ import {
   getFormSubmissions,
   exportSubmissionsToCsv,
   syncFormSubmissionsToGoogleSheets,
-  getZenFormsSheetsConfig
+  getZenFormsSheetsConfig,
+  resetZenFormToDefault
 } from '@/lib/formsStorage';
+import {
+  ZenFormTemplate
+} from '@/types/forms';
+import {
+  getOfficialTemplates,
+  getCommunityTemplates,
+  saveCommunityTemplate,
+  getAllTemplates,
+  generateShareableTemplateUrl,
+  downloadTemplateJsonFile,
+  exportTemplateAsJson,
+  importTemplateFromJson,
+  createFormFromTemplate,
+  unpackTemplateFromData
+} from '@/lib/formsTemplates';
 import { ZenForm, ZenFormTheme } from '@/types/forms';
 import { ZenFormsSheetsPanel } from '@/components/forms/ZenFormsSheetsPanel';
 
@@ -48,10 +73,29 @@ export default function ZenFormsHubPage() {
   const [activeMenuFormId, setActiveMenuFormId] = useState<string | null>(null);
   const [syncToast, setSyncToast] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedTemplateForShare, setSelectedTemplateForShare] = useState<ZenForm | null>(null);
+  const [isShareTemplateModalOpen, setIsShareTemplateModalOpen] = useState(false);
+  const [isImportTemplateModalOpen, setIsImportTemplateModalOpen] = useState(false);
+  const [importInput, setImportInput] = useState('');
+  const [importError, setImportError] = useState<string | null>(null);
+  const [copiedTemplateUrl, setCopiedTemplateUrl] = useState(false);
+  const [copiedTemplateJson, setCopiedTemplateJson] = useState(false);
+  const [communityTemplates, setCommunityTemplates] = useState<ZenFormTemplate[]>([]);
+  const [templatesTab, setTemplatesTab] = useState<'official' | 'community'>('official');
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tmplParam = params.get('template');
+      const dataParam = params.get('templateData');
+      if (tmplParam || dataParam) {
+        router.push(`/forms/edit/new?${params.toString()}`);
+        return;
+      }
+      setCommunityTemplates(getCommunityTemplates());
+    }
     refreshForms();
-  }, []);
+  }, [router]);
 
   const refreshForms = () => {
     const localForms = getPublicForms();
@@ -76,10 +120,6 @@ export default function ZenFormsHubPage() {
           const userForms = Array.from(map.values()).filter(
             (f) =>
               f &&
-              f.id !== 'zen-diplomacy-2026-registration' &&
-              f.slug !== 'zen-diplomacy-2026' &&
-              f.id !== 'zen-secretariat-2026-application' &&
-              f.slug !== 'zen-secretariat-2026' &&
               f.id !== 'form_jharokha_delegate_2026' &&
               f.id !== 'form_horizon_eb_2026' &&
               !f.slug?.includes('jharokha') &&
@@ -93,10 +133,6 @@ export default function ZenFormsHubPage() {
 
   const filteredForms = forms.filter((f) =>
     f &&
-    f.id !== 'zen-diplomacy-2026-registration' &&
-    f.slug !== 'zen-diplomacy-2026' &&
-    f.id !== 'zen-secretariat-2026-application' &&
-    f.slug !== 'zen-secretariat-2026' &&
     (f.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (f.description && f.description.toLowerCase().includes(searchQuery.toLowerCase())))
   );
@@ -158,7 +194,7 @@ export default function ZenFormsHubPage() {
         { id: 'rsvp_name', label: 'Full Attendee Name', type: 'short_answer', required: true, placeholder: 'Your official credential name' },
         { id: 'rsvp_org', label: 'Organization / Sovereign Delegation', type: 'short_answer', required: true, placeholder: 'e.g. Ministry of Foreign Affairs / Company' },
         { id: 'rsvp_guests', label: 'Number of Accompanying Guests', type: 'number', required: false, placeholder: '0' },
-        { id: 'rsvp_diet', label: 'Hospitality & Dietary Preferences', type: 'checkboxes', required: false, options: ['Vegetarian', 'Vegan', 'Halal', 'Kosher', 'Gluten-Free', 'None'] }
+        { id: 'rsvp_track', label: 'Preferred Session Track / Working Group', type: 'multiple_choice', required: false, options: ['Plenary Debate', 'Economic Policy', 'Technology Governance', 'Youth Leadership'] }
       ]
     },
     {
@@ -303,6 +339,38 @@ export default function ZenFormsHubPage() {
                 </span>
               </h1>
             </div>
+          </div>
+
+          {/* Share Your Template & Import Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                if (forms.length > 0) {
+                  setSelectedTemplateForShare(forms[0]);
+                  setIsShareTemplateModalOpen(true);
+                } else {
+                  router.push('/forms/edit/new');
+                }
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-mono text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-amber-500/15 cursor-pointer shrink-0"
+              title="Share any of your ZenForms as a reusable template"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-black" />
+              <span>Share Template</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setImportInput('');
+                setImportError(null);
+                setIsImportTemplateModalOpen(true);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 text-xs font-mono transition flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Import a template from JSON or shared link"
+            >
+              <FileDown className="w-3.5 h-3.5 text-amber-400" />
+              <span>Import</span>
+            </button>
           </div>
 
           {/* Search Input (Google Forms Search Style) */}
@@ -505,13 +573,20 @@ export default function ZenFormsHubPage() {
                   {/* Card Bottom Meta */}
                   <div className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <h3
-                        onClick={() => router.push(`/forms/edit/${form.id}`)}
-                        className="text-sm font-bold text-white hover:text-amber-400 transition cursor-pointer truncate flex-1"
-                        title={form.title}
-                      >
-                        {form.title}
-                      </h3>
+                      <div className="flex-1 min-w-0">
+                        {(form.slug === 'zen-diplomacy-2026' || form.slug === 'zen-secretariat-2026') && (
+                          <span className="inline-block px-2 py-0.5 rounded text-[8px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-1">
+                            CONFIGURABLE TEMPLATE & LIVE FORM
+                          </span>
+                        )}
+                        <h3
+                          onClick={() => router.push(`/forms/edit/${form.id}`)}
+                          className="text-sm font-bold text-white hover:text-amber-400 transition cursor-pointer truncate"
+                          title={form.title}
+                        >
+                          {form.title}
+                        </h3>
+                      </div>
 
                       {/* 3-Dot Menu */}
                       <div className="relative flex-shrink-0">
@@ -554,6 +629,48 @@ export default function ZenFormsHubPage() {
                               <Copy className="w-3.5 h-3.5" />
                               <span>{copiedId === form.id ? 'Copied Link!' : 'Copy Link'}</span>
                             </button>
+
+                            {/* Share as Template */}
+                            <button
+                              onClick={() => {
+                                setSelectedTemplateForShare(form);
+                                setIsShareTemplateModalOpen(true);
+                                setActiveMenuFormId(null);
+                              }}
+                              className="w-full px-3 py-2 rounded-lg hover:bg-amber-500/10 text-amber-300 flex items-center gap-2"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Share as Template</span>
+                            </button>
+
+                            {/* Download Template JSON */}
+                            <button
+                              onClick={() => {
+                                downloadTemplateJsonFile(form);
+                                setActiveMenuFormId(null);
+                              }}
+                              className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
+                            >
+                              <Download className="w-3.5 h-3.5 text-neutral-400" />
+                              <span>Export Template (.json)</span>
+                            </button>
+
+                            {/* Reset option for Secretariat and Diplomacy */}
+                            {(form.slug === 'zen-diplomacy-2026' || form.slug === 'zen-secretariat-2026') && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Reset "${form.title}" to default template?`)) {
+                                    resetZenFormToDefault(form.slug || form.id);
+                                    refreshForms();
+                                    setActiveMenuFormId(null);
+                                  }
+                                }}
+                                className="w-full px-3 py-2 rounded-lg hover:bg-rose-500/10 text-rose-300 flex items-center gap-2"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5 text-rose-400" />
+                                <span>Reset to Default Template</span>
+                              </button>
+                            )}
 
                             <button
                               onClick={async () => {
@@ -653,7 +770,365 @@ export default function ZenFormsHubPage() {
             </div>
           )}
         </section>
+
+        {/* ── SECTION 3: COMMUNITY & OFFICIAL TEMPLATES SHOWCASE ── */}
+        <section className="space-y-4 pt-6 border-t border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-white font-display flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>Featured & Community Template Directory</span>
+              </h2>
+              <p className="text-xs text-neutral-400 font-sans">
+                Browse official ratified templates or share your custom ZenForms templates with other organizers.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (forms.length > 0) {
+                    setSelectedTemplateForShare(forms[0]);
+                    setIsShareTemplateModalOpen(true);
+                  }
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Share Your Template</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-2">
+            {getOfficialTemplates().map((tmpl) => (
+              <div
+                key={tmpl.id}
+                className="p-5 rounded-2xl bg-[#0c0f17] border border-white/10 hover:border-amber-400/40 transition-all duration-300 flex flex-col justify-between space-y-4 shadow-xl group relative overflow-hidden"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider border"
+                      style={{
+                        borderColor: `${tmpl.accentColor || '#f59e0b'}40`,
+                        color: tmpl.accentColor || '#f59e0b',
+                        backgroundColor: `${tmpl.accentColor || '#f59e0b'}15`
+                      }}
+                    >
+                      {tmpl.category}
+                    </span>
+                    <span className="text-[10px] font-mono text-neutral-500">
+                      {tmpl.form.fields.length} questions
+                    </span>
+                  </div>
+
+                  <h3 className="font-display font-bold text-white text-base group-hover:text-amber-300 transition-colors line-clamp-1">
+                    {tmpl.title}
+                  </h3>
+
+                  <p className="text-xs text-neutral-300 leading-relaxed font-sans line-clamp-2">
+                    {tmpl.description}
+                  </p>
+
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {(tmpl.tags || []).map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono text-neutral-400">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = generateShareableTemplateUrl(tmpl.form);
+                      navigator.clipboard.writeText(url);
+                      setSyncToast(`✓ Copied shareable link for "${tmpl.title}"!`);
+                      setTimeout(() => setSyncToast(null), 3000);
+                    }}
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition cursor-pointer"
+                    title="Copy Shareable Template Link"
+                  >
+                    <Share2 className="w-4 h-4 text-amber-400" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const spawned = createFormFromTemplate(tmpl);
+                      saveZenForm(spawned);
+                      router.push(`/forms/edit/${spawned.id}`);
+                    }}
+                    className="flex-1 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                  >
+                    <span>Use Template</span>
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
+
+      {/* ── SHARE TEMPLATE MODAL ── */}
+      {isShareTemplateModalOpen && selectedTemplateForShare && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md text-left animate-fadeIn">
+          <div className="w-full max-w-xl bg-[#0d1019] border border-amber-500/40 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
+                  <Sparkles className="w-5 h-5 text-black" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white font-display">Share Your ZenForms Template</h3>
+                  <p className="text-xs text-neutral-400">Share this form so others can clone, customize, and deploy it.</p>
+                </div>
+              </div>
+              <button onClick={() => setIsShareTemplateModalOpen(false)} className="p-1 text-neutral-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Template Card Preview */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-white/[0.03] to-transparent border border-amber-500/30 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-display font-bold text-white text-base">{selectedTemplateForShare.title}</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold uppercase border border-amber-500/40">
+                  {selectedTemplateForShare.category}
+                </span>
+              </div>
+              <p className="text-xs text-neutral-300 leading-relaxed font-sans line-clamp-2">
+                {selectedTemplateForShare.description || 'Pre-configured form template.'}
+              </p>
+              <div className="flex items-center gap-3 text-[10px] font-mono text-neutral-400 pt-1">
+                <span>{selectedTemplateForShare.fields.length} questions configured</span>
+                <span>&bull;</span>
+                <span>Theme: {selectedTemplateForShare.theme}</span>
+              </div>
+            </div>
+
+            {/* 1. Shareable Template URL */}
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-neutral-300 block font-bold">1. Shareable Template Link (Instant Clone)</label>
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-black/60 border border-white/15 focus-within:border-amber-400">
+                <input
+                  type="text"
+                  readOnly
+                  value={generateShareableTemplateUrl(selectedTemplateForShare)}
+                  className="flex-1 bg-transparent px-2 text-xs font-mono text-neutral-200 outline-none select-all truncate"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = generateShareableTemplateUrl(selectedTemplateForShare);
+                    navigator.clipboard.writeText(url);
+                    setCopiedTemplateUrl(true);
+                    setSyncToast('✓ Template link copied to clipboard!');
+                    setTimeout(() => setCopiedTemplateUrl(false), 2500);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow-md"
+                >
+                  {copiedTemplateUrl ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedTemplateUrl ? 'Copied!' : 'Copy Link'}</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-neutral-400 font-sans">
+                Anyone opening this link can immediately clone and customize this template into their own ZenForms builder.
+              </p>
+            </div>
+
+            {/* 2. Download JSON or Copy Code */}
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-neutral-300 block font-bold">2. Export Template File & Code</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadTemplateJsonFile(selectedTemplateForShare);
+                    setSyncToast('✓ Downloaded template JSON file!');
+                  }}
+                  className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 text-neutral-200 transition flex items-center justify-center gap-2 text-xs font-mono font-medium cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-amber-400" />
+                  <span>Download .zenform.json</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const json = exportTemplateAsJson(selectedTemplateForShare);
+                    navigator.clipboard.writeText(json);
+                    setCopiedTemplateJson(true);
+                    setSyncToast('✓ Template JSON copied to clipboard!');
+                    setTimeout(() => setCopiedTemplateJson(false), 2500);
+                  }}
+                  className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 text-neutral-200 transition flex items-center justify-center gap-2 text-xs font-mono font-medium cursor-pointer"
+                >
+                  {copiedTemplateJson ? <Check className="w-4 h-4 text-emerald-400" /> : <Code className="w-4 h-4 text-amber-400" />}
+                  <span>{copiedTemplateJson ? 'JSON Copied!' : 'Copy JSON Code'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsShareTemplateModalOpen(false)}
+                className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white font-medium transition cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── IMPORT TEMPLATE MODAL ── */}
+      {isImportTemplateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md text-left animate-fadeIn">
+          <div className="w-full max-w-xl bg-[#0d1019] border border-white/20 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <FileDown className="w-5 h-5 text-amber-400" />
+                <h3 className="text-lg font-bold text-white font-display">Import ZenForms Template</h3>
+              </div>
+              <button onClick={() => setIsImportTemplateModalOpen(false)} className="p-1 text-neutral-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-300 font-sans">
+              Paste a shared template link or template JSON code, or upload a <code>.zenform.json</code> file to launch in the editor.
+            </p>
+
+            <div className="space-y-3">
+              {/* File upload option */}
+              <label className="p-4 rounded-2xl border border-dashed border-white/20 hover:border-amber-400/60 bg-white/[0.02] flex items-center justify-center gap-2 cursor-pointer text-xs font-mono text-neutral-300 hover:text-white transition">
+                <Upload className="w-4 h-4 text-amber-400" />
+                <span>Upload .zenform.json File</span>
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        const content = evt.target?.result as string;
+                        if (content) {
+                          const parsed = importTemplateFromJson(content);
+                          if (parsed) {
+                            saveZenForm(parsed);
+                            setIsImportTemplateModalOpen(false);
+                            router.push(`/forms/edit/${parsed.id}`);
+                          } else {
+                            setImportError('Invalid template JSON format.');
+                          }
+                        }
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                  className="hidden"
+                />
+              </label>
+
+              {/* Paste Text / URL area */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-neutral-400 block">Or Paste Template Link or JSON Code:</label>
+                <textarea
+                  rows={4}
+                  value={importInput}
+                  onChange={(e) => {
+                    setImportInput(e.target.value);
+                    setImportError(null);
+                  }}
+                  placeholder="Paste URL (e.g. https://.../forms?templateData=...) or JSON code here..."
+                  className="w-full p-3 rounded-xl bg-black/60 border border-white/15 text-white font-mono text-xs outline-none focus:border-amber-400"
+                />
+              </div>
+
+              {importError && (
+                <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-mono">
+                  {importError}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => setIsImportTemplateModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-neutral-400 hover:text-white transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const trimmed = importInput.trim();
+                  if (!trimmed) {
+                    setImportError('Please paste a template link or JSON code.');
+                    return;
+                  }
+
+                  // 1. If it's a URL
+                  if (trimmed.includes('templateData=')) {
+                    try {
+                      const urlObj = new URL(trimmed);
+                      const param = urlObj.searchParams.get('templateData');
+                      if (param) {
+                        const parsed = unpackTemplateFromData(param);
+                        if (parsed) {
+                          saveZenForm(parsed);
+                          setIsImportTemplateModalOpen(false);
+                          router.push(`/forms/edit/${parsed.id}`);
+                          return;
+                        }
+                      }
+                    } catch {}
+                  }
+
+                  if (trimmed.includes('template=')) {
+                    try {
+                      const urlObj = new URL(trimmed);
+                      const param = urlObj.searchParams.get('template');
+                      if (param) {
+                        const tmpl = getAllTemplates().find(t => t.id === param || t.slug === param);
+                        if (tmpl) {
+                          const spawned = createFormFromTemplate(tmpl);
+                          saveZenForm(spawned);
+                          setIsImportTemplateModalOpen(false);
+                          router.push(`/forms/edit/${spawned.id}`);
+                          return;
+                        }
+                      }
+                    } catch {}
+                  }
+
+                  // 2. Try parsing as JSON
+                  const parsed = importTemplateFromJson(trimmed);
+                  if (parsed) {
+                    saveZenForm(parsed);
+                    setIsImportTemplateModalOpen(false);
+                    router.push(`/forms/edit/${parsed.id}`);
+                    return;
+                  }
+
+                  setImportError('Unable to parse template from the provided link or JSON.');
+                }}
+                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition cursor-pointer shadow-lg"
+              >
+                Load & Edit Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

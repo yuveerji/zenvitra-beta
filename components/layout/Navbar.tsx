@@ -27,7 +27,10 @@ import {
   Layers,
   Gavel,
   MessageSquare,
-  BookOpen
+  BookOpen,
+  Video,
+  Globe,
+  Grid
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { SocialMindMapModal } from '@/components/home/SocialMindMapModal';
@@ -67,18 +70,18 @@ export function Navbar({
   ];
 
   const secondaryNavLinks = [
-    { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Encrypted', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
-    { name: 'ZEN.DOCS', href: '/docs', icon: BookOpen, tag: 'Workspace', desc: 'Sovereign Collaborative Drafting, Resolutions & Publishing' },
+    { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Studio', desc: 'Sovereign Form Studio, Shareable Templates & Direct Ledger Exports' },
+    { name: 'ZEN.SPACE', href: '/space', icon: Globe, tag: 'Civic Hub', desc: 'Custom Civic Bio, Portfolios, Verified Links & Custom Blocks' },
+    { name: 'PORTFOLIO MATRIX', href: '/matrix', icon: Grid, tag: 'Live Ledger', desc: 'Real-Time 240-Seat Sovereign Committee Allocations & Status' },
+    { name: 'ZEN.DIPLOMACY', href: '/zen-diplomacy', icon: Crown, tag: 'Flagship MUN', desc: 'Oct 24-25 Virtual MUN, Dossiers, Guidelines & Live Chambers' },
+    { name: 'ZEN.CALL', href: '/call', icon: Video, tag: 'Encrypted AV', desc: 'Sovereign High-Fidelity Diplomatic Audio & Video Chambers' },
     { name: 'ZEN.LEGISLATE', href: '/legislate', icon: Scale, tag: 'Lok Sabha', desc: 'Parliamentary Bill Drafting, Official Dispatches & Chamber Motions' },
-    { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Public Ledger', desc: 'Sovereign Form Builder, Custom Aesthetics & Ledger Exports' },
-    { name: 'ZEN.MUN', href: '/mun', icon: Crown, tag: 'OS', desc: 'Complete Model United Nations Operating System' },
-    { name: 'Chamber', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
+    { name: 'ZEN.DOCS', href: '/docs', icon: BookOpen, tag: 'Workspace', desc: 'Sovereign Collaborative Drafting, Resolutions & Publishing' },
+    { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Encrypted', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
+    { name: 'Chamber Dais', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },
     { name: 'Conference OS', href: '/mun/conference', icon: Layers, tag: 'Secretariat', desc: 'Secretariat Command Center & Liveboard' },
-    { name: 'Manifesto', href: '/manifesto', icon: Flame, tag: 'Declaration', desc: 'Declaration of Youth Digital Sovereignty' },
-    { name: 'Impact', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 4 Months with Video Proof' },
-    { name: 'Solutions', href: '/solutions', icon: Sparkles, tag: 'Architecture', desc: 'Civic, Tech & Media Architecture' },
-    { name: 'About', href: '/about', icon: Compass, tag: 'Governance', desc: 'Our Mission, Founders & Global Secretariat' },
+    { name: 'Impact Ledger', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 4 Months with Video Proof' },
   ];
 
   const allNavLinks = [...primaryNavLinks, ...secondaryNavLinks];
@@ -371,7 +374,7 @@ export function Navbar({
                         </span>
                       </div>
                       <span className="font-mono text-[10px] text-cyan-400/90 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-full font-medium">
-                        10 Nodes Active
+                        12 Sovereign Nodes Active
                       </span>
                     </div>
 
@@ -387,7 +390,7 @@ export function Navbar({
                         </div>
 
                         <div className="space-y-1">
-                          {secondaryNavLinks.slice(0, 5).map((item) => {
+                          {secondaryNavLinks.slice(0, 6).map((item) => {
                             const Icon = item.icon;
                             const isCurrent = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 
@@ -440,7 +443,7 @@ export function Navbar({
                         </div>
 
                         <div className="space-y-1">
-                          {secondaryNavLinks.slice(5).map((item) => {
+                          {secondaryNavLinks.slice(6).map((item) => {
                             const Icon = item.icon;
                             const isCurrent = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 

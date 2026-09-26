@@ -29,7 +29,10 @@ import {
   Layers,
   HelpCircle,
   ExternalLink,
-  X
+  X,
+  GraduationCap,
+  UploadCloud,
+  Check
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -114,6 +117,77 @@ export function PaymentsHubClient() {
   const [invClientEmail, setInvClientEmail] = useState('');
   const [invItemDesc, setInvItemDesc] = useState('');
   const [invItemAmount, setInvItemAmount] = useState('5000');
+
+  // Student ID Verification State
+  const [studentVerification, setStudentVerification] = useState<{
+    status: 'VERIFIED' | 'PENDING' | 'NONE';
+    fileName?: string;
+    fileSize?: string;
+    institution?: string;
+    rollNumber?: string;
+    verifiedAt?: string;
+  }>(() => {
+    if (typeof window === 'undefined') return { status: 'NONE' };
+    try {
+      const stored = localStorage.getItem('zenvitra_student_verification');
+      return stored ? JSON.parse(stored) : { status: 'NONE' };
+    } catch {
+      return { status: 'NONE' };
+    }
+  });
+
+  const [studentInstitutionInput, setStudentInstitutionInput] = useState('');
+  const [studentRollInput, setStudentRollInput] = useState('');
+  const [studentIdFile, setStudentIdFile] = useState<{ name: string; size: string } | null>(null);
+  const [isVerifyingStudent, setIsVerifyingStudent] = useState(false);
+  const [studentIdError, setStudentIdError] = useState<string | null>(null);
+
+  const handleStudentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setStudentIdError('File exceeds 5MB size limit.');
+        return;
+      }
+      setStudentIdFile({
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`
+      });
+      setStudentIdError(null);
+    }
+  };
+
+  const handleVerifyStudentId = () => {
+    if (!studentIdFile) {
+      setStudentIdError('Please select a valid school or university student ID image/PDF.');
+      return;
+    }
+    setIsVerifyingStudent(true);
+    setTimeout(() => {
+      const payload = {
+        status: 'VERIFIED' as const,
+        verified: true,
+        fileName: studentIdFile.name,
+        fileSize: studentIdFile.size,
+        institution: studentInstitutionInput.trim() || 'Accredited Educational Institution',
+        rollNumber: studentRollInput.trim() || 'STU-' + Math.floor(100000 + Math.random() * 900000),
+        verifiedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      };
+      setStudentVerification(payload);
+      setIsVerifyingStudent(false);
+      try {
+        localStorage.setItem('zenvitra_student_verification', JSON.stringify(payload));
+      } catch {}
+    }, 600);
+  };
+
+  const handleRevokeStudentId = () => {
+    setStudentVerification({ status: 'NONE' });
+    setStudentIdFile(null);
+    try {
+      localStorage.removeItem('zenvitra_student_verification');
+    } catch {}
+  };
 
   // Filtered transactions
   const filteredTxns = useMemo(() => {
@@ -222,7 +296,7 @@ export function PaymentsHubClient() {
           </div>
 
           <p className="text-sm text-neutral-400 max-w-3xl leading-relaxed font-sans">
-            The sovereign financial layer for <strong className="text-white">ZEN.EVENTS, ZEN.MUN, subscriptions, B2B invoices, and creator payouts</strong>. Incorporating verifiable PCI-DSS tokenization, 0.5% + ₹19 statutory gateway tax, and student GST exemptions.
+            The sovereign financial layer for <strong className="text-white">ZEN.EVENTS, ZEN.MUN, subscriptions, B2B invoices, and creator payouts</strong>. Incorporating verifiable PCI-DSS tokenization, flat ₹9 platform fee (₹5 for Pulse Pass, ₹0 for Pulse Elite), and student GST exemptions.
           </p>
 
           {/* Audience Mode Switcher */}
@@ -286,6 +360,113 @@ export function PaymentsHubClient() {
                   Manage Subscription
                 </Link>
               </div>
+            </div>
+
+            {/* Student ID Upload & Verification Module */}
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-950/25 via-[#0c1017] to-black border border-emerald-500/30 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-base font-bold text-white font-display">Student ID Verification &amp; Tax Exemption</h4>
+                      {studentVerification.status === 'VERIFIED' ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[10px] font-bold flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          VERIFIED STUDENT
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[10px] font-bold">
+                          UNVERIFIED / PENDING
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-neutral-400">
+                      Unlocks 0% GST Student Exemption on delegate passes + flat ₹5 platform fee (₹0 with Pulse Elite).
+                    </p>
+                  </div>
+                </div>
+
+                {studentVerification.status === 'VERIFIED' && (
+                  <button
+                    type="button"
+                    onClick={handleRevokeStudentId}
+                    className="text-xs text-neutral-400 hover:text-rose-400 font-mono underline transition cursor-pointer"
+                  >
+                    Update / Re-verify ID
+                  </button>
+                )}
+              </div>
+
+              {studentVerification.status === 'VERIFIED' ? (
+                <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div>
+                    <span className="text-[10px] text-neutral-500 block uppercase">Institution</span>
+                    <span className="text-white font-semibold">{studentVerification.institution || 'Accredited Institution'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-neutral-500 block uppercase">Student ID / Roll No.</span>
+                    <span className="text-emerald-300 font-semibold">{studentVerification.rollNumber || 'STU-VERIFIED'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-neutral-500 block uppercase">Verified Document</span>
+                    <span className="text-neutral-300 truncate block">{studentVerification.fileName || 'Student_ID_Proof.pdf'}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-mono text-neutral-400">School / College / University Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Delhi Public School / St. Stephen's"
+                        value={studentInstitutionInput}
+                        onChange={(e) => setStudentInstitutionInput(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-white placeholder-neutral-500 font-mono focus:outline-none focus:border-emerald-400"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-mono text-neutral-400">Student Roll / Enrollment No.</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 2026-DPS-1049"
+                        value={studentRollInput}
+                        onChange={(e) => setStudentRollInput(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/15 text-xs text-white placeholder-neutral-500 font-mono focus:outline-none focus:border-emerald-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <label className="flex-1 w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-white/20 hover:border-emerald-400/50 bg-white/[0.02] cursor-pointer text-xs font-mono text-neutral-300 transition">
+                      <UploadCloud className="w-4 h-4 text-emerald-400" />
+                      <span>{studentIdFile ? `Selected: ${studentIdFile.name} (${studentIdFile.size})` : 'Choose Student ID Photo or PDF (Max 5MB)'}</span>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={handleStudentUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      disabled={isVerifyingStudent}
+                      onClick={handleVerifyStudentId}
+                      className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-md cursor-pointer disabled:opacity-50 shrink-0"
+                    >
+                      {isVerifyingStudent ? 'Verifying...' : 'Verify Student ID'}
+                    </button>
+                  </div>
+
+                  {studentIdError && (
+                    <p className="text-[11px] text-rose-400 font-mono">{studentIdError}</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Transactions Explorer */}

@@ -565,7 +565,7 @@ export function ConferenceCommandCenter() {
                     <div className="p-5 rounded-2xl bg-black border border-white/10 space-y-3">
                       <div className="flex justify-between"><span>Gross Ticket Sales:</span><strong className="text-white">₹2,43,283</strong></div>
                       <div className="flex justify-between"><span>Refunds Processed:</span><strong className="text-amber-400">₹7,980</strong></div>
-                      <div className="flex justify-between"><span>Platform Surcharge (0.5% + ₹19):</span><strong className="text-neutral-400">₹6,082</strong></div>
+                      <div className="flex justify-between"><span>Platform Surcharge (Flat ₹9 Fee):</span><strong className="text-neutral-400">₹6,082</strong></div>
                       <div className="flex justify-between pt-2 border-t border-white/10 font-bold text-sm"><span>Net Payable to Organizer:</span><strong className="text-cyan-300">₹2,29,221</strong></div>
                     </div>
 

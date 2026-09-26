@@ -40,7 +40,7 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
       label: 'Full Name of the Delegate',
       type: 'text',
       placeholder: 'e.g. Ananya Sharma',
-      description: 'As it should appear on your official conference placard and verifiable ZEN.CERTIFY credentials.',
+      description: 'As it should appear on your official conference credentials and verifiable ZEN.CERTIFY certificates.',
       required: true,
       stepHeading: {
         enabled: true,
@@ -251,63 +251,29 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 8: ACCOMMODATION & LOGISTICS
+       STEP 8: EMERGENCY CONTACT & GUARDIAN DETAILS
        ══════════════════════════════════════════════════════════════════ */
     {
       id: 'step_break_8',
       type: 'section_break',
-      label: 'Accommodation & Logistics',
-      stepHeading: {
-        enabled: true,
-        stepBadge: 'STEP 8',
-        stepNumber: '08 / Logistics & Stay',
-        headingTitle: 'Hospitality & Accommodation Needs',
-        description: 'Indicate whether you require official conference hotel boarding and specify dietary choices.'
-      }
-    },
-    {
-      id: 'step8_accommodation',
-      label: 'Do You Require Conference Hotel Accommodation?',
-      type: 'radio',
-      options: [
-        'No, I am a local delegate / arranging private stay',
-        'Yes, 3-Night Diplomatic Residency (Delegate Twin Sharing)',
-        'Yes, Executive Board / Single Private Suite'
-      ],
-      required: true
-    },
-    {
-      id: 'step8_diet',
-      label: 'Dietary Preference for High Tea & Lunch',
-      type: 'radio',
-      options: ['Vegetarian', 'Jain', 'Non-Vegetarian', 'Vegan'],
-      required: true
-    },
-
-    /* ══════════════════════════════════════════════════════════════════
-       STEP 9: EMERGENCY CONTACT & GUARDIAN DETAILS
-       ══════════════════════════════════════════════════════════════════ */
-    {
-      id: 'step_break_9',
-      type: 'section_break',
       label: 'Emergency & Guardian Contact',
       stepHeading: {
         enabled: true,
-        stepBadge: 'STEP 9',
-        stepNumber: '09 / Emergency Contact',
+        stepBadge: 'STEP 8',
+        stepNumber: '08 / Emergency Contact',
         headingTitle: 'Emergency Contact & Guardian Information',
-        description: 'Essential contact details for emergency protocols during the conference summit.'
+        description: 'Essential contact details for emergency protocols during online conference sessions.'
       }
     },
     {
-      id: 'step9_guardian_name',
+      id: 'step8_guardian_name',
       label: 'Parent / Guardian / Faculty Advisor Name',
       type: 'text',
       placeholder: 'e.g. Dr. Rajesh Sharma',
       required: true
     },
     {
-      id: 'step9_guardian_phone',
+      id: 'step8_guardian_phone',
       label: 'Guardian Emergency Contact Number',
       type: 'phone',
       placeholder: '+91 98111 22334',
@@ -315,22 +281,22 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 10: IDENTITY & INSTITUTIONAL VERIFICATION PROOF
+       STEP 9: IDENTITY & INSTITUTIONAL VERIFICATION PROOF
        ══════════════════════════════════════════════════════════════════ */
     {
-      id: 'step_break_10',
+      id: 'step_break_9',
       type: 'section_break',
       label: 'Verification Proof',
       stepHeading: {
         enabled: true,
-        stepBadge: 'STEP 10',
-        stepNumber: '10 / Verification',
+        stepBadge: 'STEP 9',
+        stepNumber: '09 / Verification',
         headingTitle: 'Identity & Institutional Verification Proof',
         description: 'Provide proof of enrollment or identity to prevent fabricated diplomatic records.'
       }
     },
     {
-      id: 'step10_id_proof',
+      id: 'step9_id_proof',
       label: 'Institutional ID Card / Drive Link / Roll Number',
       type: 'text',
       placeholder: 'https://drive.google.com/... or Student ID #2024-EX-891',
@@ -339,26 +305,26 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 11: CODE OF CONDUCT & ETHICS AGREEMENT
+       STEP 10: CODE OF CONDUCT & ETHICS AGREEMENT
        ══════════════════════════════════════════════════════════════════ */
     {
-      id: 'step_break_11',
+      id: 'step_break_10',
       type: 'section_break',
       label: 'Code of Conduct & Ethics',
       stepHeading: {
         enabled: true,
-        stepBadge: 'STEP 11',
-        stepNumber: '11 / Ethics & Decorum',
+        stepBadge: 'STEP 10',
+        stepNumber: '10 / Ethics & Decorum',
         headingTitle: 'Diplomatic Code of Conduct Agreement',
         description: 'All delegates must adhere to non-harassment rules, zero plagiarism, and dais respect.'
       }
     },
     {
-      id: 'step11_ethics',
+      id: 'step10_ethics',
       label: 'I pledge to uphold parliamentary decorum and procedural fairness',
       type: 'checkbox',
       options: [
-        'I will maintain highest parliamentary dignity during moderated and unmoderated caucuses',
+        'I will maintain highest parliamentary dignity during moderated and unmoderated online caucuses',
         'I understand that plagiarized working papers or AI-generated resolutions without citation are grounds for disqualification',
         'I accept the dais executive authority as final on procedural rulings'
       ],
@@ -366,22 +332,22 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 12: CRYPTOGRAPHIC VERIFICATION & SOVEREIGN HANDLE
+       STEP 11: CRYPTOGRAPHIC VERIFICATION & SOVEREIGN HANDLE
        ══════════════════════════════════════════════════════════════════ */
     {
-      id: 'step_break_12',
+      id: 'step_break_11',
       type: 'section_break',
       label: 'Sovereign Handle & ZEN.CERTIFY',
       stepHeading: {
         enabled: true,
-        stepBadge: 'STEP 12',
-        stepNumber: '12 / Digital Identity',
+        stepBadge: 'STEP 11',
+        stepNumber: '11 / Digital Identity',
         headingTitle: 'Sovereign Handle & Public Verification',
         description: 'Your verified credentials, awards, and participation proof will auto-sync to your Zenvitra profile.'
       }
     },
     {
-      id: 'step12_zenvitra_handle',
+      id: 'step11_zenvitra_handle',
       label: 'Zenvitra Sovereign Username (@handle)',
       type: 'text',
       placeholder: '@yuveer or your username',
@@ -390,86 +356,55 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 13: CONFERENCE KIT & PLACARD ALLOCATION
+       STEP 12: VIRTUAL CHAMBER MEDIA & BROADCAST CONSENT
        ══════════════════════════════════════════════════════════════════ */
     {
-      id: 'step_break_13',
+      id: 'step_break_12',
       type: 'section_break',
-      label: 'Delegate Kit & Meridian Placard',
+      label: 'Media & Recording Consent',
       stepHeading: {
         enabled: true,
-        stepBadge: 'STEP 13',
-        stepNumber: '13 / Delegate Kit',
-        headingTitle: 'Meridian Placard & Delegate Kit Details',
-        description: 'Customize your acrylic desk placard and delegate stationery package.'
+        stepBadge: 'STEP 12',
+        stepNumber: '12 / Media Consent',
+        headingTitle: 'Virtual Session Recording & Media Consent',
+        description: 'Consent for online committee chamber audio-video recordings, live broadcast, and digital archives.'
       }
     },
     {
-      id: 'step13_tshirt_size',
-      label: 'Official Conference Polo T-Shirt Size',
-      type: 'select',
-      options: ['Small (S)', 'Medium (M)', 'Large (L)', 'Extra Large (XL)', 'XXL'],
-      required: true
-    },
-    {
-      id: 'step13_placard_name',
-      label: 'Printed Placard Delegate Name',
-      type: 'text',
-      placeholder: 'e.g. Hon. Ananya Sharma',
-      description: 'Exact designation to be engraved on your committee floor badge.',
-      required: true
-    },
-
-    /* ══════════════════════════════════════════════════════════════════
-       STEP 14: SOCIAL & INTERNATIONAL PRESS CONSENT
-       ══════════════════════════════════════════════════════════════════ */
-    {
-      id: 'step_break_14',
-      type: 'section_break',
-      label: 'Press & Media Consent',
-      stepHeading: {
-        enabled: true,
-        stepBadge: 'STEP 14',
-        stepNumber: '14 / Media Release',
-        headingTitle: 'International Press & Photography Consent',
-        description: 'Consent for plenary floor broadcasts, press interviews, and valedictory photography.'
-      }
-    },
-    {
-      id: 'step14_media_consent',
-      label: 'International Press Coverage Consent',
+      id: 'step12_media_consent',
+      label: 'Virtual Chamber Live Stream & Recording Consent',
       type: 'radio',
       options: [
-        'Granted — I agree to photography and live stream broadcast of committee debates',
+        'Granted — I agree to live stream broadcast and archival recordings of online committee debates',
         'Restricted — Internal committee records only'
       ],
       required: true
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 15: PARTICIPATION TIER & PASS PAYMENT (DELEGATES & PARTICIPANTS)
+       STEP 13: PARTICIPATION TIER & PASS PAYMENT (DELEGATES & PARTICIPANTS)
        ══════════════════════════════════════════════════════════════════ */
     {
-      id: 'step_break_15',
+      id: 'step_break_13',
       type: 'section_break',
       label: 'Accreditation Pass & Registration Fee',
       sectionTitle: 'Accreditation Tier & Fee Settlement',
       stepHeading: {
         enabled: true,
-        stepBadge: 'STEP 15',
-        stepNumber: '15 / Pass & Fee Settlement',
+        stepBadge: 'STEP 13',
+        stepNumber: '13 / Pass & Fee Settlement',
         headingTitle: 'Participation Pass & Registration Fee',
         description: 'Select your participation pass tier (Delegate vs Observer) and record your settlement reference.'
       }
     },
     {
-      id: 'step15_participation_tier',
+      id: 'step13_participation_tier',
       label: 'Select Delegation Pass Tier',
       type: 'radio',
       options: [
-        'Delegate Pass (₹499 / $6 USD) — Full Parliamentary Rights, Voting & Speaking Floor Access, Official Placard, Awards Contention & Sovereign Credentials',
-        'Participant / Observer Pass (₹199 / $2.5 USD) — Plenary Floor Observer Access, Moderated Caucus Attendance, Observer Certificate & Masterclasses',
-        'Executive Double Delegation Pass (₹899 / $11 USD) — Paired Delegate Seat for 2 Diplomats (UNSC/UNODC), Dual Placards & Co-Sponsorship'
+        'Delegate Pass (₹499 / $6 USD) — Full Parliamentary Rights, Voting & Speaking Floor Access, Digital Resolution Co-Sponsorship, Awards Contention & Sovereign Credentials',
+        'Participant / Observer Pass (₹199 / $2.5 USD) — Virtual Plenary Floor Observer Access, Moderated Caucus Attendance, Observer Certificate & Masterclasses',
+        'Executive Double Delegation Pass (₹899 / $11 USD) — Paired Delegate Seat for 2 Diplomats (UNSC/UNODC), Co-Sponsorship & Digital Verifiable Credentials'
       ],
       description: 'Choose whether you are participating as an accredited voting Delegate or an attending Observer.',
       required: true
@@ -510,22 +445,22 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
 
     /* ══════════════════════════════════════════════════════════════════
-       STEP 16: FINAL RATIFICATION & DIGITAL SUBMISSION
+       STEP 14: FINAL RATIFICATION & DIGITAL SUBMISSION
        ══════════════════════════════════════════════════════════════════ */
     {
-      id: 'step_break_16',
+      id: 'step_break_14',
       type: 'section_break',
       label: 'Final Ratification',
       stepHeading: {
         enabled: true,
-        stepBadge: 'STEP 16',
-        stepNumber: '16 / Ratification',
+        stepBadge: 'STEP 14',
+        stepNumber: '14 / Ratification',
         headingTitle: 'Final Ratification & Digital Submission',
         description: 'Confirm all details are true and authenticate your submission to the sovereign ledger.'
       }
     },
     {
-      id: 'step16_signature',
+      id: 'step14_signature',
       label: 'Digital Signature (Type Full Legal Name)',
       type: 'text',
       placeholder: 'e.g. Ananya Sharma',
@@ -533,7 +468,7 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
       required: true
     },
     {
-      id: 'step16_submission_date',
+      id: 'step14_submission_date',
       label: 'Date of Submission',
       type: 'date',
       required: true

@@ -46,23 +46,18 @@ export async function GET(
     const { id } = await params;
     const clean = id.trim().toLowerCase();
 
-    // Check default sovereign templates first
-    const defaultTemplate = DEFAULT_ZEN_FORMS.find(
+    // Check stored/customized forms first so user customizations are respected!
+    const forms = getStoredForms();
+    let form = forms.find(
       (f) => f.id.toLowerCase() === clean || f.slug?.toLowerCase() === clean
     );
-    if (defaultTemplate) {
-      const count = getSubmissionsCount(defaultTemplate.id);
-      return NextResponse.json({
-        success: true,
-        form: {
-          ...defaultTemplate,
-          submissionsCount: Math.max(defaultTemplate.submissionsCount || 0, count)
-        }
-      });
-    }
 
-    const forms = getStoredForms();
-    const form = forms.find((f) => f.id === id || f.slug === id);
+    // Fall back to default sovereign templates if not yet customized
+    if (!form) {
+      form = DEFAULT_ZEN_FORMS.find(
+        (f) => f.id.toLowerCase() === clean || f.slug?.toLowerCase() === clean
+      );
+    }
 
     if (!form) {
       return NextResponse.json({ success: false, error: 'Form not found' }, { status: 404 });
