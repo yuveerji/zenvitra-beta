@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  FileSpreadsheet,
   Search,
   Filter,
   Check,
@@ -337,10 +336,6 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
             <span className="font-mono text-[10px] text-cyan-300 uppercase tracking-widest font-bold flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               <span>Sovereign Dais Matrix &bull; Live Real-Time Synchronized</span>
-            </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-semibold">
-              <FileSpreadsheet className="w-3 h-3 text-emerald-400" />
-              <span>Google Sheets Matrix Active (36 Portfolios)</span>
             </span>
             {spreadsheetUrl && (
               <a
