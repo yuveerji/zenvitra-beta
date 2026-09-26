@@ -38,7 +38,7 @@ export type PortfolioStatus =
 
 export interface MatrixPortfolioItem {
   id: string;
-  committee: 'AIPPM' | 'EMI' | 'UNSC' | 'UNODC';
+  committee: 'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC' | 'UNODC';
   title: string;
   subTitle?: string;
   category: string;
@@ -84,15 +84,15 @@ const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = [
   { id: 'unsc_9', committee: 'UNSC', title: 'Swiss Confederation', subTitle: 'Non-Permanent Member (WEOG)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
   { id: 'unsc_10', committee: 'UNSC', title: 'Republic of Sierra Leone', subTitle: 'Non-Permanent Member (African Group)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
 
-  /* ── UNODC ── */
-  { id: 'unodc_1', committee: 'UNODC', title: 'Republic of Colombia', subTitle: 'Andean Narcotics & Crop Substitution Board', category: 'Key Producer/Transit States', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unodc_2', committee: 'UNODC', title: 'United Mexican States', subTitle: 'Transnational Cartel Border & Maritime Taskforce', category: 'Key Producer/Transit States', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unodc_3', committee: 'UNODC', title: 'Kingdom of the Netherlands', subTitle: 'Port of Rotterdam Interception Directorate', category: 'European Gateway States', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'unodc_4', committee: 'UNODC', title: 'Republic of the Union of Myanmar', subTitle: 'Golden Triangle Synthetic Drug Precursor Taskforce', category: 'Southeast Asia Transit', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'unodc_5', committee: 'UNODC', title: 'Federal Republic of Nigeria', subTitle: 'West African Transshipment Command', category: 'African Transit Hubs', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'unodc_6', committee: 'UNODC', title: 'INTERPOL Secretariat', subTitle: 'Transnational Organized Crime Taskforce', category: 'International Observer Agencies', status: 'Allocated', difficulty: 'Advanced' },
-  { id: 'unodc_7', committee: 'UNODC', title: 'Islamic Republic of Afghanistan', subTitle: 'Opiate Eradication Directorate', category: 'Central Asian Production Corridor', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unodc_8', committee: 'UNODC', title: 'Commonwealth of Australia', subTitle: 'Pacific Border & Darknet Interdiction Branch', category: 'Destination & Consumer States', status: 'Vacant', difficulty: 'Beginner' },
+  /* ── ECOSOC ── */
+  { id: 'ecosoc_1', committee: 'ECOSOC', title: 'Republic of India', subTitle: 'President of ECOSOC Bureau / Global South Anchor', category: 'Bureau & G20 Leadership', status: 'Allocated', difficulty: 'Advanced' },
+  { id: 'ecosoc_2', committee: 'ECOSOC', title: 'United States of America', subTitle: 'Development Finance & Multilateral Aid Directorate', category: 'Major Donor Economies (OECD)', status: 'Vacant', difficulty: 'Advanced' },
+  { id: 'ecosoc_3', committee: 'ECOSOC', title: 'Federal Republic of Germany', subTitle: 'Climate Adaptation & Green Transition Envoy', category: 'European Donor Economies', status: 'Vacant', difficulty: 'Intermediate' },
+  { id: 'ecosoc_4', committee: 'ECOSOC', title: 'Federative Republic of Brazil', subTitle: 'Troika / Global Alliance Against Hunger & Poverty', category: 'Emerging Economies (G20/BRICS)', status: 'Vacant', difficulty: 'Advanced' },
+  { id: 'ecosoc_5', committee: 'ECOSOC', title: 'Republic of South Africa', subTitle: 'African Union Debt Relief & Financing Caucus', category: 'African Group Leadership', status: 'Vacant', difficulty: 'Crisis' },
+  { id: 'ecosoc_6', committee: 'ECOSOC', title: 'Barbados (Prime Minister Envoy)', subTitle: 'Bridgetown Initiative on Climate Finance Architecture', category: 'Small Island Developing States (SIDS)', status: 'Vacant', difficulty: 'Crisis' },
+  { id: 'ecosoc_7', committee: 'ECOSOC', title: 'Republic of Kenya', subTitle: 'East African Energy Transition & Digital Development', category: 'Developing Economies', status: 'Vacant', difficulty: 'Intermediate' },
+  { id: 'ecosoc_8', committee: 'ECOSOC', title: 'Japan', subTitle: 'SDGs Financing & International Development Agency (JICA)', category: 'Asia-Pacific Donor Economies', status: 'Vacant', difficulty: 'Beginner' },
 ];
 
 function getStatusBadgeConfig(status: string): { bg: string; text: string; border: string; icon: string } {
@@ -112,7 +112,7 @@ interface PortfolioMatrixViewProps {
 
 export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: PortfolioMatrixViewProps) {
   const { user, profile } = useAuth();
-  const [activeCommittee, setActiveCommittee] = useState<'AIPPM' | 'EMI' | 'UNSC' | 'UNODC'>('AIPPM');
+  const [activeCommittee, setActiveCommittee] = useState<'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC'>('AIPPM');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'Vacant' | 'Waiting' | 'Allocated'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [matrixData, setMatrixData] = useState<MatrixPortfolioItem[]>(INITIAL_MATRIX_DATA);
@@ -241,7 +241,10 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
 
   const filteredItems = useMemo(() => {
     return liveMatrixData.filter((item) => {
-      if (item.committee !== activeCommittee) return false;
+      const matchCommittee = activeCommittee === 'ECOSOC' 
+        ? (item.committee === 'ECOSOC' || (item.committee as string) === 'UNODC')
+        : item.committee === activeCommittee;
+      if (!matchCommittee) return false;
       if (statusFilter === 'Vacant' && item.status !== 'Vacant') return false;
       if (statusFilter === 'Allocated' && item.status !== 'Allocated') return false;
       if (statusFilter === 'Waiting' && !item.status.includes('waiting')) return false;
@@ -258,7 +261,11 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
   }, [liveMatrixData, activeCommittee, statusFilter, searchQuery]);
 
   const stats = useMemo(() => {
-    const forComm = liveMatrixData.filter((i) => i.committee === activeCommittee);
+    const forComm = liveMatrixData.filter((i) => 
+      activeCommittee === 'ECOSOC'
+        ? (i.committee === 'ECOSOC' || (i.committee as string) === 'UNODC')
+        : i.committee === activeCommittee
+    );
     return {
       total: forComm.length,
       vacant: forComm.filter((i) => i.status === 'Vacant').length,
@@ -384,9 +391,9 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
         <div className="lg:col-span-3 flex items-center gap-2 overflow-x-auto p-1.5 rounded-2xl bg-[#07090f] border border-white/10">
           {[
             { id: 'AIPPM' as const, label: 'AIPPM', sub: 'All India Political Parties' },
-            { id: 'EMI' as const, label: 'EMI', sub: 'Ministry of Education' },
+            { id: 'EMI' as const, label: 'EMI', sub: 'Education Ministry (EMI)' },
             { id: 'UNSC' as const, label: 'UNSC', sub: 'UN Security Council' },
-            { id: 'UNODC' as const, label: 'UNODC', sub: 'Narcotics & Crime' },
+            { id: 'ECOSOC' as const, label: 'ECOSOC', sub: 'Economic & Social Council' },
           ].map((tab) => {
             const isActive = activeCommittee === tab.id;
             return (

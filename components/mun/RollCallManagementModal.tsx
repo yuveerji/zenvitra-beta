@@ -73,6 +73,16 @@ const COMMITTEE_ROSTERS: Record<string, CountryRollCallEntry[]> = {
     { country: 'State Education Secretary (Tamil Nadu)', flag: '🇮🇳', subTitle: 'State Language & Curriculum Autonomy', status: 'absent' },
     { country: 'National Student Union Representative', flag: '🇮🇳', subTitle: 'Youth Democratic Student Body', status: 'absent' },
   ],
+  ECOSOC: [
+    { country: 'Republic of India', flag: '🇮🇳', subTitle: 'President of ECOSOC Bureau / Global South Anchor', status: 'absent' },
+    { country: 'United States of America', flag: '🇺🇸', subTitle: 'Development Finance & Multilateral Aid Directorate', status: 'absent' },
+    { country: 'Federal Republic of Germany', flag: '🇩🇪', subTitle: 'Climate Adaptation & Green Transition Envoy', status: 'absent' },
+    { country: 'Federative Republic of Brazil', flag: '🇧🇷', subTitle: 'Troika / Global Alliance Against Hunger & Poverty', status: 'absent' },
+    { country: 'Republic of South Africa', flag: '🇿🇦', subTitle: 'African Union Debt Relief & Financing Caucus', status: 'absent' },
+    { country: 'Barbados (Prime Minister Envoy)', flag: '🇧🇧', subTitle: 'Bridgetown Initiative on Climate Finance Architecture', status: 'absent' },
+    { country: 'Republic of Kenya', flag: '🇰🇪', subTitle: 'East African Energy Transition & Digital Development', status: 'absent' },
+    { country: 'Japan', flag: '🇯🇵', subTitle: 'SDGs Financing & International Development Agency (JICA)', status: 'absent' },
+  ],
   UNODC: [
     { country: 'Republic of Colombia', flag: '🇨🇴', subTitle: 'Andean Narcotics & Crop Substitution Board', status: 'absent' },
     { country: 'United Mexican States', flag: '🇲🇽', subTitle: 'Transnational Cartel Border & Maritime Taskforce', status: 'absent' },
@@ -90,7 +100,8 @@ function getRosterForCommittee(committee: any): CountryRollCallEntry[] {
   if (norm.includes('UNSC')) return COMMITTEE_ROSTERS.UNSC;
   if (norm.includes('AIPPM')) return COMMITTEE_ROSTERS.AIPPM;
   if (norm.includes('EMI')) return COMMITTEE_ROSTERS.EMI;
-  if (norm.includes('UNODC')) return COMMITTEE_ROSTERS.UNODC;
+  if (norm.includes('ECOSOC')) return COMMITTEE_ROSTERS.ECOSOC;
+  if (norm.includes('UNODC')) return COMMITTEE_ROSTERS.ECOSOC;
   return COMMITTEE_ROSTERS.UNSC;
 }
 

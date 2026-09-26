@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export interface MatrixPortfolioItem {
   id: string;
-  committee: 'AIPPM' | 'EMI' | 'UNSC' | 'UNODC';
+  committee: 'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC' | 'UNODC';
   title: string;
   subTitle?: string;
   category: string;
@@ -52,15 +52,15 @@ const DEFAULT_PORTFOLIOS: MatrixPortfolioItem[] = [
   { id: 'unsc_9', committee: 'UNSC', title: 'Swiss Confederation', subTitle: 'Non-Permanent Member (WEOG)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
   { id: 'unsc_10', committee: 'UNSC', title: 'Republic of Sierra Leone', subTitle: 'Non-Permanent Member (African Group)', category: 'Elected Members (E10)', status: 'Vacant', difficulty: 'Beginner' },
 
-  // UNODC
-  { id: 'unodc_1', committee: 'UNODC', title: 'Republic of Colombia', subTitle: 'Andean Narcotics & Crop Substitution Board', category: 'Key Producer/Transit States', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unodc_2', committee: 'UNODC', title: 'United Mexican States', subTitle: 'Transnational Cartel Border & Maritime Taskforce', category: 'Key Producer/Transit States', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unodc_3', committee: 'UNODC', title: 'Kingdom of the Netherlands', subTitle: 'Port of Rotterdam Interception Directorate', category: 'European Gateway States', status: 'Vacant', difficulty: 'Intermediate' },
-  { id: 'unodc_4', committee: 'UNODC', title: 'Republic of the Union of Myanmar', subTitle: 'Golden Triangle Synthetic Drug Precursor Taskforce', category: 'Southeast Asia Transit', status: 'Vacant', difficulty: 'Advanced' },
-  { id: 'unodc_5', committee: 'UNODC', title: 'Federal Republic of Nigeria', subTitle: 'West African Transshipment Command', category: 'African Transit Hubs', status: 'Vacant', difficulty: 'Beginner' },
-  { id: 'unodc_6', committee: 'UNODC', title: 'INTERPOL Secretariat', subTitle: 'Transnational Organized Crime Taskforce', category: 'International Observer Agencies', status: 'Allocated', allocatedTo: 'Assigned Delegate', difficulty: 'Advanced' },
-  { id: 'unodc_7', committee: 'UNODC', title: 'Islamic Republic of Afghanistan', subTitle: 'Opiate Eradication Directorate', category: 'Central Asian Production Corridor', status: 'Vacant', difficulty: 'Crisis' },
-  { id: 'unodc_8', committee: 'UNODC', title: 'Commonwealth of Australia', subTitle: 'Pacific Border & Darknet Interdiction Branch', category: 'Destination & Consumer States', status: 'Vacant', difficulty: 'Beginner' },
+  // ECOSOC
+  { id: 'ecosoc_1', committee: 'ECOSOC', title: 'Republic of India', subTitle: 'President of ECOSOC Bureau / Global South Anchor', category: 'Bureau & G20 Leadership', status: 'Allocated', allocatedTo: 'Assigned Delegate', difficulty: 'Advanced' },
+  { id: 'ecosoc_2', committee: 'ECOSOC', title: 'United States of America', subTitle: 'Development Finance & Multilateral Aid Directorate', category: 'Major Donor Economies (OECD)', status: 'Vacant', difficulty: 'Advanced' },
+  { id: 'ecosoc_3', committee: 'ECOSOC', title: 'Federal Republic of Germany', subTitle: 'Climate Adaptation & Green Transition Envoy', category: 'European Donor Economies', status: 'Vacant', difficulty: 'Intermediate' },
+  { id: 'ecosoc_4', committee: 'ECOSOC', title: 'Federative Republic of Brazil', subTitle: 'Troika / Global Alliance Against Hunger & Poverty', category: 'Emerging Economies (G20/BRICS)', status: 'Vacant', difficulty: 'Advanced' },
+  { id: 'ecosoc_5', committee: 'ECOSOC', title: 'Republic of South Africa', subTitle: 'African Union Debt Relief & Financing Caucus', category: 'African Group Leadership', status: 'Vacant', difficulty: 'Crisis' },
+  { id: 'ecosoc_6', committee: 'ECOSOC', title: 'Barbados (Prime Minister Envoy)', subTitle: 'Bridgetown Initiative on Climate Finance Architecture', category: 'Small Island Developing States (SIDS)', status: 'Vacant', difficulty: 'Crisis' },
+  { id: 'ecosoc_7', committee: 'ECOSOC', title: 'Republic of Kenya', subTitle: 'East African Energy Transition & Digital Development', category: 'Developing Economies', status: 'Vacant', difficulty: 'Intermediate' },
+  { id: 'ecosoc_8', committee: 'ECOSOC', title: 'Japan', subTitle: 'SDGs Financing & International Development Agency (JICA)', category: 'Asia-Pacific Donor Economies', status: 'Vacant', difficulty: 'Beginner' },
 ];
 
 function getLedgerPath(): string {

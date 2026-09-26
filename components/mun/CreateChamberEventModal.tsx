@@ -37,7 +37,7 @@ export function CreateChamberEventModal({ isOpen, onClose, onEventCreated }: Cre
 
   const [eventType, setEventType] = useState<ChamberCategory>('MUN_COMMITTEE');
   const [title, setTitle] = useState('UN Security Council Plenary (UNSC)');
-  const [agenda, setAgenda] = useState('Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation');
+  const [agenda, setAgenda] = useState('Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.');
   const [hostName, setHostName] = useState('Presiding Chair / Host');
   const [selectedTimerPreset, setSelectedTimerPreset] = useState<number>(60);
   const [isCustomTimer, setIsCustomTimer] = useState(false);

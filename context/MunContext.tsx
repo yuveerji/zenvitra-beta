@@ -157,7 +157,7 @@ export const DEFAULT_CONFERENCES: MunConference[] = [
     conveningDate: '2026-10-24T09:00:00.000Z',
     secretariatChair: 'Yuveer',
     location: 'Sovereign Digital Enclave & Live Chambers',
-    committees: ['unsc-2026', 'aippm-2026', 'emi-2026', 'unodc-2026'],
+    committees: ['unsc-2026', 'aippm-2026', 'emi-2026', 'ecosoc-2026'],
   }
 ];
 
@@ -168,7 +168,7 @@ const DEFAULT_COMMITTEES: MunCommittee[] = [
     name: 'United Nations Security Council (UNSC)',
     shortName: 'UNSC',
     type: 'UNSC',
-    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
+    agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.',
     totalDelegates: 15,
     presentCount: 0,
     presentAndVotingCount: 0,
@@ -181,7 +181,7 @@ const DEFAULT_COMMITTEES: MunCommittee[] = [
     name: 'All India Political Parties Meet (AIPPM)',
     shortName: 'AIPPM',
     type: 'AIPPM',
-    agenda: 'National Security Reforms, Uniform Civil Framework & Federal Fiscal Devolution',
+    agenda: 'Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India, with Focus on Delimitation, Representation and Reservation Reforms including Creamy Layer and NCL, Citizenship, Federalism, Public-Fund Accountability including PM CARES Fund, FCRA and Political Funding, Women’s Safety, SC/ST Protection, Criminal Justice, Police and Judicial Reforms, National Security, Examination Integrity and the Roadmap towards Viksit Bharat.',
     totalDelegates: 20,
     presentCount: 0,
     presentAndVotingCount: 0,
@@ -191,10 +191,10 @@ const DEFAULT_COMMITTEES: MunCommittee[] = [
   {
     id: 'emi-2026',
     eventId: 'zen-diplomacy-2026',
-    name: 'Executive Ministry of India (EMI)',
+    name: 'Education Ministry of India (EMI)',
     shortName: 'EMI',
     type: 'PARLIAMENTARY',
-    agenda: 'National AI Compute Sovereignty, Higher Education & Youth Employment Strategy',
+    agenda: 'Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026, with Particular Focus on Examination Integrity, Entrance Examinations, Curriculum and Assessment Reform, Coaching Regulation, School and Higher Education, Teacher Accountability, Digital and AI-Based Education, Skill Development, Accessibility, Student Welfare and Equal Educational Opportunity.',
     totalDelegates: 16,
     presentCount: 0,
     presentAndVotingCount: 0,
@@ -202,17 +202,17 @@ const DEFAULT_COMMITTEES: MunCommittee[] = [
     dais: { chair: 'Union Minister of Education', viceChair: 'Principal Secretary' },
   },
   {
-    id: 'unodc-2026',
+    id: 'ecosoc-2026',
     eventId: 'zen-diplomacy-2026',
-    name: 'UN Office on Drugs and Crime (UNODC)',
-    shortName: 'UNODC',
+    name: 'United Nations Economic and Social Council (ECOSOC)',
+    shortName: 'ECOSOC',
     type: 'ECOSOC',
-    agenda: 'Countering Transnational Cyber-Cartels & Illicit Synthetic Narcotics Networks',
+    agenda: 'Deliberation upon Building an Equitable and Sustainable Global Development Framework with Particular Focus on Poverty and Inequality, Development Financing, Debt Sustainability, Employment, Food and Energy Security, Climate-Resilient Development, Technology Access, Global Economic Cooperation and the Financing of the Sustainable Development Goals.',
     totalDelegates: 16,
     presentCount: 0,
     presentAndVotingCount: 0,
     quorumNeeded: 8,
-    dais: { chair: 'Executive Director', viceChair: 'Rapporteur' },
+    dais: { chair: 'President of ECOSOC', viceChair: 'Vice-President / Rapporteur' },
   },
 ];
 
@@ -221,7 +221,7 @@ const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
     id: 'unsc-2026',
     title: 'UN Security Council (UNSC) Plenary',
     category: 'MUN_COMMITTEE',
-    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
+    agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.',
     shortCode: 'UNSC',
     hostName: 'Presiding Officer',
     hostHandle: 'dais_unsc',
@@ -235,7 +235,7 @@ const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
     id: 'aippm-2026',
     title: 'All India Political Parties Meet (AIPPM)',
     category: 'LOK_SABHA',
-    agenda: 'National Security Reforms, Uniform Civil Framework & Federal Fiscal Devolution',
+    agenda: 'Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India, with Focus on Delimitation, Representation and Reservation Reforms including Creamy Layer and NCL, Citizenship, Federalism, Public-Fund Accountability including PM CARES Fund, FCRA and Political Funding, Women’s Safety, SC/ST Protection, Criminal Justice, Police and Judicial Reforms, National Security, Examination Integrity and the Roadmap towards Viksit Bharat.',
     shortCode: 'AIPPM',
     hostName: "Hon'ble Speaker",
     hostHandle: 'speaker_aippm',
@@ -247,9 +247,9 @@ const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
   },
   {
     id: 'emi-2026',
-    title: 'Executive Ministry of India (EMI)',
+    title: 'Education Ministry of India (EMI)',
     category: 'LOK_SABHA',
-    agenda: 'National AI Compute Sovereignty, Higher Education & Youth Employment Strategy',
+    agenda: 'Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026, with Particular Focus on Examination Integrity, Entrance Examinations, Curriculum and Assessment Reform, Coaching Regulation, School and Higher Education, Teacher Accountability, Digital and AI-Based Education, Skill Development, Accessibility, Student Welfare and Equal Educational Opportunity.',
     shortCode: 'EMI',
     hostName: 'Union Minister',
     hostHandle: 'minister_emi',
@@ -260,13 +260,13 @@ const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
     createdAt: '2026-10-24T09:00:00.000Z',
   },
   {
-    id: 'unodc-2026',
-    title: 'UN Office on Drugs and Crime (UNODC)',
+    id: 'ecosoc-2026',
+    title: 'UN Economic and Social Council (ECOSOC)',
     category: 'MUN_COMMITTEE',
-    agenda: 'Countering Transnational Cyber-Cartels & Illicit Synthetic Narcotics Networks',
-    shortCode: 'UNODC',
-    hostName: 'Executive Director',
-    hostHandle: 'director_unodc',
+    agenda: 'Deliberation upon Building an Equitable and Sustainable Global Development Framework with Particular Focus on Poverty and Inequality, Development Financing, Debt Sustainability, Employment, Food and Energy Security, Climate-Resilient Development, Technology Access, Global Economic Cooperation and the Financing of the Sustainable Development Goals.',
+    shortCode: 'ECOSOC',
+    hostName: 'President of ECOSOC',
+    hostHandle: 'president_ecosoc',
     isLive: true,
     votingHistory: [],
     performersQueue: [],
@@ -573,9 +573,25 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
               !BANNED_SEEDED_COMMITTEE_IDS.includes(c.name?.toLowerCase())
           );
           if (cleaned.length > 0) {
-            setCommittees(cleaned);
-            localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(cleaned));
-            setActiveCommitteeId((prev) => (prev && cleaned.some(c => c.id === prev)) ? prev : cleaned[0].id);
+            // Keep official 2026 committees and chambers updated with the official agendas
+            const synced = cleaned.map((c: any) => {
+              const def = DEFAULT_COMMITTEES.find(dc => dc.id === c.id || (c.id === 'unodc-2026' && dc.id === 'ecosoc-2026'));
+              if (def) {
+                return {
+                  ...c,
+                  id: def.id,
+                  name: def.name,
+                  shortName: def.shortName,
+                  type: def.type,
+                  agenda: def.agenda,
+                  dais: def.dais || c.dais,
+                };
+              }
+              return c;
+            });
+            setCommittees(synced);
+            localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(synced));
+            setActiveCommitteeId((prev) => (prev && synced.some(c => c.id === prev)) ? prev : synced[0].id);
           } else {
             setCommittees(DEFAULT_COMMITTEES);
             localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(DEFAULT_COMMITTEES));
@@ -601,8 +617,24 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
               r.eventId !== 'mun_horizon_2026'
           );
           if (cleaned.length > 0) {
-            setChamberRooms(cleaned);
-            localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(cleaned));
+            const syncedRooms = cleaned.map((r: any) => {
+              const def = DEFAULT_CHAMBER_ROOMS.find(dr => dr.id === r.id || (r.id === 'unodc-2026' && dr.id === 'ecosoc-2026'));
+              if (def) {
+                return {
+                  ...r,
+                  id: def.id,
+                  title: def.title,
+                  shortCode: def.shortCode,
+                  category: def.category,
+                  agenda: def.agenda,
+                  hostName: def.hostName,
+                  hostHandle: def.hostHandle,
+                };
+              }
+              return r;
+            });
+            setChamberRooms(syncedRooms);
+            localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(syncedRooms));
           } else {
             setChamberRooms(DEFAULT_CHAMBER_ROOMS);
             localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(DEFAULT_CHAMBER_ROOMS));

@@ -449,10 +449,10 @@ export function JoinZenDiplomacyCard() {
                       onChange={(e) => setFirstChoice(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl bg-[#111322] border border-white/15 text-white focus:border-cyan-400 focus:outline-none cursor-pointer"
                     >
-                      <option value="AIPPM">AIPPM (Political Parties)</option>
-                      <option value="EDU.MINISTRY">Education Ministry of India</option>
-                      <option value="UNESCO">UNESCO</option>
-                      <option value="UNSC">UNSC (Security Council)</option>
+                      <option value="AIPPM">AIPPM (All India Political Parties Meet)</option>
+                      <option value="EMI">Education Ministry of India (EMI)</option>
+                      <option value="ECOSOC">ECOSOC (Economic & Social Council)</option>
+                      <option value="UNSC">UNSC (UN Security Council)</option>
                     </select>
                   </div>
 
@@ -463,10 +463,10 @@ export function JoinZenDiplomacyCard() {
                       onChange={(e) => setSecondChoice(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl bg-[#111322] border border-white/15 text-white focus:border-cyan-400 focus:outline-none cursor-pointer"
                     >
-                      <option value="UNSC">UNSC (Security Council)</option>
-                      <option value="AIPPM">AIPPM (Political Parties)</option>
-                      <option value="EDU.MINISTRY">Education Ministry of India</option>
-                      <option value="UNESCO">UNESCO</option>
+                      <option value="UNSC">UNSC (UN Security Council)</option>
+                      <option value="AIPPM">AIPPM (All India Political Parties Meet)</option>
+                      <option value="EMI">Education Ministry of India (EMI)</option>
+                      <option value="ECOSOC">ECOSOC (Economic & Social Council)</option>
                     </select>
                   </div>
                 </div>

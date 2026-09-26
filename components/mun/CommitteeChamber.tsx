@@ -114,7 +114,7 @@ export function CommitteeChamber() {
     name: 'United Nations Security Council (UNSC)',
     shortName: 'UNSC',
     type: 'UNSC' as const,
-    agenda: 'Autonomous Cyber-Warfare & Global Sovereign Non-Proliferation',
+    agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.',
     presentCount: 0,
     presentAndVotingCount: 0,
     totalDelegates: 15,

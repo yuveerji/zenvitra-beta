@@ -281,31 +281,31 @@ export const COMMITTEE_CHAMBERS: CommitteeChamber[] = [
     subtitle: 'National Parliamentary Council',
     badge: 'HISTORIC & POLICY COUNCIL',
     badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    agenda: 'National Security, Electoral Integrity & Cooperative Federalism in Modern India',
+    agenda: 'Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India, with Focus on Delimitation, Representation and Reservation Reforms including Creamy Layer and NCL, Citizenship, Federalism, Public-Fund Accountability including PM CARES Fund, FCRA and Political Funding, Women’s Safety, SC/ST Protection, Criminal Justice, Police and Judicial Reforms, National Security, Examination Integrity and the Roadmap towards Viksit Bharat.',
     format: 'Moderated Parliamentary Debate & Legislative Bill Tabling',
     tags: ['Lok Sabha ROP', 'Crisis Inflections', 'Domestic Policy']
   },
   {
     id: 'education-ministry',
-    code: 'Education Ministry (EMI)',
+    code: 'EMI',
     title: 'Education Ministry of India (EMI)',
     subtitle: 'Special Ministerial Assembly',
     badge: 'MINISTERIAL OVERSIGHT',
     badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
-    agenda: 'NEP 2020 Reforms, AI Integration in Classrooms & Youth Skill Equitization',
+    agenda: 'Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026, with Particular Focus on Examination Integrity, Entrance Examinations, Curriculum and Assessment Reform, Coaching Regulation, School and Higher Education, Teacher Accountability, Digital and AI-Based Education, Skill Development, Accessibility, Student Welfare and Equal Educational Opportunity.',
     format: 'Sovereign Ministerial Council & Direct Policy Blueprints',
-    tags: ['Policy Whitepapers', 'Examination Integrity', 'Priority Allotment']
+    tags: ['NEP 2026 Roadmap', 'Examination Integrity', 'Priority Allotment']
   },
   {
-    id: 'unesco',
-    code: 'UNESCO',
-    title: 'UNESCO',
-    subtitle: 'Specialized UN Agency',
-    badge: 'MULTILATERAL PLENARY',
+    id: 'ecosoc',
+    code: 'ECOSOC',
+    title: 'United Nations Economic and Social Council (ECOSOC)',
+    subtitle: 'Principal UN Organ for Sustainable Development & Economic Cooperation',
+    badge: 'MULTILATERAL DEVELOPMENT PLENARY',
     badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-    agenda: 'Protection of Cultural Heritage in Conflict Zones & Universal AI Ethics in Education',
-    format: 'UNGA Rules of Procedure (ROP) & Draft Resolution Tabling',
-    tags: ['Draft Resolutions', 'Consensus Building', 'Diplomatic Decorum']
+    agenda: 'Deliberation upon Building an Equitable and Sustainable Global Development Framework with Particular Focus on Poverty and Inequality, Development Financing, Debt Sustainability, Employment, Food and Energy Security, Climate-Resilient Development, Technology Access, Global Economic Cooperation and the Financing of the Sustainable Development Goals.',
+    format: 'UN Rules of Procedure (ROP) & Draft Resolution Tabling',
+    tags: ['SDGs Financing', 'Global South Cooperation', 'Equitable Development']
   },
   {
     id: 'unsc',
@@ -314,7 +314,7 @@ export const COMMITTEE_CHAMBERS: CommitteeChamber[] = [
     subtitle: 'Flagship Crisis & Security Body',
     badge: 'CRISIS & SECURITY COUNCIL',
     badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-    agenda: 'Geopolitical De-escalation in the Middle East, Sovereignty & Non-Proliferation Treaties',
+    agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.',
     format: 'Continuous Crisis Procedure (CCP) & Presidential Directives',
     tags: ['P5 Veto Dynamics', 'Binding Directives', 'High Experience Tier']
   }
@@ -764,9 +764,9 @@ export default function ZenFormPublicPage() {
       if (!isSecForm && isMunForm) {
         const commChoice = String(formData['step3_primary_committee'] || '').toUpperCase();
         if (commChoice.includes('AIPPM')) committeeTab = 'AIPPM';
-        else if (commChoice.includes('EMI')) committeeTab = 'EMI';
+        else if (commChoice.includes('EMI') || commChoice.includes('EDUCATION')) committeeTab = 'EMI';
         else if (commChoice.includes('UNSC')) committeeTab = 'UNSC';
-        else if (commChoice.includes('UNODC')) committeeTab = 'UNODC';
+        else if (commChoice.includes('ECOSOC') || commChoice.includes('UNODC') || commChoice.includes('UNESCO')) committeeTab = 'ECOSOC';
       }
 
       const targetSheetTab = form.googleSheetsConfig?.sheetTab || (isSecForm ? 'Secretariat Applications' : (committeeTab || 'ZEN DIPLOMACY MUN'));
@@ -1617,7 +1617,7 @@ export default function ZenFormPublicPage() {
                                 </Link>
                               </div>
                               <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                                Inspect live occupancy across <strong>AIPPM, EMI, UNESCO & UNSC</strong> on the sovereign ledger before entering your preferences. Cross-reference vacant countries, portfolios, or ministerial seats to guarantee allotment priority.
+                                Inspect live occupancy across <strong>AIPPM, EMI, ECOSOC & UNSC</strong> on the sovereign ledger before entering your preferences. Cross-reference vacant countries, portfolios, or ministerial seats to guarantee allotment priority.
                               </p>
                               <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-neutral-400">
                                 <span className="px-2.5 py-1 rounded bg-black/40 border border-white/10 text-neutral-300">

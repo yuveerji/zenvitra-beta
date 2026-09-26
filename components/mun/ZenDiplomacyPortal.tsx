@@ -206,51 +206,51 @@ export function ZenDiplomacyPortal() {
     {
       id: 'aippm',
       code: 'AIPPM',
-      title: 'All India Political Parties Meet',
+      title: 'All India Political Parties Meet (AIPPM)',
       subtitle: 'National Parliamentary Council',
       badge: 'HISTORIC & POLICY COUNCIL',
       badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
-      agenda: 'REVEALING SOON',
-      agendaDescription: 'Comprehensive national deliberations covering inter-state governance, electoral integrity, and federal policy consensus with active legislative bill tabling.',
+      agenda: 'OFFICIAL RATIFIED AGENDA',
+      agendaDescription: '“Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India, with Focus on Delimitation, Representation and Reservation Reforms including Creamy Layer and NCL, Citizenship, Federalism, Public-Fund Accountability including PM CARES Fund, FCRA and Political Funding, Women’s Safety, SC/ST Protection, Criminal Justice, Police and Judicial Reforms, National Security, Examination Integrity and the Roadmap towards Viksit Bharat.”',
       format: 'Moderated Parliamentary Debate & Bi-cameral Motions',
       portfolios: 'Union Ministers, Opposition Leaders, State Representatives, Independent MPs',
       delegates: 'Single Delegation • Limited Portfolios'
     },
     {
       id: 'education-ministry',
-      code: 'EDU.MINISTRY',
-      title: 'Education Ministry of India',
+      code: 'EMI',
+      title: 'Education Ministry of India (EMI)',
       subtitle: 'Special Ministerial Assembly',
       badge: 'MINISTERIAL OVERSIGHT',
       badgeColor: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
-      agenda: 'REVEALING SOON',
-      agendaDescription: 'Special ministerial panel addressing systemic examination integrity, paper-leak prevention frameworks, digital curriculum equity, and direct public school modernization capital.',
+      agenda: 'OFFICIAL RATIFIED AGENDA',
+      agendaDescription: '“Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026, with Particular Focus on Examination Integrity, Entrance Examinations, Curriculum and Assessment Reform, Coaching Regulation, School and Higher Education, Teacher Accountability, Digital and AI-Based Education, Skill Development, Accessibility, Student Welfare and Equal Educational Opportunity.”',
       format: 'Sovereign Ministerial Council & Direct Policy Blueprints',
       portfolios: 'Ministry Officials, State Education Secretaries, Academic Chancellors, Student Stakeholders',
       delegates: 'Single Delegation • Priority Allotment'
     },
     {
-      id: 'unesco',
-      code: 'UNESCO',
-      title: 'United Nations Educational, Scientific and Cultural Organization',
-      subtitle: 'Specialized UN Agency',
-      badge: 'MULTILATERAL PLENARY',
+      id: 'ecosoc',
+      code: 'ECOSOC',
+      title: 'United Nations Economic and Social Council (ECOSOC)',
+      subtitle: 'Principal UN Organ for Sustainable Development & Economic Cooperation',
+      badge: 'MULTILATERAL DEVELOPMENT PLENARY',
       badgeColor: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
-      agenda: 'REVEALING SOON',
-      agendaDescription: 'International consensus building around preserving cultural heritage in conflict zones, establishing universal ethics for AI in education, and open-source scientific knowledge sharing.',
-      format: 'UNGA Rules of Procedure (ROP) & Draft Resolution Tabling',
-      portfolios: 'UN Member States & Specialized Observer Delegations',
+      agenda: 'OFFICIAL RATIFIED AGENDA',
+      agendaDescription: '“Deliberation upon Building an Equitable and Sustainable Global Development Framework with Particular Focus on Poverty and Inequality, Development Financing, Debt Sustainability, Employment, Food and Energy Security, Climate-Resilient Development, Technology Access, Global Economic Cooperation and the Financing of the Sustainable Development Goals.”',
+      format: 'UN Rules of Procedure (ROP) & Draft Resolution Tabling',
+      portfolios: 'UN Member States, Developing Economies (Global South), G7/G20 Observers',
       delegates: 'Single / Double Delegation Supported'
     },
     {
       id: 'unsc',
       code: 'UNSC',
-      title: 'United Nations Security Council',
+      title: 'United Nations Security Council (UNSC)',
       subtitle: 'Flagship Crisis & Security Body',
       badge: 'CRISIS & SECURITY COUNCIL',
       badgeColor: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
-      agenda: 'REVEALING SOON',
-      agendaDescription: 'High-urgency diplomatic assembly addressing international security breaches, territorial sovereignty disputes, non-proliferation treaties, and binding international directives.',
+      agenda: 'OFFICIAL RATIFIED AGENDA',
+      agendaDescription: '“Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.”',
       format: 'Continuous Crisis Procedure (CCP) & Presidential Directives',
       portfolios: 'P5 Permanent Members + 10 Elected Non-Permanent Members',
       delegates: 'Single Delegation • High-Experience Tier'
@@ -692,8 +692,8 @@ export function ZenDiplomacyPortal() {
                         className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c101a] border border-white/15 text-white focus:outline-none focus:border-cyan-400 transition"
                       >
                         <option value="AIPPM">AIPPM (All India Political Parties Meet)</option>
-                        <option value="EDU.MINISTRY">Education Ministry of India</option>
-                        <option value="UNESCO">UNESCO (Plenary)</option>
+                        <option value="EMI">Education Ministry of India (EMI)</option>
+                        <option value="ECOSOC">ECOSOC (Economic & Social Council)</option>
                         <option value="UNSC">UNSC (Security Council)</option>
                       </select>
                     </div>
@@ -762,7 +762,7 @@ export function ZenDiplomacyPortal() {
               </h2>
             </div>
             <p className="text-xs font-mono text-neutral-400 max-w-sm">
-              Agendas across all 4 committees are finalized by the executive board and revealing very soon.
+              Official agendas ratified for all 4 sovereign chambers. Deliberations convene October 24th &amp; 25th, 2026.
             </p>
           </div>
 
@@ -791,18 +791,18 @@ export function ZenDiplomacyPortal() {
                     </p>
                   </div>
 
-                  {/* Agenda Revealing Soon Banner */}
-                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-mono font-bold text-amber-300">
+                  {/* Official Ratified Agenda Banner */}
+                  <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-mono font-bold text-cyan-300">
                       <span className="flex items-center gap-1.5">
-                        <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                        AGENDA: {comm.agenda}
+                        <Flame className="w-3.5 h-3.5 text-cyan-400" />
+                        AGENDA MANDATE
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-amber-400/80">
-                        Stay Tuned
+                      <span className="text-[10px] uppercase tracking-wider text-cyan-400/80 px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/30">
+                        RATIFIED
                       </span>
                     </div>
-                    <p className="text-xs text-neutral-300 leading-relaxed font-sans font-light">
+                    <p className="text-xs text-neutral-200 leading-relaxed font-sans font-normal italic">
                       {comm.agendaDescription}
                     </p>
                   </div>
