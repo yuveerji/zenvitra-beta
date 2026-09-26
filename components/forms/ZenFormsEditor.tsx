@@ -83,6 +83,8 @@ import {
   clearFormSubmissions,
   exportSubmissionsToCsv,
   syncFormSubmissionsToGoogleSheets,
+  autoCreateAndConnectGoogleSheet,
+  syncZenFormSchemaToGoogleSheets,
   getZenFormsSheetsConfig
 } from '@/lib/formsStorage';
 import {
@@ -241,6 +243,15 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
     }
     setTimeout(() => setSaveStatus('saved'), 400);
   };
+
+  // Debounced dynamic schema sync: automatically creates/updates columns in Google Sheet when fields change
+  useEffect(() => {
+    if (!form || !form.googleSheetsConfig?.isConnected) return;
+    const timer = setTimeout(() => {
+      syncZenFormSchemaToGoogleSheets(form).catch(() => {});
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [form?.fields, form?.googleSheetsConfig?.isConnected]);
 
   // Load other existing forms to detect link name collisions
   const [otherForms, setOtherForms] = useState<ZenForm[]>([]);
@@ -3293,6 +3304,78 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                   placeholder={`ZEN_${(form.slug || 'RESPONSES').toUpperCase().replace(/[^A-Z0-9_]/g, '_')}`}
                   className="w-full bg-[#080a0f] border border-white/15 rounded-xl px-3.5 py-2.5 text-white outline-none"
                 />
+              </div>
+
+              {/* 1-Click Auto-Create & Connect Action */}
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-emerald-300">1-Click Auto-Create &amp; Connect</span>
+                  </div>
+                  {form.googleSheetsConfig?.sheetUrl && (
+                    <a
+                      href={form.googleSheetsConfig.sheetUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-white text-[10px] font-mono flex items-center gap-1 transition"
+                    >
+                      <ExternalLink className="w-3 h-3 text-emerald-400" />
+                      <span>Open Sheet</span>
+                    </a>
+                  )}
+                </div>
+                <p className="text-[11px] text-neutral-300 font-sans leading-relaxed">
+                  Automatically initializes your Master Google Sheet, generates the tab named above, and formats your form questions as columns in real-time.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setSyncToast('Auto-provisioning Google Sheet and syncing form schema...');
+                      const tabName = form.googleSheetsConfig?.sheetTab || `ZEN_${(form.slug || form.title || 'RESPONSES').toUpperCase().replace(/[^A-Z0-9_]/g, '_')}`;
+                      const initRes = await autoCreateAndConnectGoogleSheet();
+                      await syncZenFormSchemaToGoogleSheets(form, tabName);
+
+                      updateFormState({
+                        ...form,
+                        googleSheetsConfig: {
+                          ...form.googleSheetsConfig,
+                          isConnected: true,
+                          autoSync: true,
+                          webhookUrl: form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec',
+                          sheetTab: tabName,
+                          sheetUrl: initRes.spreadsheetUrl || form.googleSheetsConfig?.sheetUrl
+                        }
+                      });
+
+                      setSyncToast('✓ Google Sheet tab created and question headers synced!');
+                      setTimeout(() => setSyncToast(null), 4000);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-black" />
+                    <span>Auto-Create &amp; Connect Sheet</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setSyncToast('Syncing question fields to Google Sheet columns...');
+                      const res = await syncZenFormSchemaToGoogleSheets(form);
+                      if (res.success) {
+                        setSyncToast('✓ Column headers updated with form questions!');
+                      } else {
+                        setSyncToast(`Sync note: ${res.error || 'Failed to sync schema'}`);
+                      }
+                      setTimeout(() => setSyncToast(null), 4000);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-neutral-200 font-mono text-xs font-semibold transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Sync Column Headers</span>
+                  </button>
+                </div>
               </div>
 
               {/* 1-Click Apps Script Code Template */}

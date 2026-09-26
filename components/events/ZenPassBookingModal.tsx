@@ -151,6 +151,32 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
       chamberRoomId: 'unsc-2026'
     });
 
+    // Stream booking directly to Google Sheets Event Registrations ledger
+    try {
+      fetch('/api/sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetTab: 'Event Registrations',
+          action: 'EVENTS',
+          data: {
+            eventId: event.id,
+            eventTitle: event.title,
+            eventName: event.title,
+            participantName: attendeeName.trim() || 'Attendee',
+            participantEmail: attendeeEmail.trim() || '',
+            contactNumber: attendeePhone.trim() || '',
+            institution: collegeOrSchool.trim() || '',
+            ticketPassType: selectedTier.name,
+            quantity,
+            allocatedSeat: finalPortfolio,
+            totalPrice: `₹${finalPayable}`,
+            paymentStatus: 'CONFIRMED'
+          }
+        })
+      }).catch((err) => console.warn('[SHEETS-EVENT-SYNC-WARN]', err));
+    } catch (_) {}
+
     onClose();
     if (onSuccess) onSuccess();
   };

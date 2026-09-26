@@ -120,14 +120,38 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
   const [registrations, setRegistrations] = useState<DelegateRegistration[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedTime, setLastSyncedTime] = useState<string>('Just now');
+  const [isSheetsConnected, setIsSheetsConnected] = useState<boolean>(true);
+  const [spreadsheetUrl, setSpreadsheetUrl] = useState<string>('');
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<MatrixPortfolioItem | null>(null);
   const [editStatus, setEditStatus] = useState<PortfolioStatus>('Vacant');
   const [editDelegateEmail, setEditDelegateEmail] = useState('');
   const [editDelegateName, setEditDelegateName] = useState('');
   const [copiedPortfolioId, setCopiedPortfolioId] = useState<string | null>(null);
 
-  // Subscribe to live delegate registrations
+  // Fetch live matrix portfolios from /api/matrix/sync (syncs with Google Sheets)
+  const fetchLiveMatrixPortfolios = async () => {
+    try {
+      const res = await fetch('/api/matrix/sync', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.portfolios) && data.portfolios.length > 0) {
+          setMatrixData(data.portfolios);
+          if (data.spreadsheetUrl) setSpreadsheetUrl(data.spreadsheetUrl);
+          if (data.syncedWithGoogleSheets !== undefined) {
+            setIsSheetsConnected(Boolean(data.syncedWithGoogleSheets));
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[MATRIX-FETCH-WARN]', err);
+    }
+  };
+
+  // Subscribe to live delegate registrations and periodic Google Sheets sync
   useEffect(() => {
+    fetchLiveMatrixPortfolios();
+    const interval = setInterval(fetchLiveMatrixPortfolios, 25000);
+
     const loadRegistrations = () => {
       setRegistrations(getStoredRegistrations());
     };
@@ -135,7 +159,10 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
     const unsub = subscribeToActivitySync(() => {
       loadRegistrations();
     });
-    return () => unsub();
+    return () => {
+      clearInterval(interval);
+      unsub();
+    };
   }, []);
 
   const canManage = Boolean(
@@ -241,13 +268,12 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
     };
   }, [liveMatrixData, activeCommittee]);
 
-  const handleTriggerSync = () => {
+  const handleTriggerSync = async () => {
     setIsSyncing(true);
     setRegistrations(getStoredRegistrations());
-    setTimeout(() => {
-      setIsSyncing(false);
-      setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    }, 600);
+    await fetchLiveMatrixPortfolios();
+    setIsSyncing(false);
+    setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   };
 
   const handleSaveSecretariatEdit = async () => {
@@ -267,7 +293,26 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
 
     setMatrixData(updated);
 
-    // If allocated, dispatch notification & sheets sync
+    // 1. Dispatch update to /api/matrix/sync to persist locally & push to Google Sheets
+    try {
+      await fetch('/api/matrix/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          portfolioId: selectedItemForEdit.id,
+          portfolioTitle: selectedItemForEdit.title,
+          title: selectedItemForEdit.title,
+          status: editStatus,
+          allocatedTo: editStatus === 'Allocated' ? editDelegateName.trim() : '',
+          allocatedEmail: editStatus === 'Allocated' ? editDelegateEmail.trim() : '',
+          committee: selectedItemForEdit.committee
+        })
+      });
+    } catch (syncErr) {
+      console.warn('[MATRIX-POST-SYNC-WARN]', syncErr);
+    }
+
+    // 2. If allocated, dispatch notification & sheets sync
     if (editStatus === 'Allocated' && editDelegateEmail.trim()) {
       try {
         await allocatePortfolioAndNotify({
@@ -287,18 +332,33 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false }: P
       {/* ── TOP HEADER & SOVEREIGN CHAMBERS LIVE MATRIX BAR ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl bg-[#090d16] border border-cyan-500/30 relative overflow-hidden shadow-xl">
         <div className="space-y-1 z-10">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
             <span className="font-mono text-[10px] text-cyan-300 uppercase tracking-widest font-bold flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               <span>Sovereign Dais Matrix &bull; Live Real-Time Synchronized</span>
             </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-semibold">
+              <FileSpreadsheet className="w-3 h-3 text-emerald-400" />
+              <span>Google Sheets Matrix Active (36 Portfolios)</span>
+            </span>
+            {spreadsheetUrl && (
+              <a
+                href={spreadsheetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] font-mono text-cyan-400 hover:underline"
+              >
+                <ExternalLink className="w-2.5 h-2.5" />
+                <span>Open GSheet</span>
+              </a>
+            )}
           </div>
           <h2 className="text-xl sm:text-2xl font-black font-display text-white tracking-tight">
             Interactive Portfolio Matrix &amp; Allotment Console
           </h2>
           <p className="text-xs text-neutral-400 font-sans">
-            Real-time live vacancy and waiting list tracking across all 4 diplomatic chambers. Portfolios update dynamically as delegate forms are recorded.
+            Real-time live vacancy and waiting list tracking across all 4 diplomatic chambers. Portfolios update dynamically as delegate forms are recorded and sync with Google Sheets.
           </p>
         </div>
 

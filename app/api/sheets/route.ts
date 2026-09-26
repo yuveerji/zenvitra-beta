@@ -22,21 +22,22 @@ function appendToLocalLedger(entry: Record<string, any>) {
  */
 function mapTabToTarget(rawTab: string): string {
   const upper = (rawTab || '').toUpperCase().trim();
+  if (upper.includes('MATRIX') || upper.includes('PORTFOLIO')) return 'Matrix Portfolios';
+  if (upper.includes('EVENT') || upper.includes('PASS') || upper.includes('TICKET')) return 'Event Registrations';
+  if (upper.includes('SECRETARIAT') || upper.includes('SEC_APP')) return 'Secretariat Applications';
   if (upper.includes('LOGIN')) return 'LOGIN_CORE';
   if (upper.includes('REGISTER')) return 'REGISTER_CORE';
-  if (upper.includes('CONTACT')) return 'CONTACT';
+  if (upper.includes('CONTACT')) return 'Contact Inquiries';
   if (upper.includes('NEWSLETTER')) return 'NEWSLETTER';
   if (upper.includes('COLLAB') || upper.includes('PARTNER')) return 'COLLAB';
-  if (upper.includes('SECRETARIAT') || upper.includes('SEC_APP')) return 'SECRETARIAT';
-  if (upper.includes('CORE_TEAM') || upper.includes('TEAM') || upper.includes('CAREER')) return 'CORE_TEAM';
+  if (upper.includes('CORE_TEAM') || upper.includes('TEAM') || upper.includes('CAREER')) return 'Core Team Applications';
   if (upper.includes('COMMUNITY')) return 'COMMUNITY';
   if (upper.includes('AMBASSADOR') || upper.includes('CAMPUS')) return 'CAMPUS_AMBASSADOR';
-  if (upper.includes('EVENT')) return 'EVENTS';
   if (upper.includes('DONAT')) return 'DONATIONS';
-  if (upper.includes('MUN') || upper.includes('DIPLOMACY') || upper.includes('PORTFOLIO') || upper.includes('MATRIX')) return 'ZEN DIPLOMACY MUN';
+  if (upper.includes('MUN') || upper.includes('DIPLOMACY')) return 'ZEN DIPLOMACY MUN';
   if (upper.includes('FEEDBACK') || upper.includes('GRIEVANCE')) return 'FEEDBACK';
   if (upper.includes('PULSE') || upper.includes('POST')) return 'PULSE_POSTS';
-  return upper || 'REGISTER_CORE';
+  return rawTab || 'REGISTER_CORE';
 }
 
 /**
@@ -45,18 +46,18 @@ function mapTabToTarget(rawTab: string): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const action = body.action ? String(body.action).toUpperCase() : undefined;
     const rawTab = body.targetTab || body.tab || body.target;
     const rawData = body.data || body;
 
-    if (!rawTab) {
+    if (!rawTab && !action) {
       return NextResponse.json(
-        { error: 'Missing targetTab or tab parameter' },
+        { error: 'Missing targetTab or action parameter' },
         { status: 400 }
       );
     }
 
-    const targetTab = mapTabToTarget(rawTab);
-    const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
+    const targetTab = rawTab ? mapTabToTarget(rawTab) : undefined;
     const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
     const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
@@ -64,7 +65,8 @@ export async function POST(req: NextRequest) {
 
     // Standardized payload matching Apps Script doPost(e)
     const appsScriptPayload = {
-      targetTab,
+      ...(action ? { action } : {}),
+      ...(targetTab ? { targetTab, tab: targetTab } : {}),
       ...rawData,
       ipAddress: rawData.ipAddress || ip,
       deviceInfo: rawData.deviceInfo || rawData.deviceBrowserInfo || userAgent,
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           success: true,
           targetTab,
+          action,
           syncedAt: new Date().toISOString(),
           googleResponse: parsedRes
         });
@@ -103,6 +106,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       targetTab,
+      action,
       syncedAt: new Date().toISOString(),
       mode: 'local_dispatched'
     });

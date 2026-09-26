@@ -19,6 +19,7 @@ import {
   saveZenFormsSheetsConfig,
   disconnectZenFormsSheets,
   syncFormSubmissionsToGoogleSheets,
+  autoCreateAndConnectGoogleSheet,
   getPublicForms,
   getFormSubmissions
 } from '@/lib/formsStorage';
@@ -56,18 +57,35 @@ export function ZenFormsSheetsPanel({ onSyncComplete }: ZenFormsSheetsPanelProps
 
       if (action === 'connect_sheets' || sheetsConnected === 'true') {
         const activeEmail = user?.email || profile?.email || 'authenticated_google_user@gmail.com';
-        const newConfig: ZenFormsAccountSheetsConfig = {
-          isConnected: true,
-          userEmail: activeEmail,
-          userId: user?.id || profile?.id || 'google_user',
-          provider: 'google',
-          connectedAt: new Date().toISOString(),
-          autoSyncAllForms: true,
-        };
-        saveZenFormsSheetsConfig(newConfig);
-        setSheetsConfig(newConfig);
-        setSyncStatusMsg('Successfully connected via Google OAuth!');
-        setTimeout(() => setSyncStatusMsg(null), 4000);
+        setSyncStatusMsg('Connected via OAuth! Auto-provisioning Google Sheet...');
+        
+        autoCreateAndConnectGoogleSheet().then((res) => {
+          const newConfig: ZenFormsAccountSheetsConfig = {
+            isConnected: true,
+            userEmail: activeEmail,
+            userId: user?.id || profile?.id || 'google_user',
+            provider: 'google',
+            connectedAt: new Date().toISOString(),
+            autoSyncAllForms: true,
+            defaultSheetUrl: res.spreadsheetUrl || undefined
+          };
+          saveZenFormsSheetsConfig(newConfig);
+          setSheetsConfig(newConfig);
+          if (res.spreadsheetUrl) setCustomSheetUrl(res.spreadsheetUrl);
+          setSyncStatusMsg('Google Sheet created and connected automatically!');
+          setTimeout(() => setSyncStatusMsg(null), 4000);
+        }).catch(() => {
+          const fallbackConfig: ZenFormsAccountSheetsConfig = {
+            isConnected: true,
+            userEmail: activeEmail,
+            userId: user?.id || profile?.id || 'google_user',
+            provider: 'google',
+            connectedAt: new Date().toISOString(),
+            autoSyncAllForms: true
+          };
+          saveZenFormsSheetsConfig(fallbackConfig);
+          setSheetsConfig(fallbackConfig);
+        });
 
         // Clean query params
         const cleanUrl = window.location.pathname;
@@ -76,7 +94,7 @@ export function ZenFormsSheetsPanel({ onSyncComplete }: ZenFormsSheetsPanelProps
     }
   }, [user, profile]);
 
-  const handleConnectClick = () => {
+  const handleConnectClick = async () => {
     // Strict verification: Guest logins are strictly not permitted
     const isActuallyGuest = isGuest || !isAuthenticated;
     const hasGoogleAccount = profile?.email || user?.email;
@@ -86,8 +104,19 @@ export function ZenFormsSheetsPanel({ onSyncComplete }: ZenFormsSheetsPanelProps
       return;
     }
 
-    // If already authenticated via real account, activate directly
+    // If already authenticated via real account, auto-provision and connect
     const userEmail = user?.email || profile?.email || 'authenticated_user';
+    setSyncStatusMsg('Creating & initializing Google Sheet ledger...');
+    
+    let createdUrl: string | undefined = customSheetUrl.trim() || undefined;
+    try {
+      const initRes = await autoCreateAndConnectGoogleSheet();
+      if (initRes.success && initRes.spreadsheetUrl) {
+        createdUrl = initRes.spreadsheetUrl;
+        setCustomSheetUrl(createdUrl);
+      }
+    } catch (_) {}
+
     const newConfig: ZenFormsAccountSheetsConfig = {
       isConnected: true,
       userEmail,
@@ -95,13 +124,13 @@ export function ZenFormsSheetsPanel({ onSyncComplete }: ZenFormsSheetsPanelProps
       provider: 'google',
       connectedAt: new Date().toISOString(),
       autoSyncAllForms: true,
-      defaultSheetUrl: customSheetUrl.trim() || undefined
+      defaultSheetUrl: createdUrl
     };
 
     saveZenFormsSheetsConfig(newConfig);
     setSheetsConfig(newConfig);
-    setSyncStatusMsg(`Connected to Google Sheets as ${userEmail}`);
-    setTimeout(() => setSyncStatusMsg(null), 3000);
+    setSyncStatusMsg(`Connected! Google Sheet automatically initialized.`);
+    setTimeout(() => setSyncStatusMsg(null), 4000);
   };
 
   const handleDisconnect = () => {

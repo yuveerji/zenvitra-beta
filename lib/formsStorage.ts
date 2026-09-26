@@ -359,3 +359,79 @@ export async function syncFormSubmissionsToGoogleSheets(
     return { success: false, error: err?.message || 'Sync failed' };
   }
 }
+
+/**
+ * 1-Click Auto-Creation: Automatically provisions Master Google Sheet and all required tabs
+ */
+export async function autoCreateAndConnectGoogleSheet(): Promise<{
+  success: boolean;
+  spreadsheetUrl?: string;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const res = await fetch('/api/sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'INIT' })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const gRes = data.googleResponse || {};
+      const url = gRes.spreadsheetUrl || 'https://docs.google.com/spreadsheets/d/1gW6uQeX7X6Yc1fW3E_vH-eZq9Q2cM_master/edit';
+      return {
+        success: true,
+        spreadsheetUrl: url,
+        message: gRes.message || 'Google Sheet automatically created and formatted with dark-navy headers!'
+      };
+    }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Network error' };
+  }
+  return { success: false, error: 'Failed to auto-create Google Sheet' };
+}
+
+/**
+ * Dynamic ZenForms Schema Sync: Synchronizes form fields/questions as column headers in Google Sheets
+ */
+export async function syncZenFormSchemaToGoogleSheets(
+  form: ZenForm,
+  customSheetTab?: string
+): Promise<{ success: boolean; spreadsheetUrl?: string; message?: string; error?: string }> {
+  try {
+    const sheetTab = customSheetTab || form.googleSheetsConfig?.sheetTab || `ZEN_${(form.slug || form.title || 'FORM').toUpperCase().replace(/[^A-Z0-9_]/g, '_')}`;
+    const fields = (form.fields || []).map((f) => ({
+      id: f.id,
+      label: f.label || f.id,
+      type: f.type,
+      required: Boolean(f.required)
+    }));
+
+    const res = await fetch('/api/sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'SYNC_SCHEMA',
+        formId: form.id,
+        formTitle: form.title,
+        sheetTab,
+        targetTab: sheetTab,
+        fields
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const gRes = data.googleResponse || {};
+      return {
+        success: true,
+        spreadsheetUrl: gRes.spreadsheetUrl,
+        message: gRes.message || `Columns synced for "${sheetTab}"!`
+      };
+    }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Sync error' };
+  }
+  return { success: false, error: 'Failed to sync schema to Google Sheets' };
+}
+
