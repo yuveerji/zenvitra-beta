@@ -620,7 +620,7 @@ function initAllTabs() {
       // Add dropdown validation for Status column (Column F / 6)
       try {
         var statusRule = SpreadsheetApp.newDataValidation()
-          .requireValueInList(['Vacant', 'Allocated', '1 person waiting', '2 people waiting', '3+ people waiting'], true)
+          .requireValueInList(['Vacant', 'Allocated', 'Reserved', 'Confirmed', 'Pending Payment', 'Pending Approval', 'Double Delegation', 'Freeze', 'Revoked', 'Locked', '1 person waiting', '2 people waiting', '3+ people waiting'], true)
           .build();
         sheet.getRange(2, 6, Math.max(rows.length, 250), 1).setDataValidation(statusRule);
       } catch (_) {}
@@ -991,7 +991,7 @@ function doPost(e) {
 
         try {
           var statusRuleAll = SpreadsheetApp.newDataValidation()
-            .requireValueInList(['Vacant', 'Allocated', '1 person waiting', '2 people waiting', '3+ people waiting'], true)
+            .requireValueInList(['Vacant', 'Allocated', 'Reserved', 'Confirmed', 'Pending Payment', 'Pending Approval', 'Double Delegation', 'Freeze', 'Revoked', 'Locked', '1 person waiting', '2 people waiting', '3+ people waiting'], true)
             .build();
           matrixSheetAll.getRange(2, 6, Math.max(outRows.length, 250), 1).setDataValidation(statusRuleAll);
         } catch (_) {}

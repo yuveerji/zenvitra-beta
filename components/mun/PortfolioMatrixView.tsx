@@ -35,8 +35,16 @@ import { OFFICIAL_240_PORTFOLIOS, MatrixPortfolioItem } from '@/lib/matrixPortfo
 export type { MatrixPortfolioItem };
 
 export type PortfolioStatus = 
-  | 'Allocated'
   | 'Vacant'
+  | 'Allocated'
+  | 'Reserved'
+  | 'Confirmed'
+  | 'Pending Payment'
+  | 'Pending Approval'
+  | 'Double Delegation'
+  | 'Freeze'
+  | 'Revoked'
+  | 'Locked'
   | `${number} people waiting`
   | `${number} person waiting`
   | string;
@@ -44,16 +52,31 @@ export type PortfolioStatus =
 const INITIAL_MATRIX_DATA: MatrixPortfolioItem[] = OFFICIAL_240_PORTFOLIOS;
 
 function getStatusBadgeConfig(status: string): { bg: string; text: string; border: string; icon: string } {
-  if (status === 'Allocated') {
-    return { bg: 'bg-rose-500/15', text: 'text-rose-300', border: 'border-rose-500/30', icon: '🔒' };
+  switch (status) {
+    case 'Allocated':
+      return { bg: 'bg-rose-500/15', text: 'text-rose-300', border: 'border-rose-500/30', icon: '🔒' };
+    case 'Reserved':
+      return { bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-purple-500/30', icon: '👑' };
+    case 'Confirmed':
+      return { bg: 'bg-blue-500/15', text: 'text-blue-300', border: 'border-blue-500/30', icon: '✅' };
+    case 'Pending Payment':
+      return { bg: 'bg-yellow-500/15', text: 'text-yellow-300', border: 'border-yellow-500/30', icon: '💳' };
+    case 'Pending Approval':
+      return { bg: 'bg-orange-500/15', text: 'text-orange-300', border: 'border-orange-500/30', icon: '⏳' };
+    case 'Double Delegation':
+      return { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-500/30', icon: '👥' };
+    case 'Freeze':
+      return { bg: 'bg-cyan-500/15', text: 'text-cyan-300', border: 'border-cyan-500/30', icon: '🧊' };
+    case 'Revoked':
+      return { bg: 'bg-red-600/15', text: 'text-red-400', border: 'border-red-600/30', icon: '⛔' };
+    case 'Locked':
+      return { bg: 'bg-slate-500/15', text: 'text-slate-300', border: 'border-slate-500/30', icon: '🔐' };
+    default:
+      if (status.includes('waiting')) {
+        return { bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-amber-500/30', icon: '⏳' };
+      }
+      return { bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30', icon: '🟢' };
   }
-  if (status === 'Reserved') {
-    return { bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-purple-500/30', icon: '👑' };
-  }
-  if (status.includes('waiting')) {
-    return { bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-amber-500/30', icon: '⏳' };
-  }
-  return { bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30', icon: '🟢' };
 }
 
 interface PortfolioMatrixViewProps {
@@ -85,7 +108,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
       }
     }
   }, []);
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'Vacant' | 'Waiting' | 'Allocated'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'Vacant' | 'Waiting' | 'Allocated' | 'Confirmed' | 'Pending' | 'Other'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [matrixData, setMatrixData] = useState<MatrixPortfolioItem[]>(INITIAL_MATRIX_DATA);
   const [registrations, setRegistrations] = useState<DelegateRegistration[]>([]);
@@ -176,8 +199,11 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
         : item.committee === activeCommittee;
       if (!matchCommittee) return false;
       if (statusFilter === 'Vacant' && item.status !== 'Vacant') return false;
-      if (statusFilter === 'Allocated' && item.status !== 'Allocated') return false;
+      if (statusFilter === 'Allocated' && item.status !== 'Allocated' && item.status !== 'Reserved') return false;
+      if (statusFilter === 'Confirmed' && item.status !== 'Confirmed') return false;
+      if (statusFilter === 'Pending' && item.status !== 'Pending Payment' && item.status !== 'Pending Approval') return false;
       if (statusFilter === 'Waiting' && !item.status.includes('waiting')) return false;
+      if (statusFilter === 'Other' && !['Double Delegation', 'Freeze', 'Revoked', 'Locked'].includes(item.status)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
@@ -201,6 +227,8 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
       vacant: forComm.filter((i) => i.status === 'Vacant').length,
       waiting: forComm.filter((i) => i.status.includes('waiting')).length,
       allocated: forComm.filter((i) => i.status === 'Allocated' || i.status === 'Reserved').length,
+      confirmed: forComm.filter((i) => i.status === 'Confirmed').length,
+      pending: forComm.filter((i) => i.status === 'Pending Payment' || i.status === 'Pending Approval').length,
     };
   }, [liveMatrixData, activeCommittee]);
 
@@ -265,13 +293,16 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
   const handleSaveSecretariatEdit = async () => {
     if (!selectedItemForEdit) return;
     
+    const DELEGATE_STATUSES = ['Allocated', 'Reserved', 'Confirmed', 'Pending Payment', 'Pending Approval', 'Double Delegation'];
+    const hasDelegateInfo = DELEGATE_STATUSES.includes(editStatus);
+
     const updated = matrixData.map((item) => {
       if (item.id === selectedItemForEdit.id) {
         return {
           ...item,
           status: editStatus,
-          allocatedTo: editStatus === 'Allocated' ? editDelegateName.trim() || item.allocatedTo : undefined,
-          allocatedEmail: editStatus === 'Allocated' ? editDelegateEmail.trim() || item.allocatedEmail : undefined,
+          allocatedTo: hasDelegateInfo ? editDelegateName.trim() || item.allocatedTo : undefined,
+          allocatedEmail: hasDelegateInfo ? editDelegateEmail.trim() || item.allocatedEmail : undefined,
         };
       }
       return item;
@@ -289,8 +320,8 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
           portfolioTitle: selectedItemForEdit.title,
           title: selectedItemForEdit.title,
           status: editStatus,
-          allocatedTo: editStatus === 'Allocated' ? editDelegateName.trim() : '',
-          allocatedEmail: editStatus === 'Allocated' ? editDelegateEmail.trim() : '',
+          allocatedTo: hasDelegateInfo ? editDelegateName.trim() : '',
+          allocatedEmail: hasDelegateInfo ? editDelegateEmail.trim() : '',
           committee: selectedItemForEdit.committee
         })
       });
@@ -463,7 +494,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
 
         {/* Real Status Filter Buttons */}
         <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono">
-          {(['ALL', 'Vacant', 'Waiting', 'Allocated'] as const).map((st) => {
+          {(['ALL', 'Vacant', 'Allocated', 'Confirmed', 'Pending', 'Waiting', 'Other'] as const).map((st) => {
             const isSel = statusFilter === st;
             return (
               <button
@@ -476,7 +507,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
                     : 'bg-white/[0.03] text-neutral-400 hover:text-white border-white/5 hover:border-white/10'
                 }`}
               >
-                {st === 'ALL' ? 'All Portfolios' : st === 'Waiting' ? 'In Demand (Waiting)' : st}
+                {st === 'ALL' ? 'All Portfolios' : st === 'Waiting' ? 'Waitlist' : st === 'Other' ? 'Freeze / Other' : st}
               </button>
             );
           })}
@@ -493,7 +524,13 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
             <div
               key={item.id}
               className={`p-5 rounded-3xl bg-[#07090f] border transition-all space-y-4 hover:border-cyan-500/40 flex flex-col justify-between relative overflow-hidden group shadow-lg ${
-                item.status === 'Allocated' ? 'border-rose-500/20' : 'border-white/10'
+                item.status === 'Allocated' ? 'border-rose-500/20' 
+                : item.status === 'Confirmed' ? 'border-blue-500/20'
+                : item.status === 'Reserved' ? 'border-purple-500/20'
+                : item.status === 'Pending Payment' ? 'border-yellow-500/20'
+                : item.status === 'Freeze' ? 'border-cyan-500/20'
+                : item.status === 'Revoked' ? 'border-red-600/20'
+                : 'border-white/10'
               }`}
             >
               <div className="space-y-3">
@@ -612,13 +649,20 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
                   <option value="Vacant">🟢 Vacant (Open Seat)</option>
                   <option value="Allocated">🔒 Allocated (Officially Assigned)</option>
                   <option value="Reserved">👑 Reserved (Dais / Delegation)</option>
+                  <option value="Confirmed">✅ Confirmed (Delegate Accepted)</option>
+                  <option value="Pending Payment">💳 Pending Payment</option>
+                  <option value="Pending Approval">⏳ Pending Approval</option>
+                  <option value="Double Delegation">👥 Double Delegation</option>
+                  <option value="Freeze">🧊 Freeze (Temporarily Held)</option>
+                  <option value="Revoked">⛔ Revoked (Removed / Withdrawn)</option>
+                  <option value="Locked">🔐 Locked (Admin Lock)</option>
                   <option value="1 person waiting">⏳ 1 person waiting</option>
                   <option value="2 people waiting">⏳ 2 people waiting</option>
                   <option value="3+ people waiting">⏳ 3+ people waiting</option>
                 </select>
               </div>
 
-              {(editStatus === 'Allocated' || editStatus === 'Reserved') && (
+              {(['Allocated', 'Reserved', 'Confirmed', 'Pending Payment', 'Pending Approval', 'Double Delegation'].includes(editStatus)) && (
                 <>
                   <div>
                     <label className="text-[10px] font-mono text-neutral-400 uppercase block mb-1">Delegate / Diplomat Full Name</label>

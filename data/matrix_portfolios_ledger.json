@@ -6,6 +6,8 @@
     "subTitle": "Prime Minister of India / Varanasi MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -15,6 +17,8 @@
     "subTitle": "Minister of Home Affairs / Gandhinagar MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -24,6 +28,8 @@
     "subTitle": "Minister of Defence / Lucknow MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -33,6 +39,8 @@
     "subTitle": "Minister of Finance & Corporate Affairs",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -42,6 +50,8 @@
     "subTitle": "Minister of External Affairs",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -51,6 +61,8 @@
     "subTitle": "Minister of Road Transport & Highways / Nagpur MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -60,6 +72,8 @@
     "subTitle": "Union Health Minister & BJP National President",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -69,6 +83,8 @@
     "subTitle": "Minister of Agriculture & Rural Development",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -78,6 +94,8 @@
     "subTitle": "Minister of Education / Sambalpur MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -87,6 +105,8 @@
     "subTitle": "Minister of Commerce & Industry / Mumbai North MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -96,6 +116,8 @@
     "subTitle": "Minister of Railways, I&B and Electronics & IT",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -105,6 +127,8 @@
     "subTitle": "Minister of Housing & Urban Affairs and Power",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -114,6 +138,8 @@
     "subTitle": "Minister of Communications and DoNER / Guna MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -123,6 +149,8 @@
     "subTitle": "Minister of Parliamentary Affairs & Minority Affairs",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -132,6 +160,8 @@
     "subTitle": "Minister of Consumer Affairs, Food & Public Distribution",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -141,6 +171,8 @@
     "subTitle": "Minister of Environment, Forest & Climate Change",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -150,6 +182,8 @@
     "subTitle": "Minister of Culture & Tourism / Jodhpur MP",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -159,6 +193,8 @@
     "subTitle": "Minister of Labour, Employment, Youth Affairs & Sports",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -168,6 +204,8 @@
     "subTitle": "Minister of Food Processing Industries / Hajipur MP",
     "category": "LJP (RV)",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -177,6 +215,8 @@
     "subTitle": "Chief Minister of Assam / NEDA Convener",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -186,6 +226,8 @@
     "subTitle": "Chief Minister of Uttar Pradesh",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -195,6 +237,8 @@
     "subTitle": "Deputy Chief Minister of Maharashtra",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -204,6 +248,8 @@
     "subTitle": "Leader of Opposition (Lok Sabha) / Rae Bareli MP",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -213,6 +259,8 @@
     "subTitle": "Congress President & Leader of Opposition (Rajya Sabha)",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -222,6 +270,8 @@
     "subTitle": "AICC General Secretary / Wayanad MP",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -231,6 +281,8 @@
     "subTitle": "Thiruvananthapuram MP / Foreign Affairs Expert",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -240,6 +292,8 @@
     "subTitle": "AICC General Secretary (Communications) / Rajya Sabha MP",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -249,6 +303,8 @@
     "subTitle": "Former Union Finance & Home Minister / Rajya Sabha MP",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -258,6 +314,8 @@
     "subTitle": "AICC General Secretary (Organisation) / Alappuzha MP",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -267,6 +325,8 @@
     "subTitle": "Deputy Leader of Opposition (Lok Sabha) / Jorhat MP",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -276,6 +336,8 @@
     "subTitle": "In-charge NSUI / Youth Leader",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -285,6 +347,8 @@
     "subTitle": "AICC General Secretary / Tonk MLA",
     "category": "INC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -294,6 +358,8 @@
     "subTitle": "Samajwadi Party President / Kannauj MP",
     "category": "SP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -303,6 +369,8 @@
     "subTitle": "Mainpuri MP / Samajwadi Party Leader",
     "category": "SP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -312,6 +380,8 @@
     "subTitle": "Chief Minister of West Bengal / TMC Chairperson",
     "category": "TMC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -321,6 +391,8 @@
     "subTitle": "TMC Parliamentary Party Leader (Rajya Sabha)",
     "category": "TMC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -330,6 +402,8 @@
     "subTitle": "Aam Aadmi Party National Convener",
     "category": "AAP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -339,6 +413,8 @@
     "subTitle": "Chief Minister of Punjab",
     "category": "AAP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -348,6 +424,8 @@
     "subTitle": "Chief Minister of Tamil Nadu / DMK President",
     "category": "DMK",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -357,6 +435,8 @@
     "subTitle": "DMK Parliamentary Leader / Thoothukudi MP",
     "category": "DMK",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -366,6 +446,8 @@
     "subTitle": "AIMIM President / Hyderabad MP",
     "category": "AIMIM",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -375,6 +457,8 @@
     "subTitle": "Nationalist Congress Party (SP) President",
     "category": "NCP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -384,6 +468,8 @@
     "subTitle": "Shiv Sena (UBT) Chief / Former CM Maharashtra",
     "category": "Shiv Sena (UBT)",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -393,6 +479,8 @@
     "subTitle": "Rajya Sabha MP / Chief Spokesperson Shiv Sena (UBT)",
     "category": "Shiv Sena (UBT)",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -402,6 +490,8 @@
     "subTitle": "BRS Working President / Sircilla MLA",
     "category": "BRS",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -411,6 +501,8 @@
     "subTitle": "Former CM Odisha / Biju Janata Dal President",
     "category": "BJD",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -420,6 +512,8 @@
     "subTitle": "Former CM J&K / PDP President",
     "category": "PDP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -429,6 +523,8 @@
     "subTitle": "Leader of Opposition (West Bengal Assembly) / Nandigram MLA",
     "category": "BJP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -438,6 +534,8 @@
     "subTitle": "Minister of State for Social Justice / RPI(A) President",
     "category": "RPI(A)",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -447,6 +545,8 @@
     "subTitle": "Minister of MSME / Former CM Bihar / HAM(S)",
     "category": "HAM(S)",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -456,6 +556,8 @@
     "subTitle": "Innovator, Education Reformer & Climate Activist (Ladakh)",
     "category": "Independent / Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -465,6 +567,8 @@
     "subTitle": "Political Analyst & Independent Commentator",
     "category": "Independent / Other",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -474,6 +578,8 @@
     "subTitle": "Investigative Journalist & RTI Researcher",
     "category": "Independent / Other",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -483,6 +589,8 @@
     "subTitle": "General Secretary MDMK / Rajya Sabha MP",
     "category": "MDMK",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -492,6 +600,8 @@
     "subTitle": "Former Union Minister / DMK Chennai Central MP",
     "category": "DMK",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -501,6 +611,8 @@
     "subTitle": "Chief Minister of Jammu & Kashmir / JKNC Vice President",
     "category": "JKNC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -510,6 +622,8 @@
     "subTitle": "Baramati MP / Working President NCP (SP)",
     "category": "NCP (SP)",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -519,6 +633,8 @@
     "subTitle": "Krishnanagar MP / TMC National Spokesperson",
     "category": "TMC",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -528,6 +644,8 @@
     "subTitle": "Former Deputy CM of Delhi / Education Architecture Lead",
     "category": "AAP",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -537,6 +655,8 @@
     "subTitle": "Former Aurangabad MP / AIMIM State President",
     "category": "AIMIM",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -546,6 +666,8 @@
     "subTitle": "Ministerial Executive Leadership",
     "category": "Government",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -555,6 +677,8 @@
     "subTitle": "Skill Development & Entrepreneurship Oversight",
     "category": "Government",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -564,6 +688,8 @@
     "subTitle": "Central University Governance & Regulatory Direction",
     "category": "Bureaucracy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -573,6 +699,8 @@
     "subTitle": "K-12 Policy Implementation & Literacy Missions",
     "category": "Bureaucracy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -582,6 +710,8 @@
     "subTitle": "Central Board of Secondary Education Governing Body",
     "category": "Institution",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -591,6 +721,8 @@
     "subTitle": "National Council of Educational Research and Training",
     "category": "Institution",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -600,6 +732,8 @@
     "subTitle": "University Grants Commission Regulatory Authority",
     "category": "Institution",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -609,6 +743,8 @@
     "subTitle": "National Testing Agency Entrance Examination Directorate",
     "category": "Institution",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -618,6 +754,8 @@
     "subTitle": "All India Council for Technical Education Accreditation",
     "category": "Institution",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -627,6 +765,8 @@
     "subTitle": "National Council for Teacher Education Quality Assurance",
     "category": "Institution",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -636,6 +776,8 @@
     "subTitle": "Institutes of National Importance Research Consortium",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -645,6 +787,8 @@
     "subTitle": "Technology Innovation & Advanced Engineering Directorate",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -654,6 +798,8 @@
     "subTitle": "Applied Incubation & Higher Technical Education",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -663,6 +809,8 @@
     "subTitle": "Cybersecurity, Aerospace & Technical Curriculum Lead",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -672,6 +820,8 @@
     "subTitle": "Heritage Technical Consortium & Multidisciplinary Studies",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -681,6 +831,8 @@
     "subTitle": "Artificial Intelligence & Semiconductor Pedagogical Lead",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -690,6 +842,8 @@
     "subTitle": "Infrastructure, Water Resources & Civil Engineering Lead",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -699,6 +853,8 @@
     "subTitle": "North-East Regional Technical Integration & Research",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -708,6 +864,8 @@
     "subTitle": "Central Government Public School Network Governance",
     "category": "School Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -717,6 +875,8 @@
     "subTitle": "Rural Gifted Student Education Network",
     "category": "School Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -726,6 +886,8 @@
     "subTitle": "National Institute of Open Schooling Flexible Learning",
     "category": "School Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -735,6 +897,8 @@
     "subTitle": "Strategic Pedagogical Policy Research Council",
     "category": "Education Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -744,6 +908,8 @@
     "subTitle": "Democratized Affordable EdTech & Entrance Preparation",
     "category": "EdTech",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -753,6 +919,8 @@
     "subTitle": "Grassroots Mass Educational Outreach & Civic Pedagogy",
     "category": "Educator",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -762,6 +930,8 @@
     "subTitle": "Corporate EdTech Commercial Governance & Financial Audits",
     "category": "EdTech",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -771,6 +941,8 @@
     "subTitle": "Kota Entrance Coaching Ecosystem & Competitive Systems",
     "category": "Coaching",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -780,6 +952,8 @@
     "subTitle": "National Pre-Medical Entrance Preparation Consortium",
     "category": "Coaching",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -789,6 +963,8 @@
     "subTitle": "Interactive Live Learning & K-12 Digital Pedagogy",
     "category": "EdTech",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -798,6 +974,8 @@
     "subTitle": "Civil Services & Competitive Exam Digital Distribution",
     "category": "EdTech",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -807,6 +985,8 @@
     "subTitle": "Engineering & Science Competitive Olympiad Training",
     "category": "Coaching",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -816,6 +996,8 @@
     "subTitle": "Kota Pedagogical Strategy & Student Academic Mentorship",
     "category": "Coaching",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -825,6 +1007,8 @@
     "subTitle": "Southern Regional Competitive Coaching Network",
     "category": "Coaching",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -834,6 +1018,8 @@
     "subTitle": "Elite STEM & JEE Advanced Test Preparation Architecture",
     "category": "Coaching",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -843,6 +1029,8 @@
     "subTitle": "Blended Schooling & Entrance Test Methodologies",
     "category": "Coaching",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -852,6 +1040,8 @@
     "subTitle": "High-Level Committee on Exam Security & Fair Logistics",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -861,6 +1051,8 @@
     "subTitle": "Statutory Anti-Cheating & Forensic Audit Oversight",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -870,6 +1062,8 @@
     "subTitle": "Engineering Entrance Structural Rationalization Board",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -879,6 +1073,8 @@
     "subTitle": "Medical Entrance Logistics, Normalization & Single-Window Evaluation",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -888,6 +1084,8 @@
     "subTitle": "Common University Entrance Examination Scaling Directorate",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -897,6 +1095,8 @@
     "subTitle": "PARAKH & Competency-Based Assessment Framework",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -906,6 +1106,8 @@
     "subTitle": "Generative AI Tools & Classroom Curriculum Integration",
     "category": "Technology",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -915,6 +1117,8 @@
     "subTitle": "SWAYAM, DIKSHA & Remote School Connectivity Infrastructure",
     "category": "Technology",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -924,6 +1128,8 @@
     "subTitle": "APAAR ID, DigiLocker & Sovereign Student Data Shield",
     "category": "Technology",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -933,6 +1139,8 @@
     "subTitle": "NISHTHA Teacher Upskilling & Professional Standards",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -942,6 +1150,8 @@
     "subTitle": "Hostel Infrastructure, Anti-Ragging & Campus Safety",
     "category": "Welfare",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -951,6 +1161,8 @@
     "subTitle": "Manodarpan Student Psychosocial Support & Stress Reduction",
     "category": "Welfare",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -960,6 +1172,8 @@
     "subTitle": "PwD Inclusivity, Assistive Tech & Universal Design",
     "category": "Social Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -969,6 +1183,8 @@
     "subTitle": "National Means-cum-Merit & Direct Benefit Transfer Audits",
     "category": "Finance",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -978,6 +1194,8 @@
     "subTitle": "Guidelines for Regulation of Coaching Centers 2024–2026",
     "category": "Regulation",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -987,6 +1205,8 @@
     "subTitle": "Fee Standardization & Transparency Regulatory Board",
     "category": "Regulation",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -996,6 +1216,8 @@
     "subTitle": "National Curriculum Framework (NCF) School Level",
     "category": "Curriculum",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1005,6 +1227,8 @@
     "subTitle": "Four-Year Undergraduate Programme (FYUP) & Academic Bank of Credits",
     "category": "Higher Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1014,6 +1238,8 @@
     "subTitle": "NSQF Integration & Early Vocational Apprenticeships",
     "category": "Skills",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1023,6 +1249,8 @@
     "subTitle": "Industry-Academia Interfacing & Global Internship Placements",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1032,6 +1260,8 @@
     "subTitle": "National Education Policy 2020 State Rollout Audits",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1041,6 +1271,8 @@
     "subTitle": "Proposed NEP 2026 Amendment & Constitutional Integration",
     "category": "Policy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1050,6 +1282,8 @@
     "subTitle": "PM SHRI Schools & State Municipal School Infrastructure",
     "category": "School Education",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1059,6 +1293,8 @@
     "subTitle": "HEFA Financing & University Research Grants Endowment",
     "category": "Finance",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1068,6 +1304,8 @@
     "subTitle": "Secondary & Senior Secondary Student Federation Delegate",
     "category": "Student Voice",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1077,6 +1315,8 @@
     "subTitle": "University & Research Scholar Democratic Plenary Voice",
     "category": "Student Voice",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1086,6 +1326,8 @@
     "subTitle": "Permanent Member (P5) • Veto Power",
     "category": "P5",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1095,6 +1337,8 @@
     "subTitle": "Permanent Member (P5) • Veto Power",
     "category": "P5",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1104,6 +1348,8 @@
     "subTitle": "Permanent Member (P5) • Veto Power",
     "category": "P5",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1113,6 +1359,8 @@
     "subTitle": "Permanent Member (P5) • Veto Power",
     "category": "P5",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1122,6 +1370,8 @@
     "subTitle": "Permanent Member (P5) • Veto Power",
     "category": "P5",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1131,6 +1381,8 @@
     "subTitle": "Elected Member • Gulf & Maritime Security",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1140,6 +1392,8 @@
     "subTitle": "Elected Member • Latin American Security",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1149,6 +1403,8 @@
     "subTitle": "Elected Member • African Peacekeeping & Critical Minerals",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1158,6 +1414,8 @@
     "subTitle": "Elected Member • Greenland & Arctic Gateway",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1167,6 +1425,8 @@
     "subTitle": "Elected Member • Mediterranean & Maritime Shipping",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1176,6 +1436,8 @@
     "subTitle": "Elected Member • Baltic Security & Eastern Flank",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1185,6 +1447,8 @@
     "subTitle": "Elected Member • Maritime Registry & West African Security",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1194,6 +1458,8 @@
     "subTitle": "Elected Member • South Asian Strategic Stability",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1203,6 +1469,8 @@
     "subTitle": "Elected Member • Trans-Oceanic Canals & Global Chokepoints",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1212,6 +1480,8 @@
     "subTitle": "Elected Member • Horn of Africa & Red Sea Security",
     "category": "Elected Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1221,6 +1491,8 @@
     "subTitle": "Northwest Passage & Arctic Sovereignty",
     "category": "Arctic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1230,6 +1502,8 @@
     "subTitle": "Nordic Defence & Extended Arctic Border",
     "category": "Arctic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1239,6 +1513,8 @@
     "subTitle": "GIUK Gap Maritime Surveillance & Arctic Council Founder",
     "category": "Arctic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1248,6 +1524,8 @@
     "subTitle": "Svalbard Treaty & Barents Sea Energy Infrastructure",
     "category": "Arctic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1257,6 +1535,8 @@
     "subTitle": "Baltic-Arctic High North Defence Architecture",
     "category": "Arctic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1266,6 +1546,8 @@
     "subTitle": "Observer State in Arctic Council & Indo-Pacific Anchor",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1275,6 +1557,8 @@
     "subTitle": "Northern Sea Route & East Asian Security Alliance",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1284,6 +1568,8 @@
     "subTitle": "Icebreaker Shipbuilding & Polar Shipping Interests",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1293,6 +1579,8 @@
     "subTitle": "European Energy Security & Polar Research Expeditions",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1302,6 +1590,8 @@
     "subTitle": "NATO Eastern Flank Logistics & Baltic Security",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1311,6 +1601,8 @@
     "subTitle": "Subsea Cable Protection & European Port Logistics",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1320,6 +1612,8 @@
     "subTitle": "Allied Joint Force Command & High North Deterrence",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1329,6 +1623,8 @@
     "subTitle": "EU External Action Service & Critical Raw Materials Directive",
     "category": "Strategic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1338,6 +1634,8 @@
     "subTitle": "Circumpolar Environmental & Scientific Secretariat",
     "category": "Arctic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1347,6 +1645,8 @@
     "subTitle": "Indigenous Territorial Rights & Arctic Environmental Justice",
     "category": "Arctic Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1356,6 +1656,8 @@
     "subTitle": "European Security Architecture & Black Sea Grain Corridors",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1365,6 +1667,8 @@
     "subTitle": "Montreux Convention & Straits Maritime Control",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1374,6 +1678,8 @@
     "subTitle": "Strait of Hormuz Security & Non-Proliferation Compliance",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1383,6 +1689,8 @@
     "subTitle": "Middle Eastern Regional Deterrence & Technology Defence",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1392,6 +1700,8 @@
     "subTitle": "OPEC+ Crude Production & Red Sea Shipping Protection",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1401,6 +1711,8 @@
     "subTitle": "Global Maritime Hub & Regional Mediation Diplomacy",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1410,6 +1722,8 @@
     "subTitle": "LNG Export Security & International Diplomatic Backchannels",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1419,6 +1733,8 @@
     "subTitle": "Suez Canal Strategic Corridor & African Security Envoy",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1428,6 +1744,8 @@
     "subTitle": "Non-Aligned Plenary Voice & Cape Sea Route Monitor",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1437,6 +1755,8 @@
     "subTitle": "South Atlantic Maritime Peace Zone & BRICS Diplomatic Voice",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1446,6 +1766,8 @@
     "subTitle": "AUKUS Maritime Alliance & Antarctic Treaty Oversight",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1455,6 +1777,8 @@
     "subTitle": "Pacific Ocean Governance & Nuclear-Free Treaty Champion",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1464,6 +1788,8 @@
     "subTitle": "Malacca Strait Security & Maritime Trade Law",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1473,6 +1799,8 @@
     "subTitle": "South China Sea Maritime Boundaries & ASEAN Security",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1482,6 +1810,8 @@
     "subTitle": "Archipelagic Sea Lanes & ASEAN Regional Neutrality",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1491,6 +1821,8 @@
     "subTitle": "Exclusive Economic Zone Defence & UNCLOS Enforcement",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1500,6 +1832,8 @@
     "subTitle": "Gulf of Guinea Anti-Piracy & ECOWAS Stability Force",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1509,6 +1843,8 @@
     "subTitle": "Grand Ethiopian Renaissance Dam & Horn Diplomatic Envoy",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1518,6 +1854,8 @@
     "subTitle": "Small Arms Interdiction & Multilateral Peacekeeping Reform",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1527,6 +1865,8 @@
     "subTitle": "South Atlantic & Antarctic Sovereignty Claims",
     "category": "Extended Security",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1536,6 +1876,8 @@
     "subTitle": "Executive Mediation & Preventive Diplomacy Mission",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1545,6 +1887,8 @@
     "subTitle": "Non-Proliferation & Hypersonic Weapon Arms Control",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1554,6 +1898,8 @@
     "subTitle": "Nuclear Safeguards & Maritime Reactor Verifications",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1563,6 +1909,8 @@
     "subTitle": "Polar Code & Freedom of Navigation International Directives",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1572,6 +1920,8 @@
     "subTitle": "Department of Peace Operations Deployment Assessments",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1581,6 +1931,8 @@
     "subTitle": "Emergency Civilian Relief & Humanitarian Corridors",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1590,6 +1942,8 @@
     "subTitle": "Geneva Conventions & Neutral War-Zone Protection",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1599,6 +1953,8 @@
     "subTitle": "Permanent Participants Secretariat of the Arctic Council",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1608,6 +1964,8 @@
     "subTitle": "Geopolitical Risk Analyst & Arctic Intelligence Briefings",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1617,6 +1975,8 @@
     "subTitle": "UN Correspondents Association (UNCA) Investigative Press",
     "category": "Crisis Actor",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1626,6 +1986,8 @@
     "subTitle": "Global South Anchor & Digital Public Infrastructure Architecture",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1635,6 +1997,8 @@
     "subTitle": "Multilateral Aid Directorate & Development Finance Corporation",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1644,6 +2008,8 @@
     "subTitle": "Global Development Initiative & Belt and Road Green Transition",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1653,6 +2019,8 @@
     "subTitle": "Foreign, Commonwealth & Development Office Sustainable Finance",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1662,6 +2030,8 @@
     "subTitle": "Paris Pact for People and Planet & Global Sovereign Debt Relief",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1671,6 +2041,8 @@
     "subTitle": "Climate Adaptation & Just Energy Transition Partnerships",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1680,6 +2052,8 @@
     "subTitle": "JICA Official Development Assistance & Disaster Risk Reduction",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1689,6 +2063,8 @@
     "subTitle": "Global Alliance Against Hunger and Poverty & G20 Troika",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1698,6 +2074,8 @@
     "subTitle": "African Union Agenda 2063 & Sovereign Debt Restructuring",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1707,6 +2085,8 @@
     "subTitle": "Critical Minerals Value Addition & South-East Asian Transition",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1716,6 +2096,8 @@
     "subTitle": "Sub-Saharan Demographic Dividend & Energy Access Transition",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1725,6 +2107,8 @@
     "subTitle": "Nearshoring Industrial Integration & Latin American Social Development",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1734,6 +2118,8 @@
     "subTitle": "Clean Energy Mining & Feminist International Assistance Policy",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1743,6 +2129,8 @@
     "subTitle": "Pacific Island Climate Resilience & Clean Energy Exports",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1752,6 +2140,8 @@
     "subTitle": "Saudi Green Initiative & Development Funds for Developing Nations",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1761,6 +2151,8 @@
     "subTitle": "COP28 UAE Consensus & Global Climate Finance Vehicle (ALTÉRRA)",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1770,6 +2162,8 @@
     "subTitle": "LDC Graduation Strategy & Climate Adaptation Infrastructure",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1779,6 +2173,8 @@
     "subTitle": "Loss and Damage Fund Implementation & Debt-for-Climate Swaps",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1788,6 +2184,8 @@
     "subTitle": "Himalayan Glacial Protection & Mountain Economy Advocacy",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1797,6 +2195,8 @@
     "subTitle": "Economic Recovery Restructuring & Renewable Energy Transition",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1806,6 +2206,8 @@
     "subTitle": "Nairobi Declaration on Climate & African Carbon Markets",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1815,6 +2217,8 @@
     "subTitle": "Agricultural Modernization & Horn Food Resilience Strategy",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1824,6 +2228,8 @@
     "subTitle": "North African Water Security & Green Hydrogen Corridors",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1833,6 +2239,8 @@
     "subTitle": "Transcontinental Logistics & Humanitarian Development Aid",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1842,6 +2250,8 @@
     "subTitle": "Lithium Triangle Industrialization & Agricultural Export Reforms",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1851,6 +2261,8 @@
     "subTitle": "Sovereign Wealth Fund Sustainability & Blue Economy Leadership",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1860,6 +2272,8 @@
     "subTitle": "Circular Economy Innovation & International Development Cooperation",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1869,6 +2283,8 @@
     "subTitle": "Geneva Global Health Hub & Humanitarian Multilateral Finance",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1878,6 +2294,8 @@
     "subTitle": "High-Tech Green Manufacturing & Mekong Delta Adaptation",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1887,6 +2305,8 @@
     "subTitle": "Disaster Risk Resilience & Overseas Migrant Worker Protections",
     "category": "Core Member",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1896,6 +2316,8 @@
     "subTitle": "International Bank for Reconstruction and Development (IBRD)",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1905,6 +2327,8 @@
     "subTitle": "Special Drawing Rights (SDR) & Resilience and Sustainability Trust",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -1914,6 +2338,8 @@
     "subTitle": "Rules-Based Multilateral Trading System & Dispute Settlement",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1923,6 +2349,8 @@
     "subTitle": "United Nations Development Programme Human Development Index",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1932,6 +2360,8 @@
     "subTitle": "Child Welfare, Nutrition & Global Education Equity Directorate",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -1941,6 +2371,8 @@
     "subTitle": "Gender Equality, Care Economy & Female Economic Empowerment",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1950,6 +2382,8 @@
     "subTitle": "World Health Organization Pandemic Agreement & Health Systems",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1959,6 +2393,8 @@
     "subTitle": "International Labour Organization Decent Work Agenda & Labour Rights",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1968,6 +2404,8 @@
     "subTitle": "Trade, Debt Vulnerability & Sovereign Technology Transfer",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1977,6 +2415,8 @@
     "subTitle": "Global Plastics Treaty & Biodiversity Finance Framework",
     "category": "Financial",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -1986,6 +2426,8 @@
     "subTitle": "Multilateral Development Bank Capital Adequacy & Blended Finance",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Advanced"
   },
   {
@@ -1995,6 +2437,8 @@
     "subTitle": "Global Resilient Infrastructure Consortium & Transport Networks",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2004,6 +2448,8 @@
     "subTitle": "Food and Agriculture Organization (FAO) Food Resilience Strategy",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -2013,6 +2459,8 @@
     "subTitle": "International Renewable Energy Agency (IRENA) Decarbonization Envoy",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2022,6 +2470,8 @@
     "subTitle": "New Collective Quantified Goal on Climate Finance (NCQG)",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -2031,6 +2481,8 @@
     "subTitle": "Global Digital Compact & Universal Broadband Connectivity",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2040,6 +2492,8 @@
     "subTitle": "Gavi & The Global Fund Sustainable Health Architecture",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2049,6 +2503,8 @@
     "subTitle": "UNESCO Global Education Monitoring & Youth Upskilling Hub",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -2058,6 +2514,8 @@
     "subTitle": "Youth SME Accelerator & Micro-Enterprise Seed Capital Envoy",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -2067,6 +2525,8 @@
     "subTitle": "AI Workforce Transitions & Universal Social Protection Floor",
     "category": "Future Economy",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2076,6 +2536,8 @@
     "subTitle": "UN Youth Office Global Plenary Delegation",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -2085,6 +2547,8 @@
     "subTitle": "UN Permanent Forum on Indigenous Issues (UNPFII)",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2094,6 +2558,8 @@
     "subTitle": "Conference of Non-Governmental Organizations in Consultative Relationship (CoNGO)",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -2103,6 +2569,8 @@
     "subTitle": "Commission on the Status of Women (CSW) Plenary Voice",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2112,6 +2580,8 @@
     "subTitle": "Doha Programme of Action for LDCs (UN-OHRLLS)",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2121,6 +2591,8 @@
     "subTitle": "Antigua and Barbuda Agenda for SIDS (ABAS) Voice",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Crisis"
   },
   {
@@ -2130,6 +2602,8 @@
     "subTitle": "Gaborone Programme of Action for LLDCs",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -2139,6 +2613,8 @@
     "subTitle": "International Trade Union Confederation (ITUC)",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   },
   {
@@ -2148,6 +2624,8 @@
     "subTitle": "UN Global Compact Sustainable Business Council",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Beginner"
   },
   {
@@ -2157,6 +2635,8 @@
     "subTitle": "International Federation of Journalists & Global Development Media",
     "category": "Civil Society",
     "status": "Vacant",
+    "allocatedTo": "",
+    "allocatedEmail": "",
     "difficulty": "Intermediate"
   }
 ]
