@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { formId, formTitle, formSlug, submissions, userEmail, customSheetUrl, targetTab, webhookUrl } = body;
 
-    const DEFAULT_WEBHOOK_URL = webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
+    const DEFAULT_WEBHOOK_URL = webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
     const finalTab = targetTab || (formSlug ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS');
 
     const syncedEntries: any[] = [];

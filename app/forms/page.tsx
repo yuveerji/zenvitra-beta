@@ -541,15 +541,6 @@ export default function ZenFormsHubPage() {
                               <span>View Public Form</span>
                             </Link>
 
-                            <Link
-                              href={`/forms/${form.slug || form.id}/responses`}
-                              target="_blank"
-                              className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
-                            >
-                              <BarChart3 className="w-3.5 h-3.5 text-purple-400" />
-                              <span>View Responses</span>
-                            </Link>
-
                             <button
                               onClick={() => {
                                 const url = `${window.location.origin}/forms/${form.slug || form.id}`;
@@ -647,14 +638,6 @@ export default function ZenFormsHubPage() {
                       className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white transition text-xs"
                     >
                       Edit
-                    </Link>
-                    <Link
-                      href={`/forms/${form.slug || form.id}/responses`}
-                      target="_blank"
-                      className="p-1.5 rounded-lg text-neutral-400 hover:text-white"
-                      title="View Responses"
-                    >
-                      <BarChart3 className="w-4 h-4 text-purple-400" />
                     </Link>
                     <Link
                       href={`/forms/${form.slug || form.id}`}

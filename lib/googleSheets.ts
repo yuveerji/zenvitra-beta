@@ -185,8 +185,8 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   }
 
   // 2. Server-Side Direct Webhook Dispatch
-  const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
-  const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
+  const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
+  const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
   
   // Normalize tab string to match Apps Script expected targetTab
   const rawTab = (payload.tab || '').toUpperCase();

@@ -328,7 +328,7 @@ export default function SecretariatPage() {
       ticketId: `SEC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
     };
 
-    const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
+    const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
 
     const secPayload = {
       action: 'add_row',
@@ -451,6 +451,18 @@ export default function SecretariatPage() {
               <p className="text-neutral-300 font-light text-sm sm:text-base leading-relaxed">
                 “Delegate is where you represent. Secretariat is where you create.” We are selecting dedicated young leaders across 10 core operational sectors to build, govern, and execute India’s sovereign online Model United Nations.
               </p>
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/forms/zen-secretariat-2026"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#e2f952] hover:bg-[#d6f03d] text-slate-950 font-bold text-xs sm:text-sm font-sans tracking-wide uppercase transition-all shadow-[0_0_25px_rgba(226,249,82,0.35)] hover:scale-105 cursor-pointer"
+                  title="Open Official Secretariat Application ZenForm"
+                >
+                  <Sparkles className="w-4 h-4 text-slate-950" />
+                  <span>Apply via Official Secretariat Form</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
             {/* Official Seal Medallion */}

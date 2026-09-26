@@ -56,9 +56,11 @@ export async function POST(req: NextRequest) {
       customSheetUrl 
     } = body;
 
-    const targetTab = formSlug 
-      ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` 
-      : 'ZEN_FORMS';
+    const isSec = formId?.toLowerCase().includes('secretariat') || formSlug?.toLowerCase().includes('secretariat');
+    const isMun = formId?.toLowerCase().includes('diplomacy') || formId?.toLowerCase().includes('mun') || formSlug?.toLowerCase().includes('diplomacy');
+
+    const targetTab = body.targetTab || body.sheetTab || (isSec ? 'Secretariat Applications' : (isMun ? 'ZEN DIPLOMACY MUN' : (formSlug ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS')));
+    const sheetTab = targetTab;
 
     const timestamp = submittedAt || new Date().toISOString();
     const subId = submissionId || `sub_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -74,29 +76,73 @@ export async function POST(req: NextRequest) {
     // 1. Save structured submission for web responses viewer
     saveStructuredSubmission(formId, structuredSub);
 
+    const rawData = data || {};
     const ledgerEntry = {
       timestamp,
+      action: 'add_row',
       tab: targetTab,
       targetTab,
+      sheetTab,
       formId,
+      formTitle: body.formTitle || formSlug || formId,
       submissionId: subId,
+      ticketId: rawData.ticketId || `SEC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
       submitterHandle: submitterHandle || 'anonymous',
       googleUserEmail: googleUserEmail || '',
       customSheetUrl: customSheetUrl || '',
-      ...data,
+      // Delegate Aliases
+      fullName: rawData.step1_fullname || rawData.step2_fullname || rawData.fullName || rawData.name || '',
+      email: rawData.step1_email || rawData.step2_email || rawData.email || '',
+      phoneNumber: rawData.step1_phone || rawData.step2_phone || rawData.phoneNumber || rawData.phone || '',
+      institution: rawData.step1_institution || rawData.step2_institution || rawData.institution || '',
+      city: rawData.step1_city || rawData.step2_city || rawData.step2_city_country || rawData.city || '',
+      track: rawData.step2_track || rawData.track || '',
+      experienceLevel: rawData.step2_experience_level || rawData.experienceLevel || '',
+      firstCommitteeChoice: rawData.step3_primary_committee || rawData.firstCommitteeChoice || '',
+      secondCommitteeChoice: rawData.step4_secondary_committee || rawData.secondCommitteeChoice || '',
+      portfolioPreferences: rawData.step5_portfolios || rawData.portfolioPreferences || '',
+      priorAccolades: rawData.step6_prior_accolades || rawData.priorAccolades || '',
+      resolutionExperience: rawData.step7_resolution_experience || rawData.resolutionExperience || '',
+      researchLink: rawData.step8_research_paper_link || rawData.researchLink || '',
+      accreditationPlacard: rawData.step9_accreditation_dossier || rawData.accreditationPlacard || '',
+      motivation: rawData.step10_motivation_statement || rawData.motivation || '',
+      accommodation: rawData.step11_accommodation_assistance || rawData.accommodation || 'NO',
+      emergencyContact: rawData.step12_emergency_contact || rawData.emergencyContact || '',
+      dietaryPreference: rawData.step13_dietary_pref || rawData.dietaryPreference || 'Vegetarian',
+      participationTier: rawData.step15_participation_tier || rawData.participationTier || rawData.passTier || 'Delegate Pass (₹499)',
+      utr: rawData.step15_payment_reference || rawData.utr || '',
+      paymentScreenshot: rawData.step15_receipt_link || rawData.step15_payment_screenshot || rawData.paymentScreenshot || '',
+      // Secretariat Aliases
+      preferredSector: rawData.step1_primary_sector || rawData.step1_preferred_department || rawData.preferredSector || '',
+      secondarySector: rawData.step1_secondary_sector || rawData.step1_secondary_department || rawData.secondarySector || '',
+      priorMunExperience: rawData.step3_prior_muns_count || rawData.priorMunExperience || '',
+      numberOfMunsAttended: rawData.step3_prior_muns_count || rawData.numberOfMunsAttended || '',
+      priorOrganizingExperience: rawData.step3_organizing_experience || rawData.priorOrganizingExperience || '',
+      weeklyBandwidth: rawData.step3_weekly_bandwidth || rawData.weeklyBandwidth || '',
+      availabilityOct2425: rawData.step4_availability_oct2425 || rawData.availabilityOct2425 || 'YES',
+      statementOfPurpose: rawData.step3_sop || rawData.statementOfPurpose || '',
+      practicalTaskResponse: rawData.step3_practical_response || rawData.practicalTaskResponse || '',
+      portfolioUrl: rawData.step3_portfolio_url || rawData.portfolioUrl || '',
+      discordHandle: rawData.step4_discord_handle || rawData.discordHandle || '',
+      sovereignAccordAccepted: rawData.step4_accord_agreement || rawData.sovereignAccordAccepted || 'CONFIRMED',
+      ...rawData,
     };
 
     // 2. Always persist to backup ledger immediately
     appendToLocalLedger(ledgerEntry);
 
-    // 3. If creator or system Google Sheets webhook is configured, forward asynchronously
-    const targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+    // 3. Forward to Google Sheets webhook
+    const targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
     if (targetWebhook && typeof targetWebhook === 'string' && targetWebhook.startsWith('http')) {
-      fetch(targetWebhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ledgerEntry),
-      }).catch((e) => console.warn('[SHEETS-ZENFORMS-WEBHOOK-WARN]', e.message));
+      try {
+        await fetch(targetWebhook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(ledgerEntry),
+        });
+      } catch (webhookErr: any) {
+        console.warn('[SHEETS-ZENFORMS-WEBHOOK-WARN]', webhookErr?.message);
+      }
     }
 
     return NextResponse.json({ success: true, submissionId: subId, submission: structuredSub });

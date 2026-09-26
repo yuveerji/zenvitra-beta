@@ -1832,16 +1832,19 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                   <span>Sync Now</span>
                 </button>
 
-                {/* View on Public Website Button */}
-                <Link
-                  href={`/forms/${form.slug || form.id}/responses`}
-                  target="_blank"
-                  className="px-3.5 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-neutral-200 transition flex items-center gap-1.5 text-xs font-mono"
-                  title="View how respondents and website visitors see responses"
-                >
-                  <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="hidden sm:inline">Web Analytics</span>
-                </Link>
+                {/* View in Google Sheets Button */}
+                {form.googleSheetsConfig?.sheetUrl && (
+                  <a
+                    href={form.googleSheetsConfig.sheetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3.5 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition flex items-center gap-1.5 text-xs font-mono"
+                    title="Open Connected Google Sheet"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="hidden sm:inline">Open in Sheets</span>
+                  </a>
+                )}
 
                 {/* 3-Dot More Actions Menu */}
                 <div className="relative">
@@ -1872,16 +1875,6 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
                         <Download className="w-3.5 h-3.5 text-amber-400" />
                         <span>Download CSV (.csv)</span>
                       </button>
-
-                      <Link
-                        href={`/forms/${form.slug || form.id}/responses`}
-                        target="_blank"
-                        onClick={() => setIsResponsesMenuOpen(false)}
-                        className="w-full px-3 py-2 rounded-lg hover:bg-white/10 text-neutral-200 flex items-center gap-2"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Public Web View</span>
-                      </Link>
 
                       <button
                         onClick={() => {

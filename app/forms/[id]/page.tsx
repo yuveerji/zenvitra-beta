@@ -676,8 +676,33 @@ export default function ZenFormPublicPage() {
         setQuizScore({ total, earned, pct: total > 0 ? Math.round((earned / total) * 100) : 0 });
       }
 
-      // Background dispatch to Google Sheets webhook
-      const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbxNKYri4iKy3VuWUn3B5x7cW40wDTS2x2Kt16u_qxfLGwACsS-Zs3-COu7EsguZdJDM/exec';
+      // Server-side robust dispatch to Google Sheets webhook
+      const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
+      const isSecForm = form.id.includes('secretariat') || form.slug?.includes('secretariat');
+      const targetSheetTab = form.googleSheetsConfig?.sheetTab || (isSecForm ? 'Secretariat Applications' : 'ZEN DIPLOMACY MUN');
+
+      try {
+        await fetch('/api/forms/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            formId: form.id,
+            formSlug: form.slug,
+            formTitle: form.title,
+            submissionId: submission.id,
+            submittedAt: submission.submittedAt,
+            data: formData,
+            submitterHandle: submitter,
+            sheetTab: targetSheetTab,
+            targetTab: targetSheetTab,
+            webhookUrl: webhookUrl,
+          }),
+        });
+      } catch (submitErr) {
+        console.warn('[SERVER-DISPATCH-WARN]', submitErr);
+      }
+
+      // Fallback direct browser dispatch to Google Apps Script
       if (webhookUrl && form.settings?.autoForwardSheets !== false) {
         try {
           fetch(webhookUrl, {
@@ -690,8 +715,8 @@ export default function ZenFormPublicPage() {
               formTitle: form.title,
               timestamp: new Date().toISOString(),
               submitterHandle: submitter,
-              sheetTab: form.googleSheetsConfig?.sheetTab || (form.id.includes('secretariat') ? 'Secretariat Applications' : 'ZEN DIPLOMACY MUN'),
-              targetTab: form.googleSheetsConfig?.sheetTab || (form.id.includes('secretariat') ? 'Secretariat Applications' : 'ZEN DIPLOMACY MUN'),
+              sheetTab: targetSheetTab,
+              targetTab: targetSheetTab,
               ...formData,
             }),
           }).catch(() => {});
@@ -797,12 +822,13 @@ export default function ZenFormPublicPage() {
           </span>
 
           <Link
-            href={`/forms/${form.slug || form.id}/responses`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-mono text-neutral-300 hover:text-white transition"
-            title="View Responses on Website"
+            href="/matrix"
+            target="_blank"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-mono text-cyan-300 hover:text-white transition"
+            title="Open Live Matrix Ledger"
           >
-            <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Responses</span>
+            <Grid className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Live Dais Matrix</span>
           </Link>
 
           <button
@@ -888,11 +914,12 @@ export default function ZenFormPublicPage() {
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href={`/forms/${form.slug || form.id}/responses`}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition flex items-center justify-center gap-2 border border-white/10 shadow-sm"
+                href="/matrix"
+                target="_blank"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 font-mono text-xs transition flex items-center justify-center gap-2 border border-cyan-500/30 shadow-sm"
               >
-                <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
-                <span>See Previous Responses</span>
+                <Grid className="w-3.5 h-3.5 text-cyan-400" />
+                <span>View Live Dais Matrix</span>
               </Link>
 
               {(form.settings?.showSubmitAnotherLink ?? true) && (
