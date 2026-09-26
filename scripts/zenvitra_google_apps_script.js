@@ -1,26 +1,35 @@
 /**
  * ==============================================================================
- * ZENVITRA MASTER TELEMETRY, FORMS & MATRIX ENGINE — GOOGLE APPS SCRIPT (v4)
+ * ZENVITRA MASTER OMNI-STREAM, FORMS & MATRIX ENGINE — GOOGLE APPS SCRIPT (v5.0)
  * ==============================================================================
- * Webhook URL:
- * https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec
- * 
- * Automatically handles:
- * 1. AUTOMATIC SPREADSHEET & TAB CREATION — Creates or attaches master Google Sheet
- * 2. LIVE MATRIX PORTFOLIO SYNC — Reads & writes portfolios in Google Sheet, syncs with /matrix
- * 3. DYNAMIC ZENFORMS SCHEMA SYNC — Adds & updates columns in real-time when forms change
- * 4. EVENT REGISTRATIONS — Connects events & pass bookings directly to Google Sheets
- * 5. ZEN DIPLOMACY MUN & SECRETARIAT — High-fidelity telemetry dispatches
+ * Unified Enterprise Apps Script Engine combining:
+ * 1.  ZEN DIPLOMACY MUN (Delegate Registrations, pass tiers, payments & preferences)
+ * 2.  SECRETARIAT APPLICATIONS (10 Department & sector selection cards, SOP, tasks)
+ * 3.  LIVE MATRIX PORTFOLIOS (36 official committee seats, 2-way real-time sync with /matrix)
+ * 4.  EVENT REGISTRATIONS (Pass bookings, custom countries, tier allocations & prices)
+ * 5.  DONATIONS & CHARITY RELIEF (Primary relief contributions & UTR tracking)
+ * 6.  IMPACT LEDGER (Public transparency & voluntary relief ledger)
+ * 7.  REGISTER DATA CORE (User registrations & digital identity ledger)
+ * 8.  LOGIN DATA CORE (Authentication audit & security telemetry)
+ * 9.  CAMPUS AMBASSADORS (Student chapter leader accreditation)
+ * 10. CORE TEAM APPLICATIONS (Founding wing applications & bandwidth commitments)
+ * 11. CONTACT INQUIRIES (Diplomatic contact & public support inquiries)
+ * 12. NEWSLETTER SUBSCRIBERS (Email subscriptions & consent tracking)
+ * 13. COLLAB & PARTNERSHIPS (Institutional alliances & conference partnerships)
+ * 14. COMMUNITY MEMBERS (Grassroots youth network & skills directory)
+ * 15. FEEDBACK & GRIEVANCE (Platform tickets, resolution audits & bug reports)
+ * 16. DYNAMIC ZENFORMS SCHEMA SYNC (Auto-creates columns when questions are added/edited)
  * ==============================================================================
- * ONE-CLICK SETUP:
- * 1. In Apps Script, click Run with function "initAllTabs".
- * 2. It will automatically create all tabs and populate the 36 Committee Portfolios!
+ * ONE-CLICK SETUP IN APPS SCRIPT:
+ * 1. Select function "initAllTabs" in the toolbar dropdown and click "▷ Run".
+ * 2. Review and Allow permissions.
  * 3. Deploy > New deployment > Web app > Execute as "Me", Access "Anyone".
+ * 4. Copy the Web App URL!
  * ==============================================================================
  */
 
 // ── 36 OFFICIAL COMMITTEE PORTFOLIOS FOR LIVE MATRIX ──
-const INITIAL_MATRIX_PORTFOLIOS = [
+var INITIAL_MATRIX_PORTFOLIOS = [
   // AIPPM (All India Political Parties Meet)
   { id: 'aippm_1', committee: 'AIPPM', title: 'Narendra Modi', subTitle: 'Prime Minister of India / Varanasi MP', category: 'Government & Cabinet', status: 'Vacant', difficulty: 'Advanced' },
   { id: 'aippm_2', committee: 'AIPPM', title: 'Amit Shah', subTitle: 'Minister of Home Affairs / Gandhinagar MP', category: 'Government & Cabinet', status: 'Allocated', difficulty: 'Advanced' },
@@ -66,129 +75,164 @@ const INITIAL_MATRIX_PORTFOLIOS = [
   { id: 'unodc_8', committee: 'UNODC', title: 'Commonwealth of Australia', subTitle: 'Pacific Border & Darknet Interdiction Branch', category: 'Destination & Consumer States', status: 'Vacant', difficulty: 'Beginner' }
 ];
 
-const TAB_SCHEMAS = {
-  // 1. DELEGATE REGISTRATIONS
-  'ZEN_DIPLOMACY_MUN': {
+// ── CANONICAL SCHEMAS & COLUMN HEADERS FOR ALL 15 STREAMS ──
+var TAB_SCHEMAS = {
+  // 1. ZEN DIPLOMACY MUN (DELEGATE REGISTRATIONS)
+  ZEN_DIPLOMACY_MUN: {
     sheetName: 'ZEN DIPLOMACY MUN',
     headers: [
-      'Timestamp',
-      'Full Name',
-      'Email Address',
-      'WhatsApp / Phone',
-      'Institution / School / University',
-      'City & State',
-      'Participation Track',
-      'Experience Level',
-      'Primary Committee Choice',
-      'Secondary Committee Choice',
-      'Portfolio Preferences',
-      'Prior Accolades & MUN Count',
-      'Resolution Drafting Experience',
-      'Research Dossier Link',
-      'Placard Accreditation Name',
-      'Motivation Statement',
-      'Accommodation Assistance',
-      'Emergency Contact',
-      'Dietary Preference',
-      'Participation Pass Tier',
-      'Payment UTR / Ref Number',
-      'Payment Screenshot Link',
-      'Code of Conduct Accord',
-      'Allocation Status',
-      'Allocated Committee',
-      'Allocated Portfolio',
-      'Submitter Handle',
-      'Form ID'
+      'Timestamp', 'Full Name', 'Email Address', 'WhatsApp / Phone',
+      'Institution / School / University', 'City & State', 'Participation Track',
+      'Experience Level', 'Primary Committee Choice', 'Secondary Committee Choice',
+      'Portfolio Preferences', 'Prior Accolades & MUN Count', 'Resolution Drafting Experience',
+      'Research Dossier Link', 'Placard Accreditation Name', 'Motivation Statement',
+      'Accommodation Assistance', 'Emergency Contact', 'Dietary Preference',
+      'Participation Pass Tier', 'Payment UTR / Ref Number', 'Payment Screenshot Link',
+      'Code of Conduct Accord', 'Allocation Status', 'Allocated Committee',
+      'Allocated Portfolio', 'Submitter Handle', 'Form ID'
     ]
   },
 
   // 2. SECRETARIAT & EXECUTIVE BOARD APPLICATIONS
-  'SECRETARIAT': {
+  SECRETARIAT: {
     sheetName: 'Secretariat Applications',
     headers: [
-      'Timestamp',
-      'Ticket ID',
-      'Full Name',
-      'Email Address',
-      'Phone Number',
-      'Institution',
-      'Grade / Academic Year',
-      'City & Country',
-      'Preferred Department',
-      'Secondary Department',
-      'Prior MUN Experience',
-      'Number of MUNs Attended',
-      'Prior Organizing Experience',
-      'Weekly Bandwidth Commitment',
-      'Available Oct 24-25, 2026',
-      'Statement of Purpose (SOP)',
-      'Department Practical Task Response',
-      'Portfolio / Resume / Drive Link',
-      'Discord Handle',
-      'Sovereign Accord Accepted',
-      'Review Status'
+      'Timestamp', 'Ticket ID', 'Full Name', 'Email Address', 'Phone Number',
+      'Institution', 'Grade / Academic Year', 'City & Country', 'Preferred Department',
+      'Secondary Department', 'Prior MUN Experience', 'Number of MUNs Attended',
+      'Prior Organizing Experience', 'Weekly Bandwidth Commitment', 'Available Oct 24-25, 2026',
+      'Statement of Purpose (SOP)', 'Department Practical Task Response',
+      'Portfolio / Resume / Drive Link', 'Discord Handle', 'Sovereign Accord Accepted', 'Review Status'
     ]
   },
 
-  // 3. MATRIX PORTFOLIOS (AUTO-SYNCS LIVE TO /matrix)
-  'MATRIX_PORTFOLIOS': {
+  // 3. MATRIX PORTFOLIOS (AUTO-SYNCS LIVE WITH /matrix)
+  MATRIX_PORTFOLIOS: {
     sheetName: 'Matrix Portfolios',
     headers: [
-      'Portfolio ID',
-      'Committee',
-      'Portfolio Title',
-      'Subtitle / Description',
-      'Category',
-      'Status',
-      'Allocated To (Name)',
-      'Allocated Email',
-      'Difficulty'
+      'Portfolio ID', 'Committee', 'Portfolio Title', 'Subtitle / Description',
+      'Category', 'Status', 'Allocated To (Name)', 'Allocated Email', 'Difficulty'
     ]
   },
 
   // 4. EVENT REGISTRATIONS & TICKET BOOKINGS
-  'EVENTS': {
+  EVENTS: {
     sheetName: 'Event Registrations',
     headers: [
-      'Timestamp',
-      'Event ID',
-      'Event Name',
-      'Participant Name',
-      'Participant Email',
-      'Contact Number',
-      'Institution / College',
-      'Ticket Pass Type',
-      'Quantity',
-      'Allocated Seat / Portfolio',
-      'Total Price',
-      'Payment Status'
+      'Timestamp', 'Event ID', 'Event Name', 'Participant Name', 'Participant Email',
+      'Contact Number', 'Institution / College', 'Ticket Pass Type', 'Quantity',
+      'Allocated Seat / Portfolio', 'Total Price', 'Payment Status'
     ]
   },
 
-  // 5. CORE TEAM APPLICATIONS
-  'CORE_TEAM': {
+  // 5. DONATIONS & RELIEF CONTRIBUTIONS
+  DONATIONS: {
+    sheetName: 'Donations',
+    headers: [
+      'Timestamp', 'Donor Name', 'Donor Email', 'Phone', 'Amount (INR)',
+      'UTR / Txn ID', 'Target Relief Stream', 'Payment Mode', 'Anonymous',
+      'Notes / Prayer', 'Audit Status', 'Verification Details', 'IP Address', 'Device Info'
+    ]
+  },
+
+  // 6. IMPACT LEDGER
+  IMPACT_LEDGER: {
+    sheetName: 'Impact Ledger',
+    headers: [
+      'Timestamp', 'Donor Name', 'Donor Email', 'Phone', 'Amount (INR)',
+      'UTR / Txn ID', 'Target Relief Stream', 'Payment Mode', 'Anonymous',
+      'Notes / Prayer', 'Audit Status', 'Verification Details', 'IP Address', 'Device Info'
+    ]
+  },
+
+  // 7. USER REGISTRATIONS (PASSPORT CORE)
+  REGISTER_CORE: {
+    sheetName: 'Register Data Core',
+    headers: [
+      'Timestamp', 'User ID', 'Full Name', 'Email', 'Role Designation',
+      'Access Level', 'Auth Provider', 'Account Status', 'IP Address', 'Device Info'
+    ]
+  },
+
+  // 8. LOGIN AUDIT CORE
+  LOGIN_CORE: {
+    sheetName: 'Login Data Core',
+    headers: [
+      'Timestamp', 'User ID', 'Full Name', 'Email', 'Auth Provider',
+      'Login Status', 'IP Address', 'Device Info'
+    ]
+  },
+
+  // 9. CAMPUS AMBASSADORS
+  CAMPUS_AMBASSADOR: {
+    sheetName: 'Campus Ambassadors',
+    headers: [
+      'Timestamp', 'Full Name', 'College / University', 'City / State',
+      'Degree & Year', 'Email', 'Phone / WhatsApp', 'Leadership Experience',
+      'Proposed Strategy', 'Student ID Proof', 'Approval Status', 'IP Address'
+    ]
+  },
+
+  // 10. CORE TEAM APPLICATIONS
+  CORE_TEAM: {
     sheetName: 'Core Team Applications',
     headers: [
       'Timestamp', 'Full Name', 'Handle', 'Email', 'Phone Number',
-      'Contact Channel', 'City / Location', 'Department', 'Role Applied',
-      'Portfolio URL', 'Uploaded Document', 'Past Experience',
-      'Technical Dossier', 'Weekly Bandwidth', 'Motivation Statement',
-      'Constitutional Accord', 'Application Status', 'IP Address'
+      'Role Applied For', 'Department', 'Portfolio URL', 'Uploaded Document',
+      'Leadership Accomplishments', 'Technical Dossier', 'Weekly Bandwidth',
+      'Motivation Statement', 'Constitutional Accord', 'Application Status', 'IP Address'
     ]
   },
 
-  // 6. CONTACT INQUIRIES
-  'CONTACT': {
+  // 11. CONTACT INQUIRIES
+  CONTACT: {
     sheetName: 'Contact Inquiries',
     headers: [
       'Timestamp', 'Full Name', 'Email', 'Phone Number', 'Subject',
-      'Query Type', 'Message', 'Source URL', 'IP Address'
+      'Query Type', 'Message', 'Source URL', 'Status', 'IP Address'
+    ]
+  },
+
+  // 12. NEWSLETTER SUBSCRIBERS
+  NEWSLETTER: {
+    sheetName: 'Newsletter Subscribers',
+    headers: [
+      'Timestamp', 'Email Address', 'Source', 'Consent Given',
+      'UTM Campaign', 'Status', 'IP Address'
+    ]
+  },
+
+  // 13. COLLAB & PARTNERSHIPS
+  COLLAB: {
+    sheetName: 'Collab & Partnerships',
+    headers: [
+      'Timestamp', 'Organization Name', 'Representative Name', 'Official Email',
+      'Phone / WhatsApp', 'Collab Type', 'Proposal Summary', 'Budget / Resources',
+      'Stage', 'IP Address'
+    ]
+  },
+
+  // 14. COMMUNITY MEMBERS
+  COMMUNITY: {
+    sheetName: 'Community Members',
+    headers: [
+      'Timestamp', 'Full Name', 'Email', 'City / Region', 'Institution / College',
+      'Primary Skills', 'Areas of Interest', 'Discord Handle', 'Membership Status', 'IP Address'
+    ]
+  },
+
+  // 15. FEEDBACK & GRIEVANCE
+  FEEDBACK: {
+    sheetName: 'Feedback & Grievance',
+    headers: [
+      'Timestamp', 'Submitter Name', 'Email', 'Category', 'Severity / Priority',
+      'Page URL', 'Description', 'Attachment Link', 'Status', 'IP Address'
     ]
   }
 };
 
 /**
- * Gets active spreadsheet or automatically creates a new one in Google Drive
+ * Gets active spreadsheet or automatically creates a new master spreadsheet in Google Drive
  */
 function getOrCreateSpreadsheet() {
   var ss = null;
@@ -213,7 +257,66 @@ function getOrCreateSpreadsheet() {
 }
 
 /**
- * One-click initialization: Auto-creates all tabs, styles headers, and pre-seeds Matrix Portfolios
+ * Normalizes any incoming tab string from client payloads to match known schemas
+ */
+function resolveSchemaKey(raw) {
+  if (!raw) return 'DONATIONS';
+  var s = String(raw).toUpperCase().trim();
+
+  if (s.indexOf('MATRIX') !== -1 || s.indexOf('PORTFOLIO') !== -1) return 'MATRIX_PORTFOLIOS';
+  if (s.indexOf('SECRETARIAT') !== -1 || s.indexOf('SEC_APP') !== -1) return 'SECRETARIAT';
+  if (s.indexOf('MUN') !== -1 || s.indexOf('DIPLOMACY') !== -1) return 'ZEN_DIPLOMACY_MUN';
+  if (s.indexOf('EVENT') !== -1 || s.indexOf('PASS') !== -1 || s.indexOf('TICKET') !== -1) return 'EVENTS';
+  if (s.indexOf('DONAT') !== -1) return 'DONATIONS';
+  if (s.indexOf('IMPACT') !== -1 || s.indexOf('LEDGER') !== -1) return 'IMPACT_LEDGER';
+  if (s.indexOf('REGISTER') !== -1) return 'REGISTER_CORE';
+  if (s.indexOf('LOGIN') !== -1) return 'LOGIN_CORE';
+  if (s.indexOf('AMBASSADOR') !== -1 || s.indexOf('CAMPUS') !== -1) return 'CAMPUS_AMBASSADOR';
+  if (s.indexOf('CORE') !== -1 || s.indexOf('TEAM') !== -1 || s.indexOf('CAREER') !== -1) return 'CORE_TEAM';
+  if (s.indexOf('CONTACT') !== -1) return 'CONTACT';
+  if (s.indexOf('NEWSLETTER') !== -1) return 'NEWSLETTER';
+  if (s.indexOf('COLLAB') !== -1 || s.indexOf('PARTNER') !== -1) return 'COLLAB';
+  if (s.indexOf('COMMUNITY') !== -1) return 'COMMUNITY';
+  if (s.indexOf('FEEDBACK') !== -1 || s.indexOf('GRIEVANCE') !== -1) return 'FEEDBACK';
+
+  return null;
+}
+
+/**
+ * Formats a sheet header row with dark obsidian background and frozen top row
+ */
+function formatHeaderRow(sheet, colCount) {
+  var headerRange = sheet.getRange(1, 1, 1, colCount);
+  headerRange.setBackground('#0f172a');
+  headerRange.setFontColor('#f8fafc');
+  headerRange.setFontWeight('bold');
+  headerRange.setFontFamily('Roboto Mono');
+  headerRange.setFontSize(10);
+  sheet.setFrozenRows(1);
+}
+
+/**
+ * Gets or creates sheet tab with styled header row
+ */
+function getOrCreateSheet(schema) {
+  var ss = getOrCreateSpreadsheet();
+  var sheet = ss.getSheetByName(schema.sheetName);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(schema.sheetName);
+    sheet.appendRow(schema.headers);
+    formatHeaderRow(sheet, schema.headers.length);
+  } else if (sheet.getLastRow() === 0) {
+    sheet.appendRow(schema.headers);
+    formatHeaderRow(sheet, schema.headers.length);
+  }
+
+  return sheet;
+}
+
+/**
+ * One-Click Master Setup:
+ * Auto-creates all 15 tabs, formats obsidian headers, and pre-seeds Matrix Portfolios!
  */
 function initAllTabs() {
   var ss = getOrCreateSpreadsheet();
@@ -230,18 +333,12 @@ function initAllTabs() {
       created.push(schema.sheetName);
     }
 
-    // Ensure header row is populated
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(schema.headers);
       isNew = true;
     }
 
-    // Format Header Row
-    var headerRange = sheet.getRange(1, 1, 1, schema.headers.length);
-    headerRange.setBackground('#0f172a');
-    headerRange.setFontColor('#f8fafc');
-    headerRange.setFontWeight('bold');
-    sheet.setFrozenRows(1);
+    formatHeaderRow(sheet, schema.headers.length);
 
     // Pre-seed 36 Portfolios if Matrix Portfolios tab is newly created
     if (key === 'MATRIX_PORTFOLIOS' && sheet.getLastRow() <= 1) {
@@ -264,10 +361,12 @@ function initAllTabs() {
       }
 
       // Add dropdown validation for Status column (Column F / 6)
-      var statusRule = SpreadsheetApp.newDataValidation()
-        .requireValueInList(['Vacant', 'Allocated', '1 person waiting', '2 people waiting', '3+ people waiting'], true)
-        .build();
-      sheet.getRange(2, 6, 100, 1).setDataValidation(statusRule);
+      try {
+        var statusRule = SpreadsheetApp.newDataValidation()
+          .requireValueInList(['Vacant', 'Allocated', '1 person waiting', '2 people waiting', '3+ people waiting'], true)
+          .build();
+        sheet.getRange(2, 6, 100, 1).setDataValidation(statusRule);
+      } catch (_) {}
     }
   });
 
@@ -276,15 +375,263 @@ function initAllTabs() {
     spreadsheetUrl: ss.getUrl(),
     spreadsheetId: ss.getId(),
     createdTabs: created,
-    message: 'Tabs initialized: ' + (created.length > 0 ? created.join(', ') : 'All tabs active and formatted')
+    totalTabs: Object.keys(TAB_SCHEMAS).length,
+    message: 'All 15 tabs initialized and formatted: ' + (created.length > 0 ? created.join(', ') : 'All tabs active')
   };
 }
 
 /**
- * Handle POST requests from website forms & matrix sync
+ * Alias for backward compatibility
+ */
+function initializeAll12Tabs() {
+  return initAllTabs();
+}
+
+/**
+ * Maps incoming client payload to canonical row columns
+ */
+function mapPayloadToRow(schemaKey, data) {
+  var now = Utilities.formatDate(new Date(), 'GMT+5:30', 'yyyy-MM-dd HH:mm:ss');
+  var ip = data.ipAddress || data.ip || '127.0.0.1';
+  var device = data.deviceInfo || data.deviceBrowserInfo || data.userAgent || 'Web Browser';
+
+  switch (schemaKey) {
+    case 'ZEN_DIPLOMACY_MUN':
+      return [
+        now,
+        data.step1_fullname || data.fullName || data.name || '',
+        data.step1_email || data.email || '',
+        data.step1_phone || data.phone || data.phoneNumber || '',
+        data.step1_institution || data.institution || '',
+        data.step1_city || data.city || '',
+        data.step2_track || data.track || '',
+        data.step2_experience_level || data.experienceLevel || '',
+        data.step3_primary_committee || data.firstCommitteeChoice || '',
+        data.step4_secondary_committee || data.secondCommitteeChoice || '',
+        data.step5_portfolios || data.portfolioPreferences || '',
+        data.step6_prior_accolades || data.priorAccolades || '',
+        data.step7_resolution_experience || data.resolutionExperience || '',
+        data.step8_research_paper_link || data.researchLink || '',
+        data.step9_accreditation_dossier || data.accreditationPlacard || '',
+        data.step10_motivation_statement || data.motivation || '',
+        data.step11_accommodation_assistance || data.accommodation || 'NO',
+        data.step12_emergency_contact || data.emergencyContact || '',
+        data.step13_dietary_pref || data.dietaryPreference || 'Vegetarian',
+        data.step15_participation_tier || data.participationTier || data.passTier || 'Delegate Pass (₹499)',
+        data.step15_payment_reference || data.utr || data.paymentReference || '',
+        data.step15_receipt_link || data.step15_payment_screenshot || data.paymentScreenshot || '',
+        data.step14_code_of_conduct ? 'CONFIRMED' : 'ACCEPTED',
+        data.status || 'PENDING_ALLOCATION',
+        data.allocatedCommittee || '',
+        data.allocatedPortfolio || '',
+        data.submitterHandle || 'public_delegate',
+        data.formId || 'zen-diplomacy-2026-registration'
+      ];
+
+    case 'SECRETARIAT':
+      return [
+        now,
+        data.ticketId || ('SEC-' + Math.random().toString(36).substring(2, 8).toUpperCase()),
+        data.fullName || data.step2_fullname || data.name || '',
+        data.email || data.step2_email || '',
+        data.phoneNumber || data.phone || data.step2_phone || '',
+        data.institution || data.step2_institution || '',
+        data.gradeOrYear || data.academicYear || data.step2_grade || '',
+        data.cityCountry || data.step2_city || data.step2_city_country || data.city || '',
+        data.preferredSector || data.step1_primary_sector || data.step1_preferred_department || data.department || '',
+        data.secondarySector || data.step1_secondary_sector || data.step1_secondary_department || '',
+        data.priorMunExperience || data.step3_prior_muns_count || '',
+        data.numberOfMunsAttended || data.step3_prior_muns_count || '',
+        data.priorOrganizingExperience || data.step3_organizing_experience || '',
+        data.weeklyBandwidth || data.step3_weekly_bandwidth || '',
+        data.availabilityOct2425 || data.step4_availability_oct2425 || 'YES',
+        data.statementOfPurpose || data.step3_sop || '',
+        data.practicalTaskResponse || data.step3_practical_response || '',
+        data.portfolioUrl || data.step3_portfolio_url || data.linkedinOrResumeUrl || '',
+        data.discordHandle || data.step4_discord_handle || '',
+        data.sovereignAccordAccepted || data.step4_accord_agreement || 'ACCEPTED',
+        data.status || 'PENDING_REVIEW'
+      ];
+
+    case 'EVENTS':
+      return [
+        now,
+        data.eventId || data.eventIdSlug || data.eventSlug || '',
+        data.eventName || data.eventTitle || 'Zenvitra Event',
+        data.participantName || data.name || data.fullName || '',
+        data.participantEmail || data.email || '',
+        data.contactNumber || data.phone || data.phoneNumber || '',
+        data.institution || data.college || data.collegeOrSchool || '',
+        data.ticketPassType || data.passType || data.tierName || 'STANDARD_PASS',
+        data.quantity || 1,
+        data.allocatedSeat || data.allocatedPortfolio || data.portfolio || '',
+        data.totalPrice || data.totalPayable || '',
+        data.paymentStatus || 'CONFIRMED'
+      ];
+
+    case 'DONATIONS':
+    case 'IMPACT_LEDGER':
+      return [
+        now,
+        data.donorName || data.fullName || data.name || 'Anonymous Citizen',
+        data.donorEmail || data.email || '',
+        data.donorPhone || data.phone || data.phoneNumber || '',
+        data.voluntaryAmountInr || data.amountInr || data.amount || 0,
+        data.utrTransactionId || data.utr || data.transactionRef || data.txId || '',
+        data.targetProjectStream || data.stream || data.target || 'Satya Niketan Anath Ashram',
+        data.paymentMode || 'UPI / Bank Transfer',
+        data.wantsAnonymous === true || data.anonymous === true ? 'YES' : 'NO',
+        data.notesOrPrayer || data.notes || data.message || '',
+        data.auditStatus || 'VERIFIED_SUBMISSION',
+        data.verificationDetails || data.paymentScreenshotPreview || 'Pending Audit Confirmation',
+        ip,
+        device
+      ];
+
+    case 'REGISTER_CORE':
+      return [
+        now,
+        data.userId || data.id || data.username || '',
+        data.fullName || data.name || '',
+        data.email || '',
+        data.roleDesignation || data.role || 'DELEGATE',
+        data.accessLevel || 'MEMBER',
+        data.authProvider || data.provider || 'CREDENTIALS',
+        data.accountStatus || 'ACTIVE',
+        ip,
+        device
+      ];
+
+    case 'LOGIN_CORE':
+      return [
+        now,
+        data.userId || data.id || '',
+        data.fullName || data.name || '',
+        data.email || '',
+        data.authProvider || data.provider || 'CREDENTIALS',
+        data.loginStatus || 'SUCCESS',
+        ip,
+        device
+      ];
+
+    case 'CAMPUS_AMBASSADOR':
+      return [
+        now,
+        data.fullName || data.name || '',
+        data.collegeUniversityName || data.college || '',
+        data.cityState || data.city || '',
+        data.degreeYearOfStudy || data.year || '',
+        data.email || '',
+        data.phoneWhatsapp || data.phone || '',
+        data.leadershipExperience || data.experience || '',
+        data.proposedStrategy || data.strategy || '',
+        data.studentIdProof || '',
+        data.approvalStatus || 'PENDING_REVIEW',
+        ip
+      ];
+
+    case 'CORE_TEAM':
+      return [
+        now,
+        data.fullName || data.name || '',
+        data.handle || '',
+        data.email || '',
+        data.phoneNumber || data.phone || '',
+        data.roleAppliedFor || data.role || '',
+        data.department || data.wing || 'GENERAL',
+        data.portfolioUrl || data.portfolio || '',
+        data.dossierUploadUrl || data.dossier || '',
+        data.leadershipAccomplishments || '',
+        data.strategicVision || '',
+        data.weeklyBandwidth || '10-15 hrs/wk',
+        data.motivationStatement || data.message || '',
+        data.constitutionalAccord || 'ACCEPTED',
+        data.applicationStatus || 'SUBMITTED',
+        ip
+      ];
+
+    case 'CONTACT':
+      return [
+        now,
+        data.fullName || data.name || '',
+        data.email || '',
+        data.phoneNumber || data.phone || '',
+        data.subject || 'General Inquiry',
+        data.queryType || 'GENERAL',
+        data.message || '',
+        data.sourceUrl || '/',
+        data.status || 'NEW',
+        ip
+      ];
+
+    case 'NEWSLETTER':
+      return [
+        now,
+        data.emailAddress || data.email || '',
+        data.subscriptionSource || data.source || 'Website Footer',
+        data.consentGiven === false ? 'NO' : 'YES',
+        data.utmCampaign || '',
+        data.status || 'SUBSCRIBED',
+        ip
+      ];
+
+    case 'COLLAB':
+      return [
+        now,
+        data.organizationName || data.org || '',
+        data.representativeName || data.name || '',
+        data.officialEmail || data.email || '',
+        data.phoneWhatsapp || data.phone || '',
+        data.collabType || 'INSTITUTIONAL',
+        data.proposalSummary || data.proposal || '',
+        data.budgetResourceScope || '',
+        data.stage || 'INQUIRY',
+        ip
+      ];
+
+    case 'COMMUNITY':
+      return [
+        now,
+        data.fullName || data.name || '',
+        data.email || '',
+        data.cityRegion || data.city || '',
+        data.institutionCollege || data.college || '',
+        data.primarySkills || '',
+        data.areasOfInterest || '',
+        data.discordHandle || '',
+        data.membershipStatus || 'ACTIVE',
+        ip
+      ];
+
+    case 'FEEDBACK':
+      return [
+        now,
+        data.submitterName || data.name || 'Anonymous',
+        data.email || '',
+        data.feedbackCategory || data.category || 'GENERAL',
+        data.severityPriority || 'NORMAL',
+        data.pageUrl || '/',
+        data.description || data.message || '',
+        data.attachmentLink || '',
+        data.status || 'OPEN',
+        ip
+      ];
+
+    default:
+      return [now, JSON.stringify(data), ip, device];
+  }
+}
+
+/**
+ * ==============================================================================
+ * POST Webhook Handler (Zenvitra API & Forms -> Apps Script)
+ * ==============================================================================
  */
 function doPost(e) {
+  var lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
+
     if (!e || !e.postData || !e.postData.contents) {
       return ContentService.createTextOutput(JSON.stringify({
         status: 'error',
@@ -306,7 +653,7 @@ function doPost(e) {
     var action = (payload.action || '').toUpperCase();
 
     // ── ACTION 1: DYNAMIC ZENFORMS SCHEMA SYNC ──
-    // When a form is created or updated in ZenForms, this automatically syncs columns to Google Sheets!
+    // Automatically creates/appends columns when questions are added or renamed
     if (action === 'SYNC_SCHEMA') {
       var sheetTab = payload.sheetTab || payload.targetTab || ('ZEN_' + (payload.formId || 'FORM').toUpperCase().replace(/[^A-Z0-9_]/g, '_'));
       var sheet = ss.getSheetByName(sheetTab);
@@ -320,7 +667,6 @@ function doPost(e) {
         existingHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
       }
 
-      // Default system leading columns
       var defaultHeaders = ['Timestamp', 'Submission ID', 'Submitter Handle'];
       defaultHeaders.forEach(function(h) {
         if (existingHeaders.indexOf(h) === -1) {
@@ -328,7 +674,6 @@ function doPost(e) {
         }
       });
 
-      // Add columns for each question in the ZenForm
       if (Array.isArray(payload.fields)) {
         payload.fields.forEach(function(field) {
           var headerName = field.label || field.id;
@@ -338,13 +683,8 @@ function doPost(e) {
         });
       }
 
-      // Write updated header row
       sheet.getRange(1, 1, 1, existingHeaders.length).setValues([existingHeaders]);
-      var hr = sheet.getRange(1, 1, 1, existingHeaders.length);
-      hr.setBackground('#0f172a');
-      hr.setFontColor('#f8fafc');
-      hr.setFontWeight('bold');
-      sheet.setFrozenRows(1);
+      formatHeaderRow(sheet, existingHeaders.length);
 
       return ContentService.createTextOutput(JSON.stringify({
         status: 'success',
@@ -357,7 +697,7 @@ function doPost(e) {
     }
 
     // ── ACTION 2: UPDATE MATRIX PORTFOLIO STATUS ──
-    // When secretariat or dais allocates a portfolio in the app, this syncs it to Google Sheets
+    // Synchronizes secretariat / dais allocations directly into the Matrix Portfolios tab
     if (action === 'UPDATE_MATRIX_PORTFOLIO') {
       var matrixSheet = ss.getSheetByName('Matrix Portfolios');
       if (!matrixSheet) {
@@ -399,7 +739,7 @@ function doPost(e) {
     // ── ACTION 3: FETCH LIVE MATRIX PORTFOLIOS ──
     if (action === 'GET_MATRIX_PORTFOLIOS') {
       var matrixSheet2 = ss.getSheetByName('Matrix Portfolios');
-      if (!matrixSheet2) {
+      if (!matrixSheet2 || matrixSheet2.getLastRow() <= 1) {
         initAllTabs();
         matrixSheet2 = ss.getSheetByName('Matrix Portfolios');
       }
@@ -433,153 +773,52 @@ function doPost(e) {
     }
 
     // ── ACTION 4: RECORD GENERAL INGESTION ROWS ──
-    var rawTab = (payload.sheetTab || payload.targetTab || payload.tab || '').toUpperCase();
-    var formId = (payload.formId || '').toLowerCase();
-    var formTitle = (payload.formTitle || '').toLowerCase();
+    var rawTab = payload.sheetTab || payload.targetTab || payload.tab || payload.target || '';
+    var schemaKey = resolveSchemaKey(rawTab);
 
-    var targetKey = 'ZEN_DIPLOMACY_MUN';
-
-    if (
-      rawTab.indexOf('SECRETARIAT') !== -1 ||
-      rawTab.indexOf('SEC_APP') !== -1 ||
-      formId.indexOf('secretariat') !== -1 ||
-      formTitle.indexOf('secretariat') !== -1 ||
-      payload.preferredSector ||
-      payload.step1_primary_sector
-    ) {
-      targetKey = 'SECRETARIAT';
-    } else if (
-      rawTab.indexOf('ZEN DIPLOMACY') !== -1 ||
-      rawTab.indexOf('DIPLOMACY') !== -1 ||
-      rawTab.indexOf('MUN') !== -1 ||
-      formId.indexOf('zen-diplomacy') !== -1 ||
-      payload.step1_fullname ||
-      payload.step3_primary_committee
-    ) {
-      targetKey = 'ZEN_DIPLOMACY_MUN';
-    } else if (rawTab.indexOf('EVENT') !== -1) {
-      targetKey = 'EVENTS';
-    } else if (rawTab.indexOf('CORE') !== -1 || rawTab.indexOf('TEAM') !== -1) {
-      targetKey = 'CORE_TEAM';
-    } else if (rawTab.indexOf('CONTACT') !== -1) {
-      targetKey = 'CONTACT';
-    } else if (payload.targetTab || payload.sheetTab) {
-      targetKey = 'CUSTOM_ZEN_FORM';
-    }
-
-    var sheetName = '';
-    var schema = null;
-
-    if (targetKey !== 'CUSTOM_ZEN_FORM' && TAB_SCHEMAS[targetKey]) {
-      schema = TAB_SCHEMAS[targetKey];
-      sheetName = schema.sheetName;
-    } else {
-      sheetName = payload.sheetTab || payload.targetTab || 'ZenForms Intake';
-    }
-
-    var sheet = ss.getSheetByName(sheetName);
-
-    // Auto-create tab if missing
-    if (!sheet) {
-      sheet = ss.insertSheet(sheetName);
-      if (schema && schema.headers) {
-        sheet.appendRow(schema.headers);
-        var headerRange = sheet.getRange(1, 1, 1, schema.headers.length);
-        headerRange.setBackground('#0f172a');
-        headerRange.setFontColor('#f8fafc');
-        headerRange.setFontWeight('bold');
-        sheet.setFrozenRows(1);
+    // Contextual inference for MUN & Secretariat forms
+    if (!schemaKey) {
+      var formId = (payload.formId || '').toLowerCase();
+      var formTitle = (payload.formTitle || '').toLowerCase();
+      if (
+        formId.indexOf('secretariat') !== -1 ||
+        formTitle.indexOf('secretariat') !== -1 ||
+        payload.preferredSector ||
+        payload.step1_primary_sector
+      ) {
+        schemaKey = 'SECRETARIAT';
+      } else if (
+        formId.indexOf('zen-diplomacy') !== -1 ||
+        payload.step1_fullname ||
+        payload.step3_primary_committee
+      ) {
+        schemaKey = 'ZEN_DIPLOMACY_MUN';
       }
     }
 
-    var now = Utilities.formatDate(new Date(), "GMT+5:30", "yyyy-MM-dd HH:mm:ss");
+    var sheet = null;
     var row = [];
 
-    // ── DELEGATE REGISTRATION ROW ──
-    if (targetKey === 'ZEN_DIPLOMACY_MUN') {
-      row = [
-        now,
-        payload.step1_fullname || payload.fullName || payload.name || '',
-        payload.step1_email || payload.email || '',
-        payload.step1_phone || payload.phone || payload.phoneNumber || '',
-        payload.step1_institution || payload.institution || '',
-        payload.step1_city || payload.city || '',
-        payload.step2_track || payload.track || '',
-        payload.step2_experience_level || payload.experienceLevel || '',
-        payload.step3_primary_committee || payload.firstCommitteeChoice || '',
-        payload.step4_secondary_committee || payload.secondCommitteeChoice || '',
-        payload.step5_portfolios || payload.portfolioPreferences || '',
-        payload.step6_prior_accolades || payload.priorAccolades || '',
-        payload.step7_resolution_experience || payload.resolutionExperience || '',
-        payload.step8_research_paper_link || payload.researchLink || '',
-        payload.step9_accreditation_dossier || payload.accreditationPlacard || '',
-        payload.step10_motivation_statement || payload.motivation || '',
-        payload.step11_accommodation_assistance || payload.accommodation || 'NO',
-        payload.step12_emergency_contact || payload.emergencyContact || '',
-        payload.step13_dietary_pref || payload.dietaryPreference || 'Vegetarian',
-        payload.step15_participation_tier || payload.participationTier || payload.passTier || 'Delegate Pass (₹499)',
-        payload.step15_payment_reference || payload.utr || payload.paymentReference || '',
-        payload.step15_receipt_link || payload.step15_payment_screenshot || payload.paymentScreenshot || '',
-        payload.step14_code_of_conduct ? 'CONFIRMED' : 'ACCEPTED',
-        payload.status || 'PENDING_ALLOCATION',
-        payload.allocatedCommittee || '',
-        payload.allocatedPortfolio || '',
-        payload.submitterHandle || 'public_delegate',
-        payload.formId || 'zen-diplomacy-2026-registration'
-      ];
-    }
-    // ── SECRETARIAT APPLICATION ROW ──
-    else if (targetKey === 'SECRETARIAT') {
-      row = [
-        now,
-        payload.ticketId || ('SEC-' + Math.random().toString(36).substring(2, 8).toUpperCase()),
-        payload.fullName || payload.step2_fullname || payload.name || '',
-        payload.email || payload.step2_email || '',
-        payload.phoneNumber || payload.phone || payload.step2_phone || '',
-        payload.institution || payload.step2_institution || '',
-        payload.gradeOrYear || payload.academicYear || payload.step2_grade || '',
-        payload.cityCountry || payload.step2_city || payload.step2_city_country || payload.city || '',
-        payload.preferredSector || payload.step1_primary_sector || payload.step1_preferred_department || payload.department || '',
-        payload.secondarySector || payload.step1_secondary_sector || payload.step1_secondary_department || '',
-        payload.priorMunExperience || payload.step3_prior_muns_count || '',
-        payload.numberOfMunsAttended || payload.step3_prior_muns_count || '',
-        payload.priorOrganizingExperience || payload.step3_organizing_experience || '',
-        payload.weeklyBandwidth || payload.step3_weekly_bandwidth || '',
-        payload.availabilityOct2425 || payload.step4_availability_oct2425 || 'YES',
-        payload.statementOfPurpose || payload.step3_sop || '',
-        payload.practicalTaskResponse || payload.step3_practical_response || '',
-        payload.portfolioUrl || payload.step3_portfolio_url || payload.linkedinOrResumeUrl || '',
-        payload.discordHandle || payload.step4_discord_handle || '',
-        payload.sovereignAccordAccepted || payload.step4_accord_agreement || 'ACCEPTED',
-        payload.status || 'PENDING_REVIEW'
-      ];
-    }
-    // ── EVENT REGISTRATION ROW ──
-    else if (targetKey === 'EVENTS') {
-      row = [
-        now,
-        payload.eventId || '',
-        payload.eventName || payload.eventTitle || '',
-        payload.participantName || payload.name || payload.fullName || '',
-        payload.participantEmail || payload.email || '',
-        payload.contactNumber || payload.phone || payload.phoneNumber || '',
-        payload.institution || payload.college || payload.collegeOrSchool || '',
-        payload.ticketPassType || payload.passType || payload.tierName || '',
-        payload.quantity || 1,
-        payload.allocatedSeat || payload.allocatedPortfolio || payload.portfolio || '',
-        payload.totalPrice || payload.totalPayable || '',
-        payload.paymentStatus || 'CONFIRMED'
-      ];
-    }
-    // ── DYNAMIC FALLBACK FOR CUSTOM FORMS ──
-    else {
+    if (schemaKey && TAB_SCHEMAS[schemaKey]) {
+      var schema = TAB_SCHEMAS[schemaKey];
+      sheet = getOrCreateSheet(schema);
+      row = mapPayloadToRow(schemaKey, payload);
+    } else {
+      // Dynamic fallback for custom ZenForms
+      var customSheetName = payload.sheetTab || payload.targetTab || 'ZenForms Intake';
+      sheet = ss.getSheetByName(customSheetName);
+      if (!sheet) {
+        sheet = ss.insertSheet(customSheetName);
+      }
+
       var lastCol = sheet.getLastColumn();
       var existingHeaders = [];
-      if (lastCol > 0) {
+      if (lastCol > 0 && sheet.getLastRow() > 0) {
         existingHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
       } else {
         existingHeaders = ['Timestamp', 'Submission ID', 'Submitter'];
         sheet.appendRow(existingHeaders);
+        formatHeaderRow(sheet, existingHeaders.length);
       }
 
       var payloadKeys = Object.keys(payload).filter(function(k) {
@@ -593,6 +832,7 @@ function doPost(e) {
         }
       });
 
+      var now = Utilities.formatDate(new Date(), 'GMT+5:30', 'yyyy-MM-dd HH:mm:ss');
       row = existingHeaders.map(function(h) {
         if (h === 'Timestamp') return now;
         if (h === 'Submission ID') return payload.submissionId || payload.ticketId || ('SUB-' + Math.random().toString(36).substring(2, 8).toUpperCase());
@@ -604,80 +844,133 @@ function doPost(e) {
     sheet.appendRow(row);
 
     return ContentService.createTextOutput(JSON.stringify({
-      status: 'success',
-      targetTab: sheetName,
-      rowNumber: sheet.getLastRow(),
+      status: 'SUCCESS',
+      schemaKey: schemaKey || 'CUSTOM_FORM',
+      tabName: sheet.getName(),
+      rowAppended: sheet.getLastRow(),
       spreadsheetUrl: ss.getUrl(),
-      timestamp: now
+      timestamp: new Date().toISOString()
     })).setMimeType(ContentService.MimeType.JSON);
 
-  } catch (error) {
+  } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({
-      status: 'error',
-      message: error.toString()
+      status: 'ERROR',
+      message: err.toString(),
+      timestamp: new Date().toISOString()
     })).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
   }
 }
 
 /**
- * Handle GET requests (One-click setup, Live Matrix Portfolios fetch, Health check)
+ * ==============================================================================
+ * GET Request Handler (One-Click Setup, Live Matrix Sync & Founder Vault Search)
+ * ==============================================================================
  */
 function doGet(e) {
-  var action = (e && e.parameter && e.parameter.action) || 'PING';
-  var ss = getOrCreateSpreadsheet();
+  try {
+    var params = (e && e.parameter) || {};
+    var action = (params.action || '').toUpperCase();
+    var ss = getOrCreateSpreadsheet();
 
-  // 1. One-click setup URL: visiting URL?action=INIT auto-creates all tabs & matrix portfolios!
-  if (action === 'INIT' || action === 'SETUP' || action === 'CREATE_SHEET') {
-    var initRes = initAllTabs();
-    return ContentService.createTextOutput(JSON.stringify(initRes)).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  // 2. Fetch Live Committee Portfolios for /matrix
-  if (action === 'GET_MATRIX_PORTFOLIOS' || action === 'PORTFOLIOS') {
-    var matrixSheet = ss.getSheetByName('Matrix Portfolios');
-    if (!matrixSheet || matrixSheet.getLastRow() <= 1) {
-      initAllTabs();
-      matrixSheet = ss.getSheetByName('Matrix Portfolios');
+    // 1. One-click setup URL: visiting URL?action=INIT auto-creates all tabs!
+    if (action === 'INIT' || action === 'SETUP' || action === 'CREATE_SHEET') {
+      var initRes = initAllTabs();
+      return ContentService.createTextOutput(JSON.stringify(initRes)).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var lastR = matrixSheet.getLastRow();
-    var portfolios = [];
+    // 2. Fetch Live Committee Portfolios for /matrix
+    if (action === 'GET_MATRIX_PORTFOLIOS' || action === 'PORTFOLIOS') {
+      var matrixSheet = ss.getSheetByName('Matrix Portfolios');
+      if (!matrixSheet || matrixSheet.getLastRow() <= 1) {
+        initAllTabs();
+        matrixSheet = ss.getSheetByName('Matrix Portfolios');
+      }
 
-    if (lastR > 1) {
-      var rows = matrixSheet.getRange(2, 1, lastR - 1, 9).getValues();
-      portfolios = rows.map(function(r) {
-        return {
-          id: String(r[0]),
-          committee: String(r[1]),
-          title: String(r[2]),
-          subTitle: String(r[3]),
-          category: String(r[4]),
-          status: String(r[5] || 'Vacant'),
-          allocatedTo: String(r[6] || ''),
-          allocatedEmail: String(r[7] || ''),
-          difficulty: String(r[8] || 'Intermediate')
-        };
-      });
+      var lastR = matrixSheet.getLastRow();
+      var portfolios = [];
+
+      if (lastR > 1) {
+        var rows = matrixSheet.getRange(2, 1, lastR - 1, 9).getValues();
+        portfolios = rows.map(function(r) {
+          return {
+            id: String(r[0]),
+            committee: String(r[1]),
+            title: String(r[2]),
+            subTitle: String(r[3]),
+            category: String(r[4]),
+            status: String(r[5] || 'Vacant'),
+            allocatedTo: String(r[6] || ''),
+            allocatedEmail: String(r[7] || ''),
+            difficulty: String(r[8] || 'Intermediate')
+          };
+        });
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'success',
+        count: portfolios.length,
+        portfolios: portfolios,
+        spreadsheetUrl: ss.getUrl()
+      })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 3. Bi-directional search and counts for Founder Vault
+    var rawTab = params.tab || 'Donations';
+    var schemaKey = resolveSchemaKey(rawTab);
+    var targetSheetName = (schemaKey && TAB_SCHEMAS[schemaKey]) ? TAB_SCHEMAS[schemaKey].sheetName : rawTab;
+    var sheet = ss.getSheetByName(targetSheetName);
+
+    if (sheet) {
+      var data = sheet.getDataRange().getValues();
+      if (data.length > 1) {
+        var headers = data[0];
+        var rows = [];
+        var query = (params.q || '').toLowerCase().trim();
+
+        for (var r = 1; r < data.length; r++) {
+          var row = data[r];
+          var rowObj = {};
+          var match = !query;
+
+          for (var c = 0; c < headers.length; c++) {
+            var val = row[c];
+            rowObj[headers[c]] = val;
+            if (query && String(val).toLowerCase().indexOf(query) !== -1) {
+              match = true;
+            }
+          }
+
+          if (match) {
+            rows.push(rowObj);
+          }
+        }
+
+        return ContentService.createTextOutput(JSON.stringify({
+          status: 'SUCCESS',
+          tab: targetSheetName,
+          count: rows.length,
+          rows: rows.slice(-100),
+          spreadsheetUrl: ss.getUrl(),
+          connected: true
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // Default health ping
     return ContentService.createTextOutput(JSON.stringify({
-      status: 'success',
-      count: portfolios.length,
-      portfolios: portfolios,
-      spreadsheetUrl: ss.getUrl()
+      status: 'online',
+      system: 'Zenvitra Master Omni-Stream & Matrix Engine v5.0',
+      spreadsheetUrl: ss.getUrl(),
+      totalSchemas: Object.keys(TAB_SCHEMAS).length,
+      timestamp: new Date().toISOString()
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'ERROR',
+      message: err.toString()
     })).setMimeType(ContentService.MimeType.JSON);
   }
-
-  // Auto-run init to ensure tabs exist
-  try {
-    initAllTabs();
-  } catch (_) {}
-
-  return ContentService.createTextOutput(JSON.stringify({
-    status: 'online',
-    system: 'Zenvitra Master Telemetry & Live Matrix Engine v4',
-    spreadsheetUrl: ss.getUrl(),
-    availableTabs: ['ZEN DIPLOMACY MUN', 'Secretariat Applications', 'Matrix Portfolios', 'Event Registrations', 'Core Team Applications', 'Contact Inquiries'],
-    timestamp: new Date().toISOString()
-  })).setMimeType(ContentService.MimeType.JSON);
 }
