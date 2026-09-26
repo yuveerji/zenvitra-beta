@@ -326,7 +326,7 @@ export function ZenDiplomacyPortal() {
                 </Link>
 
                 <Link
-                  href="/zen-diplomacy/secretariat"
+                  href="/forms/zen-secretariat-2026"
                   className="px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-500/30 hover:to-indigo-500/30 border border-purple-500/40 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer hover:scale-105"
                   title="Apply for Secretariat across 10 specialized departments"
                 >

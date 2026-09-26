@@ -174,7 +174,7 @@ export default function ZenDiplomacyBrochurePage() {
 
           {/* Secretariat Link */}
           <Link
-            href="/zen-diplomacy/secretariat"
+            href="/forms/zen-secretariat-2026"
             className="hidden md:inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-sans font-bold px-3.5 py-1.5 rounded-full border border-white/15 transition-all hover:border-[#e2f952]/40"
           >
             <span>Apply Secretariat</span>

@@ -146,7 +146,7 @@ export function FeaturedEvents() {
 
               <div className="flex flex-wrap items-center gap-2">
                 <Link
-                  href="/zen-diplomacy/secretariat"
+                  href="/forms/zen-secretariat-2026"
                   className="px-4 py-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                   title="Apply for Secretariat across 10 specialized departments"
                 >
