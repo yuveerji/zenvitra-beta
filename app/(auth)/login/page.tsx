@@ -48,13 +48,17 @@ import {
 } from '@/lib/securityShield';
 import { sheetSync } from '@/lib/googleSheets';
 
-interface SovereignTrack {
+interface SovereignPillar {
   id: string;
   title: string;
   badge: string;
   icon: React.ElementType;
   tagline: string;
   capabilities: string[];
+  spotlightColor: string;
+  accentBorder: string;
+  iconColor: string;
+  badgeColor: string;
 }
 
 interface SavedAccount {
@@ -72,46 +76,55 @@ interface SavedAccount {
   lastActive?: string;
 }
 
-const SOVEREIGN_TRACKS: SovereignTrack[] = [
+const SOVEREIGN_PILLARS: SovereignPillar[] = [
   {
     id: 'delegate',
-    title: 'Diplomatic Delegate',
+    title: 'Diplomatic Chamber Engine',
     badge: 'CHAMBER SOVEREIGN',
     icon: Users,
-    tagline: 'Lead multilateral summits, draft binding draft resolutions, and execute cryptographic roll-call votes.',
-    capabilities: ['Live Speaker Order Control', 'Encrypted Chit Mesh', 'Permanent ZEN.ID Accolades']
+    tagline: 'Lead multilateral summits, draft binding resolutions, execute cryptographic roll-call votes, and coordinate caucus floor orders.',
+    capabilities: ['Live Speaker Order', 'Encrypted Chit Mesh', 'Permanent Accolades'],
+    spotlightColor: 'rgba(245, 158, 11, 0.22)',
+    accentBorder: 'hover:border-amber-500/40 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]',
+    iconColor: 'bg-amber-500/10 border-amber-500/25 text-amber-300 group-hover:bg-amber-400 group-hover:text-black',
+    badgeColor: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
   },
   {
     id: 'press',
-    title: 'Investigative Press',
+    title: 'Investigative Press Bureau',
     badge: 'WIRE BUREAU',
     icon: Newspaper,
-    tagline: 'Publish uncompromised student dispatches, fast-wire breaking bulletins, and permanent DOI manifestos.',
-    capabilities: ['Autonomous Press Wire', 'DOI Research Registry', 'Cross-Feed Spark Sync']
+    tagline: 'Publish uncompromised student dispatches, fast-wire breaking bulletins, and permanent digital DOI research dossiers.',
+    capabilities: ['Autonomous Wire', 'DOI Research Registry', 'Cross-Feed Spark Sync'],
+    spotlightColor: 'rgba(6, 182, 212, 0.22)',
+    accentBorder: 'hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]',
+    iconColor: 'bg-cyan-500/10 border-cyan-500/25 text-cyan-300 group-hover:bg-cyan-400 group-hover:text-black',
+    badgeColor: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10',
   },
   {
     id: 'architect',
-    title: 'Civic & Tech Architect',
+    title: 'Civic & Protocol Architecture',
     badge: 'PROTOCOL ENGINE',
     icon: Terminal,
-    tagline: 'Engineer civic technologies, govern smart assemblies, and audit the 10% public school treasury ledger.',
-    capabilities: ['Decentralized Identity', 'Public Ledger Audits', 'Open Source Tooling']
-  }
+    tagline: 'Engineer civic technologies, govern smart assemblies, build open tools, and audit the 10% public school treasury ledger.',
+    capabilities: ['Decentralized Identity', 'Public Ledger Audits', 'Open Source Tooling'],
+    spotlightColor: 'rgba(16, 185, 129, 0.22)',
+    accentBorder: 'hover:border-emerald-500/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]',
+    iconColor: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300 group-hover:bg-emerald-400 group-hover:text-black',
+    badgeColor: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
+  },
 ];
 
-
 function InteractiveGlowCard({
-  isSelected = false,
-  onClick,
   className = '',
   children,
   href,
+  spotlightColor = 'rgba(168, 85, 247, 0.35)',
 }: {
-  isSelected?: boolean;
-  onClick?: () => void;
   className?: string;
   children: React.ReactNode;
   href?: string;
+  spotlightColor?: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
@@ -132,30 +145,18 @@ function InteractiveGlowCard({
   const innerCard = (
     <div
       ref={cardRef}
-      onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer text-left space-y-2 select-none overflow-hidden group ${
-        isSelected
-          ? 'bg-white/[0.08] border-white/70 shadow-[0_0_35px_rgba(255,255,255,0.22)] ring-1 ring-white/30'
-          : 'bg-[#07080b]/85 border-white/10 hover:border-purple-500/60 hover:shadow-[0_0_35px_rgba(168,85,247,0.22)]'
-      } ${className}`}
+      className={`relative p-4 rounded-2xl border transition-all duration-300 text-left space-y-2 select-none overflow-hidden group bg-[#07080b]/85 border-white/10 ${className}`}
     >
-      {/* Dynamic Cursor Spotlight Radial Glow: White on Selected, Purple on Other Buttons/Cards */}
+      {/* Dynamic Cursor Spotlight Radial Glow */}
       {mousePos && (
         <div
           className="pointer-events-none absolute -inset-px transition-opacity duration-150 z-10"
           style={{
-            background: isSelected
-              ? `radial-gradient(260px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.22), transparent 75%)`
-              : `radial-gradient(260px circle at ${mousePos.x}px ${mousePos.y}px, rgba(168, 85, 247, 0.35), transparent 75%)`,
+            background: `radial-gradient(280px circle at ${mousePos.x}px ${mousePos.y}px, ${spotlightColor}, transparent 75%)`,
           }}
         />
-      )}
-
-      {/* Persistent Ambient White Glow when Card is Selected */}
-      {isSelected && (
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-white/[0.03] z-0" />
       )}
 
       <div className="relative z-20">
@@ -206,7 +207,6 @@ function LoginForm() {
     } catch (_) {}
   }, [isAuthenticated, profile, targetDestination, router, is2FAStep]);
 
-  const [selectedTrack, setSelectedTrack] = useState<string>('delegate');
   const [showPassword, setShowPassword] = useState(false);
   
   // Saved Accounts & Login Info State
@@ -512,52 +512,73 @@ function LoginForm() {
               </p>
             </div>
 
-            {/* Interactive Sovereign Track Selector */}
+            {/* Live Network & Ledger Telemetry HUD */}
+            <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-xl font-mono text-left shadow-lg shadow-black/40">
+              <div className="space-y-1">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">Chamber Mesh</span>
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <span className="truncate">18 Live Summits</span>
+                </div>
+              </div>
+              <div className="space-y-1 border-l border-white/10 pl-3">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">Quorum Engine</span>
+                <div className="flex items-center gap-1.5 text-xs text-white font-bold">
+                  <Shield className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="truncate">100% Audited</span>
+                </div>
+              </div>
+              <div className="space-y-1 border-l border-white/10 pl-3">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">Cryptographic Layer</span>
+                <div className="flex items-center gap-1.5 text-xs text-purple-300 font-bold">
+                  <KeyRound className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                  <span className="truncate">AES-256-GCM</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Sovereign Protocol Pillars Overview */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
-                <span>SELECT PROTOCOL ARCHETYPE</span>
-                <span className="text-cyan-400 font-bold">4 SOVEREIGN DOMAINS</span>
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="tracking-wider uppercase font-semibold">SOVEREIGN ARCHITECTURE PILLARS</span>
+                </span>
+                <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase">ENCLAVE VERIFIED</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {SOVEREIGN_TRACKS.map((t) => {
-                  const Icon = t.icon;
-                  const isSelected = selectedTrack === t.id;
+              <div className="space-y-2.5">
+                {SOVEREIGN_PILLARS.map((p) => {
+                  const Icon = p.icon;
                   return (
                     <InteractiveGlowCard
-                      key={t.id}
-                      isSelected={isSelected}
-                      onClick={() => setSelectedTrack(t.id)}
+                      key={p.id}
+                      spotlightColor={p.spotlightColor}
+                      className={p.accentBorder}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className={`p-2 rounded-xl border transition-colors ${
-                          isSelected 
-                            ? 'bg-white text-black border-white' 
-                            : 'bg-white/5 border-white/10 text-white group-hover:border-purple-400/40 group-hover:text-purple-300'
-                        }`}>
-                          <Icon className="w-4 h-4" />
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2.5 rounded-xl border transition-colors shrink-0 mt-0.5 ${p.iconColor}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-sm text-white group-hover:text-neutral-100 transition-colors">
+                                {p.title}
+                              </h4>
+                              <span className={`text-[9px] font-mono font-bold tracking-widest px-2 py-0.5 rounded-full border ${p.badgeColor}`}>
+                                {p.badge}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-neutral-400 leading-snug">
+                              {p.tagline}
+                            </p>
+                          </div>
                         </div>
-                        <span className={`text-[9px] font-mono font-bold tracking-widest transition-colors ${
-                          isSelected ? 'text-white font-semibold' : 'text-neutral-400 group-hover:text-purple-300'
-                        }`}>
-                          {t.badge}
-                        </span>
                       </div>
-                      <div>
-                        <h4 className={`font-bold text-sm transition-colors ${
-                          isSelected ? 'text-white' : 'text-white group-hover:text-purple-200'
-                        }`}>{t.title}</h4>
-                        <p className="text-[11px] text-neutral-400 line-clamp-2 mt-0.5 leading-snug">
-                          {t.tagline}
-                        </p>
-                      </div>
-                      <div className="pt-1 flex flex-wrap gap-1">
-                        {t.capabilities.map((c, i) => (
-                          <span key={i} className={`text-[9px] font-mono px-2 py-0.5 rounded-md border transition-colors ${
-                            isSelected
-                              ? 'text-white bg-white/15 border-white/30'
-                              : 'text-neutral-300 bg-white/5 border-white/5 group-hover:border-purple-500/25 group-hover:text-purple-200'
-                          }`}>
+                      <div className="pt-1.5 flex flex-wrap gap-1.5 pl-11">
+                        {p.capabilities.map((c, i) => (
+                          <span key={i} className="text-[9px] font-mono px-2 py-0.5 rounded-md border border-white/5 bg-white/[0.03] text-neutral-300">
                             • {c}
                           </span>
                         ))}
@@ -565,57 +586,56 @@ function LoginForm() {
                     </InteractiveGlowCard>
                   );
                 })}
+              </div>
+            </div>
 
-                {/* 4th Slot: Create a Professional Account Here -> with Purple Mouse Glow */}
-                <InteractiveGlowCard
-                  href="/register?type=professional"
-                  className="flex flex-col justify-between"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                      <Briefcase className="w-4 h-4" />
-                    </div>
-                    <span className="text-[9px] font-mono font-bold tracking-widest text-purple-400">
-                      INSTITUTIONAL
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white group-hover:text-purple-300 transition-colors flex items-center gap-1.5">
-                      <span>Create a professional account here</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-purple-400 shrink-0" />
-                    </h4>
-                    <p className="text-[11px] text-neutral-400 mt-0.5 leading-snug">
-                      For summits, secretariats, educational institutions, and sovereign partners.
-                    </p>
-                  </div>
-                  <div className="pt-1 flex flex-wrap gap-1">
-                    <span className="text-[9px] font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
-                      • Full Dais Terminal
-                    </span>
-                    <span className="text-[9px] font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
-                      • Institutional Roaming
-                    </span>
-                  </div>
-                </InteractiveGlowCard>
+            {/* Hardware-Enforced Security Enclave Banner */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-cyan-500/5 to-transparent border border-emerald-500/20 flex items-center justify-between gap-3 shadow-lg shadow-emerald-950/20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white font-mono flex items-center gap-1.5">
+                    <span>Sovereign Security Shield Active</span>
+                    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">v2.4</span>
+                  </p>
+                  <p className="text-[11px] text-neutral-400 mt-0.5">
+                    Biometric passkeys, zero-knowledge tokens, and instant remote anti-theft session revocation.
+                  </p>
+                </div>
+              </div>
+              <div className="hidden sm:block text-right font-mono text-[9px] text-neutral-500 shrink-0">
+                <span className="block text-emerald-400 font-bold">NODE: ONLINE</span>
+                <span>LATENCY: 9ms</span>
               </div>
             </div>
           </div>
 
           {/* Right Column: High-Precision Authentication Console */}
-          <div className="lg:col-span-5 w-full max-w-md mx-auto space-y-5">
+          <div className="lg:col-span-5 w-full max-w-md mx-auto space-y-5 relative">
             
+            {/* Ambient Background Aura Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-amber-500/20 rounded-[2.8rem] blur-2xl opacity-40 pointer-events-none" />
+
             {/* Main Interactive Form Card */}
             <div className="rounded-[2.5rem] bg-[#07080b]/95 border border-white/15 p-6 sm:p-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)] backdrop-blur-3xl relative overflow-hidden text-left space-y-6">
               
-              {/* Header Title */}
+              {/* Header Title with Cyber Enclave Pill */}
               <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-neutral-400">
-                    SOVEREIGN AUTHENTICATION
+                <div className="flex items-center justify-between border-b border-white/10 pb-3 font-mono text-[10px] text-neutral-400">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                    </span>
+                    <span className="tracking-wider uppercase text-neutral-300 font-semibold">SOVEREIGN AUTHENTICATION</span>
+                  </div>
+                  <span className="text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
+                    256-BIT ENCLAVE
                   </span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight pt-2">
                   Authenticate Node
                 </h3>
                 <p className="text-xs text-neutral-400">
@@ -914,9 +934,10 @@ function LoginForm() {
                       <div className="space-y-1.5">
                         <label className="text-xs font-mono font-semibold text-neutral-300 flex items-center justify-between">
                           <span>IDENTIFIER (@HANDLE OR EMAIL)</span>
+                          <span className="text-[10px] text-neutral-500 font-normal">DELEGATE / PRESS / CITIZEN</span>
                         </label>
-                        <div className="relative">
-                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                        <div className="relative group">
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
                           <input
                             type="text"
                             value={email}
@@ -924,7 +945,7 @@ function LoginForm() {
                             placeholder="@username or email"
                             disabled={loading}
                             required
-                            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono"
+                            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
                           />
                         </div>
                       </div>
@@ -932,12 +953,12 @@ function LoginForm() {
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-xs font-mono">
                           <label className="font-semibold text-neutral-300">MASTER PASSPHRASE</label>
-                          <Link href="/privacy" className="text-neutral-400 hover:text-white transition">
+                          <Link href="/privacy" className="text-cyan-400/80 hover:text-cyan-300 transition">
                             Recovery Key?
                           </Link>
                         </div>
-                        <div className="relative">
-                          <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                        <div className="relative group">
+                          <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -945,7 +966,7 @@ function LoginForm() {
                             placeholder="••••••••••••"
                             disabled={loading}
                             required
-                            className="w-full pl-10 pr-11 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono"
+                            className="w-full pl-10 pr-11 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
                           />
                           <button
                             type="button"
@@ -963,20 +984,24 @@ function LoginForm() {
                             type="checkbox"
                             checked={saveLoginInfo}
                             onChange={(e) => setSaveLoginInfo(e.target.checked)}
-                            className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-0 focus:ring-offset-0"
+                            className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-cyan-400 focus:ring-0 focus:ring-offset-0"
                           />
                           <span className="text-[11px] font-mono text-neutral-400">Save login info on this device</span>
                         </label>
+                        <span className="text-[10px] font-mono text-emerald-400/80 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <span>ENCLAVE SECURED</span>
+                        </span>
                       </div>
 
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-white/20 active:scale-[0.98] disabled:opacity-50"
+                        className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-white via-neutral-100 to-white hover:from-cyan-100 hover:via-white hover:to-cyan-100 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_rgba(6,182,212,0.35)] active:scale-[0.98] disabled:opacity-50"
                       >
                         {loading ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Loader2 className="w-4 h-4 animate-spin text-black" />
                             <span>Validating Credentials...</span>
                           </>
                         ) : (

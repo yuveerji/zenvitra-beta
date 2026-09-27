@@ -50,7 +50,11 @@ interface SovereignTrack {
   icon: React.ElementType;
   tagline: string;
   requirements: string[];
+  capabilities: string[];
   color: string;
+  glowColor: string;
+  activeRing: string;
+  iconBg: string;
 }
 
 const REGISTER_TRACKS: SovereignTrack[] = [
@@ -59,54 +63,39 @@ const REGISTER_TRACKS: SovereignTrack[] = [
     title: 'Diplomatic Delegate',
     badge: 'CHAMBER SOVEREIGN',
     icon: Users,
-    tagline: 'Participate in Model UN summits, youth parliaments, floor caucuses, and pass cryptographic substantive resolutions.',
-    requirements: ['Verified debate & caucus access', 'Dais floor voting clearance', 'Sovereign MUN Dossier'],
-    color: 'from-amber-500/20 to-orange-500/10 border-amber-500/30'
+    tagline: 'Lead multilateral summits, draft binding resolutions, execute cryptographic roll-call votes, and earn verified MUN accolades.',
+    requirements: ['Verified debate & caucus access', 'Dais floor voting clearance', 'Sovereign MUN Dossier', 'Encrypted Chit Mesh Access'],
+    capabilities: ['Roll-Call Voting', 'Dais Clearance', 'Encrypted Chits', 'Verified Accolades'],
+    color: 'from-amber-500/20 via-orange-500/10 to-transparent border-amber-500/30',
+    glowColor: 'rgba(245, 158, 11, 0.25)',
+    activeRing: 'border-amber-400/80 shadow-[0_0_30px_rgba(245,158,11,0.22)] bg-amber-500/[0.08]',
+    iconBg: 'bg-amber-500/20 border-amber-500/40 text-amber-300'
   },
   {
     id: 'journalist',
-    title: 'ZEN.PRESS Correspondent',
+    title: 'Investigative Press',
     badge: 'WIRE BUREAU',
     icon: Newspaper,
-    tagline: 'Draft autonomous student investigations, fast-wire breaking bulletins, and permanent digital research dossiers.',
-    requirements: ['Independent editorial desk', 'Fast-wire breaking publishing', 'Permanent DOI citation archiving'],
-    color: 'from-cyan-500/20 to-blue-500/10 border-cyan-500/30'
+    tagline: 'Draft autonomous student investigations, fast-wire breaking bulletins, and permanent digital DOI research dossiers.',
+    requirements: ['Independent editorial desk', 'Fast-wire breaking publishing', 'Permanent DOI citation archiving', 'Autonomous Press Wire'],
+    capabilities: ['Fast-Wire Publishing', 'DOI Research Registry', 'Spark Feed Sync', 'Editorial Desk'],
+    color: 'from-cyan-500/20 via-blue-500/10 to-transparent border-cyan-500/30',
+    glowColor: 'rgba(6, 182, 212, 0.25)',
+    activeRing: 'border-cyan-400/80 shadow-[0_0_30px_rgba(6,182,212,0.22)] bg-cyan-500/[0.08]',
+    iconBg: 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300'
   },
   {
     id: 'architect',
     title: 'Civic & Tech Architect',
     badge: 'PROTOCOL ENGINE',
     icon: Terminal,
-    tagline: 'Build civic micro-tools, participate in campus hackathons, and audit the 10% transparent school aid treasury.',
-    requirements: ['Open protocol tooling access', 'Treasury ledger audit rights', 'Hackathon & project stage'],
-    color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30'
-  },
-  {
-    id: 'secretariat',
-    title: 'Secretariat / Node Lead',
-    badge: 'DAIS COMMAND',
-    icon: Crown,
-    tagline: 'Preside over international committees, manage delegate country rosters, and coordinate institutional summits.',
-    requirements: ['Dais command suite & quorum engine', 'Country allocation tools', 'Summit host clearance'],
-    color: 'from-purple-500/20 to-fuchsia-500/10 border-purple-500/30'
-  },
-  {
-    id: 'thinker',
-    title: 'Global Policy Thinker',
-    badge: 'POLICY FELLOW',
-    icon: Compass,
-    tagline: 'Co-author multilateral treaty frameworks, join international working groups, and publish policy manifestos.',
-    requirements: ['Treaty co-authoring rights', 'Academic review desk', 'Cross-continental working groups'],
-    color: 'from-rose-500/20 to-pink-500/10 border-rose-500/30'
-  },
-  {
-    id: 'performer',
-    title: 'Open Stage Performer',
-    badge: 'CREATIVE VOICE',
-    icon: Zap,
-    tagline: 'Perform in unmoderated open mics, slam poetry stages, stand-up comedy nights, and live creator spaces.',
-    requirements: ['Stage performer queue access', 'Audience clap-meter eligibility', 'Live audio & space broadcasting'],
-    color: 'from-yellow-500/20 to-amber-500/10 border-yellow-500/30'
+    tagline: 'Build civic micro-tools, participate in campus hackathons, and audit the 10% transparent public school aid treasury ledger.',
+    requirements: ['Open protocol tooling access', 'Treasury ledger audit rights', 'Hackathon & project stage', 'Smart Assembly Governance'],
+    capabilities: ['Treasury Audits', 'Open Protocol Tools', 'Decentralized ID', 'Smart Assemblies'],
+    color: 'from-emerald-500/20 via-teal-500/10 to-transparent border-emerald-500/30',
+    glowColor: 'rgba(16, 185, 129, 0.25)',
+    activeRing: 'border-emerald-400/80 shadow-[0_0_30px_rgba(16,185,129,0.22)] bg-emerald-500/[0.08]',
+    iconBg: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
   }
 ];
 
@@ -178,8 +167,9 @@ export default function RegisterPage() {
         router.replace('/register/professional');
         return;
       }
-      if (params.get('track') === 'secretariat') {
-        setTrack('secretariat');
+      const paramTrack = params.get('track');
+      if (paramTrack && ['delegate', 'journalist', 'architect'].includes(paramTrack)) {
+        setTrack(paramTrack);
       }
     }
   }, [router]);
@@ -342,6 +332,31 @@ export default function RegisterPage() {
               </p>
             </div>
 
+            {/* Live Registration Telemetry HUD */}
+            <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-xl font-mono text-left shadow-lg shadow-black/40">
+              <div className="space-y-1">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">IDENTITY NODE</span>
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <span className="truncate">GEN-1 ENCLAVE</span>
+                </div>
+              </div>
+              <div className="space-y-1 border-l border-white/10 pl-2.5">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">DOMAINS</span>
+                <div className="flex items-center gap-1.5 text-xs text-cyan-300 font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="truncate">3 CORE TRACKS</span>
+                </div>
+              </div>
+              <div className="space-y-1 border-l border-white/10 pl-2.5">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">SECURITY</span>
+                <div className="flex items-center gap-1.5 text-xs text-purple-300 font-bold">
+                  <KeyRound className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                  <span className="truncate">ZERO-TRACKING</span>
+                </div>
+              </div>
+            </div>
+
             {/* Active Track Highlight Box */}
             <div className={`p-6 rounded-[2rem] bg-gradient-to-br ${activeTrackObj.color} bg-[#07080b]/90 border backdrop-blur-2xl space-y-4 shadow-2xl transition-all duration-300`}>
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
@@ -393,8 +408,11 @@ export default function RegisterPage() {
           </div>
 
           {/* Right Column: Multi-Step Identity Wizard */}
-          <div className="lg:col-span-6 w-full max-w-lg mx-auto space-y-5">
+          <div className="lg:col-span-6 w-full max-w-lg mx-auto space-y-5 relative">
             
+            {/* Ambient Background Aura Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-emerald-500/20 rounded-[2.8rem] blur-2xl opacity-40 pointer-events-none" />
+
             <div className="rounded-[2.5rem] bg-[#07080b]/95 border border-white/15 p-6 sm:p-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)] backdrop-blur-3xl relative overflow-hidden text-left space-y-6">
               
               {/* Top Step Progress Bar */}
@@ -405,7 +423,9 @@ export default function RegisterPage() {
                     {step === 2 && 'ENTER DIPLOMATIC COORDINATES'}
                     {step === 3 && 'MINT 10-DIGIT SOVEREIGN KEY'}
                   </span>
-                  <span className="text-cyan-400 font-bold">STEP {step}/3</span>
+                  <span className="text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
+                    STEP {step}/3
+                  </span>
                 </div>
                 <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <div 
@@ -439,10 +459,10 @@ export default function RegisterPage() {
                 </Link>
               </div>
 
-              {/* ── STEP 1: TRACK SELECTION ── */}
+              {/* ── STEP 1: 3 CORE TRACK SELECTION ── */}
               {step === 1 && (
                 <form onSubmit={handleNextStep1} className="space-y-4">
-                  <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="space-y-3">
                     {REGISTER_TRACKS.map((t) => {
                       const Icon = t.icon;
                       const isSelected = track === t.id;
@@ -450,26 +470,53 @@ export default function RegisterPage() {
                         <div
                           key={t.id}
                           onClick={() => setTrack(t.id)}
-                          className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
+                          className={`p-4 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col gap-2.5 select-none relative overflow-hidden group ${
                             isSelected
-                              ? 'bg-white/[0.08] border-white/40 shadow-[0_0_20px_rgba(255,255,255,0.1)]'
-                              : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/15'
+                              ? t.activeRing
+                              : 'bg-white/[0.02] border-white/10 hover:bg-white/[0.05] hover:border-white/20'
                           }`}
                         >
-                          <div className={`p-2 rounded-xl border shrink-0 mt-0.5 ${isSelected ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-neutral-300'}`}>
-                            <Icon className="w-4 h-4" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-bold text-xs sm:text-sm text-white">{t.title}</h4>
-                              <span className="text-[9px] font-mono text-neutral-400 tracking-wider uppercase">{t.badge}</span>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2.5 rounded-xl border shrink-0 transition-colors ${
+                                isSelected ? t.iconBg : 'bg-white/5 border-white/10 text-neutral-300'
+                              }`}>
+                                <Icon className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-sm text-white group-hover:text-neutral-100 transition-colors">
+                                  {t.title}
+                                </h4>
+                                <span className="text-[9px] font-mono text-neutral-400 tracking-wider uppercase font-semibold">
+                                  {t.badge}
+                                </span>
+                              </div>
                             </div>
-                            <p className="text-[11px] text-neutral-400 line-clamp-2 mt-0.5 leading-snug">
-                              {t.tagline}
-                            </p>
+                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected ? 'border-white bg-white text-black shadow-md' : 'border-white/20 bg-white/5'
+                            }`}>
+                              {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            </div>
                           </div>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-1 ${isSelected ? 'border-white bg-white text-black' : 'border-white/20'}`}>
-                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+
+                          <p className="text-[11px] text-neutral-400 leading-snug">
+                            {t.tagline}
+                          </p>
+
+                          {/* Capabilities Pills */}
+                          <div className="pt-1 flex flex-wrap gap-1.5">
+                            {t.capabilities.map((c, i) => (
+                              <span
+                                key={i}
+                                className={`text-[9px] font-mono px-2 py-0.5 rounded-md border transition-colors ${
+                                  isSelected
+                                    ? 'bg-white/15 border-white/25 text-white font-semibold'
+                                    : 'bg-white/[0.03] border-white/5 text-neutral-400 group-hover:text-neutral-300'
+                                }`}
+                              >
+                                • {c}
+                              </span>
+                            ))}
                           </div>
                         </div>
                       );
@@ -478,7 +525,7 @@ export default function RegisterPage() {
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-white/20 active:scale-[0.98]"
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-white via-neutral-100 to-white hover:from-cyan-100 hover:via-white hover:to-cyan-100 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_rgba(6,182,212,0.35)] active:scale-[0.98]"
                   >
                     <span>Proceed to Identity Coordinates</span>
                     <ArrowRight className="w-4 h-4" />
@@ -491,15 +538,15 @@ export default function RegisterPage() {
                 <form onSubmit={handleNextStep2} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-mono font-semibold text-neutral-300">FULL DIPLOMATIC NAME</label>
-                    <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                    <div className="relative group">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
                       <input
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="e.g. Maya Lin"
                         required
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition shadow-inner"
                       />
                     </div>
                   </div>
@@ -509,15 +556,15 @@ export default function RegisterPage() {
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-mono font-semibold text-neutral-300">UNIQUE @HANDLE</label>
                       </div>
-                      <div className="relative flex items-center">
-                        <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
+                      <div className="relative flex items-center group">
+                        <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none group-focus-within:text-cyan-400 transition-colors" />
                         <input
                           type="text"
                           value={handle}
                           onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                           placeholder="mayalin"
                           required
-                          className="w-full pl-10 pr-28 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono"
+                          className="w-full pl-10 pr-28 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
                         />
                         <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
                           <UsernameAvailabilityButton username={handle} />
@@ -527,15 +574,15 @@ export default function RegisterPage() {
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-mono font-semibold text-neutral-300">PRIMARY EMAIL</label>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                      <div className="relative group">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
                         <input
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="maya@summit.org"
                           required
-                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition shadow-inner"
                         />
                       </div>
                     </div>
@@ -544,28 +591,28 @@ export default function RegisterPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-xs font-mono font-semibold text-neutral-300">INSTITUTION / NODE</label>
-                      <div className="relative">
-                        <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                      <div className="relative group">
+                        <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
                         <input
                           type="text"
                           value={institution}
                           onChange={(e) => setInstitution(e.target.value)}
                           placeholder="Harvard / Delhi Univ"
-                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition shadow-inner"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-mono font-semibold text-neutral-300">PRIMARY COUNTRY</label>
-                      <div className="relative">
-                        <Globe2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                      <div className="relative group">
+                        <Globe2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
                         <input
                           type="text"
                           value={delegationPreference}
                           onChange={(e) => setDelegationPreference(e.target.value)}
                           placeholder="India / USA / France"
-                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition shadow-inner"
                         />
                       </div>
                     </div>
@@ -576,15 +623,15 @@ export default function RegisterPage() {
                       <span>MASTER PASSPHRASE <span className="text-amber-400">*</span></span>
                       <span className="text-[10px] font-mono text-neutral-500 font-normal">Min. 8 chars, high-entropy</span>
                     </label>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                    <div className="relative group">
+                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••••••"
                         required
-                        className="w-full pl-10 pr-11 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white/40 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono"
+                        className="w-full pl-10 pr-11 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
                       />
                       <button
                         type="button"
@@ -616,7 +663,7 @@ export default function RegisterPage() {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-white/20 active:scale-[0.98]"
+                      className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-white via-neutral-100 to-white hover:from-cyan-100 hover:via-white hover:to-cyan-100 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_rgba(6,182,212,0.35)] active:scale-[0.98]"
                     >
                       <span>Proceed to Minting Ledger</span>
                       <ArrowRight className="w-4 h-4" />
@@ -716,11 +763,11 @@ export default function RegisterPage() {
                     <button
                       type="submit"
                       disabled={loading || !agreedTerms}
-                      className="flex-1 py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-white/20 active:scale-[0.98] disabled:opacity-50"
+                      className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(52,211,153,0.3)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] active:scale-[0.98] disabled:opacity-50"
                     >
                       {loading ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin text-black" />
                           <span>Minting Sovereign Key...</span>
                         </>
                       ) : (
