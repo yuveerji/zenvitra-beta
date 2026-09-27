@@ -21,6 +21,32 @@ import { EcosystemApp } from '@/types/zenvitra';
 
 const ECOSYSTEM_APPS: EcosystemApp[] = [
   {
+    id: 'zen-passport',
+    name: 'ZEN.PASSPORT',
+    code: 'PASSPORT',
+    version: 'V-1.0',
+    tagline: 'Permanent Identity & Record',
+    description: 'Verified MUN, Press, Speaking credentials & Living Timeline.',
+    href: '/passport',
+    iconName: 'Shield',
+    accentColor: 'from-cyan-500/20 to-blue-500/10 border-cyan-400/30 text-cyan-300',
+    badge: 'SOVEREIGN',
+    isLive: true,
+  },
+  {
+    id: 'zen-leaderboard',
+    name: 'ZEN.LEADERBOARD',
+    code: 'RANK',
+    version: 'V-1.0',
+    tagline: 'Recognise the Work',
+    description: 'Verified community leaderboards, pillars & seasons.',
+    href: '/leaderboard',
+    iconName: 'Award',
+    accentColor: 'from-amber-500/20 to-yellow-500/10 border-amber-400/30 text-amber-300',
+    badge: 'SEASON 01',
+    isLive: true,
+  },
+  {
     id: 'zenvitra-id',
     name: 'ZENVITRA ID',
     code: 'AUTH',

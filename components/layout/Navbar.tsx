@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Crown,
   ShieldCheck,
+  Trophy,
   Users,
   Scale,
   CreditCard,
@@ -69,6 +70,8 @@ export function Navbar({
   ];
 
   const secondaryNavLinks = [
+    { name: 'ZEN.PASSPORT', href: '/passport', icon: ShieldCheck, tag: 'Identity', desc: 'Permanent Sovereign Identity, Verified Credentials & QR Terminal' },
+    { name: 'ZEN.LEADERBOARD', href: '/leaderboard', icon: Trophy, tag: 'Rankings', desc: 'Verified Activity Leaderboards, Seasons, Merits & Recognition' },
     { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Studio', desc: 'Sovereign Form Studio, Shareable Templates & Direct Ledger Exports' },
     { name: 'ZEN.SPACE', href: '/space', icon: Globe, tag: 'Civic Hub', desc: 'Custom Civic Bio, Portfolios, Verified Links & Custom Blocks' },
     { name: 'ZEN.DIPLOMACY', href: '/zen-diplomacy', icon: Crown, tag: 'Flagship MUN', desc: 'Oct 24-25 Virtual MUN, Dossiers, Guidelines & Live Chambers' },
@@ -596,6 +599,22 @@ export function Navbar({
                           >
                             <Radio className="w-3.5 h-3.5 text-purple-400" />
                             <span>Platform Feed</span>
+                          </Link>
+                          <Link
+                            href="/passport"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="w-full px-3 py-2 rounded-xl hover:bg-white/10 hover:text-white transition flex items-center gap-2"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                            <span className="font-semibold text-cyan-200">🪪 ZEN.PASSPORT</span>
+                          </Link>
+                          <Link
+                            href="/leaderboard"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="w-full px-3 py-2 rounded-xl hover:bg-white/10 hover:text-white transition flex items-center gap-2"
+                          >
+                            <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                            <span className="font-semibold text-amber-200">🏆 ZEN.LEADERBOARD</span>
                           </Link>
                           <Link
                             href="/chat"
