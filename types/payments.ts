@@ -25,6 +25,7 @@ export type PaymentProduct =
   | 'CUSTOM';
 
 export type PaymentMethodType = 
+  | 'CASHFREE'
   | 'UPI_QR' 
   | 'UPI_ID' 
   | 'CREDIT_CARD' 

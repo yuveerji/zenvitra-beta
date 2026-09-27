@@ -28,6 +28,32 @@ import { computeTax, LS_ZEN_TXNS } from '@/lib/paymentsData';
 import { useAuth } from '@/context/AuthContext';
 import { PaymentTransaction, PaymentReceipt, PaymentMethodType, PaymentProduct } from '@/types/payments';
 
+// Module-level singleton loader for Cashfree.js v3
+let cashfreeSdkPromise: Promise<any> | null = null;
+function getCashfreeSdk(): Promise<any> {
+  if (typeof window === 'undefined') return Promise.reject(new Error('Window not available'));
+  if ((window as any).Cashfree) return Promise.resolve((window as any).Cashfree);
+  if (!cashfreeSdkPromise) {
+    cashfreeSdkPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[src*="cashfree.js"]');
+      if (existing) {
+        (existing as HTMLScriptElement).addEventListener('load', () => resolve((window as any).Cashfree));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+      script.async = true;
+      script.onload = () => resolve((window as any).Cashfree);
+      script.onerror = () => {
+        cashfreeSdkPromise = null;
+        reject(new Error('Failed to load Cashfree SDK'));
+      };
+      document.body.appendChild(script);
+    });
+  }
+  return cashfreeSdkPromise;
+}
+
 interface ZenCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -52,13 +78,17 @@ export function ZenCheckoutModal({
   // Payer details & taxation
   const [payerName, setPayerName] = useState('');
   const [payerEmail, setPayerEmail] = useState('');
+  const [payerPhone, setPayerPhone] = useState('9876543210');
   const [userAge, setUserAge] = useState<number>(17);
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
   const [studentIdFile, setStudentIdFile] = useState<{ name: string; size: string } | null>(null);
   const [studentIdError, setStudentIdError] = useState<string | null>(null);
 
-  // Payment method selection (Net banking removed)
-  const [selectedMethod, setSelectedMethod] = useState<'UPI_QR' | 'UPI_ID' | 'CREDIT_CARD'>('UPI_QR');
+  // Payment method selection - Cashfree PG is premier
+  const [selectedMethod, setSelectedMethod] = useState<'CASHFREE' | 'UPI_QR' | 'UPI_ID' | 'CREDIT_CARD'>('CASHFREE');
+  const [isSubmittingCashfree, setIsSubmittingCashfree] = useState(false);
+  const [cashfreeNotice, setCashfreeNotice] = useState<string | null>(null);
+
   const [upiId, setUpiId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardHolder, setCardHolder] = useState('');
@@ -80,6 +110,24 @@ export function ZenCheckoutModal({
   const isPulseElite = (profile as any)?.isElite || profile?.role === 'admin' || (profile as any)?.membershipTier === 'elite';
   const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || (typeof window !== 'undefined' && localStorage.getItem('zenvitra_pulse_pass') === 'active'));
   const userTier = isPulseElite ? 'elite' : isPulsePass ? 'pass' : 'standard';
+
+  // Prepopulate payer fields from active session
+  useEffect(() => {
+    if (user) {
+      if (!payerName) setPayerName(profile?.display_name || user.name || '');
+      if (!payerEmail) setPayerEmail(user.email || '');
+      if ((profile as any)?.phone && payerPhone === '9876543210') {
+        setPayerPhone((profile as any).phone);
+      }
+    }
+  }, [user, profile]);
+
+  // Preload Cashfree SDK when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      getCashfreeSdk().catch(() => {});
+    }
+  }, [isOpen]);
 
   // Auto-read pre-verified student status if available
   useEffect(() => {
@@ -159,9 +207,122 @@ export function ZenCheckoutModal({
     }
   };
 
+  // Cashfree Drop-in Checkout Integration
+  const handlePayWithCashfree = async () => {
+    if (isCollegeStudent && !studentIdFile) {
+      setStudentIdError('Please upload your school or college student ID proof to claim student concession.');
+      return;
+    }
+
+    if (!payerPhone || payerPhone.replace(/\D/g, '').length < 10) {
+      setCashfreeNotice('Please provide a valid 10-digit mobile number for Cashfree order processing.');
+      return;
+    }
+
+    setIsSubmittingCashfree(true);
+    setCashfreeNotice(null);
+
+    try {
+      // 1. Create order on backend
+      const res = await fetch('/api/payments/cashfree/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: tax.totalPayable,
+          currency,
+          customerName: payerName || profile?.display_name || user?.name || 'Citizen User',
+          customerEmail: payerEmail || user?.email || 'citizen@zenvitra.xyz',
+          customerPhone: payerPhone || '9876543210',
+          orderNote: `Order for ${title} (${product})`,
+          productId: product,
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.success || !data.paymentSessionId) {
+        throw new Error(data.error || 'Failed to initialize Cashfree payment session');
+      }
+
+      // 2. Load SDK & initialize once
+      const CashfreeConstructor = await getCashfreeSdk();
+      const envMode = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production' ? 'production' : 'sandbox';
+      const cashfree = CashfreeConstructor({ mode: envMode });
+
+      // 3. Drop-in checkout modal
+      const result = await cashfree.checkout({
+        paymentSessionId: data.paymentSessionId,
+        redirectTarget: '_modal',
+      });
+
+      // 4. Handle 3 terminal states per Cashfree Web SDK guidelines
+      if (result.error) {
+        // Modal dismissed by user or network error
+        setCashfreeNotice(result.error.message || 'Payment window closed. You can retry when ready.');
+        setIsSubmittingCashfree(false);
+        return;
+      }
+
+      if (result.redirect) {
+        // Navigating away
+        return;
+      }
+
+      if (result.paymentDetails) {
+        // Payment attempt made; backend is source of truth!
+        setStep('PROCESSING');
+        const verifyRes = await fetch(`/api/payments/cashfree/verify-order?order_id=${data.orderId}`);
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.isPaid || verifyData.orderStatus === 'PAID') {
+          const newTxn: PaymentTransaction = {
+            id: verifyData.paymentId || `CF-${data.orderId}`,
+            receiptId: `ZR-CF-${data.orderId.slice(-6).toUpperCase()}`,
+            status: 'SUCCESS',
+            amount: tax.totalPayable,
+            currency,
+            purpose: title,
+            product,
+            eventOrItemName: title,
+            payerName: payerName || user?.name || 'Citizen User',
+            payerEmail: payerEmail || user?.email || 'user@zenvitra.xyz',
+            merchantName: 'ZENVITRA Operating Entity (Cashfree PG)',
+            paymentMethod: 'CASHFREE',
+            paymentDetailsMasked: `Cashfree PG (${verifyData.paymentMethod || 'UPI/Card'}) - Ref: ${verifyData.paymentId || data.orderId}`,
+            taxBreakdown: tax,
+            createdAt: new Date().toISOString(),
+            settledAt: new Date().toISOString()
+          };
+
+          try {
+            const stored = localStorage.getItem(LS_ZEN_TXNS);
+            const list = stored ? JSON.parse(stored) : [];
+            localStorage.setItem(LS_ZEN_TXNS, JSON.stringify([newTxn, ...list]));
+          } catch {}
+
+          setCompletedTxn(newTxn);
+          setStep('SUCCESS');
+          if (onSuccess) onSuccess(newTxn);
+        } else {
+          setStep('DETAILS');
+          setCashfreeNotice(`Order status: ${verifyData.orderStatus}. If amount was deducted, status will update.`);
+        }
+      }
+    } catch (err: any) {
+      console.error('Cashfree checkout failed:', err);
+      setCashfreeNotice(err.message || 'Failed to connect to Cashfree payment gateway');
+    } finally {
+      setIsSubmittingCashfree(false);
+    }
+  };
+
   const handleInitiatePay = () => {
     if (isCollegeStudent && !studentIdFile) {
       setStudentIdError('Please upload your school or college student ID proof to claim student concession.');
+      return;
+    }
+
+    if (selectedMethod === 'CASHFREE') {
+      handlePayWithCashfree();
       return;
     }
 
@@ -377,31 +538,39 @@ export function ZenCheckoutModal({
               </div>
             </div>
 
-            {/* Payment Method Tabs (Net Banking Removed) */}
+            {/* Payment Method Tabs */}
             <div className="space-y-2">
               <label className="text-xs font-mono text-neutral-300 font-semibold block uppercase">
                 Choose Payment Method
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'UPI_QR', label: 'Real UPI QR', icon: QrCode },
-                  { id: 'UPI_ID', label: 'Send UPI Request', icon: Smartphone },
-                  { id: 'CREDIT_CARD', label: 'Credit / Debit Card', icon: CreditCard },
+                  { id: 'CASHFREE', label: 'Cashfree PG', subtitle: 'UPI / Cards / NB', icon: Sparkles, featured: true },
+                  { id: 'UPI_QR', label: 'Real UPI QR', subtitle: 'Scan & Pay', icon: QrCode },
+                  { id: 'UPI_ID', label: 'UPI Collect', subtitle: 'Send Request', icon: Smartphone },
+                  { id: 'CREDIT_CARD', label: 'Direct Card', subtitle: '3D Secure', icon: CreditCard },
                 ].map((m) => {
                   const Icon = m.icon;
+                  const isSelected = selectedMethod === m.id;
                   return (
                     <button
                       key={m.id}
                       type="button"
                       onClick={() => setSelectedMethod(m.id as any)}
-                      className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
-                        selectedMethod === m.id
-                          ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-200 shadow-md'
-                          : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white'
+                      className={`relative p-2.5 sm:p-3 rounded-xl border text-left transition cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                        isSelected
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+                          : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white hover:border-white/20'
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span className="text-[10px] font-mono font-bold text-center leading-tight">{m.label}</span>
+                      {m.featured && (
+                        <span className="absolute -top-1.5 right-1.5 px-1.5 py-0.5 rounded-full bg-cyan-400 text-[8px] font-bold text-black uppercase tracking-wider">
+                          Primary
+                        </span>
+                      )}
+                      <Icon className={`w-4 h-4 ${isSelected ? 'text-cyan-400' : 'text-neutral-400'}`} />
+                      <span className="text-[11px] font-mono font-bold text-center leading-tight">{m.label}</span>
+                      <span className="text-[9px] text-neutral-400 text-center leading-none">{m.subtitle}</span>
                     </button>
                   );
                 })}
@@ -410,6 +579,88 @@ export function ZenCheckoutModal({
 
             {/* Method Input Area */}
             <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-4 text-xs">
+              {/* 0. CASHFREE PAYMENT GATEWAY */}
+              {selectedMethod === 'CASHFREE' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-white text-xs">Cashfree PG Official Gateway</h5>
+                        <p className="text-[10px] text-neutral-400 font-mono">
+                          Drop-in Checkout &bull; UPI, Cards, Net Banking &amp; Wallets
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
+                      PCI-DSS Level 1
+                    </span>
+                  </div>
+
+                  {/* Payer Information Fields */}
+                  <div className="space-y-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-neutral-400 block text-[11px] mb-1">Payer Full Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Full Name"
+                          value={payerName}
+                          onChange={(e) => setPayerName(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-neutral-400 block text-[11px] mb-1">Mobile Phone (10 digits)</label>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="e.g. 9876543210"
+                          maxLength={10}
+                          value={payerPhone}
+                          onChange={(e) => setPayerPhone(e.target.value.replace(/\D/g, ''))}
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-neutral-400 block text-[11px] mb-1">Email for Receipt</label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="payer@example.com"
+                        value={payerEmail}
+                        onChange={(e) => setPayerEmail(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Sandbox helper badge */}
+                  <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/25 space-y-1.5 text-[10px] font-mono text-neutral-300">
+                    <div className="flex items-center justify-between text-cyan-300 font-bold">
+                      <span className="flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Cashfree Sandbox Environment</span>
+                      </span>
+                      <span className="text-[9px] bg-black/60 px-1.5 py-0.5 rounded text-neutral-400 border border-white/10">Simulated Payments</span>
+                    </div>
+                    <p className="text-neutral-400 leading-relaxed">
+                      Accepts test UPI (<span className="text-cyan-200">testsuccess@gocash</span>) or test cards (<span className="text-cyan-200">4706 1312 1121 2123</span> &bull; OTP: <span className="text-cyan-200">111000</span>).
+                    </p>
+                  </div>
+
+                  {cashfreeNotice && (
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono">
+                      {cashfreeNotice}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* 1. REAL DYNAMIC UPI QR */}
               {selectedMethod === 'UPI_QR' && (
                 <div className="flex flex-col items-center justify-center space-y-3 text-center">
@@ -570,17 +821,29 @@ export function ZenCheckoutModal({
               </button>
               <button
                 type="button"
+                disabled={isSubmittingCashfree}
                 onClick={handleInitiatePay}
-                className="flex-1 py-3 px-6 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(34,211,238,0.3)] flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 py-3 px-6 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(34,211,238,0.3)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>
-                  {selectedMethod === 'UPI_ID'
-                    ? `Request ₹${tax.totalPayable} in App`
-                    : selectedMethod === 'CREDIT_CARD'
-                    ? `Open Bank Gateway (₹${tax.totalPayable})`
-                    : `Confirm & Pay ₹${tax.totalPayable}`}
-                </span>
-                <ArrowRight className="w-4 h-4" />
+                {isSubmittingCashfree ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Connecting Cashfree...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      {selectedMethod === 'CASHFREE'
+                        ? `Pay ₹${tax.totalPayable} with Cashfree`
+                        : selectedMethod === 'UPI_ID'
+                        ? `Request ₹${tax.totalPayable} in App`
+                        : selectedMethod === 'CREDIT_CARD'
+                        ? `Open Bank Gateway (₹${tax.totalPayable})`
+                        : `Confirm & Pay ₹${tax.totalPayable}`}
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
           </div>

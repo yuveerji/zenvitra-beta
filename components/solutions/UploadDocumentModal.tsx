@@ -111,18 +111,29 @@ export function UploadDocumentModal({ isOpen, onClose, onDocumentCreated }: Uplo
     e.preventDefault();
     if (!title.trim()) return;
 
-    const sponsorsList = leadSponsors.split(',').map(s => s.trim()).filter(Boolean);
+    const isTestAccount = Boolean(
+      profile?.username === 'test' || 
+      (typeof window !== 'undefined' && (() => {
+        try {
+          const s = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+          return s?.username === 'test' || s?.id === 'zen_test_pilot_node';
+        } catch (_) { return false; }
+      })())
+    );
+
+    const sponsorsList = isTestAccount ? ['Test Pilot Node'] : leadSponsors.split(',').map(s => s.trim()).filter(Boolean);
     const sigList = signatories.split(',').map(s => s.trim()).filter(Boolean);
 
-    const newDoc: SolutionDocument = {
+    const newDoc: SolutionDocument & { isTest?: boolean } = {
       id: `doc-${Date.now()}`,
-      documentCode: documentCode.trim() || `DOC-${Date.now()}`,
+      documentCode: isTestAccount ? `TEST-${documentCode.trim() || `DOC-${Date.now()}`}` : (documentCode.trim() || `DOC-${Date.now()}`),
       title: title.trim(),
       documentType: docType,
       category,
       committee: committee.trim() || 'General Assembly Chamber',
       status: 'PROPOSED',
       leadSponsors: sponsorsList.length > 0 ? sponsorsList : ['Primary Drafter'],
+      proposedByUsername: isTestAccount ? 'test' : (profile?.username || 'member'),
       signatories: sigList,
       abstract: abstract.trim() || 'Official parliamentary draft resolution and working policy text submitted to the sovereign registry.',
       clauses: clauses.filter(c => c.text.trim().length > 0),
@@ -133,13 +144,14 @@ export function UploadDocumentModal({ isOpen, onClose, onDocumentCreated }: Uplo
         against: 0,
         abstain: 0
       },
-      votedUserIds: [],
+      votedUserIds: [isTestAccount ? 'test' : (profile?.username || 'self')],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      isOfficial: true
+      isOfficial: !isTestAccount,
+      isTest: isTestAccount,
     };
 
-    onDocumentCreated(newDoc);
+    onDocumentCreated(newDoc as SolutionDocument);
     onClose();
   };
 

@@ -259,13 +259,28 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
     if (!checkboxReviewed || !checkboxConfirm || !parsedResult) return;
     setIsSubmitting(true);
 
-    const docTypeMeta = DOCUMENT_TYPE_METADATA[parsedResult.detectedType];
-    const authorName = profile?.display_name || profile?.username || user?.email?.split('@')[0] || 'Anonymous Diplomat';
-    const authorUsername = profile?.username || 'member';
+    const isTestAccount = Boolean(
+      profile?.username === 'test' || 
+      user?.email === 'test@zenvitra.org' ||
+      (typeof window !== 'undefined' && (() => {
+        try {
+          const s = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+          return s?.username === 'test' || s?.id === 'zen_test_pilot_node';
+        } catch (_) { return false; }
+      })())
+    );
 
-    const newDoc: SolutionDocument = {
+    const docTypeMeta = DOCUMENT_TYPE_METADATA[parsedResult.detectedType];
+    const authorName = isTestAccount
+      ? 'Test Pilot Node'
+      : (profile?.display_name || profile?.username || user?.email?.split('@')[0] || 'Anonymous Diplomat');
+    const authorUsername = isTestAccount ? 'test' : (profile?.username || 'member');
+
+    const newDoc: SolutionDocument & { isTest?: boolean } = {
       id: `doc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      documentCode: `BILL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+      documentCode: isTestAccount 
+        ? `TEST-BILL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
+        : `BILL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
       title: editedTitle.trim() || parsedResult.title,
       documentType: parsedResult.detectedType,
       category,
@@ -281,14 +296,15 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
       clauses: editedClauses,
       validationIssues: validationIssues.filter(i => !i.resolved),
       votes: { inFavor: 1, against: 0, abstain: 0 },
-      votedUserIds: [profile?.username || 'self'],
+      votedUserIds: [authorUsername],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       publishedAt: new Date().toISOString(),
-      isOfficial: true
+      isOfficial: !isTestAccount,
+      isTest: isTestAccount,
     };
 
-    onDocumentCreated(newDoc);
+    onDocumentCreated(newDoc as SolutionDocument);
     setIsSubmitting(false);
     onClose();
   };

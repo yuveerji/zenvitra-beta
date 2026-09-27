@@ -91,7 +91,19 @@ const TYPE_FILTERS: { type: DocumentType | 'ALL'; label: string; icon: React.Ele
 const LS_SOLUTIONS = 'zenvitra_solutions_v2_clean';
 
 export default function SolutionsPage() {
-  const { isAuthenticated, isGuest } = useAuth();
+  const { isAuthenticated, isGuest, profile, user } = useAuth();
+
+  const isTestUser = Boolean(
+    profile?.username === 'test' || 
+    user?.email === 'test@zenvitra.org' ||
+    (typeof window !== 'undefined' && (() => {
+      try {
+        const s = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        return s?.username === 'test' || s?.id === 'zen_test_pilot_node';
+      } catch (_) { return false; }
+    })())
+  );
+
   const [documents, setDocuments] = useState<SolutionDocument[]>(() => {
     if (typeof window === 'undefined') return INITIAL_DOCUMENTS;
     try {
@@ -144,6 +156,10 @@ export default function SolutionsPage() {
   };
 
   const handleDocumentCreated = (newDoc: SolutionDocument) => {
+    if (isTestUser) {
+      (newDoc as any).isTest = true;
+      newDoc.proposedByUsername = 'test';
+    }
     setDocuments([newDoc, ...documents]);
     setActiveReadingDoc(newDoc);
     broadcastActivitySync({ source: 'press', action: 'create', timestamp: Date.now() });
@@ -174,6 +190,14 @@ export default function SolutionsPage() {
   };
 
   const filteredDocuments = documents.filter(doc => {
+    const isDocTest = Boolean(
+      (doc as any).isTest || 
+      doc.proposedByUsername === 'test' || 
+      doc.leadSponsors?.some(s => s.toLowerCase().includes('test'))
+    );
+    // If not test user, filter out test documents so main public platform remains clean
+    if (!isTestUser && isDocTest) return false;
+
     const matchesType = selectedType === 'ALL' || doc.documentType === selectedType;
     const matchesSearch = 
       doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -188,6 +212,23 @@ export default function SolutionsPage() {
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 pb-20 space-y-10">
+        {/* Sandbox Notice for Test Pilot User */}
+        {isTestUser && (
+          <div className="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_0_30px_rgba(6,182,212,0.15)] animate-fadeIn">
+            <div className="flex items-center gap-2.5">
+              <span className="px-2 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold tracking-wider uppercase text-[10px] shrink-0">
+                🧪 TEST PILOT ENCLAVE
+              </span>
+              <span className="text-[11px] leading-relaxed text-neutral-200">
+                Sandbox active: You can upload, test, edit, and vote on bills freely. All test drafts are isolated to your test enclave and will not appear on the main public platform.
+              </span>
+            </div>
+            <span className="px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold text-[10px] uppercase shrink-0 self-start sm:self-auto">
+              Main Platform Isolated
+            </span>
+          </div>
+        )}
+
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold uppercase tracking-widest">
@@ -283,11 +324,18 @@ export default function SolutionsPage() {
                 {/* Header */}
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`px-3 py-1 rounded-full border font-mono text-[10px] font-bold uppercase tracking-wider ${
-                      badgeStyles[doc.documentType] || 'bg-white/10 border-white/20 text-white'
-                    }`}>
-                      {doc.documentType.replace('_', ' ')}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`px-3 py-1 rounded-full border font-mono text-[10px] font-bold uppercase tracking-wider ${
+                        badgeStyles[doc.documentType] || 'bg-white/10 border-white/20 text-white'
+                      }`}>
+                        {doc.documentType.replace('_', ' ')}
+                      </span>
+                      {Boolean((doc as any).isTest || doc.proposedByUsername === 'test') && (
+                        <span className="px-2 py-0.5 rounded-full border border-cyan-400/40 bg-cyan-500/10 text-cyan-300 font-mono text-[9px] font-bold uppercase tracking-wider">
+                          🧪 Test Draft
+                        </span>
+                      )}
+                    </div>
                     <span className="font-mono text-xs text-neutral-400 font-bold">
                       {doc.documentCode}
                     </span>
