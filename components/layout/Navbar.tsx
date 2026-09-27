@@ -30,7 +30,6 @@ import {
   BookOpen,
   Video,
   Globe,
-  Grid
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { SocialMindMapModal } from '@/components/home/SocialMindMapModal';
@@ -72,7 +71,6 @@ export function Navbar({
   const secondaryNavLinks = [
     { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Studio', desc: 'Sovereign Form Studio, Shareable Templates & Direct Ledger Exports' },
     { name: 'ZEN.SPACE', href: '/space', icon: Globe, tag: 'Civic Hub', desc: 'Custom Civic Bio, Portfolios, Verified Links & Custom Blocks' },
-    { name: 'PORTFOLIO MATRIX', href: '/matrix', icon: Grid, tag: 'Live Ledger', desc: 'Real-Time 240-Seat Sovereign Committee Allocations & Status' },
     { name: 'ZEN.DIPLOMACY', href: '/zen-diplomacy', icon: Crown, tag: 'Flagship MUN', desc: 'Oct 24-25 Virtual MUN, Dossiers, Guidelines & Live Chambers' },
     { name: 'ZEN.CALL', href: '/call', icon: Video, tag: 'Encrypted AV', desc: 'Sovereign High-Fidelity Diplomatic Audio & Video Chambers' },
     { name: 'ZEN.LEGISLATE', href: '/legislate', icon: Scale, tag: 'Lok Sabha', desc: 'Parliamentary Bill Drafting, Official Dispatches & Chamber Motions' },
