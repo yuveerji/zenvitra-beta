@@ -164,6 +164,24 @@ export function PlatformShell({
     (mounted && localUser?.isGuest)
   );
 
+  const [isGuestBannerDismissed, setIsGuestBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const isDismissed = sessionStorage.getItem('zen_guest_banner_dismissed') === 'true';
+      if (isDismissed) {
+        setIsGuestBannerDismissed(true);
+      }
+    } catch (_) {}
+  }, []);
+
+  const handleDismissGuestBanner = () => {
+    setIsGuestBannerDismissed(true);
+    try {
+      sessionStorage.setItem('zen_guest_banner_dismissed', 'true');
+    } catch (_) {}
+  };
+
   const currentDisplayName = 
     profile?.display_name || 
     (profile as any)?.name || 
@@ -685,20 +703,31 @@ export function PlatformShell({
       {/* ─── MAIN CONTENT VIEWPORT ─── */}
       <main className="flex-1 min-w-0 min-h-screen flex flex-col bg-black relative z-10">
         {/* Ambient Guest Node Notice Banner */}
-        {isGuest && (
-          <div className="bg-gradient-to-r from-purple-950/90 via-purple-900/60 to-black border-b border-purple-500/30 px-4 py-2.5 flex items-center justify-between text-xs font-mono shrink-0 z-30">
-            <div className="flex items-center gap-2 text-purple-200">
+        {isGuest && !isGuestBannerDismissed && (
+          <div className="bg-gradient-to-r from-purple-950/90 via-purple-900/60 to-black border-b border-purple-500/30 px-4 py-2 flex items-center justify-between text-xs font-mono shrink-0 z-30 transition-all duration-300">
+            <div className="flex items-center gap-2 text-purple-200 min-w-0 pr-2">
               <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
-              <span>
+              <span className="truncate">
                 Exploring as <strong>Guest Node (@{currentUsername})</strong> &bull; Dispatches enabled &bull; <span className="text-purple-300/80">Medals &amp; Dais voting locked</span>
               </span>
             </div>
-            <Link
-              href="/register"
-              className="px-3 py-1 rounded-full bg-white text-black font-display font-bold text-[11px] hover:bg-neutral-200 transition shrink-0 ml-3 uppercase tracking-wider"
-            >
-              Connect Email / OAuth &rarr;
-            </Link>
+            <div className="flex items-center gap-2.5 shrink-0 ml-3">
+              <Link
+                href="/register"
+                className="px-3 py-1 rounded-full bg-white text-black font-display font-bold text-[11px] hover:bg-neutral-200 transition shrink-0 uppercase tracking-wider"
+              >
+                Connect Email / OAuth &rarr;
+              </Link>
+              <button
+                type="button"
+                onClick={handleDismissGuestBanner}
+                className="p-1 rounded-lg text-purple-300/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                title="Dismiss guest notice"
+                aria-label="Dismiss guest notice"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
         
