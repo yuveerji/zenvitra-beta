@@ -331,8 +331,8 @@ export function InteractiveWordHover({
                 <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed relative z-10 font-sans">
                   {!controls.escrowMandateActive
                     ? data.definition
-                        .replace(/exactly 10% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
-                        .replace(/10% of net platform profits every 4 months to student study kits/gi, 'student study kits')
+                        .replace(/exactly 10% of all net platform profits are distributed every 6 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
+                        .replace(/10% of net platform profits every 6 months to student study kits/gi, 'student study kits')
                     : data.definition}
                 </p>
 
@@ -344,7 +344,7 @@ export function InteractiveWordHover({
                   <p className="text-xs text-neutral-200 font-light leading-snug font-sans">
                     {!controls.escrowMandateActive
                       ? data.platformRelation
-                          .replace(/guaranteeing 10% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
+                          .replace(/guaranteeing 10% of all net platform profits are distributed every 6 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
                           .replace(/via our 10% constitutional escrow/gi, 'via our civic grant fund')
                       : data.platformRelation}
                   </p>

@@ -206,7 +206,7 @@ export default function ConstitutionPage() {
                   10% profit educational endowment
                 </span>
               </InteractiveWordHover>{' '}
-              distributed every 4 months with offline video proof and public receipts.
+              distributed every 6 months with offline video proof and public receipts.
             </div>
           </div>
 

@@ -957,7 +957,7 @@ export function SettingsModal({
                       <div className="space-y-1">
                         <h4 className="font-bold text-xs text-white">10% Constitutional Profit Endowment Ledger</h4>
                         <p className="text-[11px] text-zinc-400">
-                          Review cryptographic records for the 10% profit endowment distributed every 4 months, verified with offline giveaway videos on ZEN.FLUX.
+                          Review cryptographic records for the 10% profit endowment distributed every 6 months, verified with offline giveaway videos on ZEN.FLUX.
                         </p>
                       </div>
                       <a

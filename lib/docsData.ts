@@ -236,7 +236,7 @@ export const INITIAL_DOCUMENTS: ZenDocument[] = [
 </p>
 <h2 style="font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom: 8px; color: #111827;">Article II: The 10% Civic Endowment Covenant</h2>
 <p style="font-size: 14px; line-height: 1.8; color: #374151; margin-bottom: 16px;">
-  Under the ZENVITRA constitutional covenant, 10% of all net platform revenue is irrevocably locked and distributed triannually toward student scholarships, civic hardware, and youth debate councils with cryptographic proof and public video audits.
+  Under the ZENVITRA constitutional covenant, 10% of all net platform revenue is irrevocably locked and distributed semiannually (every 6 months) toward student scholarships, civic hardware, and youth debate councils with cryptographic proof and public video audits.
 </p>
 <h2 style="font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom: 8px; color: #111827;">Article III: Real-Time Chamber Telemetry</h2>
 <p style="font-size: 14px; line-height: 1.8; color: #374151; margin-bottom: 16px;">

@@ -681,7 +681,7 @@ export function PricingClient() {
                   </Link>
                 </div>
                 <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                  An immutable <strong className="text-white font-semibold">10% of all profits</strong> is distributed <strong className="text-amber-300">every 4 months</strong> to student scholarships and school supplies—verified with public receipts and offline giveaway videos broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> &amp; socials.
+                  An immutable <strong className="text-white font-semibold">10% of all profits</strong> is distributed <strong className="text-amber-300">every 6 months</strong> to student scholarships and school supplies—verified with public receipts and offline giveaway videos broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> &amp; socials.
                 </p>
               </div>
             </div>

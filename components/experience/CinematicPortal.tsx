@@ -233,7 +233,7 @@ export function CinematicPortal() {
                 Technology Rooted in Civic Trust
               </h3>
               <p className="font-outfit text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                10% of all net platform profits are permanently bound to student scholarships, classroom kits, and computer labs every four months—backed by public receipts and verifiable video proofs.
+                10% of all net platform profits are permanently bound to student scholarships, classroom kits, and computer labs every six months—backed by public receipts and verifiable video proofs.
               </p>
             </div>
           )}

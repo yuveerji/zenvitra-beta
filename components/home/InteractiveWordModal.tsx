@@ -56,7 +56,7 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     tag: 'CIVIC TECH & PUBLIC BUILDERS',
     icon: Heart,
     definition: 'Youth builders, researchers, programmers, and grassroots social entrepreneurs turning community debate into actionable civic projects and public digital goods.',
-    platformRelation: 'Backed by ZEN.IMPACT — a constitutional endowment guaranteeing 10% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN.FLUX.',
+    platformRelation: 'Backed by ZEN.IMPACT — a constitutional endowment guaranteeing 10% of all net platform profits are distributed every 6 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN.FLUX.',
     protocolBadge: 'ZEN.IMPACT // 10% PROFIT FUND',
     ctaText: 'View Civic Impact Fund',
     ctaHref: '/impact',
@@ -139,8 +139,8 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     term: 'Constitutional 10% Profit Endowment',
     tag: 'PUBLIC BENEFIT CHARTER',
     icon: Heart,
-    definition: 'An immutable constitutional mandate: exactly 10% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs.',
-    platformRelation: 'Audited every 4 months through public itemized receipts and unedited offline giveaway videos broadcast on ZEN.FLUX and social platforms.',
+    definition: 'An immutable constitutional mandate: exactly 10% of all net platform profits are distributed every 6 months to student scholarships, classroom supplies, and school labs.',
+    platformRelation: 'Audited every 6 months through public itemized receipts and unedited offline giveaway videos broadcast on ZEN.FLUX and social platforms.',
     protocolBadge: 'ZEN.IMPACT // 10% PROFIT MANDATE',
     ctaText: 'View Escrow Allocations',
     ctaHref: '/impact',
@@ -419,8 +419,8 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     term: '10% Profit Educational Endowment',
     tag: 'IMMUTABLE ESCROW',
     icon: Heart,
-    definition: 'A hardcoded constitutional mandate dedicating 10% of net platform profits every 4 months to student study kits, Model UN scholarships, and solar school labs.',
-    platformRelation: 'Audited every 4 months with offline handover videos on ZEN.FLUX and public ledger receipts; unalterable by any board decision.',
+    definition: 'A hardcoded constitutional mandate dedicating 10% of net platform profits every 6 months to student study kits, Model UN scholarships, and solar school labs.',
+    platformRelation: 'Audited every 6 months with offline handover videos on ZEN.FLUX and public ledger receipts; unalterable by any board decision.',
     protocolBadge: 'CONSTITUTION // ARTICLE II (10% PROFIT)',
     ctaText: 'Read Constitution Article II',
     ctaHref: '/constitution#article-2',
@@ -467,10 +467,10 @@ export function InteractiveWordModal({ termKey, onClose }: InteractiveWordModalP
 
   if (!controls.escrowMandateActive) {
     displayDefinition = displayDefinition
-      .replace(/exactly 10% of all net platform profits are distributed every 4 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
-      .replace(/10% of net platform profits every 4 months to student study kits/gi, 'student study kits');
+      .replace(/exactly 10% of all net platform profits are distributed every 6 months to student scholarships, classroom supplies, and school labs\./gi, 'student scholarships, classroom supplies, and school labs.')
+      .replace(/10% of net platform profits every 6 months to student study kits/gi, 'student study kits');
     displayRelation = displayRelation
-      .replace(/guaranteeing 10% of all net platform profits are distributed every 4 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
+      .replace(/guaranteeing 10% of all net platform profits are distributed every 6 months to student scholarships and school supplies, verified with offline giveaway videos on ZEN\.FLUX\./gi, 'focused on student scholarships and grassroots civic education.')
       .replace(/via our 10% constitutional escrow/gi, 'via our civic grant fund');
     displayBadge = displayBadge.replace(/\/\/ 10% PROFIT (FUND|MANDATE)/gi, '// CIVIC IMPACT FUND').replace(/\(10% PROFIT\)/gi, '');
   }

@@ -31,14 +31,14 @@ export default function MissionPage() {
       code: 'OBJ-03',
       title: 'Deploy the 10% Profit Civic Mandate',
       termKey: 'escrow',
-      desc: 'Permanently dedicate 10% of all net platform profits to student scholarships, study kits, and school computer labs—distributed every 4 months with unedited offline handover videos on ZEN.FLUX and public receipts.',
+      desc: 'Permanently dedicate 10% of all net platform profits to student scholarships, study kits, and school computer labs—distributed every 6 months with unedited offline handover videos on ZEN.FLUX and public receipts.',
       icon: Scale,
     },
   ];
 
   const milestones = [
     { target: '100%', detail: 'Sovereign codebase with zero third-party behavioral trackers.' },
-    { target: '10%', detail: '10% of all profits disbursed every 4 months with offline video proof and public receipts.' },
+    { target: '10%', detail: '10% of all profits disbursed every 6 months with offline video proof and public receipts.' },
     { target: 'Zero', detail: 'External advertiser profiling or sale of student discourse data.' },
     { target: 'Global', detail: 'Accessible summit operating systems for schools and collegiate MUNs.' },
   ];

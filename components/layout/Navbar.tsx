@@ -82,7 +82,7 @@ export function Navbar({
     { name: 'Chamber Dais', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },
     { name: 'Conference OS', href: '/mun/conference', icon: Layers, tag: 'Secretariat', desc: 'Secretariat Command Center & Liveboard' },
-    { name: 'Impact Ledger', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 4 Months with Video Proof' },
+    { name: 'Impact Ledger', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 6 Months with Video Proof' },
   ];
 
   const allNavLinks = [...primaryNavLinks, ...secondaryNavLinks];

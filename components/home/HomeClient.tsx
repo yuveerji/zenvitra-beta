@@ -140,7 +140,7 @@ export default function HomeClient({ session }: HomeClientProps) {
     {
       icon: Sparkles,
       title: 'Real-World Impact',
-      desc: 'Creating tangible change through youth-led dialogue, civic innovation, and a guaranteed 10% of profits allocated every 4 months to student scholarships and rural school labs.',
+      desc: 'Creating tangible change through youth-led dialogue, civic innovation, and a guaranteed 10% of profits allocated every 6 months to student scholarships and rural school labs.',
     },
   ];
 
@@ -150,7 +150,7 @@ export default function HomeClient({ session }: HomeClientProps) {
     { title: 'Events & Summits', desc: 'Assemblies, conferences, summits, and open gatherings.', icon: Calendar },
     { title: 'Leadership', desc: 'Develop skills. Lead initiatives. Inspire others.', icon: Crown },
     { title: 'Innovation', desc: 'Turn ideas into actionable projects and public solutions.', icon: Lightbulb },
-    { title: 'Social Good', desc: '10% of all profits directly fund student education & civic kits every 4 months.', icon: Heart },
+    { title: 'Social Good', desc: '10% of all profits directly fund student education & civic kits every 6 months.', icon: Heart },
   ];
 
   const sovereignWorlds = [
@@ -260,7 +260,7 @@ export default function HomeClient({ session }: HomeClientProps) {
     ...(escrowMandateActive ? [{
       title: 'ZEN.IMPACT',
       subtitle: '10% Profit Escrow & Ledger',
-      description: 'Hardcoded constitutional treasury allocating 10% of all profits every 4 months with public video proof.',
+      description: 'Hardcoded constitutional treasury allocating 10% of all profits every 6 months with public video proof.',
       icon: Heart,
       badge: '10% ESCROW',
       accentColor: 'text-teal-400 bg-teal-500/10 border-teal-500/25',
@@ -299,7 +299,7 @@ export default function HomeClient({ session }: HomeClientProps) {
     ...(escrowMandateActive ? [{
       icon: Lock,
       title: 'Guaranteed 10% Profit Impact Invariant',
-      detail: 'Hardcoded constitutional mandate distributing 10% of profits every 4 months with video proof.',
+      detail: 'Hardcoded constitutional mandate distributing 10% of profits every 6 months with video proof.',
     }] : []),
   ];
 
@@ -517,7 +517,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                           &bull; Our Constitutional Pledge:
                         </span>
                         <p className="text-neutral-400">
-                          Words mean little without structural action. That is why <strong className="text-white">10% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 4 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
+                          Words mean little without structural action. That is why <strong className="text-white">10% of all net platform profits</strong> are constitutionally dedicated <strong className="text-amber-300">every 6 months</strong> to direct student scholarships, classroom kits, and computer labs—proven through offline giveaway videos and public receipts broadcast on <strong className="text-cyan-300">ZEN.FLUX</strong> and social platforms.
                         </p>
                       </div>
                     )}
@@ -1114,12 +1114,12 @@ export default function HomeClient({ session }: HomeClientProps) {
                     Every Summit. Every Community Action. Direct Educational Capital.
                   </h3>
                   <p className="text-xs sm:text-sm text-neutral-300 font-sans font-light leading-relaxed max-w-2xl">
-                    A guaranteed 10% of all net platform profits are distributed every 4 months into verified school laboratories, curriculum kits, and delegate grants—verified with unedited offline giveaway videos and public receipts broadcast on ZEN.FLUX and social platforms.
+                    A guaranteed 10% of all net platform profits are distributed every 6 months into verified school laboratories, curriculum kits, and delegate grants—verified with unedited offline giveaway videos and public receipts broadcast on ZEN.FLUX and social platforms.
                   </p>
                   <div className="flex flex-wrap gap-4 pt-2">
                     <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>Every 4 Months Distribution</span>
+                      <span>Every 6 Months Distribution</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />

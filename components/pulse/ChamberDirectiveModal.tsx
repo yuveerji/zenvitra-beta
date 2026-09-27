@@ -77,9 +77,9 @@ export const DIRECTIVE_DOSSIERS: DirectiveDossier[] = [
     title: 'Constitutional 10% Profit Civic Treasury Allocation Invariant',
     chamber: 'Public School Treasury & Scholarship Desk',
     location: 'Immutable Governance Ledger',
-    timestamp: 'Quadrennial Distribution Invariant',
-    summary: 'Hardcoded constitutional rule allocating 10% of all platform revenues and summit fees every 4 months to student scholarships, classroom computer labs, and supplies—verified with offline video proof and public receipts.',
-    fullDossier: `Under the Zenvitra Constitutional Covenant, 10% of all net platform surplus is permanently ring-fenced for public education development and student opportunity grants.\n\nEvery four months, disbursements are made directly to underfunded government schools for computer lab hardware, textbooks, and full merit scholarships.\n\nEvery handover is recorded on video, published transparently on ZEN.FLUX, and cross-verified with bank transaction hashes accessible to all delegates.`,
+    timestamp: 'Semiannual Distribution Invariant',
+    summary: 'Hardcoded constitutional rule allocating 10% of all platform revenues and summit fees every 6 months to student scholarships, classroom computer labs, and supplies—verified with offline video proof and public receipts.',
+    fullDossier: `Under the Zenvitra Constitutional Covenant, 10% of all net platform surplus is permanently ring-fenced for public education development and student opportunity grants.\n\nEvery six months, disbursements are made directly to underfunded government schools for computer lab hardware, textbooks, and full merit scholarships.\n\nEvery handover is recorded on video, published transparently on ZEN.FLUX, and cross-verified with bank transaction hashes accessible to all delegates.`,
     clauses: [
       {
         number: 'Clause 2.1',
@@ -88,8 +88,8 @@ export const DIRECTIVE_DOSSIERS: DirectiveDossier[] = [
       },
       {
         number: 'Clause 2.2',
-        title: 'Quadrennial Handover Mandate',
-        text: 'Distributions occur strictly every 4 months, accompanied by full transparent audit logs and recipient video receipts.'
+        title: 'Semiannual Handover Mandate',
+        text: 'Distributions occur strictly every 6 months, accompanied by full transparent audit logs and recipient video receipts.'
       },
       {
         number: 'Clause 2.3',

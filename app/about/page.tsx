@@ -66,7 +66,7 @@ export default function AboutUsPage() {
       icon: HeartHandshake,
       num: '04',
       title: '10% Profit Civic Endowment',
-      desc: 'A permanent constitutional covenant: 10% of all net profits are directly disbursed every 4 months to student scholarships and study kits, verified with offline handover videos and public receipts.',
+      desc: 'A permanent constitutional covenant: 10% of all net profits are directly disbursed every 6 months to student scholarships and study kits, verified with offline handover videos and public receipts.',
       color: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300',
       tag: 'CONSTITUTIONAL PROFIT ENDOWMENT',
       termKey: 'escrow'
@@ -86,7 +86,7 @@ export default function AboutUsPage() {
     },
     {
       title: 'Constitutional 10% Profit Endowment',
-      desc: 'Executed every 4 months: 10% of profits fund student supplies, Model UN scholarships, and computer labs with offline video proof on ZEN.FLUX and socials.',
+      desc: 'Executed every 6 months: 10% of profits fund student supplies, Model UN scholarships, and computer labs with offline video proof on ZEN.FLUX and socials.',
       icon: HeartHandshake,
     },
     {
@@ -256,7 +256,7 @@ export default function AboutUsPage() {
                 Zenvitra Constitutional Charter
               </span>
             </InteractiveWordHover>
-            , an immutable <strong className="text-white font-semibold">10% of all net platform profits</strong> is distributed <strong className="text-amber-300 font-semibold">every 4 months</strong> directly to student scholarships, school study kits, and rural computer labs. Every single distribution is held to radical accountability through itemized purchase receipts and offline on-the-ground giveaway videos broadcast publicly on <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
+            , an immutable <strong className="text-white font-semibold">10% of all net platform profits</strong> is distributed <strong className="text-amber-300 font-semibold">every 6 months</strong> directly to student scholarships, school study kits, and rural computer labs. Every single distribution is held to radical accountability through itemized purchase receipts and offline on-the-ground giveaway videos broadcast publicly on <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10 font-mono text-xs">

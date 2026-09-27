@@ -1258,7 +1258,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
                 <span>CONSTITUTIONAL 10% PROFIT ENDOWMENT &amp; RADICAL ACCOUNTABILITY</span>
               </div>
               <p className="text-neutral-400">
-                Mandatory 10% allocation of all net platform profits distributed every 4 months directly to student scholarships and rural school labs—verified with offline giveaway videos on ZEN.FLUX and public receipts.
+                Mandatory 10% allocation of all net platform profits distributed every 6 months directly to student scholarships and rural school labs—verified with offline giveaway videos on ZEN.FLUX and public receipts.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -1367,7 +1367,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
                   { key: 'fluxReelsEnabled', label: 'ZEN.FLUX Vertical Video Wire', desc: 'Enable 9:16 vertical video feed' },
                   { key: 'registrationsOpen', label: 'Open Public Registrations', desc: 'Allow new accounts on platform' },
                   { key: 'assemblyOsEnabled', label: 'Assembly OS & Live Voting', desc: 'Enable parliamentary caucus engine' },
-                  { key: 'escrowMandateActive', label: 'Constitutional 10% Profit Endowment', desc: 'Disburse 10% profits every 4 months with video proof' },
+                  { key: 'escrowMandateActive', label: 'Constitutional 10% Profit Endowment', desc: 'Disburse 10% profits every 6 months with video proof' },
                   { key: 'zeroSurveillanceActive', label: 'Zero Surveillance Enforcement', desc: 'Block tracking scripts & ads' },
                   { key: 'maintenanceMode', label: 'Protocol Omega (Citadel Lockout)', desc: 'Put entire platform into read-only' },
                 ].map((item) => {

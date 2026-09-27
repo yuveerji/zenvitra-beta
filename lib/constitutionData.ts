@@ -86,7 +86,7 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
     title: 'THE 10% PROFIT CIVIC ENDOWMENT & RADICAL ACCOUNTABILITY PROTOCOL',
     badge: '10% PROFIT ENDOWMENT',
     badgeColor: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30',
-    summary: 'Hardcodes an unalterable 10.0% profit covenant dedicated to student scholarships, educational kits, and rural school labs—executed on a strict 4-month distribution cadence with transparent receipts and offline distribution videos broadcast across ZEN.FLUX and social platforms.',
+    summary: 'Hardcodes an unalterable 10.0% profit covenant dedicated to student scholarships, educational kits, and rural school labs—executed on a strict 6-month distribution cadence with transparent receipts and offline distribution videos broadcast across ZEN.FLUX and social platforms.',
     sections: [
       {
         sectionNumber: 'Section 2.01',
@@ -100,23 +100,22 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
       },
       {
         sectionNumber: 'Section 2.02',
-        heading: 'Triannual Cadence: Every 4 Months Distribution Mandate',
-        operationalTag: 'TRIANNUAL CYCLE',
+        heading: 'Semiannual Cadence: Every 6 Months Distribution Mandate',
+        operationalTag: 'SEMIANNUAL CYCLE',
         content: [
-          'The accounting, procurement, and physical distribution of the 10% profit endowment shall execute without exception every four (4) months across three annual trimesters:',
-          '• Trimester 1 (Jan – Apr): Profit computation, procurement of supplies, and field giveaway distribution.',
-          '• Trimester 2 (May – Aug): Mid-year youth summit delegate scholarships, computer lab dispatches, and student kit distribution.',
-          '• Trimester 3 (Sep – Dec): Annual educational grant distribution, winter study materials, and annual transparent reconciliation.',
-          'No endowment funds may be rolled over or deferred beyond its designated 4-month distribution cycle.'
+          'The accounting, procurement, and physical distribution of the 10% profit endowment shall execute without exception every six (6) months across two annual semesters:',
+          '• Semester 1 (Jan – Jun): Mid-year profit computation, procurement of supplies, delegate scholarships, computer lab dispatches, and student kit distribution.',
+          '• Semester 2 (Jul – Dec): Annual educational grant distribution, winter study materials, rural technology labs, and transparent end-of-year ledger reconciliation.',
+          'No endowment funds may be rolled over or deferred beyond its designated 6-month distribution cycle.'
         ],
-        callout: 'Strict 4-Month Clock: Every 120 days, 10% of profits must be fully converted into physical supplies, scholarships, or infrastructure and placed directly into students\' hands.'
+        callout: 'Strict 6-Month Clock: Every 180 days, 10% of profits must be fully converted into physical supplies, scholarships, or infrastructure and placed directly into students\' hands.'
       },
       {
         sectionNumber: 'Section 2.03',
         heading: 'Radical Accountability: Offline Videos, Public Receipts & ZEN.FLUX Broadcast',
         operationalTag: 'RADICAL TRANSPARENCY',
         content: [
-          'To ensure absolute zero-corruption accountability, every 4-month distribution cycle must provide immutable, multi-channel public proof before the next cycle begins:',
+          'To ensure absolute zero-corruption accountability, every 6-month distribution cycle must provide immutable, multi-channel public proof before the next cycle begins:',
           '1. Unedited Offline Distribution Videos: High-definition, on-the-ground video documentation capturing the actual physical distribution, giving away of textbooks, study kits, computer systems, and delegate passes directly to recipients in classrooms and youth centers.',
           '2. Itemized Financial Receipts: Every single vendor invoice, purchase receipt, hardware bill, transport waybill, and recipient school counter-signature is scanned and published publicly on the transparency dashboard.',
           '3. Multichannel Broadcast on ZEN.FLUX & Socials: Full video reports and documentation shall be broadcast prominently on ZEN.FLUX (our short-form video platform) and official social channels (@zenvitra on Instagram, YouTube, and X) ensuring every citizen can audit the delivery.'
@@ -139,14 +138,14 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
         heading: 'Operational Protocol: How Citizens Audit & Nominate Recipients',
         operationalTag: 'OPERATOR MANUAL',
         content: [
-          'Any citizen, campus ambassador, or educator can inspect the live ledgers and participate in each 4-month distribution cycle:'
+          'Any citizen, campus ambassador, or educator can inspect the live ledgers and participate in each 6-month distribution cycle:'
         ],
         howToUseProperly: {
-          title: '4-MONTH DISTRIBUTION AUDIT PROTOCOL',
+          title: '6-MONTH DISTRIBUTION AUDIT PROTOCOL',
           steps: [
             'Nominate Beneficiaries: Submit rural schools, youth centers, or student delegates in need of kits or conference sponsorship via /donate/govt-schools.',
             'Field Verification: Local ambassadors verify infrastructural readiness and student rolls.',
-            'Watch Offline Giveaway on ZEN.FLUX & Socials: Watch the live proof-of-work video dispatches showing the physical supplies being handed over every 4 months.',
+            'Watch Offline Giveaway on ZEN.FLUX & Socials: Watch the live proof-of-work video dispatches showing the physical supplies being handed over every 6 months.',
             'Audit Ledger Receipts: Download itemized vendor invoices and ledger reconciliations directly from the public audit portal.'
           ]
         }

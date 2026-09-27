@@ -11,7 +11,7 @@ import { Navbar } from '@/components/layout/Navbar';
 
 export default function ImpactPage() {
   const grantDeployments = [
-    { title: 'Rural School Digital & Solar Labs', location: 'India Focus', status: 'Cycle 1 Scheduled', metric: 'Next 4-Month Cycle Allocation', icon: Sun },
+    { title: 'Rural School Digital & Solar Labs', location: 'India Focus', status: 'Cycle 1 Scheduled', metric: 'Next 6-Month Cycle Allocation', icon: Sun },
     { title: 'Youth Media & Open Press Fellowships', location: 'Pan-India & Global Cohort', status: 'Applications Open', metric: 'Direct Sovereign Stipends', icon: BookOpen },
     { title: 'Model UN & Global Summit Scholarships', location: 'Verified Need-Based Candidates', status: 'Escrow Allocated', metric: '100% Fee Waivers & Travel Aid', icon: Users },
     { title: 'Civic Innovation & Hardware Grants', location: 'Open Grassroots Prototypes', status: 'Review in Progress', metric: 'Milestone Disbursals', icon: HeartHandshake },
@@ -33,7 +33,7 @@ export default function ImpactPage() {
             Audited, verifiable <span className="text-neutral-300 font-serif italic font-light">youth grants ledger.</span>
           </h1>
           <p className="text-neutral-300 text-base sm:text-lg max-w-2xl font-light leading-relaxed font-sans">
-            Exactly <strong className="text-white font-semibold">10% of all net platform profits</strong> on ZENVITRA is directly returned to students, rural school computer labs, and delegate scholarships. Executed <strong className="text-amber-300 font-semibold">every 4 months</strong> with radical accountability: offline handover videos and itemized purchase receipts broadcast publicly across <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
+            Exactly <strong className="text-white font-semibold">10% of all net platform profits</strong> on ZENVITRA is directly returned to students, rural school computer labs, and delegate scholarships. Executed <strong className="text-amber-300 font-semibold">every 6 months</strong> with radical accountability: offline handover videos and itemized purchase receipts broadcast publicly across <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
           </p>
         </AnimatedSection>
 
@@ -51,9 +51,9 @@ export default function ImpactPage() {
               <div className="space-y-1">
                 <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">DISTRIBUTION CADENCE</span>
                 <div className="font-display font-bold text-3xl sm:text-4xl text-amber-400">
-                  Every 4 Mos
+                  Every 6 Mos
                 </div>
-                <p className="text-[11px] font-mono text-neutral-400">3 Cycles Every Year</p>
+                <p className="text-[11px] font-mono text-neutral-400">2 Cycles Every Year</p>
               </div>
               <div className="space-y-1">
                 <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">ACCOUNTABILITY PROOF</span>
