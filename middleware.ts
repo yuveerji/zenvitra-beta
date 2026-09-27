@@ -35,6 +35,8 @@ const PUBLIC_PREFIXES = [
   '/pricing',
   '/privacy',
   '/space',
+  '/passport',
+  '/leaderboard',
   '/call',
   '/statusregister',
   '/statussignin',
@@ -146,7 +148,8 @@ export function middleware(request: NextRequest) {
       'manifesto', 'mission', 'mun', 'news', 'onboarding', 'payments', 'pricing',
       'privacy', 'profile', 'pulse', 'register', 'solutions', 'space',
       'statusregister', 'statussignin', 'summits', 'terms', 'vision',
-      'zen-diplomacy', 'chat', 'call', 'dashboard', 'settings', 'matrix', 'signup', 'preregister'
+      'zen-diplomacy', 'chat', 'call', 'dashboard', 'settings', 'matrix', 'signup', 'preregister',
+      'passport', 'leaderboard'
     ]);
 
     if (!KNOWN_ROUTES.has(candidateHandle) && !PUBLIC_PREFIXES.some((p) => p === `/${candidateHandle}`)) {
@@ -222,6 +225,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/space/') ||
     pathname === '/pulse' ||
     pathname.startsWith('/pulse/') ||
+    pathname === '/passport' ||
+    pathname.startsWith('/passport/') ||
+    pathname === '/leaderboard' ||
+    pathname.startsWith('/leaderboard/') ||
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/statusregister' ||
