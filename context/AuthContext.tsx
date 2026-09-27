@@ -799,7 +799,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Sovereign Test Pilot Node Login (Full featured testing environment with all capabilities unlocked)
-  const continueAsTestUser = async (): Promise<UserProfile> => {
+  const continueAsTestUser = useCallback(async (): Promise<UserProfile> => {
     const testProfile: UserProfile = {
       id: 'zen_test_pilot_node',
       username: 'test',
@@ -870,7 +870,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return testProfile;
-  };
+  }, []);
 
   const isGuest = Boolean(
     profile?.isGuest ||

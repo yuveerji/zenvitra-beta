@@ -232,6 +232,60 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/passport/') ||
     pathname === '/leaderboard' ||
     pathname.startsWith('/leaderboard/') ||
+    pathname === '/solutions' ||
+    pathname.startsWith('/solutions/') ||
+    pathname === '/docs' ||
+    pathname.startsWith('/docs/') ||
+    pathname === '/pricing' ||
+    pathname.startsWith('/pricing/') ||
+    pathname === '/about' ||
+    pathname.startsWith('/about/') ||
+    pathname === '/constitution' ||
+    pathname.startsWith('/constitution/') ||
+    pathname === '/chamber' ||
+    pathname.startsWith('/chamber/') ||
+    pathname === '/discussions' ||
+    pathname.startsWith('/discussions/') ||
+    pathname === '/guidelines' ||
+    pathname.startsWith('/guidelines/') ||
+    pathname === '/impact' ||
+    pathname.startsWith('/impact/') ||
+    pathname === '/invest-donate' ||
+    pathname.startsWith('/invest-donate/') ||
+    pathname === '/join-core-team' ||
+    pathname.startsWith('/join-core-team/') ||
+    pathname === '/manifesto' ||
+    pathname.startsWith('/manifesto/') ||
+    pathname === '/mission' ||
+    pathname.startsWith('/mission/') ||
+    pathname === '/privacy' ||
+    pathname.startsWith('/privacy/') ||
+    pathname === '/terms' ||
+    pathname.startsWith('/terms/') ||
+    pathname === '/vision' ||
+    pathname.startsWith('/vision/') ||
+    pathname === '/news' ||
+    pathname.startsWith('/news/') ||
+    pathname === '/press' ||
+    pathname.startsWith('/press/') ||
+    pathname === '/legislate' ||
+    pathname.startsWith('/legislate/') ||
+    pathname === '/payments' ||
+    pathname.startsWith('/payments/') ||
+    pathname === '/donate' ||
+    pathname.startsWith('/donate/') ||
+    pathname === '/campus-ambassador' ||
+    pathname.startsWith('/campus-ambassador/') ||
+    pathname === '/contact' ||
+    pathname.startsWith('/contact/') ||
+    pathname === '/faq' ||
+    pathname.startsWith('/faq/') ||
+    pathname === '/legal' ||
+    pathname.startsWith('/legal/') ||
+    pathname === '/team' ||
+    pathname.startsWith('/team/') ||
+    pathname === '/careers' ||
+    pathname.startsWith('/careers/') ||
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/statusregister' ||
@@ -243,7 +297,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/test-login/') ||
     pathname === '/demo' ||
     pathname.startsWith('/demo/') ||
-    pathname.startsWith('/auth/');
+    pathname.startsWith('/auth/') ||
+    PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   // PRE-RELEASE LOCKDOWN:
   // Before launch date, public visitors without sovereign clearance are locked to /countdown

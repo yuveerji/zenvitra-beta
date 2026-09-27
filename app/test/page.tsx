@@ -25,7 +25,10 @@ function TestPilotEnclaveContent() {
   const [step, setStep] = useState(0);
   const [ready, setReady] = useState(false);
 
-  const targetRedirect = searchParams.get('redirect') || '/pulse';
+  const rawRedirect = searchParams.get('redirect');
+  const targetRedirect = rawRedirect && rawRedirect.trim() && rawRedirect.startsWith('/') && !rawRedirect.startsWith('/test')
+    ? rawRedirect.trim()
+    : '/pulse';
 
   useEffect(() => {
     let isCancelled = false;
@@ -44,18 +47,19 @@ function TestPilotEnclaveContent() {
         setTimeout(() => {
           if (isCancelled) return;
           setStep(2);
-        }, 250);
+        }, 200);
 
         setTimeout(() => {
           if (isCancelled) return;
           setStep(3);
           setReady(true);
-        }, 550);
+        }, 450);
 
         setTimeout(() => {
           if (isCancelled) return;
-          router.push(targetRedirect);
-        }, 1100);
+          // Guaranteed hard browser redirect ensuring cookies are received by server & middleware
+          window.location.href = targetRedirect;
+        }, 950);
 
       } catch (err) {
         console.error('Failed to initialize test pilot node:', err);
@@ -68,7 +72,8 @@ function TestPilotEnclaveContent() {
     return () => {
       isCancelled = true;
     };
-  }, [continueAsTestUser, router, targetRedirect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#030407] text-white flex flex-col justify-between items-center p-6 relative overflow-hidden font-sans selection:bg-cyan-500/30">
@@ -150,12 +155,14 @@ function TestPilotEnclaveContent() {
           <div className="pt-2">
             <button
               type="button"
-              onClick={() => router.push(targetRedirect)}
+              onClick={() => {
+                window.location.href = targetRedirect;
+              }}
               className="w-full py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:shadow-cyan-500/20 active:scale-95"
             >
               {ready ? (
                 <>
-                  <span>Enter Platform Now</span>
+                  <span>Enter Platform Now ({targetRedirect})</span>
                   <ArrowRight className="w-4 h-4 text-black" />
                 </>
               ) : (
