@@ -197,6 +197,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               parsedProf.avatar_url = undefined;
               localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
             }
+            if (parsedProf.username === 'test') {
+              parsedProf.display_name = 'Test Node';
+              parsedProf.badge = '🧪 TEST NODE';
+              localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
+            }
             recordSavedSession(parsedProf);
             try {
               registerActiveDeviceSession(parsedProf.id);
@@ -803,10 +808,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const testProfile: UserProfile = {
       id: 'zen_test_pilot_node',
       username: 'test',
-      display_name: 'Test Pilot Node',
+      display_name: 'Test Node',
       email: 'test@zenvitra.org',
       role: 'delegate', // Full delegate capabilities (not locked out like guest)
-      badge: '🧪 TEST PILOT',
+      badge: '🧪 TEST NODE',
       isGuest: false, // NOT guest-restricted: all platform features, bills, medals, documents unlocked!
       impact_score: 950,
       followers_count: 142,
@@ -831,7 +836,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!list.some((r: any) => (r.email || '').toLowerCase() === 'test@zenvitra.org')) {
         list.push({
           id: 'ZNV-REG-TEST-001',
-          name: 'Test Pilot Node',
+          name: 'Test Node',
           email: 'test@zenvitra.org',
           phone: '+91 99999 88888',
           institution: 'Zenvitra QA & Evaluation Enclave',

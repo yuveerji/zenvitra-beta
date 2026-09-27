@@ -41,11 +41,19 @@ export default function PublicPassportPage() {
     // Attempt to load existing passport for this username
     const existing = getPassport(username);
     if (existing) {
+      if (username === 'test') {
+        existing.fullName = 'Test Node';
+        existing.statusLabel = 'Test Node';
+      }
       setPassport(existing);
     } else {
       // Deterministically create standard passport for recognized system user
-      const name = username.charAt(0).toUpperCase() + username.slice(1);
+      const name = username === 'test' ? 'Test Node' : (username === 'yuveer' ? 'Yuveer Chhatwani' : username.charAt(0).toUpperCase() + username.slice(1));
       const generated = getOrCreateDefaultPassport(username, name);
+      if (username === 'test') {
+        generated.fullName = 'Test Node';
+        generated.statusLabel = 'Test Node';
+      }
       setPassport(generated);
     }
   }, [username]);

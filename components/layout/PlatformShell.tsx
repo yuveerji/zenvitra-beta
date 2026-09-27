@@ -733,7 +733,7 @@ export function PlatformShell({
             <div className="flex items-center gap-2 text-cyan-200 min-w-0 pr-2">
               <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 animate-pulse" />
               <span className="truncate">
-                Testing as <strong className="text-white">Test Pilot Node (@{currentUsername})</strong> &bull; <span className="text-emerald-400 font-semibold">ALL FEATURES UNLOCKED</span> &bull; Debate Chambers, ZEN.SOLUTIONS, ZEN.DOCS &amp; Passport Enabled
+                Testing as <strong className="text-white">Test Node (@{currentUsername})</strong> &bull; <span className="text-emerald-400 font-semibold">ALL FEATURES UNLOCKED</span> &bull; Debate Chambers, ZEN.SOLUTIONS, ZEN.DOCS &amp; Passport Enabled
               </span>
             </div>
             <div className="flex items-center gap-2.5 shrink-0 ml-3">

@@ -42,19 +42,46 @@ export default function PassportPage() {
 
   useEffect(() => {
     // Retrieve real logged-in session user
-    let username = 'yuveer';
-    let fullName = 'Yuveer Chhatwani';
+    let username = 'test';
+    let fullName = 'Test Node';
 
     try {
       const storedSession = localStorage.getItem('zenvitra_session_user');
       if (storedSession) {
         const parsed = JSON.parse(storedSession);
         if (parsed.username) username = parsed.username;
-        if (parsed.name || parsed.displayName) fullName = parsed.name || parsed.displayName;
+        if (parsed.display_name || parsed.name || parsed.displayName) {
+          fullName = parsed.display_name || parsed.name || parsed.displayName;
+        } else if (username === 'yuveer') {
+          fullName = 'Yuveer Chhatwani';
+        } else if (username === 'test') {
+          fullName = 'Test Node';
+        } else {
+          fullName = username.charAt(0).toUpperCase() + username.slice(1);
+        }
       }
     } catch (_) {}
 
+    if (username === 'test') {
+      fullName = 'Test Node';
+      try {
+        const storedTest = localStorage.getItem('zenvitra_passport_test');
+        if (storedTest) {
+          const p = JSON.parse(storedTest);
+          if (p.fullName !== 'Test Node' || p.statusLabel !== 'Test Node') {
+            p.fullName = 'Test Node';
+            p.statusLabel = 'Test Node';
+            localStorage.setItem('zenvitra_passport_test', JSON.stringify(p));
+          }
+        }
+      } catch (_) {}
+    }
+
     const userPassport = getOrCreateDefaultPassport(username, fullName);
+    if (username === 'test') {
+      userPassport.fullName = 'Test Node';
+      userPassport.statusLabel = 'Test Node';
+    }
     setPassport(userPassport);
   }, []);
 

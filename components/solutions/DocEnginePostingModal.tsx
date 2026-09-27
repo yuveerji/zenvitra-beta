@@ -272,7 +272,7 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
 
     const docTypeMeta = DOCUMENT_TYPE_METADATA[parsedResult.detectedType];
     const authorName = isTestAccount
-      ? 'Test Pilot Node'
+      ? 'Test Node'
       : (profile?.display_name || profile?.username || user?.email?.split('@')[0] || 'Anonymous Diplomat');
     const authorUsername = isTestAccount ? 'test' : (profile?.username || 'member');
 

@@ -109,7 +109,7 @@ function TestPilotEnclaveContent() {
               <div>
                 <p className="text-[10px] font-mono text-cyan-300 uppercase tracking-widest font-bold">SOVEREIGN TEST LINK ACTIVE</p>
                 <h1 className="text-xl sm:text-2xl font-black font-display text-white tracking-tight">
-                  Test Pilot Node Initializing
+                  Test Node Initializing
                 </h1>
               </div>
             </div>

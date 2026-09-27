@@ -121,7 +121,7 @@ export function UploadDocumentModal({ isOpen, onClose, onDocumentCreated }: Uplo
       })())
     );
 
-    const sponsorsList = isTestAccount ? ['Test Pilot Node'] : leadSponsors.split(',').map(s => s.trim()).filter(Boolean);
+    const sponsorsList = isTestAccount ? ['Test Node'] : leadSponsors.split(',').map(s => s.trim()).filter(Boolean);
     const sigList = signatories.split(',').map(s => s.trim()).filter(Boolean);
 
     const newDoc: SolutionDocument & { isTest?: boolean } = {

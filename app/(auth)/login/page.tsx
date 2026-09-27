@@ -328,7 +328,7 @@ function LoginForm() {
     setPassword('test1234');
     try {
       await continueAsTestUser();
-      setSuccessMessage('🧪 Test Pilot Node Initialized! All Features Unlocked.');
+      setSuccessMessage('🧪 Test Node Initialized! All Features Unlocked.');
       setTimeout(() => {
         router.push(targetDestination);
       }, 250);

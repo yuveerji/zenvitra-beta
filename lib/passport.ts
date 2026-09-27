@@ -300,10 +300,10 @@ export function createDefaultPassport(user: {
     passportId,
     userId: user.id,
     username: cleanUsername,
-    fullName: user.fullName || cleanUsername,
+    fullName: isTestPilot ? 'Test Node' : (user.fullName || (cleanUsername === 'yuveer' ? 'Yuveer Chhatwani' : cleanUsername)),
     avatarUrl: user.avatarUrl,
     memberSince: 2026,
-    statusLabel: isFounder ? 'Founding Sovereign' : (isTestPilot ? 'Test Pilot Node' : (verificationLevel >= 2 ? 'Verified Student' : 'Sovereign Node')),
+    statusLabel: isFounder ? 'Founding Sovereign' : (isTestPilot ? 'Test Node' : (verificationLevel >= 2 ? 'Verified Student' : 'Sovereign Node')),
     verification: {
       level: verificationLevel,
       levelLabel: getVerificationLevelDetails(verificationLevel).tag,
@@ -438,14 +438,23 @@ export function getPassportById(passportId: string): ZenPassport | null {
  * Retrieves existing passport or creates a deterministic default and persists it
  */
 export function getOrCreateDefaultPassport(username: string, fullName?: string): ZenPassport {
-  const existing = getStoredPassport(username);
-  if (existing) return existing;
+  const clean = username.toLowerCase().replace(/^@/, '').trim();
+  const existing = getStoredPassport(clean);
+  if (existing) {
+    if (clean === 'test' && (existing.fullName !== 'Test Node' || existing.statusLabel !== 'Test Node')) {
+      existing.fullName = 'Test Node';
+      existing.statusLabel = 'Test Node';
+      savePassport(existing);
+    }
+    return existing;
+  }
 
+  const defaultName = clean === 'test' ? 'Test Node' : (fullName || (clean === 'yuveer' ? 'Yuveer Chhatwani' : clean));
   const created = createDefaultPassport({
-    id: `zen_user_${username}`,
-    username,
-    fullName: fullName || username,
-    role: username === 'yuveer' ? 'FOUNDER' : 'DELEGATE',
+    id: `zen_user_${clean}`,
+    username: clean,
+    fullName: defaultName,
+    role: clean === 'yuveer' ? 'FOUNDER' : 'DELEGATE',
     isVerified: true
   });
 
