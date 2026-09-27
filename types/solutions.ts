@@ -17,18 +17,75 @@ export type SolutionCategory =
   | 'GLOBAL_DIPLOMACY';
 
 export type DocumentType = 
-  | 'DRAFT_RESOLUTION'
   | 'LEGISLATIVE_BILL'
-  | 'PRESS_RELEASE'
-  | 'TREATY_CHARTER'
+  | 'DRAFT_RESOLUTION'
   | 'POLICY_WHITEPAPER'
+  | 'TREATY_CHARTER'
+  | 'CONSTITUTION'
+  | 'RULEBOOK'
+  | 'REPORT'
+  | 'PROPOSAL'
+  | 'AGREEMENT'
+  | 'AMENDMENT'
+  | 'DIRECTIVE'
+  | 'PRESS_RELEASE'
+  | 'MANIFESTO'
+  | 'PAPER'
   | 'WORKING_PAPER';
 
-export interface DocumentClause {
-  clauseNumber: string;
-  type: 'PREAMBULARY' | 'OPERATIVE' | 'AMENDMENT' | 'ARTICLE';
+export interface ClauseSubItem {
+  number: string; // e.g. "6.1", "(a)", "(1)"
   text: string;
+}
+
+export interface ClauseAmendment {
+  id: string;
+  author: string;
+  authorUsername?: string;
+  proposedText: string;
+  rationale: string;
+  votes: number;
+  votedUserIds?: string[];
+  createdAt: string;
+}
+
+export interface ClauseDiscussion {
+  id: string;
+  author: string;
+  authorUsername?: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface DocumentClause {
+  id?: string;
+  clauseNumber: string;
+  title?: string; // e.g. "Short Title and Commencement", "Student Welfare"
+  type: 'PREAMBULARY' | 'OPERATIVE' | 'AMENDMENT' | 'ARTICLE' | 'SECTION' | 'FINDING' | 'RECOMMENDATION' | 'RULE' | 'PROVISION';
+  text: string;
+  subClauses?: ClauseSubItem[];
+  chapterNumber?: string; // e.g. "Chapter I"
+  chapterTitle?: string;  // e.g. "Preliminary"
   sponsorAuthors?: string[];
+  amendments?: ClauseAmendment[];
+  discussions?: ClauseDiscussion[];
+}
+
+export interface DocumentChapter {
+  id: string;
+  number: string; // e.g. "Chapter I", "Part I"
+  title: string;  // e.g. "Preliminary", "Student Welfare"
+  clauseIds?: string[];
+}
+
+export interface ValidationIssue {
+  id: string;
+  type: 'structural' | 'missing_info' | 'numbering' | 'incomplete';
+  title: string;
+  description: string;
+  clauseNumber?: string;
+  suggestedFix?: string;
+  resolved?: boolean;
 }
 
 export interface SolutionDocument {
@@ -40,9 +97,14 @@ export interface SolutionDocument {
   committee: string; // e.g. "UN General Assembly", "Security Council", "Youth Parliament", "Press Corps"
   status: SolutionStatus;
   leadSponsors: string[]; // e.g. ["Delegate of France", "Delegate of Brazil", "Aarav Mehta"]
+  proposedByUsername?: string;
   signatories: string[];
   abstract: string;
+  enactingFormula?: string; // e.g. "BE it enacted by Parliament..."
+  preamble?: string;        // e.g. Purpose or Preamble text
+  chapters?: DocumentChapter[];
   clauses: DocumentClause[];
+  validationIssues?: ValidationIssue[];
   fullText?: string;
   fileName?: string;
   fileSize?: string;

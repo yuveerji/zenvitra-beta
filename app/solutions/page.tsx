@@ -26,15 +26,58 @@ import {
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { SolutionDocument, DocumentType, SolutionCategory } from '@/types/solutions';
-import { UploadDocumentModal } from '@/components/solutions/UploadDocumentModal';
+import { DocEnginePostingModal } from '@/components/solutions/DocEnginePostingModal';
 import { DocumentReaderModal } from '@/components/solutions/DocumentReaderModal';
 import { RegisterSuggestionLayover } from '@/components/solutions/RegisterSuggestionLayover';
 import { useAuth } from '@/context/AuthContext';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
+import { parseDocument } from '@/lib/docEngine/parser';
+import { SAMPLE_DRAFTS } from '@/lib/docEngine/sampleDrafts';
 
-/* ─────────── ZERO SEEDED DATA (CLEAN LIVE PLATFORM) ─────────── */
+/* ─────────── INITIAL SAMPLE BILL (OFFICIAL STRUCTURED MODEL) ─────────── */
 
-const INITIAL_DOCUMENTS: SolutionDocument[] = [];
+function getInitialSeededDocuments(): SolutionDocument[] {
+  const sample = SAMPLE_DRAFTS[0]; // Private Coaching Institutes Bill
+  if (!sample) return [];
+  const parsed = parseDocument(sample.rawText, 'LEGISLATIVE_BILL');
+  return [{
+    id: 'doc_coaching_institutes_2026',
+    documentCode: 'BILL-2026-COACH-REG',
+    title: parsed.title,
+    documentType: 'LEGISLATIVE_BILL',
+    category: 'EDUCATION',
+    committee: 'Parliament of India / Lok Sabha Standing Committee',
+    status: 'PROPOSED',
+    leadSponsors: ['Hon. Member of Parliament', 'Youth Education Caucus'],
+    proposedByUsername: 'parliament_caucus',
+    signatories: ['Aarav Mehta', 'Diya Sen', 'Vikramaditya Roy'],
+    abstract: parsed.preamble || 'A Bill to provide for mandatory registration, academic regulation, mental health counselors, fee transparency, and holistic student welfare standards in private coaching institutes across India.',
+    enactingFormula: parsed.enactingFormula,
+    preamble: parsed.preamble,
+    chapters: parsed.chapters,
+    clauses: parsed.clauses.map(c => ({
+      ...c,
+      discussions: c.clauseNumber === '7' ? [
+        { id: 'comm_1', author: 'Dr. Anita Rao', authorUsername: 'anita_rao', text: '5 hours max instructional load is critical. Coaching centers currently conduct 8-9 hours without breaks.', createdAt: new Date(Date.now() - 3600000).toISOString() }
+      ] : [],
+      amendments: c.clauseNumber === '6' ? [
+        { id: 'amend_1', author: 'Devendra K.', authorUsername: 'devendra_k', proposedText: 'Every coaching institute enrolling more than thirty students (reduced from fifty) shall maintain a mental health counselor.', rationale: 'Smaller batches also face extreme suicide vulnerability.', votes: 12, createdAt: new Date(Date.now() - 7200000).toISOString() }
+      ] : []
+    })),
+    votes: {
+      inFavor: 48,
+      against: 3,
+      abstain: 4
+    },
+    votedUserIds: [],
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date().toISOString(),
+    publishedAt: new Date(Date.now() - 86400000).toISOString(),
+    isOfficial: true
+  }];
+}
+
+const INITIAL_DOCUMENTS: SolutionDocument[] = getInitialSeededDocuments();
 
 const TYPE_FILTERS: { type: DocumentType | 'ALL'; label: string; icon: React.ElementType }[] = [
   { type: 'ALL', label: 'All Documents', icon: BookOpen },
@@ -86,6 +129,11 @@ export default function SolutionsPage() {
     broadcastActivitySync({ source: 'press', action: 'create', timestamp: Date.now() });
   };
 
+  const handleUpdateDocument = (updatedDoc: SolutionDocument) => {
+    setDocuments(prev => prev.map(d => d.id === updatedDoc.id ? updatedDoc : d));
+    setActiveReadingDoc(updatedDoc);
+  };
+
   const handleVote = (docId: string, voteType: 'IN_FAVOR' | 'AGAINST' | 'ABSTAIN') => {
     if (!isAuthenticated || isGuest) {
       setIsRegisterPromptOpen(true);
@@ -123,8 +171,8 @@ export default function SolutionsPage() {
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold uppercase tracking-widest">
-            <ScrollText className="w-4 h-4 text-cyan-400" />
-            <span>SOVEREIGN POLICY &amp; SOLUTION REPOSITORY</span>
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>ZEN.SOLUTIONS • UNIVERSAL DOCUMENT ENGINE</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-display font-black text-white tracking-tight leading-tight">
@@ -132,16 +180,16 @@ export default function SolutionsPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-neutral-400 font-sans leading-relaxed">
-            Deposit, explore, and deliberate on community bills, student research drafts, policy frameworks, and collaborative action charters authored by young thinkers, activists, and innovators worldwide.
+            Deposit, explore, and deliberate on community bills, student research drafts, policy frameworks, and collaborative action charters. Every document is automatically structured into interactive clauses for clause-level debate and redline amendments.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={handleOpenUpload}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition hover:scale-105 active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-display font-bold text-xs uppercase tracking-wider hover:opacity-95 transition hover:scale-105 active:scale-95 cursor-pointer shadow-[0_0_25px_rgba(34,211,238,0.4)]"
             >
-              <Plus className="w-4 h-4" />
-              <span>Upload &amp; Submit Document</span>
+              <Sparkles className="w-4 h-4" />
+              <span>Post Bill &amp; Structured Document</span>
             </button>
 
             <Link
@@ -183,7 +231,7 @@ export default function SolutionsPage() {
             <Search className="w-4 h-4 text-neutral-500 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by document code, resolution title, committee, or keywords (e.g., 'UNGA', 'AI-GOV', 'Microgrid')..."
+              placeholder="Search by document code, bill title, committee, or keywords (e.g., 'Coaching', 'Women Safety', 'UNGA')..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/[0.03] border border-white/10 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50"
@@ -196,6 +244,8 @@ export default function SolutionsPage() {
           {filteredDocuments.map((doc) => {
             const totalVotes = doc.votes.inFavor + doc.votes.against + doc.votes.abstain;
             const inFavorPercent = totalVotes > 0 ? Math.round((doc.votes.inFavor / totalVotes) * 100) : 100;
+            const totalDebates = doc.clauses.reduce((acc, c) => acc + (c.discussions?.length || 0), 0);
+            const totalAmendments = doc.clauses.reduce((acc, c) => acc + (c.amendments?.length || 0), 0);
 
             const badgeStyles: Record<string, string> = {
               DRAFT_RESOLUTION: 'bg-purple-500/15 border-purple-500/30 text-purple-300',
@@ -208,7 +258,7 @@ export default function SolutionsPage() {
             return (
               <div
                 key={doc.id}
-                className="group relative rounded-3xl bg-white/[0.02] border border-white/10 hover:border-white/25 p-6 space-y-4 transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between"
+                className="group relative rounded-3xl bg-white/[0.02] border border-white/10 hover:border-cyan-500/30 p-6 space-y-4 transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between"
               >
                 {/* Header */}
                 <div className="space-y-2.5">
@@ -223,9 +273,11 @@ export default function SolutionsPage() {
                     </span>
                   </div>
 
-                  <span className="text-[11px] font-mono uppercase text-cyan-300 font-semibold block">
-                    {doc.committee}
-                  </span>
+                  <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-400">
+                    <span className="text-cyan-300 font-semibold">{doc.committee}</span>
+                    <span>•</span>
+                    <span>Proposed by <strong className="text-white">@{doc.proposedByUsername || doc.leadSponsors[0] || 'member'}</strong></span>
+                  </div>
 
                   <h3 className="font-display font-bold text-lg sm:text-xl text-white group-hover:text-cyan-200 transition-colors leading-snug">
                     {doc.title}
@@ -238,14 +290,16 @@ export default function SolutionsPage() {
 
                 {/* Meta & Actions */}
                 <div className="space-y-3 pt-4 border-t border-white/10">
-                  <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-neutral-500" />
-                      <span>{doc.signatories.length} Signatories</span>
-                    </span>
+                  <div className="flex flex-wrap items-center justify-between text-xs font-mono text-neutral-400 gap-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-cyan-300 font-bold">{doc.clauses.length} Clauses</span>
+                      {totalDebates > 0 && <span className="text-neutral-400">💬 {totalDebates} Debates</span>}
+                      {totalAmendments > 0 && <span className="text-purple-300">⚖ {totalAmendments} Amendments</span>}
+                    </div>
+
                     <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
                       <ThumbsUp className="w-3.5 h-3.5" />
-                      <span>{inFavorPercent}% In Favor ({totalVotes} votes)</span>
+                      <span>{inFavorPercent}% Aye ({totalVotes} votes)</span>
                     </span>
                   </div>
 
@@ -254,7 +308,7 @@ export default function SolutionsPage() {
                       onClick={() => setActiveReadingDoc(doc)}
                       className="flex-1 py-2.5 px-4 rounded-xl bg-white/[0.05] hover:bg-white text-neutral-200 hover:text-black font-mono text-xs font-bold transition flex items-center justify-center gap-2 border border-white/10 hover:border-white cursor-pointer shadow-sm"
                     >
-                      <span>[→] Read Full Document &amp; Clauses</span>
+                      <span>[→] Read Bill &amp; Clauses</span>
                     </button>
                   </div>
                 </div>
@@ -267,12 +321,12 @@ export default function SolutionsPage() {
           <div className="text-center py-16 space-y-3 rounded-3xl bg-white/[0.01] border border-white/10">
             <ScrollText className="w-10 h-10 text-neutral-600 mx-auto" />
             <h3 className="text-lg font-bold text-white">No Policy or Solution Documents Found</h3>
-            <p className="text-xs text-neutral-400">Be the first author, innovator, or researcher to upload a draft resolution, policy paper, or bill.</p>
+            <p className="text-xs text-neutral-400">Be the first author, innovator, or researcher to structure and post a bill, draft resolution, or policy charter.</p>
             <button
               onClick={handleOpenUpload}
-              className="mt-2 px-5 py-2 rounded-full bg-white text-black font-mono text-xs font-bold"
+              className="mt-2 px-5 py-2.5 rounded-full bg-cyan-400 text-black font-mono text-xs font-bold hover:bg-cyan-300 transition cursor-pointer"
             >
-              + Upload Document
+              + Post Bill via ZEN.DOCENGINE
             </button>
           </div>
         )}
@@ -286,20 +340,22 @@ export default function SolutionsPage() {
         onCloseForceModal={() => setIsRegisterPromptOpen(false)}
       />
 
-      {/* Upload Document Modal */}
-      <UploadDocumentModal
+      {/* ZEN.DOCENGINE Universal Posting Modal */}
+      <DocEnginePostingModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onDocumentCreated={handleDocumentCreated}
       />
 
-      {/* Document Reader Modal */}
+      {/* Interactive Document Reader Modal */}
       <DocumentReaderModal
         isOpen={Boolean(activeReadingDoc)}
         onClose={() => setActiveReadingDoc(null)}
         document={activeReadingDoc}
         onVote={handleVote}
+        onUpdateDocument={handleUpdateDocument}
       />
     </div>
   );
 }
+
