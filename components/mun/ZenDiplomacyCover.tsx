@@ -78,10 +78,10 @@ export function ZenDiplomacyCover({
       style={{ perspective: 1200 }}
       className={`relative w-full overflow-hidden select-none bg-black text-white ${
         isHero
-          ? 'aspect-[16/9] sm:aspect-[18/9] max-h-[560px] min-h-[360px]'
+          ? 'aspect-[16/9] sm:aspect-[18/9] max-h-[560px] min-h-[190px] xs:min-h-[240px] sm:min-h-[360px]'
           : isCompact
-          ? 'aspect-[16/9] min-h-[220px]'
-          : 'aspect-[16/9] min-h-[280px]'
+          ? 'aspect-[16/9] min-h-[180px] sm:min-h-[220px]'
+          : 'aspect-[16/9] min-h-[220px] sm:min-h-[280px]'
       } ${className}`}
     >
       {/* ── THE ORIGINAL PRISTINE HIGH-RESOLUTION MASTER ARTWORK ── */}

@@ -274,142 +274,147 @@ export function ZenDiplomacyPortal() {
           </div>
 
           {/* Hero Header Content Overlay */}
-          <div className="relative p-6 sm:p-10 -mt-16 sm:-mt-24 z-10 space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 shadow-sm">
-                <Crown className="w-3.5 h-3.5 text-cyan-400" />
-                OFFICIAL ONLINE MUN
+          <div className="relative p-4 sm:p-8 lg:p-10 -mt-6 sm:-mt-16 lg:-mt-20 z-10 space-y-5 sm:space-y-6">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 shadow-sm">
+                <Crown className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span>OFFICIAL ONLINE MUN</span>
               </span>
-              <span className="px-3 py-1 rounded-full bg-white/10 text-neutral-200 border border-white/15 text-xs font-mono tracking-wider uppercase">
-                OCTOBER 24TH &amp; 25TH, 2026
+              <span className="px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-white/10 text-neutral-200 border border-white/15 text-[11px] sm:text-xs font-mono tracking-wider uppercase">
+                OCTOBER 24 &amp; 25, 2026
               </span>
-              <span className="px-3 py-1 rounded-full bg-[#e2f952]/15 text-[#e2f952] border border-[#e2f952]/40 text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 animate-pulse shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-[#e2f952]" />
-                DEL REGISTRATIONS GO LIVE: 1ST OCTOBER ONWARDS
+              <span className="px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-[#e2f952]/15 text-[#e2f952] border border-[#e2f952]/40 text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 animate-pulse shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#e2f952] shrink-0" />
+                <span>DEL REGISTRATIONS: 1ST OCT ONWARDS</span>
               </span>
-              <span className="px-3 py-1 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 shadow-sm">
-                COLLEGE &amp; SCHOOL DELEGATIONS AVAILABLE
+              <span className="px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 text-[11px] sm:text-xs font-mono font-bold tracking-wider uppercase inline-flex items-center gap-1.5 shadow-sm">
+                <span>COLLEGE &amp; SCHOOL DELEGATIONS</span>
               </span>
             </div>
 
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-              <div className="space-y-4 max-w-3xl">
-                <div className="flex items-center gap-3 sm:gap-4">
+              <div className="space-y-3 sm:space-y-4 max-w-3xl">
+                <div className="flex items-center gap-2.5 sm:gap-3">
                   <img 
                     src="/assets/logo.png" 
                     alt="ZENVITRA Logo" 
-                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] shrink-0"
+                    className="w-7 h-7 sm:w-10 sm:h-10 object-contain filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] shrink-0"
                   />
                   <img 
                     src="/assets/brochure/zenvitra-seal.png" 
                     alt="ZENVITRA Official Seal" 
-                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-[#e2f952]/40 shadow-[0_0_25px_rgba(226,249,82,0.2)] shrink-0 object-cover"
+                    className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-[#e2f952]/40 shadow-[0_0_15px_rgba(226,249,82,0.2)] shrink-0 object-cover"
                   />
-                  <div>
-                    <span className="text-[10px] font-mono tracking-widest text-[#e2f952] uppercase font-bold">ZENVITRA FOUNDATION // SOVEREIGN SEAL</span>
-                    <h1 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight leading-none uppercase">
-                      ZEN.DIPLOMACY <span className="text-neutral-400 font-light">MUN 2026</span>
-                    </h1>
-                  </div>
+                  <span className="text-[10px] sm:text-xs font-mono tracking-widest text-[#e2f952] uppercase font-bold truncate">
+                    ZENVITRA FOUNDATION // SOVEREIGN SEAL
+                  </span>
                 </div>
-                <p className="font-sans text-sm sm:text-base text-neutral-300 font-light leading-relaxed">
+
+                <h1 className="font-display font-black text-2xl xs:text-3xl sm:text-5xl text-white tracking-tight leading-tight uppercase">
+                  ZEN.DIPLOMACY <span className="text-neutral-400 font-light block xs:inline text-xl sm:text-4xl">MUN 2026</span>
+                </h1>
+
+                <p className="font-sans text-xs sm:text-base text-neutral-300 font-light leading-relaxed">
                   The sovereign virtual Model United Nations and parliamentary assembly convening young thinkers, delegates, and policy researchers across the globe. Online participation makes school and college students participation easier everywhere; itinerary tells the rest. Live collaborative resolution authoring on <strong className="text-white">ZEN.DOCS</strong>.
                 </p>
               </div>
 
-              {/* Action Buttons Stack */}
-              <div className="flex flex-wrap items-center gap-3">
+              {/* Action Buttons */}
+              <div className="w-full lg:w-auto flex flex-col gap-2.5 shrink-0">
                 <Link
                   href="/forms/zen-diplomacy-2026"
-                  className="px-6 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(255,255,255,0.3)] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+                  className="w-full sm:w-auto justify-center px-6 py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-black text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(255,255,255,0.3)] flex items-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-95 text-center"
                 >
-                  <Sparkles className="w-4 h-4 text-black" />
+                  <Sparkles className="w-4 h-4 text-black shrink-0" />
                   <span>Register as Delegate</span>
                 </Link>
 
-                <Link
-                  href="/forms/zen-secretariat-2026"
-                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-500/30 hover:to-indigo-500/30 border border-purple-500/40 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer hover:scale-105"
-                  title="Apply for Secretariat across 10 specialized departments"
-                >
-                  <Crown className="w-4 h-4 text-purple-400" />
-                  <span>Join Secretariat</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
-                </Link>
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+                  <Link
+                    href="/forms/zen-secretariat-2026"
+                    className="justify-center px-3 py-2.5 rounded-xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-500/30 hover:to-indigo-500/30 border border-purple-500/40 text-purple-300 font-mono text-[11px] sm:text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:scale-105 active:scale-95 text-center"
+                    title="Apply for Secretariat across 10 specialized departments"
+                  >
+                    <Crown className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    <span>Secretariat</span>
+                    <ArrowUpRight className="w-3 h-3 ml-0.5 shrink-0 hidden xs:inline" />
+                  </Link>
 
-                <Link
-                  href="/matrix"
-                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer hover:scale-105"
-                  title="Open live Interactive Portfolio Matrix"
-                >
-                  <Grid className="w-4 h-4 text-emerald-400" />
-                  <span>Live Portfolio Matrix</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
-                </Link>
+                  <Link
+                    href="/matrix"
+                    className="justify-center px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 border border-emerald-500/40 text-emerald-300 font-mono text-[11px] sm:text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:scale-105 active:scale-95 text-center"
+                    title="Open live Interactive Portfolio Matrix"
+                  >
+                    <Grid className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Matrix</span>
+                    <ArrowUpRight className="w-3 h-3 ml-0.5 shrink-0 hidden xs:inline" />
+                  </Link>
 
-                <Link
-                  href="/zen-diplomacy/brochure"
-                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer hover:scale-105"
-                  title="View official ZEN.DIPLOMACY Brochure & Prospectus"
-                >
-                  <FileText className="w-4 h-4 text-amber-400" />
-                  <span>Official Brochure</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
-                </Link>
+                  <Link
+                    href="/zen-diplomacy/brochure"
+                    className="justify-center px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-500/40 text-amber-300 font-mono text-[11px] sm:text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:scale-105 active:scale-95 text-center"
+                    title="View official ZEN.DIPLOMACY Brochure & Prospectus"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Brochure</span>
+                    <ArrowUpRight className="w-3 h-3 ml-0.5 shrink-0 hidden xs:inline" />
+                  </Link>
 
-                <button
-                  type="button"
-                  onClick={handleCopyPortalLink}
-                  className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white transition cursor-pointer"
-                  title="Share Event Link"
-                >
-                  {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyPortalLink}
+                    className="justify-center px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white transition cursor-pointer flex items-center gap-1.5 font-mono text-[11px] sm:text-xs active:scale-95"
+                    title="Share Event Link"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> : <Share2 className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{copiedLink ? 'Copied' : 'Share'}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Quick Metadata Bar & Countdown Timer */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-white/10 font-mono text-xs">
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 pt-4 sm:pt-6 border-t border-white/10 font-mono text-xs">
+              <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
                 <span className="text-[10px] text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-                  Assembly Dates
+                  <Calendar className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="truncate">Dates</span>
                 </span>
-                <p className="font-bold text-white text-sm">October 24 &amp; 25, 2026</p>
-                <p className="text-[11px] text-neutral-400">Two Days &bull; 09:00 – 19:00 IST</p>
+                <p className="font-bold text-white text-xs sm:text-sm">Oct 24 &amp; 25, 2026</p>
+                <p className="text-[10px] sm:text-[11px] text-neutral-400">Two Days &bull; 09:00–19:00 IST</p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
                 <span className="text-[10px] text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Video className="w-3.5 h-3.5 text-purple-400" />
-                  Host Platform
+                  <Video className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                  <span className="truncate">Platform</span>
                 </span>
-                <p className="font-bold text-white text-sm">Online &bull; Virtual Chambers</p>
-                <Link href="/call" className="text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1">
-                  <span>ZEN.CALL + Zenvitra Dais</span>
-                  <ArrowUpRight className="w-3 h-3" />
+                <p className="font-bold text-white text-xs sm:text-sm">Virtual Chambers</p>
+                <Link href="/call" className="text-[10px] sm:text-[11px] text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 truncate">
+                  <span>ZEN.CALL + Dais</span>
+                  <ArrowUpRight className="w-3 h-3 shrink-0" />
                 </Link>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
                 <span className="text-[10px] text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  Organizer &amp; Host
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="truncate">Organizer</span>
                 </span>
-                <Link href="/pulse?user=yuveer" className="font-bold text-white text-sm hover:text-cyan-300 transition flex items-center gap-1">
+                <Link href="/pulse?user=yuveer" className="font-bold text-white text-xs sm:text-sm hover:text-cyan-300 transition flex items-center gap-1 truncate">
                   <span>Yuveer</span>
                   <span className="text-[10px] text-cyan-400 font-mono">(@yuveer)</span>
                 </Link>
-                <p className="text-[11px] text-neutral-400">Organizer ID: <strong className="text-white">yuveer</strong></p>
+                <p className="text-[10px] sm:text-[11px] text-neutral-400 truncate">ID: <strong className="text-white">yuveer</strong></p>
               </div>
 
               {/* Countdown Tile */}
-              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-950/30 via-black to-purple-950/30 border border-cyan-500/30 space-y-1">
+              <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-950/30 via-black to-purple-950/30 border border-cyan-500/30 space-y-1">
                 <span className="text-[10px] text-cyan-300 uppercase tracking-widest flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                  Assembly Countdown
+                  <Clock className="w-3.5 h-3.5 text-cyan-400 animate-pulse shrink-0" />
+                  <span className="truncate">Countdown</span>
                 </span>
-                <div className="flex items-center gap-2 font-bold text-sm text-white">
+                <div className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm text-white">
                   <span>{timeLeft.days}d</span>
                   <span className="text-neutral-500">:</span>
                   <span>{timeLeft.hours}h</span>
@@ -418,7 +423,7 @@ export function ZenDiplomacyPortal() {
                   <span className="text-neutral-500">:</span>
                   <span>{timeLeft.seconds}s</span>
                 </div>
-                <p className="text-[10px] text-cyan-400/80 font-mono">Gavel drops 24 Oct 09:00 IST</p>
+                <p className="text-[9px] sm:text-[10px] text-cyan-400/80 font-mono truncate">24 Oct 09:00 IST</p>
               </div>
             </div>
           </div>
