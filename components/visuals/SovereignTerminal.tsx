@@ -131,14 +131,14 @@ export function SovereignTerminal({
         break;
 
       case 'time':
-        const target = new Date('2026-10-02T14:00:00+05:30').getTime();
+        const target = new Date('2026-10-11T14:00:00+05:30').getTime();
         const diff = target - Date.now();
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
         newLogs.push({
           id: Math.random().toString(),
           type: 'output',
-          text: `IGNITION CLOCK: ${days} DAYS, ${hrs} HOURS TO OCT 2, 2026 14:00 IST [PUBLIC CITADEL DEPLOYMENT]`,
+          text: `IGNITION CLOCK: ${days} DAYS, ${hrs} HOURS TO OCT 11, 2026 14:00 IST (SHUBH NAVRATRI) [PUBLIC CITADEL DEPLOYMENT]`,
         });
         break;
 

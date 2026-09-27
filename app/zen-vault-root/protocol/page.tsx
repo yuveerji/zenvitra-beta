@@ -176,7 +176,7 @@ export default function ProtocolMatrixPage() {
           { 
             key: 'registrationsOpen', 
             label: 'Delegate Identity Registration', 
-            desc: 'Permit new node and delegate creations (Scheduled to auto-activate on Oct 2, 2026, 2:00 PM IST when pre-registrations close)' 
+            desc: 'Permit new node and delegate creations (Scheduled to auto-activate on Oct 11, 2026, 2:00 PM IST [Shubh Navratri] when pre-registrations close)' 
           },
           { key: 'chatMeshEnabled', label: 'Real-Time Chat & Plenary Relays', desc: 'Enable socket streaming and active chambers' },
           { key: 'fluxReelsEnabled', label: 'Flux Reels & Multimedia Engine', desc: 'Enable video feeds, reels, and stories' },

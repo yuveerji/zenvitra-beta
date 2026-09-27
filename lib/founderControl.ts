@@ -676,8 +676,8 @@ export function getProtocolControls(): ProtocolControls {
     const raw = localStorage.getItem(PROTOCOL_STORAGE_KEY);
     let parsed = raw ? { ...DEFAULT_PROTOCOL_CONTROLS, ...JSON.parse(raw) } : { ...DEFAULT_PROTOCOL_CONTROLS };
 
-    // Auto-turn on Delegate Identity Registration once October 2, 2026, 14:00:00 IST is reached
-    const LAUNCH_TIMESTAMP = new Date('2026-10-02T14:00:00+05:30').getTime();
+    // Auto-turn on Delegate Identity Registration once October 11, 2026, 14:00:00 IST is reached (Shubh Navratri)
+    const LAUNCH_TIMESTAMP = new Date('2026-10-11T14:00:00+05:30').getTime();
     if (Date.now() >= LAUNCH_TIMESTAMP && !parsed.registrationsOpen) {
       parsed.registrationsOpen = true;
       localStorage.setItem(PROTOCOL_STORAGE_KEY, JSON.stringify(parsed));

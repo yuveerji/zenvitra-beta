@@ -163,22 +163,44 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
     };
   }, []);
 
-  const [secretariatMode, setSecretariatMode] = useState<boolean>(true);
   const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
 
-  const canManage = Boolean(
-    secretariatMode ||
-    isFounder(user) || 
-    isAdmin(user) || 
-    profile?.role === 'admin' ||
-    (profile?.role as string) === 'organizer' ||
-    (profile?.role as string) === 'secretariat' ||
-    (profile?.role as string) === 'core_team' ||
-    (profile as any)?.badge === 'ORGANIZER' ||
-    (profile as any)?.badge === 'FOUNDER' ||
-    user?.role === 'ADMIN' || 
-    user?.role === 'SECRETARIAT_CHAIR'
-  );
+  const isAuthorizedOrganizerOrFounder = useMemo(() => {
+    const cleanUsername = (profile?.username || user?.username || '').replace(/^@/, '').toLowerCase();
+    const cleanEmail = (profile?.email || user?.email || '').toLowerCase();
+
+    if (cleanUsername === 'yuveer' || cleanEmail === 'founder@zenvitra.org') return true;
+    if (isFounder(user) || isAdmin(user)) return true;
+    if ((profile as any)?.isFounder) return true;
+    if (
+      profile?.role === 'admin' ||
+      (profile?.role as string) === 'organizer' ||
+      (profile?.role as string) === 'secretariat' ||
+      (profile?.role as string) === 'core_team' ||
+      (profile as any)?.badge === 'ORGANIZER' ||
+      (profile as any)?.badge === 'FOUNDER' ||
+      user?.role === 'ADMIN' ||
+      user?.role === 'SECRETARIAT_CHAIR' ||
+      user?.role === 'ORGANIZER'
+    ) {
+      return true;
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        const su = (stored?.username || stored?.handle || '').replace(/^@/, '').toLowerCase();
+        const se = (stored?.email || '').toLowerCase();
+        if (su === 'yuveer' || se === 'founder@zenvitra.org') return true;
+        if (stored?.isFounder) return true;
+        const sRole = (stored?.role || '').toLowerCase();
+        if (['admin', 'organizer', 'secretariat', 'core_team'].includes(sRole)) return true;
+        if (['ORGANIZER', 'FOUNDER'].includes(stored?.badge)) return true;
+      } catch (_) {}
+    }
+    return false;
+  }, [user, profile]);
+
+  const canManage = isAuthorizedOrganizerOrFounder;
 
   // Directly respect portfolio status (every portfolio defaults to 'Vacant' and reflects user changes)
   const liveMatrixData = useMemo(() => {
@@ -387,27 +409,31 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
             <span>{isSyncing ? 'Syncing...' : 'Refresh'}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handlePushAllToSheets}
-            disabled={isSyncing}
-            className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-center"
-            title="Force push all 240 portfolios to Google Sheets Matrix tab"
-          >
-            <Layers className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="truncate">Sync 240 GSheet</span>
-          </button>
+          {isAuthorizedOrganizerOrFounder && (
+            <>
+              <button
+                type="button"
+                onClick={handlePushAllToSheets}
+                disabled={isSyncing}
+                className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-center"
+                title="Force push all 240 portfolios to Google Sheets Matrix tab"
+              >
+                <Layers className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate">Sync 240 GSheet</span>
+              </button>
 
-          <button
-            type="button"
-            onClick={handleResetAllVacant}
-            disabled={isSyncing}
-            className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-center"
-            title="Reset every portfolio across AIPPM, EMI, UNSC & ECOSOC to Vacant"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-            <span className="truncate">Reset Vacant</span>
-          </button>
+              <button
+                type="button"
+                onClick={handleResetAllVacant}
+                disabled={isSyncing}
+                className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-center"
+                title="Reset every portfolio across AIPPM, EMI, UNSC & ECOSOC to Vacant"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span className="truncate">Reset Vacant</span>
+              </button>
+            </>
+          )}
 
           <Link
             href="/forms/zen-diplomacy-2026"

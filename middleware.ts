@@ -161,8 +161,8 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Countdown Launch Date: October 2, 2026, 14:00:00 IST (UTC+05:30)
-  const LAUNCH_TIMESTAMP_MS = 1790930400000;
+  // Countdown Launch Date: October 11, 2026, 14:00:00 IST (UTC+05:30) - Shubh Navratri Launch
+  const LAUNCH_TIMESTAMP_MS = 1791707400000;
   const isPreReleasePeriod = Date.now() < LAUNCH_TIMESTAMP_MS;
 
   // Static files and internal Next.js paths are always allowed

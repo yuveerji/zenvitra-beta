@@ -29,8 +29,8 @@ import { HolographicPassport } from '@/components/visuals/HolographicPassport';
 import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 
 export default function CountdownPage() {
-  // Target: October 2, 2026, 14:00:00 IST (UTC+05:30)
-  const targetDate = new Date('2026-10-02T14:00:00+05:30').getTime();
+  // Target: October 11, 2026, 14:00:00 IST (UTC+05:30) - Shubh Navratri Launch
+  const targetDate = new Date('2026-10-11T14:00:00+05:30').getTime();
 
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -412,7 +412,7 @@ export default function CountdownPage() {
                 TARGET PROTOCOL UNLOCK
               </span>
               <span className="font-mono text-[9px] sm:text-[11px] text-amber-400 tracking-wider font-semibold">
-                02 OCT 2026 // 14:00 IST
+                11 OCT 2026 // 14:00 IST
               </span>
             </div>
 
@@ -531,7 +531,7 @@ export default function CountdownPage() {
 
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/[0.08] border border-amber-400/20 font-mono text-[9px] sm:text-[10px] text-amber-300 self-start sm:self-auto">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span>SCHEDULE UPDATE &bull; 2ND OCT 2026</span>
+                <span>SCHEDULE UPDATE &bull; 11TH OCT 2026 (SHUBH NAVRATRI)</span>
               </div>
             </div>
 
@@ -543,14 +543,14 @@ export default function CountdownPage() {
                   SYSTEM SCHEDULE UPDATE // DELAY NOTIFICATION
                 </span>
                 <span className="text-[9px] sm:text-[10px] font-mono text-amber-400/90 font-bold">
-                  OCTOBER 2, 2026 &bull; 2:00 PM IST
+                  OCTOBER 11, 2026 &bull; 2:00 PM IST (SHUBH NAVRATRI)
                 </span>
               </div>
               <h3 className="text-xs sm:text-base font-bold text-white tracking-tight">
-                Public Platform Ignition Rescheduled to 2nd October 2026, 2:00 PM IST
+                Public Platform Ignition Rescheduled to 11th October 2026, 2:00 PM IST (Shubh Navratri)
               </h3>
               <p className="text-[11px] sm:text-xs text-neutral-300 font-sans leading-relaxed">
-                To guarantee zero latency under peak multilateral caucuses, complete SHA-256 cryptographic verification of delegate resolutions, and verify the offline video proof distribution rails for our 10% civic profit mandate, the Founding Directorate has re-calibrated our launch window. All pre-registered delegates, study guides, and matrix assignments remain securely locked and reserved.
+                With the prayers and divine blessings of Mata Rani during the sacred days of Shubh Navratri, we will launch our sovereign platform to the world. To guarantee zero latency under peak multilateral caucuses, complete SHA-256 cryptographic verification of delegate resolutions, and verify the offline video proof distribution rails for our 10% civic profit mandate, the Founding Directorate has aligned platform ignition with Navratri on October 11, 2026. All pre-registered delegates, study guides, and matrix assignments remain securely locked and reserved.
               </p>
             </div>
 
@@ -573,7 +573,7 @@ export default function CountdownPage() {
               </p>
 
               <p>
-                That is why we initiated this temporary systemic pause and rescheduled platform ignition to <span className="text-amber-300 font-semibold">October 2, 2026, at 2:00 PM IST</span>. Our engineering and dais councils are currently hardening our distributed infrastructure, integrating SHA-256 cryptographic resolution sealing, and refining our real-time Rules of Procedure engine.
+                That is why we initiated this temporary systemic pause and rescheduled platform ignition to <span className="text-amber-300 font-semibold">October 11, 2026, at 2:00 PM IST (Shubh Navratri)</span>. With the prayers of Mata, we will post and launch our platform with divine strength, uncompromising truth, and deep reverence for our delegates. Our engineering and dais councils are currently hardening our distributed infrastructure, integrating SHA-256 cryptographic resolution sealing, and refining our real-time Rules of Procedure engine.
               </p>
 
               <p>

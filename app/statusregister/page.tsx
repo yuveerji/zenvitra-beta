@@ -498,7 +498,7 @@ export default function StatusRegisterPage() {
               <p className="text-neutral-400 leading-relaxed">
                 1. Our Dais Allocation Board reviews committee balance and draft allocations based on your conference tier.
                 <br />
-                2. On <span className="text-white font-semibold">October 2, 2026 at 2:00 PM IST</span>, when the countdown lock disengages, you can navigate directly to <span className="text-amber-300">/statussignin</span> to authenticate and access your chamber study guides and resolution workspaces.
+                2. On <span className="text-white font-semibold">October 11, 2026 at 2:00 PM IST (Shubh Navratri)</span>, when the countdown lock disengages, you can navigate directly to <span className="text-amber-300">/statussignin</span> to authenticate and access your chamber study guides and resolution workspaces.
               </p>
             </div>
 
@@ -540,7 +540,7 @@ export default function StatusRegisterPage() {
               </h1>
 
               <p className="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl mx-auto">
-                Secure early entry credentials, lodge your multilateral committee preferences, and gain priority country matrix allocation prior to public platform ignition on October 2, 2026 at 2:00 PM IST.
+                Secure early entry credentials, lodge your multilateral committee preferences, and gain priority country matrix allocation prior to public platform ignition on October 11, 2026 at 2:00 PM IST (Shubh Navratri).
               </p>
 
               {/* Genesis Whitelist Profile Perks Showcase */}
@@ -549,7 +549,7 @@ export default function StatusRegisterPage() {
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
                     <span className="font-mono text-xs font-bold tracking-wider uppercase text-amber-300">
-                      FOUNDING PRE-REGISTRATION PERKS // OCT 2 IGNITION
+                      FOUNDING PRE-REGISTRATION PERKS // OCT 11 IGNITION
                     </span>
                   </div>
                   <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold self-start sm:self-auto">
@@ -600,7 +600,7 @@ export default function StatusRegisterPage() {
                 </div>
 
                 <p className="text-[11px] font-mono text-neutral-400 leading-relaxed pt-1">
-                  💡 On <span className="text-white font-bold">October 2, 2026</span>, pre-registration closes and public registration activates. All pre-registered applicants are instantly upgraded into full sovereign profiles with credentials ready to log in immediately.
+                  💡 On <span className="text-white font-bold">October 11, 2026 (Shubh Navratri)</span>, pre-registration closes and public registration activates. All pre-registered applicants are instantly upgraded into full sovereign profiles with credentials ready to log in immediately.
                 </p>
               </div>
 

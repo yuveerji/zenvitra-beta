@@ -111,9 +111,9 @@ export function getGlobalServerProtocols(): GlobalProtocolState {
     }
   } catch (_) {}
 
-  // Automatic Launch Threshold: October 2, 2026, 14:00:00 IST (UTC+05:30)
+  // Automatic Launch Threshold: October 11, 2026, 14:00:00 IST (UTC+05:30) - Shubh Navratri Launch
   // When target launch time passes, Delegate Identity Registration turns ON automatically
-  const LAUNCH_TIMESTAMP = new Date('2026-10-02T14:00:00+05:30').getTime();
+  const LAUNCH_TIMESTAMP = new Date('2026-10-11T14:00:00+05:30').getTime();
   if (Date.now() >= LAUNCH_TIMESTAMP && !memoryState.registrationsOpen) {
     memoryState.registrationsOpen = true;
     try {
