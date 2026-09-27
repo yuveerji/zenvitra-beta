@@ -165,12 +165,17 @@ export function PlatformShell({
   );
 
   const [isGuestBannerDismissed, setIsGuestBannerDismissed] = useState(false);
+  const [isTestBannerDismissed, setIsTestBannerDismissed] = useState(false);
 
   useEffect(() => {
     try {
       const isDismissed = sessionStorage.getItem('zen_guest_banner_dismissed') === 'true';
       if (isDismissed) {
         setIsGuestBannerDismissed(true);
+      }
+      const isTestDismissed = sessionStorage.getItem('zen_test_banner_dismissed') === 'true';
+      if (isTestDismissed) {
+        setIsTestBannerDismissed(true);
       }
     } catch (_) {}
   }, []);
@@ -179,6 +184,13 @@ export function PlatformShell({
     setIsGuestBannerDismissed(true);
     try {
       sessionStorage.setItem('zen_guest_banner_dismissed', 'true');
+    } catch (_) {}
+  };
+
+  const handleDismissTestBanner = () => {
+    setIsTestBannerDismissed(true);
+    try {
+      sessionStorage.setItem('zen_test_banner_dismissed', 'true');
     } catch (_) {}
   };
 
@@ -199,6 +211,13 @@ export function PlatformShell({
     session?.user?.user_metadata?.username || 
     (mounted ? localUser?.username : '') || 
     (session?.user?.email ? session.user.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() : '');
+
+  const isTestPilot = Boolean(
+    currentUsername === 'test' ||
+    currentUsername === 'tester' ||
+    profile?.id === 'zen_test_pilot_node' ||
+    profile?.badge === '🧪 TEST PILOT'
+  );
 
   const currentAvatar = 
     myProfile?.avatar || 
@@ -693,6 +712,12 @@ export function PlatformShell({
                     GUEST
                   </span>
                 )}
+                {isTestPilot && (
+                  <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono text-[9px] font-bold shrink-0 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    TEST PILOT
+                  </span>
+                )}
               </div>
               <p className="text-[10px] text-zinc-500 truncate font-mono" suppressHydrationWarning>@{currentUsername}</p>
             </div>
@@ -702,6 +727,35 @@ export function PlatformShell({
 
       {/* ─── MAIN CONTENT VIEWPORT ─── */}
       <main className="flex-1 min-w-0 min-h-screen flex flex-col bg-black relative z-10">
+        {/* Ambient Test Pilot Node Notice Banner */}
+        {isTestPilot && !isTestBannerDismissed && (
+          <div className="bg-gradient-to-r from-cyan-950/90 via-emerald-950/70 to-black border-b border-cyan-500/30 px-4 py-2 flex items-center justify-between text-xs font-mono shrink-0 z-30 transition-all duration-300">
+            <div className="flex items-center gap-2 text-cyan-200 min-w-0 pr-2">
+              <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 animate-pulse" />
+              <span className="truncate">
+                Testing as <strong className="text-white">Test Pilot Node (@{currentUsername})</strong> &bull; <span className="text-emerald-400 font-semibold">ALL FEATURES UNLOCKED</span> &bull; Debate Chambers, ZEN.SOLUTIONS, ZEN.DOCS &amp; Passport Enabled
+              </span>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0 ml-3">
+              <Link
+                href="/passport"
+                className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-[10px] hover:bg-cyan-400/30 transition shrink-0 uppercase tracking-wider font-bold"
+              >
+                Inspect Passport &rarr;
+              </Link>
+              <button
+                type="button"
+                onClick={handleDismissTestBanner}
+                className="p-1 rounded-lg text-cyan-300/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                title="Dismiss test notice"
+                aria-label="Dismiss test notice"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Ambient Guest Node Notice Banner */}
         {isGuest && !isGuestBannerDismissed && (
           <div className="bg-gradient-to-r from-purple-950/90 via-purple-900/60 to-black border-b border-purple-500/30 px-4 py-2 flex items-center justify-between text-xs font-mono shrink-0 z-30 transition-all duration-300">

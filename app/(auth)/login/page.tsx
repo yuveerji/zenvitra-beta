@@ -179,7 +179,7 @@ function InteractiveGlowCard({
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signInWithEmail, signInWithOAuth, isAuthenticated, profile } = useAuth();
+  const { signInWithEmail, signInWithOAuth, continueAsTestUser, isAuthenticated, profile } = useAuth();
 
   const rawRedirect = searchParams.get('redirect') || searchParams.get('callbackUrl');
   const targetDestination = rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('/login')
@@ -190,6 +190,15 @@ function LoginForm() {
   const [is2FAStep, setIs2FAStep] = useState(false);
   const [securityCodeInput, setSecurityCodeInput] = useState('');
   const [targetUserId, setTargetUserId] = useState('');
+
+  // Handle direct test query param (?test=true or ?autologin=test)
+  useEffect(() => {
+    if (searchParams.get('test') === 'true' || searchParams.get('autologin') === 'test') {
+      continueAsTestUser().then(() => {
+        router.push(targetDestination);
+      });
+    }
+  }, [searchParams, continueAsTestUser, router, targetDestination]);
 
   // Instant redirect if user is already logged in (ONLY if not in middle of 2FA verification!)
   useEffect(() => {
@@ -308,6 +317,23 @@ function LoginForm() {
         setErrorMessage(fallbackErr.message || `Unable to connect with ${provider}. Please sign in directly with your credentials below.`);
       }
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickTestLogin = async () => {
+    setLoading(true);
+    setErrorMessage(null);
+    setEmail('test');
+    setPassword('test1234');
+    try {
+      await continueAsTestUser();
+      setSuccessMessage('🧪 Test Pilot Node Initialized! All Features Unlocked.');
+      setTimeout(() => {
+        router.push(targetDestination);
+      }, 250);
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Failed to initialize test node.');
       setLoading(false);
     }
   };
@@ -712,6 +738,45 @@ function LoginForm() {
                   </button>
                 </div>
               )}
+
+              {/* ── QUICK TEST PILOT NODE PREFILL & INSTANT LOGIN ── */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-[#0a1220] to-purple-950/40 border border-cyan-500/35 flex items-center justify-between gap-3 shadow-lg shadow-cyan-950/20">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-white font-mono">Test Account</span>
+                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase tracking-wider">
+                        All Features Unlocked
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-mono text-neutral-300 truncate mt-0.5">
+                      User: <strong className="text-cyan-300 font-bold">test</strong> &bull; Pass: <strong className="text-cyan-300 font-bold">test1234</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleQuickTestLogin}
+                    disabled={loading}
+                    className="px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 active:scale-95 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span>1-Click Test</span>}
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <Link
+                    href="/test"
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition"
+                    title="Direct Test Link (/test)"
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
 
               {!is2FAStep ? (
                   savedAccounts.length > 0 && !isManualInputMode ? (
@@ -1122,8 +1187,8 @@ function LoginForm() {
                     Mint New ZEN.ID
                   </Link>
                   {' '}or{' '}
-                  <Link href="/register" className="text-purple-400 hover:text-purple-300 font-bold hover:underline">
-                    Guest Node Access &rarr;
+                  <Link href="/test" className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline inline-flex items-center gap-1">
+                    <span>🧪 Test Pilot Access &rarr;</span>
                   </Link>
                 </p>
 

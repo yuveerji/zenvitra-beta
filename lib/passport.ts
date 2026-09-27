@@ -273,24 +273,25 @@ export function createDefaultPassport(user: {
   const now = new Date().toISOString();
 
   const isFounder = cleanUsername === 'yuveer' || user.id === 'zen_user_yuveer';
-  const verificationLevel: VerificationLevel = isFounder ? 3 : (user.isVerified ? 2 : 1);
+  const isTestPilot = cleanUsername === 'test' || cleanUsername === 'tester' || user.id === 'zen_test_pilot_node';
+  const verificationLevel: VerificationLevel = isFounder ? 3 : (isTestPilot ? 2 : (user.isVerified ? 2 : 1));
 
   const badges: PassportActivityBadge[] = STANDARD_ACTIVITY_BADGES.map((b) => ({
     ...b,
-    isUnlocked: isFounder ? true : false,
-    unlockedAt: isFounder ? now : undefined
+    isUnlocked: isFounder ? true : (isTestPilot && (b.id === 'debater' || b.id === 'diplomat' || b.id === 'researcher') ? true : false),
+    unlockedAt: (isFounder || isTestPilot) ? now : undefined
   }));
 
-  // If user is founder, register initial founder milestone without violating NO-SEED (this is real project inception)
+  // If user is founder or test pilot, register initial milestone
   const initialTimeline: JourneyMilestone[] = [
     {
       id: `milestone-${Date.now()}`,
       year: 2026,
       month: 'SEP',
-      icon: '🌱',
-      title: isFounder ? 'ZENVITRA Protocol Inception' : 'Created ZENVITRA Sovereign Account',
+      icon: isTestPilot ? '🧪' : '🌱',
+      title: isFounder ? 'ZENVITRA Protocol Inception' : (isTestPilot ? 'Activated Sovereign Test Pilot Enclave' : 'Created ZENVITRA Sovereign Account'),
       subtitle: `Assigned Sovereign Passport ${passportId}`,
-      category: 'COMMUNITY',
+      category: isTestPilot ? 'DIPLOMACY' : 'COMMUNITY',
       isVerified: true
     }
   ];
@@ -302,29 +303,83 @@ export function createDefaultPassport(user: {
     fullName: user.fullName || cleanUsername,
     avatarUrl: user.avatarUrl,
     memberSince: 2026,
-    statusLabel: isFounder ? 'Founding Sovereign' : (verificationLevel >= 2 ? 'Verified Student' : 'Sovereign Node'),
+    statusLabel: isFounder ? 'Founding Sovereign' : (isTestPilot ? 'Test Pilot Node' : (verificationLevel >= 2 ? 'Verified Student' : 'Sovereign Node')),
     verification: {
       level: verificationLevel,
       levelLabel: getVerificationLevelDetails(verificationLevel).tag,
       isEmailVerified: true,
-      isPhoneVerified: isFounder,
+      isPhoneVerified: isFounder || isTestPilot,
       isStudentVerified: verificationLevel >= 2,
       isZenvitraVerified: verificationLevel >= 3,
-      zenvitraRoles: isFounder ? ['FOUNDER', 'SECRETARIAT', 'DELEGATE', 'PRESS'] : [user.role?.toUpperCase() || 'DELEGATE'],
+      zenvitraRoles: isFounder ? ['FOUNDER', 'SECRETARIAT', 'DELEGATE', 'PRESS'] : (isTestPilot ? ['DELEGATE', 'TEST_PILOT', 'CHAMBER_EVALUATOR'] : [user.role?.toUpperCase() || 'DELEGATE']),
       verifiedAt: now,
       verifiedBy: 'ZENVITRA PROTOCOL'
     },
-    education: user.institution ? {
-      institution: user.institution,
-      degreeOrGrade: 'Scholar',
+    education: (user.institution || isTestPilot) ? {
+      institution: user.institution || 'Zenvitra Evaluation & QA Enclave',
+      degreeOrGrade: isTestPilot ? 'Senior Policy Fellow' : 'Scholar',
       isVerified: verificationLevel >= 2
     } : undefined,
-    munRecords: [],
-    speakingRecords: [],
+    munRecords: isTestPilot ? [
+      {
+        id: 'mun-test-rec-1',
+        conferenceName: 'ZEN.DIPLOMACY MUN 2026',
+        date: 'October 24 & 25, 2026',
+        committee: 'UNSC',
+        portfolio: 'Delegate of Germany',
+        role: 'Delegate',
+        isOrganiserVerified: true,
+        award: 'High Commendation'
+      }
+    ] : [],
+    speakingRecords: isTestPilot ? [
+      {
+        id: 'spk-test-1',
+        title: 'Multilateral Resolution Drafting Keynote',
+        event: 'ZENVITRA Global Youth Forum',
+        date: 'September 2026',
+        category: 'Keynote',
+        isVerified: true
+      }
+    ] : [],
     pressRecords: [],
-    achievements: [],
-    contributions: [],
-    wallet: [],
+    achievements: isTestPilot ? [
+      {
+        id: 'ach-test-1',
+        title: 'Sovereign Test Pilot Clearance Ratified',
+        issuer: 'ZENVITRA Secretariat',
+        date: '2026-09-20',
+        category: 'Protocol Evaluation',
+        isVerified: true,
+        verificationBadge: 'VERIFIED'
+      }
+    ] : [],
+    contributions: isTestPilot ? [
+      {
+        id: 'contrib-test-1',
+        title: 'Platform Quality Assurance & Full Stack Inspection',
+        initiative: 'Zenvitra Beta Evaluation Group',
+        date: '2026-09-27',
+        type: 'Open Source Tooling',
+        pointsEarned: 250,
+        isVerified: true
+      }
+    ] : [],
+    wallet: isTestPilot ? [
+      {
+        id: 'cred-test-pass-2026',
+        title: 'ZEN.DIPLOMACY 2026 Sovereign Delegate Pass',
+        type: 'EVENT_PASS',
+        issuedBy: 'ZENVITRA Secretariat',
+        issuedAt: now,
+        isVerified: true,
+        metadata: {
+          Committee: 'United Nations Security Council (UNSC)',
+          Portfolio: 'Delegate of Germany',
+          Status: 'ALLOCATED & RATIFIED'
+        }
+      }
+    ] : [],
     timeline: initialTimeline,
     badges,
     privacy: {

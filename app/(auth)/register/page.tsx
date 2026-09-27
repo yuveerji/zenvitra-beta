@@ -908,6 +908,10 @@ export default function RegisterPage() {
                   <Link href="/login" className="text-white font-bold hover:underline">
                     Authenticate ZEN.ID &rarr;
                   </Link>
+                  {' '}or{' '}
+                  <Link href="/test" className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline">
+                    🧪 Test Pilot Access &rarr;
+                  </Link>
                 </p>
 
                 <div className="flex items-center justify-center gap-4 text-[11px] font-mono text-neutral-500 pt-1">

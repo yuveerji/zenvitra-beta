@@ -49,6 +49,9 @@ const PUBLIC_PREFIXES = [
   '/legal',
   '/team',
   '/careers',
+  '/test',
+  '/test-login',
+  '/demo',
 ];
 
 const PUBLIC_EXACT = new Set([
@@ -149,7 +152,7 @@ export function middleware(request: NextRequest) {
       'privacy', 'profile', 'pulse', 'register', 'solutions', 'space',
       'statusregister', 'statussignin', 'summits', 'terms', 'vision',
       'zen-diplomacy', 'chat', 'call', 'dashboard', 'settings', 'matrix', 'signup', 'preregister',
-      'passport', 'leaderboard'
+      'passport', 'leaderboard', 'test', 'test-login', 'demo'
     ]);
 
     if (!KNOWN_ROUTES.has(candidateHandle) && !PUBLIC_PREFIXES.some((p) => p === `/${candidateHandle}`)) {
@@ -234,7 +237,12 @@ export function middleware(request: NextRequest) {
     pathname === '/statusregister' ||
     pathname.startsWith('/statusregister/') ||
     pathname === '/statussignin' ||
-    pathname.startsWith('/statussignin/') ||
+    pathname === '/test' ||
+    pathname.startsWith('/test/') ||
+    pathname === '/test-login' ||
+    pathname.startsWith('/test-login/') ||
+    pathname === '/demo' ||
+    pathname.startsWith('/demo/') ||
     pathname.startsWith('/auth/');
 
   // PRE-RELEASE LOCKDOWN:

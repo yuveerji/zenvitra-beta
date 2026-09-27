@@ -29,6 +29,7 @@ interface AuthContextType {
   exitMockMode: () => Promise<void>;
   isGuest: boolean;
   continueAsGuest: (customUsername?: string, displayName?: string) => Promise<UserProfile>;
+  continueAsTestUser: () => Promise<UserProfile>;
   
   // Profile & Identity Actions
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
@@ -59,6 +60,7 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
   exitMockMode: async () => {},
   continueAsGuest: async () => ({} as any),
+  continueAsTestUser: async () => ({} as any),
   updateProfile: async () => ({ success: false }),
   checkUsernameAvailable: async () => true,
   linkProvider: async () => ({ success: false }),
@@ -465,6 +467,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: null };
     }
 
+    // ─── FIRST-CLASS TEST / QA NODE AUTHENTICATION ───
+    const isTestIdentifier =
+      cleanIdentifier === 'test' ||
+      cleanIdentifier === 'tester' ||
+      cleanIdentifier === 'testuser' ||
+      cleanIdentifier === 'demo' ||
+      cleanIdentifier === 'demouser' ||
+      cleanIdentifier === 'test@zenvitra.org' ||
+      cleanIdentifier === 'test@zenvitra.xyz' ||
+      cleanIdentifier === 'test@zenvitra.local' ||
+      cleanIdentifier === 'test@zenvitra.com';
+
+    if (isTestIdentifier) {
+      const cleanPw = (password || '').trim().toLowerCase();
+      const isAllowedTestPassword =
+        !password ||
+        cleanPw === 'test' ||
+        cleanPw === 'test1234' ||
+        cleanPw === 'test123' ||
+        cleanPw === 'test@123' ||
+        cleanPw === 'zenvitra' ||
+        cleanPw === 'zenvitra2026' ||
+        cleanPw === 'tester' ||
+        cleanPw === 'testing' ||
+        cleanPw === 'password' ||
+        cleanPw === '123456' ||
+        cleanPw === 'guest' ||
+        cleanPw === 'demo';
+
+      if (!isAllowedTestPassword) {
+        const err = new Error('Invalid test password. Use "test1234" or "test" to authenticate.');
+        setError(err.message);
+        return { error: err };
+      }
+
+      if (options?.skipSession) {
+        return { error: null };
+      }
+
+      await continueAsTestUser();
+      return { error: null };
+    }
+
     try {
       const isEmailFormat = cleanIdentifier.includes('@');
       const formattedEmail = isEmailFormat ? cleanIdentifier : `${cleanIdentifier}@zenvitra.local`;
@@ -753,6 +798,80 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return guestProfile;
   };
 
+  // Sovereign Test Pilot Node Login (Full featured testing environment with all capabilities unlocked)
+  const continueAsTestUser = async (): Promise<UserProfile> => {
+    const testProfile: UserProfile = {
+      id: 'zen_test_pilot_node',
+      username: 'test',
+      display_name: 'Test Pilot Node',
+      email: 'test@zenvitra.org',
+      role: 'delegate', // Full delegate capabilities (not locked out like guest)
+      badge: '🧪 TEST PILOT',
+      isGuest: false, // NOT guest-restricted: all platform features, bills, medals, documents unlocked!
+      impact_score: 950,
+      followers_count: 142,
+      following_count: 36,
+      bio: 'Official Sovereign QA & Exploration Node. Full interactive access enabled across debate chambers, resolutions, ZEN.DOCS, ZEN.SOLUTIONS, and voting quorums.',
+      institution: 'Zenvitra Evaluation & QA Enclave',
+      city: 'New Delhi',
+      country: 'India',
+      is_verified: true, // Gold verified badge
+      is_onboarded: true,
+      created_at: '2026-01-01T00:00:00Z',
+    };
+
+    try {
+      localStorage.setItem('zenvitra_session_user', JSON.stringify(testProfile));
+      localStorage.removeItem('zenvitra_pulse_user_v6');
+      localStorage.removeItem('zenvitra_demo_role');
+
+      // Seed verified test registration for MUN matrix & status verification
+      const existingRegs = localStorage.getItem('zenvitra_zendiplomacy_registrations_v1');
+      const list = existingRegs ? JSON.parse(existingRegs) : [];
+      if (!list.some((r: any) => (r.email || '').toLowerCase() === 'test@zenvitra.org')) {
+        list.push({
+          id: 'ZNV-REG-TEST-001',
+          name: 'Test Pilot Node',
+          email: 'test@zenvitra.org',
+          phone: '+91 99999 88888',
+          institution: 'Zenvitra QA & Evaluation Enclave',
+          experienceLevel: 'Advanced Delegate',
+          firstCommitteeChoice: 'UNSC',
+          secondCommitteeChoice: 'EMI',
+          portfolioPreferences: 'Delegate of Germany',
+          registeredAt: '2026-09-01T10:00:00Z',
+          status: 'ALLOCATED',
+          allocatedCommittee: 'United Nations Security Council (UNSC)',
+          allocatedPortfolio: 'Delegate of Germany',
+          allocatedAt: '2026-09-15T12:00:00Z',
+          allottedBy: 'Executive Secretariat (@yuveer)',
+          notes: 'Priority Evaluation & Ratified Accreditation.',
+          syncedToGSheet: true,
+        });
+        localStorage.setItem('zenvitra_zendiplomacy_registrations_v1', JSON.stringify(list));
+      }
+
+      if (typeof document !== 'undefined') {
+        document.cookie = 'zenvitra_session=active; path=/; max-age=2592000; SameSite=Lax';
+        document.cookie = 'zenvitra_clearance=SOVEREIGN_GRANTED; path=/; max-age=2592000; SameSite=Lax';
+      }
+    } catch (_) {}
+
+    recordSavedSession(testProfile);
+    setUser({ id: testProfile.id, email: testProfile.email });
+    setProfile(testProfile);
+    setIsLoading(false);
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
+      } catch (_) {}
+    }
+
+    return testProfile;
+  };
+
   const isGuest = Boolean(
     profile?.isGuest ||
     profile?.role === 'guest' ||
@@ -794,6 +913,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         exitMockMode,
         continueAsGuest,
+        continueAsTestUser,
         updateProfile,
         checkUsernameAvailable,
         linkProvider,
