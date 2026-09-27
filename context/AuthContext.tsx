@@ -280,24 +280,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('zenvitra_auth_change', handleAuthChange);
     window.addEventListener('storage', handleStorageEvent);
 
-    // Watchdog timer (every 4s) to enforce active sessions
-    const watchdog = setInterval(() => {
-      try {
-        const stored = localStorage.getItem('zenvitra_session_user');
-        if (stored) {
-          const activeUid = JSON.parse(stored)?.id;
-          if (activeUid && isCurrentSessionRevoked(activeUid)) {
-            localStorage.removeItem('zenvitra_session_user');
-            setUser(null);
-            setProfile(null);
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login?reason=session_revoked';
-            }
-          }
-        }
-      } catch (_) {}
-    }, 4000);
-
     // 2. Check NextAuth session (for Google/GitHub OAuth logins)
     if (typeof window !== 'undefined') {
       fetch('/api/auth/session')
@@ -380,7 +362,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('zenvitra_security_matrix_event', handleCustomSecurityEvent);
       window.removeEventListener('zenvitra_auth_change', handleAuthChange);
       window.removeEventListener('storage', handleStorageEvent);
-      clearInterval(watchdog);
       subscription.unsubscribe();
     };
   }, [loadProfile]);

@@ -124,14 +124,33 @@ export function markSessionRevoked(sessionId: string) {
   } catch (_) {}
 }
 
+export function unmarkSessionRevoked(sessionId: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const list = getRevokedSessionIds().filter(id => id !== sessionId);
+    localStorage.setItem(REVOKED_SESSIONS_STORAGE_KEY, JSON.stringify(list));
+  } catch (_) {}
+}
+
+export function resetClientSessionId(): string {
+  if (typeof window === 'undefined') return 'sess_node_server';
+  try {
+    const rand = Math.random().toString(36).substring(2, 9);
+    const sid = `sess_node_${rand}_${Date.now()}`;
+    sessionStorage.setItem('zenvitra_client_session_id', sid);
+    sessionStorage.removeItem('zenvitra_session_registered');
+    return sid;
+  } catch (_) {
+    return 'sess_node_fallback';
+  }
+}
+
 export function getClientSessionId(): string {
   if (typeof window === 'undefined') return 'sess_node_server';
   try {
     let sid = sessionStorage.getItem('zenvitra_client_session_id');
     if (!sid) {
-      const rand = Math.random().toString(36).substring(2, 9);
-      sid = `sess_node_${rand}_${Date.now()}`;
-      sessionStorage.setItem('zenvitra_client_session_id', sid);
+      sid = resetClientSessionId();
     }
     return sid;
   } catch (_) {
@@ -233,14 +252,6 @@ export function isCurrentSessionRevoked(userId: string): boolean {
     if (raw) {
       const parsed: UserSecurityProfile = JSON.parse(raw);
       if (parsed.isAccountFrozen) return true;
-      if (parsed.activeSessions && parsed.activeSessions.length > 0) {
-        const found = parsed.activeSessions.some(s => s.id === currentSid);
-        if (!found) {
-          // If session was active before and removed by kill switch
-          const wasRegistered = sessionStorage.getItem('zenvitra_session_registered');
-          if (wasRegistered) return true;
-        }
-      }
     }
   } catch (_) {}
   return false;
@@ -490,11 +501,12 @@ export function recordSuccessfulAuth(userId: string, ipAddress: string = '127.0.
  */
 export function registerActiveDeviceSession(userId: string): SecuritySession {
   const cleanId = normalizeUserId(userId);
-  const currentSid = getClientSessionId();
+  let currentSid = getClientSessionId();
   const revoked = getRevokedSessionIds();
 
+  // If this device was previously in the revoked list, unmark it now that user is actively authorizing
   if (revoked.includes(currentSid)) {
-    throw new Error('SESSION_REVOKED');
+    unmarkSessionRevoked(currentSid);
   }
 
   const profile = getSecurityProfile(cleanId);
