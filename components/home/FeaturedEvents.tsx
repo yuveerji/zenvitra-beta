@@ -144,13 +144,13 @@ export function FeaturedEvents() {
                 <span>Starts in: <strong className="text-white">{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m</strong></span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                 <Link
                   href="/forms/zen-secretariat-2026"
-                  className="px-4 py-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                  className="justify-center px-4 py-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-center"
                   title="Apply for Secretariat across 10 specialized departments"
                 >
-                  <Crown className="w-3.5 h-3.5 text-purple-400" />
+                  <Crown className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                   <span>Secretariat</span>
                 </Link>
 
@@ -158,21 +158,21 @@ export function FeaturedEvents() {
                   href="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                  className="justify-center px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-center"
                   title="Check live Portfolio Matrix on Google Sheets"
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>Portfolio Matrix</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 shrink-0" />
                 </a>
 
-                <Link href="/zen-diplomacy">
+                <Link href="/zen-diplomacy" className="w-full sm:w-auto">
                   <button
                     type="button"
-                    className="px-5 py-2.5 rounded-xl bg-white text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition flex items-center gap-1.5 cursor-pointer shadow-md"
+                    className="w-full justify-center px-5 py-2.5 rounded-xl bg-white text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition flex items-center gap-1.5 cursor-pointer shadow-md text-center"
                   >
                     <span>Open ZEN.DIPLOMACY Portal</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                   </button>
                 </Link>
               </div>

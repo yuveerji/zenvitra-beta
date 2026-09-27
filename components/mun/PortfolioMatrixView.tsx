@@ -375,12 +375,12 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 z-10">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 z-10 w-full md:w-auto">
           <button
             type="button"
             onClick={handleTriggerSync}
             disabled={isSyncing}
-            className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             title="Refresh latest matrix allocations from Google Sheets & Local Ledger"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isSyncing ? 'animate-spin' : ''}`} />
@@ -391,30 +391,30 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
             type="button"
             onClick={handlePushAllToSheets}
             disabled={isSyncing}
-            className="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-center"
             title="Force push all 240 portfolios to Google Sheets Matrix tab"
           >
-            <Layers className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Sync 240 with GSheet</span>
+            <Layers className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="truncate">Sync 240 GSheet</span>
           </button>
 
           <button
             type="button"
             onClick={handleResetAllVacant}
             disabled={isSyncing}
-            className="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto justify-center px-3 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-center"
             title="Reset every portfolio across AIPPM, EMI, UNSC & ECOSOC to Vacant"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
-            <span>Reset All Vacant</span>
+            <RotateCcw className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+            <span className="truncate">Reset Vacant</span>
           </button>
 
           <Link
             href="/forms/zen-diplomacy-2026"
-            className="px-4 py-2 rounded-xl bg-[#e2f952] hover:bg-[#d6f03d] text-black font-display font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-md"
+            className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-[#e2f952] hover:bg-[#d6f03d] text-black font-display font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-md text-center"
           >
-            <Sparkles className="w-3.5 h-3.5 text-black" />
-            <span>Register Delegate</span>
+            <Sparkles className="w-3.5 h-3.5 text-black shrink-0" />
+            <span className="truncate">Register</span>
           </Link>
         </div>
       </div>
@@ -429,7 +429,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
       {/* ── COMMITTEE TABS & REAL-TIME SUMMARY STATS ── */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Committee Switcher Pills */}
-        <div className="lg:col-span-3 flex items-center gap-2 overflow-x-auto p-1.5 rounded-2xl bg-[#07090f] border border-white/10">
+        <div className="lg:col-span-3 flex items-center gap-2 overflow-x-auto p-1.5 rounded-2xl bg-[#07090f] border border-white/10 no-scrollbar overscroll-x-contain">
           {[
             { id: 'AIPPM' as const, label: 'AIPPM', sub: 'All India Political Parties' },
             { id: 'EMI' as const, label: 'EMI', sub: 'Education Ministry (EMI)' },
@@ -442,14 +442,14 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveCommittee(tab.id)}
-                className={`flex-1 min-w-[140px] p-3 rounded-xl text-left transition cursor-pointer border ${
+                className={`flex-1 min-w-[120px] sm:min-w-[140px] p-2.5 sm:p-3 rounded-xl text-left transition cursor-pointer border shrink-0 sm:shrink ${
                   isActive
                     ? 'bg-cyan-500/15 border-cyan-500/50 text-white shadow-[0_0_20px_rgba(6,182,212,0.15)]'
                     : 'bg-transparent border-transparent hover:bg-white/[0.04] text-neutral-400 hover:text-white'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold font-mono text-sm tracking-wide">{tab.label}</span>
+                  <span className="font-bold font-mono text-xs sm:text-sm tracking-wide">{tab.label}</span>
                   {isActive && <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />}
                 </div>
                 <span className="text-[10px] text-neutral-400 block truncate font-sans mt-0.5">{tab.sub}</span>
@@ -622,8 +622,8 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
 
       {/* ── SECRETARIAT ALLOTMENT MODAL ── */}
       {selectedItemForEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md text-left">
-          <div className="w-full max-w-md rounded-3xl bg-[#090d16] border border-cyan-500/40 p-6 sm:p-8 space-y-5 shadow-2xl text-white font-sans text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md text-left">
+          <div className="w-full max-w-md rounded-3xl bg-[#090d16] border border-cyan-500/40 p-5 sm:p-7 md:p-8 space-y-4 sm:space-y-5 shadow-2xl text-white font-sans text-xs max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div>
                 <span className="font-mono text-[10px] text-cyan-400 uppercase tracking-widest block">Secretariat Console</span>

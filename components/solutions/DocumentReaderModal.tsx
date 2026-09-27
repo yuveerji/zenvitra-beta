@@ -191,7 +191,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 15 }}
-          className="relative w-full max-w-5xl rounded-3xl bg-[#090a12] border border-cyan-500/25 p-5 sm:p-8 md:p-9 shadow-[0_30px_100px_rgba(0,0,0,0.95)] z-10 text-left space-y-6 my-auto max-h-[92vh] overflow-y-auto text-white font-sans"
+          className="relative w-full max-w-5xl rounded-3xl bg-[#090a12] border border-cyan-500/25 p-4 sm:p-7 md:p-9 shadow-[0_30px_100px_rgba(0,0,0,0.95)] z-10 text-left space-y-5 sm:space-y-6 my-auto max-h-[92dvh] overflow-y-auto text-white font-sans"
         >
           {/* Top Bar Controls */}
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -461,7 +461,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
 
                     {/* Clause Interaction Toolbar */}
                     <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/5 font-mono text-xs">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         {/* 💬 Debate / Discuss */}
                         <button
                           type="button"
@@ -472,7 +472,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                               setActiveClauseInteraction({ clauseId: clause.id!, type: 'discuss' });
                             }
                           }}
-                          className={`px-3 py-1.5 rounded-xl border transition flex items-center gap-1.5 cursor-pointer ${
+                          className={`px-3 py-1.5 rounded-xl border transition flex items-center gap-1.5 cursor-pointer text-xs ${
                             isInteracting && interactionType === 'discuss'
                               ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
                               : 'bg-white/5 border-white/10 text-neutral-300 hover:text-white hover:bg-white/10'
@@ -497,7 +497,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                               setActiveClauseInteraction({ clauseId: clause.id!, type: 'amend' });
                             }
                           }}
-                          className={`px-3 py-1.5 rounded-xl border transition flex items-center gap-1.5 cursor-pointer ${
+                          className={`px-3 py-1.5 rounded-xl border transition flex items-center gap-1.5 cursor-pointer text-xs ${
                             isInteracting && interactionType === 'amend'
                               ? 'bg-purple-500/20 border-purple-400 text-purple-300'
                               : 'bg-white/5 border-white/10 text-neutral-300 hover:text-purple-300 hover:bg-purple-500/10'
@@ -517,7 +517,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                       <button
                         type="button"
                         onClick={() => handleCiteClause(clause)}
-                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition flex items-center gap-1.5 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition flex items-center gap-1.5 cursor-pointer text-xs ml-auto sm:ml-0"
                         title="Copy statutory citation link"
                       >
                         {isCited ? (

@@ -50,6 +50,21 @@ input, textarea, select, [contenteditable="true"] {
   }
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Smooth mobile touch scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 640px) {
   html, body {
     touch-action: pan-y;

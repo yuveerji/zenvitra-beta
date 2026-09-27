@@ -256,25 +256,25 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated }: Do
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-5xl rounded-3xl bg-[#090b12] border border-cyan-500/30 p-5 sm:p-7 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.95)] z-10 text-white font-sans max-h-[92vh] flex flex-col justify-between overflow-hidden"
+          className="relative w-full max-w-5xl rounded-3xl bg-[#090b12] border border-cyan-500/30 p-3.5 sm:p-6 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.95)] z-10 text-white font-sans max-h-[94dvh] flex flex-col justify-between overflow-hidden"
         >
           {/* ── TOP HEADER & PIPELINE PROGRESS BAR ── */}
-          <div className="border-b border-white/10 pb-4 mb-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
-                  <Sparkles className="w-5 h-5" />
+          <div className="border-b border-white/10 pb-3 sm:pb-4 mb-3 sm:mb-4">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                <div className="p-1.5 sm:p-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 shrink-0">
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] text-cyan-400 uppercase tracking-widest font-bold">ZEN.DOCENGINE</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-neutral-300 font-mono">Universal Document Structuring</span>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="font-mono text-[9px] sm:text-[10px] text-cyan-400 uppercase tracking-widest font-bold">ZEN.DOCENGINE</span>
+                    <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-white/10 text-neutral-300 font-mono truncate">Universal Structuring</span>
                   </div>
-                  <h2 className="text-lg sm:text-xl font-bold font-display text-white">
-                    {currentStep === 1 && 'Create a Structured Legislative Document'}
-                    {currentStep === 2 && 'Document Structure & Structural Validation'}
-                    {currentStep === 3 && 'Clause-by-Clause Review & Editing'}
-                    {currentStep === 4 && 'Ready to Post? Final Confirmation'}
+                  <h2 className="text-base sm:text-xl font-bold font-display text-white truncate">
+                    {currentStep === 1 && 'Create Structured Document'}
+                    {currentStep === 2 && 'Structure & Validation'}
+                    {currentStep === 3 && 'Clause Review & Editing'}
+                    {currentStep === 4 && 'Ready to Post?'}
                   </h2>
                 </div>
               </div>
@@ -282,26 +282,30 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated }: Do
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Stepper Wizard Indicator */}
-            <div className="grid grid-cols-4 gap-2 mt-4 pt-2">
+            <div className="grid grid-cols-4 gap-2 mt-3 pt-1">
               {[
-                { step: 1, label: '1. Paste Draft' },
-                { step: 2, label: '2. Structure Tree' },
-                { step: 3, label: '3. Edit Clauses' },
-                { step: 4, label: '4. Confirm & Post' },
+                { step: 1, label: '1. Paste' },
+                { step: 2, label: '2. Structure' },
+                { step: 3, label: '3. Clauses' },
+                { step: 4, label: '4. Post' },
               ].map((s) => (
-                <div
-                  key={s.step}
-                  className={`h-1.5 rounded-full transition-all ${
-                    currentStep >= s.step ? 'bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.6)]' : 'bg-white/10'
-                  }`}
-                />
+                <div key={s.step} className="space-y-1">
+                  <div
+                    className={`h-1.5 rounded-full transition-all ${
+                      currentStep >= s.step ? 'bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.6)]' : 'bg-white/10'
+                    }`}
+                  />
+                  <div className={`text-[9px] sm:text-[10px] font-mono text-center truncate ${currentStep === s.step ? 'text-cyan-300 font-bold' : 'text-neutral-500'}`}>
+                    {s.label}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -353,8 +357,8 @@ BE it enacted by Parliament...
 ...
 3. Registration of Coaching Institutes
 ..."
-                  rows={13}
-                  className="w-full p-4 rounded-2xl bg-black/60 border border-white/15 text-white font-mono text-xs focus:border-cyan-400 outline-none leading-relaxed transition resize-none placeholder-neutral-600"
+                  rows={7}
+                  className="w-full p-3 sm:p-4 rounded-2xl bg-black/60 border border-white/15 text-white font-mono text-xs focus:border-cyan-400 outline-none leading-relaxed transition resize-none placeholder-neutral-600 min-h-[160px] sm:min-h-[240px]"
                 />
               </div>
 
@@ -760,30 +764,30 @@ BE it enacted by Parliament...
           )}
 
           {/* ── BOTTOM ACTION BAR & STEP NAVIGATION ── */}
-          <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3 font-mono text-xs">
+          <div className="pt-3 sm:pt-4 border-t border-white/10 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 font-mono text-xs">
             <div>
               {currentStep > 1 && (
                 <button
                   type="button"
                   onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1) as any)}
-                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 sm:px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer text-xs"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Go Back</span>
+                  <span>Back</span>
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 ml-auto">
               {currentStep === 1 && (
                 <button
                   type="button"
                   onClick={handleParseDocument}
                   disabled={!rawText.trim() || isAnalyzing}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold tracking-wide transition hover:opacity-95 disabled:opacity-40 flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.4)]"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold tracking-wide transition hover:opacity-95 disabled:opacity-40 flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.4)] text-xs"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>{isAnalyzing ? 'Analyzing Structure...' : 'PARSE DOCUMENT'}</span>
+                  <span>{isAnalyzing ? 'Analyzing...' : 'PARSE DOCUMENT'}</span>
                 </button>
               )}
 
@@ -791,9 +795,9 @@ BE it enacted by Parliament...
                 <button
                   type="button"
                   onClick={() => setCurrentStep(3)}
-                  className="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold transition flex items-center gap-2 cursor-pointer shadow-md"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold transition flex items-center gap-2 cursor-pointer shadow-md text-xs"
                 >
-                  <span>Review &amp; Edit Clauses</span>
+                  <span>Edit Clauses</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}
@@ -802,7 +806,7 @@ BE it enacted by Parliament...
                 <button
                   type="button"
                   onClick={() => setCurrentStep(4)}
-                  className="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold transition flex items-center gap-2 cursor-pointer shadow-md"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold transition flex items-center gap-2 cursor-pointer shadow-md text-xs"
                 >
                   <span>Ready to Post &rarr;</span>
                 </button>
@@ -813,10 +817,10 @@ BE it enacted by Parliament...
                   type="button"
                   onClick={handleFinalPublish}
                   disabled={!checkboxReviewed || !checkboxConfirm || isSubmitting}
-                  className="px-7 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black tracking-wide transition hover:opacity-95 disabled:opacity-30 disabled:hover:opacity-30 flex items-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(52,211,153,0.5)]"
+                  className="px-4 sm:px-7 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black font-black tracking-wide transition hover:opacity-95 disabled:opacity-30 disabled:hover:opacity-30 flex items-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(52,211,153,0.5)] text-xs"
                 >
                   <Check className="w-4 h-4 stroke-[3]" />
-                  <span>{isSubmitting ? 'Posting Bill...' : '✓ YES, POST BILL'}</span>
+                  <span>{isSubmitting ? 'Posting...' : '✓ YES, POST BILL'}</span>
                 </button>
               )}
             </div>

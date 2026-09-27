@@ -387,22 +387,22 @@ export function JoinZenDiplomacyCard() {
           </div>
 
           {/* Action Row */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
               <Link
                 href="/forms/zen-diplomacy-2026"
-                className="px-6 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(255,255,255,0.25)] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+                className="justify-center px-6 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(255,255,255,0.25)] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95 text-center"
               >
-                <Sparkles className="w-4 h-4 text-black" />
+                <Sparkles className="w-4 h-4 text-black shrink-0" />
                 <span>Join as Delegate</span>
               </Link>
 
               <Link
                 href="/matrix"
-                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer hover:scale-105"
+                className="justify-center px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer hover:scale-105 text-center"
                 title="View 240-seat live portfolio matrix"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>View 240-Seat Matrix</span>
               </Link>
 
@@ -410,17 +410,17 @@ export function JoinZenDiplomacyCard() {
                 href={matrixUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3.5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 font-mono text-xs transition flex items-center gap-1.5 cursor-pointer"
+                className="justify-center px-3.5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 font-mono text-xs transition flex items-center gap-1.5 cursor-pointer text-center"
                 title="Open Google Sheets Ledger"
               >
                 <span>Google Sheet</span>
-                <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+                <ExternalLink className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
               </a>
             </div>
 
             <Link
               href="/zen-diplomacy"
-              className="font-mono text-xs text-neutral-300 hover:text-white flex items-center gap-1.5 transition underline decoration-white/20 underline-offset-4"
+              className="font-mono text-xs text-neutral-300 hover:text-white flex items-center justify-center sm:justify-start gap-1.5 transition underline decoration-white/20 underline-offset-4 py-1"
             >
               <span>View Full Dossier, Schedule &amp; Guidelines</span>
               <ArrowRight className="w-3.5 h-3.5" />
