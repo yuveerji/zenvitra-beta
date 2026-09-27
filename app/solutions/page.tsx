@@ -114,6 +114,26 @@ export default function SolutionsPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isRegisterPromptOpen, setIsRegisterPromptOpen] = useState(false);
   const [activeReadingDoc, setActiveReadingDoc] = useState<SolutionDocument | null>(null);
+  const [importedDraftData, setImportedDraftData] = useState<any>(null);
+
+  // Check for incoming draft from ZenDocs editor
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('importZenDoc') === '1') {
+      try {
+        const importData = localStorage.getItem('zenvitra_solutions_import');
+        if (importData) {
+          const parsed = JSON.parse(importData);
+          setImportedDraftData(parsed);
+          setIsUploadModalOpen(true);
+          localStorage.removeItem('zenvitra_solutions_import');
+        }
+      } catch (err) {
+        console.error('Failed to import draft from ZenDocs:', err);
+      }
+    }
+  }, []);
 
   const handleOpenUpload = () => {
     if (!isAuthenticated || isGuest) {
@@ -343,8 +363,12 @@ export default function SolutionsPage() {
       {/* ZEN.DOCENGINE Universal Posting Modal */}
       <DocEnginePostingModal
         isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
+        onClose={() => {
+          setIsUploadModalOpen(false);
+          setImportedDraftData(null);
+        }}
         onDocumentCreated={handleDocumentCreated}
+        initialDraft={importedDraftData}
       />
 
       {/* Interactive Document Reader Modal */}

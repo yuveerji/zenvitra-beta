@@ -24,20 +24,33 @@ import {
   Trash2,
   HelpCircle,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  FileEdit,
+  ExternalLink
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { SolutionDocument, DocumentType, SolutionCategory, DocumentClause, ClauseSubItem, ValidationIssue } from '@/types/solutions';
 import { parseDocument, detectDocumentType, DOCUMENT_TYPE_METADATA, ParsedDocResult } from '@/lib/docEngine/parser';
 import { SAMPLE_DRAFTS } from '@/lib/docEngine/sampleDrafts';
 import { useAuth } from '@/context/AuthContext';
 
+export interface ImportedDraftPayload {
+  rawText?: string;
+  title?: string;
+  type?: DocumentType;
+  category?: SolutionCategory;
+  committee?: string;
+}
+
 interface DocEnginePostingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDocumentCreated: (doc: SolutionDocument) => void;
+  initialDraft?: ImportedDraftPayload | null;
 }
 
-export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated }: DocEnginePostingModalProps) {
+export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, initialDraft }: DocEnginePostingModalProps) {
+  const router = useRouter();
   const { profile, user } = useAuth();
 
   // Wizard Steps: 1: INPUT -> 2: STRUCTURE & VALIDATION -> 3: CLAUSE REVIEW -> 4: CONFIRMATION
@@ -63,16 +76,47 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated }: Do
   const [checkboxConfirm, setCheckboxConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset state when modal opens
+  // Reset state when modal opens or initialDraft arrives
   useEffect(() => {
-    if (isOpen && !rawText) {
+    if (initialDraft) {
+      if (initialDraft.rawText) setRawText(initialDraft.rawText);
+      if (initialDraft.type) setForcedType(initialDraft.type);
+      if (initialDraft.category) setCategory(initialDraft.category);
+      if (initialDraft.committee) setCommittee(initialDraft.committee);
+      if (initialDraft.title) setEditedTitle(initialDraft.title);
+    } else if (isOpen && !rawText) {
       // Auto-load coaching institutes bill draft by default for instant delight
       const defaultSample = SAMPLE_DRAFTS[0];
       if (defaultSample) {
         setRawText(defaultSample.rawText);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, initialDraft]);
+
+  // Handler: Open in ZenDocs for full rich-text drafting
+  const handleOpenInZenDocs = () => {
+    const textToTransfer = rawText.trim() || SAMPLE_DRAFTS[0]?.rawText || '';
+    const firstLine = textToTransfer.split('\n')[0].replace(/^#+\s*/, '').trim();
+    const title = firstLine || 'Legislative Draft Bill';
+
+    const transferData = {
+      title,
+      rawText: textToTransfer,
+      type: forcedType,
+      category,
+      committee,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem('zenvitra_draft_transfer', JSON.stringify(transferData));
+    } catch (e) {
+      console.error('Failed to save draft transfer:', e);
+    }
+
+    onClose();
+    router.push('/docs?draftSource=solutions');
+  };
 
   if (!isOpen) return null;
 
@@ -333,13 +377,34 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated }: Do
 
               {/* Main Textarea */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px]">
+                {initialDraft && (
+                  <div className="p-3 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-between gap-2 text-cyan-300 font-mono text-[11px]">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <span>Imported from ZenDocs drafting studio: <strong className="text-white">"{initialDraft.title || 'Draft'}"</strong></span>
+                    </div>
+                    <span className="text-[9px] px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-200 uppercase font-bold shrink-0">Ready to Parse</span>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
                   <label className="font-mono text-neutral-300 uppercase tracking-wider font-semibold">Paste Document or Legislative Bill Text</label>
-                  <label className="text-cyan-400 hover:text-cyan-300 cursor-pointer flex items-center gap-1 font-mono">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload File (.txt, .md, .doc)</span>
-                    <input type="file" accept=".txt,.md,.doc,.docx" onChange={handleFileUpload} className="hidden" />
-                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleOpenInZenDocs}
+                      className="text-cyan-400 hover:text-cyan-300 cursor-pointer flex items-center gap-1 font-mono font-bold transition hover:underline"
+                      title="Open full rich-text editor for drafting this bill"
+                    >
+                      <FileEdit className="w-3.5 h-3.5" />
+                      <span>Draft in ZenDocs ↗</span>
+                    </button>
+                    <label className="text-neutral-400 hover:text-white cursor-pointer flex items-center gap-1 font-mono transition">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload File (.txt, .md, .doc)</span>
+                      <input type="file" accept=".txt,.md,.doc,.docx" onChange={handleFileUpload} className="hidden" />
+                    </label>
+                  </div>
                 </div>
                 <textarea
                   value={rawText}

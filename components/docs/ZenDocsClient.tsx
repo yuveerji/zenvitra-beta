@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Scale, CheckCircle2, Gavel } from 'lucide-react';
+import { Scale, CheckCircle2, Gavel, Sparkles } from 'lucide-react';
 import { useDocumentEditor } from './hooks/useDocumentEditor';
 import { useEditorCommands } from './hooks/useEditorCommands';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -27,6 +27,7 @@ import {
   ShareToPulseModal,
   LokSabhaDraftModal,
   UnDocsDraftModal,
+  UploadToSolutionsModal,
 } from './modals';
 import { useSearchParams } from 'next/navigation';
 import { ScrollText, Globe2 } from 'lucide-react';
@@ -67,6 +68,8 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isLokSabhaDraftModalOpen, setIsLokSabhaDraftModalOpen] = useState<boolean>(isIndianContext);
   const [isUnDraftModalOpen, setIsUnDraftModalOpen] = useState<boolean>(isUnContext);
+  const [isSolutionsModalOpen, setIsSolutionsModalOpen] = useState<boolean>(false);
+  const [draftSourceActive, setDraftSourceActive] = useState<boolean>(false);
 
   // Export Document Handler
   const handleExportFormat = useCallback((format: ExportFormat) => {
@@ -131,6 +134,30 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
       setShowSidebar(false);
     },
   });
+
+  // Check for incoming draft from Solutions repository
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isFromSolutions = searchParams?.get('draftSource') === 'solutions';
+    const transferRaw = localStorage.getItem('zenvitra_draft_transfer');
+
+    if (isFromSolutions && transferRaw) {
+      try {
+        const transfer = JSON.parse(transferRaw);
+        if (transfer.title || transfer.rawText) {
+          setDraftSourceActive(true);
+          const mappedDocType = transfer.type === 'LEGISLATIVE_BILL' ? 'INDIAN_BILL' : 'DRAFT_RESOLUTION';
+          const formattedHtml = `<h1>${transfer.title || 'Draft Bill'}</h1><p><strong>Committee:</strong> ${transfer.committee || 'Legislative Chamber'}</p><hr/><p>${(transfer.rawText || '').replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br/>')}</p>`;
+          
+          editor.createDocument(mappedDocType, transfer.title || 'Draft Legislative Bill', formattedHtml);
+          editor.triggerToast('Draft imported into ZenDocs! Finish your edits and click ZEN.SOLUTIONS to publish.');
+          localStorage.removeItem('zenvitra_draft_transfer');
+        }
+      } catch (err) {
+        console.error('Failed to parse transferred draft:', err);
+      }
+    }
+  }, [searchParams]);
 
   // Sync content when active document changes
   useEffect(() => {
@@ -351,6 +378,7 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
             onShareToPulse={() => setIsShareToPulseModalOpen(true)}
             onShare={() => setIsShareModalOpen(true)}
             onTableToChamber={handleTableToChamber}
+            onUploadToSolutions={() => setIsSolutionsModalOpen(true)}
             onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
             isReaderMode={editor.isReaderMode}
             onToggleReaderMode={editor.toggleReaderMode}
@@ -387,6 +415,29 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
             onOutdent={commands.outdent}
             onClearFormatting={commands.clearFormatting}
           />
+
+          {/* Solutions Drafting Banner */}
+          {(draftSourceActive || editor.activeDoc.docType === 'INDIAN_BILL' || editor.activeDoc.docType === 'DRAFT_RESOLUTION') && (
+            <div className="bg-gradient-to-r from-cyan-950/70 via-blue-950/50 to-cyan-950/70 border border-cyan-500/30 rounded-2xl p-2.5 sm:p-3 my-2 flex flex-wrap items-center justify-between gap-2.5 text-xs font-mono shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1 sm:p-1.5 rounded-lg bg-cyan-400 text-black font-bold text-[10px] tracking-wider uppercase">
+                  ZEN.SOLUTIONS
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-white font-bold block text-xs">Legislative Drafting Mode Active</span>
+                  <span className="text-neutral-400 text-[10px] sm:text-[11px] hidden sm:inline">When finished drafting, push to Zen.Solutions for clause-level voting &amp; debate</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSolutionsModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-[0_0_20px_rgba(34,211,238,0.4)] ml-auto"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Finish Draft &amp; Post to Solutions &rarr;</span>
+              </button>
+            </div>
+          )}
 
           {/* Workspace: Outline Sidebar + A4 Canvas */}
           <div className="flex-1 flex gap-4 min-h-[750px] relative">
@@ -638,6 +689,15 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
           editor.createDocument(type, title);
           editor.setActiveView('EDITOR');
         }}
+      />
+
+      <UploadToSolutionsModal
+        isOpen={isSolutionsModalOpen}
+        onClose={() => setIsSolutionsModalOpen(false)}
+        activeDoc={editor.activeDoc}
+        rawText={editorRef.current?.innerText || ''}
+        wordCount={editor.wordCount}
+        onToast={editor.triggerToast}
       />
     </div>
   );

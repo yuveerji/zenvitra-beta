@@ -19,4 +19,6 @@ export { ShareToPulseModal } from './ShareToPulseModal';
 export type { ShareToPulseModalProps } from './ShareToPulseModal';
 export { LokSabhaDraftModal } from './LokSabhaDraftModal';
 export { UnDocsDraftModal } from './UnDocsDraftModal';
+export { UploadToSolutionsModal } from './UploadToSolutionsModal';
+export type { UploadToSolutionsModalProps } from './UploadToSolutionsModal';
 

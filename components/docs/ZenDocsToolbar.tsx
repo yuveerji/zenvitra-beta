@@ -86,6 +86,7 @@ export interface ZenDocsToolbarProps {
   onShareToPulse: () => void;
   onShare: () => void;
   onTableToChamber: () => void;
+  onUploadToSolutions?: () => void;
   onOpenCommandPalette: () => void;
   isReaderMode?: boolean;
   onToggleReaderMode?: () => void;
@@ -182,6 +183,7 @@ export function ZenDocsToolbar({
   onShareToPulse,
   onShare,
   onTableToChamber,
+  onUploadToSolutions,
   onOpenCommandPalette,
   isReaderMode = false,
   onToggleReaderMode,
@@ -383,6 +385,23 @@ export function ZenDocsToolbar({
                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-bold">MD</span>
                 </button>
 
+                {onUploadToSolutions && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onUploadToSolutions();
+                      setIsFileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-white cursor-pointer transition text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Post to ZEN.SOLUTIONS</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-bold">BILL/LAW</span>
+                  </button>
+                )}
+
                 <div className="h-px bg-white/10 my-1" />
 
                 <button
@@ -498,15 +517,29 @@ export function ZenDocsToolbar({
             <span>PULSE</span>
           </button>
 
+          {/* Post to ZEN.SOLUTIONS */}
+          {onUploadToSolutions && (
+            <button
+              type="button"
+              onClick={onUploadToSolutions}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-mono text-xs font-bold transition cursor-pointer shadow-lg shadow-cyan-500/20"
+              title="Upload draft to ZEN.SOLUTIONS repository for clause structuring, debates, and amendments"
+            >
+              <Sparkles className="w-3.5 h-3.5 fill-black/20" />
+              <span className="hidden sm:inline">ZEN.SOLUTIONS</span>
+              <span className="sm:hidden">POST</span>
+            </button>
+          )}
+
           {/* Share Button */}
           <button
             type="button"
             onClick={onShare}
-            className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-lg shadow-cyan-500/20"
+            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-white/15"
             title="Share document link & permissions"
           >
             <Globe2 className="w-3.5 h-3.5" />
-            <span>Share</span>
+            <span className="hidden sm:inline">Share</span>
           </button>
         </div>
       </div>
