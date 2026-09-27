@@ -745,6 +745,16 @@ export function PlatformShell({
               </Link>
               <button
                 type="button"
+                onClick={() => {
+                  signOut();
+                  router.push('/login');
+                }}
+                className="px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-400/30 text-[10px] hover:bg-red-500/30 transition shrink-0 uppercase tracking-wider font-bold cursor-pointer"
+              >
+                Exit Test Mode
+              </button>
+              <button
+                type="button"
                 onClick={handleDismissTestBanner}
                 className="p-1 rounded-lg text-cyan-300/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                 title="Dismiss test notice"

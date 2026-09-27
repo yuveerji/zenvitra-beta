@@ -101,8 +101,13 @@ export function ZenCheckoutModal({
   const [isGeneratingQr, setIsGeneratingQr] = useState<boolean>(false);
 
   // Checkout flow state
-  const [step, setStep] = useState<'DETAILS' | 'CARD_GATEWAY' | 'PROCESSING' | 'SUCCESS'>('DETAILS');
+  const [step, setStep] = useState<'DETAILS' | 'CARD_GATEWAY' | 'PROCESSING' | 'UPI_WAITING' | 'SUCCESS'>('DETAILS');
   const [completedTxn, setCompletedTxn] = useState<PaymentTransaction | null>(null);
+
+  // UPI Collect polling state
+  const [upiCollectOrderId, setUpiCollectOrderId] = useState<string | null>(null);
+  const [upiCollectMessage, setUpiCollectMessage] = useState('Sending payment request to your UPI app...');
+  const upiPollRef = useRef<NodeJS.Timeout | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -315,6 +320,127 @@ export function ZenCheckoutModal({
     }
   };
 
+  // UPI Collect: Create Cashfree order + show "sent to app" + poll for completion
+  const handleUpiCollect = async () => {
+    if (!upiId || !upiId.includes('@')) {
+      setCashfreeNotice('Please enter a valid UPI ID (e.g. name@ybl)');
+      return;
+    }
+
+    if (!payerPhone || payerPhone.replace(/\D/g, '').length < 10) {
+      setCashfreeNotice('Please provide a valid 10-digit mobile number.');
+      return;
+    }
+
+    setIsSubmittingCashfree(true);
+    setCashfreeNotice(null);
+
+    try {
+      // 1. Create Cashfree order on backend
+      const res = await fetch('/api/payments/cashfree/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: tax.totalPayable,
+          currency,
+          customerName: payerName || profile?.display_name || user?.name || 'Citizen User',
+          customerEmail: payerEmail || user?.email || 'citizen@zenvitra.xyz',
+          customerPhone: payerPhone || '9876543210',
+          orderNote: `UPI Collect for ${title} (${product})`,
+          productId: product,
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.success || !data.orderId) {
+        throw new Error(data.error || 'Failed to create payment order');
+      }
+
+      // 2. Show "sent to app" waiting screen
+      setUpiCollectOrderId(data.orderId);
+      setUpiCollectMessage('Payment request sent to your UPI app — please approve on your phone');
+      setStep('UPI_WAITING');
+      setIsSubmittingCashfree(false);
+
+      // 3. Poll for payment every 4 seconds (max 90 attempts = ~6 mins)
+      let attempts = 0;
+      const maxAttempts = 90;
+
+      // Clear any existing poll
+      if (upiPollRef.current) clearInterval(upiPollRef.current);
+
+      upiPollRef.current = setInterval(async () => {
+        attempts++;
+        if (attempts > maxAttempts) {
+          if (upiPollRef.current) clearInterval(upiPollRef.current);
+          upiPollRef.current = null;
+          setUpiCollectMessage('Request timed out. Please try again or use another method.');
+          return;
+        }
+
+        try {
+          const verifyRes = await fetch(`/api/payments/cashfree/verify-order?order_id=${data.orderId}`);
+          const verifyData = await verifyRes.json();
+
+          if (verifyData.isPaid || verifyData.orderStatus === 'PAID') {
+            if (upiPollRef.current) clearInterval(upiPollRef.current);
+            upiPollRef.current = null;
+
+            const newTxn: PaymentTransaction = {
+              id: verifyData.paymentId || `CF-${data.orderId}`,
+              receiptId: `ZR-CF-${data.orderId.slice(-6).toUpperCase()}`,
+              status: 'SUCCESS',
+              amount: tax.totalPayable,
+              currency,
+              purpose: title,
+              product,
+              eventOrItemName: title,
+              payerName: payerName || user?.name || 'Citizen User',
+              payerEmail: payerEmail || user?.email || 'user@zenvitra.xyz',
+              merchantName: 'ZENVITRA Operating Entity (Cashfree PG)',
+              paymentMethod: 'CASHFREE',
+              paymentDetailsMasked: `UPI Collect (${upiId}) via Cashfree PG - Ref: ${verifyData.paymentId || data.orderId}`,
+              taxBreakdown: tax,
+              createdAt: new Date().toISOString(),
+              settledAt: new Date().toISOString()
+            };
+
+            try {
+              const stored = localStorage.getItem(LS_ZEN_TXNS);
+              const list = stored ? JSON.parse(stored) : [];
+              localStorage.setItem(LS_ZEN_TXNS, JSON.stringify([newTxn, ...list]));
+            } catch {}
+
+            setCompletedTxn(newTxn);
+            setStep('SUCCESS');
+            if (onSuccess) onSuccess(newTxn);
+          } else if (verifyData.orderStatus === 'EXPIRED' || verifyData.orderStatus === 'TERMINATED') {
+            if (upiPollRef.current) clearInterval(upiPollRef.current);
+            upiPollRef.current = null;
+            setUpiCollectMessage('Payment request expired or was declined. Please try again.');
+          }
+        } catch {
+          // Network error — keep polling
+        }
+      }, 4000);
+
+    } catch (err: any) {
+      console.error('UPI Collect failed:', err);
+      setCashfreeNotice(err.message || 'Failed to send UPI collect request');
+      setIsSubmittingCashfree(false);
+    }
+  };
+
+  // Cleanup polling on unmount or modal close
+  useEffect(() => {
+    return () => {
+      if (upiPollRef.current) {
+        clearInterval(upiPollRef.current);
+        upiPollRef.current = null;
+      }
+    };
+  }, []);
+
   const handleInitiatePay = () => {
     if (isCollegeStudent && !studentIdFile) {
       setStudentIdError('Please upload your school or college student ID proof to claim student concession.');
@@ -323,6 +449,11 @@ export function ZenCheckoutModal({
 
     if (selectedMethod === 'CASHFREE') {
       handlePayWithCashfree();
+      return;
+    }
+
+    if (selectedMethod === 'UPI_ID') {
+      handleUpiCollect();
       return;
     }
 
@@ -918,6 +1049,80 @@ export function ZenCheckoutModal({
                 <span>Authorize &amp; Pay ₹{tax.totalPayable}</span>
                 <Check className="w-4 h-4" />
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP: UPI COLLECT — WAITING FOR APP APPROVAL */}
+        {step === 'UPI_WAITING' && (
+          <div className="py-10 text-center space-y-5">
+            {/* Animated phone icon */}
+            <div className="relative mx-auto w-20 h-20 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-cyan-500/20 animate-ping" />
+              <div className="relative w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center">
+                <Smartphone className="w-8 h-8 text-cyan-400" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-bold text-base text-white">{upiCollectMessage}</h4>
+              <p className="text-xs text-neutral-400 font-mono max-w-xs mx-auto">
+                {upiCollectMessage.includes('timed out') || upiCollectMessage.includes('expired') ? (
+                  'You can go back and try again.'
+                ) : (
+                  <>Open your UPI app ({upiId}) and approve the payment of <strong className="text-cyan-300">₹{tax.totalPayable}</strong></>
+                )}
+              </p>
+            </div>
+
+            {/* Animated dots for waiting */}
+            {!upiCollectMessage.includes('timed out') && !upiCollectMessage.includes('expired') && (
+              <div className="flex items-center justify-center gap-1.5 pt-2">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-2 h-2 rounded-full bg-cyan-400"
+                    style={{
+                      animation: 'pulse 1.4s ease-in-out infinite',
+                      animationDelay: `${i * 0.2}s`,
+                    }}
+                  />
+                ))}
+                <span className="text-[10px] font-mono text-neutral-500 ml-2">Checking payment status...</span>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-center gap-3 pt-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (upiPollRef.current) {
+                    clearInterval(upiPollRef.current);
+                    upiPollRef.current = null;
+                  }
+                  setStep('DETAILS');
+                  setUpiCollectOrderId(null);
+                  setCashfreeNotice(null);
+                }}
+                className="px-4 py-2 rounded-xl text-neutral-400 hover:text-white font-mono text-xs transition cursor-pointer border border-white/10 hover:border-white/20"
+              >
+                ← Go Back
+              </button>
+              {(upiCollectMessage.includes('timed out') || upiCollectMessage.includes('expired')) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('DETAILS');
+                    setUpiCollectOrderId(null);
+                    setCashfreeNotice(null);
+                    setTimeout(() => handleUpiCollect(), 100);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-mono text-xs font-bold transition cursor-pointer"
+                >
+                  Retry Payment
+                </button>
+              )}
             </div>
           </div>
         )}
