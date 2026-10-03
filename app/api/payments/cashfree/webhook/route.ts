@@ -3,6 +3,14 @@ import { verifyCashfreeWebhookSignature } from '@/lib/cashfreeServer';
 import { getServerPassportByUsername, saveServerPassport } from '@/lib/passportsStorage';
 import { WalletCredential } from '@/lib/passport';
 
+export async function GET() {
+  return NextResponse.json({ status: 'OK', message: 'Zenvitra Cashfree Webhook Active' }, { status: 200 });
+}
+
+export async function HEAD() {
+  return new Response(null, { status: 200 });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
@@ -10,6 +18,22 @@ export async function POST(req: NextRequest) {
     const timestamp = req.headers.get('x-webhook-timestamp');
     const webhookVersion = req.headers.get('x-webhook-version');
     const idempotencyKey = req.headers.get('x-idempotency-key');
+
+    let payload: any = {};
+    try {
+      if (rawBody && rawBody.trim()) {
+        payload = JSON.parse(rawBody);
+      }
+    } catch (_) {}
+
+    const eventType = payload?.type || payload?.event;
+    console.log(`[Cashfree Webhook] Event received: ${eventType || 'PING'}, Idempotency: ${idempotencyKey}`);
+
+    // If Cashfree Dashboard is performing an endpoint test verification ping
+    if (eventType === 'TEST' || payload?.test === true || (!rawBody.trim() && !signature)) {
+      console.log('[Cashfree Webhook] Dashboard test ping acknowledged');
+      return NextResponse.json({ status: 'OK', test: true }, { status: 200 });
+    }
 
     // Signature verification is mandatory for security
     if (!signature || !timestamp) {
@@ -19,19 +43,13 @@ export async function POST(req: NextRequest) {
 
     const isValid = verifyCashfreeWebhookSignature(rawBody, timestamp, signature);
     if (!isValid) {
+      // Acknowledge test events if sent with mock signatures during dashboard tests
+      if (eventType === 'TEST') {
+        return NextResponse.json({ status: 'OK', test: true }, { status: 200 });
+      }
       console.error('Invalid Cashfree webhook signature received');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
-
-    let payload: any = {};
-    try {
-      payload = JSON.parse(rawBody);
-    } catch (_) {
-      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
-    }
-
-    const eventType = payload.type || payload.event;
-    console.log(`[Cashfree Webhook] Event received: ${eventType}, Idempotency: ${idempotencyKey}`);
 
     // Handle payment events
     switch (eventType) {
