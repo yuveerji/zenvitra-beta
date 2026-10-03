@@ -58,19 +58,21 @@ export function ZenGlimpseApp() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const glimpseFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted glimpses on mount
+  // Load persisted glimpses on mount & scrub any legacy seeded mock items
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LS_GLIMPSES);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setGlimpses(parsed);
+          const cleaned = parsed.filter((g: any) => g && g.id && !String(g.id).startsWith('glimpse_init_'));
+          setGlimpses(cleaned);
+          localStorage.setItem(LS_GLIMPSES, JSON.stringify(cleaned));
           return;
         }
       }
-      setGlimpses(INITIAL_GLIMPSES);
-      localStorage.setItem(LS_GLIMPSES, JSON.stringify(INITIAL_GLIMPSES));
+      setGlimpses([]);
+      localStorage.setItem(LS_GLIMPSES, JSON.stringify([]));
     } catch {}
   }, []);
 
