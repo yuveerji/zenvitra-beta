@@ -191,15 +191,15 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 15 }}
-          className="relative w-full max-w-5xl rounded-3xl bg-[#090a12] border border-cyan-500/25 p-4 sm:p-7 md:p-9 shadow-[0_30px_100px_rgba(0,0,0,0.95)] z-10 text-left space-y-5 sm:space-y-6 my-auto max-h-[92dvh] overflow-y-auto text-white font-sans"
+          className="relative w-full max-w-5xl rounded-3xl bg-[#090a12] border border-cyan-500/25 p-3.5 sm:p-7 md:p-9 shadow-[0_30px_100px_rgba(0,0,0,0.95)] z-10 text-left space-y-4 sm:space-y-6 my-auto max-h-[92dvh] overflow-y-auto text-white font-sans"
         >
           {/* Top Bar Controls */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold uppercase tracking-wider">
-                {doc.documentType.replace('_', ' ')}
+          <div className="flex items-center justify-between border-b border-white/10 pb-3 sm:pb-4 gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+                {doc.documentType.replace(/_/g, ' ')}
               </span>
-              <span className="font-mono text-xs text-neutral-400">
+              <span className="font-mono text-[10px] sm:text-xs text-neutral-400 truncate">
                 Ref: <strong className="text-white">{doc.documentCode}</strong>
               </span>
             </div>
@@ -288,19 +288,19 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
               <div style={{ width: `${abstainPercent}%` }} className="bg-neutral-500 transition-all duration-500" title={`Abstain: ${abstainPercent}%`} />
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-              <div className="flex items-center gap-4 text-xs font-mono">
-                <span className="text-emerald-400">In Favor: <strong>{doc.votes.inFavor}</strong> ({inFavorPercent}%)</span>
-                <span className="text-rose-400">Against: <strong>{doc.votes.against}</strong> ({againstPercent}%)</span>
-                <span className="text-neutral-400">Abstain: <strong>{doc.votes.abstain}</strong> ({abstainPercent}%)</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 pt-1">
+              <div className="grid grid-cols-3 sm:flex sm:items-center gap-1 sm:gap-4 text-[10px] sm:text-xs font-mono text-center sm:text-left">
+                <span className="text-emerald-400">Aye: <strong>{doc.votes.inFavor}</strong> ({inFavorPercent}%)</span>
+                <span className="text-rose-400">No: <strong>{doc.votes.against}</strong> ({againstPercent}%)</span>
+                <span className="text-neutral-400">Abs: <strong>{doc.votes.abstain}</strong> ({abstainPercent}%)</span>
               </div>
 
               {/* Vote Buttons */}
-              <div className="flex items-center gap-1.5 font-mono text-xs">
+              <div className="grid grid-cols-3 sm:flex sm:items-center gap-1.5 font-mono text-xs w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => handleCastVote('IN_FAVOR')}
-                  className={`px-3 py-1.5 rounded-xl border font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl border font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                     userVote === 'IN_FAVOR'
                       ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
                       : 'bg-white/5 border-white/10 text-neutral-300 hover:text-emerald-300'
@@ -312,7 +312,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                 <button
                   type="button"
                   onClick={() => handleCastVote('AGAINST')}
-                  className={`px-3 py-1.5 rounded-xl border font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl border font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                     userVote === 'AGAINST'
                       ? 'bg-rose-500/20 border-rose-500 text-rose-300'
                       : 'bg-white/5 border-white/10 text-neutral-300 hover:text-rose-300'
@@ -324,7 +324,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                 <button
                   type="button"
                   onClick={() => handleCastVote('ABSTAIN')}
-                  className={`px-3 py-1.5 rounded-xl border font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl border font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                     userVote === 'ABSTAIN'
                       ? 'bg-neutral-500/20 border-neutral-400 text-white'
                       : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'

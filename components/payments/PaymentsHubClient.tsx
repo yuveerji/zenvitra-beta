@@ -287,29 +287,29 @@ export function PaymentsHubClient() {
               <button
                 type="button"
                 onClick={() => setIsCheckoutOpen(true)}
-                className="px-5 py-2.5 rounded-2xl bg-white text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition shadow-[0_0_25px_rgba(255,255,255,0.2)] flex items-center gap-2 cursor-pointer"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-white text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition shadow-[0_0_25px_rgba(255,255,255,0.2)] flex items-center gap-2 cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-black" />
-                <span>Test ZEN.CHECKOUT</span>
+                <Sparkles className="w-4 h-4 text-black shrink-0" />
+                <span>Secure Checkout</span>
               </button>
             </div>
           </div>
 
-          <p className="text-sm text-neutral-400 max-w-3xl leading-relaxed font-sans">
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-3xl leading-relaxed font-sans">
             The sovereign financial layer for <strong className="text-white">ZEN.EVENTS, ZEN.MUN, subscriptions, B2B invoices, and creator payouts</strong>. Incorporating verifiable PCI-DSS tokenization, flat ₹9 platform fee (₹5 for Pulse Pass, ₹0 for Pulse Elite), and student GST exemptions.
           </p>
 
           {/* Audience Mode Switcher */}
-          <div className="flex items-center p-1 bg-white/[0.03] border border-white/10 rounded-2xl max-w-lg font-mono text-xs">
+          <div className="flex items-center p-1 bg-white/[0.03] border border-white/10 rounded-2xl max-w-lg font-mono text-xs overflow-x-auto no-scrollbar">
             {[
-              { id: 'CONSUMER', label: 'My Payments (Citizen)' },
-              { id: 'PROFESSIONAL', label: 'Professional Orgs (Invoices)' },
-              { id: 'ORGANIZER', label: revenueAccess.allowed ? 'Event Revenue & Payouts' : 'Event Revenue 🔒' },
+              { id: 'CONSUMER', label: 'My Payments' },
+              { id: 'PROFESSIONAL', label: 'Professional (Invoices)' },
+              { id: 'ORGANIZER', label: revenueAccess.allowed ? 'Event Revenue' : 'Event Revenue 🔒' },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setAudience(tab.id as HubAudience)}
-                className={`flex-1 py-2 px-3 rounded-xl transition cursor-pointer text-center truncate ${
+                className={`flex-1 min-w-[120px] sm:min-w-0 py-2 px-2.5 sm:px-3 rounded-xl transition cursor-pointer text-center truncate ${
                   audience === tab.id
                     ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40 shadow-sm'
                     : 'text-neutral-400 hover:text-white'
