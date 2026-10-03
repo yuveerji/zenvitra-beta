@@ -23,7 +23,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Upload,
-  Wand2
+  Wand2,
+  Trash2
 } from 'lucide-react';
 import { ZenGlimpse, INITIAL_GLIMPSES } from '@/types/glimpse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
@@ -39,6 +40,8 @@ const LOCATION_STAMPS = [
   'Community Hub'
 ];
 
+const LS_GLIMPSES = 'zenvitra_glimpses_v2';
+
 export function ZenGlimpseApp() {
   const { currentUserName, currentUserUsername } = useZenPulse();
 
@@ -52,7 +55,24 @@ export function ZenGlimpseApp() {
   const [caption, setCaption] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(LOCATION_STAMPS[0]);
   const [selfDestructHours, setSelfDestructHours] = useState<1 | 6 | 12 | 24>(24);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const glimpseFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load persisted glimpses on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(LS_GLIMPSES);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setGlimpses(parsed);
+          return;
+        }
+      }
+      setGlimpses(INITIAL_GLIMPSES);
+      localStorage.setItem(LS_GLIMPSES, JSON.stringify(INITIAL_GLIMPSES));
+    } catch {}
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -61,6 +81,7 @@ export function ZenGlimpseApp() {
       reader.onload = (loadEvt) => {
         if (loadEvt.target?.result) {
           setCapturedImage(loadEvt.target.result as string);
+          setCameraError(null);
           stopCamera();
         }
       };
@@ -81,6 +102,7 @@ export function ZenGlimpseApp() {
 
   // Start webcam
   const startCamera = async () => {
+    setCameraError(null);
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -91,12 +113,13 @@ export function ZenGlimpseApp() {
         }
         setIsCameraActive(true);
       } else {
-        // Fallback simulation
-        setIsCameraActive(true);
+        setCameraError('Webcam API not supported in this browser. Please upload a photo.');
+        setIsCameraActive(false);
       }
-    } catch (err) {
-      console.warn('Webcam permission denied or unavailable, using simulated lens mode', err);
-      setIsCameraActive(true);
+    } catch (err: any) {
+      console.warn('Webcam permission denied or unavailable', err);
+      setCameraError('Camera access not granted or unavailable. You can upload a photo directly!');
+      setIsCameraActive(false);
     }
   };
 
@@ -121,7 +144,6 @@ export function ZenGlimpseApp() {
         stopCamera();
       }
     } else {
-      // Prompt user to upload if webcam isn't connected
       glimpseFileInputRef.current?.click();
       stopCamera();
     }
@@ -134,8 +156,8 @@ export function ZenGlimpseApp() {
     const newGlimpse: ZenGlimpse = {
       id: `glimpse_${Date.now()}`,
       authorId: 'user_current',
-      authorName: currentUserName,
-      authorUsername: currentUserUsername,
+      authorName: currentUserName || 'Citizen Node',
+      authorUsername: currentUserUsername || 'you',
       mediaUrl: capturedImage,
       mediaType: 'photo',
       caption: caption.trim() || 'Live from the assembly floor ⚡',
@@ -146,12 +168,51 @@ export function ZenGlimpseApp() {
       createdAt: 'Just now',
       expiresAt: `${selfDestructHours}h remaining`,
       likes: 1,
-      likedBy: [currentUserUsername]
+      likedBy: [currentUserUsername || 'you']
     };
 
-    setGlimpses([newGlimpse, ...glimpses]);
+    const updated = [newGlimpse, ...glimpses];
+    setGlimpses(updated);
+    try {
+      localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
+    } catch {}
     setCapturedImage(null);
     setCaption('');
+  };
+
+  const handleLikeGlimpse = (glimpseId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const userHandle = currentUserUsername || 'you';
+    setGlimpses((prev) => {
+      const updated = prev.map((g) => {
+        if (g.id !== glimpseId) return g;
+        const alreadyLiked = g.likedBy?.includes(userHandle);
+        const newLikedBy = alreadyLiked
+          ? (g.likedBy || []).filter((u) => u !== userHandle)
+          : [...(g.likedBy || []), userHandle];
+        return {
+          ...g,
+          likes: Math.max(0, g.likes + (alreadyLiked ? -1 : 1)),
+          likedBy: newLikedBy
+        };
+      });
+      try {
+        localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleDeleteGlimpse = (glimpseId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setGlimpses((prev) => {
+      const updated = prev.filter((g) => g.id !== glimpseId);
+      try {
+        localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    if (activeGlimpseIndex !== null) setActiveGlimpseIndex(null);
   };
 
   // Story viewer progress interval
@@ -280,10 +341,17 @@ export function ZenGlimpseApp() {
                       Instant 24-hour visual dispatches from active Model UNs, labs, and campus chapters.
                     </p>
                   </div>
+
+                  {cameraError && (
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] font-mono text-amber-300 max-w-xs mx-auto">
+                      {cameraError}
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                     <button
                       onClick={startCamera}
-                      className="px-4 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition cursor-pointer shadow-md flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition cursor-pointer shadow-md flex items-center gap-1.5 active:scale-95"
                     >
                       <Camera className="w-3.5 h-3.5" />
                       <span>Open Viewfinder</span>
@@ -291,7 +359,7 @@ export function ZenGlimpseApp() {
 
                     <button
                       onClick={() => glimpseFileInputRef.current?.click()}
-                      className="px-4 py-2 rounded-full bg-zinc-800 text-white font-semibold text-xs hover:bg-zinc-700 transition cursor-pointer border border-zinc-700 flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-full bg-zinc-800 text-white font-semibold text-xs hover:bg-zinc-700 transition cursor-pointer border border-zinc-700 flex items-center gap-1.5 active:scale-95"
                     >
                       <Upload className="w-3.5 h-3.5" />
                       <span>Upload Photo</span>
@@ -423,15 +491,28 @@ export function ZenGlimpseApp() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-between p-3">
                     
                     {/* Top Author Tag */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full p-[1px] bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600">
-                        <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-[10px] text-white">
-                          {glimpse.authorName[0]}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full p-[1px] bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600">
+                          <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-[10px] text-white">
+                            {glimpse.authorName ? glimpse.authorName[0] : 'U'}
+                          </div>
                         </div>
+                        <span className="font-bold text-xs text-white truncate drop-shadow">
+                          @{glimpse.authorUsername}
+                        </span>
                       </div>
-                      <span className="font-bold text-xs text-white truncate drop-shadow">
-                        @{glimpse.authorUsername}
-                      </span>
+
+                      {glimpse.authorUsername === (currentUserUsername || 'you') && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteGlimpse(glimpse.id, e)}
+                          className="p-1 rounded-full bg-black/60 hover:bg-rose-500 text-zinc-400 hover:text-white transition cursor-pointer"
+                          title="Delete Glimpse"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
 
                     {/* Bottom Info & Location */}
@@ -445,7 +526,15 @@ export function ZenGlimpseApp() {
                       </p>
                       <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono pt-1 border-t border-white/10">
                         <span>⏱️ {glimpse.expiresAt}</span>
-                        <span>❤️ {glimpse.likes}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => handleLikeGlimpse(glimpse.id, e)}
+                          className="flex items-center gap-1 hover:scale-110 transition cursor-pointer text-zinc-300 hover:text-rose-400 active:scale-95"
+                          title="Like Glimpse"
+                        >
+                          <Heart className={`w-3 h-3 ${glimpse.likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-zinc-400'}`} />
+                          <span>{glimpse.likes}</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -491,12 +580,23 @@ export function ZenGlimpseApp() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setActiveGlimpseIndex(null)}
-                  className="p-1.5 rounded-full bg-black/50 text-white hover:bg-black/80 transition cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  {filteredGlimpses[activeGlimpseIndex].authorUsername === (currentUserUsername || 'you') && (
+                    <button
+                      onClick={(e) => handleDeleteGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
+                      className="p-1.5 rounded-full bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white transition cursor-pointer"
+                      title="Delete Glimpse"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setActiveGlimpseIndex(null)}
+                    className="p-1.5 rounded-full bg-black/50 text-white hover:bg-black/80 transition cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -537,10 +637,20 @@ export function ZenGlimpseApp() {
                 </span>
 
                 <div className="flex items-center gap-2">
-                  {['❤️', '🏛️', '🔥', '👏'].map((emoji) => (
+                  <button
+                    type="button"
+                    onClick={(e) => handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 transition cursor-pointer text-xs active:scale-95"
+                    title="Like Glimpse"
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${filteredGlimpses[activeGlimpseIndex].likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
+                    <span>{filteredGlimpses[activeGlimpseIndex].likes}</span>
+                  </button>
+                  {['🏛️', '🔥', '👏'].map((emoji) => (
                     <button
                       key={emoji}
-                      className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 hover:scale-125 transition cursor-pointer text-sm"
+                      onClick={(e) => handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
+                      className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 hover:scale-125 transition cursor-pointer text-sm active:scale-95"
                     >
                       {emoji}
                     </button>

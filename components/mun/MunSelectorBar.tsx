@@ -21,9 +21,10 @@ import { MunConferenceStatus } from '@/types/mun';
 interface MunSelectorBarProps {
   onOpenHistory?: () => void;
   onOpenSummary?: () => void;
+  isEmbedded?: boolean;
 }
 
-export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarProps) {
+export function MunSelectorBar({ onOpenHistory, onOpenSummary, isEmbedded = false }: MunSelectorBarProps) {
   const {
     conferences,
     activeConferenceId,
@@ -68,7 +69,11 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary }: MunSelectorBarP
   };
 
   return (
-    <div className="w-full bg-[#0b0e14]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 sticky top-16 sm:top-[68px] xl:top-[72px] z-30 shadow-2xl">
+    <div className={
+      isEmbedded
+        ? "w-full bg-[#0a0c10]/95 rounded-3xl border border-white/10 backdrop-blur-xl px-4 py-3 shadow-xl"
+        : "w-full bg-[#0b0e14]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 sticky top-16 sm:top-[68px] xl:top-[72px] z-30 shadow-2xl"
+    }>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
         
         {/* Left: Active MUN Selector Dropdown */}

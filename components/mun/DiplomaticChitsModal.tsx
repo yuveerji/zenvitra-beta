@@ -18,6 +18,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface DiplomaticChitsModalProps {
   isOpen: boolean;
@@ -38,37 +39,91 @@ interface DiplomaticChit {
 }
 
 export function DiplomaticChitsModal({ isOpen, onClose }: DiplomaticChitsModalProps) {
+  const { profile } = useAuth();
   const { userInvites, activeCommitteeId, getCommitteeById, committees } = useMun();
   const committee = getCommitteeById(activeCommitteeId) || committees[0];
   const userAcceptedInvite = userInvites.find(
     (i) => i.committeeId === activeCommitteeId && i.status === 'accepted'
   );
 
-  const myCountry = userAcceptedInvite?.portfolio || 'France';
-  const myFlag = userAcceptedInvite?.flagEmoji || '🇫🇷';
+  const myCountry = userAcceptedInvite?.portfolio || (profile?.display_name ? `Delegate (${profile.display_name})` : 'Observer Node');
+  const myFlag = userAcceptedInvite?.flagEmoji || '🌐';
 
   const [activeTab, setActiveTab] = useState<'inbox' | 'compose' | 'sent'>('inbox');
-  const [recipient, setRecipient] = useState<string>('United States');
   const [chitType, setChitType] = useState<DiplomaticChit['type']>('Bilateral Treaty');
   const [chitContent, setChitContent] = useState<string>('');
   const [sentSuccess, setSentSuccess] = useState<boolean>(false);
   const [chits, setChits] = useState<DiplomaticChit[]>([]);
 
-  if (!isOpen) return null;
+  const COUNTRY_OPTIONS = React.useMemo(() => {
+    const isIndian = committee?.type === 'AIPPM' || committee?.type === 'LOK_SABHA' || committee?.shortName?.includes('AIPPM');
+    const isEmi = committee?.shortName?.includes('EMI') || committee?.name?.toLowerCase().includes('education');
+    const isEcosoc = committee?.shortName?.includes('ECOSOC') || committee?.type === 'ECOSOC';
 
-  const COUNTRY_OPTIONS = [
-    { country: '👑 Dais Executive Board (Chair)', flag: '👑' },
-    { country: 'United States', flag: '🇺🇸' },
-    { country: 'United Kingdom', flag: '🇬🇧' },
-    { country: 'China', flag: '🇨🇳' },
-    { country: 'Russian Federation', flag: '🇷🇺' },
-    { country: 'India', flag: '🇮🇳' },
-    { country: 'Germany', flag: '🇩🇪' },
-    { country: 'Japan', flag: '🇯🇵' },
-    { country: 'Brazil', flag: '🇧🇷' },
-    { country: 'South Africa', flag: '🇿🇦' },
-    { country: 'United Arab Emirates', flag: '🇦🇪' }
-  ];
+    if (isIndian) {
+      return [
+        { country: "👑 Dais Executive Board (Hon'ble Speaker)", flag: '👑' },
+        { country: 'Narendra Modi (Prime Minister / Varanasi MP)', flag: '🇮🇳' },
+        { country: 'Amit Shah (Minister of Home Affairs)', flag: '🇮🇳' },
+        { country: 'Rahul Gandhi (Leader of Opposition)', flag: '🇮🇳' },
+        { country: 'Rajnath Singh (Minister of Defence)', flag: '🇮🇳' },
+        { country: 'Nirmala Sitharaman (Minister of Finance)', flag: '🇮🇳' },
+        { country: 'Mallikarjun Kharge (Leader of Opposition, Rajya Sabha)', flag: '🇮🇳' },
+        { country: 'Akhilesh Yadav (Samajwadi Party Chief)', flag: '🇮🇳' },
+        { country: 'Mamata Banerjee (TMC Chief)', flag: '🇮🇳' },
+        { country: 'Nitin Gadkari (Minister of Road Transport)', flag: '🇮🇳' },
+        { country: 'Asaduddin Owaisi (AIMIM Chief)', flag: '🇮🇳' }
+      ];
+    }
+
+    if (isEmi) {
+      return [
+        { country: '👑 Dais Executive Board (Union Minister)', flag: '👑' },
+        { country: 'Dharmendra Pradhan (Union Minister of Education)', flag: '🇮🇳' },
+        { country: 'Prof. M. Jagadesh Kumar (UGC Chairman)', flag: '🇮🇳' },
+        { country: 'Prof. T.G. Sitharam (AICTE Chairman)', flag: '🇮🇳' },
+        { country: 'Director, NCERT Framework Directorate', flag: '🇮🇳' },
+        { country: 'Director, IIT Delhi', flag: '🇮🇳' },
+        { country: 'Vice-Chancellor, Delhi University', flag: '🇮🇳' },
+        { country: 'State Education Secretary (Tamil Nadu)', flag: '🇮🇳' },
+        { country: 'National Student Union Representative', flag: '🇮🇳' }
+      ];
+    }
+
+    if (isEcosoc) {
+      return [
+        { country: '👑 Dais Executive Board (ECOSOC President)', flag: '👑' },
+        { country: 'Republic of India (Global South Anchor)', flag: '🇮🇳' },
+        { country: 'United States of America', flag: '🇺🇸' },
+        { country: 'Federal Republic of Germany', flag: '🇩🇪' },
+        { country: 'Federative Republic of Brazil', flag: '🇧🇷' },
+        { country: 'Republic of South Africa', flag: '🇿🇦' },
+        { country: 'Barbados (Bridgetown Initiative)', flag: '🇧🇧' },
+        { country: 'Republic of Kenya', flag: '🇰🇪' },
+        { country: 'Japan (JICA)', flag: '🇯🇵' }
+      ];
+    }
+
+    return [
+      { country: '👑 Dais Executive Board (President)', flag: '👑' },
+      { country: 'United States of America', flag: '🇺🇸' },
+      { country: 'United Kingdom', flag: '🇬🇧' },
+      { country: 'French Republic', flag: '🇫🇷' },
+      { country: 'Russian Federation', flag: '🇷🇺' },
+      { country: "People's Republic of China", flag: '🇨🇳' },
+      { country: 'Republic of India', flag: '🇮🇳' },
+      { country: 'Japan', flag: '🇯🇵' },
+      { country: 'Republic of Korea', flag: '🇰🇷' },
+      { country: 'Swiss Confederation', flag: '🇨🇭' },
+      { country: 'Republic of Sierra Leone', flag: '🇸🇱' },
+      { country: 'Republic of South Africa', flag: '🇿🇦' },
+      { country: 'United Arab Emirates', flag: '🇦🇪' }
+    ];
+  }, [committee]);
+
+  const [recipient, setRecipient] = useState<string>(COUNTRY_OPTIONS[1]?.country || COUNTRY_OPTIONS[0].country);
+
+  if (!isOpen) return null;
 
   const handleSendChit = (e: React.FormEvent) => {
     e.preventDefault();

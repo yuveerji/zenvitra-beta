@@ -279,6 +279,7 @@ export function CommitteeChamber() {
     return (
       <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-neutral-100 select-none space-y-6 pb-12">
         <MunSelectorBar
+          isEmbedded={true}
           onOpenHistory={() => setShowDayHistoryModal(true)}
           onOpenSummary={() => setShowSummaryPaperModal(true)}
         />
@@ -300,6 +301,7 @@ export function CommitteeChamber() {
   return (
     <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-neutral-100 select-none space-y-6 pb-12">
       <MunSelectorBar
+        isEmbedded={true}
         onOpenHistory={() => setShowDayHistoryModal(true)}
         onOpenSummary={() => setShowSummaryPaperModal(true)}
       />
@@ -339,18 +341,18 @@ export function CommitteeChamber() {
           </div>
 
           {/* Committee Name Selector & Action Controls */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div className="relative w-full lg:w-auto min-w-[280px]">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
+            <div className="relative min-w-0 flex-1 max-w-full lg:max-w-xl xl:max-w-2xl">
               <select
                 value={activeCommitteeId}
                 onChange={(e) => setActiveCommitteeId(e.target.value)}
-                className="appearance-none w-full lg:w-auto bg-[#111319] border border-white/15 hover:border-white/30 text-white font-display font-semibold text-base sm:text-2xl px-3.5 sm:px-4 py-2 pr-9 sm:pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
+                className="appearance-none w-full bg-[#111319] border border-white/15 hover:border-white/30 text-white font-display font-semibold text-base sm:text-xl lg:text-2xl px-3.5 sm:px-4 py-2.5 pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
               >
                 {committees.map((c) => {
                   const isOther = c.id === 'custom-chamber-other' || c.type === 'OTHER';
                   const displayName = isOther
                     ? `Other / Custom Forum${c.name && c.name !== 'Universal Youth Assembly & Multidisciplinary Forum' ? `: ${c.name}` : ''}`
-                    : `${c.name} (${c.shortName})`;
+                    : (c.name.includes(`(${c.shortName})`) ? c.name : `${c.name} (${c.shortName})`);
                   return (
                     <option key={c.id} value={c.id} className="bg-black text-white font-sans text-sm">
                       {displayName}
@@ -362,15 +364,15 @@ export function CommitteeChamber() {
             </div>
 
             {/* Action Bar (Observer, Gavel, Edit Details, Secretariat) */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex items-center flex-wrap gap-2 shrink-0">
               {/* Delegate Passport Badge */}
               {userAcceptedInvite ? (
-                <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-200 font-mono text-xs font-medium flex items-center gap-2 shadow-sm">
+                <div className="px-3.5 py-2 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-200 font-mono text-xs font-medium flex items-center gap-2 shadow-sm shrink-0 whitespace-nowrap">
                   <span>{userAcceptedInvite.flagEmoji}</span>
                   <span>{userAcceptedInvite.portfolio} (You)</span>
                 </div>
               ) : (
-                <div className="px-3.5 py-1.5 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-400 font-mono text-xs flex items-center gap-1.5">
+                <div className="px-3.5 py-2 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-400 font-mono text-xs flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                   <Globe2 className="w-3.5 h-3.5 text-neutral-400" />
                   <span>Observer Node</span>
                 </div>
@@ -380,7 +382,7 @@ export function CommitteeChamber() {
               <button
                 type="button"
                 onClick={playGavelSound}
-                className={`p-2 px-3.5 rounded-2xl border font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 ${
+                className={`p-2 px-3.5 rounded-2xl border font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-sm active:scale-95 shrink-0 whitespace-nowrap ${
                   gavelActive
                     ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
                     : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-neutral-300 hover:border-white/20'
@@ -408,7 +410,7 @@ export function CommitteeChamber() {
               <button
                 type="button"
                 onClick={() => setShowEditChamberModal(true)}
-                className="p-2 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs font-medium transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                className="p-2 px-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs font-medium transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                 title="Customize Committee Name, Set Agenda & Define Portfolios"
               >
                 <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
@@ -419,7 +421,7 @@ export function CommitteeChamber() {
               {isSecTeam && (
                 <Link
                   href="/mun/conference"
-                  className="p-2 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="p-2 px-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-neutral-200 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 whitespace-nowrap active:scale-95"
                   title="Return to Secretariat Conference Command Center"
                 >
                   <Crown className="w-3.5 h-3.5 text-amber-400" />
@@ -508,106 +510,109 @@ export function CommitteeChamber() {
       {/* ─────────────────────────────────────────────────────────────
           2. UNCONSTRAINED DAIS COMMAND & ACTION TOOLBAR (OUTSIDE CARD)
       ───────────────────────────────────────────────────────────── */}
-      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl bg-[#0a0c10]/90 border border-white/10 shadow-xl backdrop-blur-2xl">
+      <div className="w-full flex flex-wrap items-center justify-between gap-3 p-3 sm:p-3.5 rounded-2xl bg-[#0a0c10]/95 border border-white/10 shadow-xl backdrop-blur-2xl">
         {/* Left: Operational Chamber Utilities */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center flex-wrap gap-2 sm:gap-2.5">
           {/* Quorum Trigger Button */}
           <button
             type="button"
             onClick={() => setShowRollCallModal(true)}
-            className="p-2.5 px-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-left transition cursor-pointer group flex items-center gap-2.5"
+            className="px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 hover:border-white/20 text-left transition cursor-pointer group flex items-center gap-2.5 shrink-0 whitespace-nowrap shadow-sm active:scale-95"
             title="Open Roll Call & Quorum Intelligence"
           >
             <Users className="w-4 h-4 text-cyan-400 shrink-0" />
-            <div>
-              <span className="text-[9px] font-mono text-neutral-400 uppercase font-semibold block leading-none">
-                QUORUM
+            <div className="flex items-center gap-1.5 font-mono text-xs">
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                QUORUM:
               </span>
-              <span className="font-mono font-semibold text-xs text-neutral-200">
+              <span className="font-semibold text-neutral-200">
                 {committee.presentCount > 0 ? (
-                  `${committee.presentCount}/${committee.totalDelegates || 15} Present`
+                  `${committee.presentCount}/${committee.totalDelegates || 15}`
                 ) : (
-                  `Roll Call (0/${committee.totalDelegates || 15})`
+                  `0/${committee.totalDelegates || 15}`
                 )}
               </span>
             </div>
           </button>
 
-          {/* Custom Timer Trigger */}
-          <button
-            type="button"
-            onClick={() => setShowCustomTimerModal(true)}
-            className="p-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
-            title="Configure Custom Caucus Time (MM:SS)"
-          >
-            <Clock className="w-4 h-4 text-neutral-400 shrink-0" />
-            <span>Timer</span>
-          </button>
-
-          {/* Projector Fullscreen View */}
-          <button
-            type="button"
-            onClick={() => setShowFullscreenView(true)}
-            className="p-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
-            title="Stage Projector Mode (ESC to exit)"
-          >
-            <Maximize2 className="w-4 h-4 text-neutral-400 shrink-0" />
-            <span>Stage</span>
-          </button>
-
-          {/* Diplomatic Chits */}
-          <button
-            type="button"
-            onClick={() => setShowDiplomaticChitsModal(true)}
-            className="p-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
-            title="Diplomatic Chits & Page Messenger"
-          >
-            <Mail className="w-4 h-4 text-neutral-400 shrink-0" />
-            <span>Chits</span>
-          </button>
-
-          {/* Official Sources & Media Reference Hub */}
-          <button
-            type="button"
-            onClick={() => setShowOfficialSourcesModal(true)}
-            className="p-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
-            title="Official Sources & Reference Material"
-          >
-            <BookOpen className="w-4 h-4 text-neutral-400 shrink-0" />
-            <span>Sources</span>
-          </button>
-
-          {/* Direct ZEN.LEGISLATE / ZEN.DOCS Drafting Gateway */}
-          {isIndianCommittee ? (
+          {/* Segmented Dais Controls */}
+          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
+            {/* Custom Timer Trigger */}
             <button
               type="button"
-              onClick={() => setShowLokSabhaDraftModal(true)}
-              className="p-2.5 px-3.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-              title="ZEN.LEGISLATE — Draft Parliamentary Bill or Press Release"
+              onClick={() => setShowCustomTimerModal(true)}
+              className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap active:scale-95"
+              title="Configure Custom Caucus Time (MM:SS)"
             >
-              <Gavel className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>ZEN.LEGISLATE</span>
+              <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+              <span>Timer</span>
             </button>
-          ) : (
+
+            {/* Projector Fullscreen View */}
             <button
               type="button"
-              onClick={() => setShowUnDocsDraftModal(true)}
-              className="p-2.5 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.2)]"
-              title="ZEN.DOCS Multilateral Drafting Studio"
+              onClick={() => setShowFullscreenView(true)}
+              className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap active:scale-95"
+              title="Stage Projector Mode (ESC to exit)"
             >
-              <ScrollText className="w-4 h-4 text-cyan-400 shrink-0" />
-              <span>ZEN.DOCS</span>
+              <Maximize2 className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+              <span>Stage</span>
             </button>
-          )}
+
+            {/* Diplomatic Chits */}
+            <button
+              type="button"
+              onClick={() => setShowDiplomaticChitsModal(true)}
+              className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap active:scale-95"
+              title="Diplomatic Chits & Page Messenger"
+            >
+              <Mail className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+              <span>Chits</span>
+            </button>
+
+            {/* Official Sources & Media Reference Hub */}
+            <button
+              type="button"
+              onClick={() => setShowOfficialSourcesModal(true)}
+              className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white border border-white/10 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap active:scale-95"
+              title="Official Sources & Reference Material"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+              <span>Sources</span>
+            </button>
+
+            {/* Direct ZEN.LEGISLATE / ZEN.DOCS Drafting Gateway */}
+            {isIndianCommittee ? (
+              <button
+                type="button"
+                onClick={() => setShowLokSabhaDraftModal(true)}
+                className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap shadow-[0_0_15px_rgba(245,158,11,0.2)] active:scale-95"
+                title="ZEN.LEGISLATE — Draft Parliamentary Bill or Press Release"
+              >
+                <Gavel className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>ZEN.LEGISLATE</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowUnDocsDraftModal(true)}
+                className="px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap shadow-[0_0_15px_rgba(6,182,212,0.2)] active:scale-95"
+                title="ZEN.DOCS Multilateral Drafting Studio"
+              >
+                <ScrollText className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span>ZEN.DOCS</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Right: Key Floor Actions */}
-        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Live Vote Trigger */}
           <button
             type="button"
             onClick={() => setShowLiveVotingModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-display font-semibold text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-display font-semibold text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap active:scale-95"
           >
             <Vote className="w-4 h-4 shrink-0" />
             <span>+ Vote</span>
@@ -617,9 +622,9 @@ export function CommitteeChamber() {
           <button
             type="button"
             onClick={() => setShowCreateEventModal(true)}
-            className="px-4 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white font-display font-semibold text-xs border border-neutral-700 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-display font-semibold text-xs border border-white/15 hover:border-white/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap active:scale-95"
           >
-            <Sparkles className="w-4 h-4 text-neutral-300 shrink-0" />
+            <Sparkles className="w-4 h-4 text-cyan-300 shrink-0" />
             <span>+ Host</span>
           </button>
         </div>

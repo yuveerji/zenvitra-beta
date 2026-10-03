@@ -315,7 +315,11 @@ export function PlatformShell({
     pathname === '/docs' || 
     pathname?.startsWith('/docs') ||
     pathname === '/legislate' || 
-    pathname?.startsWith('/legislate')
+    pathname?.startsWith('/legislate') ||
+    pathname === '/committee' || 
+    pathname?.startsWith('/committee') ||
+    pathname === '/glimpse' || 
+    pathname?.startsWith('/glimpse')
   );
 
   return (

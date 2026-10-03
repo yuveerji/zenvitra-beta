@@ -27,9 +27,11 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
+import { useAuth } from '@/context/AuthContext';
 import { ChamberVotingSession, ChamberVoteOption } from '@/types/mun';
 
 export function LiveVotingCenter({ onOpenNewVoteModal }: { onOpenNewVoteModal: () => void }) {
+  const { profile } = useAuth();
   const {
     activeVotingSession,
     votingSessions,
@@ -50,8 +52,8 @@ export function LiveVotingCenter({ onOpenNewVoteModal }: { onOpenNewVoteModal: (
     (i) => i.committeeId === activeCommitteeId && i.status === 'accepted'
   );
 
-  const myCountry = userAcceptedInvite?.portfolio || 'Delegation of France';
-  const myFlag = userAcceptedInvite?.flagEmoji || '🇫🇷';
+  const myCountry = userAcceptedInvite?.portfolio || (profile?.display_name ? `Delegate (${profile.display_name})` : 'Observer Node');
+  const myFlag = userAcceptedInvite?.flagEmoji || '🌐';
 
   // Live Timer Countdown for active session
   useEffect(() => {
