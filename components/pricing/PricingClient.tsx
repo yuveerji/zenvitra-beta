@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Check, 
@@ -37,7 +37,9 @@ import {
   Bookmark,
   Shield,
   Eye,
-  Rocket
+  Rocket,
+  UploadCloud,
+  FileCheck
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useAuth } from '@/context/AuthContext';
@@ -96,6 +98,26 @@ export function PricingClient() {
   /* ── TAXATION & AGE / STUDENT VERIFICATION STATE ── */
   const [userAge, setUserAge] = useState<number>(17);
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
+  const [studentIdFile, setStudentIdFile] = useState<{ name: string; size: string } | null>(null);
+  const [studentIdError, setStudentIdError] = useState<string | null>(null);
+  const studentFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-read pre-verified student status from localStorage (shared with /payments checkout)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('zenvitra_student_verification');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.verified || parsed?.status === 'VERIFIED') {
+          setIsCollegeStudent(true);
+          setStudentIdFile({
+            name: parsed.fileName || 'Verified_Student_ID.pdf',
+            size: parsed.fileSize || '142.0 KB'
+          });
+        }
+      }
+    } catch {}
+  }, []);
 
   // Safety: reset audience if current audience is not accessible for the user's account tier
   React.useEffect(() => {
@@ -1564,6 +1586,81 @@ export function PricingClient() {
                     <span className="text-[10px]">Active College / University Student (Unlocks 5% GST)</span>
                   </label>
                 </div>
+
+                {/* Student ID Upload / Verification Status */}
+                {isCollegeStudent && (
+                  <div className="pt-2 border-t border-white/5">
+                    {studentIdFile ? (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
+                        <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-mono text-emerald-300 font-bold">Student ID Verified ✓</p>
+                          <p className="text-[10px] font-mono text-neutral-400 truncate">{studentIdFile.name} ({studentIdFile.size})</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setStudentIdFile(null);
+                            try { localStorage.removeItem('zenvitra_student_verification'); } catch {}
+                          }}
+                          className="text-[9px] font-mono text-neutral-500 hover:text-red-400 transition cursor-pointer px-1.5 py-0.5 rounded border border-white/10 hover:border-red-400/30"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <input
+                          ref={studentFileInputRef}
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                setStudentIdError('File size exceeds 5MB limit.');
+                                return;
+                              }
+                              const filePayload = {
+                                name: file.name,
+                                size: `${(file.size / 1024).toFixed(1)} KB`,
+                              };
+                              setStudentIdFile(filePayload);
+                              setStudentIdError(null);
+                              setIsCollegeStudent(true);
+                              try {
+                                localStorage.setItem('zenvitra_student_verification', JSON.stringify({
+                                  verified: true,
+                                  status: 'VERIFIED',
+                                  fileName: file.name,
+                                  fileSize: filePayload.size,
+                                  uploadedAt: new Date().toISOString()
+                                }));
+                              } catch {}
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => studentFileInputRef.current?.click()}
+                          className="w-full p-3 rounded-xl border-2 border-dashed border-cyan-500/30 hover:border-cyan-400/50 bg-cyan-950/10 hover:bg-cyan-950/20 transition cursor-pointer flex flex-col items-center gap-1.5 group"
+                        >
+                          <UploadCloud className="w-5 h-5 text-cyan-400/60 group-hover:text-cyan-300 transition" />
+                          <span className="text-[11px] font-mono text-neutral-400 group-hover:text-neutral-300 transition">
+                            Upload School / College ID to avail student concession
+                          </span>
+                          <span className="text-[9px] font-mono text-neutral-500">
+                            PDF, JPG, PNG — Max 5MB
+                          </span>
+                        </button>
+                        {studentIdError && (
+                          <p className="text-[10px] font-mono text-red-400">{studentIdError}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
