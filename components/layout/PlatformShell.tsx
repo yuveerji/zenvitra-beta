@@ -694,42 +694,58 @@ export function PlatformShell({
             </span>
           </button>
 
-          {/* User Profile Snippet */}
-          <Link
-            href="/pulse?tab=profile"
-            onClick={() => {
-              setIsHovered(false);
-              setIsMobileOpen(false);
-            }}
-            className="flex items-center rounded-2xl transition cursor-pointer group p-2.5 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 gap-3"
-          >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px] shrink-0 group-hover:scale-105 transition-transform shadow-md">
-              <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white uppercase overflow-hidden" suppressHydrationWarning>
-                {mounted && currentAvatar ? (
-                  <img src={currentAvatar} alt={currentDisplayName} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  currentInitial
-                )}
+          {/* User Profile Snippet & Quick Sign Out */}
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 transition group">
+            <Link
+              href="/pulse?tab=profile"
+              onClick={() => {
+                setIsHovered(false);
+                setIsMobileOpen(false);
+              }}
+              className="flex items-center rounded-xl transition cursor-pointer p-1.5 gap-2.5 min-w-0 flex-1"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px] shrink-0 group-hover:scale-105 transition-transform shadow-md">
+                <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white uppercase overflow-hidden" suppressHydrationWarning>
+                  {mounted && currentAvatar ? (
+                    <img src={currentAvatar} alt={currentDisplayName} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    currentInitial
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="overflow-hidden min-w-0 flex-1 text-left" suppressHydrationWarning>
-              <div className="flex items-center gap-1.5">
-                <p className="text-xs font-semibold text-white group-hover:underline truncate" suppressHydrationWarning>{currentDisplayName}</p>
-                {isGuest && (
-                  <span className="px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-mono text-[9px] font-bold shrink-0">
-                    GUEST
-                  </span>
-                )}
-                {isTestPilot && (
-                  <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono text-[9px] font-bold shrink-0 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                    TEST PILOT
-                  </span>
-                )}
+              <div className="overflow-hidden min-w-0 flex-1 text-left" suppressHydrationWarning>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-semibold text-white group-hover:underline truncate" suppressHydrationWarning>{currentDisplayName}</p>
+                  {isGuest && (
+                    <span className="px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-mono text-[9px] font-bold shrink-0">
+                      GUEST
+                    </span>
+                  )}
+                  {isTestPilot && (
+                    <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono text-[9px] font-bold shrink-0 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                      TEST
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-zinc-500 truncate font-mono" suppressHydrationWarning>@{currentUsername}</p>
               </div>
-              <p className="text-[10px] text-zinc-500 truncate font-mono" suppressHydrationWarning>@{currentUsername}</p>
-            </div>
-          </Link>
+            </Link>
+
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await signOut({ forceFullLogout: true });
+                router.push('/login');
+              }}
+              className="p-2 rounded-xl text-neutral-400 hover:text-rose-400 hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 transition shrink-0 cursor-pointer"
+              title="Sign Out"
+              aria-label="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </motion.aside>
 
@@ -747,19 +763,21 @@ export function PlatformShell({
             <div className="flex items-center gap-2.5 shrink-0 ml-3">
               <Link
                 href="/passport"
-                className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-[10px] hover:bg-cyan-400/30 transition shrink-0 uppercase tracking-wider font-bold"
+                className="px-2.5 py-1 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-[10px] hover:bg-cyan-400/30 transition shrink-0 uppercase tracking-wider font-bold"
               >
                 Inspect Passport &rarr;
               </Link>
               <button
                 type="button"
-                onClick={() => {
-                  signOut();
+                onClick={async () => {
+                  await signOut({ forceFullLogout: true });
                   router.push('/login');
                 }}
-                className="px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-400/30 text-[10px] hover:bg-red-500/30 transition shrink-0 uppercase tracking-wider font-bold cursor-pointer"
+                className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 hover:text-white border border-rose-500/40 hover:bg-rose-500/40 text-[10px] transition shrink-0 uppercase tracking-wider font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(244,63,94,0.25)]"
+                title="Sign out of Test Node"
               >
-                Exit Test Mode
+                <LogOut className="w-3 h-3" />
+                <span>Sign Out</span>
               </button>
               <button
                 type="button"

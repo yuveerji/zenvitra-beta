@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { 
   ZenPassport, 
   getOrCreateDefaultPassport, 
@@ -29,10 +31,13 @@ import {
   ListTree, 
   Eye, 
   Lock,
-  Sparkles
+  Sparkles,
+  LogOut
 } from 'lucide-react';
 
 export default function PassportPage() {
+  const router = useRouter();
+  const { signOut } = useAuth();
   const [passport, setPassport] = useState<ZenPassport | null>(null);
   const [activeTab, setActiveTab] = useState<'CARD' | 'WALLET' | 'TIMELINE' | 'SECTIONS' | 'PRIVACY'>('CARD');
   const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -202,6 +207,21 @@ export default function PassportPage() {
               <Eye className="w-3.5 h-3.5 text-black" />
               <span>Public View</span>
             </Link>
+
+            {passport.username === 'test' && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut({ forceFullLogout: true });
+                  router.push('/login');
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-mono font-bold hover:bg-rose-500/25 transition cursor-pointer shadow-sm active:scale-95"
+                title="Sign out of Test Node"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            )}
           </div>
         </div>
 
