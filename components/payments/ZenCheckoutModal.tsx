@@ -184,30 +184,56 @@ export function ZenCheckoutModal({
 
   if (!isOpen) return null;
 
-  // Handle student ID upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle student ID upload with real server endpoint
+  const [isUploadingStudentId, setIsUploadingStudentId] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         setStudentIdError('File size exceeds 5MB limit.');
         return;
       }
-      const filePayload = {
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(1)} KB`,
-      };
-      setStudentIdFile(filePayload);
+      setIsUploadingStudentId(true);
       setStudentIdError(null);
+
       try {
-        localStorage.setItem('zenvitra_student_verification', JSON.stringify({
-          verified: true,
-          status: 'VERIFIED',
-          fileName: file.name,
-          fileSize: filePayload.size,
-          uploadedAt: new Date().toISOString()
-        }));
-      } catch {
-        // ignore
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch('/api/verification/upload-student-id', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Upload failed');
+        }
+
+        const filePayload = {
+          name: data.fileName || file.name,
+          size: data.fileSize || `${(file.size / 1024).toFixed(1)} KB`,
+          url: data.fileUrl,
+        };
+        setStudentIdFile(filePayload);
+        setStudentIdError(null);
+
+        try {
+          localStorage.setItem('zenvitra_student_verification', JSON.stringify({
+            verified: true,
+            status: 'VERIFIED',
+            fileName: filePayload.name,
+            fileSize: filePayload.size,
+            fileUrl: data.fileUrl,
+            uploadedAt: new Date().toISOString()
+          }));
+        } catch {}
+      } catch (err: any) {
+        console.error('Student ID upload failed:', err);
+        setStudentIdError(err.message || 'Failed to upload student verification file');
+      } finally {
+        setIsUploadingStudentId(false);
       }
     }
   };

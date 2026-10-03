@@ -1615,29 +1615,49 @@ export function PricingClient() {
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png,.webp"
                           className="hidden"
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (file) {
                               if (file.size > 5 * 1024 * 1024) {
                                 setStudentIdError('File size exceeds 5MB limit.');
                                 return;
                               }
-                              const filePayload = {
-                                name: file.name,
-                                size: `${(file.size / 1024).toFixed(1)} KB`,
-                              };
-                              setStudentIdFile(filePayload);
                               setStudentIdError(null);
                               setIsCollegeStudent(true);
+
                               try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+
+                                const res = await fetch('/api/verification/upload-student-id', {
+                                  method: 'POST',
+                                  body: formData,
+                                });
+
+                                const data = await res.json();
+                                if (!data.success) {
+                                  throw new Error(data.error || 'Upload failed');
+                                }
+
+                                const filePayload = {
+                                  name: data.fileName || file.name,
+                                  size: data.fileSize || `${(file.size / 1024).toFixed(1)} KB`,
+                                };
+                                setStudentIdFile(filePayload);
+                                setStudentIdError(null);
+
                                 localStorage.setItem('zenvitra_student_verification', JSON.stringify({
                                   verified: true,
                                   status: 'VERIFIED',
-                                  fileName: file.name,
+                                  fileName: filePayload.name,
                                   fileSize: filePayload.size,
+                                  fileUrl: data.fileUrl,
                                   uploadedAt: new Date().toISOString()
                                 }));
-                              } catch {}
+                              } catch (err: any) {
+                                console.error('Student ID upload failed:', err);
+                                setStudentIdError(err.message || 'Failed to upload student verification file');
+                              }
                             }
                           }}
                         />

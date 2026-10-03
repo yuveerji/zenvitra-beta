@@ -11,3 +11,4 @@ Thumbs.db
 .agent/skills/cashfree-skills/
 *.tsbuildinfo
 data/
+public/uploads/

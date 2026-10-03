@@ -121,6 +121,20 @@ export default function SolutionsPage() {
     } catch {}
   }, [documents]);
 
+  // Synchronize network-wide solutions from server API
+  useEffect(() => {
+    fetch(`/api/solutions?includeTest=${isTestUser ? 'true' : 'false'}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.documents) && data.documents.length > 0) {
+          setDocuments(data.documents);
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to fetch server solutions:', err);
+      });
+  }, [isTestUser]);
+
   const [selectedType, setSelectedType] = useState<DocumentType | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -163,11 +177,25 @@ export default function SolutionsPage() {
     setDocuments([newDoc, ...documents]);
     setActiveReadingDoc(newDoc);
     broadcastActivitySync({ source: 'press', action: 'create', timestamp: Date.now() });
+
+    // Sync to server storage for network-wide visibility
+    fetch('/api/solutions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ document: newDoc })
+    }).catch(err => console.warn('Failed to sync new solution to server:', err));
   };
 
   const handleUpdateDocument = (updatedDoc: SolutionDocument) => {
     setDocuments(prev => prev.map(d => d.id === updatedDoc.id ? updatedDoc : d));
     setActiveReadingDoc(updatedDoc);
+
+    // Sync updated document to server
+    fetch('/api/solutions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ document: updatedDoc })
+    }).catch(err => console.warn('Failed to sync updated solution to server:', err));
   };
 
   const handleVote = (docId: string, voteType: 'IN_FAVOR' | 'AGAINST' | 'ABSTAIN') => {
@@ -175,6 +203,7 @@ export default function SolutionsPage() {
       setIsRegisterPromptOpen(true);
       return;
     }
+    const currentUserId = user?.id || (profile as any)?.id || 'citizen_user';
     setDocuments(prev => prev.map(d => {
       if (d.id !== docId) return d;
       return {
@@ -187,6 +216,13 @@ export default function SolutionsPage() {
         }
       };
     }));
+
+    // Record verified vote on server
+    fetch('/api/solutions/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docId, voteType, userId: currentUserId })
+    }).catch(err => console.warn('Failed to record server vote:', err));
   };
 
   const filteredDocuments = documents.filter(doc => {
