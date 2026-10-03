@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
       customerPhone,
       orderNote,
       productId,
-      returnUrl
+      returnUrl,
+      username
     } = body;
 
     if (!amount || Number(amount) <= 0) {
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
       order_tags: {
         platform: 'zenvitra',
         productId: productId || 'membership',
+        username: (username || '').toLowerCase().replace(/^@/, '').trim(),
       }
     };
 

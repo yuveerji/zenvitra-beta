@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import {
@@ -22,11 +23,13 @@ import {
   FileCheck,
   Building,
   Smartphone,
-  Check
+  Check,
+  Award
 } from 'lucide-react';
 import { computeTax, LS_ZEN_TXNS } from '@/lib/paymentsData';
 import { useAuth } from '@/context/AuthContext';
 import { PaymentTransaction, PaymentReceipt, PaymentMethodType, PaymentProduct } from '@/types/payments';
+import { WalletCredential, getOrCreateDefaultPassport, savePassport } from '@/lib/passport';
 
 // Module-level singleton loader for Cashfree.js v3
 let cashfreeSdkPromise: Promise<any> | null = null;
@@ -238,6 +241,93 @@ export function ZenCheckoutModal({
     }
   };
 
+  // Mint & award ticket/pass credential to the user's sovereign passport wallet
+  const awardPassportCredential = (txn: PaymentTransaction) => {
+    try {
+      const rawUsername = profile?.username || user?.username || (user?.email ? user.email.split('@')[0] : 'citizen');
+      const cleanUsername = rawUsername.toLowerCase().replace(/^@/, '').trim();
+      const passport = getOrCreateDefaultPassport(cleanUsername, payerName || profile?.display_name || user?.name);
+
+      let credTitle = txn.eventOrItemName || txn.purpose || 'ZENVITRA Verified Access Pass';
+      let credType: 'EVENT_PASS' | 'CERTIFICATE' | 'AWARD' | 'LETTER' | 'STUDENT_BADGE' = 'EVENT_PASS';
+
+      if ((product as string) === 'ZEN_PRO' || (product as string) === 'ZEN+') {
+        credTitle = 'ZEN.PRO Verified Scholar Badge';
+        credType = 'STUDENT_BADGE';
+      } else if ((product as string) === 'ZEN.MUN' || (product as string) === 'DIPLOMACY_MUN') {
+        credTitle = 'ZEN.DIPLOMACY 2026 Sovereign Delegate Pass';
+        credType = 'EVENT_PASS';
+      } else if ((product as string) === 'ZEN_ELITE' || (product as string) === 'PULSE_MEMBERSHIP') {
+        credTitle = 'ZEN.PULSE Annual Delegate Pass';
+        credType = 'EVENT_PASS';
+      } else if ((product as string) === 'ZEN.EVENTS' || (product as string) === 'WORKSHOP') {
+        credTitle = 'Diplomatic Protocol & Resolution Masterclass Pass';
+        credType = 'EVENT_PASS';
+      } else if ((product as string) === 'PROFESSIONAL_ORG' || (product as string) === 'LEGAL_FILING') {
+        credTitle = 'Sovereign Treaty & Legal Filing Credential';
+        credType = 'CERTIFICATE';
+      }
+
+      const credId = `PASS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      const newCredential: WalletCredential = {
+        id: credId,
+        title: credTitle,
+        type: credType,
+        issuedBy: txn.paymentMethod === 'CASHFREE' ? 'ZENVITRA Directorate (Cashfree Verified)' : 'ZENVITRA Protocol Secretariat',
+        issuedAt: new Date().toISOString(),
+        isVerified: true,
+        metadata: {
+          transactionId: txn.id,
+          receiptId: txn.receiptId || txn.id,
+          product: txn.product,
+          amount: `₹${txn.amount}`,
+          paymentMethod: txn.paymentMethod,
+          recipient: txn.payerName || 'Citizen User',
+          status: 'ISSUED & ACTIVE'
+        }
+      };
+
+      const existingWallet = passport.wallet || [];
+      const isAlreadyPresent = existingWallet.some(
+        c => c.metadata?.receiptId === txn.receiptId || c.metadata?.transactionId === txn.id
+      );
+
+      if (!isAlreadyPresent) {
+        passport.wallet = [newCredential, ...existingWallet];
+
+        const now = new Date();
+        const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        passport.timeline = [
+          {
+            id: `milestone-${Date.now()}`,
+            year: now.getFullYear(),
+            month: monthNames[now.getMonth()],
+            icon: credType === 'STUDENT_BADGE' ? '🎓' : '🎫',
+            title: `Acquired ${credTitle}`,
+            subtitle: `Verified Order #${txn.receiptId} • Added to Sovereign Wallet`,
+            category: 'COMMUNITY',
+            isVerified: true
+          },
+          ...(passport.timeline || [])
+        ];
+
+        if (isCollegeStudent || studentIdFile) {
+          if (passport.verification.level < 2) {
+            passport.verification.level = 2;
+            passport.verification.levelLabel = 'VERIFIED STUDENT';
+            passport.verification.isStudentVerified = true;
+            passport.statusLabel = 'Verified Student';
+          }
+        }
+
+        passport.updatedAt = new Date().toISOString();
+        savePassport(passport);
+      }
+    } catch (err) {
+      console.warn('[WALLET-INTEGRATION-FAILED]', err);
+    }
+  };
+
   // Cashfree Drop-in Checkout Integration
   const handlePayWithCashfree = async () => {
     if (isCollegeStudent && !studentIdFile) {
@@ -266,6 +356,7 @@ export function ZenCheckoutModal({
           customerPhone: payerPhone || '9876543210',
           orderNote: `Order for ${title} (${product})`,
           productId: product,
+          username: profile?.username || user?.username || (user?.email ? user.email.split('@')[0] : 'citizen'),
         }),
       });
 
@@ -330,6 +421,9 @@ export function ZenCheckoutModal({
             localStorage.setItem(LS_ZEN_TXNS, JSON.stringify([newTxn, ...list]));
           } catch {}
 
+          // Automatically mint and hook credential into passport wallet
+          awardPassportCredential(newTxn);
+
           setCompletedTxn(newTxn);
           setStep('SUCCESS');
           if (onSuccess) onSuccess(newTxn);
@@ -374,6 +468,7 @@ export function ZenCheckoutModal({
           customerPhone: payerPhone || '9876543210',
           orderNote: `UPI Collect for ${title} (${product})`,
           productId: product,
+          username: profile?.username || user?.username || (user?.email ? user.email.split('@')[0] : 'citizen'),
         }),
       });
 
@@ -436,6 +531,9 @@ export function ZenCheckoutModal({
               const list = stored ? JSON.parse(stored) : [];
               localStorage.setItem(LS_ZEN_TXNS, JSON.stringify([newTxn, ...list]));
             } catch {}
+
+            // Automatically mint and hook credential into passport wallet
+            awardPassportCredential(newTxn);
 
             setCompletedTxn(newTxn);
             setStep('SUCCESS');
@@ -528,6 +626,9 @@ export function ZenCheckoutModal({
         const list = stored ? JSON.parse(stored) : [];
         localStorage.setItem(LS_ZEN_TXNS, JSON.stringify([newTxn, ...list]));
       } catch {}
+
+      // Automatically mint and hook credential into passport wallet
+      awardPassportCredential(newTxn);
 
       setCompletedTxn(newTxn);
       setStep('SUCCESS');
@@ -1203,6 +1304,27 @@ export function ZenCheckoutModal({
               <div className="pt-2 border-t border-white/5 text-[10px] font-mono text-neutral-400">
                 Status: SETTLED &bull; Signature Hash: SHA-256 Verified
               </div>
+            </div>
+
+            {/* Passport Wallet Credential Mint Notification */}
+            <div className="p-3.5 rounded-2xl bg-cyan-500/[0.08] border border-cyan-500/30 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center shrink-0 text-cyan-300">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-cyan-200 truncate">Credential Minted to Wallet</div>
+                  <div className="text-[10px] font-mono text-neutral-400">Added to your Sovereign ZEN.PASSPORT</div>
+                </div>
+              </div>
+              <Link
+                href={`/passport/${(profile?.username || user?.username || (user?.email ? user.email.split('@')[0] : 'citizen')).toLowerCase().replace(/^@/, '')}`}
+                onClick={onClose}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-[11px] font-mono font-bold transition shrink-0 cursor-pointer shadow-[0_0_15px_rgba(34,211,238,0.3)]"
+              >
+                <span>View Wallet</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
             {/* Actions */}
