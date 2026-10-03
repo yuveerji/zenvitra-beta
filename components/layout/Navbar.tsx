@@ -214,8 +214,12 @@ export function Navbar({
     setUserDropdownOpen(false);
     setMobileMenuOpen(false);
     setLocalUserSession(null);
-    await signOut();
-    window.location.href = '/';
+    const res = await signOut();
+    if (res?.switchedTo) {
+      window.location.reload();
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   const hasActiveSession = isAuthenticated || !!profile || !!localUserSession;

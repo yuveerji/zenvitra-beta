@@ -655,8 +655,12 @@ export function PlatformShell({
                   <button
                     onClick={async () => {
                       setIsMoreMenuOpen(false);
-                      await signOut();
-                      window.location.href = '/login';
+                      const res = await signOut();
+                      if (res?.switchedTo) {
+                        window.location.reload();
+                      } else {
+                        window.location.href = '/login';
+                      }
                     }}
                     className="w-full px-2.5 py-1.5 rounded-xl hover:bg-rose-500/15 text-rose-400 hover:text-rose-300 transition flex items-center gap-2.5 text-xs font-semibold cursor-pointer group"
                   >

@@ -25,11 +25,13 @@ interface AuthContextType {
   signInWithOAuth: (provider: OAuthProvider) => Promise<{ error: any | null }>;
   signInWithEmail: (email: string, password?: string, options?: { skipSession?: boolean }) => Promise<{ error: any | null }>;
   signUpWithEmail: (email: string, password: string, displayName: string, username: string, role?: UserRole) => Promise<{ error: any | null }>;
-  signOut: () => Promise<void>;
+  signOut: (options?: { forceFullLogout?: boolean; redirectTo?: string }) => Promise<{ switchedTo: any | null; loggedOut: boolean }>;
   exitMockMode: () => Promise<void>;
   isGuest: boolean;
   continueAsGuest: (customUsername?: string, displayName?: string) => Promise<UserProfile>;
   continueAsTestUser: () => Promise<UserProfile>;
+  isSavedAccountsOn: boolean;
+  toggleSavedAccounts: (enabled: boolean) => void;
   
   // Profile & Identity Actions
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
@@ -57,10 +59,12 @@ const AuthContext = createContext<AuthContextType>({
   signInWithOAuth: async () => ({ error: null }),
   signInWithEmail: async () => ({ error: null }),
   signUpWithEmail: async () => ({ error: null }),
-  signOut: async () => {},
+  signOut: async () => ({ switchedTo: null, loggedOut: true }),
   exitMockMode: async () => {},
   continueAsGuest: async () => ({} as any),
   continueAsTestUser: async () => ({} as any),
+  isSavedAccountsOn: true,
+  toggleSavedAccounts: () => {},
   updateProfile: async () => ({ success: false }),
   checkUsernameAvailable: async () => true,
   linkProvider: async () => ({ success: false }),
@@ -69,8 +73,63 @@ const AuthContext = createContext<AuthContextType>({
   loginAsDemoRole: () => {},
 });
 
-export function recordSavedSession(profile: UserProfile | any) {
+export const LS_SAVED_ACCOUNTS_ENABLED = 'zenvitra_save_accounts_enabled';
+
+export function isSavedAccountsEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+  try {
+    const val = localStorage.getItem(LS_SAVED_ACCOUNTS_ENABLED);
+    return val !== 'false';
+  } catch {
+    return true;
+  }
+}
+
+export function setSavedAccountsEnabled(enabled: boolean): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LS_SAVED_ACCOUNTS_ENABLED, enabled ? 'true' : 'false');
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('zenvitra_saved_accounts_change', { detail: { enabled } }));
+  } catch (_) {}
+}
+
+export function removeSavedSession(usernameOrId: string) {
+  if (!usernameOrId || typeof window === 'undefined') return;
+  try {
+    const clean = usernameOrId.replace(/^@/, '').toLowerCase().trim();
+    const raw = localStorage.getItem('zenvitra_saved_sessions');
+    if (!raw) return;
+    const list: any[] = JSON.parse(raw);
+    const updated = list.filter(
+      (a) => (a.username || a.handle || '').replace(/^@/, '').toLowerCase() !== clean && a.id !== usernameOrId
+    );
+    if (updated.length === 0) {
+      localStorage.removeItem('zenvitra_saved_sessions');
+    } else {
+      localStorage.setItem('zenvitra_saved_sessions', JSON.stringify(updated));
+    }
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new CustomEvent('zenvitra_saved_sessions_change'));
+  } catch (_) {}
+}
+
+export function getSavedSessions(): any[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem('zenvitra_saved_sessions');
+    const list = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(list)) return [];
+    const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova'];
+    return list.filter((a) => a && !fakeHandles.includes((a.username || '').replace(/^@/, '').toLowerCase()));
+  } catch {
+    return [];
+  }
+}
+
+export function recordSavedSession(profile: UserProfile | any, force: boolean = false) {
   if (!profile) return;
+  if (!force && !isSavedAccountsEnabled()) return;
   try {
     const raw = localStorage.getItem('zenvitra_saved_sessions');
     const list: any[] = raw ? JSON.parse(raw) : [];
@@ -115,6 +174,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<ConnectedAccount[]>([]);
+  const [isSavedAccountsOn, setIsSavedAccountsOn] = useState<boolean>(true);
+
+  useEffect(() => {
+    setIsSavedAccountsOn(isSavedAccountsEnabled());
+    const onSavedAccountsChange = () => {
+      setIsSavedAccountsOn(isSavedAccountsEnabled());
+    };
+    window.addEventListener('storage', onSavedAccountsChange);
+    window.addEventListener('zenvitra_saved_accounts_change', onSavedAccountsChange);
+    return () => {
+      window.removeEventListener('storage', onSavedAccountsChange);
+      window.removeEventListener('zenvitra_saved_accounts_change', onSavedAccountsChange);
+    };
+  }, []);
+
+  const toggleSavedAccounts = useCallback((enabled: boolean) => {
+    setIsSavedAccountsOn(enabled);
+    setSavedAccountsEnabled(enabled);
+    if (!enabled && profile) {
+      removeSavedSession(profile.username || profile.id);
+    }
+  }, [profile]);
 
   // Fetch or construct profile from Supabase
   const loadProfile = useCallback(async (userId: string, userEmail: string, userMeta?: any) => {
@@ -700,7 +781,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Sign Out
-  const signOut = async () => {
+  const signOut = async (options?: { forceFullLogout?: boolean; redirectTo?: string }) => {
+    const savedOn = isSavedAccountsEnabled();
+    const currentCleanHandle = (profile?.username || (profile as any)?.handle || user?.email?.split('@')[0] || '').replace(/^@/, '').toLowerCase();
+    const currentId = profile?.id || user?.id;
+
+    // 1. If saved accounts is TURNED ON:
+    if (savedOn && !options?.forceFullLogout) {
+      // Ensure the signed-out account is safely preserved in saved accounts
+      if (profile) {
+        recordSavedSession(profile, true);
+      }
+
+      // Check if there is another saved account to transition to ("go to saved one")
+      const allSaved = getSavedSessions();
+      const otherSaved = allSaved.filter((acc) => {
+        const h = (acc.username || acc.handle || '').replace(/^@/, '').toLowerCase();
+        return h && h !== currentCleanHandle && acc.id !== currentId;
+      });
+
+      if (otherSaved.length > 0) {
+        // Automatically switch active session to next saved account
+        const nextAccount = otherSaved[0];
+        try {
+          localStorage.setItem('zenvitra_session_user', JSON.stringify(nextAccount));
+          localStorage.removeItem('zenvitra_demo_role');
+          localStorage.removeItem('zenvitra_pulse_user_v6');
+        } catch (_) {}
+
+        setUser({ id: nextAccount.id, email: nextAccount.email });
+        setProfile({
+          id: nextAccount.id,
+          username: nextAccount.username,
+          display_name: nextAccount.name || nextAccount.display_name,
+          email: nextAccount.email,
+          role: nextAccount.role || 'delegate',
+          avatar_url: nextAccount.avatar || nextAccount.avatar_url,
+          impact_score: 100,
+          followers_count: 0,
+          following_count: 0,
+          is_verified: false,
+          is_onboarded: true,
+          created_at: new Date().toISOString()
+        } as UserProfile);
+
+        if (typeof window !== 'undefined') {
+          try {
+            window.dispatchEvent(new Event('storage'));
+            window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
+          } catch (_) {}
+        }
+
+        return { switchedTo: nextAccount, loggedOut: false };
+      }
+    } else {
+      // 2. If saved accounts is NOT turned on:
+      // Remove current account from saved accounts list so it doesn't linger!
+      if (currentCleanHandle || currentId) {
+        removeSavedSession(currentCleanHandle || currentId);
+      }
+    }
+
+    // Standard complete logout
     try {
       localStorage.removeItem('zenvitra_demo_role');
       localStorage.removeItem('zenvitra_session_user');
@@ -744,6 +886,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
       } catch (_) {}
     }
+
+    return { switchedTo: null, loggedOut: true };
   };
 
   // Delete Account
@@ -925,6 +1069,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         unlinkProvider,
         deleteAccount,
         loginAsDemoRole,
+        isSavedAccountsOn,
+        toggleSavedAccounts,
       }}
     >
       {children}

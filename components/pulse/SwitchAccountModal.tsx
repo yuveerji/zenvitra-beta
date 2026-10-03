@@ -213,8 +213,12 @@ export function SwitchAccountModal({
               type="button"
               onClick={async () => {
                 onClose();
-                await signOut();
-                window.location.href = '/login';
+                const res = await signOut();
+                if (res?.switchedTo) {
+                  window.location.reload();
+                } else {
+                  window.location.href = '/login';
+                }
               }}
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition text-xs font-medium cursor-pointer"
             >

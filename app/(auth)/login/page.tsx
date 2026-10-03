@@ -38,7 +38,13 @@ import {
 } from 'lucide-react';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
-import { useAuth, recordSavedSession } from '@/context/AuthContext';
+import { 
+  useAuth, 
+  recordSavedSession, 
+  isSavedAccountsEnabled, 
+  setSavedAccountsEnabled, 
+  removeSavedSession 
+} from '@/context/AuthContext';
 import { 
   checkAccountLockout, 
   recordFailedAttempt, 
@@ -228,6 +234,16 @@ function LoginForm() {
   // Load remembered accounts on client mount (ONLY real saved logins, no artificial seeding)
   useEffect(() => {
     try {
+      const isEnabled = isSavedAccountsEnabled();
+      setSaveLoginInfo(isEnabled);
+
+      if (!isEnabled) {
+        setSavedAccounts([]);
+        setSelectedAccount(null);
+        setIsManualInputMode(true);
+        return;
+      }
+
       const raw = localStorage.getItem('zenvitra_saved_sessions');
       let parsed: SavedAccount[] = [];
       if (raw) {
@@ -394,6 +410,7 @@ function LoginForm() {
 
       // Save Login Info handling
       if (saveLoginInfo) {
+        setSavedAccountsEnabled(true);
         const userProf: any = {
           id: selectedAccount?.id || `zen_user_${cleanUser}`,
           username: cleanUser,
@@ -404,17 +421,11 @@ function LoginForm() {
           avatar: selectedAccount?.avatar || undefined,
           lastActive: new Date().toISOString()
         };
-        recordSavedSession(userProf);
+        recordSavedSession(userProf, true);
         setSuccessMessage(`Access granted! Welcome back @${cleanUser}.`);
       } else {
-        try {
-          const raw = localStorage.getItem('zenvitra_saved_sessions');
-          if (raw) {
-            const list: any[] = JSON.parse(raw);
-            const filtered = list.filter((a) => (a.username || '').replace(/^@/, '').toLowerCase() !== cleanUser);
-            localStorage.setItem('zenvitra_saved_sessions', JSON.stringify(filtered));
-          }
-        } catch (_) {}
+        setSavedAccountsEnabled(false);
+        removeSavedSession(cleanUser);
         setSuccessMessage('Access granted! Authenticating sovereign clearance...');
       }
 
@@ -462,6 +473,7 @@ function LoginForm() {
       });
 
       if (saveLoginInfo) {
+        setSavedAccountsEnabled(true);
         const userProf: any = {
           id: selectedAccount?.id || `zen_user_${targetUserId}`,
           username: targetUserId,
@@ -472,7 +484,10 @@ function LoginForm() {
           avatar: selectedAccount?.avatar || undefined,
           lastActive: new Date().toISOString()
         };
-        recordSavedSession(userProf);
+        recordSavedSession(userProf, true);
+      } else {
+        setSavedAccountsEnabled(false);
+        removeSavedSession(targetUserId);
       }
 
       setTimeout(() => {
@@ -857,7 +872,10 @@ function LoginForm() {
                               <input
                                 type="checkbox"
                                 checked={saveLoginInfo}
-                                onChange={(e) => setSaveLoginInfo(e.target.checked)}
+                                onChange={(e) => {
+                                  setSaveLoginInfo(e.target.checked);
+                                  setSavedAccountsEnabled(e.target.checked);
+                                }}
                                 className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-0 focus:ring-offset-0"
                               />
                               <span className="text-[11px] font-mono text-neutral-400">Save login info on this device</span>
@@ -1048,7 +1066,10 @@ function LoginForm() {
                           <input
                             type="checkbox"
                             checked={saveLoginInfo}
-                            onChange={(e) => setSaveLoginInfo(e.target.checked)}
+                            onChange={(e) => {
+                              setSaveLoginInfo(e.target.checked);
+                              setSavedAccountsEnabled(e.target.checked);
+                            }}
                             className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-cyan-400 focus:ring-0 focus:ring-offset-0"
                           />
                           <span className="text-[11px] font-mono text-neutral-400">Save login info on this device</span>

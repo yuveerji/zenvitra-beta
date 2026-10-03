@@ -64,7 +64,7 @@ export function SettingsModal({
   onOpenSecurityShield,
 }: SettingsModalProps) {
   const { escrowMandateActive } = useProtocolControls();
-  const { profile, user, updateProfile, signOut } = useAuth();
+  const { profile, user, updateProfile, signOut, isSavedAccountsOn, toggleSavedAccounts } = useAuth();
   const { myProfile, updateMyProfile, currentUserUsername, currentUserName, savedPosts, toggleSavePost } = useZenPulse();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('account');
@@ -304,9 +304,14 @@ export function SettingsModal({
             {/* Bottom Actions */}
             <div className="pt-4 border-t border-white/10 space-y-2">
               <button
-                onClick={() => {
-                  signOut();
+                onClick={async () => {
                   onClose();
+                  const res = await signOut();
+                  if (res?.switchedTo) {
+                    window.location.reload();
+                  } else {
+                    window.location.href = '/login';
+                  }
                 }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
               >
@@ -446,6 +451,38 @@ export function SettingsModal({
                         placeholder="e.g. New Delhi, India"
                         className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-purple-500 transition"
                       />
+                    </div>
+                  </div>
+
+                  {/* Saved Accounts & Multi-Identity Persistence Toggle */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Key className="w-4 h-4 text-cyan-400" />
+                          <h5 className="font-bold text-xs text-white">Save Account On This Device</h5>
+                        </div>
+                        <p className="text-[11px] text-zinc-400">
+                          When turned on, your account remains saved for quick switching. On sign out, it moves to your saved list and automatically transitions to another saved account (if one exists). When turned off, signing out completely removes your saved profile and logs you out.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleSavedAccounts(!isSavedAccountsOn)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          isSavedAccountsOn ? 'bg-cyan-500' : 'bg-zinc-800'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            isSavedAccountsOn ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] font-mono text-zinc-500">
+                      <span>Saved Status: {isSavedAccountsOn ? 'Active (Saved on Exit)' : 'Inactive (Full Logout on Exit)'}</span>
+                      <span className="text-cyan-400">{isSavedAccountsOn ? 'Multi-Account Enabled' : 'Single Session'}</span>
                     </div>
                   </div>
 
