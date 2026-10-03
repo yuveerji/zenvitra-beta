@@ -435,7 +435,12 @@ function LoginForm() {
       }, 300);
 
     } catch (err: any) {
-      setErrorMessage(err.message || 'Invalid credentials. Please verify details.');
+      const attemptRes = recordFailedAttempt(cleanUser);
+      if (attemptRes.isLocked) {
+        setErrorMessage(`🚨 Anti-Brute-Force Lockout Active: Account locked for 60s due to consecutive failed attempts.`);
+      } else {
+        setErrorMessage(err.message || 'Invalid credentials. Please verify details.');
+      }
     } finally {
       setLoading(false);
     }

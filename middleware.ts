@@ -35,6 +35,7 @@ const PUBLIC_PREFIXES = [
   '/pricing',
   '/privacy',
   '/space',
+  '/glimpse',
   '/passport',
   '/leaderboard',
   '/call',
@@ -144,15 +145,15 @@ export function middleware(request: NextRequest) {
   if (singleSegments.length === 1 && !pathname.includes('.')) {
     const candidateHandle = singleSegments[0].toLowerCase();
     const KNOWN_ROUTES = new Set([
-      'about', 'admin-access', 'auth', 'campus-ambassador', 'chamber', 'committee',
+      'about', 'admin', 'admin-access', 'auth', 'campus-ambassador', 'chamber', 'committee',
       'constitution', 'contact', 'countdown', 'discussions', 'docs', 'donate',
-      'enclave-access', 'events', 'faq', 'forms', 'f', 'guidelines', 'impact',
+      'enclave', 'enclave-access', 'events', 'faq', 'forms', 'f', 'glimpse', 'guidelines', 'impact',
       'invest-donate', 'join', 'join-core-team', 'legal', 'legislate', 'login',
       'manifesto', 'mission', 'mun', 'news', 'onboarding', 'payments', 'pricing',
       'privacy', 'profile', 'pulse', 'register', 'solutions', 'space',
       'statusregister', 'statussignin', 'summits', 'terms', 'vision',
       'zen-diplomacy', 'chat', 'call', 'dashboard', 'settings', 'matrix', 'signup', 'preregister',
-      'passport', 'leaderboard', 'test', 'test-login', 'demo'
+      'passport', 'leaderboard', 'test', 'test-login', 'demo', 'press', 'your_activity', 'zen-vault-root'
     ]);
 
     if (!KNOWN_ROUTES.has(candidateHandle) && !PUBLIC_PREFIXES.some((p) => p === `/${candidateHandle}`)) {
@@ -226,6 +227,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/f/') ||
     pathname === '/space' ||
     pathname.startsWith('/space/') ||
+    pathname === '/glimpse' ||
+    pathname.startsWith('/glimpse/') ||
     pathname === '/pulse' ||
     pathname.startsWith('/pulse/') ||
     pathname === '/passport' ||

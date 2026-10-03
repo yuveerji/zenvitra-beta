@@ -495,24 +495,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // ─── STRICT FOUNDER AUTHENTICATION ───
     if (cleanIdentifier === 'founder@zenvitra.org' || cleanIdentifier === 'founder' || cleanIdentifier === 'yuveer') {
-      const cleanPw = (password || '').trim().toUpperCase();
+      const cleanPw = (password || '').trim();
+      const cleanPwUpper = cleanPw.toUpperCase();
       const isFounderPassword =
-        !password ||
-        password === 'Yuveer@5747R' ||
-        cleanPw === 'YUV-ROOT-MASTER-777' ||
-        cleanPw === 'YUVEER-FOUNDER-2026' ||
-        cleanPw === 'YUV-SOVEREIGN-KEY' ||
-        cleanPw === 'ROOT-YUVEER' ||
-        cleanPw === 'ZEN-FOUNDER-PASSKEY-999' ||
-        cleanPw === '5747' ||
-        cleanPw === '574729' ||
-        cleanPw === '0000' ||
-        cleanPw === '7788' ||
-        cleanPw === 'ZNV@2026!FOUNDER#99' ||
-        cleanPw === 'ZEN#99$FNDR!2026' ||
-        cleanPw === 'ZENVITRA#FOUNDER!2026' ||
-        cleanPw === 'FOUNDER' ||
-        cleanPw === 'YUVEER';
+        Boolean(password) && (
+          password === 'Yuveer@5747R' ||
+          cleanPwUpper === 'YUV-ROOT-MASTER-777' ||
+          cleanPwUpper === 'YUVEER-FOUNDER-2026' ||
+          cleanPwUpper === 'YUV-SOVEREIGN-KEY' ||
+          cleanPwUpper === 'ROOT-YUVEER' ||
+          cleanPwUpper === 'ZEN-FOUNDER-PASSKEY-999' ||
+          cleanPw === '5747' ||
+          cleanPw === '574729' ||
+          cleanPw === '7788' ||
+          cleanPwUpper === 'ZNV@2026!FOUNDER#99' ||
+          cleanPwUpper === 'ZEN#99$FNDR!2026' ||
+          cleanPwUpper === 'ZENVITRA#FOUNDER!2026'
+        );
 
       if (!isFounderPassword) {
         const err = new Error('Invalid founder credentials. Access denied.');
@@ -568,22 +567,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isTestIdentifier) {
       const cleanPw = (password || '').trim().toLowerCase();
       const isAllowedTestPassword =
-        !password ||
-        cleanPw === 'test' ||
-        cleanPw === 'test1234' ||
-        cleanPw === 'test123' ||
-        cleanPw === 'test@123' ||
-        cleanPw === 'zenvitra' ||
-        cleanPw === 'zenvitra2026' ||
-        cleanPw === 'tester' ||
-        cleanPw === 'testing' ||
-        cleanPw === 'password' ||
-        cleanPw === '123456' ||
-        cleanPw === 'guest' ||
-        cleanPw === 'demo';
+        Boolean(password) && (
+          cleanPw === 'test' ||
+          cleanPw === 'test1234' ||
+          cleanPw === 'test123' ||
+          cleanPw === 'test@123'
+        );
 
       if (!isAllowedTestPassword) {
-        const err = new Error('Invalid test password. Use "test1234" or "test" to authenticate.');
+        const err = new Error('Invalid test password. Use "test1234" to authenticate.');
         setError(err.message);
         return { error: err };
       }
@@ -596,70 +588,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: null };
     }
 
+    // ─── GENERAL USERS: STRICT CREDENTIAL VERIFICATION ───
+    if (!password) {
+      const err = new Error('Please enter your passphrase.');
+      setError(err.message);
+      return { error: err };
+    }
+
     try {
-      const isEmailFormat = cleanIdentifier.includes('@');
-      const formattedEmail = isEmailFormat ? cleanIdentifier : `${cleanIdentifier}@zenvitra.local`;
+      // 1. Verify against database credentials API
+      const res = await fetch('/api/auth/verify-credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: cleanIdentifier, password }),
+      });
+      const result = await res.json().catch(() => null);
 
-      if (password) {
-        const { data, error: err } = await supabase.auth.signInWithPassword({
-          email: formattedEmail,
-          password,
-        });
-
-        if (err || !data?.user) {
-          // Standard local user fallback (Real user session, NOT mock mode)
-          if (options?.skipSession) {
-            return { error: null };
-          }
-
-          const username = isEmailFormat ? cleanIdentifier.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') : cleanIdentifier;
-          const normalUserProf: UserProfile = {
-            id: `zen_user_${username}`,
-            username,
-            display_name: username.charAt(0).toUpperCase() + username.slice(1),
-            email: isEmailFormat ? cleanIdentifier : `${username}@zenvitra.xyz`,
-            role: 'delegate',
-            impact_score: 100,
-            followers_count: 0,
-            following_count: 0,
-            is_verified: false,
-            is_onboarded: true,
-            created_at: new Date().toISOString(),
-          };
-
-          localStorage.removeItem('zenvitra_demo_role');
-          localStorage.setItem('zenvitra_session_user', JSON.stringify(normalUserProf));
-          recordSavedSession(normalUserProf);
-          setUser({ id: normalUserProf.id, email: normalUserProf.email });
-          setProfile(normalUserProf);
-          setIsLoading(false);
-          return { error: null };
-        }
-
+      if (res.ok && result?.success && result?.user) {
         if (options?.skipSession) {
           return { error: null };
         }
 
-        if (data.user) {
-          setUser(data.user);
-          await loadProfile(data.user.id, data.user.email || formattedEmail);
-        }
-        return { error: null };
-      } else {
-        // Magic Link
-        const redirectUrl = typeof window !== 'undefined'
-          ? `${window.location.origin}/auth/callback`
-          : 'http://localhost:3000/auth/callback';
+        const verifiedUser = result.user;
+        const userProf: UserProfile = {
+          id: verifiedUser.id,
+          username: verifiedUser.username,
+          display_name: verifiedUser.name || verifiedUser.username,
+          email: verifiedUser.email,
+          role: (verifiedUser.role?.toLowerCase() as UserRole) || 'delegate',
+          impact_score: 100,
+          followers_count: 0,
+          following_count: 0,
+          is_verified: true,
+          is_onboarded: true,
+          created_at: new Date().toISOString(),
+        };
 
-        const { error: err } = await supabase.auth.signInWithOtp({
-          email: formattedEmail,
-          options: {
-            emailRedirectTo: redirectUrl,
-          },
-        });
-        if (err) throw err;
+        localStorage.removeItem('zenvitra_demo_role');
+        localStorage.setItem('zenvitra_session_user', JSON.stringify(userProf));
+        recordSavedSession(userProf);
+        setUser({ id: userProf.id, email: userProf.email });
+        setProfile(userProf);
+        setIsLoading(false);
         return { error: null };
       }
+
+      // 2. Secondary check against Supabase
+      const isEmailFormat = cleanIdentifier.includes('@');
+      const formattedEmail = isEmailFormat ? cleanIdentifier : `${cleanIdentifier}@zenvitra.local`;
+
+      const { data: sbData, error: sbErr } = await supabase.auth.signInWithPassword({
+        email: formattedEmail,
+        password,
+      });
+
+      if (sbData?.user && !sbErr) {
+        if (options?.skipSession) {
+          return { error: null };
+        }
+        setUser(sbData.user);
+        await loadProfile(sbData.user.id, sbData.user.email || formattedEmail);
+        return { error: null };
+      }
+
+      // 3. Both failed: STRICT REJECTION (never create fake fallback session)
+      const failureMessage = result?.error || sbErr?.message || 'Invalid credentials. Please verify details.';
+      const authError = new Error(failureMessage);
+      setError(failureMessage);
+      return { error: authError };
     } catch (err: any) {
       setError(err.message);
       return { error: err };
