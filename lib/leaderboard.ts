@@ -234,3 +234,37 @@ export function getRealLeaderboard(
     primaryPillar: getRecognitionPillar(e.points, index + 1)
   }));
 }
+
+/**
+ * Fetches globally aggregated leaderboard entries directly from server API
+ */
+export async function fetchServerLeaderboard(
+  category: LeaderboardCategory = 'global',
+  period: LeaderboardPeriod = 'season'
+): Promise<{
+  entries: LeaderboardEntry[];
+  institutions: InstitutionEntry[];
+  teams: TeamEntry[];
+}> {
+  try {
+    const res = await fetch(`/api/leaderboard?category=${encodeURIComponent(category)}&period=${encodeURIComponent(period)}`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.entries)) {
+      return {
+        entries: data.entries,
+        institutions: data.institutions || [],
+        teams: data.teams || []
+      };
+    }
+  } catch (err) {
+    console.warn('[FETCH-SERVER-LEADERBOARD-FAILED]', err);
+  }
+
+  // Fallback to local
+  const localEntries = getRealLeaderboard(category, period);
+  return {
+    entries: localEntries,
+    institutions: [],
+    teams: []
+  };
+}

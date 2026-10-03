@@ -7,6 +7,7 @@ import {
   ZenPassport, 
   getPassport, 
   getOrCreateDefaultPassport,
+  fetchServerPassport,
   calculateZenPoints, 
   getVerificationLevelDetails 
 } from '@/lib/passport';
@@ -38,7 +39,7 @@ export default function PublicPassportPage() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
 
   useEffect(() => {
-    // Attempt to load existing passport for this username
+    // 1. Instant load from local cache or fallback
     const existing = getPassport(username);
     if (existing) {
       if (username === 'test') {
@@ -47,7 +48,6 @@ export default function PublicPassportPage() {
       }
       setPassport(existing);
     } else {
-      // Deterministically create standard passport for recognized system user
       const name = username === 'test' ? 'Test Node' : (username === 'yuveer' ? 'Yuveer Chhatwani' : username.charAt(0).toUpperCase() + username.slice(1));
       const generated = getOrCreateDefaultPassport(username, name);
       if (username === 'test') {
@@ -56,6 +56,17 @@ export default function PublicPassportPage() {
       }
       setPassport(generated);
     }
+
+    // 2. Query authentic passport record from server API
+    fetchServerPassport(username).then((serverRecord) => {
+      if (serverRecord) {
+        if (username === 'test') {
+          serverRecord.fullName = 'Test Node';
+          serverRecord.statusLabel = 'Test Node';
+        }
+        setPassport(serverRecord);
+      }
+    });
   }, [username]);
 
   if (!passport) {

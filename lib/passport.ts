@@ -463,14 +463,68 @@ export function getOrCreateDefaultPassport(username: string, fullName?: string):
 }
 
 /**
- * Persists passport to storage
+ * Persists passport to local storage and syncs to server
  */
 export function savePassport(passport: ZenPassport): void {
   if (typeof window === 'undefined') return;
   try {
     const clean = passport.username.toLowerCase().replace(/^@/, '').trim();
     localStorage.setItem(`zenvitra_passport_${clean}`, JSON.stringify(passport));
+
+    // Asynchronously sync to server storage (non-blocking)
+    fetch('/api/passport', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passport })
+    }).catch(() => {
+      // Offline or network error; local copy preserved
+    });
   } catch (_) {}
+}
+
+/**
+ * Fetches passport from server and caches to localStorage
+ */
+export async function fetchServerPassport(username: string): Promise<ZenPassport | null> {
+  const clean = username.toLowerCase().replace(/^@/, '').trim();
+  try {
+    const res = await fetch(`/api/passport?username=${encodeURIComponent(clean)}`);
+    const data = await res.json();
+    if (data.success && data.passport) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`zenvitra_passport_${clean}`, JSON.stringify(data.passport));
+        } catch (_) {}
+      }
+      return data.passport;
+    }
+  } catch (err) {
+    console.warn('[FETCH-SERVER-PASSPORT-FAILED]', err);
+  }
+  return getStoredPassport(clean);
+}
+
+/**
+ * Fetches passport by permanent Passport ID from server
+ */
+export async function fetchServerPassportById(passportId: string): Promise<ZenPassport | null> {
+  const cleanId = passportId.toUpperCase().trim();
+  try {
+    const res = await fetch(`/api/passport?id=${encodeURIComponent(cleanId)}`);
+    const data = await res.json();
+    if (data.success && data.passport) {
+      if (typeof window !== 'undefined') {
+        try {
+          const cleanUser = data.passport.username.toLowerCase().replace(/^@/, '').trim();
+          localStorage.setItem(`zenvitra_passport_${cleanUser}`, JSON.stringify(data.passport));
+        } catch (_) {}
+      }
+      return data.passport;
+    }
+  } catch (err) {
+    console.warn('[FETCH-SERVER-PASSPORT-BY-ID-FAILED]', err);
+  }
+  return getPassportById(cleanId);
 }
 
 /**

@@ -9,6 +9,7 @@ import {
   InstitutionEntry, 
   TeamEntry, 
   getRealLeaderboard,
+  fetchServerLeaderboard,
   ZEN_POINT_RULES
 } from '@/lib/leaderboard';
 import LeaderboardUserProfileModal from '@/components/leaderboard/LeaderboardUserProfileModal';
@@ -37,12 +38,34 @@ export default function LeaderboardPage() {
   const [period, setPeriod] = useState<LeaderboardPeriod>('season');
   const [viewType, setViewType] = useState<'CITIZENS' | 'INSTITUTIONS' | 'TEAMS'>('CITIZENS');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [institutions, setInstitutions] = useState<InstitutionEntry[]>([]);
+  const [teams, setTeams] = useState<TeamEntry[]>([]);
   const [selectedUser, setSelectedUser] = useState<LeaderboardEntry | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch real leaderboard entries strictly adhering to NO-SEED.md
-    const realData = getRealLeaderboard(category, period);
-    setEntries(realData);
+    // 1. Instant render from local cache
+    const localData = getRealLeaderboard(category, period);
+    if (localData && localData.length > 0) {
+      setEntries(localData);
+    }
+
+    // 2. Query server for network-wide aggregated leaderboard
+    setIsLoading(true);
+    fetchServerLeaderboard(category, period)
+      .then((res) => {
+        if (res.entries && res.entries.length > 0) {
+          setEntries(res.entries);
+        }
+        if (res.institutions) setInstitutions(res.institutions);
+        if (res.teams) setTeams(res.teams);
+      })
+      .catch((err) => {
+        console.warn('Server leaderboard fetch error:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, [category, period]);
 
   const categories = [

@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LeaderboardEntry } from '@/lib/leaderboard';
-import { getPassport, AchievementRecord, JourneyMilestone } from '@/lib/passport';
+import { getPassport, fetchServerPassport, ZenPassport, AchievementRecord, JourneyMilestone } from '@/lib/passport';
 import { ShieldCheck, Trophy, ArrowRight, Award, Clock, Sparkles } from 'lucide-react';
 
 interface LeaderboardUserProfileModalProps {
@@ -17,10 +17,19 @@ export default function LeaderboardUserProfileModal({
   isOpen,
   onClose
 }: LeaderboardUserProfileModalProps) {
-  if (!isOpen || !entry) return null;
+  const [passport, setPassport] = useState<ZenPassport | null>(null);
 
-  // Retrieve full passport if present for achievements and recent activity
-  const passport = getPassport(entry.username);
+  useEffect(() => {
+    if (!isOpen || !entry) return;
+    const local = getPassport(entry.username);
+    if (local) setPassport(local);
+
+    fetchServerPassport(entry.username).then((srv) => {
+      if (srv) setPassport(srv);
+    });
+  }, [isOpen, entry]);
+
+  if (!isOpen || !entry) return null;
 
   const topAchievements: AchievementRecord[] = passport?.achievements?.slice(0, 3) || [];
   const recentTimeline: JourneyMilestone[] = passport?.timeline?.slice(0, 3) || [];

@@ -41,59 +41,37 @@ export default function PassportVerifyPage() {
 
     setScanTimestamp(new Date().toUTCString());
 
-    // Generate simulated cryptographic sha-like hash from ID
-    let h = 0x811c9dc5;
-    for (let i = 0; i < rawId.length; i++) {
-      h ^= rawId.charCodeAt(i);
-      h = Math.imul(h, 0x01000193);
-    }
-    const hex = (h >>> 0).toString(16).padStart(8, '0').toUpperCase();
-    setVerificationHash(`0x${hex}A73F904E${hex}B2`);
-
-    // Lookup passport in local store
+    // Instant local lookup
     const found = getPassportById(rawId);
     if (found) {
       setPassport(found);
-    } else if (validFormat) {
-      // Deterministic fallback for valid formatted IDs
-      setPassport({
-        passportId: rawId,
-        userId: 'verified-node',
-        username: rawId.toLowerCase().replace(/[^a-z0-9]/g, ''),
-        fullName: 'Authenticated ZENVITRA Citizen',
-        memberSince: 2026,
-        statusLabel: 'Verified Delegate',
-        verification: {
-          level: 2,
-          levelLabel: 'VERIFIED STUDENT',
-          isEmailVerified: true,
-          isPhoneVerified: true,
-          isStudentVerified: true,
-          isZenvitraVerified: true,
-          zenvitraRoles: ['DELEGATE'],
-          verifiedAt: '2026-09-20T00:00:00Z'
-        },
-        munRecords: [],
-        speakingRecords: [],
-        pressRecords: [],
-        achievements: [],
-        contributions: [],
-        wallet: [],
-        timeline: [],
-        badges: [],
-        privacy: {
-          showPublicBadges: true,
-          showPublicAchievements: true,
-          showPublicEvents: true,
-          showPublicTimeline: true,
-          showPublicEducation: true
-        },
-        createdAt: '2026-09-01T00:00:00Z',
-        updatedAt: '2026-09-27T00:00:00Z'
-      });
     }
 
-    setLoading(false);
+    // Query server verification endpoint for authentic signed status
+    fetch(`/api/passport/verify/${encodeURIComponent(rawId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.verified && data.passport) {
+          setPassport(data.passport);
+          if (data.verificationHash) setVerificationHash(data.verificationHash);
+          if (data.verifiedAt) setScanTimestamp(new Date(data.verifiedAt).toUTCString());
+        } else if (validFormat && !found) {
+          // Fallback hash computation
+          let h = 0x811c9dc5;
+          for (let i = 0; i < rawId.length; i++) {
+            h ^= rawId.charCodeAt(i);
+            h = Math.imul(h, 0x01000193);
+          }
+          const hex = (h >>> 0).toString(16).padStart(8, '0').toUpperCase();
+          setVerificationHash(`0x${hex}A73F904E${hex}B2`);
+        }
+      })
+      .catch((err) => {
+        console.warn('Verification endpoint error:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [rawId]);
 
   if (loading) {
