@@ -42,6 +42,9 @@ import {
   INITIAL_SUBSCRIPTIONS,
   INITIAL_BALANCE,
   INITIAL_PAYOUTS,
+  SEEDED_TRANSACTION_IDS,
+  SEEDED_INVOICE_IDS,
+  SEEDED_PAYOUT_IDS,
   LS_ZEN_TXNS,
   LS_ZEN_INVOICES,
   LS_ZEN_PAYOUTS
@@ -79,38 +82,122 @@ export function PaymentsHubClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProductFilter, setSelectedProductFilter] = useState<string>('ALL');
 
-  // Transactions State
+  // Transactions State: strictly genuine, auto-cleansing legacy seed data
   const [transactions, setTransactions] = useState<PaymentTransaction[]>(() => {
-    if (typeof window === 'undefined') return INITIAL_TRANSACTIONS;
+    if (typeof window === 'undefined') return [];
     try {
       const stored = localStorage.getItem(LS_ZEN_TXNS);
-      return stored ? JSON.parse(stored) : INITIAL_TRANSACTIONS;
+      if (stored) {
+        const parsed: PaymentTransaction[] = JSON.parse(stored);
+        const cleaned = parsed.filter(t => !SEEDED_TRANSACTION_IDS.includes(t.id));
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(LS_ZEN_TXNS, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      }
+      return [];
     } catch {
-      return INITIAL_TRANSACTIONS;
+      return [];
     }
   });
 
   // Invoices State
   const [invoices, setInvoices] = useState<PaymentInvoice[]>(() => {
-    if (typeof window === 'undefined') return INITIAL_INVOICES;
+    if (typeof window === 'undefined') return [];
     try {
       const stored = localStorage.getItem(LS_ZEN_INVOICES);
-      return stored ? JSON.parse(stored) : INITIAL_INVOICES;
+      if (stored) {
+        const parsed: PaymentInvoice[] = JSON.parse(stored);
+        const cleaned = parsed.filter(i => !SEEDED_INVOICE_IDS.includes(i.id));
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(LS_ZEN_INVOICES, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      }
+      return [];
     } catch {
-      return INITIAL_INVOICES;
+      return [];
     }
   });
 
   // Balance & Payouts State
   const [balance, setBalance] = useState<AccountBalance>(INITIAL_BALANCE);
-  const [payouts, setPayouts] = useState<PayoutRecord[]>(INITIAL_PAYOUTS);
+  const [payouts, setPayouts] = useState<PayoutRecord[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem(LS_ZEN_PAYOUTS);
+      if (stored) {
+        const parsed: PayoutRecord[] = JSON.parse(stored);
+        const cleaned = parsed.filter(p => !SEEDED_PAYOUT_IDS.includes(p.id));
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(LS_ZEN_PAYOUTS, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Dynamic Metrics computed strictly from real citizen payments
+  const settledTxns = useMemo(
+    () => transactions.filter(t => t.status === 'SUCCESS' || t.status === 'SETTLED'),
+    [transactions]
+  );
+  const totalSettledAmount = useMemo(
+    () => settledTxns.reduce((acc, t) => acc + (t.taxBreakdown?.totalPayable || t.amount || 0), 0),
+    [settledTxns]
+  );
+  const refundedTxns = useMemo(
+    () => transactions.filter(t => t.status === 'REFUNDED'),
+    [transactions]
+  );
+  const totalRefundedAmount = useMemo(
+    () => refundedTxns.reduce((acc, t) => acc + (t.refundAmount || t.amount || 0), 0),
+    [refundedTxns]
+  );
+  const hasActivePro = useMemo(() => {
+    return (
+      (profile as any)?.isElite ||
+      (profile as any)?.membershipTier === 'elite' ||
+      (profile as any)?.hasPulsePass ||
+      settledTxns.some(t => t.product === 'ZEN_PRO' || t.product === 'ZEN+')
+    );
+  }, [profile, settledTxns]);
+
+  // Organizer Dynamic Revenue Telemetry
+  const munTxns = useMemo(
+    () => transactions.filter(t => t.product === 'ZEN.MUN' && (t.status === 'SETTLED' || t.status === 'SUCCESS')),
+    [transactions]
+  );
+  const munRefundedTxns = useMemo(
+    () => transactions.filter(t => t.product === 'ZEN.MUN' && t.status === 'REFUNDED'),
+    [transactions]
+  );
+  const munGross = useMemo(
+    () => munTxns.reduce((sum, t) => sum + (t.amount || 0), 0),
+    [munTxns]
+  );
+  const munRefunds = useMemo(
+    () => munRefundedTxns.reduce((sum, t) => sum + (t.refundAmount || t.amount || 0), 0),
+    [munRefundedTxns]
+  );
+  const munPlatformFees = useMemo(
+    () => Math.round(munGross * 0.025),
+    [munGross]
+  );
+  const munNetPayable = useMemo(
+    () => Math.max(0, munGross - munRefunds - munPlatformFees),
+    [munGross, munRefunds, munPlatformFees]
+  );
 
   // Modals
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [activeReceiptTxn, setActiveReceiptTxn] = useState<PaymentTransaction | null>(null);
   const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(false);
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
-  const [payoutAmountInput, setPayoutAmountInput] = useState('25000');
+  const [payoutAmountInput, setPayoutAmountInput] = useState('0');
 
   // New Invoice Fields
   const [invClientName, setInvClientName] = useState('');
@@ -328,39 +415,49 @@ export function PaymentsHubClient() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-5 rounded-3xl bg-white/[0.02] border border-white/10 space-y-1">
                 <span className="text-[10px] font-mono text-neutral-400 uppercase">Total Settled Payments</span>
-                <h3 className="text-2xl font-bold font-mono text-white">₹548</h3>
-                <span className="text-[11px] text-emerald-400 font-mono">2 Active Products</span>
+                <h3 className="text-2xl font-bold font-mono text-white">₹{totalSettledAmount.toLocaleString()}</h3>
+                <span className="text-[11px] text-emerald-400 font-mono">
+                  {settledTxns.length} Settled Payment{settledTxns.length === 1 ? '' : 's'}
+                </span>
               </div>
               <div className="p-5 rounded-3xl bg-white/[0.02] border border-white/10 space-y-1">
                 <span className="text-[10px] font-mono text-neutral-400 uppercase">Active Subscriptions</span>
-                <h3 className="text-2xl font-bold font-mono text-cyan-300">ZEN PRO</h3>
-                <span className="text-[11px] text-neutral-400 font-mono">Renews Oct 1, 2026</span>
+                <h3 className="text-2xl font-bold font-mono text-cyan-300">
+                  {hasActivePro ? 'ZEN PRO' : 'None'}
+                </h3>
+                <span className="text-[11px] text-neutral-400 font-mono">
+                  {hasActivePro ? 'Active Sovereign Membership' : 'No active recurring tiers'}
+                </span>
               </div>
               <div className="p-5 rounded-3xl bg-white/[0.02] border border-white/10 space-y-1">
                 <span className="text-[10px] font-mono text-neutral-400 uppercase">Refunds Processed</span>
-                <h3 className="text-2xl font-bold font-mono text-neutral-300">₹499</h3>
-                <span className="text-[11px] text-neutral-400 font-mono">1 Completed Refund</span>
+                <h3 className="text-2xl font-bold font-mono text-neutral-300">₹{totalRefundedAmount.toLocaleString()}</h3>
+                <span className="text-[11px] text-neutral-400 font-mono">
+                  {refundedTxns.length} Completed Refund{refundedTxns.length === 1 ? '' : 's'}
+                </span>
               </div>
             </div>
 
             {/* Active Subscription Details Card */}
-            <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950/20 via-black to-black border border-purple-500/30 flex flex-wrap items-center justify-between gap-4">
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest font-bold">
-                  ACTIVE RECURRING BILLING &bull; ZEN.SUBSCRIPTIONS
-                </span>
-                <h4 className="text-lg font-bold text-white">ZEN PRO Sovereign Membership</h4>
-                <p className="text-xs text-neutral-400 font-mono">₹249/month &bull; Billed via Mastercard •••• 8821 &bull; Status: ACTIVE</p>
+            {hasActivePro ? (
+              <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950/20 via-black to-black border border-purple-500/30 flex flex-wrap items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest font-bold">
+                    ACTIVE RECURRING BILLING &bull; ZEN.SUBSCRIPTIONS
+                  </span>
+                  <h4 className="text-lg font-bold text-white">ZEN PRO Sovereign Membership</h4>
+                  <p className="text-xs text-neutral-400 font-mono">Status: ACTIVE &bull; Sovereign Scholar Tier</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/pricing"
+                    className="px-4 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 text-xs font-mono transition"
+                  >
+                    Manage Subscription
+                  </Link>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/pricing"
-                  className="px-4 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 text-xs font-mono transition"
-                >
-                  Manage Subscription
-                </Link>
-              </div>
-            </div>
+            ) : null}
 
             {/* Student ID Upload & Verification Module */}
             <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-950/25 via-[#0c1017] to-black border border-emerald-500/30 space-y-5">
@@ -512,39 +609,49 @@ export function PaymentsHubClient() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {filteredTxns.map((t) => (
-                        <tr key={t.id} className="hover:bg-white/[0.02] transition">
-                          <td className="p-4 font-bold text-white">{t.id}</td>
-                          <td className="p-4 font-sans">
-                            <span className="font-bold text-neutral-200 block text-xs">{t.purpose}</span>
-                            <span className="text-[11px] text-neutral-400 font-mono">{t.product} &bull; {t.merchantName}</span>
-                          </td>
-                          <td className="p-4 font-bold text-white">₹{t.taxBreakdown.totalPayable}</td>
-                          <td className="p-4 text-neutral-400">{t.paymentDetailsMasked}</td>
-                          <td className="p-4">
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                t.status === 'SUCCESS' || t.status === 'SETTLED'
-                                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                                  : t.status === 'REFUNDED'
-                                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                                  : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                              }`}
-                            >
-                              {t.status}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right">
-                            <button
-                              type="button"
-                              onClick={() => setActiveReceiptTxn(t)}
-                              className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 hover:text-white transition cursor-pointer text-[11px]"
-                            >
-                              Receipt
-                            </button>
+                      {filteredTxns.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-12 text-center text-neutral-400 font-mono">
+                            <Receipt className="w-8 h-8 mx-auto mb-2 text-neutral-600 opacity-60" />
+                            <p className="text-neutral-300 font-medium text-sm">No Transactions Recorded</p>
+                            <p className="text-neutral-500 text-xs mt-1">Verified payments and pass receipts will automatically appear here.</p>
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        filteredTxns.map((t) => (
+                          <tr key={t.id} className="hover:bg-white/[0.02] transition">
+                            <td className="p-4 font-bold text-white">{t.id}</td>
+                            <td className="p-4 font-sans">
+                              <span className="font-bold text-neutral-200 block text-xs">{t.purpose}</span>
+                              <span className="text-[11px] text-neutral-400 font-mono">{t.product} &bull; {t.merchantName}</span>
+                            </td>
+                            <td className="p-4 font-bold text-white">₹{t.taxBreakdown.totalPayable}</td>
+                            <td className="p-4 text-neutral-400">{t.paymentDetailsMasked}</td>
+                            <td className="p-4">
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                  t.status === 'SUCCESS' || t.status === 'SETTLED'
+                                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                                    : t.status === 'REFUNDED'
+                                    ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                                    : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                                }`}
+                              >
+                                {t.status}
+                              </span>
+                            </td>
+                            <td className="p-4 text-right">
+                              <button
+                                type="button"
+                                onClick={() => setActiveReceiptTxn(t)}
+                                className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 hover:text-white transition cursor-pointer text-[11px]"
+                              >
+                                Receipt
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -572,50 +679,70 @@ export function PaymentsHubClient() {
             </div>
 
             {/* Invoices List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {invoices.map((inv) => (
-                <div key={inv.id} className="p-6 rounded-3xl bg-black/50 border border-white/10 space-y-4 text-left">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div>
-                      <span className="text-[10px] font-mono text-neutral-400 uppercase block">INVOICE #{inv.id}</span>
-                      <h4 className="font-bold text-white text-base mt-0.5">{inv.billToName}</h4>
-                      {inv.billToOrg && <span className="text-xs text-neutral-400 block font-mono">{inv.billToOrg}</span>}
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                      {inv.status}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 text-xs font-mono text-neutral-300">
-                    {inv.items.map((item) => (
-                      <div key={item.id} className="flex justify-between py-1 border-b border-white/5">
-                        <span className="text-neutral-400">{item.description}</span>
-                        <span className="text-white">₹{item.amount.toLocaleString()}</span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between text-neutral-400 text-[11px] pt-1">
-                      <span>GST (18%)</span>
-                      <span>₹{inv.taxAmount.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm font-bold text-white pt-1 border-t border-white/10">
-                      <span>Total Amount</span>
-                      <span className="text-cyan-300">₹{inv.totalAmount.toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-between text-xs font-mono">
-                    <span className="text-neutral-500 text-[11px]">Due: {inv.dueDate}</span>
-                    <button
-                      type="button"
-                      onClick={() => alert(`Payment link copied: https://zenvitra.xyz${inv.paymentLinkUrl}`)}
-                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white transition cursor-pointer"
-                    >
-                      Copy Payment Link
-                    </button>
-                  </div>
+            {invoices.length === 0 ? (
+              <div className="p-12 rounded-3xl bg-black/40 border border-white/10 text-center space-y-3">
+                <Receipt className="w-10 h-10 text-neutral-600 mx-auto" />
+                <h4 className="text-base font-bold text-white">No Invoices Created</h4>
+                <p className="text-xs text-neutral-400 font-mono max-w-md mx-auto">
+                  You haven&apos;t generated any institutional billing or sponsorship invoices yet. Create an invoice to generate a shareable payment link.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewInvoiceOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30 text-purple-200 font-mono text-xs transition inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Create First Invoice</span>
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {invoices.map((inv) => (
+                  <div key={inv.id} className="p-6 rounded-3xl bg-black/50 border border-white/10 space-y-4 text-left">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <div>
+                        <span className="text-[10px] font-mono text-neutral-400 uppercase block">INVOICE #{inv.id}</span>
+                        <h4 className="font-bold text-white text-base mt-0.5">{inv.billToName}</h4>
+                        {inv.billToOrg && <span className="text-xs text-neutral-400 block font-mono">{inv.billToOrg}</span>}
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                        {inv.status}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-xs font-mono text-neutral-300">
+                      {inv.items.map((item) => (
+                        <div key={item.id} className="flex justify-between py-1 border-b border-white/5">
+                          <span className="text-neutral-400">{item.description}</span>
+                          <span className="text-white">₹{item.amount.toLocaleString()}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between text-neutral-400 text-[11px] pt-1">
+                        <span>GST (18%)</span>
+                        <span>₹{inv.taxAmount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm font-bold text-white pt-1 border-t border-white/10">
+                        <span>Total Amount</span>
+                        <span className="text-cyan-300">₹{inv.totalAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex items-center justify-between text-xs font-mono">
+                      <span className="text-neutral-500 text-[11px]">Due: {inv.dueDate}</span>
+                      <button
+                        type="button"
+                        onClick={() => alert(`Payment link copied: https://zenvitra.xyz${inv.paymentLinkUrl}`)}
+                        className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white transition cursor-pointer"
+                      >
+                        Copy Payment Link
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -697,26 +824,26 @@ export function PaymentsHubClient() {
                   <h4 className="text-lg font-bold text-white">ZENMUN 2026 — Sovereign Youth Diplomatic Assembly</h4>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
-                  817 Paid Registrations
+                  {munTxns.length} Paid {munTxns.length === 1 ? 'Registration' : 'Registrations'}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
                 <div>
                   <span className="text-neutral-400 text-[10px] block uppercase">Gross Revenue:</span>
-                  <strong className="text-base text-white">₹2,43,283</strong>
+                  <strong className="text-base text-white">₹{munGross.toLocaleString()}</strong>
                 </div>
                 <div>
                   <span className="text-neutral-400 text-[10px] block uppercase">Refunds (Cancelled):</span>
-                  <strong className="text-base text-amber-400">₹7,980</strong>
+                  <strong className="text-base text-amber-400">₹{munRefunds.toLocaleString()}</strong>
                 </div>
                 <div>
                   <span className="text-neutral-400 text-[10px] block uppercase">Platform Fees:</span>
-                  <strong className="text-base text-neutral-300">₹6,082</strong>
+                  <strong className="text-base text-neutral-300">₹{munPlatformFees.toLocaleString()}</strong>
                 </div>
                 <div>
                   <span className="text-neutral-400 text-[10px] block uppercase">Net Payable:</span>
-                  <strong className="text-base text-cyan-300">₹2,29,221</strong>
+                  <strong className="text-base text-cyan-300">₹{munNetPayable.toLocaleString()}</strong>
                 </div>
               </div>
             </div>
@@ -736,25 +863,33 @@ export function PaymentsHubClient() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {payouts.map((p) => (
-                      <tr key={p.id}>
-                        <td className="p-4 font-bold text-white">{p.id}</td>
-                        <td className="p-4 font-bold text-cyan-300">₹{p.amount.toLocaleString()}</td>
-                        <td className="p-4 text-neutral-400">{p.bankAccountMasked}</td>
-                        <td className="p-4">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              p.status === 'COMPLETED'
-                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
-                            }`}
-                          >
-                            {p.status}
-                          </span>
+                    {payouts.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-neutral-500 font-mono text-xs">
+                          No payout disbursements requested yet.
                         </td>
-                        <td className="p-4 text-neutral-500">{new Date(p.requestedAt).toLocaleDateString()}</td>
                       </tr>
-                    ))}
+                    ) : (
+                      payouts.map((p) => (
+                        <tr key={p.id}>
+                          <td className="p-4 font-bold text-white">{p.id}</td>
+                          <td className="p-4 font-bold text-cyan-300">₹{p.amount.toLocaleString()}</td>
+                          <td className="p-4 text-neutral-400">{p.bankAccountMasked}</td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                p.status === 'COMPLETED'
+                                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                                  : 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
+                              }`}
+                            >
+                              {p.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-neutral-500">{new Date(p.requestedAt).toLocaleDateString()}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
