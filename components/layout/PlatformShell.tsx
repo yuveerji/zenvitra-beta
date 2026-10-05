@@ -37,7 +37,10 @@ import {
   ChevronDown,
   Globe2,
   BookOpen,
-  X
+  X,
+  Terminal,
+  Scale,
+  Layers
 } from 'lucide-react';
 import { FloatingChatDrawer } from '@/components/chat/FloatingChatDrawer';
 import { SecurityShieldModal } from '@/components/security/SecurityShieldModal';
@@ -46,6 +49,8 @@ import { SwitchAppearanceModal } from '@/components/modals/SwitchAppearanceModal
 import { ReportProblemModal } from '@/components/modals/ReportProblemModal';
 import { ScheduledContentModal } from '@/components/modals/ScheduledContentModal';
 import { SwitchAccountModal } from '@/components/pulse/SwitchAccountModal';
+import { RoleExperienceSwitcherModal } from '@/components/modals/RoleExperienceSwitcherModal';
+import { getRoleConfig } from '@/lib/roleExperience';
 import { MobileBottomNav } from '@/components/navigation/MobileBottomNav';
 import { NotificationBell } from '@/components/navigation/NotificationBell';
 import SocialHoverMenu from '@/components/home/SocialHoverMenu';
@@ -76,11 +81,34 @@ export function PlatformShell({
   const [scheduledModalOpen, setScheduledModalOpen] = useState(false);
   const [switchAccountModalOpen, setSwitchAccountModalOpen] = useState(false);
   const [socialMindMapOpen, setSocialMindMapOpen] = useState(false);
+  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
+  const [activeRole, setActiveRole] = useState<string | null>(null);
   const [showTopHeader, setShowTopHeader] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
   const { profile, isMockMode, exitMockMode, signOut, isLoading } = useAuth();
   const { myProfile } = useZenPulse();
+
+  useEffect(() => {
+    const updateRole = () => {
+      try {
+        const storedRole = localStorage.getItem('zenvitra_user_role');
+        const sessionUser = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        setActiveRole(profile?.role || storedRole || sessionUser?.role || 'delegate');
+      } catch (_) {
+        setActiveRole(profile?.role || 'delegate');
+      }
+    };
+    updateRole();
+    window.addEventListener('storage', updateRole);
+    window.addEventListener('zenvitra_role_change', updateRole);
+    return () => {
+      window.removeEventListener('storage', updateRole);
+      window.removeEventListener('zenvitra_role_change', updateRole);
+    };
+  }, [profile?.role]);
+
+  const roleConfig = getRoleConfig(activeRole || profile?.role, isFounder);
 
   // Smart scroll auto-hide & mouse cursor top reveal
   useEffect(() => {
@@ -290,18 +318,57 @@ export function PlatformShell({
     session?.user?.email?.trim().toLowerCase() === 'founder@zenvitra.org'
   );
 
-  const navItems = [
-    { label: 'Home', href: '/pulse', icon: Radio, description: 'Feed Stream' },
-    { label: 'FLUX', href: '/pulse?tab=flux', icon: Film, description: 'FLUX Video Reels' },
-    { label: 'Messages', href: '/chat', icon: MessageSquare, description: 'ZEN.CHAT' },
-    { label: 'Search', href: '/pulse?tab=explore', icon: Search, description: 'Search & Nodes' },
-    { label: 'ZEN.GLIMPSE', href: '/glimpse', icon: Camera, tag: '24h', description: 'Snaps App' },
-    { label: 'Dashboard', href: '/dashboard', icon: BarChart3, description: 'Adaptive Matrix' },
-    { label: 'Events', href: '/events', icon: Calendar, description: 'Summits & Gatherings' },
-    { label: 'Chamber', href: '/committee', icon: Award, tag: 'Live', description: 'Assembly Chamber' },
-    { label: 'Docs', href: '/docs', icon: BookOpen, description: 'Sovereign Documents & Drafting' },
-    { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
-  ];
+  const navItems = React.useMemo(() => {
+    if (roleConfig.id === 'delegate') {
+      return [
+        { label: 'Chamber Dais', href: '/committee', icon: Award, tag: 'Live Dais', description: 'Assembly Chamber & Motions' },
+        { label: 'Resolutions', href: '/solutions', icon: Scale, tag: 'Ballots', description: 'Debate & Civic Voting' },
+        { label: 'MUN Summits', href: '/events', icon: Calendar, tag: 'MUN', description: 'Model UN Summits' },
+        { label: 'Home Feed', href: '/pulse', icon: Radio, description: 'Diplomatic Feed Stream' },
+        { label: 'Passport', href: '/passport', icon: ShieldCheck, tag: 'Dossier', description: 'Delegate Credentials' },
+        { label: 'Docs Drafting', href: '/docs', icon: BookOpen, description: 'Draft Treaties & Clauses' },
+        { label: 'ZEN.GLIMPSE', href: '/glimpse', icon: Camera, tag: '24h', description: 'Visual Floor Snaps' },
+        { label: 'Messages', href: '/chat', icon: MessageSquare, description: 'Diplomatic Mesh' },
+        { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
+      ];
+    } else if (roleConfig.id === 'journalist') {
+      return [
+        { label: 'Live Wire', href: '/pulse', icon: Radio, tag: 'Wire', description: 'Fast Feed & Bulletins' },
+        { label: 'Press Bureau', href: '/press', icon: Newspaper, tag: 'Bureau', description: 'Investigative Desks' },
+        { label: 'ZEN.GLIMPSE', href: '/glimpse', icon: Camera, tag: 'Live', description: '24h Visual Dispatches' },
+        { label: 'DOI Library', href: '/docs', icon: BookOpen, tag: 'Archive', description: 'Academic Citations' },
+        { label: 'FLUX Broadcast', href: '/pulse?tab=flux', icon: Film, description: 'Broadcast Reels' },
+        { label: 'Search & Intel', href: '/pulse?tab=explore', icon: Search, description: 'Investigative Search' },
+        { label: 'Messages', href: '/chat', icon: MessageSquare, description: 'Press Wire Mesh' },
+        { label: 'Dashboard', href: '/dashboard', icon: BarChart3, description: 'Editorial Metrics' },
+        { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
+      ];
+    } else if (roleConfig.id === 'architect') {
+      return [
+        { label: 'Protocol Engine', href: '/solutions', icon: Terminal, tag: 'Engine', description: 'Civic Micro-Tools' },
+        { label: 'Matrix Hub', href: '/matrix', icon: Layers, tag: 'OS', description: 'Adaptive Matrix OS' },
+        { label: 'Treasury Ledger', href: '/donate/govt-schools', icon: Heart, tag: '10% Aid', description: 'Public School Aid Ledger' },
+        { label: 'Developer Enclave', href: '/enclave', icon: ShieldCheck, tag: 'APIs', description: 'Open Protocol Tools' },
+        { label: 'Home Feed', href: '/pulse', icon: Radio, description: 'Feed Stream' },
+        { label: 'Messages', href: '/chat', icon: MessageSquare, description: 'Decentralized Chat' },
+        { label: 'Dashboard', href: '/dashboard', icon: BarChart3, description: 'Matrix Telemetry' },
+        { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
+      ];
+    }
+
+    return [
+      { label: 'Home', href: '/pulse', icon: Radio, description: 'Feed Stream' },
+      { label: 'FLUX', href: '/pulse?tab=flux', icon: Film, description: 'FLUX Video Reels' },
+      { label: 'Messages', href: '/chat', icon: MessageSquare, description: 'ZEN.CHAT' },
+      { label: 'Search', href: '/pulse?tab=explore', icon: Search, description: 'Search & Nodes' },
+      { label: 'ZEN.GLIMPSE', href: '/glimpse', icon: Camera, tag: '24h', description: 'Snaps App' },
+      { label: 'Dashboard', href: '/dashboard', icon: BarChart3, description: 'Adaptive Matrix' },
+      { label: 'Events', href: '/events', icon: Calendar, description: 'Summits & Gatherings' },
+      { label: 'Chamber', href: '/committee', icon: Award, tag: 'Live', description: 'Assembly Chamber' },
+      { label: 'Docs', href: '/docs', icon: BookOpen, description: 'Sovereign Documents & Drafting' },
+      { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
+    ];
+  }, [roleConfig.id]);
 
   const isActive = (href: string) => pathname === href || (href !== '/' && pathname?.startsWith(href));
 
@@ -433,6 +500,31 @@ export function PlatformShell({
                 <X className="w-4 h-4" />
               </button>
             </div>
+          </div>
+
+          {/* Active Role Persona Badge & Quick Switcher */}
+          <div className="pt-2 px-1">
+            <button
+              type="button"
+              onClick={() => setRoleSwitcherOpen(true)}
+              className={`w-full p-2.5 rounded-2xl border flex items-center justify-between gap-2 transition cursor-pointer text-left ${roleConfig.badgeClass} ${roleConfig.borderClass}`}
+              title="Click to Switch Persona / Experience"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-base shrink-0">{roleConfig.icon}</span>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-sans font-extrabold uppercase tracking-wider truncate">
+                    {roleConfig.badge}
+                  </div>
+                  <div className="text-[10px] text-neutral-400 font-sans truncate">
+                    {roleConfig.title}
+                  </div>
+                </div>
+              </div>
+              <span className="text-[9px] font-sans font-bold px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-neutral-200 shrink-0">
+                Switch
+              </span>
+            </button>
           </div>
 
           {/* Navigation Links */}
@@ -727,6 +819,11 @@ export function PlatformShell({
                       TEST
                     </span>
                   )}
+                  {!isGuest && !isTestPilot && (
+                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-sans font-bold uppercase tracking-wider shrink-0 border ${roleConfig.badgeClass}`}>
+                      {roleConfig.shortTitle}
+                    </span>
+                  )}
                 </div>
                 <p className="text-[10px] text-zinc-500 truncate font-mono" suppressHydrationWarning>@{currentUsername}</p>
               </div>
@@ -927,6 +1024,12 @@ export function PlatformShell({
         <SocialMindMapModal
           isOpen={socialMindMapOpen}
           onClose={() => setSocialMindMapOpen(false)}
+        />
+
+        {/* ─── SOVEREIGN PERSONA / ROLE EXPERIENCE SWITCHER MODAL ─── */}
+        <RoleExperienceSwitcherModal
+          isOpen={roleSwitcherOpen}
+          onClose={() => setRoleSwitcherOpen(false)}
         />
       </main>
     </div>

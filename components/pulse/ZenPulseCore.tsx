@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
+import { getRoleConfig } from '@/lib/roleExperience';
+import { RoleExperienceSwitcherModal } from '@/components/modals/RoleExperienceSwitcherModal';
 import { StoriesTray } from './StoriesTray';
 import { FluxReelsFeed } from './FluxReelsFeed';
 import { StoryComposerModal } from './StoryComposerModal';
@@ -166,6 +168,32 @@ export function ZenPulseCore() {
       ? 'profile'
       : 'feed'
   );
+
+  /* Active Sovereign Role Persona & Directive */
+  const [activeRole, setActiveRole] = useState<string | null>(null);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleRoleSync = () => {
+      try {
+        const storedRole = localStorage.getItem('zenvitra_user_role');
+        const sessionUser = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        setActiveRole(profile?.role || storedRole || sessionUser?.role || 'delegate');
+      } catch (_) {
+        setActiveRole(profile?.role || 'delegate');
+      }
+    };
+    handleRoleSync();
+    window.addEventListener('storage', handleRoleSync);
+    window.addEventListener('zenvitra_role_change', handleRoleSync);
+    return () => {
+      window.removeEventListener('storage', handleRoleSync);
+      window.removeEventListener('zenvitra_role_change', handleRoleSync);
+    };
+  }, [profile?.role]);
+
+  const isUserFounder = isFounder(activeUsername, profile?.email);
+  const roleConfig = getRoleConfig(activeRole || profile?.role, isUserFounder);
 
   /* Deep-link to User Pulse Social Profile via /pulse?user=xxx */
   useEffect(() => {
@@ -874,6 +902,47 @@ export function ZenPulseCore() {
         {/* ── Clean Centered Workspace (No Sidebars) ── */}
         <div className="max-w-2xl sm:max-w-3xl mx-auto w-full space-y-6">
           <main className="w-full space-y-6">
+            {/* Active Sovereign Role Persona Directive Hub */}
+            <div className={`p-4 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 text-xs font-sans shadow-xl shadow-black/50 backdrop-blur-2xl transition-all duration-300 ${roleConfig.badgeClass} ${roleConfig.borderClass}`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-xl shrink-0 shadow-inner">
+                  {roleConfig.icon}
+                </div>
+                <div className="min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-extrabold uppercase tracking-wider text-[10px] text-white">
+                      {roleConfig.badge}
+                    </span>
+                    <span className="text-white/40">•</span>
+                    <span className="text-white/90 font-bold truncate">
+                      {roleConfig.title} Experience
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-neutral-300 font-normal leading-relaxed">
+                    {roleConfig.directiveBanner}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 pt-1 sm:pt-0">
+                <Link
+                  href={roleConfig.quickAction.href}
+                  className="px-3.5 py-2 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition shadow-md flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                >
+                  <span>{roleConfig.quickAction.label}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setRoleModalOpen(true)}
+                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-200 hover:text-white transition font-sans font-semibold text-xs cursor-pointer border border-white/10 active:scale-95"
+                  title="Switch Persona / Experience"
+                >
+                  Switch Persona
+                </button>
+              </div>
+            </div>
+
             {/* Subview: FLUX Reels */}
             {navTab === 'flux' && (
               <div className="max-w-md mx-auto py-2">
@@ -1969,6 +2038,12 @@ export function ZenPulseCore() {
         isOpen={showFounderModal}
         onClose={() => setShowFounderModal(false)}
         onOpenAdminMenu={() => setShowAdminModal(true)}
+      />
+
+      {/* ── Sovereign Role Persona Switcher Modal ── */}
+      <RoleExperienceSwitcherModal
+        isOpen={roleModalOpen}
+        onClose={() => setRoleModalOpen(false)}
       />
     </div>
   );

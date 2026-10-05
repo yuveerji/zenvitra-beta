@@ -96,7 +96,7 @@ const SOVEREIGN_PILLARS: SovereignPillar[] = [
     badgeColor: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
   },
   {
-    id: 'press',
+    id: 'journalist',
     title: 'Investigative Press Bureau',
     badge: 'WIRE BUREAU',
     icon: Newspaper,
@@ -125,11 +125,13 @@ function InteractiveGlowCard({
   className = '',
   children,
   href,
+  onClick,
   spotlightColor = 'rgba(168, 85, 247, 0.35)',
 }: {
   className?: string;
   children: React.ReactNode;
   href?: string;
+  onClick?: () => void;
   spotlightColor?: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -151,9 +153,10 @@ function InteractiveGlowCard({
   const innerCard = (
     <div
       ref={cardRef}
+      onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative p-4 rounded-2xl border transition-all duration-300 text-left space-y-2 select-none overflow-hidden group bg-[#07080b]/85 border-white/10 ${className}`}
+      className={`relative p-4 rounded-2xl border transition-all duration-300 text-left space-y-2 select-none overflow-hidden group bg-[#07080b]/85 border-white/10 ${onClick ? 'cursor-pointer' : ''} ${className}`}
     >
       {/* Dynamic Cursor Spotlight Radial Glow */}
       {mousePos && (
@@ -223,6 +226,23 @@ function LoginForm() {
   }, [isAuthenticated, profile, targetDestination, router, is2FAStep]);
 
   const [showPassword, setShowPassword] = useState(false);
+
+  // Active Sovereign Persona Selection
+  const [selectedRole, setSelectedRole] = useState<'delegate' | 'journalist' | 'architect'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('zenvitra_user_role');
+        if (stored === 'journalist' || stored === 'architect' || stored === 'delegate') return stored;
+      } catch (_) {}
+    }
+    return 'delegate';
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('zenvitra_user_role', selectedRole);
+    } catch (_) {}
+  }, [selectedRole]);
   
   // Saved Accounts & Login Info State
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
@@ -344,7 +364,16 @@ function LoginForm() {
     setPassword('test1234');
     try {
       await continueAsTestUser();
-      setSuccessMessage('🧪 Test Node Initialized! All Features Unlocked.');
+      try {
+        localStorage.setItem('zenvitra_user_role', selectedRole);
+        const stored = localStorage.getItem('zenvitra_session_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          parsed.role = selectedRole;
+          localStorage.setItem('zenvitra_session_user', JSON.stringify(parsed));
+        }
+      } catch (_) {}
+      setSuccessMessage(`🧪 Test Node Initialized with ${selectedRole.toUpperCase()} Experience!`);
       setTimeout(() => {
         router.push(targetDestination);
       }, 250);
@@ -409,6 +438,11 @@ function LoginForm() {
       recordSuccessfulAuth(cleanUser);
 
       // Save Login Info handling
+      const effectiveRole = cleanUser === 'yuveer' ? 'founder' : (selectedAccount?.role || selectedRole);
+      try {
+        localStorage.setItem('zenvitra_user_role', effectiveRole);
+      } catch (_) {}
+
       if (saveLoginInfo) {
         setSavedAccountsEnabled(true);
         const userProf: any = {
@@ -416,7 +450,7 @@ function LoginForm() {
           username: cleanUser,
           display_name: selectedAccount?.name || (cleanUser === 'yuveer' ? 'Yuveer Chhatwani' : cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1)),
           email: cleanUser.includes('@') ? cleanUser : `${cleanUser}@zenvitra.xyz`,
-          role: cleanUser === 'yuveer' ? 'founder' : (selectedAccount?.role || 'delegate'),
+          role: effectiveRole,
           isFounder: cleanUser === 'yuveer' || cleanUser.includes('founder'),
           avatar: selectedAccount?.avatar || undefined,
           lastActive: new Date().toISOString()
@@ -589,11 +623,17 @@ function LoginForm() {
               <div className="space-y-2.5">
                 {SOVEREIGN_PILLARS.map((p) => {
                   const Icon = p.icon;
+                  const isSelected = selectedRole === p.id;
                   return (
                     <InteractiveGlowCard
                       key={p.id}
                       spotlightColor={p.spotlightColor}
-                      className={p.accentBorder}
+                      onClick={() => setSelectedRole(p.id as any)}
+                      className={`${p.accentBorder} ${
+                        isSelected 
+                          ? 'ring-2 ring-white/30 bg-white/[0.06] border-white/30 shadow-[0_0_25px_rgba(255,255,255,0.08)]' 
+                          : 'opacity-80 hover:opacity-100'
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
@@ -601,13 +641,18 @@ function LoginForm() {
                             <Icon className="w-4 h-4" />
                           </div>
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <h4 className="font-bold text-sm text-white group-hover:text-neutral-100 transition-colors">
                                 {p.title}
                               </h4>
                               <span className={`text-[9px] font-mono font-bold tracking-widest px-2 py-0.5 rounded-full border ${p.badgeColor}`}>
                                 {p.badge}
                               </span>
+                              {isSelected && (
+                                <span className="text-[9px] font-sans font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                                  ✓ Selected Persona
+                                </span>
+                              )}
                             </div>
                             <p className="text-[11px] text-neutral-400 leading-snug">
                               {p.tagline}
@@ -679,6 +724,56 @@ function LoginForm() {
                 </h3>
                 <p className="text-xs text-neutral-400">
                   Enter your unique handle or email and master passphrase.
+                </p>
+              </div>
+
+              {/* Sovereign Persona & Experience Selector */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-white/[0.02] border border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-sans font-semibold text-neutral-300 uppercase tracking-wide flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Active Session Persona</span>
+                  </span>
+                  <span className={`text-[10px] font-sans font-bold px-2 py-0.5 rounded-full border ${
+                    selectedRole === 'delegate'
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                      : selectedRole === 'journalist'
+                      ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                  }`}>
+                    {selectedRole === 'delegate' ? 'CHAMBER SOVEREIGN' : selectedRole === 'journalist' ? 'WIRE BUREAU' : 'PROTOCOL ENGINE'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  {[
+                    { id: 'delegate', label: 'Delegate', icon: Users, color: 'text-amber-400', activeBg: 'bg-amber-500/15 border-amber-400/80 text-white' },
+                    { id: 'journalist', label: 'Journalist', icon: Newspaper, color: 'text-cyan-400', activeBg: 'bg-cyan-500/15 border-cyan-400/80 text-white' },
+                    { id: 'architect', label: 'Architect', icon: Terminal, color: 'text-emerald-400', activeBg: 'bg-emerald-500/15 border-emerald-400/80 text-white' },
+                  ].map((r) => {
+                    const Icon = r.icon;
+                    const isSel = selectedRole === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => setSelectedRole(r.id as any)}
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 text-xs font-sans font-semibold ${
+                          isSel
+                            ? `${r.activeBg} shadow-md ring-1 ring-white/20`
+                            : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/10 text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        <Icon className={`w-4 h-4 ${isSel ? r.color : 'text-neutral-400'}`} />
+                        <span className="truncate">{r.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-neutral-400 font-sans leading-tight pt-1">
+                  {selectedRole === 'delegate' && 'Tailors your experience for UN Chambers, resolutions, dais motions, and live debate ballots.'}
+                  {selectedRole === 'journalist' && 'Tailors your experience for autonomous press wires, breaking bulletins, and DOI research dossiers.'}
+                  {selectedRole === 'architect' && 'Tailors your experience for open civic micro-tools, smart assemblies, and public school 10% aid audits.'}
                 </p>
               </div>
 

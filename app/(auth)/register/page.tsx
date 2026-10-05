@@ -273,6 +273,9 @@ export default function RegisterPage() {
       });
 
       recordSuccessfulAuth(cleanHandle);
+      try {
+        localStorage.setItem('zenvitra_user_role', track);
+      } catch (_) {}
 
       router.push('/pulse');
       router.refresh();

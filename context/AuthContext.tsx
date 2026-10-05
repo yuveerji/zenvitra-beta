@@ -42,6 +42,7 @@ interface AuthContextType {
   
   // Sandbox / Demo Role Quick Switcher (For Previewing Experiences)
   loginAsDemoRole: (role: UserRole) => void;
+  switchRole: (role: UserRole) => void;
 }
 
 
@@ -71,6 +72,7 @@ const AuthContext = createContext<AuthContextType>({
   unlinkProvider: async () => ({ success: false }),
   deleteAccount: async () => ({ success: false }),
   loginAsDemoRole: () => {},
+  switchRole: () => {},
 });
 
 export const LS_SAVED_ACCOUNTS_ENABLED = 'zenvitra_save_accounts_enabled';
@@ -711,6 +713,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       localStorage.removeItem('zenvitra_demo_role');
       localStorage.setItem('zenvitra_session_user', JSON.stringify(newProf));
+      localStorage.setItem('zenvitra_user_role', role);
       recordSavedSession(newProf);
       setUser({ id: newProf.id, email: cleanEmail });
       setProfile(newProf);
@@ -1046,7 +1049,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const isMockMode = false;
-  const loginAsDemoRole = (_role: UserRole) => {};
+
+  const switchRole = useCallback((newRole: UserRole) => {
+    setProfile((prev) => {
+      const updated: UserProfile = prev
+        ? { ...prev, role: newRole }
+        : ({
+            id: 'zen_user_active',
+            username: 'citizen',
+            display_name: 'Citizen Node',
+            email: 'citizen@zenvitra.xyz',
+            role: newRole,
+            impact_score: 100,
+            followers_count: 0,
+            following_count: 0,
+            is_verified: true,
+            is_onboarded: true,
+            created_at: new Date().toISOString(),
+          } as UserProfile);
+
+      try {
+        localStorage.setItem('zenvitra_session_user', JSON.stringify(updated));
+        localStorage.setItem('zenvitra_user_role', newRole);
+        recordSavedSession(updated, true);
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('zenvitra_role_change', { detail: { role: newRole } }));
+      } catch (_) {}
+
+      return updated;
+    });
+  }, []);
+
+  const loginAsDemoRole = useCallback((role: UserRole) => {
+    switchRole(role);
+  }, [switchRole]);
+
   const exitMockMode = async () => {
     await signOut();
     if (typeof window !== 'undefined') {
@@ -1079,6 +1116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         unlinkProvider,
         deleteAccount,
         loginAsDemoRole,
+        switchRole,
         isSavedAccountsOn,
         toggleSavedAccounts,
       }}
