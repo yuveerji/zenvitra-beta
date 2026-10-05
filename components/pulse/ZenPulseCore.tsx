@@ -496,9 +496,6 @@ export function ZenPulseCore() {
     const items: TickerItem[] = [];
 
     // Official platform directives (indices map directly to DIRECTIVE_DOSSIERS in ChamberDirectiveModal)
-    // 0: directive-mesh ('ZENVITRA MESH')
-    // 1: directive-civic ('Constitutional 10% Profit Civic Treasury Allocation')
-    // 2: directive-sovereign ('Sovereign Identity Shield')
     const officialDirectives: TickerItem[] = [
       {
         id: 'directive-mesh',
@@ -520,17 +517,48 @@ export function ZenPulseCore() {
       },
     ];
 
+    // 1. Calculate Trending Posts based on engagement velocity
     if (Array.isArray(feedPosts) && feedPosts.length > 0) {
-      feedPosts.slice(0, 5).forEach((p) => {
+      const scoredPosts = feedPosts.map((p) => {
+        const likes = p.likes || 0;
+        const replies = p.replyCount || (Array.isArray((p as any).comments) ? (p as any).comments.length : 0);
+        const reposts = p.reposts || (p as any).repostsCount || 0;
+        const isTrendingTag = (p.tags || []).some((t) => /trending|breaking|viral|hot|debate|resolution/i.test(t));
+        const score = (likes * 1.5) + (replies * 2.5) + (reposts * 3) + (isTrendingTag ? 10 : 0);
+        return { post: p, score };
+      });
+
+      // Filter and pick top trending dispatches
+      const topTrending = scoredPosts
+        .filter((sp) => sp.score > 0 || (sp.post.tags && sp.post.tags.length > 0))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      topTrending.forEach((tp) => {
+        const p = tp.post;
         const cleanTxt = (p.content || '').replace(/[\r\n]+/g, ' ').trim();
-        if (cleanTxt) {
-          const wirePrefix = (p as any).treatyData ? 'TREATY WIRE' : (p as any).speechData ? 'FLOOR RELAY' : 'LIVE WIRE';
-          items.push({
-            id: `post-${p.id}`,
-            badge: wirePrefix,
-            text: `@${p.authorUsername || 'delegate'}: ${cleanTxt.length > 90 ? cleanTxt.slice(0, 90) + '...' : cleanTxt}`,
-            post: p,
-          });
+        const snippet = cleanTxt.length > 85 ? cleanTxt.slice(0, 85) + '...' : cleanTxt;
+        items.push({
+          id: `trending-${p.id}`,
+          badge: '🔥 TRENDING IN CHAMBER',
+          text: `@${p.authorUsername || 'citizen'}: ${snippet}`,
+          post: p,
+        });
+      });
+
+      // 2. Add other recent live dispatches (avoiding duplicates)
+      feedPosts.slice(0, 4).forEach((p) => {
+        if (!items.some((it) => it.id === `trending-${p.id}`)) {
+          const cleanTxt = (p.content || '').replace(/[\r\n]+/g, ' ').trim();
+          if (cleanTxt) {
+            const wirePrefix = (p as any).treatyData ? 'TREATY WIRE' : (p as any).speechData ? 'FLOOR RELAY' : 'LIVE WIRE';
+            items.push({
+              id: `post-${p.id}`,
+              badge: wirePrefix,
+              text: `@${p.authorUsername || 'delegate'}: ${cleanTxt.length > 90 ? cleanTxt.slice(0, 90) + '...' : cleanTxt}`,
+              post: p,
+            });
+          }
         }
       });
     }
@@ -550,21 +578,30 @@ export function ZenPulseCore() {
 
   const handleTickerClick = (item: TickerItem) => {
     if (item.post) {
-      setActiveFlexItem({
-        id: item.post.id,
-        type: 'pulse_post',
-        title: item.post.authorName ? `${item.post.authorName}'s Dispatch` : 'Sovereign Dispatch',
-        content: item.post.content,
-        authorName: item.post.authorName,
-        authorUsername: item.post.authorUsername,
-        authorAvatar: item.post.authorAvatar,
-        images: item.post.images,
-        createdAt: item.post.createdAt,
-        likes: item.post.likes,
-        category: (item.post as any).category || 'Dispatch',
-        tags: item.post.tags,
-        threadSegments: [item.post.content],
-      });
+      const el = document.getElementById(`post-${item.post.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-amber-400', 'shadow-[0_0_30px_rgba(245,158,11,0.5)]');
+        setTimeout(() => {
+          el.classList.remove('ring-2', 'ring-amber-400', 'shadow-[0_0_30px_rgba(245,158,11,0.5)]');
+        }, 3500);
+      } else {
+        setActiveFlexItem({
+          id: item.post.id,
+          type: 'pulse_post',
+          title: item.post.authorName ? `${item.post.authorName}'s Dispatch` : 'Sovereign Dispatch',
+          content: item.post.content,
+          authorName: item.post.authorName,
+          authorUsername: item.post.authorUsername,
+          authorAvatar: item.post.authorAvatar,
+          images: item.post.images,
+          createdAt: item.post.createdAt,
+          likes: item.post.likes,
+          category: (item.post as any).category || 'Dispatch',
+          tags: item.post.tags,
+          threadSegments: [item.post.content],
+        });
+      }
     } else if (item.directiveIndex !== undefined) {
       setActiveDirectiveIndex(item.directiveIndex);
       setShowDirectiveModal(true);
@@ -701,7 +738,11 @@ export function ZenPulseCore() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-sans text-[10px] font-bold uppercase tracking-wider group-hover:bg-amber-500/25 transition">
+                <span className={`px-2.5 py-0.5 rounded-full font-sans text-[10px] font-bold uppercase tracking-wider transition ${
+                  currentTickerItem.badge.includes('TRENDING')
+                    ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.35)] animate-pulse'
+                    : 'bg-amber-500/15 border border-amber-500/30 text-amber-300 group-hover:bg-amber-500/25'
+                }`}>
                   {currentTickerItem.badge}
                 </span>
               </div>

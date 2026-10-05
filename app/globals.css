@@ -28,7 +28,10 @@ body {
 html, body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-inter), var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   max-width: 100vw;
   overflow-x: hidden;
   position: relative;
@@ -485,4 +488,30 @@ input, textarea, select, [contenteditable="true"] {
 
 .animate-marquee-wire:hover {
   animation-play-state: paused;
+}
+
+/* ═══════════════════════════════════════
+   FLOATING REACTION BURST PHYSICS
+   ═══════════════════════════════════════ */
+@keyframes glimpse-burst {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 1;
+  }
+  40% {
+    transform: translateY(-90px) scale(1.35) rotate(-6deg);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-190px) scale(1.1) rotate(6deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-280px) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.animate-glimpse-burst {
+  animation: glimpse-burst 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

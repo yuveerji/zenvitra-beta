@@ -27,7 +27,8 @@ import {
   Trash2,
   Sliders,
   Maximize2,
-  Globe
+  Globe,
+  Music
 } from 'lucide-react';
 import { ZenGlimpse, INITIAL_GLIMPSES } from '@/types/glimpse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
@@ -54,6 +55,22 @@ const LOCATION_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Campus Secretariat Hub': { lat: 1.3521, lng: 103.8198 },
 };
 
+const OPTICAL_FILTERS = [
+  { id: 'clean', label: 'Clean Optics', filter: 'none' },
+  { id: 'cyber', label: 'Cyber Cyan', filter: 'contrast(125%) saturate(145%) hue-rotate(170deg)' },
+  { id: 'obsidian', label: 'Obsidian Noir', filter: 'grayscale(100%) contrast(150%) brightness(90%)' },
+  { id: 'gold', label: '35mm Gold', filter: 'sepia(45%) contrast(110%) saturate(130%) brightness(105%)' },
+  { id: 'infrared', label: 'Infrared Matrix', filter: 'invert(85%) hue-rotate(190deg) saturate(220%)' },
+];
+
+const AUDIO_VIBES = [
+  'None',
+  '🏛️ UN Floor Ambience',
+  '🌧️ Geneva Rain',
+  '🌆 Neo-Tokyo Lo-fi',
+  '🎙️ Press Caucus',
+];
+
 const LS_GLIMPSES = 'zenvitra_glimpses_v2';
 
 export function ZenGlimpseApp() {
@@ -64,6 +81,11 @@ export function ZenGlimpseApp() {
   const [glimpses, setGlimpses] = useState<ZenGlimpse[]>(INITIAL_GLIMPSES);
   
   // Camera & Capture State
+  const [activeFilter, setActiveFilter] = useState('clean');
+  const [selectedVibe, setSelectedVibe] = useState(AUDIO_VIBES[0]);
+  const [burstParticles, setBurstParticles] = useState<{ id: number; emoji: string; x: number }[]>([]);
+  const [storyReply, setStoryReply] = useState('');
+  const [storyReplySent, setStoryReplySent] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isStudioOpen, setIsStudioOpen] = useState(false);
@@ -158,6 +180,10 @@ export function ZenGlimpseApp() {
       canvas.height = videoRef.current.videoHeight || 800;
       const ctx = canvas.getContext('2d');
       if (ctx) {
+        const filterObj = OPTICAL_FILTERS.find((f) => f.id === activeFilter);
+        if (filterObj && filterObj.filter !== 'none') {
+          ctx.filter = filterObj.filter;
+        }
         ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
         setCapturedImage(dataUrl);
@@ -184,6 +210,7 @@ export function ZenGlimpseApp() {
       mediaType: 'photo',
       caption: caption.trim() || 'Visual sovereign dispatch from the floor.',
       locationTag: selectedLocation,
+      chapterCampus: selectedVibe !== 'None' ? selectedVibe : undefined,
       selfDestructHours: selfDestructHours,
       track: postTrack,
       createdAt: new Date().toISOString(),
@@ -223,6 +250,18 @@ export function ZenGlimpseApp() {
     try {
       localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
     } catch {}
+  };
+
+  const triggerEmojiBurst = (emoji: string) => {
+    const newParticles = Array.from({ length: 5 }).map((_, i) => ({
+      id: Date.now() + i + Math.random(),
+      emoji,
+      x: 25 + Math.random() * 50,
+    }));
+    setBurstParticles((prev) => [...prev, ...newParticles]);
+    setTimeout(() => {
+      setBurstParticles((prev) => prev.filter((p) => !newParticles.some((np) => np.id === p.id)));
+    }, 1100);
   };
 
   const handleDeleteGlimpse = (id: string, e: React.MouseEvent) => {
@@ -341,6 +380,27 @@ export function ZenGlimpseApp() {
               <span className="text-[11px] font-sans text-neutral-400 font-medium">RAW DISPATCH</span>
             </div>
 
+            {/* Optical Filter Selector Row */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+              <span className="text-[10px] font-sans font-bold uppercase text-neutral-400 shrink-0 mr-1 flex items-center gap-1">
+                <Sliders className="w-3 h-3 text-cyan-400" /> Lens:
+              </span>
+              {OPTICAL_FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setActiveFilter(f.id)}
+                  className={`px-3 py-1 rounded-xl text-[11px] font-sans font-semibold transition cursor-pointer shrink-0 border ${
+                    activeFilter === f.id
+                      ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black border-cyan-300 font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)]'
+                      : 'bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 border-white/10'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
             {/* Viewfinder Screen */}
             <div className="relative aspect-[4/5] rounded-3xl bg-black border border-white/15 overflow-hidden flex flex-col items-center justify-center shadow-2xl group/viewfinder">
               
@@ -372,7 +432,8 @@ export function ZenGlimpseApp() {
                     autoPlay
                     playsInline
                     muted
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition duration-300"
+                    style={{ filter: OPTICAL_FILTERS.find((f) => f.id === activeFilter)?.filter || 'none' }}
                   />
                   {/* Shutter Button */}
                   <div className="absolute bottom-6 flex items-center justify-center z-20">
@@ -461,7 +522,7 @@ export function ZenGlimpseApp() {
                   className="w-full px-4 py-3 rounded-2xl bg-black/60 border border-white/15 text-white text-xs font-sans placeholder-neutral-500 focus:outline-none focus:border-cyan-400 shadow-inner"
                 />
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* Location Stamp Selector */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-sans font-semibold text-neutral-300 uppercase tracking-wide flex items-center gap-1">
@@ -475,6 +536,23 @@ export function ZenGlimpseApp() {
                     >
                       {LOCATION_STAMPS.map((loc) => (
                         <option key={loc} value={loc} className="bg-black text-white">{loc}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Audio Ambience Vibe */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-sans font-semibold text-neutral-300 uppercase tracking-wide flex items-center gap-1">
+                      <Music className="w-3 h-3 text-fuchsia-400" />
+                      <span>Audio Vibe</span>
+                    </label>
+                    <select
+                      value={selectedVibe}
+                      onChange={(e) => setSelectedVibe(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-sans focus:outline-none focus:border-fuchsia-400 cursor-pointer"
+                    >
+                      {AUDIO_VIBES.map((vibe) => (
+                        <option key={vibe} value={vibe} className="bg-black text-white">{vibe}</option>
                       ))}
                     </select>
                   </div>
@@ -703,9 +781,17 @@ export function ZenGlimpseApp() {
                     <h4 className="font-bold text-xs text-white">
                       @{filteredGlimpses[activeGlimpseIndex].authorUsername}
                     </h4>
-                    <p className="text-[10px] text-cyan-300 font-sans font-semibold">
-                      {filteredGlimpses[activeGlimpseIndex].locationTag}
-                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-[10px] text-cyan-300 font-sans font-semibold">
+                        {filteredGlimpses[activeGlimpseIndex].locationTag}
+                      </p>
+                      {filteredGlimpses[activeGlimpseIndex].chapterCampus && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30 text-[9px] text-fuchsia-300 font-sans font-medium">
+                          <Music className="w-2.5 h-2.5" />
+                          <span>{filteredGlimpses[activeGlimpseIndex].chapterCampus}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -727,6 +813,19 @@ export function ZenGlimpseApp() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Floating Burst Particles Layer */}
+            <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+              {burstParticles.map((p) => (
+                <div
+                  key={p.id}
+                  className="absolute bottom-28 text-3xl animate-glimpse-burst select-none"
+                  style={{ left: `${p.x}%` }}
+                >
+                  {p.emoji}
+                </div>
+              ))}
             </div>
 
             {/* Navigation Buttons */}
@@ -754,8 +853,8 @@ export function ZenGlimpseApp() {
               </button>
             </div>
 
-            {/* Bottom Caption & Reactions */}
-            <div className="relative z-10 p-5 bg-gradient-to-t from-black/95 via-black/60 to-transparent space-y-3.5">
+            {/* Bottom Caption & Reactions & Direct Story Reply Vault */}
+            <div className="relative z-10 p-5 bg-gradient-to-t from-black/95 via-black/70 to-transparent space-y-3">
               <p className="text-sm font-sans font-medium text-white drop-shadow leading-snug">
                 {filteredGlimpses[activeGlimpseIndex].caption}
               </p>
@@ -765,26 +864,69 @@ export function ZenGlimpseApp() {
                   ⏱️ {filteredGlimpses[activeGlimpseIndex].expiresAt}
                 </span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={(e) => handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 transition cursor-pointer text-xs active:scale-95 text-white font-bold"
+                    onClick={(e) => {
+                      handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e);
+                      triggerEmojiBurst('❤️');
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 transition cursor-pointer text-xs active:scale-95 text-white font-bold"
                     title="Like Glimpse"
                   >
-                    <Heart className={`w-4 h-4 ${filteredGlimpses[activeGlimpseIndex].likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
+                    <Heart className={`w-3.5 h-3.5 ${filteredGlimpses[activeGlimpseIndex].likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
                     <span>{filteredGlimpses[activeGlimpseIndex].likes}</span>
                   </button>
-                  {['🏛️', '🔥', '👏'].map((emoji) => (
+                  {['🏛️', '🔥', '👏', '⚡'].map((emoji) => (
                     <button
                       key={emoji}
-                      onClick={(e) => handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
-                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 hover:scale-125 transition cursor-pointer text-sm active:scale-95"
+                      onClick={(e) => {
+                        handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e);
+                        triggerEmojiBurst(emoji);
+                      }}
+                      className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 hover:scale-125 transition cursor-pointer text-xs active:scale-95"
                     >
                       {emoji}
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Direct Story Reply Vault */}
+              <div className="pt-1">
+                {storyReplySent ? (
+                  <div className="flex items-center gap-2 py-2 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-sans font-semibold">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Encrypted dispatch sent to @{filteredGlimpses[activeGlimpseIndex].authorUsername}</span>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!storyReply.trim()) return;
+                      setStoryReplySent(true);
+                      setStoryReply('');
+                      setTimeout(() => setStoryReplySent(false), 3000);
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <input
+                      type="text"
+                      placeholder={`Direct reply to @${filteredGlimpses[activeGlimpseIndex].authorUsername}...`}
+                      value={storyReply}
+                      onChange={(e) => setStoryReply(e.target.value)}
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 focus:bg-white/20 border border-white/20 text-white text-xs font-sans placeholder-white/50 focus:outline-none focus:border-cyan-400 transition"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!storyReply.trim()}
+                      className="p-2 rounded-xl bg-white text-black hover:bg-neutral-100 disabled:opacity-40 transition cursor-pointer shadow-md active:scale-95"
+                      title="Send Reply"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
           </div>

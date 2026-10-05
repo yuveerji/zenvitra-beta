@@ -40,12 +40,13 @@ const config: Config = {
         'inner-glow': 'inset 0 0 60px rgba(255,255,255,0.03)',
       },
       fontFamily: {
-        display: ['"Clash Display"', 'var(--font-outfit)', 'var(--font-space)', 'sans-serif'],
+        display: ['var(--font-plus-jakarta)', 'var(--font-outfit)', 'var(--font-inter)', 'sans-serif'],
         outfit: ['var(--font-outfit)', 'sans-serif'],
+        jakarta: ['var(--font-plus-jakarta)', 'sans-serif'],
         space: ['var(--font-space)', 'sans-serif'],
         serif: ['var(--font-playfair)', 'serif'],
-        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-        sans: ['var(--font-inter)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+        sans: ['var(--font-inter)', 'var(--font-plus-jakarta)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       animation: {
         'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

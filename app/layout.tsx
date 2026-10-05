@@ -1,10 +1,16 @@
 import type { Metadata, Viewport } from 'next';
-import { Playfair_Display, JetBrains_Mono, Inter, Outfit, Space_Grotesk } from 'next/font/google';
+import { Playfair_Display, JetBrains_Mono, Inter, Outfit, Space_Grotesk, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta',
   display: 'swap',
 });
 
@@ -69,7 +75,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${outfit.variable} ${spaceGrotesk.variable} ${playfair.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${plusJakartaSans.variable} ${outfit.variable} ${spaceGrotesk.variable} ${playfair.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         {/* Mobile & PWA Meta */}
