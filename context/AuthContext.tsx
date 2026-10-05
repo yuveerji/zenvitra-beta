@@ -565,6 +565,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cleanIdentifier === 'test@zenvitra.com';
 
     if (isTestIdentifier) {
+      // Official Test Node Closure Date: 19th November 2026
+      const TEST_NODE_EXPIRY = new Date('2026-11-19T23:59:59+05:30');
+      if (new Date() > TEST_NODE_EXPIRY) {
+        const err = new Error('The Test Node officially closed on 19th November 2026. Please sign in with an authentic account.');
+        setError(err.message);
+        return { error: err };
+      }
+
       const cleanPw = (password || '').trim().toLowerCase();
       const isAllowedTestPassword =
         Boolean(password) && (
@@ -945,6 +953,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sovereign Test Pilot Node Login (Full featured testing environment with all capabilities unlocked)
   const continueAsTestUser = useCallback(async (): Promise<UserProfile> => {
+    // Official Test Node Closure Date: 19th November 2026
+    const TEST_NODE_EXPIRY = new Date('2026-11-19T23:59:59+05:30');
+    if (new Date() > TEST_NODE_EXPIRY) {
+      throw new Error('The Test Node officially closed on 19th November 2026. Please sign in with an authentic account.');
+    }
+
     const testProfile: UserProfile = {
       id: 'zen_test_pilot_node',
       username: 'test',

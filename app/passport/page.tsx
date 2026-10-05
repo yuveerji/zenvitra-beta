@@ -238,6 +238,29 @@ export default function PassportPage() {
           </div>
         </div>
 
+        {/* Test Node Lifecycle Announcement Banner */}
+        {passport.username === 'test' && (
+          <div className="p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-200 shadow-lg">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-amber-400 shrink-0" />
+              <div>
+                <p className="font-sans font-bold text-sm text-white">
+                  Test Node Lifecycle Notice: Closing on 19th November 2026
+                </p>
+                <p className="font-sans text-xs text-amber-200/80 mt-0.5">
+                  This test node is temporary and will officially sunset on 19th November 2026. Register a permanent sovereign citizen profile to preserve your records and credentials.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/register"
+              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-sans font-bold text-xs uppercase tracking-wider transition shrink-0 self-start sm:self-auto shadow-md"
+            >
+              Register Citizen Profile
+            </Link>
+          </div>
+        )}
+
         {/* Bento Quick Identity & Merit Bar */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
           {/* 1. Zen Points */}

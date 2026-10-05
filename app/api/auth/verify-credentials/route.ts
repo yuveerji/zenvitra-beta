@@ -74,6 +74,18 @@ export async function POST(req: Request) {
       clean === 'test@zenvitra.xyz';
 
     if (isTestUser) {
+      // Official Test Node Closure Date: 19th November 2026
+      const TEST_NODE_EXPIRY = new Date('2026-11-19T23:59:59+05:30');
+      if (new Date() > TEST_NODE_EXPIRY) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'The Test Node officially closed on 19th November 2026. Please register or sign in with your permanent sovereign account.' 
+          },
+          { status: 403 }
+        );
+      }
+
       const isAllowedTestPassword =
         cleanPw.toLowerCase() === 'test1234' ||
         cleanPw.toLowerCase() === 'test' ||

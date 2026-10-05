@@ -753,11 +753,15 @@ export function PlatformShell({
       <main className="flex-1 min-w-0 min-h-screen flex flex-col bg-black relative z-10">
         {/* Ambient Test Pilot Node Notice Banner */}
         {isTestPilot && !isTestBannerDismissed && (
-          <div className="bg-gradient-to-r from-cyan-950/90 via-emerald-950/70 to-black border-b border-cyan-500/30 px-4 py-2 flex items-center justify-between text-xs font-mono shrink-0 z-30 transition-all duration-300">
-            <div className="flex items-center gap-2 text-cyan-200 min-w-0 pr-2">
+          <div className="bg-gradient-to-r from-cyan-950/90 via-amber-950/40 to-black border-b border-cyan-500/30 px-4 py-2 flex items-center justify-between text-xs font-sans shrink-0 z-30 transition-all duration-300">
+            <div className="flex items-center gap-2.5 text-cyan-200 min-w-0 pr-2">
               <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 animate-pulse" />
               <span className="truncate">
-                Testing as <strong className="text-white">Test Node (@{currentUsername})</strong> &bull; <span className="text-emerald-400 font-semibold">ALL FEATURES UNLOCKED</span> &bull; Debate Chambers, ZEN.SOLUTIONS, ZEN.DOCS &amp; Passport Enabled
+                Testing as <strong className="text-white">Test Node (@{currentUsername})</strong> &bull;{' '}
+                <span className="text-amber-300 font-bold px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] tracking-wide uppercase">
+                  Officially Closes 19th Nov 2026
+                </span> &bull;{' '}
+                <span className="text-emerald-400 font-semibold">ALL FEATURES UNLOCKED</span>
               </span>
             </div>
             <div className="flex items-center gap-2.5 shrink-0 ml-3">
