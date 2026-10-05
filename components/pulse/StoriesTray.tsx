@@ -121,37 +121,37 @@ export function StoriesTray() {
           {/* Master Node: Create Dispatch */}
           <button
             onClick={() => router.push('/pulse/create-story')}
-            className="group relative w-[114px] h-[148px] rounded-2xl p-[1.5px] bg-gradient-to-b from-cyan-400/40 via-blue-500/20 to-transparent hover:from-cyan-400 hover:via-blue-500 hover:to-fuchsia-500 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(0,0,0,0.5)] shrink-0"
+            className="group relative w-[116px] h-[152px] rounded-3xl p-[1.5px] bg-gradient-to-b from-cyan-400/40 via-blue-500/20 to-transparent hover:from-cyan-400 hover:via-blue-500 hover:to-rose-500 transition-all duration-300 cursor-pointer shadow-lg shrink-0 active:scale-95"
           >
-            <div className="w-full h-full rounded-2xl bg-[#090b12] p-3 flex flex-col justify-between items-center text-center relative overflow-hidden group-hover:bg-[#0d101a] transition">
+            <div className="w-full h-full rounded-[1.4rem] bg-[#090b12] p-3 flex flex-col justify-between items-center text-center relative overflow-hidden group-hover:bg-[#0c0f18] transition">
               {/* Top status indicator */}
-              <div className="flex items-center gap-1 font-mono text-[9px] text-cyan-300 font-bold uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 font-sans text-[10px] text-cyan-300 font-bold uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
                 <span>RELAY</span>
               </div>
 
               {/* Center Avatar with Pulsing Halo */}
               <div className="relative my-auto">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-[1.5px] shadow-[0_0_15px_rgba(6,182,212,0.4)] group-hover:scale-105 transition-transform">
-                  <div className="w-full h-full rounded-[10px] bg-black flex items-center justify-center font-bold text-sm text-white overflow-hidden">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 p-[1.5px] shadow-[0_0_15px_rgba(6,182,212,0.4)] group-hover:scale-105 transition-transform">
+                  <div className="w-full h-full rounded-[0.9rem] bg-black flex items-center justify-center font-bold text-sm text-white overflow-hidden">
                     {userAvatar ? (
-                      <img src={userAvatar} alt="Profile" className="w-full h-full object-cover rounded-[9px]" />
+                      <img src={userAvatar} alt="Profile" className="w-full h-full object-cover rounded-[0.85rem]" />
                     ) : (
                       (currentUserName || currentUserUsername || 'U')[0]?.toUpperCase() || 'U'
                     )}
                   </div>
                 </div>
-                <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-bold shadow-md">
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-bold shadow-md">
                   <Plus className="w-3 h-3 stroke-[3]" />
                 </div>
               </div>
 
               {/* Bottom Label */}
               <div>
-                <span className="text-[11px] font-bold text-white block group-hover:text-cyan-300 transition tracking-tight">
+                <span className="text-xs font-sans font-bold text-white block group-hover:text-cyan-300 transition tracking-tight">
                   New Relay
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 block">24h Wire</span>
+                <span className="text-[10px] font-sans text-neutral-400 block font-medium">24h Wire</span>
               </div>
             </div>
           </button>
@@ -163,37 +163,37 @@ export function StoriesTray() {
               <button
                 key={story.id}
                 onClick={() => openStory(i)}
-                className={`group relative w-[114px] h-[148px] rounded-2xl p-[1.5px] transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(0,0,0,0.5)] shrink-0 hover:scale-[1.03] ${
+                className={`group relative w-[116px] h-[152px] rounded-3xl p-[1.5px] transition-all duration-300 cursor-pointer shadow-lg shrink-0 hover:scale-[1.03] active:scale-95 ${
                   hasViewed
                     ? 'bg-white/10 hover:bg-white/20'
-                    : 'bg-gradient-to-b from-amber-400 via-rose-500 to-fuchsia-600 shadow-[0_0_20px_rgba(244,63,94,0.25)]'
+                    : 'bg-gradient-to-b from-amber-400 via-rose-500 to-cyan-400 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
                 }`}
               >
-                <div className="w-full h-full rounded-2xl bg-[#090b12] overflow-hidden relative flex flex-col justify-between p-2.5">
+                <div className="w-full h-full rounded-[1.4rem] bg-[#090b12] overflow-hidden relative flex flex-col justify-between p-3">
                   {/* Background Layer */}
                   {story.image ? (
                     <img
                       src={story.image}
                       alt={story.authorName}
-                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-85 group-hover:scale-110 transition duration-700"
+                      className="absolute inset-0 w-full h-full object-cover opacity-65 group-hover:opacity-85 group-hover:scale-110 transition duration-700"
                     />
                   ) : (
                     <div className={`absolute inset-0 bg-gradient-to-br ${story.color || 'from-indigo-900/60 to-purple-900/60'} opacity-75 group-hover:opacity-95 transition`} />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-transparent to-black/90 pointer-events-none" />
 
-                    {/* Top: Wire Channel Tag */}
-                    <div className="relative z-10 flex items-center justify-between w-full">
-                      <span className="px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/15 text-[8px] font-mono font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1">
-                        <span className="w-1 h-1 rounded-full bg-amber-400 animate-pulse" />
-                        <span>{(story as any).location || 'WIRE'}</span>
-                      </span>
-                    </div>
+                  {/* Top: Wire Channel Tag */}
+                  <div className="relative z-10 flex items-center justify-between w-full">
+                    <span className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-[9px] font-sans font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                      <span>{(story as any).location || 'WIRE'}</span>
+                    </span>
+                  </div>
 
                   {/* Center Text Snippet if text story */}
                   {!story.image && story.title && (
                     <div className="relative z-10 my-auto text-center px-1">
-                      <p className="text-[10px] font-bold text-white line-clamp-2 leading-tight drop-shadow-md">
+                      <p className="text-xs font-sans font-bold text-white line-clamp-2 leading-tight drop-shadow-md">
                         {story.title}
                       </p>
                     </div>
@@ -201,12 +201,12 @@ export function StoriesTray() {
 
                   {/* Bottom: Author Avatar & Handle */}
                   <div className="relative z-10 flex items-center gap-1.5 pt-1">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-500 p-[1px] shrink-0">
-                      <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-[9px] font-bold text-white uppercase">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-400 to-rose-400 p-[1px] shrink-0">
+                      <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-[10px] font-bold text-white uppercase">
                         {story.avatarLetter || story.authorName?.[0]?.toUpperCase() || 'U'}
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-white group-hover:text-cyan-300 transition truncate max-w-[65px] tracking-tight">
+                    <span className="text-[11px] font-sans font-bold text-white group-hover:text-cyan-300 transition truncate max-w-[70px] tracking-tight">
                       @{story.authorUsername}
                     </span>
                   </div>

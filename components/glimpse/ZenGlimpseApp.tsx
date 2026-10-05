@@ -24,7 +24,9 @@ import {
   ChevronLeft,
   Upload,
   Wand2,
-  Trash2
+  Trash2,
+  Sliders,
+  Maximize2
 } from 'lucide-react';
 import { ZenGlimpse, INITIAL_GLIMPSES } from '@/types/glimpse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
@@ -32,12 +34,12 @@ import { MediaStudioModal } from '@/components/creator/MediaStudioModal';
 
 const LOCATION_STAMPS = [
   'Global Civic Commons',
-  'Innovation Studio',
-  'Open Research Lab',
-  'City Forum',
-  'Youth Assembly',
-  'Digital Commons',
-  'Community Hub'
+  'Geneva Diplomatic Enclave',
+  'UNSC Chamber Floor',
+  'Innovation & Research Lab',
+  'City Youth Assembly',
+  'Digital Commons Terminal',
+  'Campus Secretariat Hub'
 ];
 
 const LS_GLIMPSES = 'zenvitra_glimpses_v2';
@@ -107,7 +109,9 @@ export function ZenGlimpseApp() {
     setCameraError(null);
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1350 } } 
+        });
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -138,16 +142,14 @@ export function ZenGlimpseApp() {
     if (videoRef.current && streamRef.current) {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth || 640;
-      canvas.height = videoRef.current.videoHeight || 480;
+      canvas.height = videoRef.current.videoHeight || 800;
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        setCapturedImage(canvas.toDataURL('image/png'));
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        setCapturedImage(dataUrl);
         stopCamera();
       }
-    } else {
-      glimpseFileInputRef.current?.click();
-      stopCamera();
     }
   };
 
@@ -155,22 +157,26 @@ export function ZenGlimpseApp() {
     e.preventDefault();
     if (!capturedImage) return;
 
+    const expiresDate = new Date();
+    expiresDate.setHours(expiresDate.getHours() + selfDestructHours);
+    const expiresAtStr = `${selfDestructHours}h remaining`;
+
     const newGlimpse: ZenGlimpse = {
       id: `glimpse_${Date.now()}`,
-      authorId: 'user_current',
+      authorId: currentUserUsername || 'you',
       authorName: currentUserName || 'Citizen Node',
       authorUsername: currentUserUsername || 'you',
+      authorAvatar: '',
       mediaUrl: capturedImage,
       mediaType: 'photo',
-      caption: caption.trim() || 'Live from the assembly floor ⚡',
+      caption: caption.trim() || 'Visual sovereign dispatch from the floor.',
       locationTag: selectedLocation,
-      chapterCampus: `${selectedLocation} Chapter`,
       selfDestructHours: selfDestructHours,
       track: postTrack,
-      createdAt: 'Just now',
-      expiresAt: `${selfDestructHours}h remaining`,
-      likes: 1,
-      likedBy: [currentUserUsername || 'you']
+      createdAt: new Date().toISOString(),
+      expiresAt: expiresAtStr,
+      likes: 0,
+      likedBy: [],
     };
 
     const updated = [newGlimpse, ...glimpses];
@@ -178,140 +184,172 @@ export function ZenGlimpseApp() {
     try {
       localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
     } catch {}
+
+    // Reset Form
     setCapturedImage(null);
     setCaption('');
+    stopCamera();
   };
 
-  const handleLikeGlimpse = (glimpseId: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    const userHandle = currentUserUsername || 'you';
-    setGlimpses((prev) => {
-      const updated = prev.map((g) => {
-        if (g.id !== glimpseId) return g;
-        const alreadyLiked = g.likedBy?.includes(userHandle);
-        const newLikedBy = alreadyLiked
-          ? (g.likedBy || []).filter((u) => u !== userHandle)
-          : [...(g.likedBy || []), userHandle];
-        return {
-          ...g,
-          likes: Math.max(0, g.likes + (alreadyLiked ? -1 : 1)),
-          likedBy: newLikedBy
-        };
-      });
-      try {
-        localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
-      } catch {}
-      return updated;
+  const handleLikeGlimpse = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const user = currentUserUsername || 'you';
+    const updated = glimpses.map((g) => {
+      if (g.id !== id) return g;
+      const alreadyLiked = g.likedBy?.includes(user);
+      const newLikedBy = alreadyLiked 
+        ? (g.likedBy || []).filter((u) => u !== user)
+        : [...(g.likedBy || []), user];
+      return {
+        ...g,
+        likes: alreadyLiked ? Math.max(0, g.likes - 1) : g.likes + 1,
+        likedBy: newLikedBy,
+      };
     });
+    setGlimpses(updated);
+    try {
+      localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
+    } catch {}
   };
 
-  const handleDeleteGlimpse = (glimpseId: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setGlimpses((prev) => {
-      const updated = prev.filter((g) => g.id !== glimpseId);
-      try {
-        localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
-    if (activeGlimpseIndex !== null) setActiveGlimpseIndex(null);
-  };
-
-  // Story viewer progress interval
-  useEffect(() => {
-    let interval: any;
+  const handleDeleteGlimpse = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = glimpses.filter((g) => g.id !== id);
+    setGlimpses(updated);
+    try {
+      localStorage.setItem(LS_GLIMPSES, JSON.stringify(updated));
+    } catch {}
     if (activeGlimpseIndex !== null) {
-      setProgress(0);
-      interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            // Advance to next
-            if (activeGlimpseIndex < filteredGlimpses.length - 1) {
-              setActiveGlimpseIndex(activeGlimpseIndex + 1);
-              return 0;
-            } else {
-              setActiveGlimpseIndex(null);
-              return 0;
-            }
-          }
-          return prev + 2;
-        });
-      }, 100);
+      setActiveGlimpseIndex(null);
     }
-    return () => clearInterval(interval);
+  };
+
+  // Auto-progress for full-screen viewer
+  useEffect(() => {
+    if (activeGlimpseIndex === null) {
+      setProgress(0);
+      return;
+    }
+
+    setProgress(0);
+    const intervalTime = 50;
+    const duration = 5000;
+    const step = (intervalTime / duration) * 100;
+
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          if (activeGlimpseIndex < filteredGlimpses.length - 1) {
+            setActiveGlimpseIndex(activeGlimpseIndex + 1);
+            return 0;
+          } else {
+            setActiveGlimpseIndex(null);
+            return 0;
+          }
+        }
+        return prev + step;
+      });
+    }, intervalTime);
+
+    return () => clearInterval(timer);
   }, [activeGlimpseIndex, filteredGlimpses.length]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-6 font-sans text-white space-y-8 text-left">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 select-none font-sans">
       
-      {/* ─── GLIMPSE HEADER & TRACK TABS ─── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-400 font-mono text-[10px] font-bold">
-              24H EPHEMERAL
+      {/* ─── TOP HERO HEADER & NAVIGATION ─── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 sm:p-8 rounded-3xl bg-[#080a11]/90 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+        
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="px-3 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+              24H Live Lens
             </span>
-            <span className="font-mono text-[11px] text-zinc-400 uppercase tracking-widest">
-              Zero Vanity Filters
+            <span className="font-sans text-xs text-neutral-400 font-medium">
+              Zero Vanity Filters • Authentic Floor Dispatches
             </span>
           </div>
-          <h1 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight flex items-center gap-2.5">
+
+          <h1 className="font-display font-black text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight flex items-center gap-3">
             <span>ZEN.GLIMPSE</span>
-            <Camera className="w-6 h-6 text-pink-400" />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-cyan-500/20 border border-white/15 flex items-center justify-center">
+              <Camera className="w-4 h-4 text-rose-400" />
+            </div>
           </h1>
+
+          <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
+            Real-time visual transmissions from active Model UN chambers, secretariats, research labs, and civic chapters.
+          </p>
         </div>
 
         {/* Track Switcher */}
-        <div className="flex items-center p-1 rounded-2xl bg-black border border-zinc-800 text-xs font-semibold">
+        <div className="flex items-center p-1.5 rounded-2xl bg-[#090b12] border border-white/10 text-xs font-sans font-semibold shrink-0 shadow-inner">
           <button
             onClick={() => setActiveTrack('radar')}
-            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 ${
-              activeTrack === 'radar' ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'
+            className={`px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+              activeTrack === 'radar' 
+                ? 'bg-white text-black shadow-lg shadow-white/10 font-bold' 
+                : 'text-neutral-400 hover:text-white hover:bg-white/[0.05]'
             }`}
           >
-            <Radio className="w-3.5 h-3.5" />
+            <Radio className="w-3.5 h-3.5 text-rose-400" />
             <span>Global Radar</span>
           </button>
 
           <button
             onClick={() => setActiveTrack('community')}
-            className={`px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 ${
-              activeTrack === 'community' ? 'bg-white text-black shadow-sm' : 'text-zinc-400 hover:text-white'
+            className={`px-4 py-2.5 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+              activeTrack === 'community' 
+                ? 'bg-white text-black shadow-lg shadow-white/10 font-bold' 
+                : 'text-neutral-400 hover:text-white hover:bg-white/[0.05]'
             }`}
           >
-            <Users className="w-3.5 h-3.5" />
-            <span>Community & Connections</span>
+            <Users className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Campus &amp; Chapters</span>
           </button>
         </div>
       </div>
 
       {/* ─── MAIN BENTO GRID: CAMERA VIEWFINDER & LIVE RADAR STREAM ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Camera-First Viewfinder (Capture Box) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-6 rounded-3xl bg-[#07080b] border border-white/10 space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#080a11]/90 border border-white/10 space-y-6 shadow-2xl relative overflow-hidden backdrop-blur-2xl">
             
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
-                <h3 className="font-bold text-sm text-white">Capture Live Glimpse</h3>
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e] animate-pulse" />
+                <h3 className="font-display font-extrabold text-sm sm:text-base text-white tracking-wide">
+                  SOVEREIGN OPTICAL LENS
+                </h3>
               </div>
-              <span className="text-[10px] font-mono text-zinc-500">Unfiltered Lens</span>
+              <span className="text-[11px] font-sans text-neutral-400 font-medium">RAW DISPATCH</span>
             </div>
 
             {/* Viewfinder Screen */}
-            <div className="relative aspect-[4/5] rounded-2xl bg-black border border-zinc-800 overflow-hidden flex flex-col items-center justify-center">
+            <div className="relative aspect-[4/5] rounded-3xl bg-black border border-white/15 overflow-hidden flex flex-col items-center justify-center shadow-2xl group/viewfinder">
+              
+              {/* Corner Optical Crop Brackets */}
+              <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-white/40 pointer-events-none z-10" />
+              <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-white/40 pointer-events-none z-10" />
+              <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-white/40 pointer-events-none z-10" />
+              <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-white/40 pointer-events-none z-10" />
+
               {capturedImage ? (
                 /* Image Preview */
                 <div className="w-full h-full relative">
                   <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => { setCapturedImage(null); startCamera(); }}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-black/70 text-zinc-300 hover:text-white cursor-pointer"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
+                  <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+                    <button
+                      onClick={() => { setCapturedImage(null); startCamera(); }}
+                      className="p-2.5 rounded-full bg-black/70 hover:bg-black text-white cursor-pointer transition shadow-md"
+                      title="Retake Photo"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ) : isCameraActive ? (
                 /* Active Video Feed */
@@ -323,47 +361,55 @@ export function ZenGlimpseApp() {
                     muted
                     className="w-full h-full object-cover"
                   />
-                  <button
-                    onClick={handleCapture}
-                    className="absolute bottom-5 w-16 h-16 rounded-full border-4 border-white bg-pink-500 hover:scale-105 transition-transform flex items-center justify-center cursor-pointer shadow-2xl"
-                    title="Take Photo"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-white" />
-                  </button>
+                  {/* Shutter Button */}
+                  <div className="absolute bottom-6 flex items-center justify-center z-20">
+                    <button
+                      onClick={handleCapture}
+                      className="relative p-1 rounded-full bg-white/20 hover:scale-105 transition-transform flex items-center justify-center cursor-pointer shadow-2xl active:scale-95 group/shutter"
+                      title="Take Snapshot"
+                    >
+                      <div className="w-16 h-16 rounded-full border-4 border-white bg-gradient-to-tr from-rose-500 to-amber-400 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-white shadow-md group-hover/shutter:scale-110 transition-transform" />
+                      </div>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 /* Standby Lens Trigger */
-                <div className="p-6 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-pink-400">
-                    <Camera className="w-8 h-8" />
+                <div className="p-8 text-center space-y-4 relative z-10">
+                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-rose-500/20 via-purple-500/10 to-transparent border border-white/15 mx-auto flex items-center justify-center text-rose-400 shadow-xl group-hover/viewfinder:scale-105 transition-transform">
+                    <Camera className="w-10 h-10" />
                   </div>
+                  
                   <div className="space-y-1">
-                    <h4 className="font-bold text-sm text-white">Activate Lens</h4>
-                    <p className="text-xs text-zinc-500 max-w-xs leading-relaxed">
+                    <h4 className="font-display font-extrabold text-base text-white tracking-wide">
+                      Activate Sovereign Lens
+                    </h4>
+                    <p className="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed font-sans">
                       Instant 24-hour visual dispatches from active Model UNs, labs, and campus chapters.
                     </p>
                   </div>
 
                   {cameraError && (
-                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] font-mono text-amber-300 max-w-xs mx-auto">
+                    <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs font-sans text-amber-300 max-w-xs mx-auto">
                       {cameraError}
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                  <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
                     <button
                       onClick={startCamera}
-                      className="px-4 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition cursor-pointer shadow-md flex items-center gap-1.5 active:scale-95"
+                      className="px-5 py-2.5 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition cursor-pointer shadow-lg shadow-white/10 flex items-center gap-2 active:scale-95"
                     >
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>Open Viewfinder</span>
+                      <Camera className="w-4 h-4 text-black" />
+                      <span>Open Lens</span>
                     </button>
 
                     <button
                       onClick={() => glimpseFileInputRef.current?.click()}
-                      className="px-4 py-2 rounded-full bg-zinc-800 text-white font-semibold text-xs hover:bg-zinc-700 transition cursor-pointer border border-zinc-700 flex items-center gap-1.5 active:scale-95"
+                      className="px-5 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/15 text-white font-sans font-semibold text-xs transition cursor-pointer border border-white/15 flex items-center gap-2 active:scale-95"
                     >
-                      <Upload className="w-3.5 h-3.5" />
+                      <Upload className="w-4 h-4 text-cyan-400" />
                       <span>Upload Photo</span>
                     </button>
                   </div>
@@ -383,11 +429,11 @@ export function ZenGlimpseApp() {
             {capturedImage && (
               <form onSubmit={handlePublishGlimpse} className="space-y-4 pt-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-zinc-400">Captured Snapshot</span>
+                  <span className="text-xs font-sans font-semibold text-neutral-400">Captured Snapshot Ready</span>
                   <button
                     type="button"
                     onClick={() => setIsStudioOpen(true)}
-                    className="px-3 py-1 rounded-xl bg-pink-500/20 text-pink-300 border border-pink-500/40 text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+                    className="px-3 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-sans font-bold flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-rose-500/30 transition"
                   >
                     <Wand2 className="w-3.5 h-3.5" />
                     <span>Apply FX &amp; Fonts</span>
@@ -396,20 +442,23 @@ export function ZenGlimpseApp() {
 
                 <input
                   type="text"
-                  placeholder="Add a sovereign caption..."
+                  placeholder="Add a live caption from the floor..."
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-white"
+                  className="w-full px-4 py-3 rounded-2xl bg-black/60 border border-white/15 text-white text-xs font-sans placeholder-neutral-500 focus:outline-none focus:border-cyan-400 shadow-inner"
                 />
 
                 <div className="grid grid-cols-2 gap-3">
                   {/* Location Stamp Selector */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-zinc-400 uppercase">Campus / Hall Stamp</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-sans font-semibold text-neutral-300 uppercase tracking-wide flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-cyan-400" />
+                      <span>Campus / Hall</span>
+                    </label>
                     <select
                       value={selectedLocation}
                       onChange={(e) => setSelectedLocation(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:border-white"
+                      className="w-full px-3 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-sans focus:outline-none focus:border-cyan-400 cursor-pointer"
                     >
                       {LOCATION_STAMPS.map((loc) => (
                         <option key={loc} value={loc} className="bg-black text-white">{loc}</option>
@@ -418,12 +467,15 @@ export function ZenGlimpseApp() {
                   </div>
 
                   {/* Self-Destruct Timer */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-mono text-zinc-400 uppercase">Self-Destruct Timer</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-sans font-semibold text-neutral-300 uppercase tracking-wide flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-amber-400" />
+                      <span>Ephemeral Window</span>
+                    </label>
                     <select
                       value={selfDestructHours}
                       onChange={(e) => setSelfDestructHours(Number(e.target.value) as any)}
-                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs focus:outline-none focus:border-white"
+                      className="w-full px-3 py-2.5 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-sans focus:outline-none focus:border-cyan-400 cursor-pointer"
                     >
                       <option value={1} className="bg-black text-white">1 Hour</option>
                       <option value={6} className="bg-black text-white">6 Hours</option>
@@ -436,10 +488,10 @@ export function ZenGlimpseApp() {
                 <div className="flex items-center gap-3 pt-2">
                   <button
                     type="submit"
-                    className="flex-1 py-3 rounded-2xl bg-white text-black font-semibold text-xs hover:bg-zinc-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    className="flex-1 py-3.5 rounded-2xl bg-white hover:bg-neutral-100 text-black font-sans font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-white/10 active:scale-[0.98]"
                   >
                     <span>Dispatch Glimpse</span>
-                    <Send className="w-3.5 h-3.5" />
+                    <Send className="w-4 h-4 text-black" />
                   </button>
                 </div>
               </form>
@@ -460,20 +512,31 @@ export function ZenGlimpseApp() {
 
         {/* Right Column: Live Glimpses Radar Grid */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-            <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2 text-xs font-sans font-semibold text-neutral-300">
               <Compass className="w-4 h-4 text-emerald-400" />
               <span>LIVE TRANSMISSIONS • {filteredGlimpses.length} ACTIVE</span>
             </div>
           </div>
 
           {filteredGlimpses.length === 0 ? (
-            <div className="p-12 rounded-3xl bg-[#07080b] border border-white/10 text-center space-y-3">
-              <Camera className="w-10 h-10 text-zinc-600 mx-auto" />
-              <h4 className="font-bold text-sm text-white">No Active Glimpses on this Track</h4>
-              <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                Be the first to capture a visual dispatch from your workspace, studio, city, or community.
-              </p>
+            <div className="p-16 rounded-3xl bg-[#080a11]/80 border border-white/10 text-center space-y-4 backdrop-blur-xl">
+              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-neutral-500 mx-auto shadow-inner">
+                <Camera className="w-8 h-8 text-neutral-400" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-display font-extrabold text-lg text-white">No Active Transmissions on Radar</h4>
+                <p className="text-xs text-neutral-400 max-w-sm mx-auto font-sans leading-relaxed">
+                  Be the first to transmit an unfiltered visual glimpse from your committee room, caucus floor, or studio.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={startCamera}
+                className="px-5 py-2.5 rounded-xl bg-white text-black font-sans font-bold text-xs uppercase tracking-wider hover:bg-neutral-100 transition shadow-md active:scale-95"
+              >
+                + Transmit First Glimpse
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -481,26 +544,26 @@ export function ZenGlimpseApp() {
                 <div
                   key={glimpse.id}
                   onClick={() => setActiveGlimpseIndex(idx)}
-                  className="relative aspect-[9/16] rounded-2xl bg-zinc-950 border border-zinc-800 overflow-hidden cursor-pointer group shadow-lg"
+                  className="relative aspect-[9/16] rounded-3xl bg-black border border-white/15 overflow-hidden cursor-pointer group shadow-xl hover:border-cyan-400/40 transition-all duration-300 hover:-translate-y-1"
                 >
                   <img
                     src={glimpse.mediaUrl}
                     alt={glimpse.caption}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
 
                   {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-between p-3">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-between p-3.5">
                     
                     {/* Top Author Tag */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full p-[1px] bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600">
+                        <div className="w-7 h-7 rounded-full p-[1.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-cyan-400 shadow-md">
                           <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-[10px] text-white">
                             {glimpse.authorName ? glimpse.authorName[0] : 'U'}
                           </div>
                         </div>
-                        <span className="font-bold text-xs text-white truncate drop-shadow">
+                        <span className="font-sans font-bold text-xs text-white truncate drop-shadow">
                           @{glimpse.authorUsername}
                         </span>
                       </div>
@@ -509,33 +572,36 @@ export function ZenGlimpseApp() {
                         <button
                           type="button"
                           onClick={(e) => handleDeleteGlimpse(glimpse.id, e)}
-                          className="p-1 rounded-full bg-black/60 hover:bg-rose-500 text-zinc-400 hover:text-white transition cursor-pointer"
+                          className="p-1.5 rounded-full bg-black/60 hover:bg-rose-500 text-neutral-300 hover:text-white transition cursor-pointer"
                           title="Delete Glimpse"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
 
                     {/* Bottom Info & Location */}
                     <div className="space-y-1 text-left">
-                      <div className="flex items-center gap-1 text-[10px] text-emerald-300 font-mono">
-                        <MapPin className="w-3 h-3" />
+                      <div className="flex items-center gap-1 text-[10px] text-cyan-300 font-sans font-semibold">
+                        <MapPin className="w-3 h-3 text-cyan-400" />
                         <span className="truncate">{glimpse.locationTag}</span>
                       </div>
-                      <p className="text-xs text-white font-medium line-clamp-2 drop-shadow">
+                      <p className="text-xs text-white font-medium line-clamp-2 drop-shadow font-sans">
                         {glimpse.caption}
                       </p>
-                      <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono pt-1 border-t border-white/10">
-                        <span>⏱️ {glimpse.expiresAt}</span>
+                      <div className="flex items-center justify-between text-[10px] text-neutral-400 font-sans pt-1.5 border-t border-white/15">
+                        <span className="flex items-center gap-1 font-medium">
+                          <Clock className="w-3 h-3 text-amber-400" />
+                          <span>{glimpse.expiresAt}</span>
+                        </span>
                         <button
                           type="button"
                           onClick={(e) => handleLikeGlimpse(glimpse.id, e)}
-                          className="flex items-center gap-1 hover:scale-110 transition cursor-pointer text-zinc-300 hover:text-rose-400 active:scale-95"
+                          className="flex items-center gap-1.5 hover:scale-110 transition cursor-pointer text-neutral-300 hover:text-rose-400 active:scale-95"
                           title="Like Glimpse"
                         >
-                          <Heart className={`w-3 h-3 ${glimpse.likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-zinc-400'}`} />
-                          <span>{glimpse.likes}</span>
+                          <Heart className={`w-3.5 h-3.5 ${glimpse.likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-neutral-400'}`} />
+                          <span className="font-bold">{glimpse.likes}</span>
                         </button>
                       </div>
                     </div>
@@ -549,7 +615,7 @@ export function ZenGlimpseApp() {
 
       {/* ─── FULL-SCREEN GLIMPSE MODAL VIEWER ─── */}
       {activeGlimpseIndex !== null && filteredGlimpses[activeGlimpseIndex] && (
-        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm aspect-[9/16] rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-black flex flex-col justify-between">
             
             {/* Background Image */}
@@ -567,7 +633,7 @@ export function ZenGlimpseApp() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px]">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px] shadow-md">
                     <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white">
                       {filteredGlimpses[activeGlimpseIndex].authorName[0]}
                     </div>
@@ -576,7 +642,7 @@ export function ZenGlimpseApp() {
                     <h4 className="font-bold text-xs text-white">
                       @{filteredGlimpses[activeGlimpseIndex].authorUsername}
                     </h4>
-                    <p className="text-[10px] text-emerald-300 font-mono">
+                    <p className="text-[10px] text-cyan-300 font-sans font-semibold">
                       {filteredGlimpses[activeGlimpseIndex].locationTag}
                     </p>
                   </div>
@@ -586,15 +652,15 @@ export function ZenGlimpseApp() {
                   {filteredGlimpses[activeGlimpseIndex].authorUsername === (currentUserUsername || 'you') && (
                     <button
                       onClick={(e) => handleDeleteGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
-                      className="p-1.5 rounded-full bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white transition cursor-pointer"
+                      className="p-2 rounded-full bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white transition cursor-pointer"
                       title="Delete Glimpse"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   )}
                   <button
                     onClick={() => setActiveGlimpseIndex(null)}
-                    className="p-1.5 rounded-full bg-black/50 text-white hover:bg-black/80 transition cursor-pointer"
+                    className="p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -610,7 +676,7 @@ export function ZenGlimpseApp() {
                   if (activeGlimpseIndex > 0) setActiveGlimpseIndex(activeGlimpseIndex - 1);
                 }}
                 disabled={activeGlimpseIndex === 0}
-                className="p-2 rounded-full bg-black/40 text-white disabled:opacity-0 hover:bg-black/70 transition pointer-events-auto cursor-pointer"
+                className="p-2.5 rounded-full bg-black/50 text-white disabled:opacity-0 hover:bg-black/80 transition pointer-events-auto cursor-pointer shadow-lg active:scale-90"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -621,20 +687,20 @@ export function ZenGlimpseApp() {
                   if (activeGlimpseIndex < filteredGlimpses.length - 1) setActiveGlimpseIndex(activeGlimpseIndex + 1);
                 }}
                 disabled={activeGlimpseIndex === filteredGlimpses.length - 1}
-                className="p-2 rounded-full bg-black/40 text-white disabled:opacity-0 hover:bg-black/70 transition pointer-events-auto cursor-pointer"
+                className="p-2.5 rounded-full bg-black/50 text-white disabled:opacity-0 hover:bg-black/80 transition pointer-events-auto cursor-pointer shadow-lg active:scale-90"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 
             {/* Bottom Caption & Reactions */}
-            <div className="relative z-10 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent space-y-3">
-              <p className="text-sm font-medium text-white drop-shadow">
+            <div className="relative z-10 p-5 bg-gradient-to-t from-black/95 via-black/60 to-transparent space-y-3.5">
+              <p className="text-sm font-sans font-medium text-white drop-shadow leading-snug">
                 {filteredGlimpses[activeGlimpseIndex].caption}
               </p>
 
-              <div className="flex items-center justify-between pt-1 border-t border-white/20 text-xs">
-                <span className="font-mono text-[10px] text-zinc-400">
+              <div className="flex items-center justify-between pt-2 border-t border-white/20 text-xs">
+                <span className="font-sans text-[11px] text-neutral-300 font-medium">
                   ⏱️ {filteredGlimpses[activeGlimpseIndex].expiresAt}
                 </span>
 
@@ -642,17 +708,17 @@ export function ZenGlimpseApp() {
                   <button
                     type="button"
                     onClick={(e) => handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 transition cursor-pointer text-xs active:scale-95"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 transition cursor-pointer text-xs active:scale-95 text-white font-bold"
                     title="Like Glimpse"
                   >
-                    <Heart className={`w-3.5 h-3.5 ${filteredGlimpses[activeGlimpseIndex].likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
+                    <Heart className={`w-4 h-4 ${filteredGlimpses[activeGlimpseIndex].likedBy?.includes(currentUserUsername || 'you') ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
                     <span>{filteredGlimpses[activeGlimpseIndex].likes}</span>
                   </button>
                   {['🏛️', '🔥', '👏'].map((emoji) => (
                     <button
                       key={emoji}
                       onClick={(e) => handleLikeGlimpse(filteredGlimpses[activeGlimpseIndex].id, e)}
-                      className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 hover:scale-125 transition cursor-pointer text-sm active:scale-95"
+                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 hover:scale-125 transition cursor-pointer text-sm active:scale-95"
                     >
                       {emoji}
                     </button>

@@ -693,7 +693,7 @@ export function ZenPulseCore() {
             {/* Live Ticker Capsule */}
             <div 
               onClick={() => handleTickerClick(currentTickerItem)}
-              className="flex-1 min-w-0 p-3 rounded-2xl bg-[#090a0f] border border-white/10 hover:border-white/20 hover:bg-[#0c0d14] backdrop-blur-xl flex items-center justify-between gap-3 overflow-hidden cursor-pointer transition-all group select-none shadow-sm min-h-[44px]"
+              className="flex-1 min-w-0 p-3 rounded-2xl bg-[#090b12] border border-white/10 hover:border-cyan-400/30 hover:bg-[#0c0f18] backdrop-blur-xl flex items-center justify-between gap-3 overflow-hidden cursor-pointer transition-all group select-none shadow-md min-h-[44px]"
               title="Click to inspect full chamber directive & verified dossier"
             >
               <div className="flex items-center gap-2.5 shrink-0">
@@ -701,7 +701,7 @@ export function ZenPulseCore() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-neutral-300 font-mono text-[9px] font-bold uppercase tracking-wider group-hover:bg-white/10 transition">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-sans text-[10px] font-bold uppercase tracking-wider group-hover:bg-amber-500/25 transition">
                   {currentTickerItem.badge}
                 </span>
               </div>
@@ -714,16 +714,16 @@ export function ZenPulseCore() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="text-xs font-mono text-zinc-300 group-hover:text-white truncate tracking-tight"
+                    className="text-xs font-sans text-neutral-300 group-hover:text-white truncate font-medium tracking-tight"
                   >
                     {currentTickerItem.text}
                   </motion.p>
                 </AnimatePresence>
               </div>
 
-              <div className="flex items-center gap-2 font-mono text-[10px] text-zinc-400 font-medium shrink-0">
+              <div className="flex items-center gap-1.5 font-sans text-xs text-cyan-300 font-semibold shrink-0">
                 <span className="hidden sm:inline group-hover:underline">Read Details →</span>
-                <span className="sm:hidden text-zinc-300 text-xs">Details →</span>
+                <span className="sm:hidden text-cyan-400">Details →</span>
               </div>
             </div>
           </div>
@@ -743,17 +743,17 @@ export function ZenPulseCore() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <span className="font-mono text-xs text-neutral-400 uppercase tracking-widest">
+            <span className="font-sans text-xs text-neutral-400 font-semibold tracking-wide uppercase">
               Profile &bull; Sovereign Dossier
             </span>
           </div>
         )}
 
-        {/* ── Pulse Command & Navigation Deck (Minimalist Monochrome) ── */}
+        {/* ── Pulse Command & Navigation Deck ── */}
         {navTab !== 'profile' && activeView !== 'profile' && (
           <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-wrap gap-4 select-none">
             {/* Nav Pills */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#090a0f] border border-white/10 backdrop-blur-xl">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#080a11]/90 border border-white/10 backdrop-blur-xl shadow-inner">
               {[
                 { id: 'feed', label: 'Wire', icon: Home },
                 { id: 'explore', label: 'Explore', icon: Compass },
@@ -766,65 +766,65 @@ export function ZenPulseCore() {
                   <button
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-sans font-bold transition-all duration-200 cursor-pointer ${
                       active
-                        ? 'bg-white text-black shadow-md'
-                        : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                        ? 'bg-white text-black shadow-lg shadow-white/10'
+                        : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
                     }`}
                   >
-                    <Icon className={`w-3.5 h-3.5 ${active ? 'text-black stroke-[2.5]' : 'text-zinc-400'}`} />
+                    <Icon className={`w-3.5 h-3.5 ${active ? 'text-black stroke-[2.5]' : 'text-neutral-400'}`} />
                     <span className="tracking-tight">{tab.label}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Quick Action Triggers (Scrollable on Mobile with Cyber Styling) */}
+            {/* Quick Action Triggers */}
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 max-w-full select-none">
               <button
                 onClick={() => setShowFloorSpeechModal(true)}
-                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-rose-500/10 via-rose-600/5 to-transparent hover:from-rose-500/25 hover:to-rose-500/10 border border-rose-500/30 hover:border-rose-400/60 text-xs font-semibold text-rose-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_12px_rgba(244,63,94,0.12)] hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-400/60 text-xs font-sans font-semibold text-rose-200 hover:text-white transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm shrink-0 active:scale-95"
                 title="60s Guillotine Clock Floor Audio Relays"
               >
                 <div className="relative flex items-center justify-center">
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute opacity-75" />
                   <Radio className="w-3.5 h-3.5 text-rose-400" />
                 </div>
-                <span className="font-mono tracking-tight">Floor Relay</span>
+                <span>Floor Relay</span>
               </button>
 
               <button
                 onClick={() => setShowPassportModal(true)}
-                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-transparent hover:from-amber-500/25 hover:to-amber-500/10 border border-amber-500/30 hover:border-amber-400/60 text-xs font-semibold text-amber-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_12px_rgba(245,158,11,0.12)] hover:shadow-[0_0_20px_rgba(245,158,11,0.3)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/60 text-xs font-sans font-semibold text-amber-200 hover:text-white transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm shrink-0 active:scale-95"
                 title="Sovereign Civic Passport & Clearance"
               >
                 <Award className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform duration-200" />
-                <span className="font-mono tracking-tight">Passport ({civicPointsBalance} PTS)</span>
+                <span>Passport ({civicPointsBalance} PTS)</span>
               </button>
 
               <button
                 onClick={() => setShowStoryModal(true)}
-                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-400/20 via-rose-500/20 to-fuchsia-600/20 hover:from-amber-400/30 hover:via-rose-500/35 hover:to-fuchsia-600/35 border border-rose-500/40 hover:border-rose-400 text-rose-200 hover:text-white text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_15px_rgba(244,63,94,0.2)] hover:shadow-[0_0_25px_rgba(244,63,94,0.4)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400/20 via-rose-500/20 to-fuchsia-600/20 hover:from-amber-400/30 hover:via-rose-500/30 hover:to-fuchsia-600/30 border border-rose-500/40 hover:border-rose-400 text-rose-200 hover:text-white text-xs font-sans font-bold transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-md shrink-0 active:scale-95"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-                <span className="font-mono tracking-tight">New Story</span>
+                <span>New Story</span>
               </button>
 
               <button
                 onClick={() => setShowFluxComposerModal(true)}
-                className="group relative px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-fuchsia-500/15 to-rose-500/10 hover:from-fuchsia-500/25 hover:to-rose-500/20 border border-fuchsia-500/30 hover:border-fuchsia-400/60 text-xs font-bold text-fuchsia-200 hover:text-white transition-all duration-200 flex items-center gap-1.5 cursor-pointer backdrop-blur-xl shadow-[0_0_12px_rgba(217,70,239,0.15)] hover:shadow-[0_0_20px_rgba(217,70,239,0.3)] whitespace-nowrap shrink-0 hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative px-3.5 py-2 rounded-xl bg-fuchsia-500/15 hover:bg-fuchsia-500/25 border border-fuchsia-500/30 hover:border-fuchsia-400/60 text-xs font-sans font-bold text-fuchsia-200 hover:text-white transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm shrink-0 active:scale-95"
                 title="Create FLUX Video Reel"
               >
                 <Film className="w-3.5 h-3.5 text-fuchsia-400" />
-                <span className="font-mono tracking-tight">FLUX</span>
+                <span>FLUX</span>
               </button>
 
               <button
                 onClick={() => setShowPostComposerModal(true)}
-                className="group relative px-4 py-1.5 rounded-2xl bg-gradient-to-r from-white via-zinc-100 to-zinc-200 hover:from-white hover:to-white text-black text-xs font-black transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:shadow-[0_0_28px_rgba(255,255,255,0.7)] whitespace-nowrap shrink-0 hover:scale-[1.03] active:scale-[0.97]"
+                className="group relative px-4 py-2 rounded-xl bg-white hover:bg-neutral-100 text-black text-xs font-sans font-extrabold tracking-wider uppercase transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-lg shadow-white/10 shrink-0 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Plus className="w-4 h-4 stroke-[3] group-hover:rotate-90 transition-transform duration-200" />
-                <span className="font-mono tracking-tight uppercase">+ New Dispatch</span>
+                <span>+ New Dispatch</span>
               </button>
             </div>
           </div>
@@ -896,10 +896,10 @@ export function ZenPulseCore() {
                           <button
                             key={tab.id}
                             onClick={() => setChamberFilter(tab.id as any)}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition whitespace-nowrap cursor-pointer border ${
+                            className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 whitespace-nowrap cursor-pointer border ${
                               active
-                                ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                                : 'bg-[#090b12] border-white/10 text-zinc-400 hover:text-white hover:border-white/20'
+                                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black border-cyan-300 font-bold shadow-[0_0_20px_rgba(6,182,212,0.35)] scale-[1.02]'
+                                : 'bg-[#0b0e17]/90 border-white/10 text-zinc-400 hover:text-white hover:border-white/25 hover:bg-white/[0.05]'
                             }`}
                           >
                             {tab.label}

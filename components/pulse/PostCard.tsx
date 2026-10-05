@@ -108,13 +108,13 @@ export function PostCard({ post }: PostCardProps) {
   const hasVoiceNote = post.content.toLowerCase().includes('voice') || post.content.toLowerCase().includes('audio') || post.content.length > 220;
 
   return (
-    <article className="group relative rounded-3xl p-5 sm:p-6 mb-4 card-luxury border border-white/[0.09] hover:border-white/30 transition-all duration-500 shadow-[0_10px_35px_rgba(0,0,0,0.6),0_0_25px_rgba(255,255,255,0.02)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_45px_rgba(255,255,255,0.08)]">
+    <article className="group relative rounded-[1.75rem] p-5 sm:p-6 mb-4.5 bg-gradient-to-b from-[#0f121a]/90 via-[#080a10]/95 to-[#040507] border border-white/10 hover:border-cyan-500/30 transition-all duration-500 shadow-[0_15px_40px_rgba(0,0,0,0.7)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(6,182,212,0.08)]">
       {/* Top subtle ambient glow line */}
-      <div className="absolute top-0 left-8 right-8 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute top-0 left-8 right-8 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       {/* Repost Indicator */}
       {post.isRepost && (
-        <div className="flex items-center gap-2 text-[11px] font-mono text-cyan-300 mb-3 pl-12 bg-cyan-950/30 py-1 px-3.5 rounded-xl border border-cyan-500/20 w-fit shadow-sm">
+        <div className="flex items-center gap-2 text-xs font-sans font-semibold text-cyan-300 mb-3.5 pl-12 bg-cyan-950/30 py-1.5 px-4 rounded-xl border border-cyan-500/20 w-fit shadow-sm">
           <Repeat className="w-3.5 h-3.5 text-cyan-400" />
           <span><strong className="text-white">{post.repostedByName}</strong> amplified this dispatch</span>
         </div>
@@ -123,10 +123,10 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex gap-3.5 sm:gap-4">
         {/* Avatar */}
         <div className="relative shrink-0">
-          <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/15 flex items-center justify-center font-display font-bold text-white text-lg transition-all">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-white/10 to-white/5 border border-white/15 flex items-center justify-center font-display font-black text-white text-lg shadow-md group-hover:border-cyan-400/30 transition-all">
             {post.authorName?.[0]?.toUpperCase() || 'U'}
           </div>
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-[#06080c] flex items-center justify-center">
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-[#06080c] flex items-center justify-center shadow-md">
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
           </div>
         </div>
@@ -135,35 +135,35 @@ export function PostCard({ post }: PostCardProps) {
           {/* Author Header */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
-              <span className="font-display font-bold text-base text-white hover:text-white transition cursor-pointer flex items-center gap-1.5" onClick={openDetail}>
+              <span className="font-display font-extrabold text-base text-white hover:text-cyan-200 transition cursor-pointer flex items-center gap-1.5" onClick={openDetail}>
                 {post.authorName}
                 {(post.authorUsername.toLowerCase() === 'yuveer' || post.authorUsername.toLowerCase() === 'founder' || (post as any).isVerified || (post as any).is_verified) && (
                   <CheckCircle2 className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] inline-block" />
                 )}
               </span>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-mono text-xs text-neutral-400">@{post.authorUsername}</span>
-                <span className={`px-2.5 py-0.5 rounded-full border text-[9px] font-mono font-bold tracking-wider ${badge.color}`}>
+                <span className="font-sans text-xs text-neutral-400">@{post.authorUsername}</span>
+                <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-sans font-bold tracking-wide ${badge.color}`}>
                   {badge.text}
                 </span>
                 {(post as any).feedReason === 'following' && (
-                  <span className="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-[9px] font-mono text-blue-300 font-semibold flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-[10px] font-sans text-blue-300 font-semibold flex items-center gap-1">
                     👥 Following
                   </span>
                 )}
                 {(post as any).feedReason === 'fresh' && (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-mono text-emerald-300 font-bold flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.3)]">
-                    ⚡ Fresh Item
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-sans text-emerald-300 font-bold flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.3)]">
+                    ⚡ Fresh
                   </span>
                 )}
                 {(post as any).feedReason === 'trending' && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[9px] font-mono text-amber-300 font-semibold flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-sans text-amber-300 font-semibold flex items-center gap-1">
                     🔥 Trending
                   </span>
                 )}
                 {(post as any).feedReason === 'noise' && (
-                  <span className="px-2 py-0.5 rounded-full bg-fuchsia-500/15 border border-fuchsia-500/30 text-[9px] font-mono text-fuchsia-300 font-bold flex items-center gap-1 shadow-[0_0_8px_rgba(217,70,239,0.3)]">
-                    ⚡ Wildcard Discovery
+                  <span className="px-2 py-0.5 rounded-full bg-fuchsia-500/15 border border-fuchsia-500/30 text-[10px] font-sans text-fuchsia-300 font-bold flex items-center gap-1 shadow-[0_0_8px_rgba(217,70,239,0.3)]">
+                    ⚡ Discovery
                   </span>
                 )}
               </div>
@@ -311,12 +311,12 @@ export function PostCard({ post }: PostCardProps) {
           </div>
 
           {/* Action Bar */}
-          <div className="flex items-center justify-between mt-4 pt-3.5 border-t border-white/[0.06] -mx-1" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center justify-between mt-4 pt-3.5 border-t border-white/[0.08] -mx-1" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-1.5 sm:gap-3">
               {/* Reply Button */}
               <button
                 onClick={openDetail}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer font-mono text-xs group/btn"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer font-sans font-semibold text-xs group/btn active:scale-95"
               >
                 <MessageCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                 <span>{post.replyCount || 0}</span>
@@ -325,7 +325,7 @@ export function PostCard({ post }: PostCardProps) {
               {/* Repost Button */}
               <button
                 onClick={() => repostPost(post.isRepost && post.originalPostId ? post.originalPostId : post.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer font-mono text-xs group/btn ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer font-sans font-semibold text-xs group/btn active:scale-95 ${
                   hasReposted ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10'
                 }`}
               >
@@ -336,7 +336,7 @@ export function PostCard({ post }: PostCardProps) {
               {/* Like Button with Burst */}
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer font-mono text-xs group/btn relative ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer font-sans font-semibold text-xs group/btn relative active:scale-95 ${
                   hasLiked ? 'text-rose-400 bg-rose-500/10 border border-rose-500/20' : 'text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10'
                 }`}
               >
@@ -345,7 +345,7 @@ export function PostCard({ post }: PostCardProps) {
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               {/* Send to ZEN.CHAT */}
               <button
                 type="button"
@@ -353,30 +353,30 @@ export function PostCard({ post }: PostCardProps) {
                   e.stopPropagation();
                   setShowShareToChat(true);
                 }}
-                className="p-2 rounded-xl text-neutral-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer"
+                className="p-2 rounded-xl text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer active:scale-90"
                 title="Send to ZEN.CHAT"
               >
-                <MessageSquareShare className="w-3.5 h-3.5" />
+                <MessageSquareShare className="w-4 h-4" />
               </button>
 
               {/* Bookmark */}
               <button
                 onClick={() => setBookmarked(!bookmarked)}
-                className={`p-2 rounded-xl transition cursor-pointer ${
-                  bookmarked ? 'text-amber-400 bg-amber-500/10' : 'text-neutral-500 hover:text-amber-400 hover:bg-amber-500/10'
+                className={`p-2 rounded-xl transition cursor-pointer active:scale-90 ${
+                  bookmarked ? 'text-amber-400 bg-amber-500/10' : 'text-neutral-400 hover:text-amber-400 hover:bg-amber-500/10'
                 }`}
                 title="Save dispatch"
               >
-                <Bookmark className={`w-3.5 h-3.5 ${bookmarked ? 'fill-amber-400' : ''}`} />
+                <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-amber-400' : ''}`} />
               </button>
 
               {/* Share */}
               <button
                 onClick={handleShare}
-                className="p-2 rounded-xl text-neutral-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer relative"
+                className="p-2 rounded-xl text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition cursor-pointer relative active:scale-90"
                 title="Copy link"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
               </button>
             </div>
           </div>
