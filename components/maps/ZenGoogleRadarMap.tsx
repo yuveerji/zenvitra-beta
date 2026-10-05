@@ -9,7 +9,9 @@ import {
   InfoWindow, 
   ColorScheme 
 } from '@vis.gl/react-google-maps';
-import { MapPin, Globe, Sparkles, Key, ExternalLink, RefreshCw, X, Radio } from 'lucide-react';
+import { MapPin, Globe, Sparkles, RefreshCw, Radio } from 'lucide-react';
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyAa0-KtQjJYuBpzMyPVrMGFLBQKbGeUCxo';
 
 export interface RadarMapMarker {
   id: string;
@@ -122,9 +124,6 @@ export function ZenGoogleRadarMap({
   className = '',
   heightClass = 'h-[440px]'
 }: ZenGoogleRadarMapProps) {
-  const [apiKey, setApiKey] = useState<string>('');
-  const [customKeyInput, setCustomKeyInput] = useState<string>('');
-  const [showKeyInputModal, setShowKeyInputModal] = useState(false);
   const [activeMarker, setActiveMarker] = useState<RadarMapMarker | null>(null);
 
   // Combine default hubs with dynamic markers passed from props
@@ -134,39 +133,6 @@ export function ZenGoogleRadarMap({
       (m) => !DEFAULT_GLOBAL_HUBS.some((h) => h.id === m.id)
     )
   ];
-
-  // Resolve API Key: env var or client storage
-  useEffect(() => {
-    const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (envKey && envKey.trim()) {
-      setApiKey(envKey.trim());
-      return;
-    }
-
-    try {
-      const storedKey = localStorage.getItem('zenvitra_google_maps_key');
-      if (storedKey && storedKey.trim()) {
-        setApiKey(storedKey.trim());
-      }
-    } catch {}
-  }, []);
-
-  const handleSaveCustomKey = (key: string) => {
-    const trimmed = key.trim();
-    if (!trimmed) return;
-    setApiKey(trimmed);
-    try {
-      localStorage.setItem('zenvitra_google_maps_key', trimmed);
-    } catch {}
-    setShowKeyInputModal(false);
-  };
-
-  const handleClearCustomKey = () => {
-    setApiKey('');
-    try {
-      localStorage.removeItem('zenvitra_google_maps_key');
-    } catch {}
-  };
 
   // Sync selected marker from props
   useEffect(() => {
@@ -195,33 +161,16 @@ export function ZenGoogleRadarMap({
         </div>
 
         <div className="flex items-center gap-2">
-          {apiKey ? (
-            <button
-              type="button"
-              onClick={() => setShowKeyInputModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[11px] font-sans font-medium text-neutral-300 hover:text-white transition cursor-pointer"
-              title="Configure Maps API Key"
-            >
-              <Key className="w-3 h-3 text-amber-400" />
-              <span>Key Configured</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowKeyInputModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-[11px] font-sans font-bold text-cyan-200 transition cursor-pointer shadow-[0_0_12px_rgba(6,182,212,0.3)]"
-            >
-              <Key className="w-3 h-3 text-cyan-400 animate-bounce" />
-              <span>Add Maps Demo Key</span>
-            </button>
-          )}
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-sans font-semibold text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Live Radar Active</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Map Canvas or Key Activation Prompt */}
-      {apiKey ? (
-        <div className={`w-full ${heightClass} relative`}>
-          <APIProvider apiKey={apiKey}>
+      {/* Main Map Canvas */}
+      <div className={`w-full ${heightClass} relative`}>
+        <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
             <Map
               mapId="DEMO_MAP_ID"
               internalUsageAttributionIds={["gmp_git_agentskills_v1"]}
@@ -305,115 +254,6 @@ export function ZenGoogleRadarMap({
             </Map>
           </APIProvider>
         </div>
-      ) : (
-        <div className={`w-full ${heightClass} flex flex-col items-center justify-center p-6 text-center space-y-5 bg-[#06080e]/95`}>
-          <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-            <Globe className="w-8 h-8 animate-spin-slow" />
-          </div>
-
-          <div className="max-w-md space-y-2">
-            <h3 className="font-display font-extrabold text-xl text-white tracking-tight">
-              Activate Google Maps Platform Live Radar
-            </h3>
-            <p className="text-xs text-neutral-400 font-sans leading-relaxed">
-              Visualize real-time youth assemblies, MUN diplomatic summits, and camera glimpses across global geographic coordinates with the modern Google Maps SDK.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <a
-              href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentskills_v1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-sans font-bold text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)] transition cursor-pointer"
-            >
-              <span>Get Free Maps Demo Key (Zero Setup)</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-
-            <button
-              type="button"
-              onClick={() => setShowKeyInputModal(true)}
-              className="px-4 py-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.09] border border-white/15 text-white font-sans font-semibold text-xs transition cursor-pointer"
-            >
-              Enter API Key
-            </button>
-          </div>
-
-          <p className="text-[11px] text-neutral-500 font-sans max-w-sm">
-            💡 The Maps Demo Key allows zero-cost prototyping with no credit card or Google Cloud billing account setup required.
-          </p>
-        </div>
-      )}
-
-      {/* Key Input Modal */}
-      {showKeyInputModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-[#0b0d18] border border-white/15 p-6 space-y-4 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2">
-                <Key className="w-4 h-4 text-cyan-400" />
-                <h4 className="font-display font-bold text-sm text-white">
-                  Google Maps Platform API Key
-                </h4>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowKeyInputModal(false)}
-                className="p-1 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-neutral-300 font-sans leading-relaxed">
-              Enter your Google Cloud Maps API Key or free Maps Demo Key to initialize interactive mapping:
-            </p>
-
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={customKeyInput}
-                onChange={(e) => setCustomKeyInput(e.target.value)}
-                placeholder="AIzaSy... or Maps Demo Key"
-                className="w-full px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/15 text-sm text-white font-mono placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/40"
-              />
-              <p className="text-[10px] text-neutral-500 font-sans">
-                You can also permanently configure <code className="text-cyan-300">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> in <code className="text-neutral-300">.env</code>.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              {apiKey && (
-                <button
-                  type="button"
-                  onClick={handleClearCustomKey}
-                  className="text-xs text-rose-400 hover:text-rose-300 font-medium cursor-pointer"
-                >
-                  Remove Key
-                </button>
-              )}
-              <div className="flex items-center gap-2 ml-auto">
-                <button
-                  type="button"
-                  onClick={() => setShowKeyInputModal(false)}
-                  className="px-4 py-2 rounded-xl text-neutral-400 hover:text-white text-xs font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSaveCustomKey(customKeyInput)}
-                  disabled={!customKeyInput.trim()}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-sans font-bold text-xs hover:from-cyan-300 hover:to-blue-400 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-md cursor-pointer"
-                >
-                  Activate Radar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+      </div>
+    );
+  }
