@@ -559,24 +559,17 @@ function LoginForm() {
             </div>
 
             {/* Live Network & Ledger Telemetry HUD */}
-            <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-xl font-mono text-left shadow-lg shadow-black/40">
+            <div className="grid grid-cols-2 gap-2.5 p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-xl text-left shadow-lg shadow-black/40">
               <div className="space-y-1">
-                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">Chamber Mesh</span>
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  <span className="truncate">18 Live Summits</span>
-                </div>
-              </div>
-              <div className="space-y-1 border-l border-white/10 pl-3">
-                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">Quorum Engine</span>
-                <div className="flex items-center gap-1.5 text-xs text-white font-bold">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold font-sans">Quorum Engine</span>
+                <div className="flex items-center gap-1.5 text-xs text-white font-bold font-sans">
                   <Shield className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                   <span className="truncate">100% Audited</span>
                 </div>
               </div>
               <div className="space-y-1 border-l border-white/10 pl-3">
-                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">Cryptographic Layer</span>
-                <div className="flex items-center gap-1.5 text-xs text-purple-300 font-bold">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold font-sans">Cryptographic Layer</span>
+                <div className="flex items-center gap-1.5 text-xs text-purple-300 font-bold font-sans">
                   <KeyRound className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                   <span className="truncate">AES-256-GCM</span>
                 </div>
