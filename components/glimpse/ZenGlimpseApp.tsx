@@ -26,11 +26,13 @@ import {
   Wand2,
   Trash2,
   Sliders,
-  Maximize2
+  Maximize2,
+  Globe
 } from 'lucide-react';
 import { ZenGlimpse, INITIAL_GLIMPSES } from '@/types/glimpse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { MediaStudioModal } from '@/components/creator/MediaStudioModal';
+import { ZenGoogleRadarMap, RadarMapMarker } from '@/components/maps/ZenGoogleRadarMap';
 
 const LOCATION_STAMPS = [
   'Global Civic Commons',
@@ -42,12 +44,23 @@ const LOCATION_STAMPS = [
   'Campus Secretariat Hub'
 ];
 
+const LOCATION_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  'Global Civic Commons': { lat: 28.6139, lng: 77.2090 },
+  'Geneva Diplomatic Enclave': { lat: 46.2263, lng: 6.1408 },
+  'UNSC Chamber Floor': { lat: 40.7499, lng: -73.9674 },
+  'Innovation & Research Lab': { lat: 12.9716, lng: 77.5946 },
+  'City Youth Assembly': { lat: 51.5074, lng: -0.1278 },
+  'Digital Commons Terminal': { lat: 37.7749, lng: -122.4194 },
+  'Campus Secretariat Hub': { lat: 1.3521, lng: 103.8198 },
+};
+
 const LS_GLIMPSES = 'zenvitra_glimpses_v2';
 
 export function ZenGlimpseApp() {
   const { currentUserName, currentUserUsername } = useZenPulse();
 
   const [activeTrack, setActiveTrack] = useState<'community' | 'radar'>('radar');
+  const [glimpseViewMode, setGlimpseViewMode] = useState<'grid' | 'radar_map'>('grid');
   const [glimpses, setGlimpses] = useState<ZenGlimpse[]>(INITIAL_GLIMPSES);
   
   // Camera & Capture State
@@ -517,9 +530,57 @@ export function ZenGlimpseApp() {
               <Compass className="w-4 h-4 text-emerald-400" />
               <span>LIVE TRANSMISSIONS • {filteredGlimpses.length} ACTIVE</span>
             </div>
+
+            {/* View Mode Switcher: Grid vs Google Maps Live Radar */}
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.04] border border-white/10 text-xs">
+              <button
+                type="button"
+                onClick={() => setGlimpseViewMode('grid')}
+                className={`px-3 py-1 rounded-xl font-sans font-semibold transition cursor-pointer ${
+                  glimpseViewMode === 'grid'
+                    ? 'bg-white text-black font-bold shadow-md'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                📱 Grid
+              </button>
+              <button
+                type="button"
+                onClick={() => setGlimpseViewMode('radar_map')}
+                className={`px-3 py-1 rounded-xl font-sans font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                  glimpseViewMode === 'radar_map'
+                    ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)]'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>🗺️ Live Map</span>
+              </button>
+            </div>
           </div>
 
-          {filteredGlimpses.length === 0 ? (
+          {glimpseViewMode === 'radar_map' ? (
+            <ZenGoogleRadarMap
+              markers={filteredGlimpses.map((glimpse) => {
+                const coords = LOCATION_COORDINATES[glimpse.locationTag] || { lat: 28.6139, lng: 77.2090 };
+                return {
+                  id: glimpse.id,
+                  title: `@${glimpse.authorUsername}`,
+                  subtitle: glimpse.caption,
+                  locationName: glimpse.locationTag,
+                  lat: coords.lat,
+                  lng: coords.lng,
+                  type: 'glimpse',
+                  mediaUrl: glimpse.mediaUrl,
+                };
+              })}
+              heightClass="h-[480px]"
+              onSelectMarker={(marker) => {
+                const idx = filteredGlimpses.findIndex((g) => g.id === marker.id);
+                if (idx !== -1) setActiveGlimpseIndex(idx);
+              }}
+            />
+          ) : filteredGlimpses.length === 0 ? (
             <div className="p-16 rounded-3xl bg-[#080a11]/80 border border-white/10 text-center space-y-4 backdrop-blur-xl">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-neutral-500 mx-auto shadow-inner">
                 <Camera className="w-8 h-8 text-neutral-400" />

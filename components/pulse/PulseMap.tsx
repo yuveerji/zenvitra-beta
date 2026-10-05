@@ -2,8 +2,9 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Radio, Activity, Compass } from 'lucide-react';
+import { Sparkles, Radio, Activity, Compass, Globe } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
+import { ZenGoogleRadarMap, RadarMapMarker } from '@/components/maps/ZenGoogleRadarMap';
 
 interface TopicNode {
   id: string;
@@ -35,6 +36,7 @@ const PALETTE = [
 export function PulseMap({ onSelectTopic }: PulseMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'constellation' | 'google_maps'>('constellation');
   const { feedPosts } = useZenPulse();
 
   // Persistent map of nodes to maintain coordinates across renders and avoid flashing/jumping
@@ -299,60 +301,97 @@ export function PulseMap({ onSelectTopic }: PulseMapProps) {
   return (
     <div className="relative rounded-3xl bg-[#07090e]/95 border border-white/[0.08] p-5 sm:p-6 space-y-4 overflow-hidden backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
       {/* Dynamic Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] pb-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-3.5 gap-3">
         <div className="flex items-center gap-2.5">
           <div className="relative flex items-center justify-center">
             <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping absolute opacity-75" />
             <span className="w-2 h-2 rounded-full bg-cyan-400" />
           </div>
           <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5">
+            <span className="font-display font-black text-xs uppercase tracking-wider text-white flex items-center gap-1.5">
               THE PULSE MAP <span className="text-neutral-500">//</span> LIVING SIGNAL NETWORK
             </span>
           </div>
         </div>
 
-        {selectedTopic ? (
-          <button
-            onClick={() => {
-              setSelectedTopic(null);
-              if (onSelectTopic) onSelectTopic('');
-            }}
-            className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer flex items-center gap-1"
-          >
-            <span>Clear Filter [{selectedTopic}]</span>
-            <span>✕</span>
-          </button>
-        ) : (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-neutral-400">
-            <Compass className="w-3 h-3 text-cyan-400 animate-spin-slow" />
-            <span>RADAR ACTIVE</span>
-          </div>
-        )}
-      </div>
-
-      {/* Interactive Constellation Plane */}
-      <div className="relative h-60 sm:h-72 w-full cursor-pointer rounded-2xl overflow-hidden bg-gradient-to-b from-[#05070a] to-[#0a0d14] border border-white/[0.04]">
-        <canvas
-          ref={canvasRef}
-          onClick={handleCanvasClick}
-          className="w-full h-full block"
-        />
-      </div>
-
-      {/* Footer Status Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/[0.06] text-[10px] font-mono text-neutral-400">
-        <div className="flex items-center gap-1.5">
-          <Activity className="w-3 h-3 text-cyan-400" />
-          <span>CLICK ANY TOPIC BEACON TO FILTER DISPATCH WIRE</span>
-        </div>
         <div className="flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full ${totalSignals > 0 ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'}`} />
-          <span className="text-neutral-300 font-semibold">
-            {totalSignals > 0 ? `${totalSignals} SIGNALS ACTIVE` : `${activeCount} CHANNELS ONLINE // STANDBY`}
-          </span>
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.04] border border-white/10 text-xs">
+            <button
+              type="button"
+              onClick={() => setViewMode('constellation')}
+              className={`px-3 py-1 rounded-xl font-sans font-semibold transition cursor-pointer ${
+                viewMode === 'constellation'
+                  ? 'bg-white text-black font-bold shadow-md'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              🌌 Constellation
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('google_maps')}
+              className={`px-3 py-1 rounded-xl font-sans font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                viewMode === 'google_maps'
+                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)]'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>🗺️ Google Maps</span>
+            </button>
+          </div>
+
+          {selectedTopic && (
+            <button
+              onClick={() => {
+                setSelectedTopic(null);
+                if (onSelectTopic) onSelectTopic('');
+              }}
+              className="text-[11px] font-sans font-bold px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 hover:bg-rose-500/25 transition cursor-pointer flex items-center gap-1"
+            >
+              <span>Clear [{selectedTopic}]</span>
+              <span>✕</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {viewMode === 'constellation' ? (
+        <>
+          {/* Interactive Constellation Plane */}
+          <div className="relative h-60 sm:h-72 w-full cursor-pointer rounded-2xl overflow-hidden bg-gradient-to-b from-[#05070a] to-[#0a0d14] border border-white/[0.04]">
+            <canvas
+              ref={canvasRef}
+              onClick={handleCanvasClick}
+              className="w-full h-full block"
+            />
+          </div>
+
+          {/* Footer Status Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/[0.06] text-xs font-sans text-neutral-400">
+            <div className="flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Click any topic beacon to filter dispatch wire</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${totalSignals > 0 ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'}`} />
+              <span className="text-neutral-300 font-semibold">
+                {totalSignals > 0 ? `${totalSignals} SIGNALS ACTIVE` : `${activeCount} CHANNELS ONLINE // STANDBY`}
+              </span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <ZenGoogleRadarMap
+          heightClass="h-[360px]"
+          onSelectMarker={(marker) => {
+            const topic = marker.title.split(' ')[0];
+            setSelectedTopic(topic);
+            if (onSelectTopic) onSelectTopic(topic);
+          }}
+        />
+      )}
     </div>
   );
 }
