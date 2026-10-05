@@ -26,7 +26,7 @@ import {
   X
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
-import { auditFluxDispatch, IntegrityCheckResult } from '@/lib/fluxIntegrityGuard';
+import { auditFluxDispatch, isSourceMandatory, IntegrityCheckResult } from '@/lib/fluxIntegrityGuard';
 import { FONT_OPTIONS, TEXT_EFFECTS, FILTER_PRESETS } from '@/components/creator/MediaStudioModal';
 import { STORY_FONTS, getStoryFontStyle } from '@/lib/storyFonts';
 import { MusicPickerModal } from './MusicPickerModal';
@@ -41,11 +41,21 @@ const FLUX_AUDIO_TRACKS = [
   '✨ Lo-Fi Youth Summit Chill'
 ];
 
+export const FLUX_CATEGORIES = [
+  { id: 'creative', label: '🎬 Creative & Lifestyle', requiresSource: false, badge: 'Optional' },
+  { id: 'politics', label: '🏛️ Politics & Governance', requiresSource: true, badge: 'Source Required' },
+  { id: 'press', label: '📰 Press & Fast Wire', requiresSource: true, badge: 'Source Required' },
+  { id: 'document', label: '📑 Document & Research', requiresSource: true, badge: 'Source Required' },
+  { id: 'tech', label: '⚡ Tech & Innovation', requiresSource: false, badge: 'Optional' },
+  { id: 'civic', label: '🌱 Civic Action & Youth', requiresSource: false, badge: 'Optional' },
+];
+
 export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void; onClose?: () => void }) {
   const { createFlux, setActiveView, currentUserName, currentUserUsername } = useZenPulse();
 
   const [videoUrl, setVideoUrl] = useState('');
   const [caption, setCaption] = useState('');
+  const [category, setCategory] = useState<string>('creative');
   const [sourceName, setSourceName] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [musicTitle, setMusicTitle] = useState(FLUX_AUDIO_TRACKS[0]);
@@ -74,6 +84,22 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
     }
   };
 
+  const parsedTags = useMemo(() => {
+    return tagsInput
+      .split(',')
+      .map((t) => t.trim().replace(/^#/, ''))
+      .filter(Boolean);
+  }, [tagsInput]);
+
+  // Determine whether source is strictly mandatory (Politics, Press, Document, or specific tags)
+  const sourceRequirement = useMemo(() => {
+    return isSourceMandatory({
+      category,
+      tags: parsedTags,
+      caption,
+    });
+  }, [category, parsedTags, caption]);
+
   // Live real-time integrity check
   const auditResult: IntegrityCheckResult = useMemo(() => {
     if (!caption.trim() && !sourceName.trim() && !sourceUrl.trim()) {
@@ -81,13 +107,18 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
     }
     return auditFluxDispatch({
       caption,
-      sourceName,
-      sourceUrl,
-      tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean)
+      sourceName: sourceName.trim() || undefined,
+      sourceUrl: sourceUrl.trim() || undefined,
+      category,
+      tags: parsedTags,
     });
-  }, [caption, sourceName, sourceUrl, tagsInput]);
+  }, [caption, sourceName, sourceUrl, category, parsedTags]);
 
-  const hasEnteredData = Boolean(videoUrl.trim() && caption.trim() && sourceName.trim() && sourceUrl.trim());
+  const hasEnteredData = Boolean(
+    videoUrl.trim() && 
+    caption.trim() && 
+    (!sourceRequirement.required || (sourceName.trim() && sourceUrl.trim()))
+  );
   const isFormValid = hasEnteredData && auditResult.passed;
 
   const handleClose = () => {
@@ -112,6 +143,14 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
     if (!caption.trim() || !videoUrl.trim()) return;
+
+    if (sourceRequirement.required && (!sourceName.trim() || !sourceUrl.trim())) {
+      setErrorMessage(
+        sourceRequirement.reason ||
+          'Verified source entity name and citation link are required for Politics, Press, or Document dispatches.'
+      );
+      return;
+    }
     
     if (!auditResult.passed) {
       setErrorMessage(auditResult.reasons[0] || 'Content violates Zenvitra Civic & Fact-Checking standards.');
@@ -119,19 +158,15 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
     }
     setErrorMessage(null);
 
-    const tags = tagsInput
-      .split(',')
-      .map((t: string) => t.trim().replace(/^#/, ''))
-      .filter(Boolean);
-
     try {
       createFlux({
         caption: caption.trim(),
         videoUrl: videoUrl.trim(),
-        sourceName: sourceName.trim(),
-        sourceUrl: sourceUrl.trim(),
+        sourceName: sourceName.trim() || undefined,
+        sourceUrl: sourceUrl.trim() || undefined,
+        category,
         musicTitle: musicTitle.trim() || 'Original Audio',
-        tags: tags.length > 0 ? tags : ['FLUX', 'YouthAction'],
+        tags: parsedTags.length > 0 ? parsedTags : ['FLUX', category.toUpperCase()],
         isPrivate,
         fontStyle: reelFont,
         effectStyle: reelEffect,
@@ -415,43 +450,109 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
             </div>
           </div>
 
-          {/* ── RIGHT: VERIFIED SOURCE, CAPTION & TAGS (6 cols) ── */}
+          {/* ── RIGHT: CATEGORY, VERIFIED SOURCE, CAPTION & TAGS (6 cols) ── */}
           <div className="md:col-span-6 p-5 flex flex-col justify-between overflow-y-auto space-y-5 bg-[#0e0f16]">
             <div className="space-y-4">
-              {/* COMPULSORY SOURCE CITATION BOX */}
-              <div className="p-4 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/30 space-y-3">
+              {/* ── 2. CATEGORY SELECTOR ── */}
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-cyan-300 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                    2. Verified Source Citation (COMPULSORY)
+                  <span className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                    <span>2. Reel Category</span>
                   </span>
-                  <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                    Required
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border transition-colors ${
+                    sourceRequirement.required
+                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 font-bold'
+                      : 'bg-white/[0.04] border-white/10 text-zinc-400'
+                  }`}>
+                    {sourceRequirement.required ? '⚠️ Citation Mandatory' : 'Citation Optional'}
                   </span>
                 </div>
 
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {FLUX_CATEGORIES.map((cat) => {
+                    const isSelected = category === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setCategory(cat.id)}
+                        className={`p-2 rounded-xl text-left border text-xs transition cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? cat.requiresSource
+                              ? 'bg-amber-500/20 border-amber-400/60 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                              : 'bg-violet-500/20 border-violet-400/60 text-white shadow-[0_0_12px_rgba(139,92,246,0.25)]'
+                            : 'bg-white/[0.03] border-white/10 text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                        }`}
+                      >
+                        <span className="font-semibold truncate">{cat.label}</span>
+                        <span className={`text-[9px] font-mono mt-1 ${cat.requiresSource ? 'text-amber-400/90 font-bold' : 'text-zinc-500'}`}>
+                          {cat.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── 3. VERIFIED SOURCE CITATION BOX (DYNAMIC) ── */}
+              <div className={`p-4 rounded-2xl border space-y-3 transition-all ${
+                sourceRequirement.required
+                  ? 'bg-amber-500/[0.06] border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.12)]'
+                  : 'bg-white/[0.02] border-white/10'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs font-bold flex items-center gap-2 ${sourceRequirement.required ? 'text-amber-300' : 'text-zinc-300'}`}>
+                    <span className={`w-2 h-2 rounded-full ${sourceRequirement.required ? 'bg-amber-400 animate-pulse' : 'bg-zinc-500'}`} />
+                    <span>3. Verified Source Citation {sourceRequirement.required ? '(REQUIRED)' : '(OPTIONAL)'}</span>
+                  </span>
+                  <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border ${
+                    sourceRequirement.required
+                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 font-bold'
+                      : 'bg-white/[0.04] border-white/10 text-zinc-400'
+                  }`}>
+                    {sourceRequirement.required ? 'Mandatory' : 'Optional'}
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  {sourceRequirement.required
+                    ? '⚠️ A verified source name and valid evidence link are strictly required for Politics, Press, or Document dispatches to prevent misinformation.'
+                    : 'Source citation is optional for creative or lifestyle reels. You may add one if citing research or external articles.'}
+                </p>
+
                 <div className="space-y-2">
                   <div>
-                    <label className="text-[11px] text-zinc-300 font-medium block mb-1">Source Name / Entity *</label>
+                    <label className="text-[11px] text-zinc-300 font-medium block mb-1">
+                      Source Name / Entity {sourceRequirement.required ? <span className="text-amber-400 font-bold">*</span> : <span className="text-zinc-500 font-normal">(Optional)</span>}
+                    </label>
                     <input
                       type="text"
-                      required
                       value={sourceName}
                       onChange={(e) => setSourceName(e.target.value)}
-                      placeholder="e.g. Geneva Climate Report, Youth Assembly Resolution"
-                      className="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400"
+                      placeholder={sourceRequirement.required ? "e.g. Geneva Climate Report, Youth Assembly Resolution, PRS India" : "e.g. YouTube, Spotify, Personal Creator (Optional)"}
+                      className={`w-full bg-black/60 border rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors ${
+                        sourceRequirement.required
+                          ? 'border-amber-500/30 focus:border-amber-400'
+                          : 'border-white/15 focus:border-cyan-400'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="text-[11px] text-zinc-300 font-medium block mb-1">Source / Evidence Link *</label>
+                    <label className="text-[11px] text-zinc-300 font-medium block mb-1">
+                      Source / Evidence Link {sourceRequirement.required ? <span className="text-amber-400 font-bold">*</span> : <span className="text-zinc-500 font-normal">(Optional)</span>}
+                    </label>
                     <input
                       type="url"
-                      required
                       value={sourceUrl}
                       onChange={(e) => setSourceUrl(e.target.value)}
-                      placeholder="https://prsindia.org/... or https://sci.gov.in/..."
-                      className="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400"
+                      placeholder={sourceRequirement.required ? "https://prsindia.org/... or https://sci.gov.in/..." : "https://... (Optional)"}
+                      className={`w-full bg-black/60 border rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors ${
+                        sourceRequirement.required
+                          ? 'border-amber-500/30 focus:border-amber-400'
+                          : 'border-white/15 focus:border-cyan-400'
+                      }`}
                     />
                   </div>
 
@@ -479,11 +580,11 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
                 </div>
               </div>
 
-              {/* Caption */}
+              {/* ── 4. CAPTION & KEY INSIGHT ── */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
                   <div className="flex items-center gap-2">
-                    <span>3. Caption &amp; Key Insight</span>
+                    <span>4. Caption &amp; Key Insight</span>
                     <button
                       type="button"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -556,12 +657,17 @@ export function FluxComposer({ onFinished, onClose }: { onFinished?: () => void;
                 </div>
               </div>
 
-              {/* Tags */}
+              {/* ── 5. TAGS ── */}
               <div className="space-y-1.5">
-                <label className="text-xs text-zinc-400 font-medium flex items-center gap-1.5">
-                  <Hash className="w-3.5 h-3.5 text-violet-400" />
-                  <span>Tags (comma-separated)</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-zinc-400 font-medium flex items-center gap-1.5">
+                    <Hash className="w-3.5 h-3.5 text-violet-400" />
+                    <span>5. Tags (comma-separated)</span>
+                  </label>
+                  <span className="text-[10px] font-mono text-zinc-500">
+                    #Politics &amp; #Press trigger citation guard
+                  </span>
+                </div>
                 <input
                   type="text"
                   value={tagsInput}

@@ -112,8 +112,9 @@ interface ZenPulseContextType {
     videoUrl: string; 
     musicTitle: string; 
     tags: string[]; 
-    sourceName: string; 
-    sourceUrl: string; 
+    sourceName?: string; 
+    sourceUrl?: string; 
+    category?: string;
     isPrivate?: boolean;
     fontStyle?: string;
     effectStyle?: string;
@@ -1592,8 +1593,9 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     videoUrl: string; 
     musicTitle: string; 
     tags: string[]; 
-    sourceName: string; 
-    sourceUrl: string; 
+    sourceName?: string; 
+    sourceUrl?: string; 
+    category?: string;
     isPrivate?: boolean;
     fontStyle?: string;
     effectStyle?: string;
@@ -1606,8 +1608,9 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       authorUsername: currentUserUsername,
       caption: data.caption,
       videoUrl: data.videoUrl,
-      sourceName: data.sourceName,
-      sourceUrl: data.sourceUrl,
+      sourceName: data.sourceName || undefined,
+      sourceUrl: data.sourceUrl || undefined,
+      category: data.category || 'creative',
       musicTitle: data.musicTitle || 'Diplomatic Wire Audio',
       likes: 0,
       likedBy: [],

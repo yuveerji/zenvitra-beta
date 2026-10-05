@@ -321,8 +321,9 @@ export interface FluxVideo {
   authorAvatar?: string;
   caption: string;
   videoUrl: string;
-  sourceName: string;
-  sourceUrl: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  category?: string;
   thumbnailUrl?: string;
   musicTitle: string;
   likes: number;

@@ -126,19 +126,89 @@ const FAKE_SOURCE_DOMAINS = [
 ];
 
 /**
+ * Determines whether a source citation is strictly mandatory based on
+ * category, tags, or political/investigative claims.
+ * 
+ * Rules:
+ * - By default, creative / entertainment / tech / youth clips do NOT require a source.
+ * - If category or tags include "politics", "press", "document", "research", "dossier", "news", or "policy": source is MANDATORY.
+ * - If caption contains sensationalist political claims: source is MANDATORY.
+ */
+export function isSourceMandatory(params: {
+  category?: string;
+  tags?: string[];
+  caption?: string;
+}): { required: boolean; reason?: string } {
+  const cat = (params.category || '').toLowerCase().trim();
+  const tags = (params.tags || []).map((t) => t.toLowerCase().trim().replace(/^#/, ''));
+  const caption = (params.caption || '').toLowerCase();
+
+  // 1. Direct Category Match
+  if (['politics', 'political', 'press', 'document', 'research', 'dossier', 'policy', 'wire'].includes(cat)) {
+    return {
+      required: true,
+      reason: `Verified source citation is mandatory when posting under "${params.category}" category.`
+    };
+  }
+
+  // 2. Tags Match
+  const mandatoryTagKeywords = [
+    'politics',
+    'political',
+    'election',
+    'press',
+    'news',
+    'wire',
+    'document',
+    'doc',
+    'dossier',
+    'parliament',
+    'government',
+    'policy',
+    'treaty',
+    'supremecourt',
+    'investigation',
+    'scam',
+    'sanction'
+  ];
+
+  for (const tag of tags) {
+    if (mandatoryTagKeywords.some((kw) => tag.includes(kw))) {
+      return {
+        required: true,
+        reason: `Verified source citation is required for dispatches tagged #${tag}.`
+      };
+    }
+  }
+
+  // 3. Sensationalist Political Claim Pattern Check in Caption
+  for (const pattern of SENSATIONALIST_POLITICAL_PATTERNS) {
+    if (pattern.test(caption)) {
+      return {
+        required: true,
+        reason: 'Detected political or investigative claim that requires verified institutional proof.'
+      };
+    }
+  }
+
+  return { required: false };
+}
+
+/**
  * Evaluates a FLUX dispatch for compliance with Zenvitra's Civic Research & Integrity Charter
  */
 export function auditFluxDispatch(data: {
   caption: string;
-  sourceName: string;
-  sourceUrl: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  category?: string;
   tags?: string[];
 }): IntegrityCheckResult {
   const reasons: string[] = [];
   let score = 100;
   let violationType: IntegrityCheckResult['violationType'] = undefined;
 
-  const textToScan = `${data.caption} ${data.sourceName} ${(data.tags || []).join(' ')}`.toLowerCase();
+  const textToScan = `${data.caption} ${data.sourceName || ''} ${(data.tags || []).join(' ')}`.toLowerCase();
 
   // 1. Comprehensive Devotional / Religious Spam Check
   for (const term of COMPREHENSIVE_DEVOTIONAL_TERMS) {
@@ -162,35 +232,55 @@ export function auditFluxDispatch(data: {
     }
   }
 
-  // 3. Source Verification Check
-  const trimmedUrl = data.sourceUrl.trim().toLowerCase();
-  const trimmedSource = data.sourceName.trim();
+  // 3. Source Verification Check (Mandatory only for Politics, Press, Documents, etc.)
+  const mandatoryCheck = isSourceMandatory({
+    category: data.category,
+    tags: data.tags,
+    caption: data.caption,
+  });
 
-  if (!trimmedSource || trimmedSource.length < 3) {
-    score -= 50;
-    if (!violationType) violationType = 'INVALID_SOURCE';
-    reasons.push('Source entity name is missing or too short. A legitimate institution, news wire, or verified summit archive is required.');
-  }
+  const trimmedUrl = (data.sourceUrl || '').trim().toLowerCase();
+  const trimmedSource = (data.sourceName || '').trim();
 
-  try {
-    const parsedUrl = new URL(trimmedUrl);
-    
-    const isFakeDomain = FAKE_SOURCE_DOMAINS.some((fake) => parsedUrl.hostname.includes(fake));
-    if (isFakeDomain) {
-      score -= 70;
-      if (!violationType) violationType = 'INVALID_SOURCE';
-      reasons.push(`Invalid placeholder or unverified source domain ("${parsedUrl.hostname}"). Please provide a legitimate citation link.`);
-    }
-
-    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+  if (mandatoryCheck.required) {
+    if (!trimmedSource || trimmedSource.length < 2) {
       score -= 50;
       if (!violationType) violationType = 'INVALID_SOURCE';
-      reasons.push('Source link must use a valid HTTP or HTTPS web protocol.');
+      reasons.push(
+        mandatoryCheck.reason ||
+          'Verified source entity name is required for Politics, Press, or Document dispatches.'
+      );
     }
-  } catch (_) {
-    score -= 60;
-    if (!violationType) violationType = 'INVALID_SOURCE';
-    reasons.push('Source citation link is not a valid web URL.');
+
+    if (!trimmedUrl) {
+      score -= 50;
+      if (!violationType) violationType = 'INVALID_SOURCE';
+      reasons.push('Source citation link is required when publishing under Politics, Press, or Document categories.');
+    }
+  }
+
+  // If a source URL was entered (either mandatory or optional), validate the URL format and safety
+  if (trimmedUrl) {
+    try {
+      const parsedUrl = new URL(trimmedUrl);
+      
+      const isFakeDomain = FAKE_SOURCE_DOMAINS.some((fake) => parsedUrl.hostname.includes(fake));
+      if (isFakeDomain) {
+        score -= 70;
+        if (!violationType) violationType = 'INVALID_SOURCE';
+        reasons.push(`Invalid placeholder or unverified source domain ("${parsedUrl.hostname}"). Please provide a legitimate citation link.`);
+      }
+
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        score -= 50;
+        if (!violationType) violationType = 'INVALID_SOURCE';
+        reasons.push('Source link must use a valid HTTP or HTTPS web protocol.');
+      }
+    } catch (_) {
+      score -= 60;
+      if (!violationType) violationType = 'INVALID_SOURCE';
+      reasons.push('Source citation link is not a valid web URL.');
+    }
   }
 
   const passed = score >= 50 && reasons.length === 0;
