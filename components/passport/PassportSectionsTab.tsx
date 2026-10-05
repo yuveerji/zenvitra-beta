@@ -229,21 +229,21 @@ export default function PassportSectionsTab({
   return (
     <div className="space-y-6">
       {/* Horizontal Sub-Navigation */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none border-b border-white/10">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none border-b border-white/10">
         {subSections.map((sec) => (
           <button
             key={sec.id}
             type="button"
             onClick={() => setActiveSubSection(sec.id)}
-            className={`px-3 py-2 rounded-xl text-xs font-mono tracking-wide transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-sans font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
               activeSubSection === sec.id
                 ? 'bg-white text-black font-bold shadow-md'
-                : 'bg-white/[0.02] text-neutral-400 hover:text-white hover:bg-white/[0.06]'
+                : 'bg-white/[0.03] text-neutral-400 hover:text-white hover:bg-white/[0.08]'
             }`}
           >
             <span>{sec.label}</span>
             {typeof sec.count === 'number' && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              <span className={`text-[10px] font-sans font-bold px-1.5 py-0.5 rounded-full ${
                 activeSubSection === sec.id ? 'bg-black/10 text-black' : 'bg-white/10 text-neutral-300'
               }`}>
                 {sec.count}
