@@ -1038,16 +1038,16 @@ export function ZenPulseCore() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-bold text-sm text-white">Private Saved Dispatches</h3>
-                          <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono text-[9px] font-bold uppercase tracking-wider border border-purple-500/30">
+                          <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-sans text-[10px] font-bold uppercase tracking-wider border border-purple-500/30">
                             Private Vault
                           </span>
                         </div>
-                        <p className="text-xs text-neutral-400">
+                        <p className="text-xs text-neutral-400 font-sans">
                           Encrypted to your sovereign account. Only you can view or manage your saved items.
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs font-mono font-bold text-purple-300 px-3 py-1.5 rounded-full bg-purple-500/15 border border-purple-500/30 shrink-0">
+                    <span className="text-xs font-sans font-bold text-purple-300 px-3 py-1.5 rounded-full bg-purple-500/15 border border-purple-500/30 shrink-0">
                       {savedPosts.length} Private Items
                     </span>
                   </div>
@@ -1055,11 +1055,11 @@ export function ZenPulseCore() {
 
                 {/* ── Live Founder Directive / Executive Note Banner ── */}
                 {founderDirective.isActive && navTab === 'feed' && (
-                  <div className="p-5 rounded-3xl bg-gradient-to-r from-rose-950/40 via-[#0d0914] to-zinc-950 border border-rose-500/30 shadow-[0_10px_35px_rgba(244,63,94,0.15)] relative overflow-hidden space-y-3">
+                  <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-950/40 via-[#0d0914] to-zinc-950 border border-rose-500/30 shadow-[0_10px_35px_rgba(244,63,94,0.15)] relative overflow-hidden space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                        <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono text-[9px] font-bold uppercase tracking-wider border border-rose-500/30">
+                        <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-sans text-[10px] font-bold uppercase tracking-wider border border-rose-500/30">
                           {founderDirective.tag || 'EXECUTIVE DIRECTIVE'} • {founderDirective.priority}
                         </span>
                       </div>
@@ -1068,16 +1068,16 @@ export function ZenPulseCore() {
                         <button
                           type="button"
                           onClick={() => setShowFounderModal(true)}
-                          className="px-2.5 py-1 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 border border-amber-400/30 text-[10px] font-mono font-bold transition flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 border border-amber-400/30 text-xs font-sans font-bold transition flex items-center gap-1.5 cursor-pointer"
                           title="Edit Founder Note (Founder Clearance)"
                         >
-                          <Edit3 className="w-3 h-3 text-amber-400" />
+                          <Edit3 className="w-3.5 h-3.5 text-amber-400" />
                           <span>Edit Directive</span>
                         </button>
                       )}
                     </div>
 
-                    <h3 className="font-display font-bold text-sm sm:text-base text-white tracking-wide">
+                    <h3 className="font-display font-extrabold text-base sm:text-lg text-white tracking-wide">
                       {founderDirective.title}
                     </h3>
 
@@ -1087,9 +1087,9 @@ export function ZenPulseCore() {
                       collapsible={true}
                     />
 
-                    <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-zinc-500">
-                      <span>SIGNATURE: <strong className="text-zinc-300">{founderDirective.author}</strong></span>
-                      <span>BROADCAST ACTIVE</span>
+                    <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-sans text-zinc-400">
+                      <span>SIGNATURE: <strong className="text-zinc-200">{founderDirective.author}</strong></span>
+                      <span className="font-semibold text-rose-400/90">BROADCAST ACTIVE</span>
                     </div>
                   </div>
                 )}
@@ -1100,11 +1100,11 @@ export function ZenPulseCore() {
                     <div className="flex items-center justify-between px-1">
                       <div className="flex items-center gap-2">
                         <Zap className="w-4 h-4 text-amber-400" />
-                        <span className="font-display font-bold text-xs text-white uppercase tracking-wider">
-                          ⚡ Micro-Flex &amp; Treaty Charters
+                        <span className="font-display font-extrabold text-xs sm:text-sm text-white uppercase tracking-wider">
+                          ⚡ Micro-Flex & Treaty Charters
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono text-neutral-500">Fast Diplomatic Reads</span>
+                      <span className="text-xs font-sans font-medium text-neutral-400">Fast Diplomatic Reads</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1156,7 +1156,7 @@ export function ZenPulseCore() {
                       <button
                         type="button"
                         onClick={() => setShowPostComposerModal(true)}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold font-mono tracking-wider shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 cursor-pointer flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold font-sans tracking-wider shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 cursor-pointer flex items-center gap-2"
                       >
                         <Plus className="w-4 h-4" />
                         <span>TRANSMIT FIRST DISPATCH</span>
@@ -1189,12 +1189,12 @@ export function ZenPulseCore() {
                         {/* Monolith Card Category Ribbon */}
                         <div className="px-5 pt-4 flex items-center justify-between border-b border-white/5 pb-2.5">
                           <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                            <span className="font-mono text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                            <span className="font-sans text-[11px] font-bold text-neutral-300 uppercase tracking-wider">
                               {post.postType === 'treaty' ? '📜 PLENARY RESOLUTION' : post.postType === 'floor_speech' ? '🎙️ 60S FLOOR AUDIO' : '⚡ CIVIC DISPATCH'}
                             </span>
                           </div>
-                          <span className="text-[10px] font-mono text-zinc-500">
+                          <span className="text-xs font-sans text-zinc-400 font-medium">
                             Palais des Nations • Wire #{post.id.slice(-3) || '108'}
                           </span>
                         </div>
@@ -1224,22 +1224,22 @@ export function ZenPulseCore() {
                                     setNavTab('profile');
                                     openUserProfile(post.authorUsername);
                                   }}
-                                  className="font-bold text-sm text-white hover:underline transition cursor-pointer truncate tracking-tight"
+                                  className="font-bold text-sm text-white hover:underline transition cursor-pointer truncate tracking-tight font-sans"
                                 >
                                   {post.authorName || post.authorUsername}
                                 </span>
-                                <span className="text-zinc-500 text-xs">@{post.authorUsername}</span>
+                                <span className="text-zinc-500 text-xs font-sans">@{post.authorUsername}</span>
                                 
                                 {!isSelf && !isFollowingAuthor && (
                                   <button
                                     onClick={() => toggleFollow(post.authorUsername)}
-                                    className="text-xs font-bold text-white hover:underline transition cursor-pointer ml-1"
+                                    className="text-xs font-bold text-white hover:underline transition cursor-pointer ml-1 font-sans"
                                   >
                                     · Follow
                                   </button>
                                 )}
                               </div>
-                              <p className="text-[10px] font-mono text-zinc-500">
+                              <p className="text-xs font-sans text-zinc-400 font-medium">
                                 {post.location || 'Geneva Global Assembly'} · {post.createdAt || 'Just now'}
                               </p>
                             </div>
@@ -1281,12 +1281,12 @@ export function ZenPulseCore() {
                                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
                                     transition={{ duration: 0.15 }}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 top-full mt-1.5 w-60 bg-[#0c0e18] border border-white/15 rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.85)] p-1.5 z-50 backdrop-blur-xl font-mono text-xs space-y-0.5"
+                                    className="absolute right-0 top-full mt-1.5 w-60 bg-[#0c0e18] border border-white/15 rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.85)] p-1.5 z-50 backdrop-blur-xl font-sans text-xs space-y-0.5"
                                   >
                                     {/* Header Label */}
-                                    <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 tracking-wider uppercase border-b border-white/5 flex items-center justify-between">
+                                    <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 tracking-wider uppercase border-b border-white/5 flex items-center justify-between font-sans">
                                       <span>Dispatch Settings</span>
-                                      <span className="text-[9px] text-zinc-500">#{post.id.slice(-4)}</span>
+                                      <span className="text-[10px] text-zinc-500 font-sans">#{post.id.slice(-4)}</span>
                                     </div>
 
                                     {/* Option 1: Save / Bookmark */}
@@ -1440,7 +1440,7 @@ export function ZenPulseCore() {
                             >
                               {/* Multi-Page Slide Counter */}
                               {mediaCount > 1 && (
-                                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-mono font-bold text-white border border-white/20 z-20 shadow-md">
+                                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md text-[10px] font-sans font-bold text-white border border-white/20 z-20 shadow-md">
                                   {currentSlide + 1} / {mediaCount}
                                 </div>
                               )}
@@ -1560,11 +1560,11 @@ export function ZenPulseCore() {
                                 <div className="overflow-hidden">
                                   <div className="flex items-center gap-1.5">
                                     <Music className={`w-3.5 h-3.5 text-rose-400 shrink-0 ${playingAudioId === `music_${post.id}` ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }} />
-                                    <p className="text-xs font-bold text-white font-mono truncate">
+                                    <p className="text-xs font-bold text-white font-sans truncate">
                                       {post.songTitle || 'Original Soundtrack'}
                                     </p>
                                   </div>
-                                  <p className="text-[10px] text-zinc-400 font-mono truncate">
+                                  <p className="text-[10px] text-zinc-400 font-sans truncate">
                                     {post.songArtist || 'Zenvitra Soundscape'}
                                   </p>
                                 </div>
@@ -1591,11 +1591,11 @@ export function ZenPulseCore() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                                  <span className="font-mono text-[11px] text-rose-300 font-bold uppercase tracking-wider">
+                                  <span className="font-sans text-[11px] text-rose-300 font-bold uppercase tracking-wider">
                                     📹 Chamber Video Address • {post.speechDelegation || post.audioDispatch?.delegationName || post.authorName}
                                   </span>
                                 </div>
-                                <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-mono text-[10px]">
+                                <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-sans text-[10px] font-semibold">
                                   {post.speechDuration || post.audioDispatch?.durationSeconds || 60}s Guillotine Clock
                                 </span>
                               </div>
@@ -1611,7 +1611,7 @@ export function ZenPulseCore() {
 
                               {post.speechTranscript && (
                                 <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-zinc-300 font-sans leading-relaxed">
-                                  <p className="text-[10px] font-mono font-bold text-cyan-400 uppercase mb-1">Prepared Remarks Transcript</p>
+                                  <p className="text-[10px] font-sans font-bold text-cyan-400 uppercase mb-1">Prepared Remarks Transcript</p>
                                   <p>{post.speechTranscript}</p>
                                 </div>
                               )}
@@ -1624,11 +1624,11 @@ export function ZenPulseCore() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-                                  <span className="font-mono text-[11px] text-cyan-300 font-bold uppercase tracking-wider">
+                                  <span className="font-sans text-[11px] text-cyan-300 font-bold uppercase tracking-wider">
                                     🎙️ Floor Speech Relay • {post.speechDelegation || post.audioDispatch?.delegationName || post.authorName}
                                   </span>
                                 </div>
-                                <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-mono text-[10px]">
+                                <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-sans text-[10px] font-semibold">
                                   {post.speechDuration || post.audioDispatch?.durationSeconds || 60}s Guillotine Clock
                                 </span>
                               </div>
@@ -1668,7 +1668,7 @@ export function ZenPulseCore() {
 
                               {post.speechTranscript && (
                                 <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 text-[11px] text-zinc-300 font-sans leading-relaxed">
-                                  <p className="text-[9px] font-mono font-bold text-cyan-400 uppercase mb-0.5">Remarks Summary</p>
+                                  <p className="text-[10px] font-sans font-bold text-cyan-400 uppercase mb-0.5">Remarks Summary</p>
                                   <p>{post.speechTranscript}</p>
                                 </div>
                               )}
@@ -1678,7 +1678,7 @@ export function ZenPulseCore() {
                           {/* Interactive Consensus & Supermajority Voting Bar */}
                           {(post.postType === 'treaty' || post.tags?.some(t => t.toLowerCase().includes('treaty'))) && (
                             <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2.5">
-                              <div className="flex items-center justify-between text-xs font-mono">
+                              <div className="flex items-center justify-between text-xs font-sans font-semibold">
                                 <span className="text-zinc-400 flex items-center gap-1.5">
                                   <Vote className="w-3.5 h-3.5 text-cyan-400" />
                                   <span>Supermajority Consensus Gauge</span>
@@ -1699,7 +1699,7 @@ export function ZenPulseCore() {
                                 <button
                                   type="button"
                                   onClick={() => handleVote(post.id, 'aye')}
-                                  className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition cursor-pointer ${
+                                  className={`px-3 py-1.5 rounded-xl font-sans text-xs font-bold transition cursor-pointer active:scale-95 ${
                                     voteData.userVote === 'aye'
                                       ? 'bg-emerald-500 text-black shadow-md'
                                       : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25'
@@ -1710,7 +1710,7 @@ export function ZenPulseCore() {
                                 <button
                                   type="button"
                                   onClick={() => handleVote(post.id, 'nay')}
-                                  className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition cursor-pointer ${
+                                  className={`px-3 py-1.5 rounded-xl font-sans text-xs font-bold transition cursor-pointer active:scale-95 ${
                                     voteData.userVote === 'nay'
                                       ? 'bg-rose-500 text-white shadow-md'
                                       : 'bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:bg-rose-500/25'
@@ -1727,14 +1727,14 @@ export function ZenPulseCore() {
                             <button
                               type="button"
                               onClick={() => setActiveRedlinePost(post)}
-                              className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-indigo-950/40 to-neutral-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-xs font-mono font-bold flex items-center justify-between transition cursor-pointer shadow-sm group/redline"
+                              className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-indigo-950/40 to-neutral-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-xs font-sans font-bold flex items-center justify-between transition cursor-pointer shadow-sm group/redline active:scale-[0.99]"
                             >
                               <div className="flex items-center gap-2">
                                 <SplitSquareVertical className="w-4 h-4 text-cyan-400" />
                                 <span>Inspect Redline Diff Studio ({post.redlineDiffs.length} Clauses)</span>
                               </div>
-                              <span className="px-2 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] group-hover/redline:bg-cyan-400 group-hover/redline:text-black transition">
-                                Compare &amp; Sponsor →
+                              <span className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] font-sans font-semibold group-hover/redline:bg-cyan-400 group-hover/redline:text-black transition">
+                                Compare & Sponsor →
                               </span>
                             </button>
                           )}
@@ -1745,15 +1745,15 @@ export function ZenPulseCore() {
                               <button
                                 type="button"
                                 onClick={() => setActiveCitationPost(post)}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[11px] font-mono transition cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-sans font-medium transition cursor-pointer"
                               >
                                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                                 <span>{post.citations.length} Audited Sources</span>
                                 <span className="text-emerald-400 font-bold">· {post.civicReliabilityScore || 98}% Verified</span>
                               </button>
                             ) : (
-                              <div className="text-[11px] font-mono text-zinc-500 flex items-center gap-1">
-                                <ShieldCheck className="w-3.5 h-3.5 text-zinc-600" />
+                              <div className="text-xs font-sans text-zinc-400 flex items-center gap-1 font-medium">
+                                <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
                                 <span>Community Dispatch</span>
                               </div>
                             )}
@@ -1761,7 +1761,7 @@ export function ZenPulseCore() {
                             <button
                               type="button"
                               onClick={() => handleTipPost(post.id, post.authorUsername, 50)}
-                              className="px-2.5 py-1 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                              className="px-3 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-sans text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95"
                               title="Tip 50 Civic Points to research author"
                             >
                               <Coins className="w-3.5 h-3.5 text-amber-400" />
@@ -1772,11 +1772,11 @@ export function ZenPulseCore() {
 
                         {/* Monolith Action Bar */}
                         <div className="px-5 pt-2 flex items-center justify-between border-t border-white/10">
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-3 sm:gap-4">
                             {/* Endorse Button */}
                             <button
                               onClick={() => likePost(post.id)}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition cursor-pointer ${
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-sans font-bold transition cursor-pointer active:scale-95 ${
                                 hasLiked
                                   ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 shadow-sm'
                                   : 'bg-white/[0.04] border-white/10 text-zinc-300 hover:text-white hover:bg-white/[0.08]'
@@ -1789,7 +1789,7 @@ export function ZenPulseCore() {
                             {/* Deliberate / Comments Button */}
                             <button
                               onClick={() => toggleCommentsExpansion(post.id)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-zinc-300 hover:text-white hover:bg-white/[0.08] text-xs font-mono font-bold transition cursor-pointer"
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-zinc-300 hover:text-white hover:bg-white/[0.08] text-xs font-sans font-bold transition cursor-pointer active:scale-95"
                             >
                               <MessageCircle className="w-4 h-4" />
                               <span>{replies.length}</span>
@@ -1798,7 +1798,7 @@ export function ZenPulseCore() {
                             {/* Share */}
                             <button
                               onClick={() => handleSharePost(post.id)}
-                              className="p-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-zinc-300 hover:text-white transition cursor-pointer"
+                              className="p-2 rounded-xl bg-white/[0.04] border border-white/10 text-zinc-300 hover:text-white hover:bg-white/[0.08] transition cursor-pointer active:scale-95"
                             >
                               <Share2 className="w-4 h-4" />
                             </button>
@@ -1829,7 +1829,7 @@ export function ZenPulseCore() {
                                   })),
                                 });
                               }}
-                              className="text-xs font-mono font-bold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1 cursor-pointer"
+                              className="text-xs font-sans font-bold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1.5 cursor-pointer active:scale-95"
                             >
                               <span>Read Flex</span>
                               <ArrowRight className="w-3.5 h-3.5" />
@@ -1840,7 +1840,7 @@ export function ZenPulseCore() {
                                 toggleSavePost(post.id);
                                 showToast(hasSaved ? 'Removed from saved' : 'Saved to dossier');
                               }}
-                              className="p-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-zinc-300 hover:text-white transition cursor-pointer"
+                              className="p-2 rounded-xl bg-white/[0.04] border border-white/10 text-zinc-300 hover:text-white hover:bg-white/[0.08] transition cursor-pointer active:scale-95"
                             >
                               <Bookmark className={`w-4 h-4 ${hasSaved ? 'fill-white text-white' : ''}`} />
                             </button>

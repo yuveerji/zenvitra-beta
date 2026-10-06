@@ -85,15 +85,15 @@ export function DelegatePassportModal({ isOpen, onClose }: DelegatePassportModal
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 sm:p-6 border-b border-white/10 bg-gradient-to-r from-amber-950/20 via-neutral-900 to-cyan-950/30">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-inner shrink-0">
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-lg text-white">
+              <h2 className="font-display font-black text-lg sm:text-xl text-white tracking-tight">
                 Sovereign Civic Passport &amp; Clearance
               </h2>
-              <p className="text-xs font-mono text-neutral-400">
+              <p className="text-xs font-sans text-neutral-400 font-medium">
                 Merit-Driven Cryptographic Identity • Multi-Tier Plenary Accreditation
               </p>
             </div>
@@ -108,59 +108,59 @@ export function DelegatePassportModal({ isOpen, onClose }: DelegatePassportModal
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
 
           {/* Holographic Passport Card */}
           <div className="relative p-6 rounded-3xl bg-gradient-to-br from-[#10141e] via-[#0d1017] to-[#151a27] border border-cyan-500/40 shadow-[0_0_40px_rgba(6,182,212,0.15)] overflow-hidden space-y-5">
             {/* Holographic Watermark */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-cyan-500/10 via-indigo-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
 
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div>
-                <span className="font-mono text-[10px] tracking-widest text-cyan-400 uppercase font-bold">
+                <span className="font-sans text-[10px] tracking-[0.22em] text-cyan-400 uppercase font-extrabold block">
                   PLENARY ACCREDITATION PASSPORT
                 </span>
-                <h3 className="font-display font-extrabold text-xl text-white mt-1">
+                <h3 className="font-display font-black text-xl sm:text-2xl text-white mt-1 tracking-tight">
                   {currentUserName}
                 </h3>
-                <p className="text-xs font-mono text-neutral-400">
+                <p className="text-xs font-sans text-neutral-400 font-semibold mt-0.5">
                   @{currentUserUsername}
                 </p>
               </div>
 
-              <div className="px-3.5 py-1.5 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-bold shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+              <div className="px-3.5 py-1.5 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 font-sans text-xs font-extrabold tracking-wide uppercase shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0 self-start">
                 LEVEL {clearance.level}: {clearance.title.toUpperCase()}
               </div>
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-3 gap-3 pt-2">
-              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-                <div className="font-mono text-lg font-bold text-cyan-300">{civicPointsBalance}</div>
-                <div className="text-[10px] font-mono text-neutral-400 uppercase">Civic Points</div>
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-3 pt-2">
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center space-y-0.5">
+                <div className="font-display text-xl sm:text-2xl font-black text-cyan-300">{civicPointsBalance}</div>
+                <div className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">Civic Points</div>
               </div>
 
-              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-                <div className="font-mono text-lg font-bold text-emerald-300">{clearance.verifiedCitationsCount}</div>
-                <div className="text-[10px] font-mono text-neutral-400 uppercase">Audited Citations</div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center space-y-0.5">
+                <div className="font-display text-xl sm:text-2xl font-black text-emerald-300">{clearance.verifiedCitationsCount}</div>
+                <div className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">Audited Citations</div>
               </div>
 
-              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-                <div className="font-mono text-lg font-bold text-amber-300">{clearance.ratifiedTreatiesCount}</div>
-                <div className="text-[10px] font-mono text-neutral-400 uppercase">Ratified Clauses</div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-center space-y-0.5">
+                <div className="font-display text-xl sm:text-2xl font-black text-amber-300">{clearance.ratifiedTreatiesCount}</div>
+                <div className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">Ratified Clauses</div>
               </div>
             </div>
 
             {/* Cryptographic Seal Hash */}
-            <div className="p-3 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between font-mono text-[11px] text-neutral-400">
-              <span className="truncate">{passportSignature}</span>
-              <span className="text-emerald-400 font-bold shrink-0 ml-2">✓ VERIFIED</span>
+            <div className="p-3 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between text-[11px] text-neutral-400">
+              <span className="font-mono truncate">{passportSignature}</span>
+              <span className="text-emerald-400 font-sans font-extrabold text-[10px] tracking-wider uppercase shrink-0 ml-2">✓ VERIFIED</span>
             </div>
           </div>
 
           {/* 5-Tier Sovereign Progression Pathway */}
           <div className="space-y-3">
-            <h4 className="text-xs font-mono font-bold text-neutral-400 tracking-wider uppercase">
+            <h4 className="text-xs font-sans font-extrabold text-neutral-400 tracking-wider uppercase">
               Clearance Level Ladder
             </h4>
 
@@ -177,27 +177,27 @@ export function DelegatePassportModal({ isOpen, onClose }: DelegatePassportModal
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`font-mono text-xs font-bold ${tier.color}`}>
+                    <span className={`font-display text-xs font-black ${tier.color}`}>
                       L{tier.level}
                     </span>
                     <div>
-                      <div className="font-display font-bold text-xs text-white">
+                      <div className="font-display font-bold text-xs sm:text-sm text-white">
                         {tier.title}
                       </div>
-                      <div className="text-[10px] font-mono text-neutral-400">
+                      <div className="text-[11px] font-sans text-neutral-400 font-medium">
                         Requirement: {tier.min} Civic Points
                       </div>
                     </div>
                   </div>
 
                   {clearance.level === tier.level ? (
-                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 font-mono text-[10px] font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 font-sans text-[10px] font-extrabold uppercase tracking-wide">
                       CURRENT RANK
                     </span>
                   ) : clearance.level > tier.level ? (
-                    <span className="text-emerald-400 font-mono text-xs">✓ Achieved</span>
+                    <span className="text-emerald-400 font-sans font-bold text-xs">✓ Achieved</span>
                   ) : (
-                    <span className="text-neutral-500 font-mono text-[10px]">Locked</span>
+                    <span className="text-neutral-500 font-sans text-[10px] font-semibold">Locked</span>
                   )}
                 </div>
               ))}
@@ -209,7 +209,7 @@ export function DelegatePassportModal({ isOpen, onClose }: DelegatePassportModal
             <button
               type="button"
               onClick={handleExportPassport}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-amber-500 hover:opacity-90 text-white font-display font-bold text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-amber-500 hover:opacity-90 text-white font-sans font-extrabold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
             >
               {copied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'Accredited Passport JSON Copied to Clipboard!' : 'Export Cryptographic Passport Data'}</span>

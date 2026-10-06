@@ -90,10 +90,10 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
 
               {/* Status / Level Pill */}
               <div className="flex flex-col items-end gap-1">
-                <span className={`text-[10px] sm:text-[11px] font-sans font-bold tracking-wide px-3 py-1 rounded-full border shadow-sm ${verificationMeta.color}`}>
+                <span className={`text-[10px] sm:text-[11px] font-sans font-extrabold tracking-wide px-3 py-1 rounded-full border shadow-sm ${verificationMeta.color}`}>
                   {verificationMeta.badge}
                 </span>
-                <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500">
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-neutral-400">
                   LEVEL {passport.verification.level} • DIPLOMAT
                 </span>
               </div>
@@ -161,7 +161,7 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
                     <div className="w-2.5 h-1.5 rounded-xs border-t border-l border-amber-300/60" />
                   </div>
                 </div>
-                <span className="text-[8px] font-mono tracking-widest text-amber-300/70 mt-1 uppercase font-semibold">
+                <span className="text-[8px] font-sans tracking-widest text-amber-300/90 mt-1 uppercase font-bold">
                   SECURE CHIP
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
                   <span className="text-[8px] uppercase tracking-wider text-neutral-400 block font-sans font-semibold">
                     SECURITY
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-neutral-300">
+                  <span className="text-[10px] font-sans font-extrabold text-neutral-300">
                     ED25519 • SHA-256
                   </span>
                 </div>
@@ -196,25 +196,25 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
             <div className="grid grid-cols-4 gap-2 pt-2 border-t border-white/10 text-center">
               <div className="space-y-0.5">
                 <span className="text-base sm:text-xl font-display font-black text-white">{eventCount}</span>
-                <span className="text-[10px] font-sans font-medium tracking-wider text-neutral-400 block uppercase">
+                <span className="text-[10px] font-sans font-bold tracking-wider text-neutral-400 block uppercase">
                   EVENTS
                 </span>
               </div>
               <div className="space-y-0.5 border-l border-white/10">
                 <span className="text-base sm:text-xl font-display font-black text-amber-400">{awardCount}</span>
-                <span className="text-[10px] font-sans font-medium tracking-wider text-neutral-400 block uppercase">
+                <span className="text-[10px] font-sans font-bold tracking-wider text-neutral-400 block uppercase">
                   HONORS
                 </span>
               </div>
               <div className="space-y-0.5 border-l border-white/10">
                 <span className="text-base sm:text-xl font-display font-black text-cyan-400">{activityCount}</span>
-                <span className="text-[10px] font-sans font-medium tracking-wider text-neutral-400 block uppercase">
+                <span className="text-[10px] font-sans font-bold tracking-wider text-neutral-400 block uppercase">
                   JOURNEY
                 </span>
               </div>
               <div className="space-y-0.5 border-l border-white/10">
                 <span className="text-base sm:text-xl font-display font-black text-purple-300">{contributionCount}</span>
-                <span className="text-[10px] font-sans font-medium tracking-wider text-neutral-400 block uppercase">
+                <span className="text-[10px] font-sans font-bold tracking-wider text-neutral-400 block uppercase">
                   MERITS
                 </span>
               </div>

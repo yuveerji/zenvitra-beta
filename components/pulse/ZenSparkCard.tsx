@@ -90,34 +90,34 @@ export function ZenSparkCard({ spark, onBookmark, onOpenFlex, isBookmarked = fal
       <div className="flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           {/* Reading Time Tag */}
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-mono text-[10px] font-semibold">
-            <Zap className="w-3 h-3 text-amber-400" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-sans text-[11px] font-bold tracking-wide">
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
             <span>⚡ {spark.readingTimeMinutes} min read • {spark.category}</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
+        <div className="flex items-center gap-1 text-xs text-zinc-400 font-sans font-medium">
           <span>{spark.createdAt}</span>
         </div>
       </div>
 
       {/* Title & Summary */}
       <div className="space-y-2">
-        <h3 className="font-bold text-base sm:text-lg text-white tracking-tight leading-snug group-hover:text-amber-200 transition-colors">
+        <h3 className="font-display font-extrabold text-base sm:text-lg text-white tracking-tight leading-snug group-hover:text-amber-200 transition-colors">
           {spark.title}
         </h3>
-        <p className="text-xs text-zinc-300 leading-relaxed font-normal">
+        <p className="text-xs sm:text-[13px] text-zinc-300 leading-relaxed font-sans font-normal">
           {spark.summary}
         </p>
       </div>
 
       {/* Key Takeaways Box */}
       <div className="p-3.5 rounded-xl bg-black/60 border border-zinc-800/80 space-y-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-300 uppercase tracking-wider font-sans">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           <span>Key Takeaways</span>
         </div>
-        <ul className="space-y-1.5 text-xs text-zinc-300">
+        <ul className="space-y-1.5 text-xs text-zinc-300 font-sans">
           {spark.keyTakeaways.map((point, idx) => (
             <li key={idx} className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
@@ -134,14 +134,14 @@ export function ZenSparkCard({ spark, onBookmark, onOpenFlex, isBookmarked = fal
           <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/[0.08] via-purple-500/[0.05] to-transparent border border-amber-500/20 flex flex-wrap items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse" />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300 font-bold">
+              <span className="text-[11px] font-sans uppercase tracking-wider text-amber-300 font-bold">
                 RATIFIED DIPLOMATIC DOSSIER
               </span>
             </div>
 
             {spark.treatyClauseReference && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 border border-amber-500/30 text-[10px] font-mono text-amber-200">
-                <Scale className="w-3 h-3 text-amber-400" />
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 border border-amber-500/30 text-xs font-sans text-amber-200 font-medium">
+                <Scale className="w-3.5 h-3.5 text-amber-400" />
                 <span>Treaty: <strong>{spark.treatyClauseReference}</strong></span>
               </div>
             )}
@@ -150,9 +150,9 @@ export function ZenSparkCard({ spark, onBookmark, onOpenFlex, isBookmarked = fal
           {/* Executive Preamble */}
           {parsedDossier.preamble && (
             <div className="p-3.5 rounded-xl bg-white/[0.02] border-l-2 border-l-amber-400 border-y border-r border-white/5 space-y-1.5">
-              <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-semibold">
-                <ScrollText className="w-3 h-3 text-amber-400" />
-                <span>Executive Preamble &amp; Context</span>
+              <div className="flex items-center gap-1.5 text-[11px] font-sans text-zinc-400 uppercase tracking-wider font-bold">
+                <ScrollText className="w-3.5 h-3.5 text-amber-400" />
+                <span>Executive Preamble & Context</span>
               </div>
               <p className="text-zinc-200 text-xs sm:text-[13px] leading-relaxed font-normal italic">
                 "{parsedDossier.preamble}"
@@ -170,29 +170,29 @@ export function ZenSparkCard({ spark, onBookmark, onOpenFlex, isBookmarked = fal
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono text-[10px] font-bold">
+                      <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-sans text-[11px] font-bold tracking-wide">
                         CLAUSE {clause.number || `0${cIdx + 1}`}
                       </span>
-                      <h4 className="font-bold text-xs sm:text-[13px] text-white tracking-wide group-hover:text-cyan-200 transition-colors">
+                      <h4 className="font-bold text-xs sm:text-[13px] text-white tracking-wide group-hover:text-cyan-200 transition-colors font-sans">
                         {clause.title}
                       </h4>
                     </div>
                   </div>
-                  <p className="text-zinc-300 text-xs leading-relaxed whitespace-pre-line pl-0.5">
+                  <p className="text-zinc-300 text-xs leading-relaxed whitespace-pre-line pl-0.5 font-sans">
                     {clause.body}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="p-3.5 rounded-xl bg-[#0b0d14] border border-white/10 whitespace-pre-line text-zinc-300">
+            <div className="p-3.5 rounded-xl bg-[#0b0d14] border border-white/10 whitespace-pre-line text-zinc-300 font-sans">
               {spark.fullDossier}
             </div>
           )}
 
           {/* Dossier Protocol Seal & Copy */}
-          <div className="pt-2 flex items-center justify-between text-[10px] font-mono text-zinc-500 border-t border-white/5">
-            <span className="flex items-center gap-1 text-emerald-400/90">
+          <div className="pt-2 flex items-center justify-between text-xs font-sans text-zinc-400 border-t border-white/5">
+            <span className="flex items-center gap-1.5 text-emerald-400/90 font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>Sovereign Constitutional Record</span>
             </span>
@@ -203,9 +203,9 @@ export function ZenSparkCard({ spark, onBookmark, onOpenFlex, isBookmarked = fal
                 navigator.clipboard.writeText(spark.fullDossier);
                 alert('Full dossier text copied to clipboard.');
               }}
-              className="hover:text-white transition flex items-center gap-1 cursor-pointer"
+              className="hover:text-white transition flex items-center gap-1.5 cursor-pointer font-semibold text-xs"
             >
-              <Copy className="w-3 h-3" />
+              <Copy className="w-3.5 h-3.5" />
               <span>Copy Text</span>
             </button>
           </div>

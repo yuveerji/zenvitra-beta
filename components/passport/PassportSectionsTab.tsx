@@ -261,27 +261,27 @@ export default function PassportSectionsTab({
               <User className="w-4 h-4 text-cyan-400" />
               <span>Sovereign Identity Metadata</span>
             </h3>
-            <span className="text-[11px] font-mono text-neutral-400">
+            <span className="text-[11px] font-sans font-semibold tracking-wider text-neutral-400">
               MEMBER SINCE {passport.memberSince}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">FULL NAME</span>
+              <span className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">FULL NAME</span>
               <p className="text-sm font-bold text-white">{passport.fullName}</p>
             </div>
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">HANDLE</span>
-              <p className="text-sm font-mono text-cyan-300">@{passport.username}</p>
+              <span className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">HANDLE</span>
+              <p className="text-sm font-sans font-semibold text-cyan-300">@{passport.username}</p>
             </div>
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">PERMANENT PASSPORT IDENTIFIER</span>
+              <span className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">PERMANENT PASSPORT IDENTIFIER</span>
               <p className="text-sm font-mono font-bold text-amber-300 tracking-wider">{passport.passportId}</p>
-              <p className="text-[10px] text-neutral-500">Universal ID for MUN credentials, press citations &amp; dais entry.</p>
+              <p className="text-[10px] text-neutral-500">Universal ID for MUN credentials, press citations & dais entry.</p>
             </div>
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">STATUS DESIGNATION</span>
+              <span className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">STATUS DESIGNATION</span>
               <p className="text-sm font-bold text-emerald-400">{passport.statusLabel}</p>
               <p className="text-[10px] text-neutral-500">{levelDetails.title}</p>
             </div>
@@ -306,13 +306,13 @@ export default function PassportSectionsTab({
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-cyan-400" />
-              <span>Academic &amp; Student Identity</span>
+              <span>Academic & Student Identity</span>
             </h3>
             {isOwner && (
               <button
                 type="button"
                 onClick={() => setModalMode('EDUCATION')}
-                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-mono transition cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-sans font-semibold transition cursor-pointer"
               >
                 {passport.education ? 'Edit Education' : '+ Add Academic Info'}
               </button>
@@ -330,18 +330,18 @@ export default function PassportSectionsTab({
                   </p>
                 </div>
                 {passport.education.isVerified ? (
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 font-bold">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-sans bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 font-bold">
                     <ShieldCheck className="w-3 h-3" />
                     VERIFIED STUDENT (L2)
                   </span>
                 ) : (
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-neutral-800 text-neutral-400 border border-white/10">
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-sans font-medium bg-neutral-800 text-neutral-400 border border-white/10">
                     SELF-REPORTED
                   </span>
                 )}
               </div>
-              <div className="text-[11px] font-mono text-neutral-500">
-                CLASS / GRADUATION YEAR: {passport.education.graduationYear || 'N/A'}
+              <div className="text-xs font-sans text-neutral-400">
+                CLASS / GRADUATION YEAR: <span className="font-semibold text-white">{passport.education.graduationYear || 'N/A'}</span>
               </div>
             </div>
           ) : (
@@ -396,24 +396,24 @@ export default function PassportSectionsTab({
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="text-sm font-bold text-white">{mun.conferenceName}</h4>
-                      <p className="text-xs text-cyan-400 font-mono mt-0.5">{mun.committee} • {mun.portfolio}</p>
+                      <p className="text-xs text-cyan-400 font-sans font-medium mt-0.5">{mun.committee} • {mun.portfolio}</p>
                     </div>
                     {mun.isOrganiserVerified ? (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-bold">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-sans bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-bold">
                         <ShieldCheck className="w-3 h-3" /> VERIFIED
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-neutral-800 text-neutral-400 border border-white/10">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-sans bg-neutral-800 text-neutral-400 border border-white/10 font-semibold">
                         PENDING
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 pt-2 border-t border-white/5">
-                    <span>ROLE: {mun.role}</span>
-                    <span>DATE: {mun.date}</span>
+                  <div className="flex items-center justify-between text-xs font-sans text-neutral-400 pt-2 border-t border-white/5">
+                    <span>ROLE: <span className="text-white font-medium">{mun.role}</span></span>
+                    <span>DATE: <span className="text-neutral-300">{mun.date}</span></span>
                   </div>
                   {mun.award && (
-                    <div className="mt-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-300 flex items-center gap-1.5">
+                    <div className="mt-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs font-sans font-semibold text-amber-300 flex items-center gap-1.5">
                       <Award className="w-3.5 h-3.5" />
                       <span>{mun.award}</span>
                     </div>
@@ -432,7 +432,7 @@ export default function PassportSectionsTab({
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Mic className="w-4 h-4 text-emerald-400" />
-                <span>Speaking, Debates &amp; Youth Parliaments</span>
+                <span>Speaking, Debates & Youth Parliaments</span>
               </h3>
               <p className="text-xs text-neutral-400 mt-1">Verified oratory and parliamentary debates.</p>
             </div>
@@ -440,7 +440,7 @@ export default function PassportSectionsTab({
               <button
                 type="button"
                 onClick={() => setModalMode('SPEAKING')}
-                className="px-3 py-1.5 rounded-xl bg-white text-black font-semibold text-xs cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-white text-black font-sans font-bold text-xs cursor-pointer hover:bg-neutral-100 transition active:scale-95"
               >
                 + Add Speaking Record
               </button>
@@ -461,12 +461,12 @@ export default function PassportSectionsTab({
                       <h4 className="text-sm font-bold text-white">{spk.title}</h4>
                       <p className="text-xs text-neutral-400">{spk.event}</p>
                     </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
                       {spk.category}
                     </span>
                   </div>
-                  <div className="text-[11px] font-mono text-neutral-500 pt-2 border-t border-white/5">
-                    DATE: {spk.date}
+                  <div className="text-xs font-sans text-neutral-400 pt-2 border-t border-white/5">
+                    DATE: <span className="text-neutral-300">{spk.date}</span>
                   </div>
                 </div>
               ))}
@@ -482,7 +482,7 @@ export default function PassportSectionsTab({
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <FileText className="w-4 h-4 text-purple-400" />
-                <span>Press, Journalism &amp; Scholarly Publications</span>
+                <span>Press, Journalism & Scholarly Publications</span>
               </h3>
               <p className="text-xs text-neutral-400 mt-1">Published research papers, press bulletins, and sovereign dispatches.</p>
             </div>
@@ -490,7 +490,7 @@ export default function PassportSectionsTab({
               <button
                 type="button"
                 onClick={() => setModalMode('PRESS')}
-                className="px-3 py-1.5 rounded-xl bg-white text-black font-semibold text-xs cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-white text-black font-sans font-bold text-xs cursor-pointer hover:bg-neutral-100 transition active:scale-95"
               >
                 + Submit Publication
               </button>
@@ -511,15 +511,15 @@ export default function PassportSectionsTab({
                     <p className="text-xs text-neutral-400 mt-0.5">
                       {p.publication} • Published {p.publishedAt}
                     </p>
-                    {p.doi && <span className="text-[10px] font-mono text-cyan-400">DOI: {p.doi}</span>}
+                    {p.doi && <span className="text-xs font-mono text-cyan-400">DOI: {p.doi}</span>}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {p.isApproved ? (
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-purple-500/10 text-purple-300 border border-purple-500/30 font-bold">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-sans bg-purple-500/10 text-purple-300 border border-purple-500/30 font-bold">
                         PEER APPROVED
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-neutral-800 text-neutral-400">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-medium bg-neutral-800 text-neutral-400">
                         EDITORIAL REVIEW
                       </span>
                     )}
@@ -543,7 +543,7 @@ export default function PassportSectionsTab({
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Award className="w-4 h-4 text-amber-400" />
-                <span>Verified Accolades &amp; Merits</span>
+                <span>Verified Accolades & Merits</span>
               </h3>
               <p className="text-xs text-neutral-400 mt-1">Strict anti-gaming: Zero points assigned unless authenticated by issuing bodies.</p>
             </div>
@@ -551,7 +551,7 @@ export default function PassportSectionsTab({
               <button
                 type="button"
                 onClick={() => setModalMode('ACHIEVEMENTS')}
-                className="px-3 py-1.5 rounded-xl bg-white text-black font-semibold text-xs cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-white text-black font-sans font-bold text-xs cursor-pointer hover:bg-neutral-100 transition active:scale-95"
               >
                 + Propose Accolade
               </button>
@@ -573,16 +573,16 @@ export default function PassportSectionsTab({
                       <p className="text-xs text-neutral-400">{ach.issuer}</p>
                     </div>
                     {ach.isVerified ? (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold">
                         VERIFIED +100 PTS
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-neutral-800 text-neutral-400">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-medium bg-neutral-800 text-neutral-400">
                         AUDIT PENDING
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 pt-2 border-t border-white/5">
+                  <div className="flex items-center justify-between text-xs font-sans text-neutral-400 pt-2 border-t border-white/5">
                     <span>{ach.category}</span>
                     <span>{ach.date}</span>
                   </div>
@@ -600,7 +600,7 @@ export default function PassportSectionsTab({
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <HeartHandshake className="w-4 h-4 text-cyan-400" />
-                <span>Contributions &amp; Public Good Initiatives</span>
+                <span>Contributions & Public Good Initiatives</span>
               </h3>
               <p className="text-xs text-neutral-400 mt-1">Volunteering, organising committees, and open platform contributions.</p>
             </div>
@@ -608,7 +608,7 @@ export default function PassportSectionsTab({
               <button
                 type="button"
                 onClick={() => setModalMode('CONTRIBUTIONS')}
-                className="px-3 py-1.5 rounded-xl bg-white text-black font-semibold text-xs cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-white text-black font-sans font-bold text-xs cursor-pointer hover:bg-neutral-100 transition active:scale-95"
               >
                 + Record Contribution
               </button>
@@ -629,11 +629,11 @@ export default function PassportSectionsTab({
                     <p className="text-xs text-neutral-400 mt-0.5">{c.initiative} • {c.type}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-cyan-400">
+                    <span className="text-xs font-sans font-bold text-cyan-400">
                       +{c.pointsEarned} PTS
                     </span>
                     {c.isVerified && (
-                      <span className="px-2 py-0.5 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-sans bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
                         VERIFIED
                       </span>
                     )}
@@ -651,29 +651,29 @@ export default function PassportSectionsTab({
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-purple-400" />
-              <span>Activity &amp; Merit Ledger Breakdown</span>
+              <span>Activity & Merit Ledger Breakdown</span>
             </h3>
-            <span className="text-xs font-mono text-cyan-400">
+            <span className="text-xs font-sans font-semibold tracking-wider text-cyan-400">
               AUDITED ON SOVEREIGN ESCROW
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-              <p className="text-2xl font-bold font-mono text-white">{passport.munRecords.length}</p>
-              <p className="text-[10px] font-mono text-neutral-400">CONFERENCES</p>
+              <p className="text-2xl font-display font-black text-white">{passport.munRecords.length}</p>
+              <p className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">CONFERENCES</p>
             </div>
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-              <p className="text-2xl font-bold font-mono text-cyan-400">{passport.pressRecords.length}</p>
-              <p className="text-[10px] font-mono text-neutral-400">PUBLICATIONS</p>
+              <p className="text-2xl font-display font-black text-cyan-400">{passport.pressRecords.length}</p>
+              <p className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">PUBLICATIONS</p>
             </div>
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-              <p className="text-2xl font-bold font-mono text-amber-400">{passport.achievements.length}</p>
-              <p className="text-[10px] font-mono text-neutral-400">ACCOLADES</p>
+              <p className="text-2xl font-display font-black text-amber-400">{passport.achievements.length}</p>
+              <p className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">ACCOLADES</p>
             </div>
             <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-              <p className="text-2xl font-bold font-mono text-emerald-400">{passport.badges.filter(b => b.isUnlocked).length}</p>
-              <p className="text-[10px] font-mono text-neutral-400">BADGES UNLOCKED</p>
+              <p className="text-2xl font-display font-black text-emerald-400">{passport.badges.filter(b => b.isUnlocked).length}</p>
+              <p className="text-[10px] font-sans font-bold text-neutral-400 uppercase tracking-wider">BADGES UNLOCKED</p>
             </div>
           </div>
         </div>
@@ -765,32 +765,32 @@ export default function PassportSectionsTab({
       {modalMode === 'EDUCATION' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md p-6 rounded-2xl bg-[#0c0e14] border border-white/15 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-white">Update Academic Credentials</h3>
-            <form onSubmit={handleSaveEducation} className="space-y-3">
+            <h3 className="text-sm font-display font-bold text-white">Update Academic Credentials</h3>
+            <form onSubmit={handleSaveEducation} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">INSTITUTION</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">INSTITUTION</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Modern School, DPS, Oxford University"
                   value={educationForm.institution}
                   onChange={(e) => setEducationForm({ ...educationForm, institution: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">GRADE / DEGREE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">GRADE / DEGREE</label>
                 <input
                   type="text"
                   placeholder="e.g. Grade 11, B.A. Political Science"
                   value={educationForm.degreeOrGrade}
                   onChange={(e) => setEducationForm({ ...educationForm, degreeOrGrade: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setModalMode(null)} className="px-3 py-1.5 text-xs text-neutral-400">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 rounded-xl bg-white text-black font-semibold text-xs">Save</button>
+                <button type="button" onClick={() => setModalMode(null)} className="px-3.5 py-2 text-xs font-sans text-neutral-400 hover:text-white transition">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition cursor-pointer active:scale-95">Save</button>
               </div>
             </form>
           </div>
@@ -800,48 +800,48 @@ export default function PassportSectionsTab({
       {modalMode === 'MUN' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-2xl bg-[#0c0e14] border border-white/15 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-white">Record Multilateral Conference (MUN)</h3>
-            <form onSubmit={handleAddMun} className="space-y-3">
+            <h3 className="text-sm font-display font-bold text-white">Record Multilateral Conference (MUN)</h3>
+            <form onSubmit={handleAddMun} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">CONFERENCE NAME</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">CONFERENCE NAME</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. ZENVITRA Virtual MUN 2026"
                   value={munForm.conferenceName}
                   onChange={(e) => setMunForm({ ...munForm, conferenceName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-mono text-neutral-400 mb-1">COMMITTEE</label>
+                  <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">COMMITTEE</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. UNSC"
                     value={munForm.committee}
                     onChange={(e) => setMunForm({ ...munForm, committee: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-neutral-400 mb-1">PORTFOLIO</label>
+                  <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">PORTFOLIO</label>
                   <input
                     type="text"
                     placeholder="e.g. Delegate of France"
                     value={munForm.portfolio}
                     onChange={(e) => setMunForm({ ...munForm, portfolio: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">ROLE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">ROLE</label>
                 <select
                   value={munForm.role}
                   onChange={(e) => setMunForm({ ...munForm, role: e.target.value as any })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none cursor-pointer"
                 >
                   <option value="Delegate">Delegate</option>
                   <option value="Executive Board">Executive Board</option>
@@ -850,18 +850,18 @@ export default function PassportSectionsTab({
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">AWARD (OPTIONAL)</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">AWARD (OPTIONAL)</label>
                 <input
                   type="text"
                   placeholder="e.g. Best Delegate, High Commendation"
                   value={munForm.award}
                   onChange={(e) => setMunForm({ ...munForm, award: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setModalMode(null)} className="px-3 py-1.5 text-xs text-neutral-400">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 rounded-xl bg-white text-black font-semibold text-xs">Add Record</button>
+                <button type="button" onClick={() => setModalMode(null)} className="px-3.5 py-2 text-xs font-sans text-neutral-400 hover:text-white transition">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition cursor-pointer active:scale-95">Add Record</button>
               </div>
             </form>
           </div>
@@ -871,33 +871,33 @@ export default function PassportSectionsTab({
       {modalMode === 'SPEAKING' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-2xl bg-[#0c0e14] border border-white/15 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-white">Record Speaking / Debate</h3>
-            <form onSubmit={handleAddSpeaking} className="space-y-3">
+            <h3 className="text-sm font-display font-bold text-white">Record Speaking / Debate</h3>
+            <form onSubmit={handleAddSpeaking} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">TITLE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">TITLE</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. National Youth Parliament Debate"
                   value={speakingForm.title}
                   onChange={(e) => setSpeakingForm({ ...speakingForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">EVENT / VENUE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">EVENT / VENUE</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Inter-School Oratory Championship"
                   value={speakingForm.event}
                   onChange={(e) => setSpeakingForm({ ...speakingForm, event: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setModalMode(null)} className="px-3 py-1.5 text-xs text-neutral-400">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 rounded-xl bg-white text-black font-semibold text-xs">Add Speaking</button>
+                <button type="button" onClick={() => setModalMode(null)} className="px-3.5 py-2 text-xs font-sans text-neutral-400 hover:text-white transition">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition cursor-pointer active:scale-95">Add Speaking</button>
               </div>
             </form>
           </div>
@@ -907,32 +907,32 @@ export default function PassportSectionsTab({
       {modalMode === 'PRESS' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-2xl bg-[#0c0e14] border border-white/15 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-white">Submit Press Publication</h3>
-            <form onSubmit={handleAddPress} className="space-y-3">
+            <h3 className="text-sm font-display font-bold text-white">Submit Press Publication</h3>
+            <form onSubmit={handleAddPress} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">ARTICLE TITLE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">ARTICLE TITLE</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Sovereign AI Governance & Emerging Multilateralism"
                   value={pressForm.title}
                   onChange={(e) => setPressForm({ ...pressForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">PUBLICATION</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">PUBLICATION</label>
                 <input
                   type="text"
                   placeholder="e.g. ZENVITRA Press / Diplomatic Courier"
                   value={pressForm.publication}
                   onChange={(e) => setPressForm({ ...pressForm, publication: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setModalMode(null)} className="px-3 py-1.5 text-xs text-neutral-400">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 rounded-xl bg-white text-black font-semibold text-xs">Submit Article</button>
+                <button type="button" onClick={() => setModalMode(null)} className="px-3.5 py-2 text-xs font-sans text-neutral-400 hover:text-white transition">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition cursor-pointer active:scale-95">Submit Article</button>
               </div>
             </form>
           </div>
@@ -942,33 +942,33 @@ export default function PassportSectionsTab({
       {modalMode === 'ACHIEVEMENTS' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-2xl bg-[#0c0e14] border border-white/15 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-white">Propose Accolade / Award</h3>
-            <form onSubmit={handleAddAchievement} className="space-y-3">
+            <h3 className="text-sm font-display font-bold text-white">Propose Accolade / Award</h3>
+            <form onSubmit={handleAddAchievement} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">AWARD TITLE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">AWARD TITLE</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Outstanding Youth Delegate"
                   value={achievementForm.title}
                   onChange={(e) => setAchievementForm({ ...achievementForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">ISSUED BY</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">ISSUED BY</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. UN Association / University Dais"
                   value={achievementForm.issuer}
                   onChange={(e) => setAchievementForm({ ...achievementForm, issuer: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setModalMode(null)} className="px-3 py-1.5 text-xs text-neutral-400">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 rounded-xl bg-white text-black font-semibold text-xs">Propose</button>
+                <button type="button" onClick={() => setModalMode(null)} className="px-3.5 py-2 text-xs font-sans text-neutral-400 hover:text-white transition">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition cursor-pointer active:scale-95">Propose</button>
               </div>
             </form>
           </div>
@@ -978,25 +978,25 @@ export default function PassportSectionsTab({
       {modalMode === 'CONTRIBUTIONS' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-2xl bg-[#0c0e14] border border-white/15 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-white">Record Contribution</h3>
-            <form onSubmit={handleAddContribution} className="space-y-3">
+            <h3 className="text-sm font-display font-bold text-white">Record Contribution</h3>
+            <form onSubmit={handleAddContribution} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">TITLE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">TITLE</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Organising Committee Secretariat Lead"
                   value={contributionForm.title}
                   onChange={(e) => setContributionForm({ ...contributionForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-neutral-400 mb-1">TYPE</label>
+                <label className="block text-[11px] font-sans font-bold text-neutral-300 mb-1.5 uppercase tracking-wider">TYPE</label>
                 <select
                   value={contributionForm.type}
                   onChange={(e) => setContributionForm({ ...contributionForm, type: e.target.value as any })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs font-sans focus:border-cyan-400 focus:outline-none cursor-pointer"
                 >
                   <option value="Volunteering">Volunteering</option>
                   <option value="Open Source Tooling">Open Source Tooling</option>
@@ -1005,8 +1005,8 @@ export default function PassportSectionsTab({
                 </select>
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setModalMode(null)} className="px-3 py-1.5 text-xs text-neutral-400">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 rounded-xl bg-white text-black font-semibold text-xs">Record</button>
+                <button type="button" onClick={() => setModalMode(null)} className="px-3.5 py-2 text-xs font-sans text-neutral-400 hover:text-white transition">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-xl bg-white text-black font-sans font-bold text-xs hover:bg-neutral-100 transition cursor-pointer active:scale-95">Record</button>
               </div>
             </form>
           </div>

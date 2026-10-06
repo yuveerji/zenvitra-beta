@@ -176,9 +176,9 @@ export function ZenFlexReaderModal({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-display font-bold text-sm text-white truncate">{item.authorName}</span>
-                  <span className="text-xs text-neutral-400 font-mono">@{item.authorUsername}</span>
+                  <span className="text-xs text-neutral-400 font-sans">@{item.authorUsername}</span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-500">
+                <div className="flex items-center gap-2 text-xs font-sans text-neutral-400 font-medium">
                   <span>{item.createdAt}</span>
                   {item.category && (
                     <>
@@ -203,7 +203,7 @@ export function ZenFlexReaderModal({
                 <select
                   value={readerFont}
                   onChange={(e) => setReaderFont(e.target.value)}
-                  className="bg-transparent text-[11px] font-mono text-zinc-300 focus:outline-none cursor-pointer pr-1"
+                  className="bg-transparent text-xs font-sans text-zinc-300 focus:outline-none cursor-pointer pr-1"
                 >
                   {STORY_FONTS.map((font) => (
                     <option key={font.id} value={font.id} className="bg-zinc-950 text-white">
@@ -247,11 +247,11 @@ export function ZenFlexReaderModal({
             {/* Key Takeaways Box (if available) */}
             {item.keyTakeaways && item.keyTakeaways.length > 0 && (
               <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 space-y-2.5 shadow-inner">
-                <div className="flex items-center gap-2 text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-xs font-sans font-bold text-amber-300 uppercase tracking-wider">
                   <Sparkles className="w-4 h-4 text-amber-400" />
                   <span>Executive Takeaways</span>
                 </div>
-                <ul className="space-y-2 text-xs sm:text-sm text-neutral-200">
+                <ul className="space-y-2 text-xs sm:text-sm text-neutral-200 font-sans">
                   {item.keyTakeaways.map((takeaway, idx) => (
                     <li key={idx} className="flex items-start gap-2.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0" />
@@ -264,8 +264,8 @@ export function ZenFlexReaderModal({
 
             {/* Treaty Clause Reference Badge */}
             {item.treatyClauseReference && (
-              <div className="p-3 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between text-xs font-mono text-neutral-300">
-                <span className="text-neutral-500">Treaty Clause Citation:</span>
+              <div className="p-3.5 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between text-xs font-sans text-neutral-300">
+                <span className="text-neutral-400 font-medium">Treaty Clause Citation:</span>
                 <span className="font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-md border border-cyan-500/30">
                   {item.treatyClauseReference}
                 </span>
@@ -288,7 +288,7 @@ export function ZenFlexReaderModal({
 
             {/* ─── Thread Segments / Readable Micro-Flex Stream ─── */}
             <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-2 pb-2 border-b border-white/[0.08] text-xs font-mono text-neutral-400">
+              <div className="flex items-center gap-2 pb-2 border-b border-white/[0.08] text-xs font-sans font-bold text-neutral-300 uppercase tracking-wider">
                 <Layers className="w-3.5 h-3.5 text-purple-400" />
                 <span>THREAD CLAUSES ({threadSegments.length})</span>
               </div>
@@ -300,12 +300,12 @@ export function ZenFlexReaderModal({
                     className="relative pl-6 sm:pl-8 before:absolute before:left-2 before:top-3 before:bottom-0 before:w-[2px] before:bg-gradient-to-b before:from-purple-500/60 before:via-cyan-500/40 before:to-transparent last:before:hidden"
                   >
                     {/* Bullet marker */}
-                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-purple-500/20 border border-purple-400 flex items-center justify-center font-mono text-[9px] font-bold text-purple-300">
+                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-purple-500/20 border border-purple-400 flex items-center justify-center font-sans text-[10px] font-bold text-purple-300">
                       {idx + 1}
                     </div>
 
                     <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-white/20 transition-all space-y-1">
-                      <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 pb-1">
+                      <div className="flex items-center justify-between text-[11px] font-sans text-neutral-400 pb-1">
                         <span>Segment [{idx + 1}/{threadSegments.length}]</span>
                       </div>
                       <p 
@@ -344,13 +344,13 @@ export function ZenFlexReaderModal({
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-pulse" />
-                      <span className="text-xs font-mono uppercase tracking-widest text-amber-300 font-bold">
+                      <span className="text-xs font-sans uppercase tracking-wider text-amber-300 font-bold">
                         Ratified Comprehensive Dossier
                       </span>
                     </div>
 
                     {item.treatyClauseReference && (
-                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-black/60 border border-amber-500/30 text-xs font-mono text-amber-200">
+                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-black/60 border border-amber-500/30 text-xs font-sans text-amber-200 font-medium">
                         <Scale className="w-3.5 h-3.5 text-amber-400" />
                         <span>Treaty: <strong>{item.treatyClauseReference}</strong></span>
                       </div>
@@ -360,11 +360,11 @@ export function ZenFlexReaderModal({
                   {/* Executive Preamble */}
                   {preamble && (
                     <div className="p-4 rounded-2xl bg-white/[0.02] border-l-2 border-l-amber-400 border-y border-r border-white/5 space-y-2">
-                      <div className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 uppercase tracking-wider font-semibold">
+                      <div className="flex items-center gap-1.5 text-xs font-sans text-zinc-400 uppercase tracking-wider font-semibold">
                         <ScrollText className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Executive Preamble &amp; Geopolitical Thesis</span>
+                        <span>Executive Preamble & Geopolitical Thesis</span>
                       </div>
-                      <p className="text-zinc-200 text-xs sm:text-sm leading-relaxed italic">
+                      <p className="text-zinc-200 text-xs sm:text-sm leading-relaxed italic font-sans">
                         "{preamble}"
                       </p>
                     </div>
@@ -379,7 +379,7 @@ export function ZenFlexReaderModal({
                           className="p-4 rounded-2xl bg-black/50 border border-white/10 hover:border-cyan-500/30 transition-all space-y-2 group"
                         >
                           <div className="flex items-center gap-2.5">
-                            <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono text-xs font-bold">
+                            <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-sans text-xs font-bold">
                               CLAUSE {clause.number || `0${cIdx + 1}`}
                             </span>
                             <h4 className="font-bold text-xs sm:text-sm text-white tracking-wide group-hover:text-cyan-200 transition-colors font-display">
@@ -404,8 +404,8 @@ export function ZenFlexReaderModal({
                     </div>
                   )}
 
-                  <div className="pt-2 flex items-center justify-between text-[11px] font-mono text-zinc-500 border-t border-white/5">
-                    <span className="flex items-center gap-1.5 text-emerald-400">
+                  <div className="pt-2 flex items-center justify-between text-xs font-sans text-zinc-400 border-t border-white/5">
+                    <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
                       <ShieldCheck className="w-4 h-4 text-emerald-400" />
                       <span>Certified Plenary Non-Paper Document</span>
                     </span>
@@ -416,7 +416,7 @@ export function ZenFlexReaderModal({
                         navigator.clipboard.writeText(item.fullDossier || '');
                         alert('Full dossier copied to clipboard.');
                       }}
-                      className="hover:text-white transition flex items-center gap-1.5 text-zinc-400 cursor-pointer"
+                      className="hover:text-white transition flex items-center gap-1.5 text-zinc-400 cursor-pointer font-semibold text-xs"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       <span>Copy Full Text</span>
@@ -447,7 +447,7 @@ export function ZenFlexReaderModal({
                 <button
                   type="submit"
                   disabled={!replyText.trim()}
-                  className="px-4 py-2.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-neutral-200 disabled:opacity-40 transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-neutral-200 disabled:opacity-40 transition flex items-center gap-1.5 cursor-pointer active:scale-95"
                 >
                   <span>Post</span>
                   <Send className="w-3 h-3" />
@@ -457,7 +457,7 @@ export function ZenFlexReaderModal({
               {/* Replies List */}
               <div className="space-y-2.5 max-h-60 overflow-y-auto pt-2">
                 {localReplies.length === 0 ? (
-                  <p className="text-xs font-mono text-neutral-500 py-3 text-center">
+                  <p className="text-xs font-sans text-neutral-400 py-3 text-center">
                     No replies yet. Be the first to deliberate on this thread.
                   </p>
                 ) : (
@@ -469,9 +469,9 @@ export function ZenFlexReaderModal({
                       <CornerDownRight className="w-3.5 h-3.5 text-neutral-500 mt-1 shrink-0" />
                       <div className="space-y-1 min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-white text-[11px]">{rep.authorName}</span>
-                          <span className="text-[10px] text-neutral-500 font-mono">@{rep.authorUsername}</span>
-                          <span className="text-[10px] text-neutral-600 font-mono">&bull; {rep.createdAt}</span>
+                          <span className="font-bold text-white text-[11px] font-sans">{rep.authorName}</span>
+                          <span className="text-[10px] text-neutral-400 font-sans">@{rep.authorUsername}</span>
+                          <span className="text-[10px] text-neutral-500 font-sans">&bull; {rep.createdAt}</span>
                         </div>
                         <p className="text-neutral-300 font-sans leading-relaxed">{rep.content}</p>
                       </div>
@@ -487,7 +487,7 @@ export function ZenFlexReaderModal({
             <div className="flex items-center gap-3">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-mono transition cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-sans font-semibold transition cursor-pointer active:scale-95 ${
                   liked
                     ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
                     : 'bg-white/[0.04] border-white/10 text-neutral-300 hover:text-white'
@@ -499,7 +499,7 @@ export function ZenFlexReaderModal({
 
               <button
                 onClick={handleBookmark}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-mono transition cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-sans font-semibold transition cursor-pointer active:scale-95 ${
                   saved
                     ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
                     : 'bg-white/[0.04] border-white/10 text-neutral-300 hover:text-white'
@@ -512,7 +512,7 @@ export function ZenFlexReaderModal({
 
             <button
               onClick={onClose}
-              className="px-5 py-2 rounded-xl bg-white text-black font-display font-bold text-xs hover:bg-neutral-200 transition cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-white text-black font-display font-bold text-xs hover:bg-neutral-100 transition cursor-pointer active:scale-95"
             >
               Done Reading
             </button>
