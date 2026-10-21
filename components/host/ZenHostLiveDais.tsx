@@ -26,6 +26,7 @@ import {
   AlertCircle,
   Trophy,
   Sliders,
+  Settings,
   Radio,
   BookOpen,
   GraduationCap,
@@ -46,6 +47,7 @@ import {
   CustomHostEventConfig,
 } from '@/types/zenHost';
 import CustomEventBuilderModal from '@/components/host/CustomEventBuilderModal';
+import DaisSettingsModal, { DaisLiveSettings } from '@/components/host/DaisSettingsModal';
 
 interface ZenHostLiveDaisProps {
   sessionCode?: string;
@@ -67,6 +69,27 @@ export default function ZenHostLiveDais({
   // Custom Configuration State (if configured or modular)
   const [customConfig, setCustomConfig] = useState<CustomHostEventConfig | undefined>(propCustomConfig);
   const [isCustomConfigModalOpen, setIsCustomConfigModalOpen] = useState(false);
+
+  // Dais Live Feature Toggles State
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [daisSettings, setDaisSettings] = useState<DaisLiveSettings>(() => ({
+    showQueue: customConfig ? customConfig.enableQueue : true,
+    showOnDeck: customConfig ? customConfig.enableOnDeckCallout : true,
+    showCompletedActs: true,
+    showSessionClock: customConfig ? customConfig.enableMasterTimer : true,
+    enableVoting: customConfig ? customConfig.enableRapidPolls : true,
+    showLiveVoteCount: true,
+    enableApplauseMeter: customConfig ? customConfig.enableApplauseMeter : true,
+    enableStageBroadcast: customConfig ? customConfig.enableStageBroadcasts : true,
+    enableHostNotes: true,
+    enableSounds: customConfig ? customConfig.enableAudioChimes : true,
+    enableWarningBell: true,
+    enableBuzzer: true,
+    enableCheerSound: true,
+    enableTimer: customConfig ? customConfig.enableSpeakerTimer : true,
+    strictCutoff: customConfig ? customConfig.strictCutoff : false,
+    enableScoring: initialFormat === 'competition' || Boolean(customConfig?.enableScoringRubric),
+  }));
 
   // 1. Session Identity
   const [sessionCode] = useState<string>(() => {
@@ -136,7 +159,10 @@ export default function ZenHostLiveDais({
 
   // ── Web Audio API Synthetic Chimes ──────────────────────────────────
   const playSoundEffect = useCallback((type: 'ding' | 'buzzer' | 'applause') => {
-    if (!soundEnabled || typeof window === 'undefined') return;
+    if (!daisSettings.enableSounds || !soundEnabled || typeof window === 'undefined') return;
+    if (type === 'ding' && !daisSettings.enableWarningBell) return;
+    if (type === 'buzzer' && !daisSettings.enableBuzzer) return;
+    if (type === 'applause' && !daisSettings.enableCheerSound) return;
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new AudioCtx();
@@ -190,12 +216,12 @@ export default function ZenHostLiveDais({
     } catch {
       // AudioContext unavailable or blocked by autoplay policy
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, daisSettings.enableSounds, daisSettings.enableWarningBell, daisSettings.enableBuzzer, daisSettings.enableCheerSound]);
 
   // ── Timer Interval Tick ─────────────────────────────────────────────
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isTimerRunning) {
+    if (isTimerRunning && daisSettings.enableTimer) {
       interval = setInterval(() => {
         setRemainingSeconds((prev) => {
           if (prev > 1) {
@@ -205,13 +231,13 @@ export default function ZenHostLiveDais({
             return prev - 1;
           } else if (prev === 1) {
             playSoundEffect('buzzer'); // Time's up gong
-            if (customConfig?.strictCutoff) {
+            if (daisSettings.strictCutoff) {
               setIsTimerRunning(false);
             }
             return 0;
           } else {
             // Count overtime if strict cutoff is false
-            if (customConfig?.strictCutoff) {
+            if (daisSettings.strictCutoff) {
               return 0;
             }
             setOvertimeSeconds((ot) => ot + 1);
@@ -224,7 +250,7 @@ export default function ZenHostLiveDais({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isTimerRunning, playSoundEffect, customConfig?.strictCutoff]);
+  }, [isTimerRunning, playSoundEffect, daisSettings.enableTimer, daisSettings.strictCutoff]);
 
   // ── Keyboard Shortcuts ──────────────────────────────────────────────
   useEffect(() => {
@@ -508,6 +534,17 @@ export default function ZenHostLiveDais({
             <span>Stage Display</span>
           </button>
 
+          {/* Live Settings Modal (Configure Voting, Queue, Timers, Layout, Sounds) */}
+          <button
+            type="button"
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-bold text-amber-300"
+            title="Configure Live Stage Features & Toggles"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Settings</span>
+          </button>
+
           {/* Modular Toggles / Studio Settings */}
           <button
             type="button"
@@ -516,7 +553,7 @@ export default function ZenHostLiveDais({
             title="Configure Modular Event Toggles"
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Toggles</span>
+            <span className="hidden md:inline">Custom Studio</span>
           </button>
 
           {/* Exit Dais */}
@@ -556,8 +593,12 @@ export default function ZenHostLiveDais({
 
       {/* ── 3. MAIN DAIS ARENA ─────────────────────────────────────────────────── */}
       <div className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* ── LEFT/CENTER: THE MAIN STAGE & TIMER CONSOLE (8 Cols) ── */}
-        <main className="lg:col-span-8 flex flex-col space-y-6">
+        {/* ── LEFT/CENTER: THE MAIN STAGE & TIMER CONSOLE (8 Cols or 12 Cols if queue disabled) ── */}
+        <main
+          className={`${
+            daisSettings.showQueue ? 'lg:col-span-8' : 'lg:col-span-12 max-w-5xl mx-auto w-full'
+          } flex flex-col space-y-6`}
+        >
           {/* Active Performer / Speaker Spotlight Card */}
           <div className="relative rounded-3xl bg-[#070b16] border border-white/10 shadow-2xl p-6 sm:p-8 overflow-hidden">
             {/* Ambient Spotlight Glow */}
@@ -604,108 +645,125 @@ export default function ZenHostLiveDais({
               </div>
 
               {/* Total Session Clock */}
-              <div className="px-3.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-right">
-                <div className="text-[9px] uppercase font-mono text-neutral-400">SESSION TIME</div>
-                <div className="text-xs font-mono font-bold text-neutral-200">
-                  {formatTimeMinutesSeconds(sessionTotalSeconds)}
+              {daisSettings.showSessionClock && (
+                <div className="px-3.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-right">
+                  <div className="text-[9px] uppercase font-mono text-neutral-400">SESSION TIME</div>
+                  <div className="text-xs font-mono font-bold text-neutral-200">
+                    {formatTimeMinutesSeconds(sessionTotalSeconds)}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Giant Central Countdown Clock or Open Stage Display */}
+            {daisSettings.enableTimer ? (
+              <div className="py-8 sm:py-12 flex flex-col items-center justify-center relative z-10">
+                <div
+                  className={`font-mono font-black tracking-tighter text-6xl sm:text-8xl md:text-9xl transition-all duration-300 select-none ${
+                    isOvertime
+                      ? 'text-red-500 animate-pulse drop-shadow-[0_0_40px_rgba(239,68,68,0.5)]'
+                      : isWarning
+                      ? 'text-amber-400 drop-shadow-[0_0_35px_rgba(251,191,36,0.4)]'
+                      : 'text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]'
+                  }`}
+                >
+                  {isOvertime ? `+${formatTimeMinutesSeconds(overtimeSeconds)}` : formatTimeMinutesSeconds(remainingSeconds)}
+                </div>
+
+                {/* Overtime or Warning Status Alert */}
+                <div className="h-6 mt-2">
+                  {isOvertime ? (
+                    <span className="px-3 py-1 rounded-full bg-red-950/80 border border-red-500/50 text-red-300 text-xs font-mono font-bold uppercase tracking-widest animate-pulse">
+                      &bull; TIME EXCEEDED / OVERTIME &bull;
+                    </span>
+                  ) : isWarning ? (
+                    <span className="px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 text-xs font-mono font-bold uppercase tracking-widest">
+                      &bull; 30 SECONDS REMAINING &bull;
+                    </span>
+                  ) : (
+                    <span className="text-xs text-neutral-400 font-mono">
+                      Slot Limit: {formatTimeMinutesSeconds(speakerDuration)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Visual Progress Bar */}
+                <div className="w-full max-w-xl h-2.5 bg-white/10 rounded-full mt-6 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      isOvertime
+                        ? 'bg-red-500 w-full'
+                        : isWarning
+                        ? 'bg-gradient-to-r from-amber-500 to-red-400'
+                        : 'bg-gradient-to-r from-cyan-400 to-amber-400'
+                    }`}
+                    style={{
+                      width: isOvertime
+                        ? '100%'
+                        : `${Math.max(0, Math.min(100, (remainingSeconds / speakerDuration) * 100))}%`,
+                    }}
+                  />
                 </div>
               </div>
-            </div>
-
-            {/* Giant Central Countdown Clock */}
-            <div className="py-8 sm:py-12 flex flex-col items-center justify-center relative z-10">
-              <div
-                className={`font-mono font-black tracking-tighter text-6xl sm:text-8xl md:text-9xl transition-all duration-300 select-none ${
-                  isOvertime
-                    ? 'text-red-500 animate-pulse drop-shadow-[0_0_40px_rgba(239,68,68,0.5)]'
-                    : isWarning
-                    ? 'text-amber-400 drop-shadow-[0_0_35px_rgba(251,191,36,0.4)]'
-                    : 'text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]'
-                }`}
-              >
-                {isOvertime ? `+${formatTimeMinutesSeconds(overtimeSeconds)}` : formatTimeMinutesSeconds(remainingSeconds)}
+            ) : (
+              <div className="py-12 flex flex-col items-center justify-center relative z-10 space-y-2">
+                <div className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
+                  OPEN FLOOR STAGE
+                </div>
+                <div className="text-xs text-neutral-400 font-mono">
+                  Countdown Timer Disabled under Settings &bull; Speaking floor is open
+                </div>
               </div>
-
-              {/* Overtime or Warning Status Alert */}
-              <div className="h-6 mt-2">
-                {isOvertime ? (
-                  <span className="px-3 py-1 rounded-full bg-red-950/80 border border-red-500/50 text-red-300 text-xs font-mono font-bold uppercase tracking-widest animate-pulse">
-                    &bull; TIME EXCEEDED / OVERTIME &bull;
-                  </span>
-                ) : isWarning ? (
-                  <span className="px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 text-xs font-mono font-bold uppercase tracking-widest">
-                    &bull; 30 SECONDS REMAINING &bull;
-                  </span>
-                ) : (
-                  <span className="text-xs text-neutral-400 font-mono">
-                    Slot Limit: {formatTimeMinutesSeconds(speakerDuration)}
-                  </span>
-                )}
-              </div>
-
-              {/* Visual Progress Bar */}
-              <div className="w-full max-w-xl h-2.5 bg-white/10 rounded-full mt-6 overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-300 ${
-                    isOvertime
-                      ? 'bg-red-500 w-full'
-                      : isWarning
-                      ? 'bg-gradient-to-r from-amber-500 to-red-400'
-                      : 'bg-gradient-to-r from-cyan-400 to-amber-400'
-                  }`}
-                  style={{
-                    width: isOvertime
-                      ? '100%'
-                      : `${Math.max(0, Math.min(100, (remainingSeconds / speakerDuration) * 100))}%`,
-                  }}
-                />
-              </div>
-            </div>
+            )}
 
             {/* Direct Stage Control Bar */}
             <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-white/10 relative z-10">
               {/* Play / Pause Toggle */}
-              <button
-                type="button"
-                onClick={() => setIsTimerRunning((prev) => !prev)}
-                className={`px-8 py-3.5 rounded-2xl font-black text-sm uppercase tracking-wider transition shadow-xl active:scale-95 flex items-center gap-2 cursor-pointer ${
-                  isTimerRunning
-                    ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/25 ring-2 ring-amber-300'
-                    : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black shadow-emerald-500/25'
-                }`}
-              >
-                {isTimerRunning ? (
-                  <>
-                    <Pause className="w-4 h-4 fill-current" />
-                    <span>Pause (Space)</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 fill-current" />
-                    <span>Start (Space)</span>
-                  </>
-                )}
-              </button>
+              {daisSettings.enableTimer && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setIsTimerRunning((prev) => !prev)}
+                    className={`px-8 py-3.5 rounded-2xl font-black text-sm uppercase tracking-wider transition shadow-xl active:scale-95 flex items-center gap-2 cursor-pointer ${
+                      isTimerRunning
+                        ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/25 ring-2 ring-amber-300'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black shadow-emerald-500/25'
+                    }`}
+                  >
+                    {isTimerRunning ? (
+                      <>
+                        <Pause className="w-4 h-4 fill-current" />
+                        <span>Pause (Space)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 fill-current" />
+                        <span>Start (Space)</span>
+                      </>
+                    )}
+                  </button>
 
-              {/* Reset Timer */}
-              <button
-                type="button"
-                onClick={handleResetTimer}
-                className="p-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-neutral-300 hover:text-white transition active:scale-95"
-                title="Reset Timer (R)"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
+                  {/* Reset Timer */}
+                  <button
+                    type="button"
+                    onClick={handleResetTimer}
+                    className="p-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-neutral-300 hover:text-white transition active:scale-95"
+                    title="Reset Timer (R)"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
 
-              {/* Add 30s Extension */}
-              <button
-                type="button"
-                onClick={handleAddThirtySeconds}
-                className="px-4 py-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-xs font-mono font-bold text-neutral-200 hover:text-white transition active:scale-95"
-                title="Add 30 Seconds"
-              >
-                +30s
-              </button>
+                  {/* Add 30s Extension */}
+                  <button
+                    type="button"
+                    onClick={handleAddThirtySeconds}
+                    className="px-4 py-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-xs font-mono font-bold text-neutral-200 hover:text-white transition active:scale-95"
+                    title="Add 30 Seconds"
+                  >
+                    +30s
+                  </button>
+                </>
+              )}
 
               {/* Advance to Next Performer */}
               <button
@@ -719,40 +777,48 @@ export default function ZenHostLiveDais({
               </button>
 
               {/* Sound FX Triggers */}
-              <div className="flex items-center gap-1.5 ml-2 border-l border-white/10 pl-3">
-                <button
-                  type="button"
-                  onClick={() => playSoundEffect('ding')}
-                  className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-amber-500/20 hover:border-amber-400/40 text-amber-300 text-xs font-bold transition flex items-center gap-1.5"
-                  title="Trigger Warning Bell (D)"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>Ding</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => playSoundEffect('buzzer')}
-                  className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-red-500/20 hover:border-red-400/40 text-red-300 text-xs font-bold transition flex items-center gap-1.5"
-                  title="Trigger Stage Buzzer (B)"
-                >
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Buzzer</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={triggerCheer}
-                  className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-emerald-500/20 hover:border-emerald-400/40 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5"
-                  title="Trigger Crowd Cheer & Claps (A)"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Cheer</span>
-                </button>
-              </div>
+              {daisSettings.enableSounds && (
+                <div className="flex items-center gap-1.5 ml-2 border-l border-white/10 pl-3">
+                  {daisSettings.enableWarningBell && (
+                    <button
+                      type="button"
+                      onClick={() => playSoundEffect('ding')}
+                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-amber-500/20 hover:border-amber-400/40 text-amber-300 text-xs font-bold transition flex items-center gap-1.5"
+                      title="Trigger Warning Bell (D)"
+                    >
+                      <Bell className="w-3.5 h-3.5" />
+                      <span>Ding</span>
+                    </button>
+                  )}
+                  {daisSettings.enableBuzzer && (
+                    <button
+                      type="button"
+                      onClick={() => playSoundEffect('buzzer')}
+                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-red-500/20 hover:border-red-400/40 text-red-300 text-xs font-bold transition flex items-center gap-1.5"
+                      title="Trigger Stage Buzzer (B)"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>Buzzer</span>
+                    </button>
+                  )}
+                  {daisSettings.enableCheerSound && (
+                    <button
+                      type="button"
+                      onClick={triggerCheer}
+                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-emerald-500/20 hover:border-emerald-400/40 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5"
+                      title="Trigger Crowd Cheer & Claps (A)"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Cheer</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           {/* On Deck Preview Banner */}
-          {queue.length > 0 && (
+          {daisSettings.showOnDeck && queue.length > 0 && (
             <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-black uppercase tracking-wider">
@@ -780,78 +846,96 @@ export default function ZenHostLiveDais({
           )}
 
           {/* Host Fast Tool Tabs (Interactive / Competition Rubric / Broadcast / Notes) */}
-          <div className="rounded-3xl bg-[#070b16] border border-white/10 p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('interactive')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    activeTab === 'interactive'
-                      ? 'bg-amber-500 text-black shadow'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
-                >
-                  <BarChart2 className="w-3.5 h-3.5" />
-                  <span>Rapid Polls &amp; Alerts</span>
-                </button>
-
-                {format === 'competition' && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('scoring')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                      activeTab === 'scoring'
-                        ? 'bg-amber-500 text-black shadow'
-                        : 'text-neutral-400 hover:text-white'
-                    }`}
-                  >
-                    <Trophy className="w-3.5 h-3.5" />
-                    <span>Judge Rubric</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('notes')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                    activeTab === 'notes'
-                      ? 'bg-amber-500 text-black shadow'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>Host Stage Notes</span>
-                </button>
-              </div>
-
-              {/* Applause Meter Indicator */}
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="text-[10px] font-mono text-neutral-400">ENERGY METER</span>
-                <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-amber-400 to-red-500 transition-all duration-300"
-                    style={{ width: `${applauseMeter}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Tab: Interactive Polls & Alerts */}
-            {activeTab === 'interactive' && (
-              <div className="space-y-4">
-                {/* Instant Lower-Third Broadcast Alert */}
+          {(daisSettings.enableVoting || daisSettings.enableScoring || daisSettings.enableHostNotes || daisSettings.enableApplauseMeter) && (
+            <div className="rounded-3xl bg-[#070b16] border border-white/10 p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={announcementText}
-                    onChange={(e) => setAnnouncementText(e.target.value)}
-                    placeholder="Type an announcement to broadcast across stage displays & attendee phones..."
-                    className="flex-1 bg-black/50 border border-white/15 rounded-xl px-4 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
+                  {daisSettings.enableVoting && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('interactive')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        activeTab === 'interactive'
+                          ? 'bg-amber-500 text-black shadow'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <BarChart2 className="w-3.5 h-3.5" />
+                      <span>Rapid Polls &amp; Alerts</span>
+                    </button>
+                  )}
+
+                  {daisSettings.enableScoring && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('scoring')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        activeTab === 'scoring'
+                          ? 'bg-amber-500 text-black shadow'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <Trophy className="w-3.5 h-3.5" />
+                      <span>Judge Rubric</span>
+                    </button>
+                  )}
+
+                  {daisSettings.enableHostNotes && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('notes')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        activeTab === 'notes'
+                          ? 'bg-amber-500 text-black shadow'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>Host Stage Notes</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Applause Meter Indicator */}
+                {daisSettings.enableApplauseMeter && (
+                  <div className="hidden sm:flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-neutral-400">ENERGY METER</span>
+                    <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-400 to-red-500 transition-all duration-300"
+                        style={{ width: `${applauseMeter}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tab: Interactive Polls & Alerts */}
+              {activeTab === 'interactive' && daisSettings.enableVoting && (
+                <div className="space-y-4">
+                  {/* Instant Lower-Third Broadcast Alert */}
+                  {daisSettings.enableStageBroadcast && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={announcementText}
+                        onChange={(e) => setAnnouncementText(e.target.value)}
+                        placeholder="Type an announcement to broadcast across stage displays & attendee phones..."
+                        className="flex-1 bg-black/50 border border-white/15 rounded-xl px-4 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (announcementText.trim()) {
+                            setIsBroadcastBannerActive(true);
+                          }
+                        }}
+                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0"
+                      >
+                        Broadcast Alert
+                      </button>
+                    </div>
+                  )}
                       if (announcementText.trim()) {
                         setIsBroadcastBannerActive(true);
                       }
@@ -1029,166 +1113,168 @@ export default function ZenHostLiveDais({
         </main>
 
         {/* ── RIGHT COLUMN: STAGE QUEUE & LINEUP (4 Cols) ── */}
-        <aside className="lg:col-span-4 rounded-3xl bg-[#070b16] border border-white/10 shadow-2xl p-6 flex flex-col space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <div>
-              <div className="text-[10px] font-mono font-bold tracking-widest text-amber-400 uppercase">
-                {format === 'open_mic' ? 'PERFORMER LINEUP' : 'STAGE QUEUE'}
+        {daisSettings.showQueue && (
+          <aside className="lg:col-span-4 rounded-3xl bg-[#070b16] border border-white/10 shadow-2xl p-6 flex flex-col space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <div className="text-[10px] font-mono font-bold tracking-widest text-amber-400 uppercase">
+                  {format === 'open_mic' ? 'PERFORMER LINEUP' : 'STAGE QUEUE'}
+                </div>
+                <h3 className="text-lg font-black text-white">
+                  Queue ({queue.length})
+                </h3>
               </div>
-              <h3 className="text-lg font-black text-white">
-                Queue ({queue.length})
-              </h3>
+
+              <button
+                type="button"
+                onClick={() => setIsAddPerformerOpen((prev) => !prev)}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Performer</span>
+              </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setIsAddPerformerOpen((prev) => !prev)}
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Performer</span>
-            </button>
-          </div>
-
-          {/* Quick Inline Add Form */}
-          {isAddPerformerOpen && (
-            <form onSubmit={handleAddPerformer} className="p-4 rounded-2xl bg-black/60 border border-amber-500/30 space-y-3">
-              <div className="text-xs font-bold text-amber-300">
-                Add Act to {formatPreset.name}
-              </div>
-              <input
-                type="text"
-                value={newPerformerName}
-                onChange={(e) => setNewPerformerName(e.target.value)}
-                placeholder="Performer / Speaker name..."
-                required
-                className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
-              />
-              <input
-                type="text"
-                value={newPerformerAct}
-                onChange={(e) => setNewPerformerAct(e.target.value)}
-                placeholder="Act / Piece title (e.g. Acoustic Set, Standup)..."
-                className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
-              />
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-neutral-400 font-mono">Slot (mins):</span>
+            {/* Quick Inline Add Form */}
+            {isAddPerformerOpen && (
+              <form onSubmit={handleAddPerformer} className="p-4 rounded-2xl bg-black/60 border border-amber-500/30 space-y-3">
+                <div className="text-xs font-bold text-amber-300">
+                  Add Act to {formatPreset.name}
+                </div>
                 <input
-                  type="number"
-                  min="1"
-                  max="60"
-                  value={newPerformerMinutes}
-                  onChange={(e) => setNewPerformerMinutes(e.target.value)}
-                  className="w-16 bg-white/[0.05] border border-white/15 rounded-xl px-2 py-1 text-xs text-white text-center font-mono"
+                  type="text"
+                  value={newPerformerName}
+                  onChange={(e) => setNewPerformerName(e.target.value)}
+                  placeholder="Performer / Speaker name..."
+                  required
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
                 />
-                <button
-                  type="submit"
-                  className="flex-1 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs transition"
-                >
-                  Push to Lineup
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Lineup List */}
-          <div className="flex-1 overflow-y-auto space-y-2 max-h-[480px] pr-1">
-            {queue.length === 0 ? (
-              <div className="py-12 px-4 rounded-2xl border border-dashed border-white/10 text-center space-y-3">
-                <Users className="w-8 h-8 text-neutral-600 mx-auto" />
-                <div className="text-xs text-neutral-400 leading-relaxed">
-                  Lineup is currently empty.
+                <input
+                  type="text"
+                  value={newPerformerAct}
+                  onChange={(e) => setNewPerformerAct(e.target.value)}
+                  placeholder="Act / Piece title (e.g. Acoustic Set, Standup)..."
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-neutral-400 font-mono">Slot (mins):</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={newPerformerMinutes}
+                    onChange={(e) => setNewPerformerMinutes(e.target.value)}
+                    className="w-16 bg-white/[0.05] border border-white/15 rounded-xl px-2 py-1 text-xs text-white text-center font-mono"
+                  />
+                  <button
+                    type="submit"
+                    className="flex-1 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs transition"
+                  >
+                    Push to Lineup
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddPerformerOpen(true)}
-                  className="text-xs font-bold text-amber-400 hover:text-amber-300 underline"
-                >
-                  + Add First Performer
-                </button>
-              </div>
-            ) : (
-              queue.map((item, idx) => (
-                <div
-                  key={item.id}
-                  className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition flex items-center justify-between gap-3 group"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 font-mono text-[10px] flex items-center justify-center text-neutral-400 shrink-0">
-                      #{idx + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold text-white truncate">
-                        {item.participantName}
-                      </div>
-                      <div className="text-[10px] text-neutral-400 truncate flex items-center gap-1.5">
-                        {item.titleOrAct && <span>{item.titleOrAct} &bull;</span>}
-                        <span>{formatTimeMinutesSeconds(item.slotDurationSeconds)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Queue Control Buttons */}
-                  <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={() => handlePutOnStage(item)}
-                      className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 text-[10px] font-bold transition"
-                      title="Put on Stage Now"
-                    >
-                      Stage
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveQueue(idx, 'up')}
-                      disabled={idx === 0}
-                      className="p-1 text-neutral-400 hover:text-white disabled:opacity-20"
-                    >
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveQueue(idx, 'down')}
-                      disabled={idx === queue.length - 1}
-                      className="p-1 text-neutral-400 hover:text-white disabled:opacity-20"
-                    >
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFromQueue(item.id)}
-                      className="p-1 text-neutral-500 hover:text-red-400"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))
+              </form>
             )}
-          </div>
 
-          {/* Completed Acts Drawer Preview */}
-          {completedQueue.length > 0 && (
-            <div className="border-t border-white/10 pt-4 space-y-2">
-              <div className="text-[10px] font-mono text-neutral-400 uppercase">
-                COMPLETED ACTS ({completedQueue.length})
-              </div>
-              <div className="max-h-28 overflow-y-auto space-y-1.5">
-                {completedQueue.map((item) => (
+            {/* Lineup List */}
+            <div className="flex-1 overflow-y-auto space-y-2 max-h-[480px] pr-1">
+              {queue.length === 0 ? (
+                <div className="py-12 px-4 rounded-2xl border border-dashed border-white/10 text-center space-y-3">
+                  <Users className="w-8 h-8 text-neutral-600 mx-auto" />
+                  <div className="text-xs text-neutral-400 leading-relaxed">
+                    Lineup is currently empty.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddPerformerOpen(true)}
+                    className="text-xs font-bold text-amber-400 hover:text-amber-300 underline"
+                  >
+                    + Add First Performer
+                  </button>
+                </div>
+              ) : (
+                queue.map((item, idx) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between text-xs text-neutral-400 px-2 py-1 rounded-lg bg-white/[0.02]"
+                    className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition flex items-center justify-between gap-3 group"
                   >
-                    <span className="truncate">{item.participantName}</span>
-                    <span className="font-mono text-[10px] text-emerald-400 shrink-0">
-                      {formatTimeMinutesSeconds(item.timeSpokenSeconds)}
-                    </span>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 font-mono text-[10px] flex items-center justify-center text-neutral-400 shrink-0">
+                        #{idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-white truncate">
+                          {item.participantName}
+                        </div>
+                        <div className="text-[10px] text-neutral-400 truncate flex items-center gap-1.5">
+                          {item.titleOrAct && <span>{item.titleOrAct} &bull;</span>}
+                          <span>{formatTimeMinutesSeconds(item.slotDurationSeconds)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Queue Control Buttons */}
+                    <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition">
+                      <button
+                        type="button"
+                        onClick={() => handlePutOnStage(item)}
+                        className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 text-[10px] font-bold transition"
+                        title="Put on Stage Now"
+                      >
+                        Stage
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveQueue(idx, 'up')}
+                        disabled={idx === 0}
+                        className="p-1 text-neutral-400 hover:text-white disabled:opacity-20"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveQueue(idx, 'down')}
+                        disabled={idx === queue.length - 1}
+                        className="p-1 text-neutral-400 hover:text-white disabled:opacity-20"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFromQueue(item.id)}
+                        className="p-1 text-neutral-500 hover:text-red-400"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
             </div>
-          )}
-        </aside>
+
+            {/* Completed Acts Drawer Preview */}
+            {daisSettings.showCompletedActs && completedQueue.length > 0 && (
+              <div className="border-t border-white/10 pt-4 space-y-2">
+                <div className="text-[10px] font-mono text-neutral-400 uppercase">
+                  COMPLETED ACTS ({completedQueue.length})
+                </div>
+                <div className="max-h-28 overflow-y-auto space-y-1.5">
+                  {completedQueue.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between text-xs text-neutral-400 px-2 py-1 rounded-lg bg-white/[0.02]"
+                    >
+                      <span className="truncate">{item.participantName}</span>
+                      <span className="font-mono text-[10px] text-emerald-400 shrink-0">
+                        {formatTimeMinutesSeconds(item.timeSpokenSeconds)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </aside>
+        )}
       </div>
 
       {/* ── 4. FOOTER TELEMETRY & HOTKEY CHEATSHEET ─────────────────────────── */}
@@ -1221,6 +1307,17 @@ export default function ZenHostLiveDais({
           setSpeakerDuration(newCfg.speakerTimerSeconds);
           setRemainingSeconds(newCfg.speakerTimerSeconds);
           setSoundEnabled(newCfg.enableAudioChimes);
+          setDaisSettings((prev) => ({
+            ...prev,
+            showQueue: newCfg.enableQueue,
+            showOnDeck: newCfg.enableOnDeckCallout,
+            enableVoting: newCfg.enableRapidPolls,
+            enableStageBroadcast: newCfg.enableStageBroadcasts,
+            enableApplauseMeter: newCfg.enableApplauseMeter,
+            enableSounds: newCfg.enableAudioChimes,
+            strictCutoff: newCfg.strictCutoff,
+            enableScoring: newCfg.enableScoringRubric,
+          }));
           if (newCfg.rubricCriteria?.length) {
             const rubricMap: { [k: string]: number } = {};
             newCfg.rubricCriteria.forEach((c) => {
@@ -1230,6 +1327,34 @@ export default function ZenHostLiveDais({
           }
           setIsCustomConfigModalOpen(false);
         }}
+      />
+
+      {/* ── 6. LIVE FEATURE TOGGLES SETTINGS MODAL ──────────────────────────── */}
+      <DaisSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        settings={daisSettings}
+        onUpdateSettings={setDaisSettings}
+        onResetDefaults={() =>
+          setDaisSettings({
+            showQueue: true,
+            showOnDeck: true,
+            showCompletedActs: true,
+            showSessionClock: true,
+            enableVoting: true,
+            showLiveVoteCount: true,
+            enableApplauseMeter: true,
+            enableStageBroadcast: true,
+            enableHostNotes: true,
+            enableSounds: true,
+            enableWarningBell: true,
+            enableBuzzer: true,
+            enableCheerSound: true,
+            enableTimer: true,
+            strictCutoff: false,
+            enableScoring: format === 'competition',
+          })
+        }
       />
     </div>
   );
