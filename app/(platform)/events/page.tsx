@@ -19,6 +19,7 @@ import { useAccountCapabilities } from '@/hooks/useAccountCapabilities';
 import { EventAccessGate } from '@/components/events/EventAccessGate';
 import { useAuth } from '@/context/AuthContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
+import { SignInPromptModal } from '@/components/auth/SignInPromptModal';
 
 function EventsViewSwitcher() {
   const { activeView, setActiveView } = useZenEvents();
@@ -181,11 +182,43 @@ function EventsContent() {
 }
 
 export default function EventsPage() {
+  const { isAuthenticated, isMockMode, profile } = useAuth();
+  const [showSignInModal, setShowSignInModal] = useState(false);
+
+  useEffect(() => {
+    const hasLoggedIn = isAuthenticated || isMockMode || Boolean(profile?.id);
+    if (!hasLoggedIn) {
+      try {
+        const dismissed = sessionStorage.getItem('zenvitra_signin_prompt_dismissed_summits');
+        if (!dismissed) {
+          const timer = setTimeout(() => {
+            setShowSignInModal(true);
+          }, 600);
+          return () => clearTimeout(timer);
+        }
+      } catch {
+        setShowSignInModal(true);
+      }
+    }
+  }, [isAuthenticated, isMockMode, profile]);
+
+  const handleClose = () => {
+    setShowSignInModal(false);
+    try {
+      sessionStorage.setItem('zenvitra_signin_prompt_dismissed_summits', 'true');
+    } catch {}
+  };
+
   return (
     <ZenPassProvider>
       <Suspense fallback={<div className="min-h-[75vh] flex items-center justify-center text-xs font-mono text-neutral-400">Loading Events Hub...</div>}>
         <EventsContent />
       </Suspense>
+      <SignInPromptModal
+        isOpen={showSignInModal}
+        onClose={handleClose}
+        feature="summits"
+      />
     </ZenPassProvider>
   );
 }
