@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ShieldCheck, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, FileText, CheckCircle2, AlertCircle, Scale, X, ExternalLink } from 'lucide-react';
 
 interface LegalGateModalProps {
   isOpen: boolean;
-  type: 'PRIVACY' | 'TOS';
+  type: 'PRIVACY' | 'TOS' | 'CONSTITUTION';
   onComplete: () => void;
+  onClose?: () => void;
   isMinor?: boolean;
 }
 
-export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateModalProps) {
+export function LegalGateModal({ isOpen, type, onComplete, onClose, isMinor }: LegalGateModalProps) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
@@ -73,30 +74,60 @@ export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateM
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="max-w-2xl w-full bg-[#07080b] border border-white/10 rounded-[2rem] overflow-hidden flex flex-col max-h-[85vh] shadow-2xl">
+      <div className="max-w-2xl w-full bg-[#07080b] border border-white/10 rounded-[2rem] overflow-hidden flex flex-col max-h-[85vh] shadow-2xl relative">
         
         {/* Modal Header */}
         <div className="p-6 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-300">
-              {type === 'PRIVACY' ? <ShieldCheck className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              isMinor 
+                ? 'bg-amber-400/10 border border-amber-400/20 text-amber-300' 
+                : 'bg-cyan-400/10 border border-cyan-400/20 text-cyan-300'
+            }`}>
+              {type === 'PRIVACY' ? (
+                <ShieldCheck className="w-5 h-5" />
+              ) : type === 'TOS' ? (
+                <FileText className="w-5 h-5" />
+              ) : (
+                <Scale className="w-5 h-5" />
+              )}
             </div>
             <div>
-              <h3 className="font-sans text-lg text-white font-semibold">
+              <h3 className="font-sans text-lg text-white font-semibold flex items-center gap-2">
                 {type === 'PRIVACY' 
                   ? (isMinor ? 'Under-18 Privacy & Parental Consent Policy' : 'Sovereign Privacy Charter') 
-                  : (isMinor ? 'Minor Terms of Service & Parental Consent Accord' : 'Platform Terms of Service')}
+                  : type === 'TOS'
+                  ? (isMinor ? 'Minor Terms of Service & Parental Consent Accord' : 'Platform Terms of Service')
+                  : 'ZENVITRA Sovereign Youth Constitution'}
               </h3>
               <p className="font-mono text-[11px] text-neutral-400">
-                {isMinor 
+                {type === 'CONSTITUTION'
+                  ? 'Guiding charter for democratic youth assembly, high-signal diplomacy, and ethical participation.'
+                  : isMinor 
                   ? 'Dedicated Under-18 safeguards under DPDP Act, 2023. Scroll to unlock.' 
                   : 'Scroll to the bottom of the document to unlock confirmation.'}
               </p>
             </div>
           </div>
-          <span className="font-mono text-[10px] px-2.5 py-1 rounded-full bg-white/5 text-amber-300 border border-white/5 uppercase tracking-widest">
-            {isMinor ? 'Under-18 Gate' : 'Step Gate'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`font-mono text-[10px] px-2.5 py-1 rounded-full uppercase tracking-widest border ${
+              isMinor 
+                ? 'bg-amber-500/10 text-amber-300 border-amber-500/20' 
+                : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20'
+            }`}>
+              {type === 'CONSTITUTION' ? 'Youth Accord' : isMinor ? 'Under-18 Gate' : 'Step Gate'}
+            </span>
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Scrollable Container */}
@@ -130,19 +161,20 @@ export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateM
                   </div>
                   <div>
                     <a
-                      href="/privacy/minor"
+                      href="/minor-privacy"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block mt-1 text-amber-300 underline font-mono text-[11px] hover:text-white"
+                      className="inline-flex items-center gap-1 mt-1 text-amber-300 underline font-mono text-[11px] hover:text-white"
                     >
-                      Read Complete 6-Part Minor Privacy Policy (Opens in new tab) &rarr;
+                      <span>Read Complete 6-Part Minor Privacy Policy (Opens in new tab)</span>
+                      <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <p className="font-mono text-amber-300 uppercase tracking-widest">
+                <p className="font-mono text-cyan-300 uppercase tracking-widest">
                   [ZENVITRA PROTOCOL: ZERO SURVEILLANCE INVARIANT]
                 </p>
                 <p>
@@ -164,15 +196,16 @@ export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateM
                       href="/privacy"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-cyan-300 underline font-mono text-[11px] hover:text-white"
+                      className="inline-flex items-center gap-1 text-cyan-300 underline font-mono text-[11px] hover:text-white"
                     >
-                      Read Complete 22-Part Standard Privacy Policy (Opens in new tab) &rarr;
+                      <span>Read Complete 22-Part Standard Privacy Policy (Opens in new tab)</span>
+                      <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 </div>
               </>
             )
-          ) : (
+          ) : type === 'TOS' ? (
             isMinor ? (
               <>
                 <p className="font-mono text-amber-300 uppercase tracking-widest">
@@ -197,19 +230,20 @@ export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateM
                   </div>
                   <div>
                     <a
-                      href="/terms/minor"
+                      href="/minor-terms"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block mt-1 text-amber-300 underline font-mono text-[11px] hover:text-white"
+                      className="inline-flex items-center gap-1 mt-1 text-amber-300 underline font-mono text-[11px] hover:text-white"
                     >
-                      Read Complete 8-Section Minor Terms of Service (Opens in new tab) &rarr;
+                      <span>Read Complete 8-Section Minor Terms of Service (Opens in new tab)</span>
+                      <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <p className="font-mono text-amber-300 uppercase tracking-widest">
+                <p className="font-mono text-cyan-300 uppercase tracking-widest">
                   [ZENVITRA PROTOCOL: DELEGATE CODE &amp; TERMS]
                 </p>
                 <p>
@@ -231,14 +265,51 @@ export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateM
                       href="/terms"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-cyan-300 underline font-mono text-[11px] hover:text-white"
+                      className="inline-flex items-center gap-1 text-cyan-300 underline font-mono text-[11px] hover:text-white"
                     >
-                      Read Complete 46-Section Standard Terms of Service (Opens in new tab) &rarr;
+                      <span>Read Complete 46-Section Standard Terms of Service (Opens in new tab)</span>
+                      <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 </div>
               </>
             )
+          ) : (
+            /* CONSTITUTION */
+            <>
+              <p className="font-mono text-cyan-300 uppercase tracking-widest">
+                [ZENVITRA SOVEREIGN YOUTH CONSTITUTION — FUNDAMENTAL CANONS]
+              </p>
+              <p>
+                <strong>Article I — Sovereign Freedom of Expression:</strong> Every student, delegate, and youth thinker retains the inalienable right to intellectual exploration, diplomatic dissent, and creative discourse without fear of partisan retribution.
+              </p>
+              <p>
+                <strong>Article II — High-Signal Civic Decorum:</strong> Civil discourse demands rigorous argumentation over ad-hominem attacks. Defamation, coordinated harassment, hate speech, and bad-faith manipulation violate the sovereign covenant and warrant immediate node revocation.
+              </p>
+              <p>
+                <strong>Article III — Youth Democracy &amp; Bill Voting:</strong> Every verified youth citizen holds equal franchise in platform plebiscites, bill ratifications, motion debates, and consensus governance across the /vote and /mun assemblies.
+              </p>
+              <p>
+                <strong>Article IV — Anti-Doxxing &amp; Identity Sovereignty:</strong> No member&apos;s real-world private coordinates, physical residence, school registry, or family telephone numbers may be published, disclosed, or extorted. Identity sovereignty is protected by end-to-end client cryptographic principles.
+              </p>
+              <p>
+                <strong>Article V — 10% Public School Computing Aid:</strong> ZENVITRA operates an unalterable civic tithe: at least 10% of revenue is dedicated to installing open-source computer workstations in underprivileged schools, verified on an open public ledger.
+              </p>
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-neutral-400 space-y-2">
+                <div>By acknowledging the Constitution, you bind your node to these democratic, high-signal principles.</div>
+                <div>
+                  <a
+                    href="/constitution"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-cyan-300 underline font-mono text-[11px] hover:text-white"
+                  >
+                    <span>Read Full 7-Article Sovereign Youth Constitution (Opens in new tab)</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            </>
           )}
 
           {/* Sentinel Element Target */}
@@ -259,14 +330,29 @@ export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateM
             )}
           </div>
 
-          <button
-            type="button"
-            disabled={!hasScrolledToBottom}
-            onClick={onComplete}
-            className="px-6 py-2.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition disabled:opacity-30 disabled:cursor-not-allowed shadow-lg cursor-pointer"
-          >
-            Acknowledge &amp; Continue
-          </button>
+          <div className="flex items-center gap-3">
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-full bg-white/5 text-neutral-300 hover:text-white font-mono text-xs hover:bg-white/10 transition cursor-pointer"
+              >
+                Close
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={!hasScrolledToBottom}
+              onClick={onComplete}
+              className={`px-6 py-2.5 rounded-full font-mono text-xs font-semibold transition disabled:opacity-30 disabled:cursor-not-allowed shadow-lg cursor-pointer ${
+                isMinor 
+                  ? 'bg-amber-400 text-black hover:bg-amber-300' 
+                  : 'bg-white text-black hover:bg-neutral-200'
+              }`}
+            >
+              Acknowledge Accord &rarr;
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -35,7 +35,9 @@ import {
   Radio,
   CheckCircle2,
   Calendar,
-  Shield
+  Shield,
+  Scale,
+  ExternalLink
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { LegalGateModal } from '@/components/auth/LegalGateModal';
@@ -151,11 +153,11 @@ export default function RegisterPage() {
   const [sovereignKey, setSovereignKey] = useState('');
   const [hasCopiedKey, setHasCopiedKey] = useState(false);
 
-  // Legal Gate Flags
-  const [agreedTerms, setAgreedTerms] = useState(false);
-  const [hasReadPrivacy, setHasReadPrivacy] = useState(false);
-  const [hasReadToS, setHasReadToS] = useState(false);
-  const [activeModal, setActiveModal] = useState<'PRIVACY' | 'TOS' | null>(null);
+  // Legal Gate Flags - Separate checkboxes for ToS, Privacy, Constitution, and Minor Accord
+  const [agreedToS, setAgreedToS] = useState(false);
+  const [agreedPrivacy, setAgreedPrivacy] = useState(false);
+  const [agreedConstitution, setAgreedConstitution] = useState(false);
+  const [activeModal, setActiveModal] = useState<'PRIVACY' | 'TOS' | 'CONSTITUTION' | null>(null);
 
   // UI Telemetry
   const [loading, setLoading] = useState(false);
@@ -186,34 +188,15 @@ export default function RegisterPage() {
     setTimeout(() => setHasCopiedKey(false), 2000);
   };
 
-  const handleCheckboxToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.checked) {
-      setAgreedTerms(false);
-      return;
+  const handleModalCompleted = () => {
+    if (activeModal === 'PRIVACY') {
+      setAgreedPrivacy(true);
+    } else if (activeModal === 'TOS') {
+      setAgreedToS(true);
+    } else if (activeModal === 'CONSTITUTION') {
+      setAgreedConstitution(true);
     }
-    if (!hasReadPrivacy) {
-      setActiveModal('PRIVACY');
-    } else if (!hasReadToS) {
-      setActiveModal('TOS');
-    } else {
-      setAgreedTerms(true);
-    }
-  };
-
-  const handlePrivacyCompleted = () => {
-    setHasReadPrivacy(true);
     setActiveModal(null);
-    if (!hasReadToS) {
-      setTimeout(() => setActiveModal('TOS'), 300);
-    } else {
-      setAgreedTerms(true);
-    }
-  };
-
-  const handleToSCompleted = () => {
-    setHasReadToS(true);
-    setActiveModal(null);
-    setAgreedTerms(true);
   };
 
   const handleNextStep1 = (e: React.FormEvent) => {
@@ -246,11 +229,24 @@ export default function RegisterPage() {
 
   const handleFinalMintSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreedTerms) {
-      setErrorMessage('You must review and accept the Terms of Service and Privacy Policy.');
+    const isMinor = Boolean(age) && Number(age) < 18;
+    if (!agreedToS) {
+      setErrorMessage(isMinor 
+        ? 'Please review and accept the Minor Terms of Service.' 
+        : 'Please review and accept the Platform Terms of Service.');
       return;
     }
-    if (Number(age) < 18 && !minorConfirmed) {
+    if (!agreedPrivacy) {
+      setErrorMessage(isMinor 
+        ? 'Please review and accept the Under-18 Privacy Policy.' 
+        : 'Please review and accept the Privacy Policy.');
+      return;
+    }
+    if (!agreedConstitution) {
+      setErrorMessage('Please review and accept the ZENVITRA Sovereign Youth Constitution.');
+      return;
+    }
+    if (isMinor && !minorConfirmed) {
       setErrorMessage('Under-18 users must review and acknowledge the minor consent declaration.');
       return;
     }
@@ -796,71 +792,223 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  {/* Legal Gate Checkbox */}
-                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
-                    <label className="flex items-start gap-2.5 cursor-pointer text-xs select-none">
-                      <input
-                        type="checkbox"
-                        checked={agreedTerms}
-                        onChange={handleCheckboxToggle}
-                        className="mt-0.5 w-4 h-4 rounded border-white/20 bg-black text-cyan-400 focus:ring-0 cursor-pointer"
-                      />
-                      <span className="text-neutral-300 text-[11px] leading-snug">
-                        {Boolean(age) && Number(age) < 18 ? (
-                          <>
-                            I confirm this identity, agree to ZENVITRA&apos;s{' '}
-                            <button
-                              type="button"
-                              onClick={() => setActiveModal('TOS')}
-                              className="text-amber-300 font-semibold underline hover:text-white"
-                            >
-                              Minor Terms of Service &amp; Parental Consent Accord
-                            </button>{' '}
-                            and acknowledge its{' '}
-                            <button
-                              type="button"
-                              onClick={() => setActiveModal('PRIVACY')}
-                              className="text-amber-300 font-semibold underline hover:text-white"
-                            >
-                              Under-18 User Protection &amp; Parental Consent Policy
-                            </button>.
-                          </>
-                        ) : (
-                          <>
-                            I confirm this identity, agree to ZENVITRA&apos;s{' '}
-                            <button
-                              type="button"
-                              onClick={() => setActiveModal('TOS')}
-                              className="text-white font-semibold underline hover:text-cyan-300"
-                            >
-                              Terms of Service
-                            </button>{' '}
-                            and acknowledge its{' '}
-                            <button
-                              type="button"
-                              onClick={() => setActiveModal('PRIVACY')}
-                              className="text-white font-semibold underline hover:text-cyan-300"
-                            >
-                              Privacy Policy
-                            </button>.
-                          </>
-                        )}
-                      </span>
-                    </label>
-
-                    {age && Number(age) < 18 && (
-                      <label className="flex items-start gap-2.5 cursor-pointer text-xs select-none pt-2.5 border-t border-white/10">
-                        <input
-                          type="checkbox"
-                          checked={minorConfirmed}
-                          onChange={(e) => setMinorConfirmed(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 rounded border-amber-400/40 bg-black text-amber-400 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="text-amber-200/90 text-[11px] leading-snug font-mono">
-                          I confirm that I am under 18 and have provided accurate information. I understand that parental or guardian consent may be required before certain information is processed or features are enabled.
+                  {/* Legal Gate Accords (Age-Adaptive: Minor vs Major) */}
+                  <div className={`p-4 sm:p-5 rounded-2xl border space-y-4 shadow-lg ${
+                    Boolean(age) && Number(age) < 18
+                      ? 'bg-gradient-to-br from-amber-500/[0.07] via-black to-[#07080b] border-amber-500/30'
+                      : 'bg-gradient-to-br from-cyan-500/[0.05] via-black to-[#07080b] border-white/10'
+                  }`}>
+                    {/* Header */}
+                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <Scale className={`w-4 h-4 ${Boolean(age) && Number(age) < 18 ? 'text-amber-400' : 'text-cyan-400'}`} />
+                        <span className="text-xs font-mono font-bold tracking-wider uppercase text-white">
+                          Legal Accords &amp; Constitutional Ledger
                         </span>
-                      </label>
-                    )}
+                      </div>
+                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded border uppercase tracking-wider font-semibold ${
+                        Boolean(age) && Number(age) < 18
+                          ? 'bg-amber-400/10 text-amber-300 border-amber-400/30'
+                          : 'bg-cyan-400/10 text-cyan-300 border-cyan-400/30'
+                      }`}>
+                        {Boolean(age) && Number(age) < 18 ? 'Minor Accord (DPDP Act, 2023)' : 'Major Citizen Accord (18+)'}
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* Checkbox 1: Terms of Service */}
+                      <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
+                        <label className="flex items-start gap-3 cursor-pointer text-xs select-none">
+                          <input
+                            type="checkbox"
+                            checked={agreedToS}
+                            onChange={(e) => setAgreedToS(e.target.checked)}
+                            className={`mt-0.5 w-4 h-4 rounded border-white/20 bg-black cursor-pointer focus:ring-0 ${
+                              Boolean(age) && Number(age) < 18 ? 'text-amber-400' : 'text-cyan-400'
+                            }`}
+                          />
+                          <div className="space-y-1 flex-1">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-neutral-200 font-semibold text-xs leading-snug">
+                                I agree to the{' '}
+                                <Link
+                                  href={Boolean(age) && Number(age) < 18 ? '/minor-terms' : '/terms'}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`underline inline-flex items-center gap-0.5 hover:text-white ${
+                                    Boolean(age) && Number(age) < 18 ? 'text-amber-300' : 'text-cyan-300'
+                                  }`}
+                                >
+                                  {Boolean(age) && Number(age) < 18 
+                                    ? 'Minor Terms of Service & Student Guidelines' 
+                                    : 'Platform Terms of Service'}
+                                  <ExternalLink className="w-3 h-3 inline ml-0.5" />
+                                </Link>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setActiveModal('TOS');
+                                }}
+                                className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 cursor-pointer shrink-0 transition"
+                              >
+                                View Accord
+                              </button>
+                            </div>
+                            <p className="text-[11px] text-neutral-400 font-mono leading-relaxed">
+                              {Boolean(age) && Number(age) < 18
+                                ? 'Civic decorum, academic integrity, parental sponsorship, and zero cyberbullying invariant.'
+                                : 'High-signal discourse, fair assembly voting rules, zero coordinate abuse, and node rights.'}
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+
+                      {/* Checkbox 2: Privacy Policy */}
+                      <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
+                        <label className="flex items-start gap-3 cursor-pointer text-xs select-none">
+                          <input
+                            type="checkbox"
+                            checked={agreedPrivacy}
+                            onChange={(e) => setAgreedPrivacy(e.target.checked)}
+                            className={`mt-0.5 w-4 h-4 rounded border-white/20 bg-black cursor-pointer focus:ring-0 ${
+                              Boolean(age) && Number(age) < 18 ? 'text-amber-400' : 'text-cyan-400'
+                            }`}
+                          />
+                          <div className="space-y-1 flex-1">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-neutral-200 font-semibold text-xs leading-snug">
+                                I acknowledge and accept the{' '}
+                                <Link
+                                  href={Boolean(age) && Number(age) < 18 ? '/minor-privacy' : '/privacy'}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`underline inline-flex items-center gap-0.5 hover:text-white ${
+                                    Boolean(age) && Number(age) < 18 ? 'text-amber-300' : 'text-cyan-300'
+                                  }`}
+                                >
+                                  {Boolean(age) && Number(age) < 18 
+                                    ? 'Minor Privacy Policy (DPDP Act, 2023)' 
+                                    : 'Privacy Policy & Zero Surveillance Charter'}
+                                  <ExternalLink className="w-3 h-3 inline ml-0.5" />
+                                </Link>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setActiveModal('PRIVACY');
+                                }}
+                                className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 cursor-pointer shrink-0 transition"
+                              >
+                                View Policy
+                              </button>
+                            </div>
+                            <p className="text-[11px] text-neutral-400 font-mono leading-relaxed">
+                              {Boolean(age) && Number(age) < 18
+                                ? 'Statutory minor safeguards: zero behavioural tracking, zero targeted ads, and protected phone/email.'
+                                : 'Complete client-side cryptographic isolation, zero tracking telemetry, and unconditional data wiping.'}
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+
+                      {/* Checkbox 3: Constitution */}
+                      <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
+                        <label className="flex items-start gap-3 cursor-pointer text-xs select-none">
+                          <input
+                            type="checkbox"
+                            checked={agreedConstitution}
+                            onChange={(e) => setAgreedConstitution(e.target.checked)}
+                            className={`mt-0.5 w-4 h-4 rounded border-white/20 bg-black cursor-pointer focus:ring-0 ${
+                              Boolean(age) && Number(age) < 18 ? 'text-amber-400' : 'text-cyan-400'
+                            }`}
+                          />
+                          <div className="space-y-1 flex-1">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-neutral-200 font-semibold text-xs leading-snug">
+                                I uphold the{' '}
+                                <Link
+                                  href="/constitution"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="underline inline-flex items-center gap-0.5 text-cyan-300 hover:text-white"
+                                >
+                                  ZENVITRA Sovereign Youth Constitution
+                                  <ExternalLink className="w-3 h-3 inline ml-0.5" />
+                                </Link>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setActiveModal('CONSTITUTION');
+                                }}
+                                className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 cursor-pointer shrink-0 transition"
+                              >
+                                View Constitution
+                              </button>
+                            </div>
+                            <p className="text-[11px] text-neutral-400 font-mono leading-relaxed">
+                              Democratic assembly rights, equal voting on student bills/motions, anti-doxxing, and the 10% public school aid tithe.
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+
+                      {/* Checkbox 4: Minor Parental Consent (Only for Age < 18) */}
+                      {Boolean(age) && Number(age) < 18 && (
+                        <div className="p-3.5 rounded-xl bg-amber-500/[0.08] border border-amber-400/30">
+                          <label className="flex items-start gap-3 cursor-pointer text-xs select-none">
+                            <input
+                              type="checkbox"
+                              checked={minorConfirmed}
+                              onChange={(e) => setMinorConfirmed(e.target.checked)}
+                              className="mt-0.5 w-4 h-4 rounded border-amber-400/50 bg-black text-amber-400 focus:ring-0 cursor-pointer"
+                            />
+                            <div className="space-y-1 flex-1">
+                              <span className="text-amber-200 font-bold text-xs leading-snug flex items-center gap-1.5">
+                                <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                Under-18 Parental / Guardian Consent Confirmation
+                              </span>
+                              <p className="text-[11px] text-amber-200/80 font-mono leading-relaxed">
+                                I confirm that I am under 18 years old and that my parent or lawful guardian {parentName ? `(${parentName})` : ''} is aware of and consents to my registration on ZENVITRA.
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quick Accept All Toggle */}
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                      <span>Quick action:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allChecked = agreedToS && agreedPrivacy && agreedConstitution && (!(Boolean(age) && Number(age) < 18) || minorConfirmed);
+                          const nextVal = !allChecked;
+                          setAgreedToS(nextVal);
+                          setAgreedPrivacy(nextVal);
+                          setAgreedConstitution(nextVal);
+                          if (Boolean(age) && Number(age) < 18) {
+                            setMinorConfirmed(nextVal);
+                          }
+                        }}
+                        className="text-white hover:text-cyan-300 underline font-semibold transition cursor-pointer"
+                      >
+                        {agreedToS && agreedPrivacy && agreedConstitution && (!(Boolean(age) && Number(age) < 18) || minorConfirmed)
+                          ? 'Deselect All'
+                          : 'Accept All Accords'}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3 pt-2">
@@ -874,7 +1022,13 @@ export default function RegisterPage() {
                     </button>
                     <button
                       type="submit"
-                      disabled={loading || !agreedTerms || (Boolean(age) && Number(age) < 18 && !minorConfirmed)}
+                      disabled={
+                        loading ||
+                        !agreedToS ||
+                        !agreedPrivacy ||
+                        !agreedConstitution ||
+                        (Boolean(age) && Number(age) < 18 && !minorConfirmed)
+                      }
                       className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(52,211,153,0.3)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] active:scale-[0.98] disabled:opacity-50"
                     >
                       {loading ? (
@@ -1047,7 +1201,8 @@ export default function RegisterPage() {
         isOpen={Boolean(activeModal)}
         type={activeModal || 'PRIVACY'}
         isMinor={Boolean(age) && Number(age) < 18}
-        onComplete={activeModal === 'PRIVACY' ? handlePrivacyCompleted : handleToSCompleted}
+        onClose={() => setActiveModal(null)}
+        onComplete={handleModalCompleted}
       />
     </div>
   );
