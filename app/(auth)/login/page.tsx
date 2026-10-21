@@ -205,7 +205,7 @@ function LoginForm() {
   useEffect(() => {
     if (searchParams.get('test') === 'true' || searchParams.get('autologin') === 'test') {
       continueAsTestUser().then(() => {
-        router.push(targetDestination);
+        router.push('/test-node/journey');
       });
     }
   }, [searchParams, continueAsTestUser, router, targetDestination]);
@@ -265,7 +265,7 @@ function LoginForm() {
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<SavedAccount | null>(null);
   const [saveLoginInfo, setSaveLoginInfo] = useState<boolean>(true);
-  const [isManualInputMode, setIsManualInputMode] = useState<boolean>(false);
+  const [activeAuthTab, setActiveAuthTab] = useState<'saved' | 'credentials'>('credentials');
   const [showSaveNotice, setShowSaveNotice] = useState<boolean>(true);
 
   // Load remembered accounts on client mount (ONLY real saved logins, no artificial seeding)
@@ -277,7 +277,7 @@ function LoginForm() {
       if (!isEnabled) {
         setSavedAccounts([]);
         setSelectedAccount(null);
-        setIsManualInputMode(true);
+        setActiveAuthTab('credentials');
         return;
       }
 
@@ -309,6 +309,7 @@ function LoginForm() {
       if (parsed.length > 0) {
         setSelectedAccount(parsed[0]);
         setEmail(parsed[0].username ? parsed[0].username.replace(/^@/, '') : (parsed[0].email || ''));
+        setActiveAuthTab('saved');
       } else {
         setSelectedAccount(null);
         setEmail('');
@@ -320,7 +321,7 @@ function LoginForm() {
     setSelectedAccount(acc);
     setEmail(acc.username ? acc.username.replace(/^@/, '') : (acc.email || ''));
     setPassword('');
-    setIsManualInputMode(false);
+    setActiveAuthTab('saved');
   };
 
   const handleRemoveSavedAccount = (usernameToRemove: string, e: React.MouseEvent) => {
@@ -338,7 +339,7 @@ function LoginForm() {
       } else {
         setSelectedAccount(null);
         setEmail('');
-        setIsManualInputMode(true);
+        setActiveAuthTab('credentials');
       }
     }
   };
@@ -394,9 +395,9 @@ function LoginForm() {
           localStorage.setItem('zenvitra_session_user', JSON.stringify(parsed));
         }
       } catch (_) {}
-      setSuccessMessage(`🧪 Test Node Initialized with ${selectedRole.toUpperCase()} Experience!`);
+      setSuccessMessage(`🧪 Test Node Initialized! Redirecting to Journey...`);
       setTimeout(() => {
-        router.push(targetDestination);
+        router.push('/test-node/journey');
       }, 250);
     } catch (err: any) {
       setErrorMessage(err?.message || 'Failed to initialize test node.');
@@ -899,9 +900,9 @@ function LoginForm() {
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                   <Link
-                    href="/test"
+                    href="/test-node/journey"
                     className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition"
-                    title="Direct Test Link (/test)"
+                    title="Test Node Journey (/test-node/journey)"
                   >
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
@@ -909,202 +910,280 @@ function LoginForm() {
               </div>
 
               {!is2FAStep ? (
-                  savedAccounts.length > 0 && !isManualInputMode ? (
-                    selectedAccount ? (
-                      /* ── SAVED ACCOUNT QUICK PASSWORD SCREEN ── */
-                      <div className="space-y-4">
-                        <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-800/30 border border-purple-500/40 flex items-center justify-center text-purple-200 font-bold text-base overflow-hidden shrink-0 shadow-inner">
-                              {selectedAccount.avatar || selectedAccount.avatar_url ? (
-                                <img src={selectedAccount.avatar || selectedAccount.avatar_url} alt={selectedAccount.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <span>{(selectedAccount.name || selectedAccount.username || 'U')[0]?.toUpperCase()}</span>
-                              )}
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <h4 className="text-sm font-bold text-white font-display truncate">
-                                  {selectedAccount.name || selectedAccount.display_name || selectedAccount.username}
-                                </h4>
-                                {selectedAccount.isFounder ? (
-                                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30 shrink-0">
-                                    👑 FOUNDER
-                                  </span>
-                                ) : (
-                                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30 uppercase shrink-0">
-                                    {selectedAccount.role || 'CITIZEN'}
-                                  </span>
-                                )}
+                <div className="space-y-4">
+                  {/* ── META-STYLE ACCOUNT SWITCHER TABS ── */}
+                  <div className="grid grid-cols-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10 gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveAuthTab('saved');
+                        if (savedAccounts.length > 0 && !selectedAccount) {
+                          setSelectedAccount(savedAccounts[0]);
+                          setEmail(savedAccounts[0].username ? savedAccounts[0].username.replace(/^@/, '') : (savedAccounts[0].email || ''));
+                        }
+                      }}
+                      className={`py-2.5 px-3 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        activeAuthTab === 'saved'
+                          ? 'bg-gradient-to-r from-purple-500/25 via-indigo-500/20 to-cyan-500/20 text-white border border-white/20 shadow-md shadow-purple-950/40'
+                          : 'text-neutral-400 hover:text-white hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Saved Accounts</span>
+                      {savedAccounts.length > 0 ? (
+                        <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 text-[10px] font-mono border border-purple-400/30 font-bold">
+                          {savedAccounts.length}
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.2 rounded-full bg-white/5 text-neutral-500 text-[10px] font-mono border border-white/10">
+                          0
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveAuthTab('credentials');
+                      }}
+                      className={`py-2.5 px-3 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        activeAuthTab === 'credentials'
+                          ? 'bg-white/10 text-white border border-white/20 shadow-md shadow-white/5'
+                          : 'text-neutral-400 hover:text-white hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Standard Sign In</span>
+                    </button>
+                  </div>
+
+                  {activeAuthTab === 'saved' ? (
+                    savedAccounts.length > 0 ? (
+                      selectedAccount ? (
+                        /* ── META-STYLE ACCOUNT CARD: FAST PASSPHRASE AUTH ── */
+                        <div className="space-y-4">
+                          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-3 shadow-inner">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="relative">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/30 via-indigo-600/30 to-purple-800/30 border border-purple-500/40 flex items-center justify-center text-purple-200 font-bold text-base overflow-hidden shrink-0 shadow-inner">
+                                  {selectedAccount.avatar || selectedAccount.avatar_url ? (
+                                    <img src={selectedAccount.avatar || selectedAccount.avatar_url} alt={selectedAccount.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span>{(selectedAccount.name || selectedAccount.username || 'U')[0]?.toUpperCase()}</span>
+                                  )}
+                                </div>
+                                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-[#07080b]" title="Active on this device" />
                               </div>
-                              <p className="text-xs text-neutral-400 font-mono truncate">@{selectedAccount.username.replace(/^@/, '')}</p>
+
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <h4 className="text-sm font-bold text-white font-display truncate">
+                                    {selectedAccount.name || selectedAccount.display_name || selectedAccount.username}
+                                  </h4>
+                                  {selectedAccount.isFounder ? (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30 shrink-0">
+                                      👑 FOUNDER
+                                    </span>
+                                  ) : (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300 font-mono border border-purple-500/30 uppercase shrink-0">
+                                      {selectedAccount.role || 'DELEGATE'}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-neutral-400 font-mono truncate">@{selectedAccount.username.replace(/^@/, '')}</p>
+                              </div>
                             </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setSelectedAccount(null)}
+                              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-xs font-mono transition cursor-pointer shrink-0 border border-white/5"
+                            >
+                              Switch
+                            </button>
+                          </div>
+
+                          <form onSubmit={handleAuthSubmit} className="space-y-4">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-xs font-mono">
+                                <label className="font-semibold text-neutral-300">
+                                  ENTER PASSPHRASE FOR @{selectedAccount.username.replace(/^@/, '')}
+                                </label>
+                                <Link href="/privacy" className="text-neutral-400 hover:text-white transition">
+                                  Recovery Key?
+                                </Link>
+                              </div>
+                              <div className="relative">
+                                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                                <input
+                                  type={showPassword ? 'text' : 'password'}
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  placeholder="••••••••••••"
+                                  autoFocus
+                                  disabled={loading}
+                                  required
+                                  className="w-full pl-10 pr-11 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-purple-400/60 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition cursor-pointer"
+                                >
+                                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={saveLoginInfo}
+                                  onChange={(e) => {
+                                    setSaveLoginInfo(e.target.checked);
+                                    setSavedAccountsEnabled(e.target.checked);
+                                  }}
+                                  className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-0 focus:ring-offset-0"
+                                />
+                                <span className="text-[11px] font-mono text-neutral-400">Save login info on this device</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={(e) => handleRemoveSavedAccount(selectedAccount.username, e)}
+                                className="text-[11px] font-mono text-neutral-500 hover:text-rose-400 transition cursor-pointer"
+                              >
+                                Remove from device
+                              </button>
+                            </div>
+
+                            <button
+                              type="submit"
+                              disabled={loading}
+                              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-500 hover:opacity-95 text-white font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-purple-950/40 active:scale-[0.98] disabled:opacity-50"
+                            >
+                              {loading ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                  <span>Signing in securely...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>Continue as @{selectedAccount.username.replace(/^@/, '')}</span>
+                                  <ArrowRight className="w-4 h-4" />
+                                </>
+                              )}
+                            </button>
+
+                            <div className="pt-2 text-center">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveAuthTab('credentials');
+                                  setEmail('');
+                                  setPassword('');
+                                }}
+                                className="text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer inline-flex items-center gap-1.5"
+                              >
+                                <User className="w-3.5 h-3.5" />
+                                <span>Sign in with another account</span>
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      ) : (
+                        /* ── META ACCOUNTS PICKER LIST ── */
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-mono uppercase text-neutral-400 font-semibold tracking-wider flex items-center gap-1.5">
+                              <Users className="w-3.5 h-3.5 text-purple-400" />
+                              <span>Select an account to log in</span>
+                            </span>
+                            <span className="text-[10px] font-mono text-neutral-500">{savedAccounts.length} saved</span>
+                          </div>
+
+                          <div className="space-y-2">
+                            {savedAccounts.map((acc) => (
+                              <div
+                                key={acc.id || acc.username}
+                                onClick={() => handleSelectAccount(acc)}
+                                className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-purple-500/40 transition flex items-center justify-between gap-3 cursor-pointer group"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="relative">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-800/30 border border-purple-500/30 flex items-center justify-center text-purple-300 font-bold overflow-hidden shrink-0 shadow-inner">
+                                      {acc.avatar || acc.avatar_url ? (
+                                        <img src={acc.avatar || acc.avatar_url} alt={acc.name} className="w-full h-full object-cover" />
+                                      ) : (
+                                        <span>{(acc.name || acc.username || 'U')[0]?.toUpperCase()}</span>
+                                      )}
+                                    </div>
+                                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#07080b]" />
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-xs font-bold text-white truncate">{acc.name || acc.display_name || acc.username}</span>
+                                      {acc.isFounder && (
+                                        <span className="px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30">
+                                          FOUNDER
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-neutral-400 font-mono truncate">@{acc.username.replace(/^@/, '')}</p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="text-[10px] font-mono text-purple-400 group-hover:text-purple-300 transition">
+                                    Log In &rarr;
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleRemoveSavedAccount(acc.username, e)}
+                                    title="Remove account from device"
+                                    className="p-1.5 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
 
                           <button
                             type="button"
-                            onClick={() => setSelectedAccount(null)}
-                            className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-mono transition cursor-pointer shrink-0"
+                            onClick={() => {
+                              setActiveAuthTab('credentials');
+                              setEmail('');
+                              setPassword('');
+                            }}
+                            className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs flex items-center justify-center gap-2 transition cursor-pointer"
                           >
-                            Switch
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Log Into Another Account</span>
                           </button>
                         </div>
-
-                        <form onSubmit={handleAuthSubmit} className="space-y-4">
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between text-xs font-mono">
-                              <label className="font-semibold text-neutral-300">
-                                ENTER PASSWORD FOR @{selectedAccount.username.replace(/^@/, '')}
-                              </label>
-                              <Link href="/privacy" className="text-neutral-400 hover:text-white transition">
-                                Recovery Key?
-                              </Link>
-                            </div>
-                            <div className="relative">
-                              <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-                              <input
-                                type={showPassword ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••••••"
-                                autoFocus
-                                disabled={loading}
-                                required
-                                className="w-full pl-10 pr-11 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-purple-400/60 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition cursor-pointer"
-                              >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 cursor-pointer select-none">
-                              <input
-                                type="checkbox"
-                                checked={saveLoginInfo}
-                                onChange={(e) => {
-                                  setSaveLoginInfo(e.target.checked);
-                                  setSavedAccountsEnabled(e.target.checked);
-                                }}
-                                className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-purple-500 focus:ring-0 focus:ring-offset-0"
-                              />
-                              <span className="text-[11px] font-mono text-neutral-400">Save login info on this device</span>
-                            </label>
-                            <button
-                              type="button"
-                              onClick={(e) => handleRemoveSavedAccount(selectedAccount.username, e)}
-                              className="text-[11px] font-mono text-neutral-500 hover:text-rose-400 transition cursor-pointer"
-                            >
-                              Remove from device
-                            </button>
-                          </div>
-
-                          <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-white/20 active:scale-[0.98] disabled:opacity-50"
-                          >
-                            {loading ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>Signing in securely...</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>Sign In as @{selectedAccount.username.replace(/^@/, '')}</span>
-                                <ArrowRight className="w-4 h-4" />
-                              </>
-                            )}
-                          </button>
-
-                          <div className="pt-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsManualInputMode(true);
-                                setEmail('');
-                                setPassword('');
-                              }}
-                              className="text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer inline-flex items-center gap-1.5"
-                            >
-                              <User className="w-3.5 h-3.5" />
-                              <span>Sign in with another account</span>
-                            </button>
-                          </div>
-                        </form>
-                      </div>
+                      )
                     ) : (
-                      /* ── SAVED ACCOUNTS LIST ── */
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-mono uppercase text-neutral-400 font-semibold tracking-wider flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-purple-400" />
-                            <span>Saved Accounts On This Device</span>
-                          </span>
-                          <span className="text-[10px] font-mono text-neutral-500">{savedAccounts.length} saved</span>
+                      /* ── CLEAN EMPTY STATE (ZERO HARDCODED/MOCK DATA) ── */
+                      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto">
+                          <Users className="w-6 h-6" />
                         </div>
-
-                        <div className="space-y-2">
-                          {savedAccounts.map((acc) => (
-                            <div
-                              key={acc.id || acc.username}
-                              onClick={() => handleSelectAccount(acc)}
-                              className="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-purple-500/40 transition flex items-center justify-between gap-3 cursor-pointer group"
-                            >
-                              <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 font-bold overflow-hidden shrink-0">
-                                  {acc.avatar || acc.avatar_url ? (
-                                    <img src={acc.avatar || acc.avatar_url} alt={acc.name} className="w-full h-full object-cover" />
-                                  ) : (
-                                    <span>{(acc.name || acc.username || 'U')[0]?.toUpperCase()}</span>
-                                  )}
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-bold text-white truncate">{acc.name || acc.display_name || acc.username}</span>
-                                    {acc.isFounder && (
-                                      <span className="px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30">
-                                        FOUNDER
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-[10px] text-neutral-400 font-mono truncate">@{acc.username.replace(/^@/, '')}</p>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-2 shrink-0">
-                                <span className="text-[10px] font-mono text-purple-400 group-hover:text-purple-300 transition">
-                                  Insert Password &rarr;
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleRemoveSavedAccount(acc.username, e)}
-                                  title="Remove account from device"
-                                  className="p-1 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-bold text-white font-display">No Accounts Saved on This Device</h4>
+                          <p className="text-xs text-neutral-400 font-sans leading-relaxed max-w-xs mx-auto">
+                            Sign in with your ZEN.ID or master passphrase and ensure &apos;Save login info&apos; is enabled to switch between accounts with 1-click on this browser.
+                          </p>
                         </div>
-
                         <button
                           type="button"
-                          onClick={() => {
-                            setIsManualInputMode(true);
-                            setEmail('');
-                            setPassword('');
-                          }}
-                          className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+                          onClick={() => setActiveAuthTab('credentials')}
+                          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition cursor-pointer inline-flex items-center gap-1.5"
                         >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Use Another Account</span>
+                          <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Sign In with Credentials &rarr;</span>
                         </button>
                       </div>
                     )
@@ -1116,7 +1195,7 @@ function LoginForm() {
                           <button
                             type="button"
                             onClick={() => {
-                              setIsManualInputMode(false);
+                              setActiveAuthTab('saved');
                               if (savedAccounts.length > 0) {
                                 setSelectedAccount(savedAccounts[0]);
                                 setEmail(savedAccounts[0].username ? savedAccounts[0].username.replace(/^@/, '') : (savedAccounts[0].email || ''));
@@ -1124,7 +1203,7 @@ function LoginForm() {
                             }}
                             className="text-xs font-mono text-purple-400 hover:text-purple-300 transition cursor-pointer flex items-center gap-1.5"
                           >
-                            <span>&larr; Back to saved accounts ({savedAccounts.length})</span>
+                            <span>&larr; Switch to saved accounts ({savedAccounts.length})</span>
                           </button>
                         </div>
                       )}
@@ -1252,9 +1331,10 @@ function LoginForm() {
                         </div>
                       </div>
                     </form>
-                  )
-                ) : (
-                  <form onSubmit={handleVerify2FACode} className="space-y-4">
+                  )}
+                </div>
+              ) : (
+                <form onSubmit={handleVerify2FACode} className="space-y-4">
                     <div className="flex items-center justify-between pb-1">
                       <button
                         type="button"
@@ -1323,8 +1403,8 @@ function LoginForm() {
                     Mint New ZEN.ID
                   </Link>
                   {' '}or{' '}
-                  <Link href="/test" className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline inline-flex items-center gap-1">
-                    <span>🧪 Test Pilot Access &rarr;</span>
+                  <Link href="/test-node/journey" className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline inline-flex items-center gap-1">
+                    <span>🧪 Test Node Journey &rarr;</span>
                   </Link>
                 </p>
 
