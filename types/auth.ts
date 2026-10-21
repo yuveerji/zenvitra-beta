@@ -1,4 +1,8 @@
 export type UserRole =
+  | 'founder'
+  | 'co_founder'
+  | 'FOUNDER'
+  | 'CO_FOUNDER'
   | 'delegate'
   | 'journalist'
   | 'creator'
@@ -6,7 +10,10 @@ export type UserRole =
   | 'organization'
   | 'professional'
   | 'core_team'
+  | 'CORE_TEAM'
   | 'admin'
+  | 'ADMIN'
+  | 'SECRETARIAT_CHAIR'
   | 'guest'
   | 'GUEST';
 

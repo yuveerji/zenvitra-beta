@@ -118,7 +118,9 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
   const effectiveUser = (currentUserUsername || user?.email?.split('@')[0] || profile?.username || '').toLowerCase().trim().replace(/^@/, '');
   const isFounderClearance = 
     isFounderOrCoFounder(effectiveUser, (profile?.role as any) || (profile as any)?.badge, profile?.id || user?.id) ||
-    isCurrentSessionFounderOrCoFounder();
+    isCurrentSessionFounderOrCoFounder() ||
+    profile?.role === 'FOUNDER' ||
+    profile?.role === 'CO_FOUNDER';
 
   /* Modal Passkey Unlock State */
   const [modalUnlockKey, setModalUnlockKey] = useState('');

@@ -78,7 +78,9 @@ const PROTECTED_PREFIXES = [
   '/platform',
   '/settings',
   '/admin',
+  '/core-team-panel',
   '/founder',
+  '/zen-vault-root',
   '/pulse/create-story',
   '/test-node',
 ];
@@ -161,11 +163,20 @@ export async function middleware(request: NextRequest) {
   }
 
   // Enforce Founder / Admin Enclave at the Edge
-  if (pathname.startsWith('/founder') || pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/zen-vault-root') || pathname.startsWith('/founder')) {
     const role = sessionCheck.payload?.role;
-    if (role !== 'FOUNDER' && role !== 'CO_FOUNDER' && role !== 'ADMIN') {
+    if (role !== 'FOUNDER' && role !== 'CO_FOUNDER') {
       const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('error', 'insufficient_clearance');
+      loginUrl.searchParams.set('error', 'founder_clearance_required');
+      return NextResponse.redirect(loginUrl, { status: 307 });
+    }
+  }
+
+  if (pathname.startsWith('/core-team-panel') || pathname.startsWith('/admin')) {
+    const role = sessionCheck.payload?.role;
+    if (role !== 'FOUNDER' && role !== 'CO_FOUNDER' && role !== 'ADMIN' && role !== 'SECRETARIAT_CHAIR') {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('error', 'admin_clearance_required');
       return NextResponse.redirect(loginUrl, { status: 307 });
     }
   }

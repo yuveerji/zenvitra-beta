@@ -40,6 +40,7 @@ import {
   Cpu,
   Orbit,
   Target,
+  ShieldAlert,
   Lock,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -201,10 +202,28 @@ export function Navbar({
         const isAuthorized =
           isCurrentSessionFounderOrCoFounder() ||
           isFounderOrCoFounder(curProfile?.username, curProfile?.role, curProfile?.id) ||
-          isFounderOrCoFounder(curProfile?.email, curProfile?.role, curProfile?.id);
+          isFounderOrCoFounder(curProfile?.email, curProfile?.role, curProfile?.id) || curProfile?.role === 'FOUNDER' || curProfile?.role === 'CO_FOUNDER';
 
         if (isAuthorized) {
           setFounderOmniModalOpen(true);
+        }
+      }
+      // Admin & Operational Committee Shortcut (Ctrl+Shift+A or Cmd+Shift+A)
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'A' || event.key === 'a')) {
+        event.preventDefault();
+        const curProfile = profileRef.current;
+        const isAuthorizedAdmin =
+          isCurrentSessionFounderOrCoFounder() ||
+          isFounderOrCoFounder(curProfile?.username, curProfile?.role, curProfile?.id) ||
+          checkIsAdmin(curProfile?.username, curProfile?.role) ||
+          checkIsAdmin(curProfile?.email, curProfile?.role) ||
+          curProfile?.role === 'ADMIN' ||
+          curProfile?.role === 'SECRETARIAT_CHAIR' ||
+          curProfile?.role === 'FOUNDER' ||
+          curProfile?.role === 'CO_FOUNDER';
+
+        if (isAuthorizedAdmin) {
+          setAdminOmniModalOpen(true);
         }
       }
     }
@@ -305,6 +324,24 @@ export function Navbar({
   const userRoleVal = (profile?.role || localUserSession?.role || '') as string;
   const isFounder = checkIsFounder(userIdentifier, userRoleVal);
   const isAdminUser = checkIsAdmin(userIdentifier, userRoleVal);
+
+  const isAuthorizedFounder = useMemo(() => {
+    return (
+      isCurrentSessionFounderOrCoFounder() ||
+      isFounderOrCoFounder(userIdentifier, userRoleVal, profile?.id) ||
+      userRoleVal === 'FOUNDER' ||
+      userRoleVal === 'CO_FOUNDER'
+    );
+  }, [userIdentifier, userRoleVal, profile?.id]);
+
+  const isAuthorizedAdmin = useMemo(() => {
+    return (
+      isAuthorizedFounder ||
+      checkIsAdmin(userIdentifier, userRoleVal) ||
+      userRoleVal === 'ADMIN' ||
+      userRoleVal === 'SECRETARIAT_CHAIR'
+    );
+  }, [isAuthorizedFounder, userIdentifier, userRoleVal]);
   const displayName = profile?.display_name || profile?.username || localUserSession?.name || (profile?.email ? profile.email.split('@')[0] : 'Member');
   const userHandle = profile?.username || localUserSession?.username || 'member';
   const initial = (displayName ? displayName.charAt(0).toUpperCase() : '') || 'Z';
@@ -520,6 +557,67 @@ export function Navbar({
                         </div>
 
                         <div className="space-y-1 text-xs font-medium text-neutral-300 font-sans">
+                          {/* Founder Privilege Suite */}
+                          {isAuthorizedFounder && (
+                            <div className="p-1 mb-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUserDropdownOpen(false);
+                                  setFounderOmniModalOpen(true);
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-amber-400 text-black hover:bg-amber-300 font-bold transition flex items-center justify-between text-xs cursor-pointer shadow"
+                              >
+                                <div className="flex items-center gap-2 font-display uppercase tracking-wider text-[11px]">
+                                  <Crown className="w-3.5 h-3.5 fill-black" />
+                                  <span>Founder Suite</span>
+                                </div>
+                                <span className="text-[9px] font-mono opacity-80 font-bold">Ctrl+Shift+F</span>
+                              </button>
+                              <Link
+                                href="/zen-vault-root"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="w-full px-2.5 py-1.5 rounded-lg hover:bg-amber-500/20 text-amber-200 transition flex items-center justify-between text-xs font-semibold"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                                  <span>Founder Vault (Root 0)</span>
+                                </div>
+                                <ArrowUpRight className="w-3 h-3 opacity-60" />
+                              </Link>
+                            </div>
+                          )}
+
+                          {/* Admin & Core Team Operational Suite */}
+                          {isAuthorizedAdmin && (
+                            <div className="p-1 mb-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 space-y-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUserDropdownOpen(false);
+                                  setAdminOmniModalOpen(true);
+                                }}
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-200 hover:bg-cyan-500/30 hover:text-white font-bold transition flex items-center justify-between text-xs cursor-pointer border border-cyan-500/30"
+                              >
+                                <div className="flex items-center gap-2 font-display uppercase tracking-wider text-[11px]">
+                                  <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                                  <span>Admin Console</span>
+                                </div>
+                                <span className="text-[9px] font-mono text-cyan-400 font-bold">Ctrl+Shift+A</span>
+                              </button>
+                              <Link
+                                href="/core-team-panel"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="w-full px-2.5 py-1.5 rounded-lg hover:bg-cyan-500/20 text-cyan-200 transition flex items-center justify-between text-xs font-semibold"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
+                                  <span>Core Team Control Room</span>
+                                </div>
+                                <ArrowUpRight className="w-3 h-3 opacity-60" />
+                              </Link>
+                            </div>
+                          )}
                           <Link
                             href="/dashboard"
                             onClick={() => setUserDropdownOpen(false)}
@@ -671,18 +769,66 @@ export function Navbar({
               <div className="flex flex-col gap-2 pt-2 border-t border-white/10 font-mono text-xs">
                 {hasActiveSession ? (
                   <>
-                    {isFounder && (
-                      <Link
-                        href="/zen-vault-root"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="w-full p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-center justify-between font-bold shadow-[0_0_15px_rgba(244,63,94,0.2)]"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Crown className="w-4 h-4 text-rose-400" />
-                          <span>Founders Hub (Root)</span>
-                        </div>
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
+                    {/* Mobile Founder Suite */}
+                    {isAuthorizedFounder && (
+                      <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-1.5 mb-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            setFounderOmniModalOpen(true);
+                          }}
+                          className="w-full p-2.5 rounded-lg bg-amber-400 text-black font-bold flex items-center justify-between text-xs cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 font-display uppercase tracking-wider">
+                            <Crown className="w-4 h-4 fill-black" />
+                            <span>👑 ZEN FOUNDER SUITE</span>
+                          </div>
+                          <span className="text-[10px] font-mono bg-black/10 px-1.5 py-0.5 rounded">MODAL</span>
+                        </button>
+                        <Link
+                          href="/zen-vault-root"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="w-full p-2 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-200 font-semibold flex items-center justify-between text-xs transition"
+                        >
+                          <div className="flex items-center gap-2">
+                            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                            <span>🏛️ Founder Vault (Root 0)</span>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 opacity-60" />
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* Mobile Admin Suite */}
+                    {isAuthorizedAdmin && (
+                      <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/25 space-y-1.5 mb-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            setAdminOmniModalOpen(true);
+                          }}
+                          className="w-full p-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-200 font-bold flex items-center justify-between text-xs cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 font-display uppercase tracking-wider">
+                            <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                            <span>🛡️ ZEN ADMIN CONSOLE</span>
+                          </div>
+                          <span className="text-[10px] font-mono bg-cyan-400/10 px-1.5 py-0.5 rounded">MODAL</span>
+                        </button>
+                        <Link
+                          href="/core-team-panel"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="w-full p-2 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-200 font-semibold flex items-center justify-between text-xs transition"
+                        >
+                          <div className="flex items-center gap-2">
+                            <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>⚙️ Core Team Control Room</span>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 opacity-60" />
+                        </Link>
+                      </div>
                     )}
                     <Link
                       href="/pulse"
@@ -864,14 +1010,7 @@ export function Navbar({
       <AdminOmniModal
         isOpen={adminOmniModalOpen}
         onClose={() => setAdminOmniModalOpen(false)}
-        onOpenFounderMenu={() => {
-          if (
-            isCurrentSessionFounderOrCoFounder() ||
-            isFounderOrCoFounder(profile?.username, profile?.role, profile?.id)
-          ) {
-            setFounderOmniModalOpen(true);
-          }
-        }}
+        onOpenFounderMenu={() => { if (isCurrentSessionFounderOrCoFounder() || isFounderOrCoFounder(profile?.username, profile?.role, profile?.id)) { setFounderOmniModalOpen(true); } }}
       />
 
       {/* Supreme Founder Sovereignty Modal */}

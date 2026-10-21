@@ -53,8 +53,14 @@ export function AdminOmniModal({ isOpen, onClose, onOpenFounderMenu }: AdminOmni
   const effectiveUser = (currentUserUsername || user?.email?.split('@')[0] || profile?.username || '').toLowerCase().trim().replace(/^@/, '');
   const userIsFounder = 
     isFounderOrCoFounder(effectiveUser, (profile?.role as any) || (profile as any)?.badge, profile?.id || user?.id) ||
-    isCurrentSessionFounderOrCoFounder();
-  const userIsAdmin = isAdmin(effectiveUser, (profile?.role as any) || (profile as any)?.badge);
+    isCurrentSessionFounderOrCoFounder() ||
+    profile?.role === 'FOUNDER' ||
+    profile?.role === 'CO_FOUNDER';
+  const userIsAdmin = 
+    isAdmin(effectiveUser, (profile?.role as any) || (profile as any)?.badge) ||
+    profile?.role === 'ADMIN' ||
+    profile?.role === 'SECRETARIAT_CHAIR' ||
+    userIsFounder;
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
