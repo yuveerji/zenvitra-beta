@@ -132,11 +132,6 @@ zenvitra-beta/
 3. **Configure Environment Variables**:
    Create a `.env.local` file in the root directory:
    ```env
-   # Cashfree Payment Gateway Credentials
-   CASHFREE_APP_ID="your_cashfree_app_id"
-   CASHFREE_SECRET_KEY="your_cashfree_secret_key"
-   CASHFREE_ENV="SANDBOX" # Or "PRODUCTION"
-
    # Offline Pass Security Secret
    TICKET_HMAC_SECRET="your_secure_random_hmac_secret_key"
 
