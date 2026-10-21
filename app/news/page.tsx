@@ -28,6 +28,8 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { NewsStory, NewsCategory } from '@/types/news';
 import { isSubscribedToCategory, toggleCategorySubscription } from '@/lib/categorySubscriptionService';
+import { useAuth } from '@/context/AuthContext';
+import { SignInPromptModal } from '@/components/auth/SignInPromptModal';
 
 /* ─────────── ZERO SEEDED DATA (CLEAN LIVE PLATFORM) ─────────── */
 
@@ -78,6 +80,33 @@ export default function ZenNewsPage() {
       window.removeEventListener('storage', handleNewsSync);
     };
   }, []);
+
+  const { isAuthenticated, isMockMode, profile } = useAuth();
+  const [showSignInModal, setShowSignInModal] = useState(false);
+
+  useEffect(() => {
+    const hasLoggedIn = isAuthenticated || isMockMode || Boolean(profile?.id);
+    if (!hasLoggedIn) {
+      try {
+        const dismissed = sessionStorage.getItem('zenvitra_signin_prompt_dismissed_news');
+        if (!dismissed) {
+          const timer = setTimeout(() => {
+            setShowSignInModal(true);
+          }, 600);
+          return () => clearTimeout(timer);
+        }
+      } catch {
+        setShowSignInModal(true);
+      }
+    }
+  }, [isAuthenticated, isMockMode, profile]);
+
+  const handleCloseSignInModal = () => {
+    setShowSignInModal(false);
+    try {
+      sessionStorage.setItem('zenvitra_signin_prompt_dismissed_news', 'true');
+    } catch {}
+  };
 
   const [selectedSector, setSelectedSector] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -669,6 +698,12 @@ export default function ZenNewsPage() {
         </div>
       )}
     </AnimatePresence>
+
+    <SignInPromptModal
+      isOpen={showSignInModal}
+      onClose={handleCloseSignInModal}
+      feature="news"
+    />
 
     <Footer />
     </div>

@@ -46,8 +46,37 @@ import { CircularEcosystemMap } from '@/components/apps/CircularEcosystemMap';
 import { ApplicationListView } from '@/components/apps/ApplicationListView';
 import { ApplicationDetailsPanel } from '@/components/apps/ApplicationDetailsPanel';
 import { EcosystemToolbar } from '@/components/apps/EcosystemToolbar';
+import { useAuth } from '@/context/AuthContext';
+import { SignInPromptModal } from '@/components/auth/SignInPromptModal';
 
 function AppsEcosystemContent() {
+  const { isAuthenticated, isMockMode, profile } = useAuth();
+  const [showSignInModal, setShowSignInModal] = useState(false);
+
+  useEffect(() => {
+    const hasLoggedIn = isAuthenticated || isMockMode || Boolean(profile?.id);
+    if (!hasLoggedIn) {
+      try {
+        const dismissed = sessionStorage.getItem('zenvitra_signin_prompt_dismissed_apps');
+        if (!dismissed) {
+          const timer = setTimeout(() => {
+            setShowSignInModal(true);
+          }, 600);
+          return () => clearTimeout(timer);
+        }
+      } catch {
+        setShowSignInModal(true);
+      }
+    }
+  }, [isAuthenticated, isMockMode, profile]);
+
+  const handleCloseSignInModal = () => {
+    setShowSignInModal(false);
+    try {
+      sessionStorage.setItem('zenvitra_signin_prompt_dismissed_apps', 'true');
+    } catch {}
+  };
+
   const searchParams = useSearchParams();
 
   // Search & Filter state
@@ -685,6 +714,12 @@ function AppsEcosystemContent() {
           </div>
         </section>
       </main>
+
+      <SignInPromptModal
+        isOpen={showSignInModal}
+        onClose={handleCloseSignInModal}
+        feature="apps"
+      />
 
       <Footer />
     </div>

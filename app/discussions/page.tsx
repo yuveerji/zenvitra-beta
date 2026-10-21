@@ -22,7 +22,9 @@ import {
   Lightbulb,
   ExternalLink,
   Flame,
-  X
+  X,
+  Hash,
+  Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
@@ -31,6 +33,7 @@ import { OpenDiscussion, DiscussionArgument, DiscussionCategory, ArgumentStance 
 import { useAuth } from '@/context/AuthContext';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { CreateDiscussionModal } from '@/components/discussions/CreateDiscussionModal';
+import { SignInPromptModal } from '@/components/auth/SignInPromptModal';
 import { DiscussionDebateTree } from '@/components/discussions/DiscussionDebateTree';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
 
@@ -192,8 +195,33 @@ function sanitizeDiscussions(discs: OpenDiscussion[]): OpenDiscussion[] {
 }
 
 function OpenDiscussionsContent() {
-  const { profile } = useAuth();
+  const { profile, isAuthenticated, isMockMode } = useAuth();
   const searchParams = useSearchParams();
+  const [showSignInModal, setShowSignInModal] = useState(false);
+
+  useEffect(() => {
+    const hasLoggedIn = isAuthenticated || isMockMode || Boolean(profile?.id);
+    if (!hasLoggedIn) {
+      try {
+        const dismissed = sessionStorage.getItem('zenvitra_signin_prompt_dismissed_discussions');
+        if (!dismissed) {
+          const timer = setTimeout(() => {
+            setShowSignInModal(true);
+          }, 600);
+          return () => clearTimeout(timer);
+        }
+      } catch {
+        setShowSignInModal(true);
+      }
+    }
+  }, [isAuthenticated, isMockMode, profile]);
+
+  const handleCloseSignInModal = () => {
+    setShowSignInModal(false);
+    try {
+      sessionStorage.setItem('zenvitra_signin_prompt_dismissed_discussions', 'true');
+    } catch {}
+  };
 
   const [discussions, setDiscussions] = useState<OpenDiscussion[]>(() => {
     if (typeof window === 'undefined') return INITIAL_DISCUSSIONS;
@@ -236,7 +264,24 @@ function OpenDiscussionsContent() {
   });
 
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedHashtag, setSelectedHashtag] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Extract all unique hashtags dynamically from discussions
+  const allHashtags = React.useMemo(() => {
+    const map = new Map<string, number>();
+    discussions.forEach((d) => {
+      d.tags?.forEach((t) => {
+        const clean = t.replace(/^#/, '').trim();
+        if (clean) {
+          map.set(clean, (map.get(clean) || 0) + 1);
+        }
+      });
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([tag]) => tag);
+  }, [discussions]);
   const [activeDiscussionId, setActiveDiscussionId] = useState<string>(() => {
     return INITIAL_DISCUSSIONS[0].id;
   });
@@ -265,17 +310,52 @@ function OpenDiscussionsContent() {
     broadcastActivitySync({ source: 'post', action: 'create', timestamp: Date.now() });
   };
 
-  const filteredDiscussions = discussions.filter((d) => {
-    const matchesCat = selectedCategory === 'ALL' || d.category === selectedCategory;
-    const matchesSearch = d.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          d.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          d.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCat && matchesSearch;
-  });
+  const filteredDiscussions = React.useMemo(() => {
+    return discussions.filter((d) => {
+      // 1. Category match
+      const matchesCat = selectedCategory === 'ALL' || d.category === selectedCategory;
+
+      // 2. Hashtag pill filter
+      const matchesHashtag = !selectedHashtag || d.tags.some(t =>
+        t.toLowerCase().replace(/^#/, '') === selectedHashtag.toLowerCase().replace(/^#/, '')
+      );
+
+      // 3. Search query match
+      if (!searchQuery.trim()) {
+        return matchesCat && matchesHashtag;
+      }
+
+      const q = searchQuery.toLowerCase().trim();
+      const isExplicitHashtag = q.startsWith('#');
+      const cleanQ = isExplicitHashtag ? q.slice(1).trim() : q;
+
+      if (isExplicitHashtag && cleanQ) {
+        const tagMatch = d.tags.some(t => t.toLowerCase().replace(/^#/, '').includes(cleanQ));
+        return matchesCat && matchesHashtag && tagMatch;
+      }
+
+      // Keyword match across titles, questions, context summaries, author, tags & arguments
+      const titleMatch = d.title.toLowerCase().includes(q);
+      const questionMatch = d.question.toLowerCase().includes(q);
+      const contextMatch = (d.contextSummary || '').toLowerCase().includes(q);
+      const tagMatch = d.tags.some(t => t.toLowerCase().includes(q) || t.toLowerCase().replace(/^#/, '').includes(q));
+      const authorMatch = (d.authorName || '').toLowerCase().includes(q) || (d.authorUsername || '').toLowerCase().includes(q);
+      const argumentMatch = d.arguments?.some(a =>
+        a.content.toLowerCase().includes(q) || (a.evidenceLinks || []).some((e) => e.title?.toLowerCase().includes(q) || e.sourceName?.toLowerCase().includes(q))
+      );
+
+      return matchesCat && matchesHashtag && (titleMatch || questionMatch || contextMatch || tagMatch || authorMatch || argumentMatch);
+    });
+  }, [discussions, selectedCategory, selectedHashtag, searchQuery]);
 
   const activeDiscussion = discussions.find((d) => d.id === activeDiscussionId) || filteredDiscussions[0] || discussions[0];
 
   const handleVoteArgument = (argId: string, delta: number) => {
+    const hasLoggedIn = isAuthenticated || isMockMode || Boolean(profile?.id);
+    if (!hasLoggedIn) {
+      setShowSignInModal(true);
+      return;
+    }
     setDiscussions(prev => prev.map(disc => {
       if (disc.id !== activeDiscussion.id) return disc;
       return {
@@ -297,6 +377,11 @@ function OpenDiscussionsContent() {
   };
 
   const handleAddArgumentNode = (argData: Omit<DiscussionArgument, 'id' | 'createdAt' | 'upvotes' | 'downvotes' | 'upvotedBy'>) => {
+    const hasLoggedIn = isAuthenticated || isMockMode || Boolean(profile?.id);
+    if (!hasLoggedIn) {
+      setShowSignInModal(true);
+      return;
+    }
     const newArg: DiscussionArgument = {
       ...argData,
       id: `arg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -372,7 +457,14 @@ function OpenDiscussionsContent() {
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={() => {
+                  const hasLoggedIn = isAuthenticated || isMockMode || Boolean(profile?.id);
+                  if (!hasLoggedIn) {
+                    setShowSignInModal(true);
+                  } else {
+                    setIsCreateModalOpen(true);
+                  }
+                }}
                 className="px-6 py-2.5 rounded-full bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
               >
                 <Plus className="w-4 h-4" />
@@ -390,46 +482,143 @@ function OpenDiscussionsContent() {
           </div>
         </div>
 
-        {/* CATEGORY SELECTOR & SEARCH */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory('ALL')}
-              className={`px-3.5 py-1.5 rounded-full font-mono text-xs transition cursor-pointer shrink-0 border ${
-                selectedCategory === 'ALL'
-                  ? 'bg-white text-black border-white font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)]'
-                  : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
-              }`}
-            >
-              ALL TOPICS
-            </button>
-            {CATEGORIES.map((cat) => (
+        {/* DISCOVERY CONTROLS: CATEGORIES, KEYWORD & HASHTAG DISCOVERY */}
+        <div className="space-y-3 bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-5">
+          {/* Top Row: Categories + Keyword/Hashtag Search */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
               <button
-                key={cat}
                 type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-full font-mono text-xs transition cursor-pointer shrink-0 border ${
-                  selectedCategory === cat
-                    ? 'bg-purple-500/20 text-purple-300 border-purple-400 font-bold shadow-[0_0_15px_rgba(168,85,247,0.3)]'
-                    : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
+                onClick={() => setSelectedCategory('ALL')}
+                className={`px-3.5 py-1.5 rounded-full font-mono text-xs transition cursor-pointer shrink-0 border ${
+                  selectedCategory === 'ALL'
+                    ? 'bg-white text-black border-white font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)]'
+                    : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10'
                 }`}
               >
-                {cat.replace('_', ' ')}
+                ALL TOPICS
               </button>
-            ))}
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full font-mono text-xs transition cursor-pointer shrink-0 border ${
+                    selectedCategory === cat
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-400 font-bold shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+                      : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {cat.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
+
+            {/* Keyword & Hashtag Search Bar */}
+            <div className="relative w-full lg:w-80 shrink-0">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search keywords or #hashtags..."
+                className="w-full pl-9 pr-8 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-purple-400 transition"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-neutral-400 hover:text-white"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="relative w-full sm:w-72 shrink-0">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search questions or tags..."
-              className="w-full pl-9 pr-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-purple-400 transition"
-            />
+          {/* Bottom Row: Trending Hashtags */}
+          <div className="pt-2 border-t border-white/5 flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-mono text-[11px] text-purple-400/90 font-bold flex items-center gap-1 shrink-0">
+              <Hash className="w-3.5 h-3.5 text-purple-400" />
+              <span>Trending Hashtags:</span>
+            </span>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {allHashtags.map((tag) => {
+                const isActive = selectedHashtag?.toLowerCase() === tag.toLowerCase();
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      if (isActive) {
+                        setSelectedHashtag(null);
+                      } else {
+                        setSelectedHashtag(tag);
+                      }
+                    }}
+                    className={`px-2.5 py-1 rounded-lg font-mono text-[11px] transition flex items-center gap-1 cursor-pointer border ${
+                      isActive
+                        ? 'bg-purple-500/25 text-purple-200 border-purple-400 font-bold shadow-[0_0_12px_rgba(168,85,247,0.35)]'
+                        : 'bg-white/[0.03] text-neutral-400 border-white/10 hover:text-purple-300 hover:border-purple-500/30 hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    <span className="text-purple-400 font-semibold">#</span>
+                    <span>{tag}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Active Filter Ribbon */}
+          {(selectedHashtag || searchQuery.trim() || selectedCategory !== 'ALL') && (
+            <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-mono text-neutral-400">Active filters:</span>
+                {selectedCategory !== 'ALL' && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[11px] font-mono">
+                    Topic: {selectedCategory}
+                    <button type="button" onClick={() => setSelectedCategory('ALL')} className="hover:text-white">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedHashtag && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-bold">
+                    #{selectedHashtag}
+                    <button type="button" onClick={() => setSelectedHashtag(null)} className="hover:text-white">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                {searchQuery.trim() && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-neutral-200 text-[11px] font-mono">
+                    Keyword: &quot;{searchQuery}&quot;
+                    <button type="button" onClick={() => setSearchQuery('')} className="hover:text-white">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                <span className="text-[11px] font-mono text-neutral-400">
+                  ({filteredDiscussions.length} debate{filteredDiscussions.length === 1 ? '' : 's'} found)
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('ALL');
+                  setSelectedHashtag(null);
+                  setSearchQuery('');
+                }}
+                className="text-[11px] font-mono text-neutral-400 hover:text-white transition underline underline-offset-2 cursor-pointer"
+              >
+                Reset All Filters
+              </button>
+            </div>
+          )}
         </div>
 
         {/* MAIN 2-COLUMN DISCOURSE WORKSPACE */}
@@ -490,9 +679,39 @@ function OpenDiscussionsContent() {
                         {disc.title}
                       </h3>
 
-                      <p className="font-sans text-xs text-neutral-400 line-clamp-2 mb-3">
+                      <p className="font-sans text-xs text-neutral-400 line-clamp-2 mb-2.5">
                         {disc.question}
                       </p>
+
+                      {/* Hashtag Pills */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                        {disc.tags.slice(0, 3).map((t) => {
+                          const cleanTag = t.replace(/^#/, '');
+                          const isTagActive = selectedHashtag?.toLowerCase() === cleanTag.toLowerCase();
+                          return (
+                            <span
+                              key={t}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedHashtag(isTagActive ? null : cleanTag);
+                              }}
+                              className={`px-2 py-0.5 rounded-md text-[9px] font-mono border transition ${
+                                isTagActive 
+                                  ? 'bg-purple-500/25 border-purple-400 text-purple-200 font-bold'
+                                  : 'bg-white/5 border-white/10 text-neutral-400 hover:text-purple-300 hover:border-purple-500/30'
+                              }`}
+                              title={`Filter by #${cleanTag}`}
+                            >
+                              #{cleanTag}
+                            </span>
+                          );
+                        })}
+                        {disc.tags.length > 3 && (
+                          <span className="text-[9px] font-mono text-neutral-500">
+                            +{disc.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
 
                       <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400 border-t border-white/5 pt-2.5">
                         {disc.arguments.length > 0 ? (
@@ -603,11 +822,26 @@ function OpenDiscussionsContent() {
                 {/* Tags & Debater metadata */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10 text-xs font-mono text-neutral-400">
                   <div className="flex flex-wrap items-center gap-2">
-                    {activeDiscussion.tags.map(t => (
-                      <span key={t} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-neutral-300 text-[10px]">
-                        #{t}
-                      </span>
-                    ))}
+                    {activeDiscussion.tags.map(t => {
+                      const cleanT = t.replace(/^#/, '');
+                      const isTagActive = selectedHashtag?.toLowerCase() === cleanT.toLowerCase();
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setSelectedHashtag(isTagActive ? null : cleanT)}
+                          className={`px-2 py-0.5 rounded-md border text-[10px] transition cursor-pointer flex items-center gap-0.5 ${
+                            isTagActive
+                              ? 'bg-purple-500/30 border-purple-400 text-purple-200 font-bold'
+                              : 'bg-white/5 border-white/10 text-neutral-300 hover:border-purple-400/50 hover:text-purple-300'
+                          }`}
+                          title={`Filter discussions by #${cleanT}`}
+                        >
+                          <span className="text-purple-400">#</span>
+                          <span>{cleanT}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-neutral-500">Initiated by</span>
@@ -775,6 +1009,13 @@ function OpenDiscussionsContent() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onDiscussionCreated={handleDiscussionCreated}
+      />
+
+      {/* Sovereign Sign-In Prompt Modal */}
+      <SignInPromptModal
+        isOpen={showSignInModal}
+        onClose={handleCloseSignInModal}
+        feature="discussions"
       />
     </div>
   );
