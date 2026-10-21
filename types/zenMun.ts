@@ -531,7 +531,7 @@ export const TUTORIAL_STEPS_CONTENT: TutorialStepDef[] = [
   {
     step: 17,
     title: 'Session Code & Projection',
-    text: 'Your session code. Click it to put the code and a QR code on the screen for the whole room, or to copy it. Delegates enter it at gavelling.com or zenvitra.xyz to join in real time.',
+    text: 'Your committee broadcast code. Click it to project the session room code and QR overlay to the entire dais hall. Delegates scan the QR or enter the code at zenvitra.xyz to sync their live committee portal in real time.',
     targets: ['tutorial-target-session-code'],
     highlightWords: ['session code', 'QR code'],
   },

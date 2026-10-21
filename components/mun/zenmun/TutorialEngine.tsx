@@ -1,7 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ArrowRight, X, Sparkles, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  X,
+  Sparkles,
+  Shield,
+  Command,
+  Keyboard,
+  Clock,
+  Mic,
+  Gavel,
+  BookOpen,
+} from 'lucide-react';
 import { useZenMun } from '@/context/ZenMunContext';
 import { TUTORIAL_STEPS_CONTENT, TutorialStepDef } from '@/types/zenMun';
 
@@ -14,18 +26,17 @@ interface TargetRect {
 }
 
 export function TutorialEngine() {
-  const { session, setSession, nextTutorialStep, prevTutorialStep, skipTutorial, endTutorial } = useZenMun();
+  const { session, setSession, nextTutorialStep, prevTutorialStep, endTutorial } = useZenMun();
   const { isActive, currentStep, welcomeModalOpen } = session.tutorial;
 
   const [targetRects, setTargetRects] = useState<TargetRect[]>([]);
-  const [stickTipCoord, setStickTipCoord] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const stickRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<'tour' | 'hotkeys'>('tour');
 
   const currentStepData: TutorialStepDef =
     TUTORIAL_STEPS_CONTENT[currentStep - 1] || TUTORIAL_STEPS_CONTENT[0];
-  const isFinal = currentStep === 17;
+  const isFinal = currentStep === TUTORIAL_STEPS_CONTENT.length;
 
-  // Measure target elements bounding rectangles dynamically
+  // Track target bounding rects dynamically
   useEffect(() => {
     if (!isActive) {
       setTargetRects([]);
@@ -52,44 +63,68 @@ export function TutorialEngine() {
         });
       }
       setTargetRects(rects);
-
-      // Measure guiding tip of Zeno's outstretched wing
-      if (stickRef.current) {
-        const b = stickRef.current.getBoundingClientRect();
-        // Zeno's outstretched wing tip is at x: 14%, y: 44% of the container
-        setStickTipCoord({
-          x: b.left + b.width * 0.14,
-          y: b.top + b.height * 0.44,
-        });
-      } else {
-        setStickTipCoord({
-          x: window.innerWidth - 240,
-          y: window.innerHeight - 220,
-        });
-      }
     };
 
     updateRects();
-    const handleResize = () => updateRects();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', updateRects);
     window.addEventListener('scroll', updateRects, true);
-
-    // Continuous RAF / interval tracking for dynamic layout changes
     const interval = setInterval(updateRects, 300);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', updateRects);
       window.removeEventListener('scroll', updateRects, true);
       clearInterval(interval);
     };
   }, [isActive, currentStep, currentStepData]);
 
-  // Welcome Modal: Clean Luxury Sovereign Dark Glass
+  // Keyboard navigation during tour
+  useEffect(() => {
+    if (!isActive) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        if (isFinal) endTutorial();
+        else nextTutorialStep();
+      } else if (e.key === 'ArrowLeft' && currentStep > 1) {
+        prevTutorialStep();
+      } else if (e.key === 'Escape') {
+        endTutorial();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isActive, currentStep, isFinal, nextTutorialStep, prevTutorialStep, endTutorial]);
+
+  // Highlight bold/keywords
+  const renderFormattedSpeech = (text: string, highlightWords?: string[]) => {
+    if (!highlightWords || highlightWords.length === 0) return text;
+    const escaped = highlightWords.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) => {
+      const isMatch = highlightWords.some((w) => w.toLowerCase() === part.toLowerCase());
+      if (isMatch) {
+        return (
+          <span key={i} className="text-cyan-300 font-extrabold underline decoration-cyan-400/40 underline-offset-2">
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 1. WELCOME & PROTOCOL COMMAND MODAL (Sovereign Diplomatic Nexus)
+  // ─────────────────────────────────────────────────────────────
   if (welcomeModalOpen) {
     return (
       <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
-        <div className="w-full max-w-sm bg-[#090d16] rounded-3xl border border-white/15 shadow-[0_0_60px_rgba(0,0,0,0.9)] p-7 text-center space-y-6 text-white relative">
-          {/* Top-Right Dismiss Button */}
+        <div className="w-full max-w-lg bg-[#080d1a] rounded-3xl border border-white/15 shadow-[0_0_80px_rgba(0,0,0,0.95)] p-7 space-y-6 text-white relative overflow-hidden">
+          {/* Subtle Ambient Radial Glow */}
+          <div className="absolute -top-24 -left-24 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Dismiss button */}
           <button
             type="button"
             onClick={() => {
@@ -99,129 +134,197 @@ export function TutorialEngine() {
                 tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
               }));
             }}
-            className="absolute top-4 right-4 p-2 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
-            title="Close"
+            className="absolute top-4 right-4 p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer z-10"
+            title="Close Protocol Modal"
           >
             <X className="w-4 h-4" />
           </button>
 
-          {/* Zeno Welcome Mascot */}
-          <div className="w-52 h-48 mx-auto flex items-center justify-center">
-            <img
-              src="/assets/zeno.png"
-              alt="Zeno the Diplomatic Owl Guide"
-              className="w-full h-full object-contain drop-shadow-[0_10px_25px_rgba(6,182,212,0.25)] select-none"
-            />
+          {/* Sovereign Emblem & Title */}
+          <div className="text-center space-y-3 relative z-10">
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-cyan-500/20 via-white/5 to-amber-500/20 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_35px_rgba(6,182,212,0.25)] relative group">
+              <Shield className="w-10 h-10 text-cyan-300 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]" />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400/20 border border-amber-400/60 flex items-center justify-center">
+                <Gavel className="w-3 h-3 text-amber-300" />
+              </div>
+            </div>
+
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-[10px] font-mono font-black uppercase tracking-widest text-cyan-300 mb-2">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>ZENVITRA DAIS NEXUS</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
+                COMMITTEE COMMAND SUITE
+              </h2>
+              <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed mt-1">
+                The high-performance diplomatic operating system for Model UN, summit presidiums, and parliamentary debate.
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-lg font-black text-white tracking-tight uppercase leading-snug">
-              HAVE YOU USED ZENVITRA MUN BEFORE?
-            </h2>
-            <p className="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed">
-              Zeno has a short interactive run-through prepared for your dais session.
-            </p>
-          </div>
-
-          <div className="flex items-center justify-center gap-3 pt-2">
+          {/* Mode Tabs: Interactive Tour vs Keyboard Shortcuts */}
+          <div className="flex rounded-xl bg-black/50 p-1 border border-white/10">
             <button
               type="button"
-              onClick={() => {
-                setSession((prev) => ({
-                  ...prev,
-                  sessionState: 'in-session',
-                  tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: true, currentStep: 1 },
-                }));
-              }}
-              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 cursor-pointer active:scale-95"
+              onClick={() => setActiveTab('tour')}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                activeTab === 'tour'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
             >
-              SHOW ME AROUND
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Interactive Protocol Tour</span>
             </button>
             <button
               type="button"
-              onClick={() => {
-                setSession((prev) => ({
-                  ...prev,
-                  sessionState: 'in-session',
-                  tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
-                }));
-              }}
-              className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-neutral-300 font-bold text-xs uppercase tracking-wider transition cursor-pointer border border-white/15"
+              onClick={() => setActiveTab('hotkeys')}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                activeTab === 'hotkeys'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
             >
-              SKIP TUTORIAL
+              <Keyboard className="w-3.5 h-3.5" />
+              <span>Hotkeys &amp; Rules</span>
             </button>
           </div>
+
+          {/* Content Pane */}
+          {activeTab === 'tour' ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1">
+                  <div className="font-bold text-white flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Dual Caucus Clocks</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-400 leading-normal">
+                    Track total moderated caucus time and individual speaking slots simultaneously.
+                  </p>
+                </div>
+                <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1">
+                  <div className="font-bold text-white flex items-center gap-1.5">
+                    <Mic className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Live Yields &amp; RTR</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-400 leading-normal">
+                    Yield to Chair, questions, or delegations with a separate Right of Reply buffer.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSession((prev) => ({
+                      ...prev,
+                      sessionState: 'in-session',
+                      tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: true, currentStep: 1 },
+                    }));
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/25 cursor-pointer active:scale-95 flex items-center gap-1.5"
+                >
+                  <span>LAUNCH PROTOCOL TOUR</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSession((prev) => ({
+                      ...prev,
+                      sessionState: 'in-session',
+                      tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
+                    }));
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 border border-white/10"
+                >
+                  ENTER LIVE DAIS
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Hotkeys & Protocol Cheatsheet */
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-1 text-xs">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                  <span className="text-neutral-300 font-medium">Start / Pause Timer</span>
+                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">Space</kbd>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                  <span className="text-neutral-300 font-medium">Next Speaker in Queue</span>
+                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">N</kbd>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                  <span className="text-neutral-300 font-medium">Reset Clock to Full Time</span>
+                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">R</kbd>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                  <span className="text-neutral-300 font-medium">Raise Motion / Caucus</span>
+                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">M</kbd>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                  <span className="text-neutral-300 font-medium">Roll Call &amp; Attendance</span>
+                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">C</kbd>
+                </div>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
+                  <span className="text-neutral-300 font-medium">Yield Active Speaker Floor</span>
+                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">Y</kbd>
+                </div>
+              </div>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSession((prev) => ({
+                      ...prev,
+                      sessionState: 'in-session',
+                      tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
+                    }));
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-98 shadow-md shadow-emerald-500/20"
+                >
+                  START SESSION
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
+  // If tour is not actively triggered, render nothing
   if (!isActive) return null;
 
-  // Formatter for highlighting keywords inside speech bubble
-  const renderFormattedSpeech = (text: string, highlightWords: string[] = []) => {
-    if (!highlightWords || highlightWords.length === 0) {
-      return text;
-    }
-
-    const escaped = highlightWords.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-    const regex = new RegExp(`(${escaped})`, 'gi');
-    const parts = text.split(regex);
-
-    return parts.map((part, i) => {
-      const isMatch = highlightWords.some((w) => w.toLowerCase() === part.toLowerCase());
-      if (isMatch) {
-        return (
-          <span
-            key={i}
-            className="text-[#A1853B] font-black bg-[#E4DB98]/30 px-1 py-0.5 rounded cursor-pointer transition hover:bg-[#E4DB98]/60 inline-block"
-          >
-            {part}
-          </span>
-        );
-      }
-      return part;
-    });
-  };
-
+  // ─────────────────────────────────────────────────────────────
+  // 2. ACTIVE INTERACTIVE TOUR HUD (Cyber-Sovereign Target Spotlight)
+  // ─────────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-90 pointer-events-none select-none">
+    <div className="fixed inset-0 pointer-events-none z-[9990] select-none">
+      {/* Dynamic Keyframes */}
       <style>{`
-        @keyframes tutorialFlashHalo {
+        @keyframes sovereignHaloPulse {
           0%, 100% {
-            box-shadow: 0 0 25px rgba(228, 219, 152, 0.95), 0 0 60px rgba(217, 119, 6, 0.5), inset 0 0 15px rgba(228, 219, 152, 0.6);
-            border-color: #E4DB98;
-            transform: scale(1);
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.9), 0 0 25px rgba(6, 182, 212, 0.45);
           }
           50% {
-            box-shadow: 0 0 50px rgba(245, 158, 11, 1), 0 0 90px rgba(245, 158, 11, 0.8), inset 0 0 25px rgba(245, 158, 11, 0.8);
-            border-color: #F59E0B;
-            transform: scale(1.02);
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.95), 0 0 40px rgba(251, 191, 36, 0.6);
           }
         }
-        @keyframes beamFlowDash {
-          to {
-            stroke-dashoffset: -28;
-          }
-        }
-        .animate-tutorial-halo {
-          animation: tutorialFlashHalo 1.4s ease-in-out infinite;
-        }
-        .animate-beam-flow {
-          animation: beamFlowDash 1s linear infinite;
+        .animate-sovereign-halo {
+          animation: sovereignHaloPulse 1.8s ease-in-out infinite;
         }
       `}</style>
-      
-      {/* ─────────────────────────────────────────────────────────────
-          1. FULL SCREEN SPOTLIGHT SVG MASK
-             Dims entire screen EXCEPT active targets which shine crisp
-      ───────────────────────────────────────────────────────────── */}
-      <svg className="fixed inset-0 w-full h-full pointer-events-none z-80" xmlns="http://www.w3.org/2000/svg">
+
+      {/* Full-screen Darkened Backdrop SVG with transparent holes cut out for targets */}
+      <svg className="fixed inset-0 w-full h-full pointer-events-none z-[80]" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <mask id="tutorial-spotlight-mask">
-            {/* White base = fully visible overlay */}
+          <mask id="zen-spotlight-mask">
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            {/* Black cutouts = transparent holes letting UI shine through */}
             {targetRects.map((t) => (
               <rect
                 key={`cutout-${t.id}`}
@@ -229,121 +332,24 @@ export function TutorialEngine() {
                 y={t.top - 6}
                 width={t.width + 12}
                 height={t.height + 12}
-                rx="16"
+                rx="14"
                 fill="black"
               />
             ))}
           </mask>
-
-          {/* Golden energy beam gradient */}
-          <linearGradient id="beam-gold-gradient" x1="1" y1="1" x2="0" y2="0">
-            <stop offset="0%" stopColor="#E4DB98" stopOpacity="0.95" />
-            <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#D97706" stopOpacity="0.85" />
-          </linearGradient>
-
-          {/* Inter-Target Relationship Gradient */}
-          <linearGradient id="inter-target-gradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#34D399" stopOpacity="0.95" />
-            <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#60A5FA" stopOpacity="0.95" />
-          </linearGradient>
-
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
         </defs>
 
-        {/* Backdrop overlay with holes cut out for targets */}
         <rect
           x="0"
           y="0"
           width="100%"
           height="100%"
-          fill="rgba(15, 24, 18, 0.52)"
-          mask="url(#tutorial-spotlight-mask)"
+          fill="rgba(3, 4, 7, 0.65)"
+          mask="url(#zen-spotlight-mask)"
         />
-
-        {/* 1. BEAM FROM GAVIN'S POINTER STICK TO EACH ACTIVE TARGET */}
-        {targetRects.map((t) => {
-          const targetX = t.left + t.width / 2;
-          const targetY = t.top + t.height / 2;
-          const startX = stickTipCoord.x || window.innerWidth - 260;
-          const startY = stickTipCoord.y || window.innerHeight - 280;
-
-          // Smooth curved path to target
-          const ctrlX = (startX + targetX) / 2;
-          const ctrlY = Math.min(startY, targetY) - 60;
-
-          return (
-            <g key={`beam-${t.id}`}>
-              {/* Glowing animated dashed connector beam */}
-              <path
-                d={`M ${startX} ${startY} Q ${ctrlX} ${ctrlY} ${targetX} ${targetY}`}
-                fill="none"
-                stroke="url(#beam-gold-gradient)"
-                strokeWidth="4"
-                strokeDasharray="10 6"
-                filter="url(#glow)"
-                className="animate-beam-flow"
-              />
-
-              {/* Pulsing target contact indicator */}
-              <circle cx={targetX} cy={targetY} r="12" fill="#E4DB98" className="animate-ping opacity-60" />
-              <circle cx={targetX} cy={targetY} r="6" fill="#F59E0B" stroke="#FFF" strokeWidth="2.5" />
-            </g>
-          );
-        })}
-
-        {/* 2. INTER-TARGET RELATIONSHIP CONNECTOR BEAMS (SHOWING HOW RELATED ELEMENTS CONNECT) */}
-        {targetRects.length >= 2 &&
-          targetRects.map((t1, idx) => {
-            if (idx === targetRects.length - 1) return null;
-            const t2 = targetRects[idx + 1];
-
-            const x1 = t1.left + t1.width / 2;
-            const y1 = t1.top + t1.height / 2;
-            const x2 = t2.left + t2.width / 2;
-            const y2 = t2.top + t2.height / 2;
-
-            const midX = (x1 + x2) / 2;
-            const midY = (y1 + y2) / 2 - 40;
-
-            return (
-              <g key={`rel-beam-${t1.id}-${t2.id}`}>
-                {/* Dynamic Inter-Relationship Connecting Line */}
-                <path
-                  d={`M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`}
-                  fill="none"
-                  stroke="url(#inter-target-gradient)"
-                  strokeWidth="4"
-                  strokeDasharray="8 6"
-                  filter="url(#glow)"
-                  className="animate-beam-flow"
-                />
-
-                {/* Relationship Node Badge */}
-                <circle cx={midX} cy={midY + 15} r="14" fill="#243928" stroke="#E4DB98" strokeWidth="2.5" />
-                <text
-                  x={midX}
-                  y={midY + 19}
-                  textAnchor="middle"
-                  fill="#E4DB98"
-                  fontSize="10"
-                  fontWeight="bold"
-                  fontFamily="sans-serif"
-                >
-                  🔗
-                </text>
-              </g>
-            );
-          })}
       </svg>
 
-      {/* ─────────────────────────────────────────────────────────────
-          2. FLASHING GOLDEN HALOS AROUND TARGET ELEMENTS
-      ───────────────────────────────────────────────────────────── */}
+      {/* Flashing Laser Rings around target elements */}
       {targetRects.map((t) => (
         <div
           key={`flash-ring-${t.id}`}
@@ -353,35 +359,32 @@ export function TutorialEngine() {
             width: t.width + 12,
             height: t.height + 12,
           }}
-          className="fixed pointer-events-none z-85 rounded-2xl border-2 border-[#E4DB98] animate-tutorial-halo"
+          className="fixed pointer-events-none z-[85] rounded-2xl animate-sovereign-halo"
         >
-          {/* Sparkle chip in corner */}
-          <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-80" />
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-500 shadow-[0_0_10px_#F59E0B]" />
+          <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-80" />
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-400 shadow-[0_0_10px_#06b6d4]" />
           </span>
         </div>
       ))}
 
-      {/* ─────────────────────────────────────────────────────────────
-          3. TOP NAVIGATION PILL: [ < Back ] [ 4/17 ] [ Skip > / Next > ]
-      ───────────────────────────────────────────────────────────── */}
+      {/* Top Floating Step Controller */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-auto z-[90]">
-        <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-[#0a0d18] shadow-2xl border border-white/15 text-xs font-bold text-white">
+        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#080d1a]/95 backdrop-blur-md shadow-2xl border border-white/15 text-xs font-bold text-white">
           <button
             type="button"
             disabled={currentStep === 1}
             onClick={prevTutorialStep}
             className={`flex items-center gap-1 cursor-pointer transition ${
-              currentStep === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-cyan-400'
+              currentStep === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-cyan-300'
             }`}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back</span>
+            <span>Prev</span>
           </button>
 
-          <span className="font-mono text-cyan-300 px-2.5 py-0.5 rounded bg-black/50 border border-cyan-500/30">
-            {currentStep}/17
+          <span className="font-mono text-cyan-300 px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-[11px]">
+            STEP {currentStep} / {TUTORIAL_STEPS_CONTENT.length}
           </span>
 
           <button
@@ -389,60 +392,64 @@ export function TutorialEngine() {
             onClick={isFinal ? endTutorial : nextTutorialStep}
             className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 cursor-pointer font-black"
           >
-            <span>{isFinal ? 'Finish >' : currentStepData.actionLabel || 'Next >'}</span>
+            <span>{isFinal ? 'Finish Guide' : 'Next'}</span>
             {!isFinal && <ArrowRight className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          4. TOP-RIGHT END TUTORIAL BUTTON
-      ───────────────────────────────────────────────────────────── */}
+      {/* Top-Right Dismiss Button */}
       <div className="absolute top-4 right-6 pointer-events-auto z-[90]">
         <button
           type="button"
           onClick={endTutorial}
-          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition shadow-md border border-white/15 flex items-center gap-1.5"
+          className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition shadow-md border border-white/15 flex items-center gap-1.5"
         >
           <X className="w-3.5 h-3.5" />
-          <span>End Tutorial</span>
+          <span>Exit Guide</span>
         </button>
       </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          5. ZENO MASCOT WITH GUIDING GESTURE & SPEECH BUBBLE
-      ───────────────────────────────────────────────────────────── */}
-      <div className="absolute bottom-2 right-6 max-w-sm pointer-events-auto z-[90] flex flex-col items-end">
-        
-        {/* Mascot Speech Bubble Card */}
-        <div className="p-5 rounded-2xl bg-[#0a0d18] border border-white/15 shadow-2xl relative space-y-3 mb-2 animate-fade-in max-w-xs sm:max-w-sm text-white">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <div className="text-xs font-black uppercase text-cyan-300 flex items-center gap-1.5">
-              <span>Zeno &bull; Dais Guide</span>
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+      {/* Sovereign Floating Command HUD Card (Bottom Right) */}
+      <div className="absolute bottom-6 right-6 max-w-sm w-full pointer-events-auto z-[90] animate-fade-in">
+        <div className="p-5 rounded-3xl bg-[#080d1a]/95 backdrop-blur-xl border border-cyan-500/30 shadow-[0_0_50px_rgba(0,0,0,0.9)] space-y-3.5 text-white relative overflow-hidden">
+          {/* Subtle ambient corner gradient */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+
+          {/* Card Header */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
+                <Command className="w-3 h-3 text-cyan-300" />
+              </div>
+              <span className="text-xs font-black uppercase tracking-wider text-cyan-300 truncate max-w-[200px]">
+                {currentStepData.title}
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-neutral-400 bg-black/40 px-2 py-0.5 rounded border border-white/10">
-              Step {currentStep}/17
+            <span className="text-[10px] font-mono text-neutral-400">
+              {currentStep}/{TUTORIAL_STEPS_CONTENT.length}
             </span>
           </div>
 
-          {/* Speech Text with Gold Formatted Keywords linking to UI */}
-          <p className="text-xs text-neutral-200 leading-relaxed font-medium">
+          {/* Formatted Guide Copy */}
+          <p className="text-xs text-neutral-300 leading-relaxed font-medium">
             {renderFormattedSpeech(currentStepData.text, currentStepData.highlightWords)}
           </p>
 
-          {/* Diamond Tail pointing down to Zeno */}
-          <div className="w-3 h-3 bg-[#0a0d18] rotate-45 border-r border-b border-white/15 absolute -bottom-1.5 right-20" />
-        </div>
-
-        {/* Zeno Mascot Illustration */}
-        <div ref={stickRef} className="relative w-52 sm:w-60 h-auto drop-shadow-2xl">
-          <img
-            src="/assets/zeno.png"
-            alt="Zeno the Diplomatic Owl pointing to Dais components"
-            className="w-full h-auto object-contain select-none pointer-events-none animate-fade-in"
-          />
+          {/* Bottom Card Controls */}
+          <div className="flex items-center justify-between pt-1 text-[11px]">
+            <span className="text-[10px] text-neutral-400 font-mono">
+              Press <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-white">Enter</kbd> to advance
+            </span>
+            <button
+              type="button"
+              onClick={isFinal ? endTutorial : nextTutorialStep}
+              className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-[10px] tracking-wider transition cursor-pointer flex items-center gap-1 active:scale-95"
+            >
+              <span>{isFinal ? 'Done' : 'Next Step'}</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

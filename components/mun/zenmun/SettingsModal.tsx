@@ -538,7 +538,7 @@ export function SettingsModal() {
                         </button>
                       </div>
                     </div>
-                    <div className="text-[11px] text-neutral-400">Delegates enter this at gavelling.com or zenvitra.xyz to join.</div>
+                    <div className="text-[11px] text-neutral-400">Delegates enter this at zenvitra.xyz to join the live committee room.</div>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">

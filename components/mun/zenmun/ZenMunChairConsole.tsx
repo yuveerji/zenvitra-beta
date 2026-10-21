@@ -136,6 +136,67 @@ export function ZenMunChairConsole() {
   const [contentRating, setContentRating] = useState(7);
   const [savedFeedbackAlert, setSavedFeedbackAlert] = useState(false);
 
+  // Sidebar Tab & Filter state
+  const [sidebarTab, setSidebarTab] = useState<'queue' | 'roster'>('queue');
+  const [rosterSearch, setRosterSearch] = useState('');
+  const [rosterFilter, setRosterFilter] = useState<'all' | 'present' | 'present_voting' | 'absent'>('all');
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        activeEl instanceof HTMLSelectElement ||
+        activeEl?.getAttribute('contenteditable') === 'true';
+
+      if (isInput) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleTimer();
+      } else if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        nextSpeaker();
+      } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        resetTimer();
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        setShowMotionsModal(true);
+      } else if (e.key === 'c' || e.key === 'C') {
+        e.preventDefault();
+        setShowRollCallModal(true);
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        setShowScoreboardModal(true);
+      } else if (e.key === 'y' || e.key === 'Y') {
+        e.preventDefault();
+        openYieldPopover();
+      } else if (e.key === 'q' || e.key === 'Q') {
+        e.preventDefault();
+        setShowQrOverlay(true);
+      } else if (e.key === '?') {
+        e.preventDefault();
+        startTutorial();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [
+    toggleTimer,
+    nextSpeaker,
+    resetTimer,
+    setShowMotionsModal,
+    setShowRollCallModal,
+    setShowScoreboardModal,
+    openYieldPopover,
+    setShowQrOverlay,
+    startTutorial,
+  ]);
+
   const activeDelegate: ZenDelegate | undefined = session.roster.find(
     (d) => d.id === session.currentSpeakerId
   ) || session.roster[0];
@@ -623,15 +684,15 @@ export function ZenMunChairConsole() {
             <LifeBuoy className="w-4 h-4" />
           </button>
 
-          {/* Tutorial Button */}
+          {/* Sovereign Protocol Guide & Hotkeys */}
           <button
             type="button"
             onClick={startTutorial}
-            className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-white/10 transition"
-            title="Run Interactive Tutorial"
+            className="px-3 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/50 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-xs"
+            title="Dais Protocol Guide & Keyboard Shortcuts [?]"
           >
-            <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Tutorial</span>
+            <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Protocol Guide</span>
           </button>
         </div>
       </header>
@@ -742,108 +803,224 @@ export function ZenMunChairConsole() {
               </div>
             </div>
 
-            {/* Pinned Speaker Queue & Alphabetical Seated Roster */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-4">
-              
-              {/* PINNED SPEAKER QUEUE (Top of Sidebar) */}
-              <div className="space-y-1.5">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 px-1">
-                  Active Speaker Queue
-                </div>
+            {/* Sidebar Tab Switcher: Queue vs Roster */}
+            <div className="flex border-b border-white/10 bg-[#060a14]">
+              <button
+                type="button"
+                onClick={() => setSidebarTab('queue')}
+                className={`flex-1 py-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
+                  sidebarTab === 'queue'
+                    ? 'border-cyan-400 text-cyan-300 bg-white/[0.04]'
+                    : 'border-transparent text-neutral-400 hover:text-white'
+                }`}
+              >
+                <span>Queue</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-300 text-[10px] font-mono border border-cyan-500/30">
+                  {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).length}
+                </span>
+              </button>
 
-                {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).map((delId, qIdx) => {
-                  const del = session.roster.find((d) => d.id === delId);
-                  if (!del) return null;
-                  const isActive = qIdx === 0;
+              <button
+                type="button"
+                onClick={() => setSidebarTab('roster')}
+                className={`flex-1 py-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
+                  sidebarTab === 'roster'
+                    ? 'border-cyan-400 text-cyan-300 bg-white/[0.04]'
+                    : 'border-transparent text-neutral-400 hover:text-white'
+                }`}
+              >
+                <span>Roster</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-neutral-300 text-[10px] font-mono border border-white/15">
+                  {session.roster.length}
+                </span>
+              </button>
+            </div>
 
-                  return (
-                    <div
-                      key={del.id}
-                      className={`p-2.5 rounded-2xl flex items-center justify-between gap-2 transition ${
-                        isActive
-                          ? 'bg-gradient-to-r from-amber-500/15 to-transparent border border-amber-500/40 shadow-[0_0_15px_rgba(251,191,36,0.1)]'
-                          : 'bg-[#0d1424] hover:bg-[#121b30] border border-white/5'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        {/* Flag with Badge */}
-                        <div className="relative shrink-0">
-                          <img
-                            src={`https://flagcdn.com/w80/${del.countryCode.toLowerCase()}.png`}
-                            alt=""
-                            className="w-6 h-6 rounded-full object-cover border border-white/20"
-                            onError={(e) => {
-                              (e.target as HTMLElement).style.display = 'none';
-                            }}
-                          />
-                          <span
-                            className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                              isActive && session.isTimerRunning
-                                ? 'bg-amber-400 text-black'
-                                : 'bg-black/80 text-white border border-white/20'
-                            }`}
-                          >
-                            {isActive && session.isTimerRunning ? <Mic className="w-2 h-2" /> : qIdx + 1}
-                          </span>
-                        </div>
+            {/* Sidebar Content Body */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {sidebarTab === 'queue' ? (
+                /* TAB 1: SPEAKER QUEUE */
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                      Speaking Order
+                    </span>
+                    {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSession((prev) => ({
+                            ...prev,
+                            ...(prev.activeMode === 'gsl'
+                              ? { speakerQueue: [], currentSpeakerId: null }
+                              : { caucusSpeakerQueue: [], currentSpeakerId: null }),
+                          }));
+                        }}
+                        className="text-[10px] font-bold text-rose-400 hover:text-rose-300 cursor-pointer"
+                      >
+                        Clear Queue
+                      </button>
+                    )}
+                  </div>
 
-                        <div className="min-w-0">
-                          <div className="text-xs font-bold text-white truncate">{del.name}</div>
-                          <div className={`text-[10px] font-semibold leading-none ${isActive ? 'text-amber-400' : 'text-neutral-400'}`}>
-                            {isActive
-                              ? session.isTimerRunning
-                                ? 'SPEAKING'
-                                : 'READY TO SPEAK'
-                              : 'In Queue'}
+                  {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).length === 0 ? (
+                    <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-2">
+                      <div className="w-8 h-8 mx-auto rounded-full bg-white/5 flex items-center justify-center text-neutral-400">
+                        <Mic className="w-4 h-4 opacity-50" />
+                      </div>
+                      <div className="text-xs font-bold text-neutral-300">Queue is empty</div>
+                      <p className="text-[11px] text-neutral-500">
+                        Switch to the Roster tab or type in the bottom bar to add speakers.
+                      </p>
+                    </div>
+                  ) : (
+                    (session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).map((delId, qIdx) => {
+                      const del = session.roster.find((d) => d.id === delId);
+                      if (!del) return null;
+                      const isActive = qIdx === 0;
+
+                      return (
+                        <div
+                          key={del.id}
+                          className={`p-2.5 rounded-2xl flex items-center justify-between gap-2 transition ${
+                            isActive
+                              ? 'bg-gradient-to-r from-cyan-500/15 to-transparent border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+                              : 'bg-[#0d1424] hover:bg-[#121b30] border border-white/5'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {/* Flag with Order Badge */}
+                            <div className="relative shrink-0">
+                              <img
+                                src={`https://flagcdn.com/w80/${del.countryCode.toLowerCase()}.png`}
+                                alt=""
+                                className="w-6 h-6 rounded-full object-cover border border-white/20"
+                                onError={(e) => {
+                                  (e.target as HTMLElement).style.display = 'none';
+                                }}
+                              />
+                              <span
+                                className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                                  isActive && session.isTimerRunning
+                                    ? 'bg-cyan-400 text-black shadow-xs'
+                                    : 'bg-black/80 text-white border border-white/20'
+                                }`}
+                              >
+                                {isActive && session.isTimerRunning ? <Mic className="w-2 h-2" /> : qIdx + 1}
+                              </span>
+                            </div>
+
+                            <div className="min-w-0">
+                              <div className="text-xs font-bold text-white truncate">{del.name}</div>
+                              <div className={`text-[10px] font-semibold leading-none ${isActive ? 'text-cyan-400' : 'text-neutral-400'}`}>
+                                {isActive
+                                  ? session.isTimerRunning
+                                    ? 'SPEAKING NOW'
+                                    : 'ON THE FLOOR'
+                                  : `Position #${qIdx + 1}`}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => removeSpeakerFromQueue(qIdx)}
+                              className="text-white/40 hover:text-rose-400 p-1 cursor-pointer transition"
+                              title="Remove from queue"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
-                      </div>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => removeSpeakerFromQueue(qIdx)}
-                          className="text-white/40 hover:text-rose-400 p-0.5 cursor-pointer transition"
-                          title="Remove from queue"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="text-white/20 text-xs cursor-grab">⋮⋮</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* ALPHABETICAL SEATED ROSTER (Below Queue) */}
-              <div className="space-y-1 pt-2 border-t border-white/10">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 px-1">
-                  Seated Delegations (Click to Add)
+                      );
+                    })
+                  )}
                 </div>
-                {session.roster.map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => addSpeakerToQueue(d.id)}
-                    className="w-full p-2 rounded-xl bg-[#0d1424]/70 hover:bg-[#121b30] text-left flex items-center justify-between border border-white/5 transition cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <img
-                        src={`https://flagcdn.com/w80/${d.countryCode.toLowerCase()}.png`}
-                        alt=""
-                        className="w-5 h-5 rounded-full object-cover shrink-0 border border-white/10"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                      <span className="text-xs font-medium text-white/90 group-hover:text-white truncate">{d.name}</span>
+              ) : (
+                /* TAB 2: ROSTER WITH SEARCH & FILTER */
+                <div className="space-y-2.5">
+                  <div className="space-y-1.5">
+                    <input
+                      type="text"
+                      value={rosterSearch}
+                      onChange={(e) => setRosterSearch(e.target.value)}
+                      placeholder="Search delegations..."
+                      className="w-full px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400"
+                    />
+
+                    <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+                      {(['all', 'present', 'present_voting', 'absent'] as const).map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setRosterFilter(f)}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase transition cursor-pointer shrink-0 ${
+                            rosterFilter === f
+                              ? 'bg-cyan-500 text-black'
+                              : 'bg-white/5 text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {f === 'present_voting' ? 'P+V' : f}
+                        </button>
+                      ))}
                     </div>
-                    <span className="text-[10px] text-cyan-400 opacity-0 group-hover:opacity-100 font-mono transition">
-                      + Add
-                    </span>
-                  </button>
-                ))}
-              </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    {session.roster
+                      .filter((d) => {
+                        const matchesSearch = d.name.toLowerCase().includes(rosterSearch.toLowerCase());
+                        const matchesFilter =
+                          rosterFilter === 'all'
+                            ? true
+                            : rosterFilter === 'present'
+                            ? d.attendance === 'present' || d.attendance === 'present_voting'
+                            : d.attendance === rosterFilter;
+                        return matchesSearch && matchesFilter;
+                      })
+                      .map((d) => {
+                        const inQueue = (session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).includes(d.id);
+
+                        return (
+                          <button
+                            key={d.id}
+                            type="button"
+                            onClick={() => addSpeakerToQueue(d.id)}
+                            className="w-full p-2 rounded-xl bg-[#0d1424]/70 hover:bg-[#121b30] text-left flex items-center justify-between border border-white/5 transition cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img
+                                src={`https://flagcdn.com/w80/${d.countryCode.toLowerCase()}.png`}
+                                alt=""
+                                className="w-5 h-5 rounded-full object-cover shrink-0 border border-white/10"
+                                onError={(e) => {
+                                  (e.target as HTMLElement).style.display = 'none';
+                                }}
+                              />
+                              <div className="truncate">
+                                <span className="text-xs font-medium text-white/90 group-hover:text-white block truncate">{d.name}</span>
+                                <span className="text-[9px] font-mono text-neutral-500 uppercase">
+                                  {d.attendance === 'present_voting' ? 'Present & Voting' : d.attendance}
+                                </span>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`text-[10px] font-mono font-bold transition px-1.5 py-0.5 rounded ${
+                                inQueue
+                                  ? 'text-cyan-400 bg-cyan-950/60 border border-cyan-500/30'
+                                  : 'text-neutral-400 opacity-0 group-hover:opacity-100 bg-white/5'
+                              }`}
+                            >
+                              {inQueue ? 'Queued' : '+ Add'}
+                            </span>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
           </aside>
         )}
@@ -980,8 +1157,18 @@ export function ZenMunChairConsole() {
               
               {/* Header Title / Active Mode */}
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300 bg-cyan-950/40 px-3.5 py-1.5 rounded-full border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-                  {session.activeMode === 'gsl' ? '☰ General Speaker\'s List' : `🔥 ${session.activeCaucusMotion?.typeName || 'Caucus'}`}
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300 bg-cyan-950/40 px-3.5 py-1.5 rounded-full border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1.5">
+                  {session.activeMode === 'gsl' ? (
+                    <>
+                      <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>General Speaker's List</span>
+                    </>
+                  ) : (
+                    <>
+                      <Flame className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{session.activeCaucusMotion?.typeName || 'Caucus'}</span>
+                    </>
+                  )}
                 </span>
 
                 {session.activeMode !== 'gsl' && (
@@ -995,6 +1182,34 @@ export function ZenMunChairConsole() {
                 )}
               </div>
 
+              {/* DUAL CAUCUS TIMER CAPSULE (When in Moderated Caucus) */}
+              {session.activeMode === 'moderated_caucus' && session.activeCaucusMotion && (
+                <div className="w-full max-w-xl p-3.5 rounded-2xl bg-[#090e1c] border border-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.12)] flex items-center justify-between gap-4 animate-fade-in">
+                  <div className="flex items-center gap-3 min-w-0 text-left">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
+                      <Flame className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold truncate">
+                        CAUCUS &bull; BY {session.activeCaucusMotion.proposedByName.toUpperCase()}
+                      </div>
+                      <div className="text-xs font-black text-white truncate max-w-[280px]">
+                        {session.activeCaucusMotion.topic}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <div className="text-[9px] uppercase tracking-wider text-neutral-400 font-bold">Total Caucus Left</div>
+                      <div className="text-lg font-mono font-black text-amber-300">
+                        {formatTime(session.caucusRemainingTotalSeconds)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Horizontal Queued Avatars Strip */}
               <div className="flex items-center justify-center gap-4 overflow-x-auto py-2 max-w-full">
                 {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).map((delId, idx) => {
@@ -1007,7 +1222,7 @@ export function ZenMunChairConsole() {
                       <div
                         className={`w-13 h-13 rounded-full overflow-hidden border-2 transition shadow-lg ${
                           isFirst
-                            ? 'border-amber-400 ring-4 ring-amber-400/20 scale-105 shadow-[0_0_20px_rgba(251,191,36,0.3)]'
+                            ? 'border-cyan-400 ring-4 ring-cyan-400/20 scale-105 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
                             : 'border-white/20 opacity-70 hover:opacity-100'
                         }`}
                       >
@@ -1021,7 +1236,7 @@ export function ZenMunChairConsole() {
                         {d.name}
                       </span>
                       {isFirst && (
-                        <span className="text-[9px] font-mono text-amber-400 font-bold uppercase tracking-wider">
+                        <span className="text-[9px] font-mono text-cyan-300 font-bold uppercase tracking-wider">
                           {session.isTimerRunning ? 'Speaking' : 'Ready'}
                         </span>
                       )}
@@ -1041,16 +1256,41 @@ export function ZenMunChairConsole() {
               {/* Center Active Speaker Flag & Name */}
               {activeDelegate ? (
                 <div className="flex flex-col items-center space-y-3 pt-2">
-                  <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-amber-400/80 shadow-[0_0_50px_rgba(251,191,36,0.25)] ring-8 ring-amber-400/10 relative">
-                    <img
-                      src={`https://flagcdn.com/w160/${activeDelegate.countryCode.toLowerCase()}.png`}
-                      alt={activeDelegate.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative">
+                    <div className={`w-36 h-36 rounded-full overflow-hidden border-4 transition-all duration-300 shadow-2xl relative ${
+                      session.isTimerRunning
+                        ? 'border-cyan-400 ring-8 ring-cyan-400/20 shadow-[0_0_60px_rgba(6,182,212,0.35)] scale-102'
+                        : 'border-white/20 ring-4 ring-white/5 shadow-[0_0_30px_rgba(0,0,0,0.5)]'
+                    }`}>
+                      <img
+                        src={`https://flagcdn.com/w160/${activeDelegate.countryCode.toLowerCase()}.png`}
+                        alt={activeDelegate.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* Live Equalizer Audio Waveform Pill */}
+                    {session.isTimerRunning && (
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-black/90 border border-cyan-400/60 shadow-lg flex items-center gap-1.5 z-10">
+                        <div className="flex items-end gap-0.5 h-3">
+                          <span className="w-1 bg-cyan-400 rounded-full animate-pulse h-2" />
+                          <span className="w-1 bg-cyan-300 rounded-full animate-pulse h-3" />
+                          <span className="w-1 bg-cyan-400 rounded-full animate-pulse h-2.5" />
+                          <span className="w-1 bg-cyan-200 rounded-full animate-pulse h-1.5" />
+                        </div>
+                        <span className="text-[10px] font-mono font-black text-cyan-300 tracking-wider">SPEAKING</span>
+                      </div>
+                    )}
                   </div>
-                  <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight drop-shadow-md">
-                    {activeDelegate.name}
-                  </h3>
+
+                  <div className="text-center space-y-0.5">
+                    <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight drop-shadow-md">
+                      {activeDelegate.name}
+                    </h3>
+                    <div className="text-xs font-medium text-neutral-400">
+                      {session.activeMode === 'gsl' ? 'General Speakers List' : session.activeCaucusMotion?.topic || 'Moderated Caucus'}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="py-8 text-sm font-bold text-neutral-400">
@@ -1062,17 +1302,29 @@ export function ZenMunChairConsole() {
               <div
                 onClick={toggleTimer}
                 id="tutorial-target-clock"
-                className={`font-mono font-black text-7xl sm:text-8xl tracking-tight transition cursor-pointer hover:scale-102 select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] ${
-                  isAmber ? 'text-amber-400 animate-pulse drop-shadow-[0_0_40px_rgba(251,191,36,0.5)]' : 'text-white hover:text-cyan-300'
+                className={`font-mono font-black text-7xl sm:text-8xl tracking-tight transition cursor-pointer hover:scale-102 select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] relative ${
+                  session.remainingSeconds === 0 && session.isTimerRunning
+                    ? 'text-rose-500 animate-pulse drop-shadow-[0_0_40px_rgba(244,63,94,0.6)]'
+                    : isAmber
+                    ? 'text-amber-400 animate-pulse drop-shadow-[0_0_40px_rgba(251,191,36,0.5)]'
+                    : 'text-white hover:text-cyan-300'
                 }`}
-                title="Click clock to Start / Pause"
+                title="Click clock to Start / Pause [Space]"
               >
                 {formatTime(session.remainingSeconds)}
               </div>
 
               {/* 6px Progress Bar & RTR Button on Right End */}
               <div className="w-full max-w-lg space-y-2">
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-between text-[11px] text-neutral-400 px-1 font-mono">
+                  <span>
+                    {session.remainingSeconds === 0 && session.isTimerRunning ? (
+                      <span className="text-rose-400 font-bold">TIME EXPIRED</span>
+                    ) : (
+                      <span>Slot: {session.speakingTimeSeconds}s</span>
+                    )}
+                  </span>
+
                   {/* Right to Reply (RTR) Button */}
                   <button
                     type="button"
@@ -1089,7 +1341,9 @@ export function ZenMunChairConsole() {
                 <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/10">
                   <div
                     className={`h-full transition-all duration-300 rounded-full ${
-                      isAmber
+                      session.remainingSeconds === 0 && session.isTimerRunning
+                        ? 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.6)]'
+                        : isAmber
                         ? 'bg-gradient-to-r from-amber-500 to-rose-500 shadow-[0_0_15px_rgba(251,191,36,0.5)]'
                         : 'bg-gradient-to-r from-cyan-500 via-teal-400 to-amber-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
                     }`}
@@ -1107,7 +1361,7 @@ export function ZenMunChairConsole() {
                   id="tutorial-target-reset-btn"
                   onClick={resetTimer}
                   className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center cursor-pointer transition shadow-md active:scale-95"
-                  title="Reset clock to full time"
+                  title="Reset clock to full time [R]"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
@@ -1122,16 +1376,17 @@ export function ZenMunChairConsole() {
                       ? 'bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black shadow-amber-500/20'
                       : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black shadow-emerald-500/20'
                   }`}
+                  title="Start / Pause [Space]"
                 >
                   {session.isTimerRunning ? (
                     <>
                       <Pause className="w-4 h-4 fill-current" />
-                      <span>PAUSE</span>
+                      <span>PAUSE [Space]</span>
                     </>
                   ) : (
                     <>
                       <Play className="w-4 h-4 fill-current" />
-                      <span>START</span>
+                      <span>START [Space]</span>
                     </>
                   )}
                 </button>
@@ -1142,10 +1397,10 @@ export function ZenMunChairConsole() {
                   id="tutorial-target-next-btn"
                   onClick={nextSpeaker}
                   className="w-44 h-12 rounded-2xl bg-[#0c1424] hover:bg-[#121f38] text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 font-black text-sm uppercase tracking-wider transition shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                  title="Next Speaker (Awards speech & time points)"
+                  title="Next Speaker [N]"
                 >
                   <SkipForward className="w-4 h-4" />
-                  <span>NEXT</span>
+                  <span>NEXT [N]</span>
                 </button>
 
                 {/* 🕒+ Add Time Button */}
@@ -1327,12 +1582,12 @@ export function ZenMunChairConsole() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. BOTTOM BAR (52px, Sovereign Obsidian Glass)
+          3. BOTTOM BAR (56px, Sovereign Obsidian Glass)
       ───────────────────────────────────────────────────────────── */}
       <footer id="tutorial-target-bottom-bar" className="h-14 bg-[#070a12]/95 backdrop-blur-md border-t border-white/10 px-4 flex items-center justify-between gap-4 z-30 shrink-0 relative">
         
         {/* Left: Add to speakers list input */}
-        <div className="relative flex-1 max-w-xl">
+        <div className="relative flex-1 max-w-md">
           <input
             type="text"
             value={bottomInput}
@@ -1351,8 +1606,8 @@ export function ZenMunChairConsole() {
                 }
               }
             }}
-            placeholder="Add to speakers list... (Type country and press Enter)"
-            className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-white placeholder-white/30 focus:outline-none focus:border-cyan-400 shadow-xs"
+            placeholder="Quick-add to queue... (Type country and press Enter)"
+            className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 shadow-xs"
           />
 
           {bottomDropdown && bottomInput.trim() && filteredBottomDelegates.length > 0 && (
@@ -1378,6 +1633,33 @@ export function ZenMunChairConsole() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Center: Command Shortcuts Legend (Hidden on small screens) */}
+        <div className="hidden xl:flex items-center gap-3 text-[10px] text-neutral-400 font-mono">
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">Space</kbd> Play/Pause
+          </span>
+          <span className="text-white/20">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">N</kbd> Next
+          </span>
+          <span className="text-white/20">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">R</kbd> Reset
+          </span>
+          <span className="text-white/20">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">M</kbd> Motions
+          </span>
+          <span className="text-white/20">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">C</kbd> Roll Call
+          </span>
+          <span className="text-white/20">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">Y</kbd> Yield
+          </span>
         </div>
 
         {/* Right: TIME presets selector */}
