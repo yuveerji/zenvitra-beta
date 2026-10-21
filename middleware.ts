@@ -200,6 +200,21 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Stealth 404 if an unauthorized or normal user probes administrative access links
+  const adminQueryParam = request.nextUrl.searchParams.get('admin_key') || request.nextUrl.searchParams.get('founder_key');
+  const accessKeyParam = request.nextUrl.searchParams.get('access_key') || request.nextUrl.searchParams.get('key') || request.nextUrl.searchParams.get('bypass_key');
+  const hasAdminQueryProbe = Boolean(
+    adminQueryParam ||
+    (accessKeyParam && (accessKeyParam.toUpperCase().includes('ADMIN') || accessKeyParam.toUpperCase().includes('FOUNDER') || accessKeyParam.toUpperCase().includes('SECRET') || accessKeyParam.toUpperCase().includes('OPERATOR')))
+  );
+
+  if (hasAdminQueryProbe) {
+    const role = sessionCheck.payload?.role;
+    if (!sessionCheck.valid || !role || !ADMIN_CORE_CLEARANCE_ROLES.includes(role)) {
+      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
+    }
+  }
+
   // Enforce Protected Routes for standard authenticated members
   const isProtectedRoute = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)

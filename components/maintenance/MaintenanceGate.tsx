@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import NotFound from '@/app/not-found';
 import { 
   ShieldAlert, 
   ShieldCheck,
@@ -44,6 +45,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
   const [isPrivileged, setIsPrivileged] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
   const [bypassWarning, setBypassWarning] = useState<string | null>(null);
+  const [shouldShow404, setShouldShow404] = useState<boolean>(false);
 
   /* Inline Unlock Form for Founder / Admin */
   const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
@@ -129,14 +131,37 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
     if (typeof window !== 'undefined') {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        const accessKey = urlParams.get('access_key') || urlParams.get('bypass_key') || urlParams.get('admin_key') || urlParams.get('auth') || urlParams.get('key');
+        const adminKeyParam = urlParams.get('admin_key') || urlParams.get('founder_key');
+        const rawAccessKey = urlParams.get('access_key') || urlParams.get('bypass_key') || adminKeyParam || urlParams.get('auth') || urlParams.get('key');
+        const accessKey = rawAccessKey?.trim();
+
+        const isAdminProbeKey = Boolean(
+          adminKeyParam ||
+          (accessKey && (
+            accessKey.toUpperCase().includes('ADMIN') ||
+            accessKey.toUpperCase().includes('FOUNDER') ||
+            accessKey.toUpperCase().includes('OPERATOR') ||
+            accessKey.toUpperCase().includes('SECRET')
+          ))
+        );
+
         if (accessKey) {
           const isIdentityPrivileged = checkPrivilegedIdentity();
 
           if (!isIdentityPrivileged) {
-            // STRICT SECURITY LAW: A normal ID person who gets an access link STILL gets the maintenance gate page!
+            // STRICT SECURITY LAW: A normal ID person cannot bypass maintenance or access admin facilities!
             setIsPrivileged(false);
-            setBypassWarning('Bypass link rejected: This access link is restricted strictly to verified Admin & Founder personnel. Your account does not have maintenance immunity.');
+
+            // CIRCUMSTANCE ROUTING:
+            // 1. If an admin/founder-specific access key is used:
+            //    -> Conceal the mechanism entirely by rendering the 404 Not Found error page.
+            // 2. If it's a general platform maintenance bypass on public routes:
+            //    -> Show the Maintenance Gate page with the restriction warning.
+            if (isAdminProbeKey) {
+              setShouldShow404(true);
+            } else {
+              setBypassWarning('Bypass link rejected: This access link is restricted strictly to verified Admin & Founder personnel. Your account does not have maintenance immunity.');
+            }
 
             // Strip the access key from URL so it does not linger
             const cleanUrl = window.location.pathname + window.location.hash;
@@ -147,6 +172,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
             if (activated) {
               setIsPrivileged(true);
               setBypassWarning(null);
+              setShouldShow404(false);
               // Clean URL query without page reload
               const cleanUrl = window.location.pathname + window.location.hash;
               window.history.replaceState(null, '', cleanUrl);
@@ -281,14 +307,31 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
   }
 
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  const isExemptPath = Boolean(
+
+  // Administrative & Founder Restricted Enclave Routes
+  const isAdminOrFounderEnclavePath = Boolean(
+    pathname.startsWith('/core-team-panel') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/founder') ||
     pathname.startsWith('/zen-vault-root') ||
     pathname.startsWith('/admin-access') ||
     pathname.startsWith('/enclave') ||
+    pathname.startsWith('/enclave-access')
+  );
+
+  // CIRCUMSTANCE 1: Stealth 404
+  // If an unauthorized/normal user visits an administrative enclave route OR triggered a stealth 404 via an admin probe link
+  if ((isAdminOrFounderEnclavePath || shouldShow404) && !isPrivileged && !checkPrivilegedIdentity()) {
+    return <NotFound />;
+  }
+
+  // Exempt routes for authorized authentication
+  const isExemptPath = Boolean(
     pathname.startsWith('/login') ||
     pathname.startsWith('/api')
   );
 
+  // CIRCUMSTANCE 2: Global Maintenance Screen
   // If maintenance is ON AND user is NOT Founder/Admin and NOT on an exempt path -> FULL SCREEN MAINTENANCE SCREEN
   if (maintenanceActive && !isPrivileged && !isExemptPath) {
     return (
