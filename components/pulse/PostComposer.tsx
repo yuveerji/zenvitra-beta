@@ -1472,7 +1472,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                     {/* User Profile Dossier Row */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[2px]">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[2px]">
                           <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white uppercase">
                             {(currentUserName || currentUserUsername || 'U')[0]?.toUpperCase() || 'U'}
                           </div>

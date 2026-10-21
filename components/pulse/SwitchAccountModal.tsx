@@ -169,7 +169,7 @@ export function SwitchAccountModal({
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[2px] shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[2px] shrink-0">
                     {acc.avatar ? (
                       <img src={acc.avatar} alt={acc.name} className="w-full h-full rounded-full object-cover" />
                     ) : (

@@ -300,7 +300,7 @@ Generated via ZENVITRA Protocol Engine
                 </span>
               </div>
               <p className="text-xs font-sans text-neutral-400 pt-0.5">
-                Dual-audience seat breakdown: Students ($\le$ 18 &bull; 0% GST) + Normal Attendees (&gt; 18 &bull; 6% GST)
+                Dual-audience seat breakdown: Students (≤ 18 &bull; 0% GST) + Normal Attendees (&gt; 18 &bull; 6% GST)
               </p>
             </div>
           </div>
@@ -416,7 +416,7 @@ Generated via ZENVITRA Protocol Engine
                   <GraduationCap className="w-5 h-5 text-emerald-400" />
                   <div>
                     <span className="font-bold text-white text-sm">Student Delegates</span>
-                    <span className="text-[10px] text-neutral-400 block">Age $\le$ 18 Years &bull; High School / Under-18</span>
+                    <span className="text-[10px] text-neutral-400 block">Age ≤ 18 Years &bull; High School / Under-18</span>
                   </div>
                 </div>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">

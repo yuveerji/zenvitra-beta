@@ -1262,7 +1262,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
             {/* Avatar with Halo */}
             <div className="relative mb-4 group">
               <div className={`absolute -inset-1 rounded-full opacity-70 blur-xs transition-opacity ${
-                isLight ? 'bg-neutral-900/20' : 'bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600'
+                isLight ? 'bg-neutral-900/20' : 'bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500'
               }`} />
               <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden shadow-xl">
                 {profile.avatar ? (
@@ -2125,7 +2125,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                         : bStyle === 'neon'
                         ? 'bg-black/60 hover:bg-black/80 text-cyan-300 border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]'
                         : bStyle === 'gradient'
-                        ? 'bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white shadow-xl'
+                        ? 'bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-600 text-white shadow-xl'
                         : 'bg-white hover:bg-neutral-200 text-black shadow-md border border-neutral-300'
                     }`}
                   >

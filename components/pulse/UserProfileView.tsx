@@ -1747,7 +1747,7 @@ export function UserProfileView() {
                   }}
                   className="flex items-center gap-3 cursor-pointer group min-w-0"
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px] shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[1.5px] shrink-0">
                     <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white">
                       {activePostModal.authorName?.[0] || 'U'}
                     </div>

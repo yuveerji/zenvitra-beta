@@ -41,7 +41,7 @@ const ARTICLES: HelpArticle[] = [
     summary: 'Under ZENVITRA Article 12, youth aged 18 and below pay 0% GST on all conference registrations.',
     content: [
       'ZENVITRA operates an age-aware dynamic taxation engine that adheres to National Youth Empowerment directives.',
-      'Students declaring age $\\le$ 18 during registration are completely exempt from GST (0% GST applied).',
+      'Students declaring age ≤ 18 during registration are completely exempt from GST (0% GST applied).',
       'Attendees older than 18 (general observers, adult advisors, corporate attendees) are levied the standard 6% state event surcharge.',
       'Organizers receive the exact net settlement into their linked bank accounts via Cashfree Payout rails with T+1 bank settlement speeds.'
     ]

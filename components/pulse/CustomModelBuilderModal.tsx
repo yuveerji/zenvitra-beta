@@ -204,7 +204,7 @@ export function CustomModelBuilderModal({
                     <GraduationCap className="w-5 h-5 text-cyan-400" />
                     <div>
                       <span className="font-bold text-white text-sm">Student Delegates</span>
-                      <span className="text-[10px] text-neutral-400 block">Age $\le$ 18 &bull; School &amp; College Youth</span>
+                      <span className="text-[10px] text-neutral-400 block">Age ≤ 18 &bull; School &amp; College Youth</span>
                     </div>
                   </div>
                   <span className="text-[9px] font-mono px-2 py-0.5 rounded font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">

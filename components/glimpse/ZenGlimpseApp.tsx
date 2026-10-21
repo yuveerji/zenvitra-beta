@@ -795,7 +795,7 @@ export function ZenGlimpseApp() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px] shadow-md">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[1.5px] shadow-md">
                     <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white">
                       {filteredGlimpses[activeGlimpseIndex].authorName[0]}
                     </div>

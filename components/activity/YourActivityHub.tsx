@@ -858,7 +858,7 @@ export function YourActivityHub() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px]">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[1.5px]">
                         <img src={activeModalPost.authorAvatar} alt="" className="w-full h-full rounded-full object-cover" />
                       </div>
                       <div>

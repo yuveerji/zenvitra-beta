@@ -142,7 +142,7 @@ function MobileBottomNavInner() {
               ? 'ring-2 ring-white ring-offset-1 ring-offset-black' 
               : 'ring-1 ring-white/30'
           }`}>
-            <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 flex items-center justify-center text-[9px] font-bold text-white uppercase">
+            <div className="w-full h-full rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 flex items-center justify-center text-[9px] font-bold text-white uppercase">
               {initial}
             </div>
           </div>

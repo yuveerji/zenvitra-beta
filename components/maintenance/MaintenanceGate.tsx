@@ -135,12 +135,20 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
       }
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'F' || e.key === 'A' || e.key === 'M')) {
+        e.preventDefault();
+        setShowUnlockModal((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('storage', onStorage);
     window.addEventListener('zenvitra_protocol_update', debouncedSync);
 
     return () => {
       clearInterval(interval);
       if (syncTimeout) clearTimeout(syncTimeout);
+      window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('zenvitra_protocol_update', debouncedSync);
     };
@@ -245,14 +253,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
 
           {/* Action Footer */}
           <div className="pt-2 flex flex-col gap-2.5">
-            <button
-              type="button"
-              onClick={() => setShowUnlockModal(true)}
-              className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(251,191,36,0.3)]"
-            >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Founder / Staff Bypass Authentication</span>
-            </button>
+            
 
             <button
               type="button"

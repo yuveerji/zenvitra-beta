@@ -392,7 +392,7 @@ export function SettingsModal({
                 <form onSubmit={handleSaveAccountSettings} className="space-y-6">
                   {/* Avatar Upload */}
                   <div className="flex items-center gap-5 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                    <div className="relative w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 shrink-0">
+                    <div className="relative w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 shrink-0">
                       <div className="w-full h-full rounded-full bg-black overflow-hidden flex items-center justify-center font-bold text-xl uppercase">
                         {avatar ? (
                           <img src={avatar} alt={displayName} className="w-full h-full object-cover" />

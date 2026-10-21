@@ -817,7 +817,7 @@ export function PlatformShell({
               }}
               className="flex items-center rounded-xl transition cursor-pointer p-1.5 gap-2.5 min-w-0 flex-1"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[1.5px] shrink-0 group-hover:scale-105 transition-transform shadow-md">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[1.5px] shrink-0 group-hover:scale-105 transition-transform shadow-md">
                 <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white uppercase overflow-hidden" suppressHydrationWarning>
                   {mounted && currentAvatar ? (
                     <img src={currentAvatar} alt={currentDisplayName} className="w-full h-full rounded-full object-cover" />
