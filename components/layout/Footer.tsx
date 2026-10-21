@@ -351,7 +351,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/committee" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
+                <Link href="/host" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
                   <span>Chamber Dais Liveboard</span>
                 </Link>
               </li>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -22,7 +22,7 @@ export function ZenSovereignNav() {
 
   const navItems = [
     { label: 'PULSE', href: '/pulse', icon: Radio, tag: 'Living Feed' },
-    { label: 'CHAMBER', href: '/committee', icon: Gavel, tag: 'Decision Dais' },
+    { label: 'HOST', href: '/host', icon: Gavel, tag: 'Live Session OS' },
     { label: 'MUN', href: '/mun', icon: Crown, tag: 'Conference OS' },
   ];
 

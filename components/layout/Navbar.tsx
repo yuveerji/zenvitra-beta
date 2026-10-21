@@ -110,7 +110,7 @@ export function Navbar({
     { name: 'Submit News Wire', href: '/news/submit', icon: Send, tag: 'Wire Desk', desc: 'Transmit Breaking Wire Dispatches & Press Reports across Network' },
     { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Community', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
     { name: 'ZEN.SUPPORT', href: '/support', icon: LifeBuoy, tag: 'Helpdesk', desc: 'Official Helpdesk, Ticket Triage, Issue Resolution & Service Desk' },
-    { name: 'Chamber Dais', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
+    { name: 'ZEN.HOST', href: '/host', icon: Gavel, tag: 'Live OS', desc: 'Universal Live-Session & Event Operating System (Dais, Stage, Formats)' },
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },
     { name: 'Conference OS', href: '/mun/conference', icon: Layers, tag: 'Secretariat', desc: 'Secretariat Command Center & Liveboard' },
     { name: 'Impact Ledger', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 6 Months with Video Proof' },

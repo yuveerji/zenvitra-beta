@@ -335,7 +335,7 @@ export function PlatformShell({
     if (roleConfig.id === 'delegate') {
       return [
         { label: 'Home Feed', href: '/pulse', icon: Radio, description: 'Diplomatic Feed Stream' },
-        { label: 'Chamber Dais', href: '/committee', icon: Award, tag: 'Live Dais', description: 'Assembly Chamber & Motions' },
+        { label: 'ZEN.HOST', href: '/host', icon: Award, tag: 'Live OS', description: 'Universal Live-Session & Dais OS' },
         { label: 'Resolutions', href: '/solutions', icon: Scale, tag: 'Ballots', description: 'Debate & Civic Voting' },
         { label: 'MUN Summits', href: '/events', icon: Calendar, tag: 'MUN', description: 'Model UN Summits' },
         { label: 'Passport', href: '/passport', icon: ShieldCheck, tag: 'Dossier', description: 'Delegate Credentials' },
@@ -377,7 +377,7 @@ export function PlatformShell({
       { label: 'ZEN.GLIMPSE', href: '/glimpse', icon: Camera, tag: '24h', description: 'Snaps App' },
       { label: 'Dashboard', href: '/dashboard', icon: BarChart3, description: 'Adaptive Matrix' },
       { label: 'Events', href: '/events', icon: Calendar, description: 'Summits & Gatherings' },
-      { label: 'Chamber', href: '/committee', icon: Award, tag: 'Live', description: 'Assembly Chamber' },
+      { label: 'ZEN.HOST', href: '/host', icon: Award, tag: 'Live', description: 'Live Sessions & Dais OS' },
       { label: 'Docs', href: '/docs', icon: BookOpen, description: 'Sovereign Documents & Drafting' },
       { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
     ];
@@ -396,6 +396,8 @@ export function PlatformShell({
     pathname?.startsWith('/docs') ||
     pathname === '/legislate' || 
     pathname?.startsWith('/legislate') ||
+    pathname === '/host' || 
+    pathname?.startsWith('/host') ||
     pathname === '/committee' || 
     pathname?.startsWith('/committee') ||
     pathname === '/glimpse' || 
@@ -407,6 +409,7 @@ export function PlatformShell({
       {/* ─── THREE LINES HAMBURGER TRIGGER BUTTON (COLLAPSED DEFAULT - ONLY ON STUDIOS WITHOUT EMBEDDED NAVBAR NOR INLINE TOGGLE) ─── */}
       {!hasEmbeddedNavbar && 
         !pathname?.startsWith('/pulse') && 
+        !pathname?.startsWith('/host') && 
         !pathname?.startsWith('/committee') && 
         !pathname?.startsWith('/call') && 
         !pathname?.startsWith('/chat') && 

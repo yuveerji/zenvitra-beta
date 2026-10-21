@@ -1,22 +1,26 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { CommitteeChamber } from '@/components/mun/CommitteeChamber';
-import { useMun } from '@/context/MunContext';
+import { useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default function CommitteeChamberPage() {
   const params = useParams();
+  const router = useRouter();
   const committeeId = params?.id as string;
-  const { setActiveCommitteeId, committees } = useMun();
 
   useEffect(() => {
-    if (committeeId && committees.some((c) => c.id === committeeId)) {
-      setActiveCommitteeId(committeeId);
+    if (committeeId) {
+      router.replace(`/host?chamber=${committeeId}&dais=true`);
+    } else {
+      router.replace('/host?dais=true');
     }
-  }, [committeeId, committees, setActiveCommitteeId]);
+  }, [committeeId, router]);
 
-  return <CommitteeChamber />;
+  return (
+    <div className="min-h-screen bg-[#030407] text-white flex items-center justify-center font-mono text-xs">
+      Transitioning to ZEN.HOST Chamber...
+    </div>
+  );
 }

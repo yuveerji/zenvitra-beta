@@ -117,6 +117,7 @@ export default function HomeClient({ session }: HomeClientProps) {
       href.startsWith('/pulse') ||
       href.startsWith('/press') ||
       href.startsWith('/events') ||
+      href.startsWith('/host') ||
       href.startsWith('/committee') ||
       href.startsWith('/mun') ||
       href.startsWith('/chat') ||
@@ -172,7 +173,7 @@ export default function HomeClient({ session }: HomeClientProps) {
       tags: ['Pulse Map', 'FLUX Reels', 'Zero Algorithms', 'Direct Comms'],
     },
     {
-      title: 'ZEN.CHAMBER',
+      title: 'ZEN.HOST',
       subtitle: 'The Deliberation Sanctuary',
       worldNumber: 'WORLD 02',
       category: 'PARLIAMENTARY ORDER',
@@ -183,7 +184,7 @@ export default function HomeClient({ session }: HomeClientProps) {
       glowColor: 'rgba(245, 158, 11, 0.2)',
       tagColor: 'text-amber-300/80 bg-amber-500/10 border-amber-500/20',
       actionText: 'Enter Chamber',
-      href: '/committee',
+      href: '/host',
       tags: ['GSL Timers', 'Motion Queue', 'Caucus Engine', 'Roll Calls'],
     },
     {
