@@ -27,13 +27,22 @@ import {
 } from 'lucide-react';
 import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
 import ZenHostLiveDais from '@/components/host/ZenHostLiveDais';
-import { HOST_FORMAT_PRESETS, HostSessionFormat } from '@/types/zenHost';
+import CustomEventBuilderModal from '@/components/host/CustomEventBuilderModal';
+import {
+  HOST_FORMAT_PRESETS,
+  HostSessionFormat,
+  CustomHostEventConfig,
+} from '@/types/zenHost';
 
 export const dynamic = 'force-dynamic';
 
 function HostDashboardInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Custom Event Builder Modal State
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
+  const [activeCustomConfig, setActiveCustomConfig] = useState<CustomHostEventConfig | undefined>(undefined);
 
   const formatParam = searchParams?.get('format') as HostSessionFormat | null;
   const roomParam = searchParams?.get('room') || searchParams?.get('chamber') || undefined;
@@ -61,6 +70,7 @@ function HostDashboardInner() {
         initialFormat={formatParam || 'open_mic'}
         sessionCode={roomParam}
         initialTitle={titleParam}
+        customConfig={activeCustomConfig}
         onExit={() => router.push('/host')}
       />
     );
@@ -75,6 +85,7 @@ function HostDashboardInner() {
         initialFormat={formatParam || 'open_mic'}
         sessionCode={roomParam}
         initialTitle={titleParam}
+        customConfig={activeCustomConfig}
         onExit={() => router.push('/host')}
       />
     );
@@ -132,6 +143,14 @@ function HostDashboardInner() {
               <Mic className="w-4 h-4" />
               <span>Instant Open Mic</span>
             </Link>
+            <button
+              type="button"
+              onClick={() => setIsCustomModalOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-teal-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 text-xs font-black uppercase tracking-wider transition shadow-md active:scale-95 flex items-center gap-2 cursor-pointer"
+            >
+              <Sliders className="w-4 h-4 text-cyan-400" />
+              <span>Custom Event (Toggles)</span>
+            </button>
             <Link
               href="/host?dais=true&format=mun"
               className="px-4 py-2.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] text-cyan-300 text-xs font-bold uppercase tracking-wider transition flex items-center gap-2"
@@ -236,7 +255,19 @@ function HostDashboardInner() {
                 Each format loads dedicated procedural timers, queue algorithms, and participant roles.
               </p>
             </div>
-            <span className="text-xs font-mono text-cyan-400">8 Configured Engines</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-mono text-cyan-400">
+                {Object.keys(HOST_FORMAT_PRESETS).length} Configured Engines
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsCustomModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-xs font-bold transition flex items-center gap-1.5"
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Custom Builder</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -270,10 +301,16 @@ function HostDashboardInner() {
 
                   <button
                     type="button"
-                    onClick={() => handleLaunchInstantSession(fmtKey)}
+                    onClick={() => {
+                      if (fmtKey === 'custom') {
+                        setIsCustomModalOpen(true);
+                      } else {
+                        handleLaunchInstantSession(fmtKey);
+                      }
+                    }}
                     className="w-full py-2 rounded-xl bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 text-neutral-300 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border border-white/10"
                   >
-                    <span>Launch as {item.badge.split(' ')[0]}</span>
+                    <span>{fmtKey === 'custom' ? 'Open Custom Builder' : `Launch as ${item.badge.split(' ')[0]}`}</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -364,6 +401,19 @@ function HostDashboardInner() {
           </div>
         </div>
       )}
+      {/* ── CUSTOM EVENT BUILDER WITH MODULAR TOGGLES ── */}
+      <CustomEventBuilderModal
+        isOpen={isCustomModalOpen}
+        onClose={() => setIsCustomModalOpen(false)}
+        initialConfig={activeCustomConfig}
+        onLaunch={(newConfig) => {
+          setActiveCustomConfig(newConfig);
+          setIsCustomModalOpen(false);
+          router.push(
+            `/host?dais=true&format=custom&title=${encodeURIComponent(newConfig.eventName)}`
+          );
+        }}
+      />
     </div>
   );
 }

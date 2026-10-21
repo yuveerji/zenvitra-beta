@@ -43,12 +43,15 @@ import {
   HostQueueItem,
   HostPoll,
   HostAnnouncement,
+  CustomHostEventConfig,
 } from '@/types/zenHost';
+import CustomEventBuilderModal from '@/components/host/CustomEventBuilderModal';
 
 interface ZenHostLiveDaisProps {
   sessionCode?: string;
   initialFormat?: HostSessionFormat;
   initialTitle?: string;
+  customConfig?: CustomHostEventConfig;
   onExit?: () => void;
 }
 
@@ -56,9 +59,14 @@ export default function ZenHostLiveDais({
   sessionCode: propSessionCode,
   initialFormat = 'open_mic',
   initialTitle,
+  customConfig: propCustomConfig,
   onExit,
 }: ZenHostLiveDaisProps) {
   const router = useRouter();
+
+  // Custom Configuration State (if configured or modular)
+  const [customConfig, setCustomConfig] = useState<CustomHostEventConfig | undefined>(propCustomConfig);
+  const [isCustomConfigModalOpen, setIsCustomConfigModalOpen] = useState(false);
 
   // 1. Session Identity
   const [sessionCode] = useState<string>(() => {
@@ -68,6 +76,7 @@ export default function ZenHostLiveDais({
 
   const [format, setFormat] = useState<HostSessionFormat>(initialFormat);
   const [title, setTitle] = useState<string>(() => {
+    if (customConfig?.eventName) return customConfig.eventName;
     if (initialTitle) return initialTitle;
     return HOST_FORMAT_PRESETS[initialFormat]?.name || 'Live Stage';
   });
@@ -75,8 +84,9 @@ export default function ZenHostLiveDais({
 
   // 2. Timer System
   const formatPreset = HOST_FORMAT_PRESETS[format] || HOST_FORMAT_PRESETS.general;
-  const [speakerDuration, setSpeakerDuration] = useState<number>(formatPreset.defaultTimer);
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(formatPreset.defaultTimer);
+  const initialSpeakerSecs = customConfig?.speakerTimerSeconds || formatPreset.defaultTimer;
+  const [speakerDuration, setSpeakerDuration] = useState<number>(initialSpeakerSecs);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(initialSpeakerSecs);
   const [overtimeSeconds, setOvertimeSeconds] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [sessionTotalSeconds, setSessionTotalSeconds] = useState<number>(0);
@@ -195,9 +205,15 @@ export default function ZenHostLiveDais({
             return prev - 1;
           } else if (prev === 1) {
             playSoundEffect('buzzer'); // Time's up gong
+            if (customConfig?.strictCutoff) {
+              setIsTimerRunning(false);
+            }
             return 0;
           } else {
-            // Count overtime
+            // Count overtime if strict cutoff is false
+            if (customConfig?.strictCutoff) {
+              return 0;
+            }
             setOvertimeSeconds((ot) => ot + 1);
             return 0;
           }
@@ -208,7 +224,7 @@ export default function ZenHostLiveDais({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isTimerRunning, playSoundEffect]);
+  }, [isTimerRunning, playSoundEffect, customConfig?.strictCutoff]);
 
   // ── Keyboard Shortcuts ──────────────────────────────────────────────
   useEffect(() => {
@@ -490,6 +506,17 @@ export default function ZenHostLiveDais({
           >
             <Tv className="w-3.5 h-3.5" />
             <span>Stage Display</span>
+          </button>
+
+          {/* Modular Toggles / Studio Settings */}
+          <button
+            type="button"
+            onClick={() => setIsCustomConfigModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] transition text-xs font-bold text-cyan-300"
+            title="Configure Modular Event Toggles"
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Toggles</span>
           </button>
 
           {/* Exit Dais */}
@@ -1182,6 +1209,28 @@ export default function ZenHostLiveDais({
           <span className="text-amber-400">{formatPreset.badge}</span>
         </div>
       </footer>
+
+      {/* ── 5. MODULAR TOGGLES & CUSTOM BUILDER MODAL ───────────────────────── */}
+      <CustomEventBuilderModal
+        isOpen={isCustomConfigModalOpen}
+        onClose={() => setIsCustomConfigModalOpen(false)}
+        initialConfig={customConfig}
+        onLaunch={(newCfg) => {
+          setCustomConfig(newCfg);
+          setTitle(newCfg.eventName);
+          setSpeakerDuration(newCfg.speakerTimerSeconds);
+          setRemainingSeconds(newCfg.speakerTimerSeconds);
+          setSoundEnabled(newCfg.enableAudioChimes);
+          if (newCfg.rubricCriteria?.length) {
+            const rubricMap: { [k: string]: number } = {};
+            newCfg.rubricCriteria.forEach((c) => {
+              rubricMap[c.name] = 8;
+            });
+            setRubricScores(rubricMap);
+          }
+          setIsCustomConfigModalOpen(false);
+        }}
+      />
     </div>
   );
 }

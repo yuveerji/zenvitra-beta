@@ -1,10 +1,15 @@
 export type HostSessionFormat =
   | 'general'
   | 'open_mic'
-  | 'storyline'
+  | 'lightning_talks'
   | 'workshop'
   | 'panel'
   | 'competition'
+  | 'parliamentary'
+  | 'quiz_trivia'
+  | 'speed_networking'
+  | 'focus_pomodoro'
+  | 'storyline'
   | 'mun'
   | 'custom';
 
@@ -83,6 +88,77 @@ export interface HostAnnouncement {
   targetRole?: HostParticipantRole;
 }
 
+// ── CUSTOM EVENT BUILDER TOGGLE CONFIGURATION ──────────────────────────
+export interface CustomHostEventConfig {
+  eventName: string;
+  badge: string;
+  tagline: string;
+  
+  // Timer & Pacing Toggles
+  enableMasterTimer: boolean;
+  masterTimerMinutes: number;
+  enableSpeakerTimer: boolean;
+  speakerTimerSeconds: number;
+  strictCutoff: boolean; // Cutoff directly vs allow overtime
+  warningBellSeconds: number;
+  enableAudioChimes: boolean; // Ding, Buzzer, Applause
+  
+  // Queue & Lineup Toggles
+  enableQueue: boolean;
+  allowSelfQueue: boolean; // Attendees can join queue via room code
+  requireHostApproval: boolean;
+  enableOnDeckCallout: boolean; // Show "Next up on deck"
+  showQueueOnDisplay: boolean; // Show queue on auditorium projector
+  
+  // Audience & Interactive Toggles
+  enableRapidPolls: boolean;
+  enableStageBroadcasts: boolean; // Lower-third announcements
+  enableApplauseMeter: boolean; // Energy/clapping meter
+  enableAudienceQnA: boolean; // Upvoted questions from audience
+  
+  // Judging & Scoring Toggles
+  enableScoringRubric: boolean;
+  rubricCriteria: Array<{ id: string; name: string; maxScore: number }>;
+  enableLeaderboardReveal: boolean;
+  
+  // Public Stage / Projector Toggles
+  showSpeakerCardOnDisplay: boolean;
+  showTimerOnDisplay: boolean;
+  anonymizeParticipants: boolean; // Display aliases/codes instead of personal names
+}
+
+export const DEFAULT_CUSTOM_EVENT_CONFIG: CustomHostEventConfig = {
+  eventName: 'Custom Stage Event',
+  badge: 'MODULAR STAGE',
+  tagline: 'Fully custom live session with modular toggles',
+  enableMasterTimer: true,
+  masterTimerMinutes: 60,
+  enableSpeakerTimer: true,
+  speakerTimerSeconds: 180,
+  strictCutoff: false,
+  warningBellSeconds: 30,
+  enableAudioChimes: true,
+  enableQueue: true,
+  allowSelfQueue: true,
+  requireHostApproval: false,
+  enableOnDeckCallout: true,
+  showQueueOnDisplay: true,
+  enableRapidPolls: true,
+  enableStageBroadcasts: true,
+  enableApplauseMeter: true,
+  enableAudienceQnA: false,
+  enableScoringRubric: false,
+  rubricCriteria: [
+    { id: 'crit-1', name: 'Delivery & Energy', maxScore: 10 },
+    { id: 'crit-2', name: 'Content & Impact', maxScore: 10 },
+    { id: 'crit-3', name: 'Originality', maxScore: 10 },
+  ],
+  enableLeaderboardReveal: false,
+  showSpeakerCardOnDisplay: true,
+  showTimerOnDisplay: true,
+  anonymizeParticipants: false,
+};
+
 export interface HostSession {
   id: string;
   sessionCode: string;
@@ -117,6 +193,9 @@ export interface HostSession {
   polls: HostPoll[];
   announcements: HostAnnouncement[];
   
+  // Custom Config when format === 'custom'
+  customConfig?: CustomHostEventConfig;
+
   // Format-specific settings
   settings: {
     allowRaiseHand: boolean;
@@ -158,25 +237,25 @@ export const HOST_FORMAT_PRESETS: Record<
     name: 'Open Mic & Showcase',
     badge: 'PERFORMANCE',
     icon: 'Mic',
-    tagline: 'Performer queue, round limits, stage-ready alerts & audience polls',
-    description: 'Purpose-built for slam poetry, standup comedy, acoustic music, talent showcases, and pitch rounds.',
+    tagline: 'Performer lineup, act titles, stage-ready alerts & audience applause',
+    description: 'Purpose-built for slam poetry, standup comedy, acoustic music, talent showcases, and open expression.',
     defaultTimer: 180,
     color: 'amber',
   },
-  storyline: {
-    name: 'Storyline / EP 101',
-    badge: 'ROLEPLAY & LORE',
-    icon: 'BookOpen',
-    tagline: 'Sequential chapters, character role allotments, secret lore & branch polls',
-    description: 'Interactive narrative simulations, episode campaigns, crisis roleplays, and collaborative worldbuilding.',
-    defaultTimer: 300,
-    color: 'purple',
+  lightning_talks: {
+    name: 'Lightning Talks & Pitches',
+    badge: 'RAPID FIRE',
+    icon: 'Zap',
+    tagline: 'Strict 3-5 min cutoffs, deck timers, buzzer chimes & pitch queue',
+    description: 'High-velocity startup pitches, demo days, flash presentations, and rapid project showcases with strict timed cutoffs.',
+    defaultTimer: 180,
+    color: 'orange',
   },
   workshop: {
     name: 'Workshop & Masterclass',
     badge: 'ACADEMY',
     icon: 'GraduationCap',
-    tagline: 'Structured modules, learning objectives, timed exercises & resource vault',
+    tagline: 'Structured modules, learning sprints, exercise timers & resource vault',
     description: 'Designed for intensive skill training, breakout sprints, student lectures, and certification labs.',
     defaultTimer: 600,
     color: 'emerald',
@@ -199,6 +278,51 @@ export const HOST_FORMAT_PRESETS: Record<
     defaultTimer: 300,
     color: 'yellow',
   },
+  parliamentary: {
+    name: 'Parliament & Youth Assembly',
+    badge: 'LEGISLATURE',
+    icon: 'Landmark',
+    tagline: 'Bills, zero-hour speeches, floor motions & division bell voting',
+    description: 'Legislative chambers, mock youth parliaments, Lok Sabha simulations, calling attention motions, and division voting.',
+    defaultTimer: 120,
+    color: 'rose',
+  },
+  quiz_trivia: {
+    name: 'Quiz & Trivia Championship',
+    badge: 'ARENA QUIZ',
+    icon: 'HelpCircle',
+    tagline: 'Buzzer rounds, question timers, team rosters & live scoreboard',
+    description: 'College trivia bowls, tech quiz championships, buzzer-first answering, and real-time point leaderboards.',
+    defaultTimer: 30,
+    color: 'indigo',
+  },
+  speed_networking: {
+    name: 'Speed Networking & Roundtables',
+    badge: 'NETWORKING',
+    icon: 'Shuffle',
+    tagline: 'Rotational rounds, automatic table-switch bells & elevator pitch clocks',
+    description: 'Structured peer meets, founder-investor speed dates, mentor office hours, and timed table rotations.',
+    defaultTimer: 240,
+    color: 'pink',
+  },
+  focus_pomodoro: {
+    name: 'Focus Pod & Co-Working Sprint',
+    badge: 'DEEP WORK',
+    icon: 'Clock3',
+    tagline: '25/5 or 50/10 sprint intervals, ambient accountability & check-in rounds',
+    description: 'Community study halls, hack sprints, writing marathons, and collective productivity sessions.',
+    defaultTimer: 1500,
+    color: 'emerald',
+  },
+  storyline: {
+    name: 'Storyline / EP 101',
+    badge: 'ROLEPLAY & LORE',
+    icon: 'BookOpen',
+    tagline: 'Sequential chapters, character role allotments, secret lore & branch polls',
+    description: 'Interactive narrative simulations, episode campaigns, crisis roleplays, and collaborative worldbuilding.',
+    defaultTimer: 300,
+    color: 'purple',
+  },
   mun: {
     name: 'Model UN & Diplomatic Dais',
     badge: 'DIPLOMACY (ZEN.MUN)',
@@ -210,11 +334,11 @@ export const HOST_FORMAT_PRESETS: Record<
   },
   custom: {
     name: 'Custom Event Studio',
-    badge: 'MODULAR',
+    badge: 'MODULAR BUILDER',
     icon: 'Sliders',
-    tagline: 'Assemble bespoke event modules, timers, and permissions',
-    description: 'Configure custom segments, custom participant tiers, and specialized stage controls.',
-    defaultTimer: 120,
+    tagline: 'Assemble bespoke event modules, timers, and modular toggles',
+    description: 'Pick and choose exact modules: custom timers, judging rubrics, audience polls, sound effects, and display rules.',
+    defaultTimer: 180,
     color: 'slate',
   },
 };
