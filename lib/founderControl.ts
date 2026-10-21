@@ -562,18 +562,25 @@ export function verifyFounderKey(key: string): boolean {
 export function activateFounderSession(key: string): boolean {
   if (verifyFounderKey(key)) {
     if (typeof window !== 'undefined') {
+      // Security Guard: Check if an unauthorized non-founder account is currently logged in
+      const stored = localStorage.getItem('zenvitra_session_user');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const handle = (parsed?.username || parsed?.handle || '').toLowerCase().trim().replace(/^@/, '');
+          const email = (parsed?.email || '').toLowerCase().trim();
+          const r = (parsed?.role || '').toUpperCase().trim();
+          const uid = (parsed?.id || '').toString();
+
+          if ((handle || email || r) && !isFounder(handle, r) && !isFounder(email, r) && !isFounder(uid, r)) {
+            return false;
+          }
+        } catch {}
+      }
+
       localStorage.setItem(FOUNDER_MASTER_KEY_STORAGE, key.trim().toUpperCase());
       localStorage.setItem(FOUNDER_OVERRIDE_STORAGE, 'true');
-      
-      try {
-        const stored = localStorage.getItem('zenvitra_session_user');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          parsed.role = 'FOUNDER';
-          parsed.username = parsed.username || 'yuveer';
-          localStorage.setItem('zenvitra_session_user', JSON.stringify(parsed));
-        }
-      } catch {}
+      localStorage.setItem('zenvitra_founder_active_session', 'true');
 
       addAuditLog(`Founder Sovereign Session Activated with Personal Master Key`, 'PROTOCOL');
     }
@@ -744,17 +751,66 @@ export function isCurrentSessionFounderOrCoFounder(): boolean {
   return false;
 }
 
+export const PRIVILEGED_CLEARANCE_ROLES = [
+  'FOUNDER',
+  'CO_FOUNDER',
+  'COFOUNDER',
+  'CHIEF_OF_STAFF',
+  'ADMIN',
+  'SECRETARY_GENERAL',
+  'DIRECTOR_GENERAL',
+  'CHAIRPERSON',
+  'VICE_CHAIR',
+  'TECH_LEAD',
+  'FULLSTACK_DEV',
+  'DESIGN_LEAD',
+  'POLICY_RESEARCHER',
+  'FINANCE_LEAD',
+  'OUTREACH_LEAD',
+  'OPERATIONS_LEAD',
+  'COMMUNITY_LEAD',
+  'MODERATOR',
+  'SECRETARIAT_CHAIR',
+  'CORE_TEAM',
+];
+
 export function isAdmin(usernameOrEmail?: string | null, role?: string | null): boolean {
   if (isFounder(usernameOrEmail, role)) return true;
   if (isCoFounder(usernameOrEmail, role)) return true;
   const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
   const r = (role || '').toUpperCase().trim();
   return (
-    r === 'ADMIN' ||
-    r === 'SECRETARIAT_CHAIR' ||
-    r === 'MODERATOR' ||
+    PRIVILEGED_CLEARANCE_ROLES.includes(r) ||
     clean === 'admin'
   );
+}
+
+/**
+ * Strict Double-Lock Verification:
+ * Validates whether an account identity qualifies as Founder, Co-Founder, Admin, or Core Team.
+ * Normal user accounts (delegate, student, guest, creator, journalist, professional, etc.) strictly evaluate to false.
+ */
+export function isPrivilegedAccount(
+  usernameOrEmail?: string | null,
+  role?: string | null,
+  id?: string | null
+): boolean {
+  if (!usernameOrEmail && !role && !id) return false;
+
+  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
+  const r = (role || '').toUpperCase().trim();
+  const cleanId = (id || '').toLowerCase().trim();
+
+  // 1. Founder Identity (Yuveer)
+  if (isFounder(clean, r) || isFounder(cleanId, r)) return true;
+
+  // 2. Co-Founder Identities (Aarush, Khushi)
+  if (isCoFounder(clean, r) || isCoFounder(cleanId, r)) return true;
+
+  // 3. Admin / Core Team designations
+  if (isAdmin(clean, r) || isAdmin(cleanId, r)) return true;
+
+  return false;
 }
 
 
@@ -795,16 +851,26 @@ export function activateAdminSession(key: string, name: string = 'Staff Admin'):
   }
   if (verifyAdminKey(cleanKey)) {
     if (typeof window !== 'undefined') {
+      // Security Guard: Check if the currently active user is a normal user
+      const rawUser = localStorage.getItem('zenvitra_session_user') || localStorage.getItem('zenvitra_pulse_user_v6');
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser);
+          const handle = (parsed?.username || parsed?.handle || '').toLowerCase().trim().replace(/^@/, '');
+          const email = (parsed?.email || '').toLowerCase().trim();
+          const r = (parsed?.role || '').toUpperCase().trim();
+          const uid = (parsed?.id || '').toString();
+
+          // If the logged in user is explicitly a normal user, DO NOT activate admin session!
+          if ((handle || email || r) && !isPrivilegedAccount(handle, r, uid) && !isPrivilegedAccount(email, r, uid)) {
+            return false;
+          }
+        } catch {}
+      }
+
       localStorage.setItem(ADMIN_OVERRIDE_STORAGE, cleanKey);
-      try {
-        const stored = localStorage.getItem('zenvitra_session_user');
-        const parsed = stored ? JSON.parse(stored) : {};
-        parsed.role = 'ADMIN';
-        parsed.name = parsed.name || name;
-        parsed.username = parsed.username || 'admin_operator';
-        localStorage.setItem('zenvitra_session_user', JSON.stringify(parsed));
-      } catch {}
-      addAuditLog(`Admin Session Activated via Magic Access Link: ${cleanKey.slice(0, 8)}...`, 'PROTOCOL');
+      localStorage.setItem('zenvitra_admin_active_session', 'true');
+      addAuditLog(`Admin Session Activated via Key: ${cleanKey.slice(0, 8)}...`, 'PROTOCOL');
     }
     return true;
   }
@@ -814,8 +880,34 @@ export function activateAdminSession(key: string, name: string = 'Staff Admin'):
 export function isAdminSessionActive(): boolean {
   if (typeof window === 'undefined') return false;
   if (isFounderSessionActive()) return true;
+
+  // Strict session owner verification for admin:
+  // If an active session user exists and is a normal user, admin session cannot be active!
+  try {
+    const rawUser = localStorage.getItem('zenvitra_session_user') || localStorage.getItem('zenvitra_pulse_user_v6');
+    if (rawUser) {
+      const parsed = JSON.parse(rawUser);
+      const userHandle = (parsed?.username || parsed?.handle || '').toLowerCase().trim().replace(/^@/, '');
+      const userEmail = (parsed?.email || '').toLowerCase().trim();
+      const userId = (parsed?.id || '').toString();
+      const userRole = (parsed?.role || '').toUpperCase().trim();
+
+      const isPrivileged =
+        isPrivilegedAccount(userHandle, userRole, userId) ||
+        isPrivilegedAccount(userEmail, userRole, userId);
+
+      if (!isPrivileged && (userHandle || userEmail || userRole)) {
+        // Active session belongs to a normal non-admin user! Purge admin override tokens immediately.
+        localStorage.removeItem(ADMIN_OVERRIDE_STORAGE);
+        localStorage.removeItem('zenvitra_admin_active_session');
+        return false;
+      }
+    }
+  } catch (_) {}
+
   const storedAdmin = localStorage.getItem(ADMIN_OVERRIDE_STORAGE);
-  return Boolean(storedAdmin) && verifyAdminKey(storedAdmin || '');
+  const adminActive = localStorage.getItem('zenvitra_admin_active_session') === 'true';
+  return (adminActive || Boolean(storedAdmin)) && verifyAdminKey(storedAdmin || '');
 }
 
 export function generateCustomAdminKey(keyName: string): string {

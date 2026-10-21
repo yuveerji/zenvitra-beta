@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ShieldAlert, 
   ShieldCheck,
@@ -24,10 +24,13 @@ import {
   saveProtocolControls, 
   isFounder, 
   isAdmin, 
+  isPrivilegedAccount,
   activateFounderSession, 
   isFounderSessionActive,
   activateAdminSession,
-  isAdminSessionActive
+  isAdminSessionActive,
+  verifyFounderKey,
+  verifyAdminKey,
 } from '@/lib/founderControl';
 import { useAuth } from '@/context/AuthContext';
 
@@ -40,6 +43,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
   const [maintenanceActive, setMaintenanceActive] = useState<boolean>(false);
   const [isPrivileged, setIsPrivileged] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
+  const [bypassWarning, setBypassWarning] = useState<string | null>(null);
 
   /* Inline Unlock Form for Founder / Admin */
   const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
@@ -47,22 +51,76 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const [unlockSuccess, setUnlockSuccess] = useState<string | null>(null);
 
-  const checkPrivilege = () => {
-    if (typeof window !== 'undefined') {
-      if (
-        localStorage.getItem('zenvitra_founder_active_session') === 'true' ||
-        localStorage.getItem('zenvitra_admin_active_session') === 'true' ||
-        sessionStorage.getItem('zenvitra_vault_authenticated') === 'true'
-      ) {
-        return true;
-      }
+  /**
+   * Helper: Determines if the currently active/authenticated account identity
+   * belongs to the verified Founder, Co-Founder, Admin, or Core Team roster.
+   * Normal user IDs (e.g. delegates, students, guests) evaluate strictly to false.
+   */
+  const checkPrivilegedIdentity = useCallback((): boolean => {
+    const effectiveUsername = (profile?.username || user?.email?.split('@')[0] || '').toLowerCase().trim().replace(/^@/, '');
+    const effectiveEmail = (user?.email || profile?.email || '').toLowerCase().trim();
+    const effectiveRole = ((profile?.role as any) || (profile as any)?.badge || '').toString().toUpperCase().trim();
+    const effectiveId = (user?.id || profile?.id || '').toString();
+
+    if (effectiveUsername || effectiveEmail || effectiveRole) {
+      return (
+        isPrivilegedAccount(effectiveUsername, effectiveRole, effectiveId) ||
+        isPrivilegedAccount(effectiveEmail, effectiveRole, effectiveId)
+      );
     }
+
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('zenvitra_session_user') || localStorage.getItem('zenvitra_pulse_user_v6');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const handle = (parsed?.username || parsed?.handle || '').toLowerCase().trim().replace(/^@/, '');
+          const email = (parsed?.email || '').toLowerCase().trim();
+          const r = (parsed?.role || '').toUpperCase().trim();
+          const id = (parsed?.id || '').toString();
+
+          return (
+            isPrivilegedAccount(handle, r, id) ||
+            isPrivilegedAccount(email, r, id)
+          );
+        }
+      } catch (_) {}
+    }
+
+    return false;
+  }, [user?.email, user?.id, profile?.username, profile?.email, profile?.role, profile?.id]);
+
+  /**
+   * Double-Lock Verification:
+   * To bypass maintenance mode, BOTH conditions must be satisfied:
+   * 1. Identity Lock: Must be an authenticated Founder, Co-Founder, or Admin/Core Team account.
+   * 2. Key Lock: Must have an active founder/admin session or valid clearance passkey.
+   *
+   * A normal ID person CANNOT bypass maintenance even if given an access link.
+   */
+  const checkPrivilege = useCallback((): boolean => {
+    const isIdentityPrivileged = checkPrivilegedIdentity();
+
+    if (!isIdentityPrivileged) {
+      // Normal ID or unauthenticated account: purge any rogue bypass tokens
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('zenvitra_founder_active_session');
+        localStorage.removeItem('zenvitra_admin_active_session');
+        localStorage.removeItem('zenvitra_admin_override_token');
+        localStorage.removeItem('zenvitra_founder_master_key');
+        localStorage.removeItem('zenvitra_founder_override');
+        localStorage.removeItem('zenvitra_vault_authenticated');
+        sessionStorage.removeItem('zenvitra_vault_authenticated');
+      }
+      return false;
+    }
+
     const effectiveUser = (user?.email?.split('@')[0] || profile?.username || '').toLowerCase().trim().replace(/^@/, '');
     const userRole = (profile?.role as any) || (profile as any)?.badge;
     const isF = isFounder(effectiveUser, userRole) || isFounderSessionActive();
     const isA = isAdmin(effectiveUser, userRole) || isAdminSessionActive();
     return isF || isA;
-  };
+  }, [checkPrivilegedIdentity, user?.email, profile?.username, profile?.role]);
 
   useEffect(() => {
     setMounted(true);
@@ -73,12 +131,26 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
         const urlParams = new URLSearchParams(window.location.search);
         const accessKey = urlParams.get('access_key') || urlParams.get('bypass_key') || urlParams.get('admin_key') || urlParams.get('auth') || urlParams.get('key');
         if (accessKey) {
-          const activated = activateAdminSession(accessKey) || activateFounderSession(accessKey);
-          if (activated) {
-            setIsPrivileged(true);
-            // Clean URL query without page reload
+          const isIdentityPrivileged = checkPrivilegedIdentity();
+
+          if (!isIdentityPrivileged) {
+            // STRICT SECURITY LAW: A normal ID person who gets an access link STILL gets the maintenance gate page!
+            setIsPrivileged(false);
+            setBypassWarning('Bypass link rejected: This access link is restricted strictly to verified Admin & Founder personnel. Your account does not have maintenance immunity.');
+
+            // Strip the access key from URL so it does not linger
             const cleanUrl = window.location.pathname + window.location.hash;
             window.history.replaceState(null, '', cleanUrl);
+          } else {
+            // An Admin or Founder got the access ID link!
+            const activated = activateAdminSession(accessKey) || activateFounderSession(accessKey);
+            if (activated) {
+              setIsPrivileged(true);
+              setBypassWarning(null);
+              // Clean URL query without page reload
+              const cleanUrl = window.location.pathname + window.location.hash;
+              window.history.replaceState(null, '', cleanUrl);
+            }
           }
         }
       } catch (_) {}
@@ -152,13 +224,39 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('zenvitra_protocol_update', debouncedSync);
     };
-  }, [user?.id, profile?.username, profile?.role]);
+  }, [user?.id, profile?.username, profile?.role, checkPrivilegedIdentity, checkPrivilege]);
 
   const handleUnlockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!passkeyInput.trim()) return;
 
-    const success = activateFounderSession(passkeyInput.trim());
+    const cleanKey = passkeyInput.trim().toUpperCase();
+    const isFKey = verifyFounderKey(cleanKey);
+    const isAKey = verifyAdminKey(cleanKey);
+
+    if (!isFKey && !isAKey) {
+      setPasskeyError('Invalid authorization code.');
+      return;
+    }
+
+    const isIdentityPrivileged = checkPrivilegedIdentity();
+    const hasNormalLoggedInAccount = Boolean(
+      (profile?.username || user?.email) && !isIdentityPrivileged
+    );
+
+    // If an active session belongs to a normal user, block bypass attempt:
+    if (hasNormalLoggedInAccount) {
+      setPasskeyError('Access Denied: Logged-in account does not have Admin or Founder clearance. Normal user accounts cannot bypass maintenance mode.');
+      return;
+    }
+
+    // If not logged in as admin/founder, general admin bypass keys cannot be used anonymously
+    if (!isIdentityPrivileged && !isFKey) {
+      setPasskeyError('Access Denied: Admin bypass keys require an authorized Admin or Core Team account identity.');
+      return;
+    }
+
+    const success = activateFounderSession(cleanKey) || activateAdminSession(cleanKey);
     if (success) {
       setPasskeyError(null);
       setUnlockSuccess('👑 Sovereign clearance unlocked! Access granted.');
@@ -169,7 +267,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
         setPasskeyInput('');
       }, 1200);
     } else {
-      setPasskeyError('Invalid authorization code.');
+      setPasskeyError('Unable to activate bypass clearance for this account.');
     }
   };
 
@@ -187,6 +285,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
     pathname.startsWith('/zen-vault-root') ||
     pathname.startsWith('/admin-access') ||
     pathname.startsWith('/enclave') ||
+    pathname.startsWith('/login') ||
     pathname.startsWith('/api')
   );
 
@@ -225,6 +324,18 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
               FREEZE ENGAGED
             </span>
           </div>
+
+          {bypassWarning && (
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-2 font-bold text-rose-400">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>ACCESS LINK RESTRICTED</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-rose-300/90">
+                {bypassWarning}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-3 text-xs text-neutral-300 leading-relaxed font-mono">
             <p>
