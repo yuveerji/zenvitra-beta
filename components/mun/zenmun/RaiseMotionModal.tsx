@@ -85,15 +85,15 @@ export function RaiseMotionModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-2xl bg-[#F5F3EB] rounded-3xl border border-[#D6D1C4] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+      <div className="w-full max-w-2xl bg-[#090d16] rounded-3xl border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="px-6 py-4 bg-[#243928] text-white flex items-center justify-between border-b border-[#324f38]">
-          <h2 className="text-sm font-black tracking-widest uppercase">RAISE A MOTION</h2>
+        <div className="px-6 py-4 bg-[#0c1220] text-white flex items-center justify-between border-b border-white/10">
+          <h2 className="text-sm font-black tracking-widest uppercase text-cyan-400">RAISE A MOTION</h2>
           <button
             type="button"
             onClick={() => setShowMotionsModal(false)}
-            className="text-neutral-400 hover:text-white p-1 rounded-full cursor-pointer"
+            className="text-neutral-400 hover:text-white p-1 rounded-full cursor-pointer transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -103,7 +103,7 @@ export function RaiseMotionModal() {
         <div className="p-6 overflow-y-auto space-y-6">
           {/* Motion Type Selector Row */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A7870]">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
               MOTION TYPE
             </label>
             <div className="grid grid-cols-5 gap-2">
@@ -118,10 +118,10 @@ export function RaiseMotionModal() {
                   key={t.id}
                   type="button"
                   onClick={() => handleTypeSelect(t.id as any)}
-                  className={`p-2.5 rounded-xl border text-[11px] font-extrabold text-center leading-tight transition cursor-pointer ${
+                  className={`p-2.5 rounded-xl border text-[11px] font-black text-center leading-tight transition cursor-pointer ${
                     motionType === t.id
-                      ? 'bg-[#243928] text-white border-[#243928] shadow-sm'
-                      : 'bg-white hover:bg-[#FAF9F5] text-[#1A1D1A] border-[#D6D1C4]'
+                      ? 'bg-cyan-500 text-black border-cyan-400 shadow-md'
+                      : 'bg-white/5 hover:bg-white/10 text-white border-white/10'
                   }`}
                 >
                   {t.label}
@@ -136,8 +136,8 @@ export function RaiseMotionModal() {
                 onClick={() => handleTypeSelect('suspend')}
                 className={`px-3 py-1.5 rounded-full border text-xs font-bold transition cursor-pointer ${
                   motionType === 'suspend'
-                    ? 'bg-[#7D2E2E] text-white border-[#7D2E2E]'
-                    : 'bg-[#EED8D6] text-[#7D2E2E] border-[#D9B2AE] hover:brightness-95'
+                    ? 'bg-rose-600 text-white border-rose-500 shadow-xs'
+                    : 'bg-rose-500/10 text-rose-300 border-rose-500/30 hover:bg-rose-500/20'
                 }`}
               >
                 Suspend
@@ -147,8 +147,8 @@ export function RaiseMotionModal() {
                 onClick={() => handleTypeSelect('end_debate')}
                 className={`px-3 py-1.5 rounded-full border text-xs font-bold transition cursor-pointer ${
                   motionType === 'end_debate'
-                    ? 'bg-[#7D2E2E] text-white border-[#7D2E2E]'
-                    : 'bg-[#EED8D6] text-[#7D2E2E] border-[#D9B2AE] hover:brightness-95'
+                    ? 'bg-rose-600 text-white border-rose-500 shadow-xs'
+                    : 'bg-rose-500/10 text-rose-300 border-rose-500/30 hover:bg-rose-500/20'
                 }`}
               >
                 End Debate
@@ -159,8 +159,8 @@ export function RaiseMotionModal() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Topic Input */}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#7A7870] mb-1">
-                Topic <span className="text-rose-600">*</span>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
+                Topic <span className="text-rose-400">*</span>
               </label>
               <input
                 type="text"
@@ -168,13 +168,13 @@ export function RaiseMotionModal() {
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="e.g. Humanitarian response in conflict zones"
                 required
-                className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D6D1C4] focus:outline-none focus:ring-2 focus:ring-[#243928] text-sm font-semibold"
+                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-cyan-400 text-sm font-semibold text-white placeholder-white/30"
               />
             </div>
 
             {/* Proposed by Autocomplete */}
             <div className="relative">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#39683C] mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-1">
                 Proposed by
               </label>
               <input
@@ -186,24 +186,24 @@ export function RaiseMotionModal() {
                 }}
                 onFocus={() => setProposerDropdown(true)}
                 placeholder="Type country name..."
-                className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D6D1C4] focus:outline-none focus:ring-2 focus:ring-[#243928] text-sm font-semibold"
+                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-cyan-400 text-sm font-semibold text-white placeholder-white/30"
               />
 
               {proposerDropdown && filteredProposers.length > 0 && (
-                <div className="absolute top-16 left-0 right-0 z-30 bg-white rounded-2xl shadow-xl border border-[#D6D1C4] max-h-48 overflow-y-auto">
+                <div className="absolute top-16 left-0 right-0 z-30 bg-[#0a0f1d] rounded-2xl shadow-2xl border border-white/15 max-h-48 overflow-y-auto">
                   {filteredProposers.map((d) => (
                     <button
                       key={d.id}
                       type="button"
                       onClick={() => handleSelectProposer(d.id)}
-                      className="w-full px-4 py-2.5 text-left hover:bg-[#F5F3EB] flex items-center gap-2 border-b border-[#F0EDE4] last:border-none cursor-pointer"
+                      className="w-full px-4 py-2.5 text-left hover:bg-white/10 flex items-center gap-2 border-b border-white/5 last:border-none cursor-pointer text-white"
                     >
                       <img
                         src={`https://flagcdn.com/w40/${d.countryCode.toLowerCase()}.png`}
                         alt=""
-                        className="w-4 h-4 rounded-full object-cover"
+                        className="w-4 h-4 rounded-full object-cover border border-white/10"
                       />
-                      <span className="text-xs font-bold text-[#1A1D1A]">{d.name}</span>
+                      <span className="text-xs font-bold text-white">{d.name}</span>
                     </button>
                   ))}
                 </div>
@@ -214,8 +214,8 @@ export function RaiseMotionModal() {
             {motionType !== 'suspend' && motionType !== 'end_debate' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 {/* Total Time */}
-                <div className="p-4 rounded-2xl bg-[#EFECE4] border border-[#D6D1C4] space-y-3">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A7870]">
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                     Total time
                   </div>
                   <div className="flex items-center gap-2">
@@ -225,18 +225,18 @@ export function RaiseMotionModal() {
                       max={60}
                       value={totalMin}
                       onChange={(e) => setTotalMin(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-16 px-2 py-1.5 rounded-lg bg-white border border-[#D6D1C4] font-mono text-center font-bold text-sm"
+                      className="w-16 px-2 py-1.5 rounded-lg bg-black/40 border border-white/10 font-mono text-center font-bold text-sm text-white focus:outline-none focus:border-cyan-400"
                     />
-                    <span className="text-xs font-bold text-[#7A7870]">min</span>
+                    <span className="text-xs font-bold text-neutral-400">min</span>
                     <input
                       type="number"
                       min={0}
                       max={59}
                       value={totalSec}
                       onChange={(e) => setTotalSec(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))}
-                      className="w-16 px-2 py-1.5 rounded-lg bg-white border border-[#D6D1C4] font-mono text-center font-bold text-sm"
+                      className="w-16 px-2 py-1.5 rounded-lg bg-black/40 border border-white/10 font-mono text-center font-bold text-sm text-white focus:outline-none focus:border-cyan-400"
                     />
-                    <span className="text-xs font-bold text-[#7A7870]">sec</span>
+                    <span className="text-xs font-bold text-neutral-400">sec</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {[2, 5, 10, 15, 20].map((m) => (
@@ -247,10 +247,10 @@ export function RaiseMotionModal() {
                           setTotalMin(m);
                           setTotalSec(0);
                         }}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold border cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold border cursor-pointer transition ${
                           totalMin === m && totalSec === 0
-                            ? 'bg-[#243928] text-white border-[#243928]'
-                            : 'bg-white text-[#1A1D1A] border-[#D6D1C4] hover:bg-[#FAF9F5]'
+                            ? 'bg-cyan-500 text-black border-cyan-400'
+                            : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
                         }`}
                       >
                         {m}m
@@ -261,8 +261,8 @@ export function RaiseMotionModal() {
 
                 {/* Per Delegate */}
                 {motionType !== 'unmoderated' && (
-                  <div className="p-4 rounded-2xl bg-[#EFECE4] border border-[#D6D1C4] space-y-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A7870]">
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                       / delegate
                     </div>
                     <div className="flex items-center gap-2">
@@ -273,9 +273,9 @@ export function RaiseMotionModal() {
                         step={5}
                         value={delegateSec}
                         onChange={(e) => setDelegateSec(Math.max(10, parseInt(e.target.value) || 60))}
-                        className="w-20 px-2 py-1.5 rounded-lg bg-white border border-[#D6D1C4] font-mono text-center font-bold text-sm"
+                        className="w-20 px-2 py-1.5 rounded-lg bg-black/40 border border-white/10 font-mono text-center font-bold text-sm text-white focus:outline-none focus:border-cyan-400"
                       />
-                      <span className="text-xs font-bold text-[#7A7870]">sec</span>
+                      <span className="text-xs font-bold text-neutral-400">sec</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {[30, 45, 60, 90, 120].map((s) => (
@@ -283,10 +283,10 @@ export function RaiseMotionModal() {
                           key={s}
                           type="button"
                           onClick={() => setDelegateSec(s)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border cursor-pointer transition ${
                             delegateSec === s
-                              ? 'bg-[#243928] text-white border-[#243928]'
-                              : 'bg-white text-[#1A1D1A] border-[#D6D1C4] hover:bg-[#FAF9F5]'
+                              ? 'bg-cyan-500 text-black border-cyan-400'
+                              : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
                           }`}
                         >
                           {s}s
@@ -295,8 +295,8 @@ export function RaiseMotionModal() {
                     </div>
 
                     {/* Capacity Pill */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#D6D1C4] text-[11px] text-[#243928]">
-                      <Users className="w-3 h-3 text-[#39683C]" />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-[11px] text-cyan-300">
+                      <Users className="w-3 h-3 text-cyan-400" />
                       <span><strong>{maxSpeakers}</strong> delegates can speak</span>
                     </div>
                   </div>
@@ -311,8 +311,8 @@ export function RaiseMotionModal() {
                 disabled={!topic.trim()}
                 className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition shadow-lg cursor-pointer flex items-center justify-center gap-2 ${
                   topic.trim()
-                    ? 'bg-[#243928] hover:bg-[#324f38] text-[#E4DB98] shadow-[#243928]/20'
-                    : 'bg-[#D6D1C2] text-neutral-500 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black shadow-emerald-500/20 active:scale-95'
+                    : 'bg-white/10 text-neutral-500 cursor-not-allowed'
                 }`}
               >
                 <span>RAISE MOTION &rarr;</span>
@@ -322,29 +322,29 @@ export function RaiseMotionModal() {
 
           {/* Active Motions Queue */}
           {session.motions.length > 0 && (
-            <div className="pt-4 border-t border-[#D6D1C4] space-y-2">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A7870]">
+            <div className="pt-4 border-t border-white/10 space-y-2">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                 QUEUED MOTIONS ({session.motions.length})
               </div>
               <div className="space-y-2">
                 {session.motions.map((m) => (
                   <div
                     key={m.id}
-                    className="p-3.5 rounded-2xl bg-white border border-[#D6D1C4] flex items-center justify-between gap-3 shadow-2xs"
+                    className="p-3.5 rounded-2xl bg-[#0d1424] border border-white/10 flex items-center justify-between gap-3 shadow-xs"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase bg-[#EFECE4] px-2 py-0.5 rounded text-[#243928]">
+                        <span className="text-[10px] font-bold uppercase bg-white/10 px-2 py-0.5 rounded text-cyan-300 border border-white/10">
                           {m.typeName}
                         </span>
-                        <span className="text-xs text-[#7A7870] font-medium">
-                          by <strong>{m.proposedByName}</strong>
+                        <span className="text-xs text-neutral-400 font-medium">
+                          by <strong className="text-white">{m.proposedByName}</strong>
                         </span>
                       </div>
-                      <div className="text-sm font-bold text-[#1A1D1A] truncate pt-0.5">
+                      <div className="text-sm font-bold text-white truncate pt-0.5">
                         {m.topic}
                       </div>
-                      <div className="text-[10px] font-mono text-[#7A7870]">
+                      <div className="text-[10px] font-mono text-neutral-400">
                         {Math.floor(m.totalSeconds / 60)}m {m.totalSeconds % 60}s total &bull; {m.delegateSeconds}s / speaker
                       </div>
                     </div>
@@ -356,15 +356,15 @@ export function RaiseMotionModal() {
                           passAndStartMotion(m.id);
                           setShowMotionsModal(false);
                         }}
-                        className="px-3 py-1.5 rounded-xl bg-[#39683C] hover:bg-[#2e5531] text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black text-xs font-black flex items-center gap-1 cursor-pointer transition shadow-md active:scale-95"
                       >
-                        <Play className="w-3 h-3 fill-white" />
+                        <Play className="w-3 h-3 fill-black" />
                         <span>Pass &amp; Start</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => voteOnMotion(m.id, false)}
-                        className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-[#D6D1C4] text-xs font-bold cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold cursor-pointer transition"
                       >
                         Fail
                       </button>

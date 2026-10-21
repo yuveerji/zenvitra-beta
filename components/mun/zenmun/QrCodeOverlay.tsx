@@ -40,12 +40,12 @@ export function QrCodeOverlay() {
   return (
     <div
       onClick={() => setShowQrOverlay(false)}
-      className="fixed inset-0 z-100 bg-[#243928] text-white flex flex-col justify-between p-8 sm:p-14 animate-fade-in cursor-pointer select-none"
+      className="fixed inset-0 z-[9999] bg-[#030407]/95 backdrop-blur-xl text-white flex flex-col justify-between p-8 sm:p-14 animate-fade-in cursor-pointer select-none"
     >
       {/* Top Bar with Close */}
       <div className="flex items-center justify-between w-full">
-        <div className="text-xs font-mono font-bold uppercase tracking-[0.25em] text-[#E4DB98]">
-          SESSION CODE &bull; LIVE ROOM PROJECTION
+        <div className="text-xs font-mono font-bold uppercase tracking-[0.25em] text-cyan-400">
+          SESSION CODE • LIVE ROOM PROJECTION
         </div>
         <button
           type="button"
@@ -61,10 +61,10 @@ export function QrCodeOverlay() {
 
       {/* Center Giant Code */}
       <div className="text-center my-auto py-12">
-        <div className="text-[12vw] font-black font-display tracking-[0.2em] text-white leading-none drop-shadow-2xl">
+        <div className="text-[12vw] font-black font-mono tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300 leading-none drop-shadow-[0_0_60px_rgba(6,182,212,0.35)]">
           {formattedCode}
         </div>
-        <div className="text-sm sm:text-lg text-[#E4DB98] font-mono tracking-widest uppercase pt-6 opacity-90">
+        <div className="text-sm sm:text-lg text-cyan-300 font-mono tracking-widest uppercase pt-6 opacity-90">
           Enter this 6-character code to join the dais floor
         </div>
       </div>
@@ -72,7 +72,7 @@ export function QrCodeOverlay() {
       {/* Bottom Block (Split Left Info / Right QR) */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-8 pt-8 border-t border-white/10">
         <div className="space-y-2 text-left">
-          <div className="text-xs uppercase tracking-widest text-[#A6C4AD] font-mono">Join at</div>
+          <div className="text-xs uppercase tracking-widest text-neutral-400 font-mono">Join at</div>
           <div className="text-xl sm:text-3xl font-black text-white font-mono">
             zenvitra.xyz/join
           </div>
@@ -80,15 +80,15 @@ export function QrCodeOverlay() {
             <button
               type="button"
               onClick={handleCopy}
-              className="px-6 py-3 rounded-2xl bg-[#E4DB98] hover:bg-[#d8cf8a] text-[#1A1D1A] font-black text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition shadow-xl"
+              className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition shadow-xl active:scale-95"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-800" /> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4 text-black" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'Code Copied!' : 'Copy Code'}</span>
             </button>
             <button
               type="button"
               onClick={handleRotate}
-              className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition border border-white/20"
+              className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition border border-white/20 active:scale-95"
               title="Generate a fresh unseeded code"
             >
               <RefreshCw className={`w-4 h-4 ${rotated ? 'animate-spin' : ''}`} />
@@ -109,67 +109,67 @@ export function QrCodeOverlay() {
             xmlns="http://www.w3.org/2000/svg"
           >
             {/* Outer Position Squares */}
-            <rect x="5" y="5" width="25" height="25" rx="3" fill="#243928" />
+            <rect x="5" y="5" width="25" height="25" rx="3" fill="#0c1220" />
             <rect x="9" y="9" width="17" height="17" rx="2" fill="white" />
-            <rect x="13" y="13" width="9" height="9" rx="1.5" fill="#243928" />
+            <rect x="13" y="13" width="9" height="9" rx="1.5" fill="#0c1220" />
 
-            <rect x="70" y="5" width="25" height="25" rx="3" fill="#243928" />
+            <rect x="70" y="5" width="25" height="25" rx="3" fill="#0c1220" />
             <rect x="74" y="9" width="17" height="17" rx="2" fill="white" />
-            <rect x="78" y="13" width="9" height="9" rx="1.5" fill="#243928" />
+            <rect x="78" y="13" width="9" height="9" rx="1.5" fill="#0c1220" />
 
-            <rect x="5" y="70" width="25" height="25" rx="3" fill="#243928" />
+            <rect x="5" y="70" width="25" height="25" rx="3" fill="#0c1220" />
             <rect x="9" y="74" width="17" height="17" rx="2" fill="white" />
-            <rect x="13" y="78" width="9" height="9" rx="1.5" fill="#243928" />
+            <rect x="13" y="78" width="9" height="9" rx="1.5" fill="#0c1220" />
 
             {/* Stylized QR Matrix Pattern */}
-            <rect x="36" y="8" width="6" height="6" fill="#243928" />
-            <rect x="46" y="8" width="6" height="6" fill="#243928" />
-            <rect x="56" y="8" width="6" height="6" fill="#243928" />
+            <rect x="36" y="8" width="6" height="6" fill="#0c1220" />
+            <rect x="46" y="8" width="6" height="6" fill="#0c1220" />
+            <rect x="56" y="8" width="6" height="6" fill="#0c1220" />
 
-            <rect x="36" y="18" width="6" height="6" fill="#243928" />
-            <rect x="50" y="18" width="12" height="6" fill="#243928" />
+            <rect x="36" y="18" width="6" height="6" fill="#0c1220" />
+            <rect x="50" y="18" width="12" height="6" fill="#0c1220" />
 
-            <rect x="8" y="36" width="6" height="6" fill="#243928" />
-            <rect x="18" y="36" width="6" height="6" fill="#243928" />
-            <rect x="28" y="36" width="6" height="6" fill="#243928" />
-            <rect x="38" y="36" width="8" height="8" rx="2" fill="#39683C" />
-            <rect x="52" y="36" width="6" height="6" fill="#243928" />
-            <rect x="64" y="36" width="6" height="6" fill="#243928" />
-            <rect x="76" y="36" width="6" height="6" fill="#243928" />
-            <rect x="86" y="36" width="6" height="6" fill="#243928" />
+            <rect x="8" y="36" width="6" height="6" fill="#0c1220" />
+            <rect x="18" y="36" width="6" height="6" fill="#0c1220" />
+            <rect x="28" y="36" width="6" height="6" fill="#0c1220" />
+            <rect x="38" y="36" width="8" height="8" rx="2" fill="#06b6d4" />
+            <rect x="52" y="36" width="6" height="6" fill="#0c1220" />
+            <rect x="64" y="36" width="6" height="6" fill="#0c1220" />
+            <rect x="76" y="36" width="6" height="6" fill="#0c1220" />
+            <rect x="86" y="36" width="6" height="6" fill="#0c1220" />
 
-            <rect x="8" y="48" width="12" height="6" fill="#243928" />
-            <rect x="26" y="48" width="6" height="6" fill="#243928" />
-            <rect x="38" y="48" width="6" height="6" fill="#243928" />
-            <rect x="50" y="48" width="8" height="8" rx="2" fill="#39683C" />
-            <rect x="66" y="48" width="10" height="6" fill="#243928" />
-            <rect x="82" y="48" width="10" height="6" fill="#243928" />
+            <rect x="8" y="48" width="12" height="6" fill="#0c1220" />
+            <rect x="26" y="48" width="6" height="6" fill="#0c1220" />
+            <rect x="38" y="48" width="6" height="6" fill="#0c1220" />
+            <rect x="50" y="48" width="8" height="8" rx="2" fill="#06b6d4" />
+            <rect x="66" y="48" width="10" height="6" fill="#0c1220" />
+            <rect x="82" y="48" width="10" height="6" fill="#0c1220" />
 
-            <rect x="8" y="60" width="6" height="6" fill="#243928" />
-            <rect x="20" y="60" width="10" height="6" fill="#243928" />
-            <rect x="36" y="60" width="6" height="6" fill="#243928" />
-            <rect x="46" y="60" width="14" height="6" fill="#243928" />
-            <rect x="66" y="60" width="6" height="6" fill="#243928" />
-            <rect x="78" y="60" width="14" height="6" fill="#243928" />
+            <rect x="8" y="60" width="6" height="6" fill="#0c1220" />
+            <rect x="20" y="60" width="10" height="6" fill="#0c1220" />
+            <rect x="36" y="60" width="6" height="6" fill="#0c1220" />
+            <rect x="46" y="60" width="14" height="6" fill="#0c1220" />
+            <rect x="66" y="60" width="6" height="6" fill="#0c1220" />
+            <rect x="78" y="60" width="14" height="6" fill="#0c1220" />
 
-            <rect x="36" y="74" width="8" height="6" fill="#243928" />
-            <rect x="48" y="74" width="6" height="6" fill="#243928" />
-            <rect x="60" y="74" width="8" height="6" fill="#243928" />
-            <rect x="74" y="74" width="6" height="6" fill="#243928" />
-            <rect x="86" y="74" width="6" height="6" fill="#243928" />
+            <rect x="36" y="74" width="8" height="6" fill="#0c1220" />
+            <rect x="48" y="74" width="6" height="6" fill="#0c1220" />
+            <rect x="60" y="74" width="8" height="6" fill="#0c1220" />
+            <rect x="74" y="74" width="6" height="6" fill="#0c1220" />
+            <rect x="86" y="74" width="6" height="6" fill="#0c1220" />
 
-            <rect x="36" y="86" width="14" height="6" fill="#243928" />
-            <rect x="56" y="86" width="6" height="6" fill="#243928" />
-            <rect x="68" y="86" width="14" height="6" fill="#243928" />
-            <rect x="88" y="86" width="6" height="6" fill="#243928" />
+            <rect x="36" y="86" width="14" height="6" fill="#0c1220" />
+            <rect x="56" y="86" width="6" height="6" fill="#0c1220" />
+            <rect x="68" y="86" width="14" height="6" fill="#0c1220" />
+            <rect x="88" y="86" width="6" height="6" fill="#0c1220" />
           </svg>
-          <span className="text-[10px] font-mono font-bold text-[#243928] uppercase tracking-wider">
+          <span className="text-[10px] font-mono font-bold text-neutral-800 uppercase tracking-wider">
             Scan to Join
           </span>
         </div>
       </div>
 
-      <div className="text-center text-[11px] font-mono text-[#A6C4AD] pt-4">
+      <div className="text-center text-[11px] font-mono text-neutral-400 pt-4">
         Click anywhere or press Escape to close
       </div>
     </div>

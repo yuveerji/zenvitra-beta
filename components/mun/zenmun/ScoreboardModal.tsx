@@ -76,15 +76,16 @@ export function ScoreboardModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in select-none">
-      <div className="w-full max-w-4xl bg-[#FAF9F5] rounded-3xl border border-[#D6D1C4] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
+      <div className="w-full max-w-4xl bg-[#090d16] rounded-3xl border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
-        {/* ── 1. HEADER (Dark Forest Green with Download record Pill) ── */}
-        <div className="px-6 py-4 bg-[#243928] text-white flex items-center justify-between border-b border-[#1c2e20]">
+        {/* ── 1. HEADER ── */}
+        <div className="px-6 py-4 bg-[#0c1220] text-white flex items-center justify-between border-b border-white/10">
           <div className="flex items-center gap-2.5">
-            <span className="w-1.5 h-5 bg-[#E4DB98] rounded-full" />
-            <h2 className="text-base font-black tracking-tight text-white uppercase">
-              Scoreboard
+            <span className="w-1.5 h-5 bg-amber-400 rounded-full" />
+            <h2 className="text-base font-black tracking-tight text-white uppercase flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <span>Scoreboard &amp; Ledger</span>
             </h2>
           </div>
 
@@ -92,10 +93,10 @@ export function ScoreboardModal() {
             <button
               type="button"
               onClick={exportCsvScores}
-              className="px-4 py-1.5 rounded-full bg-[#E4DB98] hover:bg-[#d8cf89] text-[#243928] font-bold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+              className="px-4 py-1.5 rounded-full bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer active:scale-95"
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>Download record</span>
+              <span>Download CSV</span>
             </button>
             <button
               type="button"
@@ -103,30 +104,30 @@ export function ScoreboardModal() {
                 setShowScoreboardModal(false);
                 setDrillInDelegate(null);
               }}
-              className="text-white/70 hover:text-white p-1 rounded-full cursor-pointer transition"
+              className="text-white/60 hover:text-white p-1 rounded-full cursor-pointer transition"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* ── 2. SUB-BADGES & VIEW SWITCHER (Matching Gavelling.com) ── */}
-        <div className="px-6 py-4 bg-[#F2EFE9] border-b border-[#D6D1C4] space-y-4">
+        {/* ── 2. SUB-BADGES & VIEW SWITCHER ── */}
+        <div className="px-6 py-4 bg-[#0a0f1d] border-b border-white/10 space-y-4">
           
           {/* Top Stat Pills Row */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="px-4 py-2 rounded-2xl bg-white border border-[#DCD9CE] shadow-2xs flex items-center gap-2 text-xs font-black text-[#1A1D1A]">
-              <Users className="w-4 h-4 text-[#7A7870]" />
+            <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 shadow-xs flex items-center gap-2 text-xs font-black text-white">
+              <Users className="w-4 h-4 text-cyan-400" />
               <span>{totalDelegations} DELEGATIONS</span>
             </div>
 
-            <div className="px-4 py-2 rounded-2xl bg-white border border-[#DCD9CE] shadow-2xs flex items-center gap-2 text-xs font-black text-[#1A1D1A]">
-              <Mic className="w-4 h-4 text-[#7A7870]" />
+            <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 shadow-xs flex items-center gap-2 text-xs font-black text-white">
+              <Mic className="w-4 h-4 text-amber-400" />
               <span>{totalSpeeches} SPEECHES</span>
             </div>
 
-            <div className="px-4 py-2 rounded-2xl bg-white border border-[#DCD9CE] shadow-2xs flex items-center gap-2 text-xs font-black text-[#1A1D1A]">
-              <Clock className="w-4 h-4 text-[#7A7870]" />
+            <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 shadow-xs flex items-center gap-2 text-xs font-black text-white">
+              <Clock className="w-4 h-4 text-emerald-400" />
               <span>{totalSpeakingSeconds}s SPEAKING TIME</span>
             </div>
           </div>
@@ -145,10 +146,10 @@ export function ScoreboardModal() {
                     setActiveTab(tab);
                     setDrillInDelegate(null);
                   }}
-                  className={`px-4 py-2 rounded-xl text-xs font-extrabold tracking-wide transition cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-4 py-2 rounded-xl text-xs font-black tracking-wide transition cursor-pointer flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-[#243928] text-white shadow-sm'
-                      : 'bg-white hover:bg-[#FAF9F5] text-[#555] border border-[#DCD9CE]'
+                      ? 'bg-cyan-500 text-black shadow-md'
+                      : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
                   }`}
                 >
                   <span>{label}</span>
@@ -163,11 +164,11 @@ export function ScoreboardModal() {
           {drillInDelegate ? (
             /* DELEGATION DRILL-IN DETAIL VIEW */
             <div className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between border-b pb-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <button
                   type="button"
                   onClick={() => setDrillInDelegate(null)}
-                  className="text-xs font-bold text-[#243928] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back to {activeTab}</span>
@@ -177,15 +178,15 @@ export function ScoreboardModal() {
                   <img
                     src={`https://flagcdn.com/w80/${drillInDelegate.countryCode.toLowerCase()}.png`}
                     alt=""
-                    className="w-7 h-7 rounded-full object-cover border"
+                    className="w-7 h-7 rounded-full object-cover border border-white/20"
                   />
-                  <span className="text-base font-black text-[#1A1D1A]">{drillInDelegate.name}</span>
+                  <span className="text-base font-black text-white">{drillInDelegate.name}</span>
                 </div>
               </div>
 
               {/* Manual Point Award / Deduct Bar */}
-              <div className="p-4 rounded-2xl bg-white border border-[#D6D1C4] space-y-3">
-                <div className="text-xs font-black uppercase text-[#243928]">Award or Deduct Points</div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                <div className="text-xs font-black uppercase text-cyan-400">Award or Deduct Points</div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <input
                     type="number"
@@ -193,19 +194,19 @@ export function ScoreboardModal() {
                     max={100}
                     value={manualAmount}
                     onChange={(e) => setManualAmount(parseInt(e.target.value) || 5)}
-                    className="w-20 px-3 py-1.5 rounded-xl bg-[#FAF9F5] border border-[#D6D1C4] text-xs font-mono font-bold"
+                    className="w-20 px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono font-bold text-white focus:outline-none focus:border-cyan-400"
                   />
                   <input
                     type="text"
                     placeholder="Reason (e.g. exemplary framing, POO violation)..."
                     value={manualReason}
                     onChange={(e) => setManualReason(e.target.value)}
-                    className="flex-1 min-w-[200px] px-3 py-1.5 rounded-xl bg-[#FAF9F5] border border-[#D6D1C4] text-xs font-medium"
+                    className="flex-1 min-w-[200px] px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-medium text-white focus:outline-none focus:border-cyan-400 placeholder-white/30"
                   />
                   <button
                     type="button"
                     onClick={() => handleApplyManual(false)}
-                    className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-2xs"
+                    className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs flex items-center gap-1 cursor-pointer shadow-md transition"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Award</span>
@@ -213,7 +214,7 @@ export function ScoreboardModal() {
                   <button
                     type="button"
                     onClick={() => handleApplyManual(true)}
-                    className="px-4 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-2xs"
+                    className="px-4 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 font-bold text-xs flex items-center gap-1 cursor-pointer shadow-xs transition"
                   >
                     <Minus className="w-3.5 h-3.5" />
                     <span>Deduct</span>
@@ -223,24 +224,24 @@ export function ScoreboardModal() {
 
               {/* Point Ledger Timeline */}
               <div className="space-y-2">
-                <div className="text-xs font-black uppercase text-[#7A7870]">Activity Ledger</div>
+                <div className="text-xs font-black uppercase text-neutral-400">Activity Ledger</div>
                 {drillInEntries.length === 0 ? (
-                  <div className="p-6 rounded-2xl bg-white border border-[#D6D1C4] text-center text-xs text-[#7A7870]">
+                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center text-xs text-neutral-400">
                     No activity recorded for this delegation yet.
                   </div>
                 ) : (
-                  <div className="divide-y divide-[#EFECE4] rounded-2xl bg-white border border-[#D6D1C4] overflow-hidden">
+                  <div className="divide-y divide-white/10 rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
                     {drillInEntries.map((e) => (
                       <div key={e.id} className="p-3.5 flex items-center justify-between text-xs">
                         <div>
-                          <div className="font-bold text-[#1A1D1A]">{e.reason}</div>
-                          <div className="text-[10px] text-[#7A7870] font-mono">
+                          <div className="font-bold text-white">{e.reason}</div>
+                          <div className="text-[10px] text-neutral-400 font-mono">
                             {new Date(e.timestamp).toLocaleTimeString()}
                           </div>
                         </div>
                         <span
                           className={`font-mono font-black ${
-                            e.points >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                            e.points >= 0 ? 'text-emerald-400' : 'text-rose-400'
                           }`}
                         >
                           {e.points > 0 ? `+${e.points}` : e.points} pts
@@ -252,10 +253,10 @@ export function ScoreboardModal() {
               </div>
             </div>
           ) : activeTab === 'ranking' ? (
-            /* TAB 1: RANKING VIEW (Matches Screenshot 2026-10-18 030354.png) */
-            <div className="overflow-x-auto rounded-2xl border border-[#D6D1C4] bg-white">
+            /* TAB 1: RANKING VIEW */
+            <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0d1424]">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F2EFE9] text-[#7A7870] font-bold uppercase tracking-wider text-[10px] border-b border-[#D6D1C4]">
+                <thead className="bg-[#0a0f1d] text-neutral-400 font-bold uppercase tracking-wider text-[10px] border-b border-white/10">
                   <tr>
                     <th className="py-3 px-4 w-12 text-center">#</th>
                     <th className="py-3 px-4">DELEGATION</th>
@@ -264,7 +265,7 @@ export function ScoreboardModal() {
                     <th className="py-3 px-4 text-right">SCORE</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EFECE4]">
+                <tbody className="divide-y divide-white/5">
                   {scoreboardRanking.map((item, idx) => {
                     const rowStats = getMatrixRow(item.delegate);
                     const isAbsent = item.delegate.attendance === 'absent';
@@ -273,9 +274,9 @@ export function ScoreboardModal() {
                       <tr
                         key={item.delegate.id}
                         onClick={() => setDrillInDelegate(item.delegate)}
-                        className="hover:bg-[#FAF9F5] transition cursor-pointer group"
+                        className="hover:bg-white/5 transition cursor-pointer group"
                       >
-                        <td className="py-3 px-4 text-center font-mono font-bold text-[#7A7870]">
+                        <td className="py-3 px-4 text-center font-mono font-bold text-neutral-400">
                           {idx + 1}
                         </td>
                         <td className="py-3 px-4">
@@ -283,31 +284,31 @@ export function ScoreboardModal() {
                             <img
                               src={`https://flagcdn.com/w80/${item.delegate.countryCode.toLowerCase()}.png`}
                               alt=""
-                              className="w-5 h-5 rounded-full object-cover border border-black/10 shrink-0"
+                              className="w-5 h-5 rounded-full object-cover border border-white/20 shrink-0"
                               onError={(e) => {
                                 (e.target as HTMLElement).style.display = 'none';
                               }}
                             />
-                            <span className="font-bold text-[#1A1D1A]">{item.delegate.name}</span>
+                            <span className="font-bold text-white">{item.delegate.name}</span>
                             <span
-                              className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                                isAbsent ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                                isAbsent ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                               }`}
                             >
                               {isAbsent ? 'Absent' : 'Present'}
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-[#1A1D1A]">
+                        <td className="py-3 px-4 text-center font-bold text-white">
                           {rowStats.gsl + rowStats.cauc}
                         </td>
-                        <td className="py-3 px-4 text-center font-mono text-[#7A7870]">
+                        <td className="py-3 px-4 text-center font-mono text-neutral-400">
                           {rowStats.timeSec}s
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <div className="inline-flex items-center gap-1 font-black text-sm text-[#243928]">
+                          <div className="inline-flex items-center gap-1 font-black text-sm text-cyan-400">
                             <span>{item.blendedScore} pts</span>
-                            <ChevronRight className="w-3.5 h-3.5 text-[#7A7870] group-hover:translate-x-0.5 transition" />
+                            <ChevronRight className="w-3.5 h-3.5 text-neutral-400 group-hover:translate-x-0.5 transition" />
                           </div>
                         </td>
                       </tr>
@@ -317,10 +318,10 @@ export function ScoreboardModal() {
               </table>
             </div>
           ) : activeTab === 'matrix' ? (
-            /* TAB 2: MATRIX VIEW (Matches Screenshot 2026-10-18 030405.png) */
-            <div className="overflow-x-auto rounded-2xl border border-[#D6D1C4] bg-white">
+            /* TAB 2: MATRIX VIEW */
+            <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0d1424]">
               <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-[#F2EFE9] text-[#7A7870] font-bold uppercase tracking-wider text-[10px] border-b border-[#D6D1C4]">
+                <thead className="bg-[#0a0f1d] text-neutral-400 font-bold uppercase tracking-wider text-[10px] border-b border-white/10">
                   <tr>
                     <th className="py-3 px-4">DELEGATION</th>
                     <th className="py-3 px-2 text-center">GSL</th>
@@ -336,7 +337,7 @@ export function ScoreboardModal() {
                     <th className="py-3 px-4 text-center">SCORE</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EFECE4]">
+                <tbody className="divide-y divide-white/5">
                   {session.roster.map((del) => {
                     const row = getMatrixRow(del);
 
@@ -344,29 +345,29 @@ export function ScoreboardModal() {
                       <tr
                         key={del.id}
                         onClick={() => setDrillInDelegate(del)}
-                        className="hover:bg-[#FAF9F5] transition cursor-pointer"
+                        className="hover:bg-white/5 transition cursor-pointer"
                       >
                         <td className="py-2.5 px-4">
                           <div className="flex items-center gap-2">
                             <img
                               src={`https://flagcdn.com/w80/${del.countryCode.toLowerCase()}.png`}
                               alt=""
-                              className="w-4 h-4 rounded-full object-cover shrink-0"
+                              className="w-4 h-4 rounded-full object-cover shrink-0 border border-white/20"
                             />
-                            <span className="font-bold text-[#1A1D1A] truncate max-w-[140px]">{del.name}</span>
+                            <span className="font-bold text-white truncate max-w-[140px]">{del.name}</span>
                           </div>
                         </td>
-                        <td className="py-2.5 px-2 text-center font-mono text-[#7A7870]">{row.gsl}</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-[#7A7870]">{row.cauc}</td>
-                        <td className="py-2.5 px-3 text-center font-mono text-[#7A7870]">{row.timeSec}s</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-[#7A7870]">{row.mot}</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-[#7A7870]">{row.rtr}</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-[#7A7870]">{row.wp}</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-[#7A7870]">{row.dr}</td>
-                        <td className="py-2.5 px-2 text-center font-mono text-[#7A7870]">{row.manual}</td>
-                        <td className="py-2.5 px-3 text-center font-bold font-mono text-[#243928]">{row.points}</td>
-                        <td className="py-2.5 px-3 text-center font-mono text-[#7A7870]">{row.quality}</td>
-                        <td className="py-2.5 px-4 text-center font-black font-mono text-[#1A1D1A]">{row.score}</td>
+                        <td className="py-2.5 px-2 text-center font-mono text-neutral-400">{row.gsl}</td>
+                        <td className="py-2.5 px-2 text-center font-mono text-neutral-400">{row.cauc}</td>
+                        <td className="py-2.5 px-3 text-center font-mono text-neutral-400">{row.timeSec}s</td>
+                        <td className="py-2.5 px-2 text-center font-mono text-neutral-400">{row.mot}</td>
+                        <td className="py-2.5 px-2 text-center font-mono text-neutral-400">{row.rtr}</td>
+                        <td className="py-2.5 px-2 text-center font-mono text-neutral-400">{row.wp}</td>
+                        <td className="py-2.5 px-2 text-center font-mono text-neutral-400">{row.dr}</td>
+                        <td className="py-2.5 px-2 text-center font-mono text-neutral-400">{row.manual}</td>
+                        <td className="py-2.5 px-3 text-center font-bold font-mono text-cyan-400">{row.points}</td>
+                        <td className="py-2.5 px-3 text-center font-mono text-neutral-400">{row.quality}</td>
+                        <td className="py-2.5 px-4 text-center font-black font-mono text-white">{row.score}</td>
                       </tr>
                     );
                   })}
@@ -374,29 +375,29 @@ export function ScoreboardModal() {
               </table>
             </div>
           ) : (
-            /* TAB 3: HISTORY VIEW (Matches Screenshot 2026-10-18 030415.png) */
+            /* TAB 3: HISTORY VIEW */
             <div className="space-y-4">
               {speechesLedger.length === 0 ? (
                 <div className="py-16 text-center space-y-2">
-                  <p className="text-sm font-semibold text-[#7A7870]">
+                  <p className="text-sm font-semibold text-neutral-400">
                     Nothing has happened on the floor yet. Speeches appear here as they are given.
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-[#EFECE4] rounded-2xl bg-white border border-[#D6D1C4] overflow-hidden">
+                <div className="divide-y divide-white/5 rounded-2xl bg-[#0d1424] border border-white/10 overflow-hidden">
                   {speechesLedger.map((s) => (
-                    <div key={s.id} className="p-4 flex items-center justify-between text-xs hover:bg-[#FAF9F5]">
+                    <div key={s.id} className="p-4 flex items-center justify-between text-xs hover:bg-white/5 transition">
                       <div className="flex items-center gap-3">
-                        <span className="w-2 h-2 rounded-full bg-[#243928]" />
+                        <span className="w-2 h-2 rounded-full bg-cyan-400" />
                         <div>
-                          <div className="font-bold text-[#1A1D1A]">{s.delegateName}</div>
-                          <div className="text-[10px] text-[#7A7870] font-mono">
+                          <div className="font-bold text-white">{s.delegateName}</div>
+                          <div className="text-[10px] text-neutral-400 font-mono">
                             {s.category === 'gsl_speech' ? 'General Speaker\'s List' : 'Caucus Speech'} &bull;{' '}
                             {s.secondsSpoken ? `${s.secondsSpoken}s spoken` : `${s.points} pts logged`}
                           </div>
                         </div>
                       </div>
-                      <span className="font-mono text-[#7A7870] text-[11px]">
+                      <span className="font-mono text-neutral-400 text-[11px]">
                         {new Date(s.timestamp).toLocaleTimeString()}
                       </span>
                     </div>

@@ -84,26 +84,42 @@ export function TutorialEngine() {
     };
   }, [isActive, currentStep, currentStepData]);
 
-  // Welcome Modal: Matches Screenshot 2026-10-18 023509.png
+  // Welcome Modal: Clean Luxury Sovereign Dark Glass
   if (welcomeModalOpen) {
     return (
-      <div className="fixed inset-0 z-100 bg-[#243928]/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in select-none">
-        <div className="w-full max-w-sm bg-[#F0EDE4] rounded-3xl border border-[#D6D1C4] shadow-2xl p-7 text-center space-y-6">
+      <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
+        <div className="w-full max-w-sm bg-[#090d16] rounded-3xl border border-white/15 shadow-[0_0_60px_rgba(0,0,0,0.9)] p-7 text-center space-y-6 text-white relative">
+          {/* Top-Right Dismiss Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setSession((prev) => ({
+                ...prev,
+                sessionState: 'in-session',
+                tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
+              }));
+            }}
+            className="absolute top-4 right-4 p-2 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            title="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
           {/* Zeno Welcome Mascot */}
-          <div className="w-56 h-52 mx-auto flex items-center justify-center">
+          <div className="w-52 h-48 mx-auto flex items-center justify-center">
             <img
               src="/assets/zeno.png"
               alt="Zeno the Diplomatic Owl Guide"
-              className="w-full h-full object-contain drop-shadow-xl select-none"
+              className="w-full h-full object-contain drop-shadow-[0_10px_25px_rgba(6,182,212,0.25)] select-none"
             />
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-black text-[#1A1D1A] tracking-tight uppercase leading-snug">
+            <h2 className="text-lg font-black text-white tracking-tight uppercase leading-snug">
               HAVE YOU USED ZENVITRA MUN BEFORE?
             </h2>
-            <p className="text-xs text-[#7A7870] max-w-xs mx-auto leading-relaxed">
-              Zeno has a short interactive run-through prepared for you.
+            <p className="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed">
+              Zeno has a short interactive run-through prepared for your dais session.
             </p>
           </div>
 
@@ -117,7 +133,7 @@ export function TutorialEngine() {
                   tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: true, currentStep: 1 },
                 }));
               }}
-              className="px-6 py-3 rounded-full bg-[#243928] hover:bg-[#324f38] text-[#E4DB98] font-black text-xs uppercase tracking-wider transition shadow-md cursor-pointer active:scale-95"
+              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 cursor-pointer active:scale-95"
             >
               SHOW ME AROUND
             </button>
@@ -130,7 +146,7 @@ export function TutorialEngine() {
                   tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
                 }));
               }}
-              className="px-5 py-3 rounded-full bg-[#DCD9CE] hover:bg-[#cfcbc0] text-[#243928] font-bold text-xs uppercase tracking-wider transition cursor-pointer border border-[#C8C4B8]"
+              className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-neutral-300 font-bold text-xs uppercase tracking-wider transition cursor-pointer border border-white/15"
             >
               SKIP TUTORIAL
             </button>
@@ -350,28 +366,28 @@ export function TutorialEngine() {
       {/* ─────────────────────────────────────────────────────────────
           3. TOP NAVIGATION PILL: [ < Back ] [ 4/17 ] [ Skip > / Next > ]
       ───────────────────────────────────────────────────────────── */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-auto z-95">
-        <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-white shadow-xl border border-[#D6D1C4] text-xs font-bold text-[#1A1D1A]">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-auto z-[90]">
+        <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-[#0a0d18] shadow-2xl border border-white/15 text-xs font-bold text-white">
           <button
             type="button"
             disabled={currentStep === 1}
             onClick={prevTutorialStep}
             className={`flex items-center gap-1 cursor-pointer transition ${
-              currentStep === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-[#243928]'
+              currentStep === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-cyan-400'
             }`}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back</span>
           </button>
 
-          <span className="font-mono text-[#7A7870] px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#EFECE4]">
+          <span className="font-mono text-cyan-300 px-2.5 py-0.5 rounded bg-black/50 border border-cyan-500/30">
             {currentStep}/17
           </span>
 
           <button
             type="button"
             onClick={isFinal ? endTutorial : nextTutorialStep}
-            className="flex items-center gap-1 text-[#243928] hover:underline cursor-pointer font-black"
+            className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 cursor-pointer font-black"
           >
             <span>{isFinal ? 'Finish >' : currentStepData.actionLabel || 'Next >'}</span>
             {!isFinal && <ArrowRight className="w-3.5 h-3.5" />}
@@ -382,11 +398,11 @@ export function TutorialEngine() {
       {/* ─────────────────────────────────────────────────────────────
           4. TOP-RIGHT END TUTORIAL BUTTON
       ───────────────────────────────────────────────────────────── */}
-      <div className="absolute top-4 right-6 pointer-events-auto z-95">
+      <div className="absolute top-4 right-6 pointer-events-auto z-[90]">
         <button
           type="button"
           onClick={endTutorial}
-          className="px-4 py-2 rounded-xl bg-[#243928] hover:bg-[#324f38] text-white text-xs font-bold cursor-pointer transition shadow-md flex items-center gap-1.5"
+          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition shadow-md border border-white/15 flex items-center gap-1.5"
         >
           <X className="w-3.5 h-3.5" />
           <span>End Tutorial</span>
@@ -396,28 +412,28 @@ export function TutorialEngine() {
       {/* ─────────────────────────────────────────────────────────────
           5. ZENO MASCOT WITH GUIDING GESTURE & SPEECH BUBBLE
       ───────────────────────────────────────────────────────────── */}
-      <div className="absolute bottom-2 right-6 max-w-sm pointer-events-auto z-95 flex flex-col items-end">
+      <div className="absolute bottom-2 right-6 max-w-sm pointer-events-auto z-[90] flex flex-col items-end">
         
         {/* Mascot Speech Bubble Card */}
-        <div className="p-5 rounded-2xl bg-white border border-[#D6D1C4] shadow-2xl relative space-y-3 mb-2 animate-fade-in max-w-xs sm:max-w-sm">
+        <div className="p-5 rounded-2xl bg-[#0a0d18] border border-white/15 shadow-2xl relative space-y-3 mb-2 animate-fade-in max-w-xs sm:max-w-sm text-white">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#F0EDE4] pb-2">
-            <div className="text-xs font-black uppercase text-[#243928] flex items-center gap-1.5">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <div className="text-xs font-black uppercase text-cyan-300 flex items-center gap-1.5">
               <span>Zeno &bull; Dais Guide</span>
-              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
             </div>
-            <span className="text-[10px] font-mono text-[#7A7870] bg-[#FAF9F5] px-2 py-0.5 rounded border border-[#EAE6DC]">
+            <span className="text-[10px] font-mono text-neutral-400 bg-black/40 px-2 py-0.5 rounded border border-white/10">
               Step {currentStep}/17
             </span>
           </div>
 
           {/* Speech Text with Gold Formatted Keywords linking to UI */}
-          <p className="text-xs text-[#2A2D2A] leading-relaxed font-medium">
+          <p className="text-xs text-neutral-200 leading-relaxed font-medium">
             {renderFormattedSpeech(currentStepData.text, currentStepData.highlightWords)}
           </p>
 
           {/* Diamond Tail pointing down to Zeno */}
-          <div className="w-3 h-3 bg-white rotate-45 border-r border-b border-[#D6D1C4] absolute -bottom-1.5 right-20" />
+          <div className="w-3 h-3 bg-[#0a0d18] rotate-45 border-r border-b border-white/15 absolute -bottom-1.5 right-20" />
         </div>
 
         {/* Zeno Mascot Illustration */}

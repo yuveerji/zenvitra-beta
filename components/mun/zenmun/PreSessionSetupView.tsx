@@ -126,7 +126,8 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
       sessionState: 'in-session' as const,
       tutorial: {
         ...session.tutorial,
-        welcomeModalOpen: true,
+        welcomeModalOpen: false,
+        isActive: false,
       },
       committeeName: (committeeName.trim() || 'Lok Sabha').replace(/_/g, ' '),
       committeeAcronym: cleanAcronym,
@@ -147,18 +148,21 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
   };
 
   return (
-    <div className="min-h-screen bg-[#E5E1D5] text-[#1A1D1A] font-sans antialiased flex flex-col">
+    <div className="min-h-screen bg-[#030407] text-white font-sans antialiased flex flex-col relative select-none">
+      {/* Ambient background glow */}
+      <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.2),rgba(255,255,255,0))]" />
+
       {/* Top Navbar */}
-      <header className="w-full bg-[#E5E1D5] border-b border-[#D6D1C4] px-6 py-4 flex items-center justify-between">
+      <header className="w-full bg-[#070a12]/95 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center justify-between z-40 relative">
         <div className="flex items-center gap-4">
-          <span className="font-extrabold tracking-wider text-xs uppercase text-[#243928]">
-            ZENVITRA &bull; ZEN.MUN &mdash; THE PREMIER MUN DAIS ECOSYSTEM
+          <span className="font-black tracking-wider text-xs uppercase text-cyan-400">
+            ZENVITRA • ZEN.MUN — THE PREMIER MUN DAIS ECOSYSTEM
           </span>
           {onBack && (
             <button
               type="button"
               onClick={onBack}
-              className="text-xs font-bold text-[#555] hover:text-black flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>BACK</span>
@@ -166,7 +170,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-[#243928] bg-white/70 px-3 py-1 rounded-full border border-[#D6D1C4] flex items-center gap-1.5 shadow-sm">
+          <span className="text-xs font-bold text-cyan-300 bg-cyan-950/40 px-3 py-1 rounded-full border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
             <Globe className="w-3.5 h-3.5" />
             <span>EN</span>
           </span>
@@ -174,22 +178,22 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
       </header>
 
       {/* Main 2-Column Split Stage */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
         {/* Left Card: Sections 1 & 2 */}
-        <div className="lg:col-span-7 bg-[#FAF9F5] rounded-3xl p-6 sm:p-8 border border-[#D6D1C4] shadow-sm space-y-8">
+        <div className="lg:col-span-7 bg-[#070a12]/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl space-y-8">
           
           {/* Section 1: Committee */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <span className="w-6 h-6 rounded-full bg-[#243928] text-[#E4DB98] font-bold text-xs flex items-center justify-center">
+              <span className="w-6 h-6 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold text-xs flex items-center justify-center">
                 1
               </span>
-              <h2 className="text-lg font-black tracking-tight uppercase text-[#243928]">Committee</h2>
+              <h2 className="text-lg font-black tracking-tight uppercase text-white">Committee</h2>
             </div>
 
             {/* Live Preview Card */}
-            <div className="p-4 rounded-2xl bg-[#F0EDE4] border border-[#E0DCCE] flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-3xl border border-[#D6D1C4] overflow-hidden p-1.5">
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#0d1424] shadow-md flex items-center justify-center text-3xl border border-white/10 overflow-hidden p-1.5">
                 {isIndian || acronym.toLowerCase().includes('lok') ? (
                   <img
                     src="/assets/committees/emblem_of_india.svg"
@@ -203,10 +207,10 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xl font-black text-[#1A1D1A] truncate tracking-tight">
+                <div className="text-xl font-black text-white truncate tracking-tight">
                   {(acronym || committeeName || 'LOK SABHA').replace(/_/g, ' ')}
                 </div>
-                <div className="text-xs text-[#7A7870] font-medium truncate">
+                <div className="text-xs text-neutral-400 font-medium truncate">
                   Topic: {topic || 'Your topic appears here'}
                 </div>
               </div>
@@ -215,7 +219,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
             {/* Inputs */}
             <div className="space-y-3 relative">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#7A7870] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                   COMMITTEE NAME
                 </label>
                 <input
@@ -227,28 +231,28 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                   }}
                   onFocus={() => setAutocompleteOpen(true)}
                   placeholder="e.g. UN Human Rights Council"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D6D1C4] focus:outline-none focus:ring-2 focus:ring-[#243928] text-sm font-semibold text-[#1A1D1A]"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-cyan-400 text-sm font-semibold text-white placeholder-white/30"
                 />
 
                 {/* Floating Autocomplete Dropdown */}
                 {autocompleteOpen && filteredPresets.length > 0 && (
-                  <div className="absolute top-16 left-0 right-0 z-30 bg-white rounded-2xl shadow-xl border border-[#D6D1C4] overflow-hidden animate-fade-in">
+                  <div className="absolute top-16 left-0 right-0 z-30 bg-[#0a0f1d] rounded-2xl shadow-2xl border border-white/15 overflow-hidden animate-fade-in">
                     {filteredPresets.map((p) => (
                       <button
                         key={p.name}
                         type="button"
                         onClick={() => handleSelectPreset(p)}
-                        className="w-full px-4 py-3 text-left hover:bg-[#F5F3EB] flex items-center justify-between border-b border-[#F0EDE4] last:border-none cursor-pointer"
+                        className="w-full px-4 py-3 text-left hover:bg-white/10 flex items-center justify-between border-b border-white/5 last:border-none cursor-pointer transition text-white"
                       >
                         <div className="flex items-center gap-2.5">
                           <span className="text-xl">{p.emblem}</span>
                           <div>
-                            <div className="text-xs font-bold text-[#1A1D1A]">{p.name}</div>
-                            <div className="text-[10px] text-[#7A7870] font-mono">{p.acronym}</div>
+                            <div className="text-xs font-bold text-white">{p.name}</div>
+                            <div className="text-[10px] text-cyan-400 font-mono">{p.acronym}</div>
                           </div>
                         </div>
-                        <span className="text-[10px] font-mono text-[#7A7870] bg-[#EFECE4] px-1.5 py-0.5 rounded">
-                          &crarr;
+                        <span className="text-[10px] font-mono text-neutral-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                          ↵
                         </span>
                       </button>
                     ))}
@@ -257,7 +261,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#7A7870] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
                   TOPIC
                 </label>
                 <input
@@ -265,25 +269,25 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="e.g. The right to education"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D6D1C4] focus:outline-none focus:ring-2 focus:ring-[#243928] text-sm font-semibold text-[#1A1D1A]"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-cyan-400 text-sm font-semibold text-white placeholder-white/30"
                 />
               </div>
             </div>
           </div>
 
           {/* Section 2: Delegations */}
-          <div className="space-y-4 pt-4 border-t border-[#EFECE4]">
+          <div className="space-y-4 pt-4 border-t border-white/10">
             <div className="flex items-center gap-2.5">
-              <span className="w-6 h-6 rounded-full bg-[#243928] text-[#E4DB98] font-bold text-xs flex items-center justify-center">
+              <span className="w-6 h-6 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold text-xs flex items-center justify-center">
                 2
               </span>
-              <h2 className="text-lg font-black tracking-tight uppercase text-[#243928]">Delegations</h2>
+              <h2 className="text-lg font-black tracking-tight uppercase text-white">Delegations</h2>
             </div>
 
             {/* Search Country Input */}
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="w-4 h-4 text-[#7A7870] absolute left-3 top-3" />
+                <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
                 <input
                   type="text"
                   value={searchCountry}
@@ -295,13 +299,13 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                     }
                   }}
                   placeholder="Type a country, or any custom name"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-[#D6D1C4] focus:outline-none focus:ring-2 focus:ring-[#243928] text-sm font-medium"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-cyan-400 text-sm font-medium text-white placeholder-white/30"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => handleAddCountry(searchCountry)}
-                className="px-4 py-2.5 rounded-xl bg-[#243928] hover:bg-[#324f38] text-white text-xs font-bold cursor-pointer transition"
+                className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black cursor-pointer transition shadow-md"
               >
                 + Add
               </button>
@@ -309,7 +313,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
 
             {/* 11 Quick-Add Bloc Bundles */}
             <div className="space-y-1.5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A7870]">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                 QUICK-ADD BLOCS
               </div>
               <div className="flex flex-wrap gap-2">
@@ -318,11 +322,11 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                     key={b.id}
                     type="button"
                     onClick={() => handleAddBundle(b)}
-                    className="px-3 py-1.5 rounded-full bg-[#EFECE4] hover:bg-[#E2DDD2] border border-[#D6D1C4] text-xs font-bold text-[#1A1D1A] flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs"
+                    className="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-xs"
                   >
                     <span>{b.icon}</span>
                     <span>{b.name}</span>
-                    <span className="text-[10px] text-[#7A7870] font-mono font-medium">+{b.count}</span>
+                    <span className="text-[10px] text-cyan-400 font-mono font-medium">+{b.count}</span>
                   </button>
                 ))}
               </div>
@@ -331,14 +335,14 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
             {/* Paste a List */}
             <div className="space-y-1.5 pt-2">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A7870]">
-                  &bull; PASTE A LIST
+                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  • PASTE A LIST
                 </label>
                 {pasteList.trim() && (
                   <button
                     type="button"
                     onClick={handleParsePasteList}
-                    className="text-[10px] font-bold text-[#243928] hover:underline cursor-pointer"
+                    className="text-[10px] font-bold text-cyan-400 hover:underline cursor-pointer"
                   >
                     Parse &amp; Add List
                   </button>
@@ -350,23 +354,23 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                 onBlur={handleParsePasteList}
                 rows={3}
                 placeholder={"France\nGermany\nBrazil, India...\nObserver Delegation"}
-                className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D6D1C4] focus:outline-none focus:ring-2 focus:ring-[#243928] text-xs font-mono"
+                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-cyan-400 text-xs font-mono text-white placeholder-white/30"
               />
             </div>
           </div>
         </div>
 
         {/* Right Card: Live Roster Preview */}
-        <div className="lg:col-span-5 bg-[#FAF9F5] rounded-3xl p-6 sm:p-8 border border-[#D6D1C4] shadow-sm flex flex-col min-h-[620px]">
-          <div className="flex items-center justify-between pb-4 border-b border-[#EFECE4]">
-            <h3 className="text-xl font-black text-[#1A1D1A] tracking-tight">
+        <div className="lg:col-span-5 bg-[#070a12]/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl flex flex-col min-h-[620px]">
+          <div className="flex items-center justify-between pb-4 border-b border-white/10">
+            <h3 className="text-xl font-black text-white tracking-tight">
               {delegations.length} delegations
             </h3>
             {delegations.length > 0 && (
               <button
                 type="button"
                 onClick={() => setDelegations([])}
-                className="text-[10px] font-bold uppercase tracking-wider text-rose-600 hover:underline cursor-pointer"
+                className="text-[10px] font-bold uppercase tracking-wider text-rose-400 hover:underline cursor-pointer"
               >
                 Clear all
               </button>
@@ -376,13 +380,13 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
           {/* Roster Area */}
           <div className="flex-1 py-4 overflow-y-auto max-h-[460px] space-y-2 pr-1">
             {delegations.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center py-20 text-[#7A7870] space-y-3">
-                <div className="w-16 h-16 rounded-full bg-[#EFECE4] flex items-center justify-center text-3xl">
+              <div className="h-full flex flex-col items-center justify-center text-center py-20 text-neutral-400 space-y-3">
+                <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-3xl">
                   🌐
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#1A1D1A]">No Delegates Yet</div>
-                  <div className="text-xs max-w-xs leading-relaxed text-[#7A7870]">
+                  <div className="text-sm font-bold text-white">No Delegates Yet</div>
+                  <div className="text-xs max-w-xs leading-relaxed text-neutral-400">
                     Add a country, paste a list, or use a quick bundle above.
                   </div>
                 </div>
@@ -392,20 +396,20 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                 {delegations.map((d) => (
                   <div
                     key={d.id}
-                    className="p-2.5 rounded-xl bg-[#F0EDE4] border border-[#E0DCCE] flex items-center justify-between group hover:border-[#243928]/40 transition"
+                    className="p-2.5 rounded-xl bg-[#0d1424] border border-white/10 flex items-center justify-between group hover:border-cyan-500/40 transition"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <img
                         src={`https://flagcdn.com/w80/${d.countryCode.toLowerCase()}.png`}
                         alt={d.name}
-                        className="w-5 h-5 rounded-full object-cover shadow-2xs border border-black/10 shrink-0"
+                        className="w-5 h-5 rounded-full object-cover shadow-xs border border-white/20 shrink-0"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
                         }}
                       />
-                      <span className="text-xs font-bold text-[#1A1D1A] truncate">{d.name}</span>
+                      <span className="text-xs font-bold text-white truncate">{d.name}</span>
                       {d.role === 'observer' && (
-                        <span className="text-[9px] font-mono uppercase bg-amber-200/80 text-amber-900 px-1 rounded shrink-0">
+                        <span className="text-[9px] font-mono uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 rounded shrink-0">
                           Obs
                         </span>
                       )}
@@ -413,7 +417,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                     <button
                       type="button"
                       onClick={() => handleRemoveDelegation(d.id)}
-                      className="text-[#7A7870] hover:text-rose-600 opacity-60 group-hover:opacity-100 p-0.5 cursor-pointer"
+                      className="text-neutral-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 p-0.5 cursor-pointer transition"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -424,11 +428,11 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
           </div>
 
           {/* Launch Button */}
-          <div className="pt-4 border-t border-[#EFECE4]">
+          <div className="pt-4 border-t border-white/10">
             <button
               type="button"
               onClick={handleLaunch}
-              className="w-full py-4 rounded-2xl bg-[#243928] hover:bg-[#324f38] text-[#E4DB98] font-black text-sm uppercase tracking-wider transition shadow-lg shadow-[#243928]/20 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-sm uppercase tracking-wider transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
               <span>Start Committee Session &rarr;</span>
             </button>

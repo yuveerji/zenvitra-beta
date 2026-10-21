@@ -111,7 +111,7 @@ export function createInitialZenMunSession(initialCode?: string): ZenMunSession 
       isActive: false,
       currentStep: 1,
       isCompleted: false,
-      welcomeModalOpen: true,
+      welcomeModalOpen: false,
     },
   };
 }
@@ -268,6 +268,11 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
             commenterFeedbacks: cleanCommenterFeedbacks,
             roster: Array.isArray(parsed.roster) ? parsed.roster : [],
             speakerQueue: Array.isArray(parsed.speakerQueue) ? parsed.speakerQueue : [],
+            tutorial: {
+              ...(parsed.tutorial || {}),
+              welcomeModalOpen: false,
+              isActive: false,
+            },
           };
 
           setSession(sanitizedSession);
@@ -1002,7 +1007,7 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
   const startTutorial = useCallback(() => {
     setSession((prev) => ({
       ...prev,
-      tutorial: { ...prev.tutorial, isActive: true, currentStep: 1 },
+      tutorial: { ...prev.tutorial, isActive: false, currentStep: 1, welcomeModalOpen: true },
     }));
   }, []);
 
@@ -1023,14 +1028,14 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
   const skipTutorial = useCallback(() => {
     setSession((prev) => ({
       ...prev,
-      tutorial: { ...prev.tutorial, isActive: false, isCompleted: true },
+      tutorial: { ...prev.tutorial, isActive: false, isCompleted: true, welcomeModalOpen: false },
     }));
   }, []);
 
   const endTutorial = useCallback(() => {
     setSession((prev) => ({
       ...prev,
-      tutorial: { ...prev.tutorial, isActive: false, isCompleted: true },
+      tutorial: { ...prev.tutorial, isActive: false, isCompleted: true, welcomeModalOpen: false },
     }));
   }, []);
 
