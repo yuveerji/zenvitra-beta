@@ -1,20 +1,29 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth } from '@/lib/session';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { followerId, followingId, followingUsername, followerUsername } = body;
+    // ── Cryptographic Server-Side Authentication (Anti-IDOR) ──
+    const session = await requireAuth();
+    const verifiedFollowerId = session.userId;
+    const verifiedFollowerUsername = session.username || 'delegate';
 
-    if (!followerId || (!followingId && !followingUsername)) {
+    const body = await request.json();
+    const { followingId, followingUsername } = body;
+
+    if (!followingId && !followingUsername) {
       return NextResponse.json(
-        { success: false, error: 'followerId and target are required' },
+        { success: false, error: 'Target followingId or followingUsername is required' },
         { status: 400 }
       );
     }
 
     let targetId = followingId;
-    let targetUsername = followingUsername;
+    const targetUsername = followingUsername;
 
     if (!targetId && targetUsername) {
       const targetProfile = await db.pulseProfile.findUnique({
@@ -27,7 +36,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (followerId === targetId) {
+    if (verifiedFollowerId === targetId) {
       return NextResponse.json(
         { success: false, error: 'Cannot follow yourself' },
         { status: 400 }
@@ -37,7 +46,7 @@ export async function POST(request: Request) {
     const existing = await db.pulseFollow.findUnique({
       where: {
         followerId_followingId: {
-          followerId,
+          followerId: verifiedFollowerId,
           followingId: targetId,
         },
       },
@@ -49,10 +58,10 @@ export async function POST(request: Request) {
         where: { id: existing.id },
       });
 
-      // Update counters
+      // Update counters safely
       await Promise.all([
         db.pulseProfile.updateMany({
-          where: { userId: followerId },
+          where: { userId: verifiedFollowerId },
           data: { followingCount: { decrement: 1 } },
         }).catch(() => {}),
         db.pulseProfile.updateMany({
@@ -69,15 +78,15 @@ export async function POST(request: Request) {
       // Follow
       await db.pulseFollow.create({
         data: {
-          followerId,
+          followerId: verifiedFollowerId,
           followingId: targetId,
         },
       });
 
-      // Update counters
+      // Update counters safely
       await Promise.all([
         db.pulseProfile.updateMany({
-          where: { userId: followerId },
+          where: { userId: verifiedFollowerId },
           data: { followingCount: { increment: 1 } },
         }).catch(() => {}),
         db.pulseProfile.updateMany({
@@ -86,15 +95,15 @@ export async function POST(request: Request) {
         }).catch(() => {}),
       ]);
 
-      // Create notification
+      // Create notification for target
       await db.pulseNotification.create({
         data: {
           recipientId: targetId,
-          actorId: followerId,
-          actorUsername: followerUsername || null,
+          actorId: verifiedFollowerId,
+          actorUsername: verifiedFollowerUsername,
           type: 'FOLLOW',
-          message: `@${followerUsername || 'delegate'} started following your sovereign profile`,
-          linkUrl: `/pulse?user=${followerUsername}`,
+          message: `@${verifiedFollowerUsername} started following your sovereign profile`,
+          linkUrl: `/pulse?user=${verifiedFollowerUsername}`,
         },
       }).catch(() => {});
 
@@ -104,6 +113,9 @@ export async function POST(request: Request) {
       });
     }
   } catch (error: any) {
+    if (error.message?.includes('UNAUTHORIZED')) {
+      return NextResponse.json({ success: false, error: 'Unauthorized: Session missing or invalid' }, { status: 401 });
+    }
     console.error('Error in pulse follow:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to update follow relationship' },

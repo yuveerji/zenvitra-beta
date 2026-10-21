@@ -1,73 +1,49 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
-// Public website routes accessible without login
+// Secret key for Edge JWT verification
+const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'zenvitra_sovereign_secret_key_development_32_bytes_min';
+const encodedKey = new TextEncoder().encode(JWT_SECRET);
+
+// Public marketing & informational routes accessible without authentication
 const PUBLIC_PREFIXES = [
   '/_next',
-  '/api',
+  '/api/auth',
+  '/api/health',
   '/icons',
   '/brand',
   '/fonts',
   '/assets',
   '/images',
   '/auth',
-  '/mun',
-  '/zen-diplomacy',
-  '/events',
-  '/news',
-  '/press',
-  '/docs',
-  '/solutions',
   '/about',
   '/campus-ambassador',
-  '/chamber',
   '/constitution',
   '/contact',
   '/countdown',
   '/discussions',
+  '/docs',
+  '/faq',
   '/guidelines',
   '/impact',
   '/join-core-team',
+  '/legal',
+  '/login',
   '/manifesto',
   '/mission',
+  '/news',
   '/pricing',
   '/privacy',
-  '/space',
-  '/glimpse',
-  '/passport',
-  '/leaderboard',
-  '/call',
-  '/statusregister',
-  '/statussignin',
-  '/pre-register',
-  '/pre-login',
+  '/register',
+  '/solutions',
   '/terms',
   '/vision',
-  '/login',
-  '/register',
-  '/join',
-  '/faq',
-  '/legal',
-  '/team',
-  '/careers',
   '/welcome',
   '/onboarding',
-  '/test',
-  '/test-login',
-  '/demo',
-  '/platform',
-  '/dashboard',
-  '/pulse',
+  '/pre-register',
+  '/pre-login',
 ];
-
-const PUBLIC_EXACT = new Set([
-  '/',
-  '/manifest.json',
-  '/robots.txt',
-  '/sitemap.xml',
-  '/favicon.ico',
-  '/zen-diplomacy-brochure.html',
-]);
 
 const STATIC_EXTENSIONS = [
   '.html',
@@ -96,251 +72,102 @@ const STATIC_EXTENSIONS = [
   '.eot',
 ];
 
-export function middleware(request: NextRequest) {
+// Routes strictly requiring an authenticated cryptographic session
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/platform',
+  '/settings',
+  '/admin',
+  '/founder',
+  '/pulse/create-story',
+  '/test-node',
+];
+
+/**
+ * Edge-compatible cryptographic session validator using jose.
+ */
+async function verifySessionToken(token?: string): Promise<{ valid: boolean; payload?: any }> {
+  if (!token) return { valid: false };
+  try {
+    const { payload } = await jwtVerify(token, encodedKey, {
+      algorithms: ['HS256'],
+    });
+    return { valid: true, payload };
+  } catch {
+    return { valid: false };
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const url = request.nextUrl.clone();
   const pathname = request.nextUrl.pathname;
 
-  // Handle m.zenvitra.xyz mobile subdomain redirection to canonical URL
+  // Subdomain normalization
   if (host.startsWith('m.zenvitra.xyz')) {
     url.host = 'zenvitra.xyz';
     url.port = '';
     return NextResponse.redirect(url, { status: 308 });
   }
 
-  // Handle local dev testing for m.localhost
-  if (host.startsWith('m.localhost')) {
-    const port = host.split(':')[1] || '3000';
-    url.host = `localhost:${port}`;
-    return NextResponse.redirect(url, { status: 307 });
-  }
-
-  // Handle /signup redirect to /register (canonical registration route)
+  // Canonical route redirects
   if (pathname === '/signup' || pathname.startsWith('/signup/')) {
     const registerUrl = new URL('/register', request.url);
     registerUrl.search = request.nextUrl.search;
     return NextResponse.redirect(registerUrl, { status: 308 });
   }
 
-  // Handle /preregister and /statusregister redirect to /pre-register
-  if (pathname === '/preregister' || pathname.startsWith('/preregister/') || pathname === '/statusregister' || pathname.startsWith('/statusregister/')) {
-    const preregisterUrl = new URL('/pre-register', request.url);
-    preregisterUrl.search = request.nextUrl.search;
-    return NextResponse.redirect(preregisterUrl, { status: 308 });
-  }
-
-  // Handle /statussignin redirect to /pre-login
-  if (pathname === '/statussignin' || pathname.startsWith('/statussignin/')) {
-    const preloginUrl = new URL('/pre-login', request.url);
-    preloginUrl.search = request.nextUrl.search;
-    return NextResponse.redirect(preloginUrl, { status: 308 });
-  }
-
-  // Handle /platform redirect to /dashboard (Unified Platform Root)
   if (pathname === '/platform' || pathname === '/platform/') {
     const dashboardUrl = new URL('/dashboard', request.url);
     dashboardUrl.search = request.nextUrl.search;
     return NextResponse.redirect(dashboardUrl, { status: 307 });
   }
 
-  // Redirect legacy /zen-diplomacy to /events
-  if (pathname === '/zen-diplomacy' || pathname.startsWith('/zen-diplomacy/')) {
-    const eventsUrl = new URL('/events', request.url);
-    eventsUrl.search = request.nextUrl.search;
-    return NextResponse.redirect(eventsUrl, { status: 308 });
-  }
-
-  // Handle /brochure or /prospectus redirect to /events
-  if (pathname === '/brochure' || pathname.startsWith('/brochure/') || pathname === '/prospectus' || pathname.startsWith('/prospectus/')) {
-    const brochureUrl = new URL('/events', request.url);
-    brochureUrl.search = request.nextUrl.search;
-    return NextResponse.redirect(brochureUrl, { status: 307 });
-  }
-
-  // Handle /pulse/xxx redirect to /pulse?user=xxx (excluding /pulse/create-story)
-  if (pathname.startsWith('/pulse/') && pathname !== '/pulse/create-story') {
-    const subPath = pathname.replace(/^\/pulse\//, '').split('/')[0]?.replace(/^@/, '').trim();
-    if (subPath) {
-      const pulseUserUrl = new URL(`/pulse?user=${encodeURIComponent(subPath)}`, request.url);
-      return NextResponse.redirect(pulseUserUrl, { status: 307 });
-    }
-  }
-
-  // Single segment routes (e.g. /event-name) are handled directly by app/[mun]/page.tsx for event showcases
-  const singleSegments = pathname.split('/').filter(Boolean);
-
-  // Countdown Launch Date: October 25, 2026, 14:00:00 IST (UTC+05:30)
-  const LAUNCH_TIMESTAMP_MS = 1792917000000;
-  const isPreReleasePeriod = Date.now() < LAUNCH_TIMESTAMP_MS;
-
-  // Static files and internal Next.js paths are always allowed
+  // Allow static files and internal Next.js assets immediately
   if (
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
     STATIC_EXTENSIONS.some((ext) => pathname.endsWith(ext)) ||
     pathname === '/favicon.ico' ||
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
-    pathname === '/manifest.json' ||
-    pathname === '/zen-diplomacy-brochure.html'
+    pathname === '/manifest.json'
   ) {
     return NextResponse.next();
   }
 
-  // Check for sovereign clearance or authenticated session
-  const hasClearance = Boolean(
-    request.cookies.get('zenvitra_clearance')?.value === 'SOVEREIGN_GRANTED' ||
-    request.cookies.get('zenvitra_admin_override_token')?.value ||
-    request.cookies.get('zenvitra_session')?.value ||
+  // ── Cryptographic Session Verification at the Edge ──
+  // Check HttpOnly session token
+  const sessionCookie = request.cookies.get('zenvitra_session_token')?.value;
+  const sessionCheck = await verifySessionToken(sessionCookie);
+
+  // Check NextAuth session tokens as fallback
+  const hasNextAuthCookie = Boolean(
     request.cookies.get('next-auth.session-token')?.value ||
     request.cookies.get('__Secure-next-auth.session-token')?.value ||
-    request.cookies.get('authjs.session-token')?.value ||
-    request.cookies.get('sb-access-token')?.value ||
-    request.cookies.getAll().some((c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'))
+    request.cookies.get('authjs.session-token')?.value
   );
 
-  // Clearance bypass via query param ?clearance=sovereign
-  if (request.nextUrl.searchParams.get('clearance') === 'sovereign') {
-    const res = NextResponse.redirect(new URL(pathname, request.url));
-    res.cookies.set('zenvitra_clearance', 'SOVEREIGN_GRANTED', {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-      sameSite: 'lax',
-    });
-    return res;
-  }
+  const isAuthenticated = sessionCheck.valid || hasNextAuthCookie;
 
-  // Whitelisted public routes accessible even during pre-release countdown
-  const isCountdownExempt = 
-    singleSegments.length === 1 ||
-    pathname === '/countdown' ||
-    pathname.startsWith('/countdown/') ||
-    pathname === '/zen-diplomacy' ||
-    pathname.startsWith('/zen-diplomacy/') ||
-    pathname === '/zen-diplomacy-brochure.html' ||
-    pathname === '/brochure' ||
-    pathname.startsWith('/brochure/') ||
-    pathname === '/prospectus' ||
-    pathname.startsWith('/prospectus/') ||
-    pathname === '/matrix' ||
-    pathname.startsWith('/matrix/') ||
-    pathname.endsWith('/matrix') ||
-    pathname === '/call' ||
-    pathname.startsWith('/call/') ||
-    pathname === '/events' ||
-    pathname.startsWith('/events/') ||
-    pathname === '/mun' ||
-    pathname.startsWith('/mun/') ||
-    pathname === '/forms' ||
-    pathname.startsWith('/forms/') ||
-    pathname.startsWith('/f/') ||
-    pathname === '/space' ||
-    pathname.startsWith('/space/') ||
-    pathname === '/glimpse' ||
-    pathname.startsWith('/glimpse/') ||
-    pathname === '/pulse' ||
-    pathname.startsWith('/pulse/') ||
-    pathname === '/dashboard' ||
-    pathname.startsWith('/dashboard/') ||
-    pathname === '/platform' ||
-    pathname.startsWith('/platform/') ||
-    pathname === '/passport' ||
-    pathname.startsWith('/passport/') ||
-    pathname === '/leaderboard' ||
-    pathname.startsWith('/leaderboard/') ||
-    pathname === '/solutions' ||
-    pathname.startsWith('/solutions/') ||
-    pathname === '/docs' ||
-    pathname.startsWith('/docs/') ||
-    pathname === '/pricing' ||
-    pathname.startsWith('/pricing/') ||
-    pathname === '/about' ||
-    pathname.startsWith('/about/') ||
-    pathname === '/constitution' ||
-    pathname.startsWith('/constitution/') ||
-    pathname === '/chamber' ||
-    pathname.startsWith('/chamber/') ||
-    pathname === '/discussions' ||
-    pathname.startsWith('/discussions/') ||
-    pathname === '/guidelines' ||
-    pathname.startsWith('/guidelines/') ||
-    pathname === '/impact' ||
-    pathname.startsWith('/impact/') ||
-    pathname === '/join-core-team' ||
-    pathname.startsWith('/join-core-team/') ||
-    pathname === '/manifesto' ||
-    pathname.startsWith('/manifesto/') ||
-    pathname === '/mission' ||
-    pathname.startsWith('/mission/') ||
-    pathname === '/privacy' ||
-    pathname.startsWith('/privacy/') ||
-    pathname === '/terms' ||
-    pathname.startsWith('/terms/') ||
-    pathname === '/vision' ||
-    pathname.startsWith('/vision/') ||
-    pathname === '/news' ||
-    pathname.startsWith('/news/') ||
-    pathname === '/press' ||
-    pathname.startsWith('/press/') ||
-    pathname === '/legislate' ||
-    pathname.startsWith('/legislate/') ||
-    pathname === '/payments' ||
-    pathname.startsWith('/payments/') ||
-    pathname === '/campus-ambassador' ||
-    pathname.startsWith('/campus-ambassador/') ||
-    pathname === '/contact' ||
-    pathname.startsWith('/contact/') ||
-    pathname === '/faq' ||
-    pathname.startsWith('/faq/') ||
-    pathname === '/legal' ||
-    pathname.startsWith('/legal/') ||
-    pathname === '/team' ||
-    pathname.startsWith('/team/') ||
-    pathname === '/careers' ||
-    pathname.startsWith('/careers/') ||
-    pathname === '/login' ||
-    pathname === '/register' ||
-    pathname === '/pre-register' ||
-    pathname.startsWith('/pre-register/') ||
-    pathname === '/pre-login' ||
-    pathname.startsWith('/pre-login/') ||
-    pathname === '/statusregister' ||
-    pathname.startsWith('/statusregister/') ||
-    pathname === '/statussignin' ||
-    pathname === '/test' ||
-    pathname.startsWith('/test/') ||
-    pathname === '/test-login' ||
-    pathname.startsWith('/test-login/') ||
-    pathname === '/demo' ||
-    pathname.startsWith('/demo/') ||
-    pathname.startsWith('/auth/') ||
-    PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-
-  // PRE-RELEASE LOCKDOWN:
-  // Before launch date, public visitors without sovereign clearance are locked to /countdown
-  if (isPreReleasePeriod && !hasClearance) {
-    if (isCountdownExempt) {
-      return NextResponse.next();
-    }
-    // Redirect root and any other page directly to /countdown
-    const countdownUrl = new URL('/countdown', request.url);
-    return NextResponse.redirect(countdownUrl, { status: 307 });
-  }
-
-  // Check if requested path is a standard public website page
-  const isPublicWebsitePage = PUBLIC_PREFIXES.some(
+  // Enforce Protected Routes
+  const isProtectedRoute = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
 
-  // If visitor is NOT logged in and not in pre-release countdown:
-  if (!hasClearance) {
-    if (isPublicWebsitePage || pathname === '/') {
-      return NextResponse.next();
-    }
-
+  if (isProtectedRoute && !isAuthenticated) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl, { status: 307 });
+  }
+
+  // Enforce Founder / Admin Enclave at the Edge
+  if (pathname.startsWith('/founder') || pathname.startsWith('/admin')) {
+    const role = sessionCheck.payload?.role;
+    if (role !== 'FOUNDER' && role !== 'CO_FOUNDER' && role !== 'ADMIN') {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('error', 'insufficient_clearance');
+      return NextResponse.redirect(loginUrl, { status: 307 });
+    }
   }
 
   return NextResponse.next();
@@ -349,13 +176,8 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (images, icons)
+     * Match all request paths except static files
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|icons).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|icons).*)',
   ],
 };

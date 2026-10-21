@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { verifySession, requireAuth } from '@/lib/session';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   try {
@@ -8,7 +12,6 @@ export async function GET(request: Request) {
     const author = searchParams.get('author');
     const topic = searchParams.get('topic');
     const communityId = searchParams.get('communityId');
-    const userId = searchParams.get('userId');
     const limit = Math.min(parseInt(searchParams.get('limit') || '30', 10), 100);
     const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
     const skip = (page - 1) * limit;
@@ -33,28 +36,35 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Handle Feed views
-    if (feed === 'saved' && userId) {
-      const bookmarks = await db.pulseBookmark.findMany({
-        where: { userId },
-        select: { postId: true },
-        orderBy: { createdAt: 'desc' },
-      });
-      const bookmarkedIds = bookmarks.map((b) => b.postId);
-      if (bookmarkedIds.length === 0) {
-        return NextResponse.json({ success: true, posts: [], total: 0 });
+    // ── Anti-IDOR Private Feeds (Server-Verified Session Only) ──
+    if (feed === 'saved' || feed === 'following') {
+      const session = await verifySession();
+      if (!session.isAuth || !session.userId) {
+        return NextResponse.json({ error: 'Authentication required to view private feed.' }, { status: 401 });
       }
-      where.id = { in: bookmarkedIds };
-    } else if (feed === 'following' && userId) {
-      const followingList = await db.pulseFollow.findMany({
-        where: { followerId: userId },
-        select: { followingId: true },
-      });
-      const followingIds = followingList.map((f) => f.followingId);
-      if (followingIds.length === 0) {
-        return NextResponse.json({ success: true, posts: [], total: 0, notice: 'No following accounts yet' });
+
+      if (feed === 'saved') {
+        const bookmarks = await db.pulseBookmark.findMany({
+          where: { userId: session.userId },
+          select: { postId: true },
+          orderBy: { createdAt: 'desc' },
+        });
+        const bookmarkedIds = bookmarks.map((b) => b.postId);
+        if (bookmarkedIds.length === 0) {
+          return NextResponse.json({ success: true, posts: [], total: 0 });
+        }
+        where.id = { in: bookmarkedIds };
+      } else if (feed === 'following') {
+        const followingList = await db.pulseFollow.findMany({
+          where: { followerId: session.userId },
+          select: { followingId: true },
+        });
+        const followingIds = followingList.map((f) => f.followingId);
+        if (followingIds.length === 0) {
+          return NextResponse.json({ success: true, posts: [], total: 0, notice: 'No following accounts yet' });
+        }
+        where.authorId = { in: followingIds };
       }
-      where.authorId = { in: followingIds };
     }
 
     // Order by strategy
@@ -91,12 +101,12 @@ export async function GET(request: Request) {
       posts: parsedPosts,
       total,
       page,
-      limit,
+      totalPages: Math.ceil(total / limit),
     });
   } catch (error: any) {
     console.error('Error fetching pulse posts:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch pulse posts' },
+      { success: false, error: error.message || 'Failed to fetch posts' },
       { status: 500 }
     );
   }
@@ -104,13 +114,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // ── Cryptographic Server-Side Authentication (Zero Client Trust) ──
+    const session = await requireAuth();
+
     const body = await request.json();
     const {
-      authorId,
-      authorUsername,
-      authorName,
-      authorAvatar,
-      authorRole = 'DELEGATE',
       postType = 'STANDARD',
       title,
       content,
@@ -126,26 +134,29 @@ export async function POST(request: Request) {
       pollData,
     } = body;
 
-    if (!authorUsername || !content?.trim()) {
+    if (!content?.trim()) {
       return NextResponse.json(
-        { success: false, error: 'Author and content are mandatory' },
+        { success: false, error: 'Post content cannot be empty' },
         { status: 400 }
       );
     }
 
-    const cleanUsername = authorUsername.toLowerCase().replace(/^@/, '').trim();
-    const cleanAuthorId = authorId || `user_${cleanUsername}`;
+    // Author attributes are bound STRICTLY from cryptographic session
+    const verifiedAuthorId = session.userId;
+    const verifiedUsername = session.username || 'delegate';
+    const verifiedRole = session.role || 'DELEGATE';
+
     const wordCount = content.trim().split(/\s+/).length;
     const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 180));
 
-    // Create canonical post record
+    // Create canonical post record bound to verified session
     const post = await db.pulsePostRecord.create({
       data: {
-        authorId: cleanAuthorId,
-        authorUsername: cleanUsername,
-        authorName: authorName || cleanUsername,
-        authorAvatar: authorAvatar || null,
-        authorRole,
+        authorId: verifiedAuthorId,
+        authorUsername: verifiedUsername,
+        authorName: verifiedUsername,
+        authorAvatar: null,
+        authorRole: verifiedRole,
         postType,
         title: title?.trim() || null,
         content: content.trim(),
@@ -165,22 +176,21 @@ export async function POST(request: Request) {
       },
     });
 
-    // Ensure profile exists and increment post count
+    // Increment profile post count
     await db.pulseProfile.upsert({
-      where: { username: cleanUsername },
+      where: { username: verifiedUsername },
       update: {
         postsCount: { increment: 1 },
       },
       create: {
-        userId: cleanAuthorId,
-        username: cleanUsername,
-        displayName: authorName || cleanUsername,
-        avatarUrl: authorAvatar || null,
+        userId: verifiedAuthorId,
+        username: verifiedUsername,
+        displayName: verifiedUsername,
+        avatarUrl: null,
         postsCount: 1,
       },
     });
 
-    // Parse back response
     const parsedPost = {
       ...post,
       mediaUrls,
@@ -194,6 +204,9 @@ export async function POST(request: Request) {
       post: parsedPost,
     });
   } catch (error: any) {
+    if (error.message?.includes('UNAUTHORIZED')) {
+      return NextResponse.json({ success: false, error: 'Unauthorized: Session missing or invalid' }, { status: 401 });
+    }
     console.error('Error creating pulse post:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to publish post' },

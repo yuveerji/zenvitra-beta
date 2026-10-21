@@ -1,24 +1,32 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth } from '@/lib/session';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { postId, userId, type = 'LIKE', action = 'toggle' } = body;
+    // ── Cryptographic Server-Side Authentication (Anti-IDOR) ──
+    const session = await requireAuth();
+    const verifiedUserId = session.userId;
 
-    if (!postId || !userId) {
+    const body = await request.json();
+    const { postId, type = 'LIKE' } = body;
+
+    if (!postId) {
       return NextResponse.json(
-        { success: false, error: 'postId and userId are required' },
+        { success: false, error: 'postId is required' },
         { status: 400 }
       );
     }
 
-    // Check existing reaction
+    // Check existing reaction for this authenticated user
     const existing = await db.pulseReaction.findUnique({
       where: {
         postId_userId_type: {
           postId,
-          userId,
+          userId: verifiedUserId,
           type,
         },
       },
@@ -44,7 +52,7 @@ export async function POST(request: Request) {
       await db.pulseReaction.create({
         data: {
           postId,
-          userId,
+          userId: verifiedUserId,
           type,
         },
       });
@@ -60,9 +68,12 @@ export async function POST(request: Request) {
       });
     }
   } catch (error: any) {
+    if (error.message?.includes('UNAUTHORIZED')) {
+      return NextResponse.json({ success: false, error: 'Unauthorized: Session missing or invalid' }, { status: 401 });
+    }
     console.error('Error in pulse reaction:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process reaction' },
+      { success: false, error: error.message || 'Failed to update reaction' },
       { status: 500 }
     );
   }
