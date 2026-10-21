@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
-import { RelayStudio } from '@/components/pulse/RelayStudio';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function CreateStoryPage() {
   const router = useRouter();
 
-  return <RelayStudio onExit={() => router.push('/pulse')} />;
+  useEffect(() => {
+    router.replace('/pulse');
+  }, [router]);
+
+  return null;
 }

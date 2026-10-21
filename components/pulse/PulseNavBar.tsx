@@ -73,13 +73,6 @@ export function PulseNavBar() {
           <span>+ Wire News</span>
         </Link>
 
-        <a
-          href="/pulse/create-story"
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl font-sans text-xs font-bold transition-all cursor-pointer bg-gradient-to-r from-amber-400/15 via-rose-500/15 to-fuchsia-600/15 hover:from-amber-400/25 hover:via-rose-500/25 hover:to-fuchsia-600/25 text-rose-300 border border-rose-500/30"
-        >
-          <Radio className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-          <span>+ Add Relay</span>
-        </a>
 
         <button
           onClick={() => setActiveView('create-flux')}

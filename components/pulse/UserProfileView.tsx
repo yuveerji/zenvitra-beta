@@ -49,7 +49,6 @@ import { PulseProfile, PulsePost, FluxVideo } from '@/types/pulse';
 import { DelegateDossierView } from '@/components/mun/DelegateDossierView';
 import { SettingsModal } from '@/components/settings/SettingsModal';
 import { VerificationModal } from '@/components/modals/VerificationModal';
-import { StoryComposerModal } from './StoryComposerModal';
 import OrganizerKycModal from '@/components/events/OrganizerKycModal';
 import { compressAvatarImage } from '@/lib/imageUtils';
 
@@ -160,7 +159,6 @@ export function UserProfileView() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showOrganizerModal, setShowOrganizerModal] = useState(false);
-  const [showStoryComposerModal, setShowStoryComposerModal] = useState(false);
   const [showFollowersModal, setShowFollowersModal] = useState<'followers' | 'following' | null>(null);
   const [activePostModal, setActivePostModal] = useState<PulsePost | null>(null);
   const [showModalPostSettings, setShowModalPostSettings] = useState(false);
@@ -450,7 +448,7 @@ export function UserProfileView() {
         
         {/* Profile Avatar with Story Ring */}
         <div className="relative group shrink-0 mx-auto sm:mx-0">
-          <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 shadow-xl">
+          <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-[2.5px] bg-gradient-to-tr from-cyan-500/40 via-white/20 to-blue-600/40 border border-white/10 shadow-xl">
             <div className="w-full h-full rounded-full bg-black overflow-hidden relative">
               {profile.avatar ? (
                 <img src={profile.avatar} alt={displayName} className="w-full h-full object-cover" />
@@ -525,15 +523,7 @@ export function UserProfileView() {
                     <span>Clearance Active</span>
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => router.push('/pulse/create-story')}
-                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400/20 via-rose-500/20 to-fuchsia-600/20 hover:from-amber-400/30 hover:via-rose-500/30 hover:to-fuchsia-600/30 border border-rose-500/40 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md active:scale-95 shadow-sm"
-                  title="Broadcast 24-Hour Sovereign Relay"
-                >
-                  <Plus className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Add Relay</span>
-                </button>
+
                 <Link href="/dashboard">
                   <button
                     className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-bold text-cyan-300 transition cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
@@ -2564,13 +2554,7 @@ export function UserProfileView() {
         onClose={() => setShowVerificationModal(false)}
       />
 
-      {/* ─── STORY COMPOSER MODAL ─── */}
-      {showStoryComposerModal && (
-        <StoryComposerModal
-          isOpen={showStoryComposerModal}
-          onClose={() => setShowStoryComposerModal(false)}
-        />
-      )}
+
     </div>
   );
 }

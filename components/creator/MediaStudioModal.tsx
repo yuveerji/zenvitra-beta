@@ -96,7 +96,7 @@ export const MINIMAL_COLORS = [
 export const STANDARD_ASPECT_RATIOS = [
   { id: '1:1', label: '1:1 Square', ratio: '1 / 1' },
   { id: '4:5', label: '4:5 Portrait', ratio: '4 / 5' },
-  { id: '9:16', label: '9:16 Story', ratio: '9 / 16' },
+  { id: '9:16', label: '9:16 Reel / Vertical', ratio: '9 / 16' },
   { id: '16:9', label: '16:9 Cinema', ratio: '16 / 9' },
   { id: '3:4', label: '3:4 Photo', ratio: '3 / 4' },
   { id: '2:3', label: '2:3 Classic', ratio: '2 / 3' },

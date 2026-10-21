@@ -38,9 +38,7 @@ import {
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
 import { getRoleConfig } from '@/lib/roleExperience';
-import { StoriesTray } from './StoriesTray';
 import { FluxReelsFeed } from './FluxReelsFeed';
-import { StoryComposerModal } from './StoryComposerModal';
 import { UserProfileView } from './UserProfileView';
 import { DiscoverProfiles } from './DiscoverProfiles';
 import { PostComposer } from './PostComposer';
@@ -281,8 +279,6 @@ export function ZenPulseCore() {
   const [feedFilter, setFeedFilter] = useState<'for_you' | 'following' | 'trending' | 'topics' | 'saved'>('for_you');
   const [selectedTopicTag, setSelectedTopicTag] = useState<string | null>(null);
   const [activeShareToChatPost, setActiveShareToChatPost] = useState<PulsePost | null>(null);
-  
-  const [showStoryModal, setShowStoryModal] = useState(false);
   const [showPostComposerModal, setShowPostComposerModal] = useState(false);
   const [showFluxComposerModal, setShowFluxComposerModal] = useState(false);
   const [showDirectiveModal, setShowDirectiveModal] = useState(false);
@@ -945,14 +941,6 @@ export function ZenPulseCore() {
               </button>
 
               <button
-                onClick={() => setShowStoryModal(true)}
-                className="group relative px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400/20 via-rose-500/20 to-fuchsia-600/20 hover:from-amber-400/30 hover:via-rose-500/30 hover:to-fuchsia-600/30 border border-rose-500/40 hover:border-rose-400 text-rose-200 hover:text-white text-xs font-sans font-bold transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-md shrink-0 active:scale-95"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-                <span>New Story</span>
-              </button>
-
-              <button
                 onClick={() => setShowFluxComposerModal(true)}
                 className="group relative px-3.5 py-2 rounded-xl bg-fuchsia-500/15 hover:bg-fuchsia-500/25 border border-fuchsia-500/30 hover:border-fuchsia-400/60 text-xs font-sans font-bold text-fuchsia-200 hover:text-white transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm shrink-0 active:scale-95"
                 title="Create FLUX Video Reel"
@@ -1036,11 +1024,6 @@ export function ZenPulseCore() {
                 {/* ── Spatial Living Feed Elements ── */}
                 {navTab === 'feed' && (
                   <>
-                    {/* 1. Orbital Wire Capsules (Stories Tray) */}
-                    <div className="p-4 sm:p-5 rounded-3xl bg-[#090b12]/90 border border-white/10 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)]">
-                      <StoriesTray />
-                    </div>
-
                     {/* 2. Multi-Mode Spatial Post Composer (The Primary Dispatch Studio) */}
                     <SpatialPostComposer
                       onOpenFluxComposer={() => setShowFluxComposerModal(true)}
@@ -1323,7 +1306,7 @@ export function ZenPulseCore() {
                                 setNavTab('profile');
                                 openUserProfile(post.authorUsername);
                               }}
-                              className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600 p-[2px] shrink-0 cursor-pointer shadow-md group hover:scale-105 transition-transform"
+                              className="w-11 h-11 rounded-full bg-gradient-to-tr from-cyan-500/40 via-white/20 to-blue-600/40 p-[2px] shrink-0 cursor-pointer shadow-md group hover:scale-105 transition-transform"
                             >
                               <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-sm text-white uppercase overflow-hidden">
                                 {post.authorName?.[0]?.toUpperCase() || 'U'}
@@ -2072,10 +2055,6 @@ export function ZenPulseCore() {
           onFinished={() => setShowFluxComposerModal(false)}
           onClose={() => setShowFluxComposerModal(false)}
         />
-      )}
-
-      {showStoryModal && (
-        <StoryComposerModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
       )}
 
       {/* ── Immersive Full Flex Reader Modal ── */}

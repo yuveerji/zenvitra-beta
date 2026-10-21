@@ -1,12 +1,34 @@
 {
   "maintenanceMode": false,
   "registrationsOpen": true,
+  "registrationControl": "OPEN",
+  "emergencyLockdown": false,
   "chatMeshEnabled": true,
   "fluxReelsEnabled": true,
   "assemblyOsEnabled": true,
   "escrowMandateActive": true,
   "zeroSurveillanceActive": true,
   "readOnlyMode": false,
-  "updatedAt": "2026-09-03T06:12:31.908Z",
+  "modulePulseEnabled": true,
+  "moduleMunEnabled": true,
+  "moduleFormsEnabled": true,
+  "modulePressEnabled": true,
+  "modulePassportEnabled": true,
+  "moduleCallEnabled": true,
+  "moduleLegislateEnabled": true,
+  "moduleDocsEnabled": true,
+  "moduleChatEnabled": true,
+  "modulePaymentsEnabled": true,
+  "announcements": [
+    {
+      "id": "genesis-announcement-01",
+      "title": "PLATFORM PROTOCOL V4 ACTIVE",
+      "body": "All multilateral nodes and Sovereign Press bureaus synchronized across the ZENVITRA mesh.",
+      "priority": "NORMAL",
+      "active": true,
+      "timestamp": "2026-10-21T09:39:09.016Z"
+    }
+  ],
+  "updatedAt": "2026-10-21T16:44:53.814Z",
   "updatedBy": "@yuveer"
 }

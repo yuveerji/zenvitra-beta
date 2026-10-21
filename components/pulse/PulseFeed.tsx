@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { PostCard } from './PostCard';
-import { StoriesTray } from './StoriesTray';
 import { PulseNavBar } from './PulseNavBar';
 import { rankPulseFeed, FeedAlgorithmTab, RankedPulsePost } from '@/lib/pulseAlgorithm';
 
@@ -129,8 +128,6 @@ export function PulseFeed() {
               </div>
             </div>
 
-            {/* Stories Tray */}
-            <StoriesTray />
 
             {/* Filter Tabs with Sliding Indicator */}
             <div className="flex px-2 border-t border-white/[0.06] bg-white/[0.01] overflow-x-auto scrollbar-none">

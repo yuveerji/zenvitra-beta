@@ -41,7 +41,7 @@ export interface MusicPickerModalProps {
   onClose: () => void;
   onSelectTrack: (track: SelectedTrackPayload) => void;
   selectedTrackTitle?: string;
-  mode?: 'story' | 'post' | 'notes' | 'flux';
+  mode?: 'post' | 'notes' | 'flux';
 }
 
 interface YTTrackItem {
@@ -74,7 +74,7 @@ export function MusicPickerModal({
   const [playlistStatus, setPlaylistStatus] = useState<string | null>(null);
 
   // Instagram-style song frame trimming state
-  const maxLimit = (mode === 'story' || mode === 'notes') ? 60 : 120;
+  const maxLimit = mode === 'notes' ? 60 : 120;
   const minLimit = 30;
   const [trimTrack, setTrimTrack] = useState<YTTrackItem | MusicTrack | null>(null);
   const [frameDuration, setFrameDuration] = useState<number>(Math.min(60, maxLimit));
@@ -323,7 +323,7 @@ export function MusicPickerModal({
                     YouTube Music
                   </span>
                 </div>
-                <p className="text-[11px] text-zinc-400 font-mono">Attach background music to your Story, Post, or Flux</p>
+                <p className="text-[11px] text-zinc-400 font-mono">Attach background music to your Post or Flux Reel</p>
               </div>
             </div>
 
@@ -861,7 +861,7 @@ export function MusicPickerModal({
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-white">Upload Custom Soundtrack</h4>
                   <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                    Select any MP3, AAC, or WAV audio file from your device (up to 20MB) to use in your Story, Post, or Flux dispatch.
+                    Select any MP3, AAC, or WAV audio file from your device (up to 20MB) to use in your Post or Flux Reel dispatch.
                   </p>
                 </div>
                 <button

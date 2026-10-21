@@ -74,17 +74,29 @@ export interface EmbeddedTextOverlay {
   rotation: number;
   opacity: number;
   letterSpacing: number;
-  effect: 'clean' | 'neon' | 'glass' | 'brutalist' | 'outline' | 'shadow';
+  effect: 'clean' | 'neon' | 'glow_gold' | 'cyber_glitch' | 'fire' | 'chrome' | 'glass' | 'badge_neon' | 'brutalist' | '3d_extrude' | 'outline' | 'shadow';
   isUppercase: boolean;
   align: 'left' | 'center' | 'right';
   /* Instagram-Style Text Background System */
   hasBackground?: boolean;
   bgStyle?: 'none' | 'solid' | 'soft' | 'invert';
   bgColor?: string;
+  gradient?: string;
+  animation?: 'none' | 'pulse' | 'shimmer' | 'float';
 }
 
 export const FX_FILTERS = [
-  { id: 'none', name: 'Normal', css: 'none', thumb: 'from-zinc-700 to-zinc-900', desc: 'No Filter' },
+  { id: 'none', name: 'Normal', css: 'none', thumb: 'from-zinc-700 to-zinc-900', desc: 'Raw & Natural' },
+  { id: 'teal_orange', name: 'Teal & Orange', css: 'contrast(125%) saturate(140%) sepia(20%) hue-rotate(165deg)', thumb: 'from-cyan-500 via-teal-600 to-amber-500', desc: 'Hollywood Cinema' },
+  { id: 'cyberpunk', name: 'Cyberpunk', css: 'contrast(135%) saturate(165%) hue-rotate(330deg) brightness(105%)', thumb: 'from-fuchsia-600 via-purple-600 to-cyan-400', desc: 'Neon Dystopia' },
+  { id: 'solaris', name: 'Solaris Gold', css: 'contrast(115%) brightness(112%) saturate(145%) sepia(26%)', thumb: 'from-amber-400 via-orange-500 to-rose-600', desc: 'Anamorphic Sun' },
+  { id: 'kodak_portra', name: 'Kodak 400', css: 'sepia(14%) contrast(110%) saturate(118%) brightness(104%)', thumb: 'from-amber-200 via-amber-400 to-stone-600', desc: '35mm Film Stock' },
+  { id: 'matrix', name: 'Matrix Core', css: 'contrast(140%) saturate(140%) hue-rotate(75deg) brightness(95%)', thumb: 'from-emerald-400 via-teal-700 to-black', desc: 'Terminal Phosphor' },
+  { id: 'noir_cinema', name: 'Film Noir', css: 'grayscale(100%) contrast(165%) brightness(90%)', thumb: 'from-stone-300 via-zinc-600 to-black', desc: 'High Dynamic B&W' },
+  { id: 'bleach_bypass', name: 'Bleach Bypass', css: 'contrast(155%) saturate(35%) brightness(104%)', thumb: 'from-slate-400 via-zinc-700 to-stone-900', desc: 'Silver Desaturated' },
+  { id: 'fuji_velvia', name: 'Fuji Velvia', css: 'contrast(122%) saturate(170%) brightness(102%)', thumb: 'from-emerald-500 via-sky-500 to-indigo-600', desc: 'Hyper-Vivid Color' },
+  { id: 'vaporwave', name: 'Vaporwave', css: 'contrast(118%) saturate(155%) hue-rotate(275deg) brightness(106%)', thumb: 'from-pink-500 via-purple-500 to-cyan-500', desc: '90s Retro Aesthetic' },
+  { id: 'infrared', name: 'Aero Infrared', css: 'invert(80%) hue-rotate(180deg) saturate(160%)', thumb: 'from-rose-500 via-red-600 to-purple-800', desc: 'Surreal False Color' },
   { id: 'clarendon', name: 'Clarendon', css: 'contrast(120%) saturate(125%) brightness(105%)', thumb: 'from-cyan-500 to-blue-600', desc: 'Vibrant & Cool' },
   { id: 'juno', name: 'Juno', css: 'contrast(115%) saturate(135%) sepia(15%)', thumb: 'from-amber-500 to-rose-600', desc: 'Warm Highlights' },
   { id: 'ludwig', name: 'Ludwig', css: 'contrast(105%) brightness(108%) saturate(105%)', thumb: 'from-stone-500 to-stone-800', desc: 'Minimal & Crisp' },
@@ -95,7 +107,7 @@ export const FX_FILTERS = [
   { id: 'slumber', name: 'Slumber', css: 'saturate(66%) brightness(105%) sepia(35%)', thumb: 'from-yellow-600 to-stone-700', desc: 'Hazy Retro' },
   { id: 'crema', name: 'Crema', css: 'contrast(90%) brightness(105%) saturate(90%) sepia(15%)', thumb: 'from-stone-300 to-amber-900', desc: 'Creamy Tone' },
   { id: 'moon', name: 'Moon', css: 'grayscale(100%) contrast(110%) brightness(110%)', thumb: 'from-zinc-300 to-zinc-700', desc: 'Soft B&W' },
-  { id: 'inkwell', name: 'Inkwell', css: 'grayscale(100%) contrast(140%) brightness(95%)', thumb: 'from-zinc-900 to-black', desc: 'High Contrast B&W' },
+  { id: 'inkwell', name: 'Inkwell', css: 'grayscale(100%) contrast(140%) brightness(95%)', thumb: 'from-zinc-900 to-black', desc: 'Deep Shadow B&W' },
 ];
 
 export const OVERLAY_FONTS = [
@@ -112,13 +124,36 @@ export const OVERLAY_FONTS = [
 ];
 
 export const OVERLAY_EFFECTS = [
-  { id: 'clean', name: 'Clean Flat' },
-  { id: 'neon', name: 'Neon Glow' },
-  { id: 'glass', name: 'Glass Badge' },
-  { id: 'brutalist', name: 'Slab Box' },
-  { id: 'outline', name: 'Stark Outline' },
-  { id: 'shadow', name: '3D Shadow' },
+  { id: 'clean', name: 'Stark Flat', badge: 'CLASSIC' },
+  { id: 'neon', name: 'Cyan Neon Aura', badge: 'GLOW' },
+  { id: 'glow_gold', name: '24K Imperial Gold', badge: 'PRESTIGE' },
+  { id: 'cyber_glitch', name: 'Cyberpunk Glitch', badge: 'RGB SHIFT' },
+  { id: 'fire', name: 'Inferno Flame', badge: 'VIBRANT' },
+  { id: 'chrome', name: 'Liquid Chrome', badge: 'METALLIC' },
+  { id: 'glass', name: 'Frosted Glass Badge', badge: 'BLUR' },
+  { id: 'badge_neon', name: 'Neon Glowing Capsule', badge: 'CAPSULE' },
+  { id: 'brutalist', name: 'Slab Box Brutalist', badge: 'BOLD' },
+  { id: '3d_extrude', name: '3D Isometric Extrude', badge: 'DEPTH' },
+  { id: 'outline', name: 'Kinetic Outline', badge: 'STROKE' },
+  { id: 'shadow', name: 'Deep Cinema Shadow', badge: 'CINEMA' },
 ] as const;
+
+export const TEXT_GRADIENTS = [
+  { id: 'none', name: 'Solid Color', css: '' },
+  { id: 'sunset', name: 'Sunset Flame', css: 'linear-gradient(135deg, #f59e0b, #ef4444, #ec4899)' },
+  { id: 'cyber', name: 'Cyber Matrix', css: 'linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)' },
+  { id: 'aurora', name: 'Aurora Emerald', css: 'linear-gradient(135deg, #10b981, #06b6d4, #6366f1)' },
+  { id: 'gold', name: 'Imperial 24K Gold', css: 'linear-gradient(135deg, #fef08a, #eab308, #ca8a04)' },
+  { id: 'velvet', name: 'Royal Velvet', css: 'linear-gradient(135deg, #c084fc, #ec4899, #f43f5e)' },
+  { id: 'liquid_silver', name: 'Liquid Chrome', css: 'linear-gradient(135deg, #ffffff, #94a3b8, #e2e8f0)' },
+];
+
+export const TEXT_ANIMATIONS = [
+  { id: 'none', name: 'Static' },
+  { id: 'pulse', name: 'Breathing Glow' },
+  { id: 'shimmer', name: 'Liquid Shimmer' },
+  { id: 'float', name: 'Levitation' },
+];
 
 export const SWATCH_COLORS = [
   '#ffffff',
@@ -138,13 +173,16 @@ export const SWATCH_COLORS = [
 ];
 
 export const STICKER_PRESETS = [
-  { id: 'verified', label: '👑 Sovereign Verified', text: '👑 VERIFIED', color: '#fbbf24', font: 'clash', effect: 'glass' as const },
-  { id: 'nepal', label: '🇳🇵 PMDRF Relief Aid', text: '🇳🇵 PMDRF RELIEF', color: '#f43f5e', font: 'syne', effect: 'brutalist' as const },
-  { id: 'youth', label: '⚡ Youth Action Core', text: '⚡ YOUTH CORE', color: '#22d3ee', font: 'impact', effect: 'neon' as const },
-  { id: 'live', label: '🔴 DISPATCH WIRE', text: '🔴 DISPATCH WIRE', color: '#ef4444', font: 'mono', effect: 'glass' as const },
-  { id: 'exclusive', label: '✨ EXCLUSIVE', text: '✨ EXCLUSIVE', color: '#a855f7', font: 'clash', effect: 'neon' as const },
-  { id: 'sovereign', label: '🛡️ ZEN SOVEREIGN', text: '🛡️ ZEN SOVEREIGN', color: '#10b981', font: 'serif', effect: 'glass' as const },
-  { id: 'hot', label: '🔥 TRENDING WIRE', text: '🔥 TRENDING WIRE', color: '#f97316', font: 'impact', effect: 'shadow' as const },
+  { id: 'verified', label: '👑 Sovereign Verified', text: '👑 SOVEREIGN CORE', color: '#fbbf24', font: 'clash', effect: 'glow_gold' as const },
+  { id: 'live', label: '🔴 LIVE WIRE DISPATCH', text: '🔴 LIVE WIRE DISPATCH', color: '#ef4444', font: 'mono', effect: 'badge_neon' as const },
+  { id: 'youth', label: '⚡ Youth Action Core', text: '⚡ YOUTH ACTION CORE', color: '#22d3ee', font: 'impact', effect: 'neon' as const },
+  { id: 'resolution', label: '📜 Draft Resolution', text: '📜 DRAFT RESOLUTION PASSED', color: '#10b981', font: 'mono', effect: 'glass' as const },
+  { id: 'dais', label: '🏛️ Senate Dais Plenary', text: '🏛️ SENATE DAIS PLENARY', color: '#38bdf8', font: 'serif', effect: 'glass' as const },
+  { id: 'exclusive', label: '✨ Editorial Dispatch', text: '✨ EDITORIAL EXCLUSIVE', color: '#a855f7', font: 'clash', effect: 'chrome' as const },
+  { id: 'sovereign', label: '🛡️ ZEN SOVEREIGN ID', text: '🛡️ SOVEREIGN CLEARANCE', color: '#10b981', font: 'cyber', effect: 'badge_neon' as const },
+  { id: 'hot', label: '🔥 Unfiltered Wire', text: '🔥 100% UNFILTERED WIRE', color: '#f97316', font: 'impact', effect: 'fire' as const },
+  { id: 'glitch_wire', label: '⚡ Cyber Broadcast', text: '⚡ CYBER MATRIX BROADCAST', color: '#22d3ee', font: 'cyber', effect: 'cyber_glitch' as const },
+  { id: 'nepal', label: '🇳🇵 PMDRF Relief Aid', text: '🇳🇵 PMDRF RELIEF AID', color: '#f43f5e', font: 'syne', effect: 'brutalist' as const },
 ];
 
 interface PostComposerProps {
@@ -249,6 +287,10 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
   const [warmth, setWarmth] = useState<number>(0);
   const [blur, setBlur] = useState<number>(0);
   const [vignette, setVignette] = useState<number>(0);
+  const [filmGrain, setFilmGrain] = useState<number>(0);
+  const [sharpness, setSharpness] = useState<number>(0);
+  const [exposure, setExposure] = useState<number>(0);
+  const [chromatic, setChromatic] = useState<boolean>(false);
   const [rotationDeg, setRotationDeg] = useState<number>(0);
   const [flipH, setFlipH] = useState<boolean>(false);
   const [flipV, setFlipV] = useState<boolean>(false);
@@ -287,7 +329,9 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
     if (isComparingOriginal) return 'none';
     const found = FX_FILTERS.find((f) => f.id === activeFilterId);
     let base = found && found.css !== 'none' ? found.css + ' ' : '';
-    base += `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) `;
+    const effBrightness = Math.round(brightness * (1 + exposure / 100));
+    const effContrast = Math.round(contrast + sharpness * 0.35);
+    base += `brightness(${effBrightness}%) contrast(${effContrast}%) saturate(${saturation}%) `;
     if (warmth !== 0) {
       base += warmth > 0 ? `sepia(${warmth}%) ` : `hue-rotate(${Math.abs(warmth) * 2}deg) `;
     }
@@ -322,6 +366,8 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
       effect: 'clean',
       isUppercase: true,
       align: 'center',
+      animation: 'none',
+      gradient: '',
       hasBackground: false,
       bgStyle: 'none',
     };
@@ -402,11 +448,54 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
     setWarmth(0);
     setBlur(0);
     setVignette(0);
+    setFilmGrain(0);
+    setSharpness(0);
+    setExposure(0);
+    setChromatic(false);
     setRotationDeg(0);
     setFlipH(false);
     setFlipV(false);
     setTextOverlays([]);
     setActiveOverlayId(null);
+  };
+
+  const handleApplyMacroLook = (lookId: 'cinema' | 'analog' | 'cyber' | 'sovereign') => {
+    if (lookId === 'cinema') {
+      setActiveFilterId('teal_orange');
+      setBrightness(102);
+      setContrast(118);
+      setSaturation(130);
+      setVignette(25);
+      setFilmGrain(22);
+      setSharpness(20);
+      setExposure(5);
+    } else if (lookId === 'analog') {
+      setActiveFilterId('kodak_portra');
+      setBrightness(104);
+      setContrast(110);
+      setWarmth(14);
+      setVignette(18);
+      setFilmGrain(45);
+      setSharpness(10);
+    } else if (lookId === 'cyber') {
+      setActiveFilterId('cyberpunk');
+      setBrightness(100);
+      setContrast(130);
+      setSaturation(150);
+      setVignette(30);
+      setChromatic(true);
+      setFilmGrain(18);
+      setSharpness(35);
+    } else if (lookId === 'sovereign') {
+      setActiveFilterId('solaris');
+      setBrightness(106);
+      setContrast(115);
+      setWarmth(18);
+      setVignette(22);
+      setFilmGrain(15);
+      setSharpness(15);
+      setExposure(8);
+    }
   };
 
   /* Drag handlers for text overlay on the canvas */
@@ -527,6 +616,36 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
+        // Apply Procedural 35mm Film Grain
+        if (filmGrain > 0) {
+          const grainCanvas = document.createElement('canvas');
+          grainCanvas.width = 160;
+          grainCanvas.height = 160;
+          const gCtx = grainCanvas.getContext('2d');
+          if (gCtx) {
+            const imgData = gCtx.createImageData(160, 160);
+            const d = imgData.data;
+            const intensity = (filmGrain / 100) * 45;
+            for (let i = 0; i < d.length; i += 4) {
+              const noise = (Math.random() - 0.5) * intensity;
+              d[i] = 128 + noise;
+              d[i + 1] = 128 + noise;
+              d[i + 2] = 128 + noise;
+              d[i + 3] = intensity * 1.8;
+            }
+            gCtx.putImageData(imgData, 0, 0);
+            ctx.save();
+            ctx.globalCompositeOperation = 'overlay';
+            ctx.globalAlpha = Math.min(0.9, (filmGrain / 100) * 0.85);
+            const pattern = ctx.createPattern(grainCanvas, 'repeat');
+            if (pattern) {
+              ctx.fillStyle = pattern;
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            ctx.restore();
+          }
+        }
+
         // Draw overlays scoped ONLY to this image index
         textOverlays
           .filter((ov) => (ov.imageIndex ?? 0) === targetIdx)
@@ -612,6 +731,35 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
             ctx.shadowBlur = 25 * scale;
             ctx.fillStyle = textColor;
             ctx.fillText(textToRender, 0, 0);
+          } else if (ov.effect === 'glow_gold') {
+            ctx.shadowColor = '#fbbf24';
+            ctx.shadowBlur = 24 * scale;
+            ctx.fillStyle = '#fef08a';
+            ctx.fillText(textToRender, 0, 0);
+          } else if (ov.effect === 'cyber_glitch') {
+            ctx.save();
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 8 * scale;
+            ctx.shadowOffsetX = -2 * scale;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(textToRender, 0, 0);
+            ctx.shadowColor = '#ff0055';
+            ctx.shadowOffsetX = 2 * scale;
+            ctx.fillText(textToRender, 0, 0);
+            ctx.restore();
+          } else if (ov.effect === 'fire') {
+            ctx.shadowColor = '#f97316';
+            ctx.shadowBlur = 20 * scale;
+            ctx.shadowOffsetY = -3 * scale;
+            ctx.fillStyle = '#fef08a';
+            ctx.fillText(textToRender, 0, 0);
+          } else if (ov.effect === '3d_extrude') {
+            ctx.fillStyle = '#0f172a';
+            for (let step = 5; step >= 1; step--) {
+              ctx.fillText(textToRender, step * scale, step * scale);
+            }
+            ctx.fillStyle = textColor;
+            ctx.fillText(textToRender, 0, 0);
           } else if (ov.effect === 'outline') {
             ctx.strokeStyle = ov.color;
             ctx.lineWidth = 2 * scale;
@@ -624,7 +772,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
             ctx.fillStyle = textColor;
             ctx.fillText(textToRender, 0, 0);
           } else {
-            // Clean / Glass / Solid - subtle shadow for legibility over photos
+            // Clean / Glass / Solid
             if (!hasBackgroundBox) {
               ctx.shadowColor = 'rgba(0,0,0,0.9)';
               ctx.shadowBlur = 8 * scale;
@@ -1094,10 +1242,28 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                   {/* Vignette Shadow Overlay */}
                   {vignette > 0 && !isComparingOriginal && (
                     <div 
-                      className="absolute inset-0 pointer-events-none transition-opacity"
+                      className="absolute inset-0 pointer-events-none transition-opacity z-10"
                       style={{
                         background: `radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,${(vignette / 100) * 0.85}) 100%)`
                       }}
+                    />
+                  )}
+
+                  {/* 35mm Analog Film Grain Texture Overlay */}
+                  {filmGrain > 0 && !isComparingOriginal && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none mix-blend-overlay z-10 transition-opacity"
+                      style={{
+                        opacity: (filmGrain / 100) * 0.85,
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.75'/%3E%3C/svg%3E")`
+                      }}
+                    />
+                  )}
+
+                  {/* Prismatic Chromatic Aberration Edge Glow */}
+                  {chromatic && !isComparingOriginal && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none shadow-[inset_2px_0_15px_rgba(255,0,85,0.45),inset_-2px_0_15px_rgba(0,255,234,0.45)] z-10 animate-pulse"
                     />
                   )}
 
@@ -1147,6 +1313,14 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                           textShadow: 
                             ov.effect === 'neon' 
                               ? `0 0 12px ${ov.color}, 0 0 24px ${ov.color}`
+                              : ov.effect === 'glow_gold'
+                              ? '0 0 12px rgba(250,204,21,0.9), 0 0 28px rgba(245,158,11,0.7), 0 2px 4px rgba(0,0,0,0.8)'
+                              : ov.effect === 'cyber_glitch'
+                              ? '2px 0px 0px rgba(255,0,85,0.9), -2px 0px 0px rgba(0,255,234,0.9), 0 0 12px rgba(34,211,238,0.6)'
+                              : ov.effect === 'fire'
+                              ? '0 0 10px #f97316, 0 -3px 18px #ef4444, 0 -7px 25px #dc2626'
+                              : ov.effect === '3d_extrude'
+                              ? '1px 1px 0 #0f172a, 2px 2px 0 #0f172a, 3px 3px 0 #0f172a, 4px 4px 0 #0f172a, 6px 6px 12px rgba(0,0,0,0.9)'
                               : ov.effect === 'shadow'
                               ? '3px 3px 0px rgba(0,0,0,0.9), 6px 6px 0px rgba(0,0,0,0.4)'
                               : ov.hasBackground === false || ov.bgStyle === 'none'
@@ -1848,45 +2022,82 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                   className="flex-1 flex flex-col justify-between p-5 space-y-4 overflow-y-auto no-scrollbar bg-[#0a0b12]"
                 >
                   <div className="space-y-3.5">
-                    {/* Header Bar */}
-                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                      <div className="flex items-center gap-2">
-                        <Wand2 className="w-4 h-4 text-cyan-400" />
-                        <span 
-                          className="font-bold text-xs uppercase tracking-widest text-white"
-                          style={{ fontFamily: 'Clash Display, var(--font-space), sans-serif' }}
-                        >
-                          Pro FX Studio Suite
-                        </span>
+                    {/* Header Bar with Realtime FX Telemetry */}
+                    <div className="space-y-2.5 pb-2 border-b border-white/10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Wand2 className="w-4 h-4 text-cyan-400 animate-pulse" />
+                          <span 
+                            className="font-bold text-xs uppercase tracking-widest text-white flex items-center gap-1.5"
+                            style={{ fontFamily: 'Clash Display, var(--font-space), sans-serif' }}
+                          >
+                            <span>Pro FX &amp; Text Studio</span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-500/30">
+                              STUDIO V2
+                            </span>
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onMouseDown={() => setIsComparingOriginal(true)}
+                            onMouseUp={() => setIsComparingOriginal(false)}
+                            onTouchStart={() => setIsComparingOriginal(true)}
+                            onTouchEnd={() => setIsComparingOriginal(false)}
+                            className={`text-[11px] font-mono px-2 py-0.5 rounded-lg border transition cursor-pointer flex items-center gap-1 ${
+                              isComparingOriginal
+                                ? 'bg-rose-500/20 border-rose-400 text-rose-300'
+                                : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:text-white'
+                            }`}
+                            title="Press & hold to compare with raw original"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>Compare</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleResetAdjustments}
+                            className="text-[11px] font-mono text-zinc-400 hover:text-rose-400 flex items-center gap-1 transition cursor-pointer"
+                            title="Reset all FX & text layers to default"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>Reset</span>
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        {/* Compare Raw Original Button (Press and hold) */}
+                      {/* Quick Pro Cinema Macro Looks */}
+                      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider shrink-0">LOOKS:</span>
                         <button
                           type="button"
-                          onMouseDown={() => setIsComparingOriginal(true)}
-                          onMouseUp={() => setIsComparingOriginal(false)}
-                          onTouchStart={() => setIsComparingOriginal(true)}
-                          onTouchEnd={() => setIsComparingOriginal(false)}
-                          className={`text-[11px] font-mono px-2 py-0.5 rounded-lg border transition cursor-pointer flex items-center gap-1 ${
-                            isComparingOriginal
-                              ? 'bg-rose-500/20 border-rose-400 text-rose-300'
-                              : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:text-white'
-                          }`}
-                          title="Press & hold to compare with raw original"
+                          onClick={() => handleApplyMacroLook('cinema')}
+                          className="px-2 py-0.5 rounded-md bg-gradient-to-r from-teal-500/15 to-amber-500/15 border border-teal-500/30 hover:border-teal-400 text-[10px] font-mono font-bold text-teal-300 hover:text-white transition shrink-0 cursor-pointer"
                         >
-                          <Eye className="w-3 h-3" />
-                          <span>Compare</span>
+                          🎬 Hollywood Cinema
                         </button>
-
                         <button
                           type="button"
-                          onClick={handleResetAdjustments}
-                          className="text-[11px] font-mono text-zinc-400 hover:text-rose-400 flex items-center gap-1 transition cursor-pointer"
-                          title="Reset all FX & text layers to default"
+                          onClick={() => handleApplyMacroLook('analog')}
+                          className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/15 to-stone-500/15 border border-amber-500/30 hover:border-amber-400 text-[10px] font-mono font-bold text-amber-300 hover:text-white transition shrink-0 cursor-pointer"
                         >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Reset</span>
+                          🎞️ Kodak 35mm
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApplyMacroLook('cyber')}
+                          className="px-2 py-0.5 rounded-md bg-gradient-to-r from-purple-500/15 to-cyan-500/15 border border-purple-500/30 hover:border-cyan-400 text-[10px] font-mono font-bold text-cyan-300 hover:text-white transition shrink-0 cursor-pointer"
+                        >
+                          ⚡ Cyber Matrix
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApplyMacroLook('sovereign')}
+                          className="px-2 py-0.5 rounded-md bg-gradient-to-r from-yellow-500/15 to-amber-600/15 border border-yellow-500/30 hover:border-yellow-400 text-[10px] font-mono font-bold text-yellow-300 hover:text-white transition shrink-0 cursor-pointer"
+                        >
+                          👑 24K Sovereign
                         </button>
                       </div>
                     </div>
@@ -2234,22 +2445,68 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                               </div>
                             </div>
 
-                            {/* Typography Effect Styles */}
+                            {/* Typography Effect Styles (12 Sovereign FX Presets) */}
                             <div className="space-y-1">
-                              <label className="text-[9px] text-zinc-400 font-mono uppercase">Text Effect Preset</label>
-                              <div className="grid grid-cols-3 gap-1">
+                              <label className="text-[9px] text-zinc-400 font-mono uppercase flex items-center justify-between">
+                                <span>Text Effect Preset (12 Styles)</span>
+                                <span className="text-cyan-400 font-bold">{activeOverlayObj.effect.toUpperCase()}</span>
+                              </label>
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1 max-h-[140px] overflow-y-auto no-scrollbar pr-1">
                                 {OVERLAY_EFFECTS.map((eff) => (
                                   <button
                                     key={eff.id}
                                     type="button"
                                     onClick={() => handleUpdateActiveOverlay({ effect: eff.id })}
-                                    className={`py-1 px-2 rounded-lg text-[10px] font-mono transition cursor-pointer border ${
+                                    className={`py-1 px-1.5 rounded-lg text-[10px] font-mono transition cursor-pointer border text-left truncate ${
                                       activeOverlayObj.effect === eff.id
+                                        ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold shadow-[0_0_10px_rgba(34,211,238,0.3)]'
+                                        : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                                    }`}
+                                    title={eff.name}
+                                  >
+                                    <div className="truncate font-semibold">{eff.name}</div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Text Gradient Fills */}
+                            <div className="space-y-1">
+                              <label className="text-[9px] text-zinc-400 font-mono uppercase">Gradient Shading</label>
+                              <div className="grid grid-cols-4 gap-1">
+                                {TEXT_GRADIENTS.map((grad) => (
+                                  <button
+                                    key={grad.id}
+                                    type="button"
+                                    onClick={() => handleUpdateActiveOverlay({ gradient: grad.css })}
+                                    className={`py-1 px-1 rounded-lg text-[9px] font-mono transition cursor-pointer border text-center truncate ${
+                                      activeOverlayObj.gradient === grad.css
                                         ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold'
                                         : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
                                     }`}
                                   >
-                                    {eff.name}
+                                    {grad.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Text Motion & Animation */}
+                            <div className="space-y-1">
+                              <label className="text-[9px] text-zinc-400 font-mono uppercase">Motion FX</label>
+                              <div className="grid grid-cols-4 gap-1">
+                                {TEXT_ANIMATIONS.map((anim) => (
+                                  <button
+                                    key={anim.id}
+                                    type="button"
+                                    onClick={() => handleUpdateActiveOverlay({ animation: anim.id as any })}
+                                    className={`py-1 px-1 rounded-lg text-[9px] font-mono transition cursor-pointer border text-center truncate ${
+                                      (activeOverlayObj.animation || 'none') === anim.id
+                                        ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold'
+                                        : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                                    }`}
+                                  >
+                                    {anim.name}
                                   </button>
                                 ))}
                               </div>
