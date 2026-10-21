@@ -14,8 +14,13 @@ import {
   Sparkles,
   RefreshCw,
   Landmark,
-  BadgeCheck
+  BadgeCheck,
+  User,
+  Users,
+  GraduationCap,
+  HeartHandshake
 } from 'lucide-react';
+import { CustomSelect, SelectOption } from '@/components/ui/CustomSelect';
 
 interface OrganizerKycModalProps {
   isOpen: boolean;
@@ -25,6 +30,44 @@ interface OrganizerKycModalProps {
   userHandle?: string;
   onSuccess?: () => void;
 }
+
+const ORGANIZER_ENTITY_OPTIONS: SelectOption[] = [
+  {
+    value: 'INDIVIDUAL',
+    label: 'Individual Event Host',
+    description: 'Solo curator, independent delegate, or campus host',
+    icon: User,
+    badge: 'SOLO NODE',
+  },
+  {
+    value: 'STUDENT_BODY',
+    label: 'Student Council / School Club',
+    description: 'Official high school or campus club committee',
+    icon: Users,
+    badge: 'CAMPUS',
+  },
+  {
+    value: 'COLLEGE_SOCIETY',
+    label: 'College MUN Society / University Body',
+    description: 'University society, Model UN circuit, or debater bureau',
+    icon: GraduationCap,
+    badge: 'COLLEGIATE',
+  },
+  {
+    value: 'NGO',
+    label: 'Registered NGO / Youth Foundation',
+    description: 'Non-profit organization, trust, or civic foundation',
+    icon: HeartHandshake,
+    badge: 'CIVIC TRUST',
+  },
+  {
+    value: 'COMPANY',
+    label: 'Private Limited / Enterprise Organizer',
+    description: 'Registered commercial entity, firm, or agency',
+    icon: Building2,
+    badge: 'ENTERPRISE',
+  },
+];
 
 export default function OrganizerKycModal({
   isOpen,
@@ -273,20 +316,17 @@ export default function OrganizerKycModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Entity Type */}
           <div className="space-y-1.5">
-            <label className="text-xs font-mono text-neutral-300 block">
-              Organizer Entity Type
-            </label>
-            <select
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-mono text-neutral-300 block">
+                Organizer Entity Type
+              </label>
+              <span className="text-[10px] font-mono text-neutral-500">Verified KYC Tier</span>
+            </div>
+            <CustomSelect
               value={organizationType}
-              onChange={(e) => setOrganizationType(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
-            >
-              <option value="INDIVIDUAL">Individual Event Host</option>
-              <option value="STUDENT_BODY">Student Council / School Club</option>
-              <option value="COLLEGE_SOCIETY">College MUN Society / University Body</option>
-              <option value="NGO">Registered NGO / Youth Foundation</option>
-              <option value="COMPANY">Private Limited / Enterprise Organizer</option>
-            </select>
+              onChange={(val) => setOrganizationType(val)}
+              options={ORGANIZER_ENTITY_OPTIONS}
+            />
           </div>
 
           {/* Legal / Beneficiary Name */}
