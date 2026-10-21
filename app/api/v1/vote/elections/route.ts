@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { INITIAL_ELECTIONS, INITIAL_UNIVERSES, INITIAL_FACTIONS_AND_COUNCILS } from '@/lib/voting/votingData';
+import { INITIAL_UNIVERSES, INITIAL_FACTIONS_AND_COUNCILS } from '@/lib/voting/votingData';
 import { MultiversalElection } from '@/types/voting';
-
-// In-memory / dynamic election registry for the platform
-let electionsCache: MultiversalElection[] = [...INITIAL_ELECTIONS];
+import { getAllElections, addElection, updateElection, getElectionById } from '@/lib/voting/votingStore';
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,7 +10,7 @@ export async function GET(req: NextRequest) {
     const state = searchParams.get('state');
     const mode = searchParams.get('mode');
 
-    let filtered = [...electionsCache];
+    let filtered = [...getAllElections()];
 
     if (universeId) {
       filtered = filtered.filter(e => e.universeId === universeId || !e.universeId);
@@ -96,7 +94,7 @@ export async function POST(req: NextRequest) {
       allowVoteChangeBeforeClose: false,
     };
 
-    electionsCache.unshift(newElection);
+    addElection(newElection);
 
     return NextResponse.json({
       success: true,
@@ -123,12 +121,10 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'electionId is required' }, { status: 400 });
     }
 
-    const index = electionsCache.findIndex(e => e.id === electionId);
-    if (index === -1) {
+    const election = getElectionById(electionId);
+    if (!election) {
       return NextResponse.json({ error: 'Election not found' }, { status: 404 });
     }
-
-    const election = electionsCache[index];
 
     // If attempting to mutate roll while already frozen
     if (election.isVoterRollFrozen && voterRollSnapshot && isVoterRollFrozen !== false) {
@@ -138,16 +134,14 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const updatedElection: MultiversalElection = {
-      ...election,
-      voterRollSnapshot: voterRollSnapshot !== undefined ? voterRollSnapshot : election.voterRollSnapshot,
-      eligibleVoterCount: voterRollSnapshot ? voterRollSnapshot.length : election.eligibleVoterCount,
-      isVoterRollFrozen: isVoterRollFrozen !== undefined ? isVoterRollFrozen : election.isVoterRollFrozen,
-      frozenAt: isVoterRollFrozen ? new Date().toISOString() : (isVoterRollFrozen === false ? undefined : election.frozenAt),
-      state: state || election.state,
-    };
-
-    electionsCache[index] = updatedElection;
+    const updatedElection = updateElection(electionId, (curr) => ({
+      ...curr,
+      voterRollSnapshot: voterRollSnapshot !== undefined ? voterRollSnapshot : curr.voterRollSnapshot,
+      eligibleVoterCount: voterRollSnapshot ? voterRollSnapshot.length : curr.eligibleVoterCount,
+      isVoterRollFrozen: isVoterRollFrozen !== undefined ? isVoterRollFrozen : curr.isVoterRollFrozen,
+      frozenAt: isVoterRollFrozen ? new Date().toISOString() : (isVoterRollFrozen === false ? undefined : curr.frozenAt),
+      state: state || curr.state,
+    }));
 
     return NextResponse.json({
       success: true,

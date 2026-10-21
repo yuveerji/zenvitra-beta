@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { INITIAL_ELECTIONS, INITIAL_AUDIT_LOGS } from '@/lib/voting/votingData';
 import { executeElectionTally, RawBallotSubmission } from '@/lib/voting/countingEngine';
 import { UserBallotReceipt, AuditLogEntry } from '@/types/voting';
+import { 
+  getElectionById, 
+  updateElection, 
+  recordBallotSubmission, 
+  hasUserVoted, 
+  markUserVoted, 
+  addAuditLog 
+} from '@/lib/voting/votingStore';
 import crypto from 'crypto';
-
-// Server-side ballot storage map
-const submittedBallotsMap = new Map<string, RawBallotSubmission[]>();
-const userVotedEntitlements = new Set<string>(); // "electionId:userHandle"
-const auditLogsStore: AuditLogEntry[] = [...INITIAL_AUDIT_LOGS];
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Valid electionId and option selection required' }, { status: 400 });
     }
 
-    const election = INITIAL_ELECTIONS.find(e => e.id === electionId);
+    const election = getElectionById(electionId);
     if (!election) {
       return NextResponse.json({ error: 'Election record not found in multiversal registry' }, { status: 404 });
     }
@@ -35,28 +37,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Invariant: One person, one ballot entitlement check
-    const entitlementKey = `${electionId}:${voterHandle.toLowerCase()}`;
-    if (userVotedEntitlements.has(entitlementKey) && !election.allowVoteChangeBeforeClose) {
+    if (hasUserVoted(electionId, voterHandle) && !election.allowVoteChangeBeforeClose) {
       return NextResponse.json({ 
         error: 'Duplicate vote rejected: You have already submitted an authenticated ballot for this election.' 
       }, { status: 409 });
     }
 
     // Store Ballot Submission
-    const currentBallots = submittedBallotsMap.get(electionId) || [];
-    currentBallots.push({
+    recordBallotSubmission(electionId, {
       electionId,
       voterHandle,
       selectedOptionIds,
       isRepresentativeVote,
     });
-    submittedBallotsMap.set(electionId, currentBallots);
-    userVotedEntitlements.add(entitlementKey);
+    markUserVoted(electionId, voterHandle);
 
-    // Increment ballot counter
-    election.votesCastCount = (election.votesCastCount || 0) + 1;
-    const turnout = (election.votesCastCount / election.eligibleVoterCount) * 100;
-    election.isQuorumMet = turnout >= election.quorumNeededPercent;
+    // Update ballot counter on election
+    const updatedElection = updateElection(electionId, (curr) => {
+      const votesCast = (curr.votesCastCount || 0) + 1;
+      const turnout = curr.eligibleVoterCount > 0 ? (votesCast / curr.eligibleVoterCount) * 100 : 0;
+      return {
+        ...curr,
+        votesCastCount: votesCast,
+        isQuorumMet: turnout >= curr.quorumNeededPercent,
+      };
+    }) || election;
+
+    const turnout = updatedElection.eligibleVoterCount > 0 
+      ? (updatedElection.votesCastCount / updatedElection.eligibleVoterCount) * 100 
+      : 0;
 
     // Generate Tamper-Proof User Submission Receipt
     const receiptSeed = `${electionId}:${voterHandle}:${Date.now()}:${idempotencyKey || 'none'}`;
@@ -84,16 +93,16 @@ export async function POST(req: NextRequest) {
       details: `Authenticated ballot receipt minted (${receipt.receiptId}). Zero selection telemetry leaked to public audit.`,
       sha256Hash: receipt.cryptographicReceiptHash,
     };
-    auditLogsStore.unshift(auditEntry);
+    addAuditLog(auditEntry);
 
     return NextResponse.json({
       success: true,
       message: 'Ballot authenticated and permanently committed to the voting engine.',
       receipt,
       electionStatus: {
-        votesCast: election.votesCastCount,
+        votesCast: updatedElection.votesCastCount,
         turnoutPercent: Math.round(turnout * 10) / 10,
-        isQuorumMet: election.isQuorumMet,
+        isQuorumMet: updatedElection.isQuorumMet,
       }
     });
 

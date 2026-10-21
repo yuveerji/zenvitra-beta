@@ -48,6 +48,21 @@ export default function ZenVoteHub() {
   const currentUserHandle = user?.username || profile?.username || 'delegate.member';
   const isOfficer = profile?.role === 'admin' || profile?.role === 'core_team' || currentUserHandle === 'yuveer';
 
+  useEffect(() => {
+    async function loadElections() {
+      try {
+        const res = await fetch('/api/v1/vote/elections');
+        const data = await res.json();
+        if (data.elections) {
+          setElections(data.elections);
+        }
+      } catch (e) {
+        // Fallback to in-state registry
+      }
+    }
+    loadElections();
+  }, []);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
@@ -274,14 +289,26 @@ export default function ZenVoteHub() {
                 Inspect voter turnout, quorum verifications, multi-chamber tallies, and cryptographic signoff hashes.
               </p>
             </div>
-            {elections.map((elec) => (
-              <ResultsObservatory
-                key={elec.id}
-                election={elec}
-                isOfficer={isOfficer}
-                onRunTally={() => handleRunTally(elec.id)}
-              />
-            ))}
+            {elections.length === 0 ? (
+              <div className="p-12 rounded-3xl bg-neutral-950/60 border border-white/10 text-center space-y-3 font-mono">
+                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto">
+                  <BarChart3 className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-white font-display">Observatory Ledger Clear</h3>
+                <p className="text-xs text-neutral-400 max-w-md mx-auto">
+                  No certified election outcomes recorded yet. Ballots will be displayed here once tallies are certified by Returning Officers.
+                </p>
+              </div>
+            ) : (
+              elections.map((elec) => (
+                <ResultsObservatory
+                  key={elec.id}
+                  election={elec}
+                  isOfficer={isOfficer}
+                  onRunTally={() => handleRunTally(elec.id)}
+                />
+              ))
+            )}
           </div>
         ) : activeTab === 'COMMISSIONER_DAIS' ? (
           <div className="space-y-6">
@@ -294,22 +321,26 @@ export default function ZenVoteHub() {
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                {elections.map((elec) => (
-                  <button
-                    key={elec.id}
-                    onClick={() => setDaisElection(elec)}
-                    className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition cursor-pointer flex items-center gap-1.5 ${
-                      daisElection?.id === elec.id
-                        ? 'bg-amber-400/20 text-amber-300 border-amber-400/60 font-bold shadow-sm'
-                        : 'bg-black/60 text-neutral-400 border-white/10 hover:border-white/25'
-                    }`}
-                  >
-                    <span>{elec.electionCode}</span>
-                    <span className="text-[10px] text-neutral-500">
-                      ({elec.voterRollSnapshot?.length || elec.eligibleVoterCount})
-                    </span>
-                  </button>
-                ))}
+                {elections.length > 0 ? (
+                  elections.map((elec) => (
+                    <button
+                      key={elec.id}
+                      onClick={() => setDaisElection(elec)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition cursor-pointer flex items-center gap-1.5 ${
+                        daisElection?.id === elec.id
+                          ? 'bg-amber-400/20 text-amber-300 border-amber-400/60 font-bold shadow-sm'
+                          : 'bg-black/60 text-neutral-400 border-white/10 hover:border-white/25'
+                      }`}
+                    >
+                      <span>{elec.electionCode}</span>
+                      <span className="text-[10px] text-neutral-500">
+                        ({elec.voterRollSnapshot?.length || elec.eligibleVoterCount})
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <span className="text-xs text-neutral-500 italic">No elections available to administer</span>
+                )}
               </div>
             </div>
 
@@ -321,8 +352,24 @@ export default function ZenVoteHub() {
                 onCloseDais={() => setActiveTab('ACTIVE_BALLOTS')}
               />
             ) : (
-              <div className="p-8 text-center text-neutral-400 font-mono text-sm">
-                Select an election above to open the Commissioner Dais.
+              <div className="p-12 rounded-3xl bg-neutral-950/60 border border-white/10 text-center space-y-3 font-mono">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                  <Gavel className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-white font-display">Commissioner Dais Inactive</h3>
+                <p className="text-xs text-neutral-400 max-w-md mx-auto">
+                  {elections.length === 0
+                    ? 'No registered elections exist in the platform registry. Create an election to administer its voter roll and freeze snapshots.'
+                    : 'Select a ballot from the jurisdiction selector above to administer its voter roll.'}
+                </p>
+                {isOfficer && elections.length === 0 && (
+                  <button
+                    onClick={() => setActiveTab('CREATE_ELECTION')}
+                    className="mt-2 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs font-mono transition cursor-pointer shadow-md"
+                  >
+                    Create Election Ballot
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -449,87 +496,109 @@ export default function ZenVoteHub() {
               </div>
             </div>
 
-            {/* Elections Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredElections.map((elec) => (
-                <div
-                  key={elec.id}
-                  className="p-5 rounded-3xl bg-[#070b14] border border-white/10 hover:border-cyan-500/40 transition-all flex flex-col justify-between space-y-4 group"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 font-bold">
-                        {elec.electionCode}
-                      </span>
-                      <span className={`text-[10px] font-mono font-bold ${
-                        elec.state === 'OPEN' ? 'text-emerald-400' : 'text-neutral-400'
-                      }`}>
-                        {elec.state}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h3 className="text-base font-bold text-white font-display group-hover:text-cyan-300 transition line-clamp-2">
-                        {elec.title}
-                      </h3>
-                      <p className="text-xs text-neutral-400 mt-1 line-clamp-3 leading-relaxed">
-                        {elec.summary}
-                      </p>
-                    </div>
-
-                    {/* Voting Mode & Quorum Specs */}
-                    <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1 font-mono text-[11px]">
-                      <div className="flex justify-between text-neutral-400">
-                        <span>Governance:</span>
-                        <strong className="text-neutral-200">{elec.governanceLevel.replace('_', ' ')}</strong>
-                      </div>
-                      <div className="flex justify-between text-neutral-400">
-                        <span>Mode:</span>
-                        <strong className="text-cyan-300">{elec.mode.replace('MODE_', '').replace(/_/g, ' ')}</strong>
-                      </div>
-                      <div className="flex justify-between text-neutral-400">
-                        <span>Turnout:</span>
-                        <strong className={elec.isQuorumMet ? 'text-emerald-400' : 'text-amber-400'}>
-                          {elec.votesCastCount} / {elec.eligibleVoterCount} ({Math.round((elec.votesCastCount / elec.eligibleVoterCount) * 100)}%)
-                        </strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="pt-2 space-y-2">
-                    {elec.state === 'OPEN' ? (
-                      <button
-                        onClick={() => setSelectedElection(elec)}
-                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs font-mono uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md active:scale-95"
-                      >
-                        <Vote className="w-3.5 h-3.5" />
-                        <span>Enter Ballot Room</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => { setSelectedElection(null); setActiveTab('OBSERVATORY'); }}
-                        className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 text-xs font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>View Certified Tally</span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        setDaisElection(elec);
-                        setActiveTab('COMMISSIONER_DAIS');
-                      }}
-                      className="w-full py-2 rounded-xl bg-neutral-900/90 hover:bg-amber-500/10 text-neutral-300 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 text-[11px] font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Gavel className="w-3 h-3 text-amber-400" />
-                      <span>Commissioner Dais &bull; Voter Roll ({elec.voterRollSnapshot?.length || elec.eligibleVoterCount})</span>
-                    </button>
-                  </div>
+            {/* Elections Grid or Clean Empty State */}
+            {filteredElections.length === 0 ? (
+              <div className="p-12 rounded-3xl bg-neutral-950/60 border border-white/10 text-center space-y-3 font-mono">
+                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto">
+                  <Vote className="w-6 h-6" />
                 </div>
-              ))}
-            </div>
+                <h3 className="text-base font-bold text-white font-display">No Active Ballots or Motions</h3>
+                <p className="text-xs text-neutral-400 max-w-md mx-auto">
+                  {searchQuery || selectedModeFilter !== 'ALL'
+                    ? 'No elections match the selected filter criteria.'
+                    : 'The plenary docket is clear. Zero mock or seeded elections exist on the platform.'}
+                </p>
+                {isOfficer && (
+                  <button
+                    onClick={() => setActiveTab('CREATE_ELECTION')}
+                    className="mt-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs font-mono transition cursor-pointer shadow-md"
+                  >
+                    Create New Ballot
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredElections.map((elec) => (
+                  <div
+                    key={elec.id}
+                    className="p-5 rounded-3xl bg-[#070b14] border border-white/10 hover:border-cyan-500/40 transition-all flex flex-col justify-between space-y-4 group"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 font-bold">
+                          {elec.electionCode}
+                        </span>
+                        <span className={`text-[10px] font-mono font-bold ${
+                          elec.state === 'OPEN' ? 'text-emerald-400' : 'text-neutral-400'
+                        }`}>
+                          {elec.state}
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 className="text-base font-bold text-white font-display group-hover:text-cyan-300 transition line-clamp-2">
+                          {elec.title}
+                        </h3>
+                        <p className="text-xs text-neutral-400 mt-1 line-clamp-3 leading-relaxed">
+                          {elec.summary}
+                        </p>
+                      </div>
+
+                      {/* Voting Mode & Quorum Specs */}
+                      <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1 font-mono text-[11px]">
+                        <div className="flex justify-between text-neutral-400">
+                          <span>Governance:</span>
+                          <strong className="text-neutral-200">{elec.governanceLevel.replace('_', ' ')}</strong>
+                        </div>
+                        <div className="flex justify-between text-neutral-400">
+                          <span>Mode:</span>
+                          <strong className="text-cyan-300">{elec.mode.replace('MODE_', '').replace(/_/g, ' ')}</strong>
+                        </div>
+                        <div className="flex justify-between text-neutral-400">
+                          <span>Turnout:</span>
+                          <strong className={elec.isQuorumMet ? 'text-emerald-400' : 'text-amber-400'}>
+                            {elec.votesCastCount} / {elec.eligibleVoterCount} ({elec.eligibleVoterCount > 0 ? Math.round((elec.votesCastCount / elec.eligibleVoterCount) * 100) : 0}%)
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="pt-2 space-y-2">
+                      {elec.state === 'OPEN' ? (
+                        <button
+                          onClick={() => setSelectedElection(elec)}
+                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs font-mono uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                        >
+                          <Vote className="w-3.5 h-3.5" />
+                          <span>Enter Ballot Room</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => { setSelectedElection(null); setActiveTab('OBSERVATORY'); }}
+                          className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 text-xs font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>View Certified Tally</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setDaisElection(elec);
+                          setActiveTab('COMMISSIONER_DAIS');
+                        }}
+                        className="w-full py-2 rounded-xl bg-neutral-900/90 hover:bg-amber-500/10 text-neutral-300 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 text-[11px] font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Gavel className="w-3 h-3 text-amber-400" />
+                        <span>Commissioner Dais &bull; Voter Roll ({elec.voterRollSnapshot?.length || elec.eligibleVoterCount})</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>
