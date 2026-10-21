@@ -522,6 +522,30 @@ export default function ZenMunPortalPage() {
                 </p>
               </div>
             </div>
+
+            {/* Live Voting & Multiversal Sovereign Link */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-cyan-950/30 to-black border border-amber-500/30 font-mono text-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center justify-center">
+                  <Vote className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-white font-bold text-sm">Synchronized with ZEN.VOTE Multiversal Infrastructure</h4>
+                  <p className="text-[11px] text-neutral-400">
+                    Motions, statutory bills, and final chamber resolutions are cryptographically committed to the central voting engine.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/vote"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-md"
+              >
+                <Vote className="w-4 h-4 text-black" />
+                <span>Open ZEN.VOTE Ledger</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         )}
 

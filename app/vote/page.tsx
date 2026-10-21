@@ -255,6 +255,24 @@ export default function ZenVoteHub() {
               </button>
             )}
           </div>
+
+          {/* Direct Floor Nav Links */}
+          <div className="flex items-center gap-2">
+            <a
+              href="/committee"
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-mono transition flex items-center gap-1"
+            >
+              <span>Chamber Floor</span>
+              <ChevronRight className="w-3 h-3 text-cyan-400" />
+            </a>
+            <a
+              href="/mun"
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-mono transition flex items-center gap-1"
+            >
+              <span>MUN Portal</span>
+              <ChevronRight className="w-3 h-3 text-amber-400" />
+            </a>
+          </div>
         </div>
       </header>
 
@@ -383,6 +401,67 @@ export default function ZenVoteHub() {
               <p className="text-xs text-neutral-400">
                 Configure voting mode, governance chamber, quorum threshold, and ballot options.
               </p>
+            </div>
+
+            {/* Quick Template Presets for MUN / Bills / Motions */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase text-neutral-400 block font-bold">
+                Quick Template Presets:
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewTitle('Motion for Moderated Caucus: AI Safety & Multilateral Treaties');
+                    setNewSummary('Procedural motion to open moderated caucus for 15 minutes with 60 seconds speaking time per delegate.');
+                    setNewMode('MODE_F_CONFIGURABLE_POLL');
+                    setNewOptionsText('In Favour\nAgainst\nAbstain');
+                  }}
+                  className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-left hover:bg-cyan-900/40 transition cursor-pointer"
+                >
+                  <span className="font-bold text-cyan-300 block text-[11px]">🏛️ Procedural Motion</span>
+                  <span className="text-[9px] text-neutral-400">Yes / No / Abstain</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewTitle('Lok Sabha Division Vote: Digital Personal Data & Sovereign AI Bill');
+                    setNewSummary('Statutory division vote on passing the Digital Sovereignty Bill 2026 through the House of the People.');
+                    setNewMode('MODE_C_FACTION_COUNCIL');
+                    setNewOptionsText('AYES (In Favour)\nNOES (Against)\nABSTAIN');
+                  }}
+                  className="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-left hover:bg-amber-900/40 transition cursor-pointer"
+                >
+                  <span className="font-bold text-amber-300 block text-[11px]">🇮🇳 Lok Sabha Bill</span>
+                  <span className="text-[9px] text-neutral-400">Ayes vs Noes</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewTitle('UNSC Final Resolution 2743: Multilateral Peace Accords');
+                    setNewSummary('Binding Chapter VII resolution. Permanent members subject to procedural veto.');
+                    setNewMode('MODE_C_FACTION_COUNCIL');
+                    setNewOptionsText('In Favour\nAgainst (Veto Applicable)\nAbstain\nPass on 1st Call');
+                  }}
+                  className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-left hover:bg-purple-900/40 transition cursor-pointer"
+                >
+                  <span className="font-bold text-purple-300 block text-[11px]">📜 Final Resolution</span>
+                  <span className="text-[9px] text-neutral-400">Roll Call &amp; Veto</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewTitle('Multiversal Covenant: Shared Decorum & Civic Grant Charter');
+                    setNewSummary('Constitutional double-mandate requiring 60% popular approval and 3 of 5 universe councils.');
+                    setNewMode('MODE_E_HYBRID_CHAMBER');
+                    setNewOptionsText('Approve & Ratify Covenant\nReject & Return to Committee');
+                  }}
+                  className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-left hover:bg-emerald-900/40 transition cursor-pointer"
+                >
+                  <span className="font-bold text-emerald-300 block text-[11px]">🌐 Double Majority</span>
+                  <span className="text-[9px] text-neutral-400">Popular + Council</span>
+                </button>
+              </div>
             </div>
 
             <form onSubmit={handleCreateElection} className="space-y-4 text-xs">
@@ -519,84 +598,112 @@ export default function ZenVoteHub() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredElections.map((elec) => (
-                  <div
-                    key={elec.id}
-                    className="p-5 rounded-3xl bg-[#070b14] border border-white/10 hover:border-cyan-500/40 transition-all flex flex-col justify-between space-y-4 group"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 font-bold">
-                          {elec.electionCode}
-                        </span>
-                        <span className={`text-[10px] font-mono font-bold ${
-                          elec.state === 'OPEN' ? 'text-emerald-400' : 'text-neutral-400'
-                        }`}>
-                          {elec.state}
-                        </span>
+                {filteredElections.map((elec) => {
+                  const isChamberVote = elec.governanceLevel === 'COUNCIL_CHAMBER' || 
+                    elec.electionCode.includes('MUN') || 
+                    elec.title.toLowerCase().includes('motion') || 
+                    elec.title.toLowerCase().includes('resolution') || 
+                    elec.title.toLowerCase().includes('bill');
+
+                  return (
+                    <div
+                      key={elec.id}
+                      className="p-5 rounded-3xl bg-[#070b14] border border-white/10 hover:border-cyan-500/40 transition-all flex flex-col justify-between space-y-4 group"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 font-bold">
+                              {elec.electionCode}
+                            </span>
+                            {isChamberVote && (
+                              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold flex items-center gap-1">
+                                <Scale className="w-2.5 h-2.5" />
+                                <span>MUN / CHAMBER</span>
+                              </span>
+                            )}
+                          </div>
+                          <span className={`text-[10px] font-mono font-bold ${
+                            elec.state === 'OPEN' ? 'text-emerald-400' : 'text-neutral-400'
+                          }`}>
+                            {elec.state}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h3 className="text-base font-bold text-white font-display group-hover:text-cyan-300 transition line-clamp-2">
+                            {elec.title}
+                          </h3>
+                          <p className="text-xs text-neutral-400 mt-1 line-clamp-3 leading-relaxed">
+                            {elec.summary}
+                          </p>
+                        </div>
+
+                        {/* Voting Mode & Quorum Specs */}
+                        <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1 font-mono text-[11px]">
+                          <div className="flex justify-between text-neutral-400">
+                            <span>Governance:</span>
+                            <strong className="text-neutral-200">{elec.governanceLevel.replace('_', ' ')}</strong>
+                          </div>
+                          <div className="flex justify-between text-neutral-400">
+                            <span>Mode:</span>
+                            <strong className="text-cyan-300">{elec.mode.replace('MODE_', '').replace(/_/g, ' ')}</strong>
+                          </div>
+                          <div className="flex justify-between text-neutral-400">
+                            <span>Turnout:</span>
+                            <strong className={elec.isQuorumMet ? 'text-emerald-400' : 'text-amber-400'}>
+                              {elec.votesCastCount} / {elec.eligibleVoterCount} ({elec.eligibleVoterCount > 0 ? Math.round((elec.votesCastCount / elec.eligibleVoterCount) * 100) : 0}%)
+                            </strong>
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <h3 className="text-base font-bold text-white font-display group-hover:text-cyan-300 transition line-clamp-2">
-                          {elec.title}
-                        </h3>
-                        <p className="text-xs text-neutral-400 mt-1 line-clamp-3 leading-relaxed">
-                          {elec.summary}
-                        </p>
-                      </div>
+                      {/* Action Buttons */}
+                      <div className="pt-2 space-y-2">
+                        {elec.state === 'OPEN' ? (
+                          <button
+                            onClick={() => setSelectedElection(elec)}
+                            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs font-mono uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                          >
+                            <Vote className="w-3.5 h-3.5" />
+                            <span>Enter Ballot Room</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => { setSelectedElection(null); setActiveTab('OBSERVATORY'); }}
+                            className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 text-xs font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>View Certified Tally</span>
+                          </button>
+                        )}
 
-                      {/* Voting Mode & Quorum Specs */}
-                      <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1 font-mono text-[11px]">
-                        <div className="flex justify-between text-neutral-400">
-                          <span>Governance:</span>
-                          <strong className="text-neutral-200">{elec.governanceLevel.replace('_', ' ')}</strong>
-                        </div>
-                        <div className="flex justify-between text-neutral-400">
-                          <span>Mode:</span>
-                          <strong className="text-cyan-300">{elec.mode.replace('MODE_', '').replace(/_/g, ' ')}</strong>
-                        </div>
-                        <div className="flex justify-between text-neutral-400">
-                          <span>Turnout:</span>
-                          <strong className={elec.isQuorumMet ? 'text-emerald-400' : 'text-amber-400'}>
-                            {elec.votesCastCount} / {elec.eligibleVoterCount} ({elec.eligibleVoterCount > 0 ? Math.round((elec.votesCastCount / elec.eligibleVoterCount) * 100) : 0}%)
-                          </strong>
-                        </div>
+                        {isChamberVote && (
+                          <a
+                            href="/committee"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-[11px] font-mono transition flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <span>Open Committee Chamber Floor</span>
+                            <ChevronRight className="w-3 h-3 text-cyan-400" />
+                          </a>
+                        )}
+
+                        <button
+                          onClick={() => {
+                            setDaisElection(elec);
+                            setActiveTab('COMMISSIONER_DAIS');
+                          }}
+                          className="w-full py-2 rounded-xl bg-neutral-900/90 hover:bg-amber-500/10 text-neutral-300 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 text-[11px] font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Gavel className="w-3 h-3 text-amber-400" />
+                          <span>Commissioner Dais &bull; Voter Roll ({elec.voterRollSnapshot?.length || elec.eligibleVoterCount})</span>
+                        </button>
                       </div>
                     </div>
-
-                    {/* Action Buttons */}
-                    <div className="pt-2 space-y-2">
-                      {elec.state === 'OPEN' ? (
-                        <button
-                          onClick={() => setSelectedElection(elec)}
-                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs font-mono uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md active:scale-95"
-                        >
-                          <Vote className="w-3.5 h-3.5" />
-                          <span>Enter Ballot Room</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => { setSelectedElection(null); setActiveTab('OBSERVATORY'); }}
-                          className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 text-xs font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>View Certified Tally</span>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => {
-                          setDaisElection(elec);
-                          setActiveTab('COMMISSIONER_DAIS');
-                        }}
-                        className="w-full py-2 rounded-xl bg-neutral-900/90 hover:bg-amber-500/10 text-neutral-300 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 text-[11px] font-mono transition flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Gavel className="w-3 h-3 text-amber-400" />
-                        <span>Commissioner Dais &bull; Voter Roll ({elec.voterRollSnapshot?.length || elec.eligibleVoterCount})</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

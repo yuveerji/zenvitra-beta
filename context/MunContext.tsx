@@ -1854,10 +1854,61 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     setActiveVotingSession(newSession);
     setVotingSessions((prev) => [newSession, ...prev]);
     broadcastActivitySync({ source: 'mun_reg', action: 'create', timestamp: Date.now() });
+
+    // Sync with ZEN.VOTE Multiversal Voting Engine (/vote)
+    const votingModeMap: Record<VotingSessionType, string> = {
+      mun_motion: 'MODE_F_CONFIGURABLE_POLL',
+      mun_resolution_rollcall: 'MODE_C_FACTION_COUNCIL',
+      lok_sabha_division: 'MODE_C_FACTION_COUNCIL',
+      open_mic_poll: 'MODE_F_CONFIGURABLE_POLL',
+      performer_rating: 'MODE_F_CONFIGURABLE_POLL',
+      pitch_evaluation: 'MODE_D_RANKED_CHOICE',
+      quick_referendum: 'MODE_A_INDIVIDUAL',
+      other_vote: 'MODE_F_CONFIGURABLE_POLL',
+      ep_101_pitch: 'MODE_D_RANKED_CHOICE',
+      storyline_vote: 'MODE_F_CONFIGURABLE_POLL',
+    };
+
+    if (typeof window !== 'undefined') {
+      fetch('/api/v1/vote/elections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newSession.title,
+          summary: newSession.description || `Official vote in MUN chamber: ${activeCommitteeId || 'General Assembly'}`,
+          governanceLevel: params.category === 'mun_resolution_rollcall' ? 'UNIVERSE_ASSEMBLY' : 'COUNCIL_CHAMBER',
+          mode: votingModeMap[params.category] || 'MODE_F_CONFIGURABLE_POLL',
+          universeId: 'univ-geneva-diplomatic',
+          options: newSession.options.map((o) => ({
+            title: o.label,
+            description: o.sublabel || '',
+          })),
+          eligibleVoterCount: 25,
+          quorumNeededPercent: params.ruleMode === 'two_thirds' ? 66 : 50,
+          isSecretBallot: params.category !== 'mun_resolution_rollcall' && params.category !== 'lok_sabha_division',
+          commissionerHandle: currentUserHandle || 'dais.chair',
+        }),
+      }).catch(() => {});
+    }
+
     return newSession;
-  }, [activeCommitteeId]);
+  }, [activeCommitteeId, broadcastActivitySync, currentUserHandle]);
 
   const castChamberVote = useCallback((sessionId: string, optionId: string) => {
+    // Sync vote with ZEN.VOTE API
+    if (typeof window !== 'undefined') {
+      fetch('/api/v1/vote/ballots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          electionId: sessionId,
+          voterHandle: currentUserHandle,
+          selectedOptionIds: [optionId],
+          isRepresentativeVote: true,
+        }),
+      }).catch(() => {});
+    }
+
     setActiveVotingSession((prev) => {
       if (!prev || prev.id !== sessionId || prev.status !== 'active') return prev;
 
@@ -1983,6 +2034,18 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   }, [currentUserId, currentUserHandle]);
 
   const closeVotingSession = useCallback((sessionId: string) => {
+    // Sync tally with ZEN.VOTE
+    if (typeof window !== 'undefined') {
+      fetch('/api/v1/vote/tally', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          electionId: sessionId,
+          officerHandle: currentUserHandle || 'dais.chair',
+        }),
+      }).catch(() => {});
+    }
+
     setActiveVotingSession((prev) => {
       if (!prev || prev.id !== sessionId) return null;
       const closed: ChamberVotingSession = {
@@ -1993,7 +2056,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
       setVotingSessions((all) => all.map((v) => (v.id === sessionId ? closed : v)));
       return closed;
     });
-  }, []);
+  }, [currentUserHandle]);
 
   const addStagePerformer = useCallback((
     performerName: string,

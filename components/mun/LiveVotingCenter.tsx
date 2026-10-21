@@ -87,6 +87,30 @@ export function LiveVotingCenter({ onOpenNewVoteModal }: { onOpenNewVoteModal: (
   return (
     <div className="w-full space-y-6">
       
+      {/* ── 0. ZEN.VOTE MULTIVERSAL SOVEREIGN BRIDGE BANNER ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl bg-[#070b14] border border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.1)] font-mono text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center">
+            <Vote className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-white font-bold block">ZEN.VOTE Sovereign Engine Connected</span>
+            <span className="text-[10px] text-neutral-400 block">
+              Motions, Lok Sabha bills, and final resolutions sync live with the multiversal voting ledger.
+            </span>
+          </div>
+        </div>
+        <a
+          href="/vote"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+        >
+          <span>Open /vote Registry</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </a>
+      </div>
+
       {/* ─────────────────────────────────────────────────────────────
           1. ACTIVE LIVE VOTING FLOOR CARD
       ───────────────────────────────────────────────────────────── */}

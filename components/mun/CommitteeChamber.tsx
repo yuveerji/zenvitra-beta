@@ -119,6 +119,7 @@ export function CommitteeChamber() {
     currentConferenceDay,
     passAndArchiveBill,
     setCommitteeWinners,
+    launchVotingSession,
   } = useMun();
 
   const DEFAULT_COMMITTEE = {
@@ -1538,6 +1539,33 @@ export function CommitteeChamber() {
                           <span>▼</span>
                           <span>{m.votesAgainst}</span>
                         </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const proposer = m.proposedBy?.portfolio || m.proposedBy?.userName || 'Delegate';
+                            const indSeconds = m.individualSpeakerSeconds || 60;
+                            launchVotingSession({
+                              title: `Procedural Vote on Motion: ${m.topic}`,
+                              description: `Motion by ${proposer}. Type: ${m.type.replace(/_/g, ' ')}. Total: ${m.totalMinutes}m, Per Delegate: ${indSeconds}s`,
+                              category: 'mun_motion',
+                              ruleMode: 'simple_majority',
+                              durationSeconds: 60,
+                              options: [
+                                { label: 'In Favor / Yes', sublabel: 'Adopt Motion' },
+                                { label: 'Against / No', sublabel: 'Reject Motion' },
+                                { label: 'Abstain', sublabel: 'Abstain' },
+                              ],
+                            });
+                            playGavelSound();
+                            setActiveTab('voting');
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition cursor-pointer flex items-center gap-1 font-mono text-xs"
+                          title="Open live authenticated ballot on ZEN.VOTE"
+                        >
+                          <Vote className="w-3 h-3 text-cyan-400" />
+                          <span>Floor Ballot</span>
+                        </button>
                       </div>
 
                       {/* Start Motion Button */}
@@ -1722,6 +1750,37 @@ export function CommitteeChamber() {
                       className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold transition cursor-pointer"
                     >
                       + Signatory
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        launchVotingSession({
+                          title: `Substantive Roll Call: ${res.code} — ${res.title}`,
+                          description: `Final voting procedure on ${res.title}. Sponsors: ${res.sponsors.join(', ')}`,
+                          category: isIndianCommittee ? 'lok_sabha_division' : 'mun_resolution_rollcall',
+                          ruleMode: isIndianCommittee ? 'division_voice_vote' : 'roll_call',
+                          durationSeconds: 120,
+                          options: isIndianCommittee
+                            ? [
+                                { label: 'AYES (In Favor)', sublabel: 'Pass Bill into Law' },
+                                { label: 'NOES (Against)', sublabel: 'Reject Bill' },
+                                { label: 'ABSTAIN', sublabel: 'Abstention' },
+                              ]
+                            : [
+                                { label: 'Yes', sublabel: 'Adopt Resolution' },
+                                { label: 'No', sublabel: 'Reject / Veto' },
+                                { label: 'Abstain', sublabel: 'Abstention' },
+                                { label: 'Pass', sublabel: 'Pass on 1st Call' },
+                              ],
+                        });
+                        playGavelSound();
+                        setActiveTab('voting');
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-mono text-xs font-bold transition cursor-pointer shadow-sm flex items-center gap-1.5 active:scale-95"
+                      title="Move to Final Vote on ZEN.VOTE and Chamber Floor"
+                    >
+                      <Vote className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Move to Final Vote</span>
                     </button>
                     <button
                       type="button"
