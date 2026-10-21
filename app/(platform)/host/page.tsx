@@ -26,6 +26,7 @@ import {
   Layers,
 } from 'lucide-react';
 import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
+import ZenHostLiveDais from '@/components/host/ZenHostLiveDais';
 import { HOST_FORMAT_PRESETS, HostSessionFormat } from '@/types/zenHost';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,10 @@ export const dynamic = 'force-dynamic';
 function HostDashboardInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const formatParam = searchParams?.get('format') as HostSessionFormat | null;
+  const roomParam = searchParams?.get('room') || searchParams?.get('chamber') || undefined;
+  const titleParam = searchParams?.get('title') || undefined;
 
   // If URL flags indicate dais/control or setup mode, load the Dais directly
   const isDaisMode =
@@ -47,11 +52,32 @@ function HostDashboardInner() {
     searchParams?.get('setup') === 'true';
 
   if (isDaisMode) {
-    return <ZenMunMasterDais initialView="chair" />;
+    if (formatParam === 'mun' || Boolean(searchParams?.get('chamber'))) {
+      return <ZenMunMasterDais initialView="chair" />;
+    }
+    // Universal Live Dais for Open Mic, Workshop, Showcase, Competition, etc.
+    return (
+      <ZenHostLiveDais
+        initialFormat={formatParam || 'open_mic'}
+        sessionCode={roomParam}
+        initialTitle={titleParam}
+        onExit={() => router.push('/host')}
+      />
+    );
   }
 
   if (isSetupMode) {
-    return <ZenMunMasterDais initialView="setup" />;
+    if (formatParam === 'mun') {
+      return <ZenMunMasterDais initialView="setup" />;
+    }
+    return (
+      <ZenHostLiveDais
+        initialFormat={formatParam || 'open_mic'}
+        sessionCode={roomParam}
+        initialTitle={titleParam}
+        onExit={() => router.push('/host')}
+      />
+    );
   }
 
   // State for Instant Session Modal / Join Input
@@ -97,21 +123,21 @@ function HostDashboardInner() {
             </p>
           </div>
 
-          {/* Quick Engine Telemetry */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="px-3.5 py-2 rounded-2xl bg-white/[0.03] border border-white/10 text-right">
-              <div className="text-[10px] uppercase font-mono text-neutral-400">ENGINE STATUS</div>
-              <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 justify-end">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>ONLINE &bull; v2.4</span>
-              </div>
-            </div>
+          {/* Quick Engine Telemetry & Instant Actions */}
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
-              href="/host?dais=true"
-              className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/25 active:scale-95 flex items-center gap-2"
+              href="/host?dais=true&format=open_mic"
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/25 active:scale-95 flex items-center gap-2"
+            >
+              <Mic className="w-4 h-4" />
+              <span>Instant Open Mic</span>
+            </Link>
+            <Link
+              href="/host?dais=true&format=mun"
+              className="px-4 py-2.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] text-cyan-300 text-xs font-bold uppercase tracking-wider transition flex items-center gap-2"
             >
               <Gavel className="w-4 h-4" />
-              <span>Enter Live Dais</span>
+              <span>MUN Dais</span>
             </Link>
           </div>
         </header>
