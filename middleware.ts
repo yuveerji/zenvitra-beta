@@ -77,10 +77,6 @@ const PROTECTED_PREFIXES = [
   '/dashboard',
   '/platform',
   '/settings',
-  '/admin',
-  '/core-team-panel',
-  '/founder',
-  '/zen-vault-root',
   '/pulse/create-story',
   '/test-node',
 ];
@@ -151,7 +147,60 @@ export async function middleware(request: NextRequest) {
 
   const isAuthenticated = sessionCheck.valid || hasNextAuthCookie;
 
-  // Enforce Protected Routes
+  // ── Stealth 404 for Founder & Admin Enclaves (Zero-Knowledge Security) ──
+  // If an account is at normal status or not in the core team / admin list,
+  // return an identical 404 Not Found error (never redirect to login).
+  const FOUNDER_CLEARANCE_ROLES = ['FOUNDER', 'CO_FOUNDER', 'founder', 'co_founder'];
+  const ADMIN_CORE_CLEARANCE_ROLES = [
+    'FOUNDER',
+    'CO_FOUNDER',
+    'CHIEF_OF_STAFF',
+    'ADMIN',
+    'SECRETARY_GENERAL',
+    'DIRECTOR_GENERAL',
+    'CHAIRPERSON',
+    'VICE_CHAIR',
+    'TECH_LEAD',
+    'FULLSTACK_DEV',
+    'DESIGN_LEAD',
+    'POLICY_RESEARCHER',
+    'FINANCE_LEAD',
+    'OUTREACH_LEAD',
+    'OPERATIONS_LEAD',
+    'COMMUNITY_LEAD',
+    'MODERATOR',
+    'SECRETARIAT_CHAIR',
+    'CORE_TEAM',
+    'founder',
+    'co_founder',
+    'admin',
+    'core_team',
+  ];
+
+  const isFounderPath = pathname.startsWith('/zen-vault-root') || pathname.startsWith('/founder');
+  const isAdminCorePath = (
+    pathname.startsWith('/core-team-panel') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/admin-access') ||
+    pathname.startsWith('/enclave') ||
+    pathname.startsWith('/enclave-access')
+  );
+
+  if (isFounderPath) {
+    const role = sessionCheck.payload?.role;
+    if (!sessionCheck.valid || !role || !FOUNDER_CLEARANCE_ROLES.includes(role)) {
+      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
+    }
+  }
+
+  if (isAdminCorePath) {
+    const role = sessionCheck.payload?.role;
+    if (!sessionCheck.valid || !role || !ADMIN_CORE_CLEARANCE_ROLES.includes(role)) {
+      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
+    }
+  }
+
+  // Enforce Protected Routes for standard authenticated members
   const isProtectedRoute = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
@@ -160,25 +209,6 @@ export async function middleware(request: NextRequest) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl, { status: 307 });
-  }
-
-  // Enforce Founder / Admin Enclave at the Edge
-  if (pathname.startsWith('/zen-vault-root') || pathname.startsWith('/founder')) {
-    const role = sessionCheck.payload?.role;
-    if (role !== 'FOUNDER' && role !== 'CO_FOUNDER') {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('error', 'founder_clearance_required');
-      return NextResponse.redirect(loginUrl, { status: 307 });
-    }
-  }
-
-  if (pathname.startsWith('/core-team-panel') || pathname.startsWith('/admin')) {
-    const role = sessionCheck.payload?.role;
-    if (role !== 'FOUNDER' && role !== 'CO_FOUNDER' && role !== 'ADMIN' && role !== 'SECRETARIAT_CHAIR') {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('error', 'admin_clearance_required');
-      return NextResponse.redirect(loginUrl, { status: 307 });
-    }
   }
 
   return NextResponse.next();

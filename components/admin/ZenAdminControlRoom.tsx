@@ -161,12 +161,7 @@ export function ZenAdminControlRoom() {
     }
   }, [currentStaffName]);
 
-  // Check login: redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user && !profile && !userIsLoggedIn) {
-      router.push('/login?callbackUrl=/core-team-panel');
-    }
-  }, [authLoading, user, profile, userIsLoggedIn, router]);
+
 
   // Determine if logged-in user has staff/admin/founder clearance
   const hasStaffClearance = useMemo(() => {
@@ -803,14 +798,14 @@ export function ZenAdminControlRoom() {
   };
 
   // Stealth 404 for unauthorized visitors
-  if (!authLoading && (user || profile || userIsLoggedIn) && !hasStaffClearance) {
+  if (!authLoading && !hasStaffClearance) {
     return (
       <div className="min-h-screen bg-[#030405] text-white flex flex-col items-center justify-center p-6 text-center select-none font-sans">
         <div className="w-16 h-16 rounded-3xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-6 shadow-2xl">
           <Sparkles className="w-8 h-8 text-neutral-400" />
         </div>
         <span className="font-mono text-xs text-neutral-500 tracking-widest uppercase mb-2">
-          Error 404 // Coordinate Not Found
+          Error 404 // Dimension Not Found
         </span>
         <h1 className="font-display font-medium text-4xl sm:text-5xl text-white mb-4">
           Transmission Severed
