@@ -65,7 +65,7 @@ export function UploadToSolutionsModal({
 
   if (!isOpen) return null;
 
-  const handleConfirmUpload = () => {
+  const handleConfirmUpload = (destination: 'studio' | 'standard' = 'studio') => {
     setIsExporting(true);
 
     // Extract cleanest text version of the draft
@@ -82,14 +82,18 @@ export function UploadToSolutionsModal({
 
     try {
       localStorage.setItem('zenvitra_solutions_import', JSON.stringify(payload));
-      if (onToast) onToast('Draft transferred to ZEN.SOLUTIONS engine!');
+      if (onToast) onToast('Draft transferred to ZEN.SOLUTIONS studio!');
     } catch (e) {
       console.error('Failed to store draft for solutions:', e);
     }
 
     onClose();
     // Redirect to Solutions repository with trigger flag
-    router.push('/solutions?importZenDoc=1');
+    if (destination === 'studio') {
+      router.push('/solutions?importZenDoc=1&studio=1');
+    } else {
+      router.push('/solutions?importZenDoc=1');
+    }
   };
 
   return (
@@ -206,19 +210,30 @@ export function UploadToSolutionsModal({
             onClick={onClose}
             className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition cursor-pointer"
           >
-            Keep Drafting in ZenDocs
+            Keep in ZenDocs
           </button>
 
-          <button
-            type="button"
-            onClick={handleConfirmUpload}
-            disabled={isExporting}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold tracking-wide transition hover:opacity-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(6,182,212,0.4)] ml-auto"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>{isExporting ? 'Transferring...' : '✓ YES, UPLOAD TO ZEN.SOLUTIONS'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="flex flex-wrap items-center gap-2 ml-auto">
+            <button
+              type="button"
+              onClick={() => handleConfirmUpload('standard')}
+              disabled={isExporting}
+              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold transition disabled:opacity-50 cursor-pointer"
+            >
+              Quick Wizard
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleConfirmUpload('studio')}
+              disabled={isExporting}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 via-cyan-400 to-blue-500 text-black font-black tracking-wide transition hover:opacity-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(6,182,212,0.4)]"
+            >
+              <Sparkles className="w-4 h-4 text-black" />
+              <span>{isExporting ? 'Opening...' : 'Open in Drafting Studio ⚡'}</span>
+              <ArrowRight className="w-4 h-4 text-black" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -20,6 +20,7 @@ import {
   Globe2
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
+import { daisAudio } from '@/lib/daisAudio';
 import { VotingSessionType, VotingRuleMode } from '@/types/mun';
 
 interface LiveVotingModalProps {
@@ -159,6 +160,7 @@ export function LiveVotingModal({ isOpen, onClose }: { isOpen: boolean; onClose:
       } : undefined,
     });
 
+    daisAudio.playDoubleGavel();
     onClose();
   };
 

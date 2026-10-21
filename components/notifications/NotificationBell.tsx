@@ -19,7 +19,9 @@ import {
   Megaphone,
   ArrowRight,
   ChevronUp,
-  X
+  X,
+  Rss,
+  SlidersHorizontal
 } from 'lucide-react';
 import {
   NotificationItem,
@@ -32,6 +34,16 @@ import {
 import { subscribeToActivitySync } from '@/lib/reactiveActivityHub';
 import { getFounderDirective, type FounderDirective } from '@/lib/founderControl';
 import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
+import {
+  getCategorySubscriptions,
+  saveCategorySubscriptions,
+  toggleCategorySubscription,
+  CategorySubscriptionState,
+  PRESS_CATEGORIES,
+  NEWS_CATEGORIES,
+  PULSE_TOPICS,
+  SubscriptionPlatform
+} from '@/lib/categorySubscriptionService';
 
 type FilterCategory = 'all' | 'directive' | 'event' | 'refund' | 'pulse' | 'mun' | 'security';
 
@@ -77,9 +89,54 @@ function getDirectiveNotifications(): NotificationItem[] {
 export default function NotificationBell() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'feed' | 'subscriptions'>('feed');
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('all');
   const [expandedDirectiveId, setExpandedDirectiveId] = useState<string | null>(null);
+
+  // Category subscriptions state
+  const [subscriptions, setSubscriptions] = useState<CategorySubscriptionState>({ press: [], news: [], pulse: [] });
+  const [subPlatformTab, setSubPlatformTab] = useState<SubscriptionPlatform>('news');
+
+  const refreshSubscriptions = useCallback(() => {
+    setSubscriptions(getCategorySubscriptions());
+  }, []);
+
+  useEffect(() => {
+    refreshSubscriptions();
+    const handleSubChange = () => refreshSubscriptions();
+    window.addEventListener('zenvitra_category_subscriptions_updated', handleSubChange);
+    return () => {
+      window.removeEventListener('zenvitra_category_subscriptions_updated', handleSubChange);
+    };
+  }, [refreshSubscriptions]);
+
+  const totalSubscribedCount = 
+    (subscriptions.press?.length || 0) + 
+    (subscriptions.news?.length || 0) + 
+    (subscriptions.pulse?.length || 0);
+
+  const handleToggleSubscription = (platform: SubscriptionPlatform, categoryId: string) => {
+    toggleCategorySubscription(platform, categoryId);
+    refreshSubscriptions();
+  };
+
+  const handleSubscribeAll = (platform: SubscriptionPlatform) => {
+    let allCats: string[] = [];
+    if (platform === 'press') allCats = PRESS_CATEGORIES.map(c => c.id);
+    else if (platform === 'news') allCats = NEWS_CATEGORIES.map(c => c.id);
+    else if (platform === 'pulse') allCats = PULSE_TOPICS.map(c => c.id);
+
+    const current = getCategorySubscriptions();
+    saveCategorySubscriptions({ ...current, [platform]: allCats });
+    refreshSubscriptions();
+  };
+
+  const handleUnsubscribeAll = (platform: SubscriptionPlatform) => {
+    const current = getCategorySubscriptions();
+    saveCategorySubscriptions({ ...current, [platform]: [] });
+    refreshSubscriptions();
+  };
 
   const refreshNotifications = useCallback(() => {
     const stored = getStoredNotifications();
@@ -239,7 +296,10 @@ export default function NotificationBell() {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)} 
           />
-          <div className="absolute right-0 top-full mt-3 w-80 sm:w-[26rem] rounded-3xl bg-[#07080d]/95 border border-white/15 backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-50 p-5 sm:p-6 space-y-4 font-sans animate-in fade-in zoom-in-95 duration-200">
+          <div 
+            style={{ backgroundColor: '#07080d' }}
+            className="absolute right-0 top-full mt-3 w-80 sm:w-[26rem] rounded-3xl bg-[#07080d] border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.98)] z-50 p-5 sm:p-6 space-y-4 font-sans animate-in fade-in zoom-in-95 duration-200"
+          >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
@@ -279,29 +339,198 @@ export default function NotificationBell() {
               </div>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[10px] font-mono">
-              {[
-                { id: 'all', label: 'All' },
-                { id: 'directive', label: '👑 Directives' },
-                { id: 'event', label: 'Convenings & Refunds' },
-                { id: 'pulse', label: 'Pulse' },
-                { id: 'mun', label: 'Chambers' },
-                { id: 'security', label: 'Security' },
-              ].map((f) => (
+            {/* Mode Switcher: Feed vs Subscriptions */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-2 text-xs font-mono">
+              <div className="flex items-center gap-1">
                 <button
-                  key={f.id}
-                  onClick={() => setSelectedFilter(f.id as FilterCategory)}
-                  className={`px-2.5 py-1 rounded-full border whitespace-nowrap transition cursor-pointer ${
-                    selectedFilter === f.id
-                      ? 'bg-white text-black font-bold border-white'
-                      : 'bg-white/[0.04] text-neutral-400 border-white/5 hover:text-white hover:bg-white/10'
+                  type="button"
+                  onClick={() => setActiveTab('feed')}
+                  className={`px-3 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 font-bold ${
+                    activeTab === 'feed'
+                      ? 'bg-white text-black'
+                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  {f.label}
+                  <Bell className="w-3.5 h-3.5" />
+                  <span>Feed</span>
+                  {unreadCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-black text-[9px] font-bold">
+                      {unreadCount}
+                    </span>
+                  )}
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('subscriptions')}
+                  className={`px-3 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 font-bold ${
+                    activeTab === 'subscriptions'
+                      ? 'bg-white text-black'
+                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Rss className="w-3.5 h-3.5" />
+                  <span>Subscriptions</span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-neutral-300 text-[9px]">
+                    {totalSubscribedCount}
+                  </span>
+                </button>
+              </div>
+
+              <span className="text-[10px] text-neutral-500 font-mono">
+                Real-time
+              </span>
             </div>
+
+            {activeTab === 'subscriptions' ? (
+              <div className="space-y-3">
+                {/* Platform selector & Actions */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10 text-[10px] font-mono">
+                    <button
+                      type="button"
+                      onClick={() => setSubPlatformTab('news')}
+                      className={`px-2 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 ${
+                        subPlatformTab === 'news'
+                          ? 'bg-white text-black font-bold'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <span>⚡ News</span>
+                      <span>({subscriptions.news?.length || 0})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSubPlatformTab('press')}
+                      className={`px-2 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 ${
+                        subPlatformTab === 'press'
+                          ? 'bg-white text-black font-bold'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <span>📰 Press</span>
+                      <span>({subscriptions.press?.length || 0})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSubPlatformTab('pulse')}
+                      className={`px-2 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 ${
+                        subPlatformTab === 'pulse'
+                          ? 'bg-white text-black font-bold'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      <span>🔥 Pulse</span>
+                      <span>({subscriptions.pulse?.length || 0})</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSubscribeAll(subPlatformTab)}
+                      className="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[9px] font-mono text-neutral-200 transition cursor-pointer"
+                    >
+                      All +
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUnsubscribeAll(subPlatformTab)}
+                      className="px-2 py-1 rounded-md bg-neutral-900 hover:bg-neutral-800 text-[9px] font-mono text-neutral-400 transition cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                {/* Subscriptions Category List */}
+                <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+                  {(subPlatformTab === 'news'
+                    ? NEWS_CATEGORIES
+                    : subPlatformTab === 'press'
+                    ? PRESS_CATEGORIES
+                    : PULSE_TOPICS
+                  ).map((cat) => {
+                    const isSubbed = (subscriptions[subPlatformTab] || []).some(
+                      (c) => c.toUpperCase() === cat.id.toUpperCase()
+                    );
+
+                    return (
+                      <div
+                        key={cat.id}
+                        onClick={() => handleToggleSubscription(subPlatformTab, cat.id)}
+                        className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-3 cursor-pointer select-none ${
+                          isSubbed
+                            ? 'bg-white/10 border-white/30 text-white shadow-sm'
+                            : 'bg-neutral-950/60 border-white/5 text-neutral-400 hover:text-neutral-200 hover:border-white/15'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="text-base shrink-0">{cat.icon}</span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold truncate leading-tight">
+                              {cat.label}
+                            </p>
+                            <p className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider">
+                              #{cat.id}
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleSubscription(subPlatformTab, cat.id);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition flex items-center gap-1 shrink-0 cursor-pointer ${
+                            isSubbed
+                              ? 'bg-white text-black'
+                              : 'bg-white/5 hover:bg-white/15 text-neutral-400 hover:text-white border border-white/10'
+                          }`}
+                        >
+                          {isSubbed ? (
+                            <>
+                              <Check className="w-3 h-3 stroke-[3]" />
+                              <span>Subscribed</span>
+                            </>
+                          ) : (
+                            <span>+ Subscribe</span>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="p-2 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] font-mono text-neutral-400">
+                  ⚡ Auto-routes formatted dispatches to your notifications when new items publish.
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Filter Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[10px] font-mono">
+                  {[
+                    { id: 'all', label: 'All' },
+                    { id: 'directive', label: '👑 Directives' },
+                    { id: 'event', label: 'Convenings & Refunds' },
+                    { id: 'pulse', label: 'Pulse' },
+                    { id: 'mun', label: 'Chambers' },
+                    { id: 'security', label: 'Security' },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setSelectedFilter(f.id as FilterCategory)}
+                      className={`px-2.5 py-1 rounded-full border whitespace-nowrap transition cursor-pointer ${
+                        selectedFilter === f.id
+                          ? 'bg-white text-black font-bold border-white'
+                          : 'bg-white/[0.04] text-neutral-400 border-white/5 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
 
             {/* Notification List */}
             <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1 select-none">
@@ -453,9 +682,11 @@ export default function NotificationBell() {
                 })
               )}
             </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
+            </>
+          )}
+        </div>
+      </>
+    )}
+  </div>
+);
 }

@@ -69,7 +69,7 @@ export default function MonolithCard() {
             </p>
           </div>
           <span className="px-2 py-0.5 rounded-md border border-white/10 bg-white/[0.04] text-[9px] font-mono text-neutral-300 uppercase tracking-widest">
-            CORE OS v1.0
+            CORE OS V1
           </span>
         </div>
 

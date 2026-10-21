@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient: Obsidian Luxury -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f2637"/>
+      <stop offset="45%" stop-color="#111622"/>
+      <stop offset="100%" stop-color="#080b10"/>
+    </linearGradient>
+
+    <!-- Radial Ambient Center Light -->
+    <radialGradient id="ambientLight" cx="50%" cy="36%" r="65%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.16"/>
+      <stop offset="40%" stop-color="#818cf8" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#080b10" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Silhouette Gradient: Pure Platinum into Soft Titanium -->
+    <linearGradient id="silhouette" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+
+    <!-- Beveled Precision Rim -->
+    <linearGradient id="rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.08"/>
+    </linearGradient>
+
+    <!-- Drop Shadow for Silhouette Pop -->
+    <filter id="silhouetteShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+
+    <clipPath id="avatarCircleClip">
+      <circle cx="256" cy="256" r="256"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#avatarCircleClip)">
+    <!-- Base Disc -->
+    <rect width="512" height="512" fill="url(#bg)"/>
+    <rect width="512" height="512" fill="url(#ambientLight)"/>
+
+    <!-- Subtle Tech Accent Ring -->
+    <circle cx="256" cy="256" r="240" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1.5"/>
+
+    <!-- Silhouette Elements with Balanced Proportions -->
+    <g filter="url(#silhouetteShadow)">
+      <!-- Head Circle -->
+      <circle cx="256" cy="188" r="74" fill="url(#silhouette)"/>
+
+      <!-- Torso Arch with Natural Shoulder Ratio -->
+      <path d="M 64 500 C 64 388 136 332 256 332 C 376 332 448 388 448 500 C 448 518 436 524 404 524 L 108 524 C 76 524 64 518 64 500 Z" fill="url(#silhouette)"/>
+    </g>
+
+    <!-- Outer Precision Rim -->
+    <circle cx="256" cy="256" r="254" fill="none" stroke="url(#rim)" stroke-width="3"/>
+  </g>
+</svg>

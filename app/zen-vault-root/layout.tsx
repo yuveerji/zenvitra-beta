@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { FounderSidebar } from '@/components/founder/FounderSidebar';
@@ -15,7 +16,9 @@ export default async function SovereignVaultLayout({
     <FounderClearanceGate>
       <div className="min-h-screen w-full max-w-full bg-[#030405] text-neutral-100 flex flex-col md:flex-row selection:bg-rose-500 selection:text-white overflow-x-hidden">
         {/* High Security Sidebar */}
-        <FounderSidebar />
+        <Suspense fallback={<aside className="w-full md:w-80 border-r border-amber-500/20 bg-[#040508] p-5 shrink-0" />}>
+          <FounderSidebar />
+        </Suspense>
 
         {/* Main Command Viewport */}
         <div className="flex-1 w-full min-w-0 min-h-screen flex flex-col overflow-x-hidden">

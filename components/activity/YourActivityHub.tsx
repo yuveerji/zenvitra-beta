@@ -670,7 +670,7 @@ export function YourActivityHub() {
                 },
                 {
                   event: 'Security Credentials Refreshed',
-                  desc: 'Cryptographic defense profile upgraded to Defense Suite v1.0.',
+                  desc: 'Cryptographic defense profile upgraded to Defense Suite V1.',
                   time: 'Aug 2026',
                   icon: History,
                   color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',

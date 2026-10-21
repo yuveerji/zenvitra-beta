@@ -202,7 +202,7 @@ export function SecurityShieldModal({ isOpen, onClose }: { isOpen: boolean; onCl
                   </span>
                 )}
               </h2>
-              <p className="font-mono text-[10px] text-zinc-400">CRYPTOGRAPHIC DEFENSE SUITE V-1.0</p>
+              <p className="font-mono text-[10px] text-zinc-400">CRYPTOGRAPHIC DEFENSE SUITE V1</p>
             </div>
           </div>
 

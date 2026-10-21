@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
 import { useAuth } from '@/context/AuthContext';
+import { daisAudio } from '@/lib/daisAudio';
 import { ChamberVotingSession, ChamberVoteOption } from '@/types/mun';
 
 export function LiveVotingCenter({ onOpenNewVoteModal }: { onOpenNewVoteModal: () => void }) {
@@ -168,7 +169,10 @@ export function LiveVotingCenter({ onOpenNewVoteModal }: { onOpenNewVoteModal: (
                     <button
                       key={btn.vote}
                       type="button"
-                      onClick={() => castRollCallVote(activeVotingSession.id, btn.vote, myCountry)}
+                      onClick={() => {
+                        daisAudio.playGavelStrike(0.6);
+                        castRollCallVote(activeVotingSession.id, btn.vote, myCountry);
+                      }}
                       className={`p-4 rounded-2xl bg-black/50 border font-display font-bold text-xs tracking-wide transition-all duration-200 cursor-pointer shadow-md hover:scale-102 flex flex-col items-center justify-center gap-1.5 ${btn.bg}`}
                     >
                       <span>{btn.label}</span>
@@ -258,7 +262,10 @@ export function LiveVotingCenter({ onOpenNewVoteModal }: { onOpenNewVoteModal: (
                       <button
                         key={opt.id}
                         type="button"
-                        onClick={() => castChamberVote(activeVotingSession.id, opt.id)}
+                        onClick={() => {
+                          daisAudio.playGavelStrike(0.5);
+                          castChamberVote(activeVotingSession.id, opt.id);
+                        }}
                         className="p-4 rounded-2xl bg-black/60 border border-white/15 hover:border-amber-400 text-left transition-all duration-200 cursor-pointer shadow-md group relative overflow-hidden"
                       >
                         {/* Fill percentage background */}

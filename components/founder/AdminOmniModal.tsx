@@ -25,7 +25,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
-import { getAuditLogs, isFounder, isAdmin } from '@/lib/founderControl';
+import { getAuditLogs, isFounder, isAdmin, isFounderOrCoFounder, isCurrentSessionFounderOrCoFounder } from '@/lib/founderControl';
 
 interface AdminOmniModalProps {
   isOpen: boolean;
@@ -51,7 +51,9 @@ export function AdminOmniModal({ isOpen, onClose, onOpenFounderMenu }: AdminOmni
 
   // Founder and Admin Access Checking
   const effectiveUser = (currentUserUsername || user?.email?.split('@')[0] || profile?.username || '').toLowerCase().trim().replace(/^@/, '');
-  const userIsFounder = isFounder(effectiveUser, (profile?.role as any) || (profile as any)?.badge);
+  const userIsFounder = 
+    isFounderOrCoFounder(effectiveUser, (profile?.role as any) || (profile as any)?.badge, profile?.id || user?.id) ||
+    isCurrentSessionFounderOrCoFounder();
   const userIsAdmin = isAdmin(effectiveUser, (profile?.role as any) || (profile as any)?.badge);
 
   const showToast = (msg: string) => {

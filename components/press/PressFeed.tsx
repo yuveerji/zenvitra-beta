@@ -170,7 +170,7 @@ export function PressFeed() {
               </div>
             </div>
             <span className="text-[11px] font-mono text-neutral-400 hidden sm:inline">
-              Concise sovereign dossiers • 5 min read time
+              Concise Student Profiles & MUN CVs • 5 min read time
             </span>
           </div>
 

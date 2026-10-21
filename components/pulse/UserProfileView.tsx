@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
+  ArrowRight,
   Grid, 
   Film, 
   Bookmark, 
@@ -35,7 +36,12 @@ import {
   EyeOff,
   Flag,
   Upload,
-  LayoutDashboard
+  LayoutDashboard,
+  Globe,
+  Ticket,
+  Landmark,
+  QrCode,
+  Briefcase
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
@@ -44,10 +50,12 @@ import { DelegateDossierView } from '@/components/mun/DelegateDossierView';
 import { SettingsModal } from '@/components/settings/SettingsModal';
 import { VerificationModal } from '@/components/modals/VerificationModal';
 import { StoryComposerModal } from './StoryComposerModal';
+import OrganizerKycModal from '@/components/events/OrganizerKycModal';
+import { compressAvatarImage } from '@/lib/imageUtils';
 
 export function UserProfileView() {
   const router = useRouter();
-  const { profile: authProfile, user: authUser } = useAuth();
+  const { profile: authProfile, user: authUser, updateProfile } = useAuth();
   const {
     selectedProfileUsername,
     getProfileByUsername,
@@ -106,13 +114,15 @@ export function UserProfileView() {
     effectiveMyUsername || 
     '';
 
-  const effectiveMyAvatar = 
+  const rawEffectiveAvatar = 
     myProfile?.avatar || 
     authProfile?.avatar_url || 
     (authProfile as any)?.avatar || 
     storedUser?.avatar || 
     storedUser?.avatar_url || 
     '';
+
+  const effectiveMyAvatar = rawEffectiveAvatar || '/assets/default-avatar.svg';
 
   const effectiveMyBio = 
     myProfile?.bio || 
@@ -144,7 +154,7 @@ export function UserProfileView() {
   const displayName = profile.name || effectiveMyName || displayHandle;
   const displayInitial = (displayName || displayHandle || 'U').charAt(0).toUpperCase();
 
-  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'events_showcase' | 'saved' | 'mun_dossier'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'reels' | 'events_showcase' | 'my_tickets' | 'saved' | 'mun_dossier'>('posts');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -155,6 +165,16 @@ export function UserProfileView() {
   const [activePostModal, setActivePostModal] = useState<PulsePost | null>(null);
   const [showModalPostSettings, setShowModalPostSettings] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Organizer KYC & Tickets ledger state
+  const [kycModalOpen, setKycModalOpen] = useState(false);
+  const [kycStatus, setKycStatus] = useState<string | null>(null);
+  const [userTickets, setUserTickets] = useState<any[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
+  const [userApplications, setUserApplications] = useState<any[]>([]);
+  const [loadingApplications, setLoadingApplications] = useState(false);
+  const [ticketsSubTab, setTicketsSubTab] = useState<'passes' | 'applications'>('passes');
+  const [respondingAppId, setRespondingAppId] = useState<string | null>(null);
 
   // Add event form state
   const [newEventTitle, setNewEventTitle] = useState('');
@@ -177,6 +197,16 @@ export function UserProfileView() {
   const [editLocation, setEditLocation] = useState(profile.location || '');
   const [editCategory, setEditCategory] = useState(profile.category || 'Writer & Thinker');
 
+  // Pulse Profile Privacy (Public vs Private)
+  const [profilePrivacy, setProfilePrivacy] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(`zenvitra_pulse_privacy_${displayHandle}`);
+      if (stored !== null) return stored === 'true';
+    }
+    return Boolean(profile.isPrivate);
+  });
+  const [editIsPrivate, setEditIsPrivate] = useState<boolean>(profilePrivacy);
+
   useEffect(() => {
     if (displayName) setEditName(displayName);
     if (profile.bio) setEditBio(profile.bio);
@@ -184,7 +214,93 @@ export function UserProfileView() {
     if (profile.website) setEditWebsite(profile.website);
     if (profile.location) setEditLocation(profile.location);
     if (profile.category) setEditCategory(profile.category);
-  }, [displayName, profile.bio, profile.avatar, profile.website, profile.location, profile.category]);
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(`zenvitra_pulse_privacy_${displayHandle}`);
+      if (stored !== null) {
+        setProfilePrivacy(stored === 'true');
+        setEditIsPrivate(stored === 'true');
+        return;
+      }
+    }
+    setProfilePrivacy(Boolean(profile.isPrivate));
+    setEditIsPrivate(Boolean(profile.isPrivate));
+  }, [displayName, profile.bio, profile.avatar, profile.website, profile.location, profile.category, profile.isPrivate, displayHandle]);
+
+  // Fetch verified tickets and organizer KYC status
+  useEffect(() => {
+    const handleToQuery = effectiveMyUsername || authProfile?.username || (authProfile as any)?.handle || '';
+    const emailToQuery = authProfile?.email || authUser?.email || '';
+
+    if (!handleToQuery && !emailToQuery) return;
+
+    const fetchKycAndTickets = async () => {
+      try {
+        if (handleToQuery) {
+          const kycRes = await fetch(`/api/organizer/kyc?userHandle=${encodeURIComponent(handleToQuery)}`);
+          const kycData = await kycRes.json();
+          if (kycData.success && kycData.kyc) {
+            setKycStatus(kycData.kyc.status);
+          }
+        }
+      } catch (_) {}
+
+      try {
+        setLoadingTickets(true);
+        const queryParams = new URLSearchParams();
+        if (handleToQuery) queryParams.set('attendeeHandle', handleToQuery);
+        if (emailToQuery) queryParams.set('attendeeEmail', emailToQuery);
+        
+        const ticketsRes = await fetch(`/api/events/tickets?${queryParams.toString()}`);
+        const ticketsData = await ticketsRes.json();
+        if (ticketsData.success && Array.isArray(ticketsData.tickets)) {
+          setUserTickets(ticketsData.tickets);
+        }
+      } catch (_) {} finally {
+        setLoadingTickets(false);
+      }
+
+      try {
+        setLoadingApplications(true);
+        const appParams = new URLSearchParams();
+        if (handleToQuery) appParams.set('applicantHandle', handleToQuery);
+        if (emailToQuery) appParams.set('applicantEmail', emailToQuery);
+
+        const appsRes = await fetch(`/api/events/recruit/applications?${appParams.toString()}`);
+        const appsData = await appsRes.json();
+        if (appsData.success && Array.isArray(appsData.applications)) {
+          setUserApplications(appsData.applications);
+        }
+      } catch (_) {} finally {
+        setLoadingApplications(false);
+      }
+    };
+
+    fetchKycAndTickets();
+  }, [effectiveMyUsername, authProfile?.username, (authProfile as any)?.handle, authProfile?.email, authUser?.email]);
+
+  const handleRespondToOffer = async (applicationId: string, action: 'ACCEPT' | 'DECLINE') => {
+    try {
+      setRespondingAppId(applicationId);
+      const res = await fetch('/api/events/recruit/applications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applicationId,
+          action,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.application) {
+        setUserApplications((prev) =>
+          prev.map((a) => (a.id === applicationId ? { ...a, ...data.application } : a))
+        );
+      }
+    } catch (err) {
+      console.error('Failed to respond to offer:', err);
+    } finally {
+      setRespondingAppId(null);
+    }
+  };
 
   // Comment input inside post modal
   const [modalComment, setModalComment] = useState('');
@@ -192,27 +308,83 @@ export function UserProfileView() {
   const posts: PulsePost[] = getPostsByUsername(displayHandle);
   const reels: FluxVideo[] = getFluxByUsername(displayHandle);
   const following = isFollowing(displayHandle);
+  const isProfileLocked = !isOwnProfile && profilePrivacy && !following;
 
-  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditAvatar(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressAvatarImage(file, 400, 400, 0.88);
+        setEditAvatar(compressed);
+      } catch (err) {
+        console.warn('Avatar compression fallback to FileReader:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setEditAvatar(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanAvatar = editAvatar.trim();
+    const cleanName = editName.trim();
+    const cleanBio = editBio.trim();
+
     updateMyProfile({
-      name: editName.trim(),
-      bio: editBio.trim(),
-      avatar: editAvatar.trim(),
+      name: cleanName,
+      bio: cleanBio,
+      avatar: cleanAvatar,
       website: editWebsite.trim(),
       location: editLocation.trim(),
+      isPrivate: editIsPrivate,
     });
+
+    if (updateProfile) {
+      try {
+        await updateProfile({
+          display_name: cleanName,
+          avatar_url: cleanAvatar,
+          bio: cleanBio,
+        });
+      } catch (_) {}
+    }
+
+    setProfilePrivacy(editIsPrivate);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`zenvitra_pulse_privacy_${displayHandle}`, String(editIsPrivate));
+        
+        // Sync passport record so profile photo updates globally
+        const passKey = `zenvitra_passport_${displayHandle}`;
+        const existingPass = localStorage.getItem(passKey);
+        if (existingPass) {
+          const parsed = JSON.parse(existingPass);
+          parsed.avatarUrl = cleanAvatar;
+          parsed.fullName = cleanName;
+          localStorage.setItem(passKey, JSON.stringify(parsed));
+          window.dispatchEvent(new CustomEvent('zenvitra_passport_updated', { detail: { passport: parsed } }));
+        }
+
+        // Sync session user
+        const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        const nextUser = {
+          ...stored,
+          display_name: cleanName,
+          name: cleanName,
+          avatar_url: cleanAvatar,
+          avatar: cleanAvatar,
+          bio: cleanBio,
+        };
+        localStorage.setItem('zenvitra_session_user', JSON.stringify(nextUser));
+
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
+        window.dispatchEvent(new CustomEvent('zenvitra_profile_sync'));
+      } catch (_) {}
+    }
     setShowEditModal(false);
   };
 
@@ -332,15 +504,25 @@ export function UserProfileView() {
 
             {isOwnProfile ? (
               <div className="flex flex-wrap items-center gap-2.5">
-                {!isVerifiedEffective && (
+                {!isVerifiedEffective ? (
                   <button
                     type="button"
                     onClick={() => setShowVerificationModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/15 to-teal-500/15 hover:from-cyan-500/25 hover:to-teal-500/25 border border-cyan-500/40 text-cyan-300 hover:text-cyan-200 text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.2)] active:scale-95"
-                    title="Apply for Sovereign Verified Badge"
+                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 via-teal-500/15 to-blue-600/20 hover:from-cyan-500/30 hover:to-blue-600/30 border border-cyan-400/50 text-cyan-200 hover:text-white text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_18px_rgba(6,182,212,0.3)] active:scale-95"
+                    title="Apply for Official National Sovereign Clearance"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                    <span>Get Verified</span>
+                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                    <span>Verify Account</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowVerificationModal(true)}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 hover:text-emerald-200 text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.2)] active:scale-95"
+                    title="Inspect National Sovereign Clearance Certificate & Proof"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Clearance Active</span>
                   </button>
                 )}
                 <button
@@ -370,6 +552,56 @@ export function UserProfileView() {
                     <span>ZenSpace</span>
                   </button>
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !profilePrivacy;
+                    updateMyProfile({ isPrivate: nextVal });
+                    setProfilePrivacy(nextVal);
+                    setEditIsPrivate(nextVal);
+                    if (typeof window !== 'undefined') {
+                      try {
+                        localStorage.setItem(`zenvitra_pulse_privacy_${displayHandle}`, String(nextVal));
+                      } catch (_) {}
+                    }
+                  }}
+                  className={`px-3 py-2 rounded-xl text-xs font-mono font-bold transition border cursor-pointer flex items-center gap-1.5 backdrop-blur-md ${
+                    profilePrivacy
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
+                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                  }`}
+                  title={profilePrivacy ? 'Click to make your profile Public' : 'Click to make your profile Private'}
+                >
+                  {profilePrivacy ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="hidden sm:inline">PRIVATE</span>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="hidden sm:inline">PUBLIC</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setKycModalOpen(true)}
+                  className={`px-3 py-2 rounded-xl text-xs font-mono font-semibold transition border cursor-pointer flex items-center gap-1.5 backdrop-blur-md ${
+                    kycStatus === 'VERIFIED'
+                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                      : kycStatus === 'UNDER_REVIEW'
+                      ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                      : 'bg-white/[0.04] text-neutral-300 border-white/10 hover:bg-white/10 hover:text-white'
+                  }`}
+                  title="Organizer Payout KYC: Link bank account to receive event payouts"
+                >
+                  <Landmark className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">
+                    {kycStatus === 'VERIFIED' ? 'Payout KYC Verified' : kycStatus === 'UNDER_REVIEW' ? 'KYC Under Review' : 'Host Payout KYC'}
+                  </span>
+                  <span className="sm:hidden">KYC</span>
+                </button>
                 <button
                   onClick={() => setShowEditModal(true)}
                   className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-xs font-bold text-white transition cursor-pointer backdrop-blur-md"
@@ -506,13 +738,13 @@ export function UserProfileView() {
 
       {/* ─── PROFILE NAVIGATION TABS ─── */}
       <div className="w-full max-w-3xl mx-auto pt-2 pb-4">
-        <div className={`flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-[#080911]/90 backdrop-blur-2xl border border-white/10 shadow-xl`}>
+        <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-[#080911]/90 backdrop-blur-2xl border border-white/10 shadow-xl">
           <button
             type="button"
             onClick={() => setActiveTab('posts')}
-            className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+            className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-sans font-semibold tracking-normal transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
               activeTab === 'posts'
-                ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]'
+                ? 'bg-white text-black shadow-sm'
                 : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
@@ -523,13 +755,13 @@ export function UserProfileView() {
           <button
             type="button"
             onClick={() => setActiveTab('reels')}
-            className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+            className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-sans font-semibold tracking-normal transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
               activeTab === 'reels'
-                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.25)]'
+                ? 'bg-white text-black shadow-sm'
                 : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">SPARK</span>
           </button>
 
@@ -538,16 +770,18 @@ export function UserProfileView() {
             <button
               type="button"
               onClick={() => setActiveTab('events_showcase')}
-              className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+              className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-sans font-semibold tracking-normal transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
                 activeTab === 'events_showcase'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
-                  : 'text-neutral-400 hover:text-cyan-300 hover:bg-white/[0.04]'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
-              <Calendar className="w-3.5 h-3.5 shrink-0 text-cyan-400" />
+              <Calendar className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">Showcase</span>
               {(profile.hostedEvents || []).length > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/30 text-cyan-200 border border-cyan-500/40 shrink-0">
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-sans font-bold shrink-0 ${
+                  activeTab === 'events_showcase' ? 'bg-black text-white' : 'bg-white/10 text-white'
+                }`}>
                   {(profile.hostedEvents || []).length}
                 </span>
               )}
@@ -557,37 +791,83 @@ export function UserProfileView() {
           {isOwnProfile && (
             <button
               type="button"
+              onClick={() => setActiveTab('my_tickets')}
+              className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-sans font-semibold tracking-normal transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+                activeTab === 'my_tickets'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <Ticket className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Tickets &amp; Applications</span>
+              {(userTickets.length + userApplications.length) > 0 && (
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${
+                  activeTab === 'my_tickets' ? 'bg-black text-white' : 'bg-white/10 text-white'
+                }`}>
+                  {userTickets.length + userApplications.length}
+                </span>
+              )}
+            </button>
+          )}
+
+          {isOwnProfile && (
+            <button
+              type="button"
               onClick={() => setActiveTab('saved')}
-              className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+              className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-sans font-semibold tracking-normal transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
                 activeTab === 'saved'
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.25)]'
+                  ? 'bg-white text-black shadow-sm'
                   : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <Bookmark className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">Saved</span>
-              <Lock className="w-2.5 h-2.5 text-purple-300 shrink-0 opacity-75" />
+              <Lock className={`w-2.5 h-2.5 shrink-0 ${activeTab === 'saved' ? 'text-black/75' : 'text-neutral-400'}`} />
             </button>
           )}
 
           <button
             type="button"
             onClick={() => setActiveTab('mun_dossier')}
-            className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+            className={`flex-1 min-w-[90px] py-2 px-2.5 rounded-xl text-xs font-sans font-semibold tracking-normal transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
               activeTab === 'mun_dossier'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
-                : 'text-neutral-400 hover:text-amber-300 hover:bg-white/[0.04]'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
-            <Award className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+            <Award className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">Track Record</span>
           </button>
         </div>
       </div>
 
       {/* ─── TAB CONTENT ─── */}
-      {/* 1. POSTS GRID */}
-      {activeTab === 'posts' && (
+      {isProfileLocked ? (
+        <div className="py-20 text-center space-y-5 rounded-3xl bg-black/60 border border-white/10 p-8 max-w-xl mx-auto backdrop-blur-xl animate-fade-in shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 mx-auto flex items-center justify-center text-amber-400 shadow-inner">
+            <Lock className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/25">
+              CONFIDENTIAL PROFILE
+            </span>
+            <h3 className="font-bold text-xl text-white font-display">This Account is Private</h3>
+            <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+              Follow @{displayHandle} to view their dispatches, SPARK reels, and sovereign moments.
+            </p>
+          </div>
+          <button 
+            type="button"
+            onClick={() => toggleFollow(displayHandle)}
+            className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition cursor-pointer active:scale-95 shadow-lg shadow-white/10"
+          >
+            {following ? 'Following' : 'Follow to View'}
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* 1. POSTS GRID */}
+          {activeTab === 'posts' && (
         <div>
           {posts.length === 0 ? (
             <div className="py-20 text-center space-y-4 rounded-3xl bg-black/40 border border-white/5 p-8 max-w-xl mx-auto">
@@ -1004,6 +1284,425 @@ export function UserProfileView() {
         <div className="py-4">
           <DelegateDossierView userHandle={profile.username} isOwner={isOwnProfile} />
         </div>
+      )}
+
+      {/* 6. YOUR TICKETS & PASSES (CONNECTED TO ZEN.EVENTS) */}
+      {activeTab === 'my_tickets' && (
+        <div className="py-4 space-y-5">
+          {/* Section Header */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#080911] border border-white/10 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Ticket className="w-4 h-4 text-white" />
+                <h3 className="font-sans font-bold text-base text-white">Your Conference Passes &amp; Staff Applications</h3>
+              </div>
+              <p className="text-xs text-neutral-400">
+                Connected to <strong className="text-white">ZEN.EVENTS</strong>. Access your cryptographic delegate passes and track your Organising Committee &amp; Secretariat appointment applications.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => router.push('/events')}
+                className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-sans font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+              >
+                <span>Browse ZEN.EVENTS</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Organizer Payout KYC Notice Banner */}
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-white shrink-0">
+                <Landmark className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-semibold text-white">
+                  Hosting an event or Model UN?
+                </p>
+                <p className="text-neutral-400 text-[11px]">
+                  {kycStatus === 'VERIFIED'
+                    ? 'Your Organizer KYC is verified. Ticket sales payouts will settle directly to your verified bank account.'
+                    : kycStatus === 'UNDER_REVIEW'
+                    ? 'Your KYC documents are under review. Payouts will unlock upon verification.'
+                    : 'Complete Organizer Payout KYC to receive payouts when attendees purchase passes for your event.'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setKycModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-mono text-xs transition cursor-pointer shrink-0"
+            >
+              {kycStatus === 'VERIFIED' ? 'View KYC Status' : 'Set Up Payout KYC'}
+            </button>
+          </div>
+
+          {/* Sub-Tab Switcher: Passes & Tickets vs Staff & Secretariat Applications */}
+          <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+            <button
+              type="button"
+              onClick={() => setTicketsSubTab('passes')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold font-sans transition flex items-center gap-2 cursor-pointer ${
+                ticketsSubTab === 'passes'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-neutral-400 hover:text-white bg-white/5'
+              }`}
+            >
+              <Ticket className="w-3.5 h-3.5" />
+              <span>Conference Passes ({userTickets.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTicketsSubTab('applications')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold font-sans transition flex items-center gap-2 cursor-pointer ${
+                ticketsSubTab === 'applications'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-neutral-400 hover:text-white bg-white/5'
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5" />
+              <span>Staff &amp; Secretariat Applications ({userApplications.length})</span>
+            </button>
+          </div>
+
+          {/* ── PASSES SUB-TAB ── */}
+          {ticketsSubTab === 'passes' && (
+            <div className="space-y-4">
+              {/* Loading Skeleton */}
+              {loadingTickets && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="p-5 rounded-2xl bg-[#090a12] border border-white/5 animate-pulse space-y-3">
+                      <div className="h-4 bg-white/10 rounded w-1/3" />
+                      <div className="h-6 bg-white/10 rounded w-2/3" />
+                      <div className="h-20 bg-white/5 rounded" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!loadingTickets && userTickets.length === 0 && (
+                <div className="py-16 text-center space-y-4 rounded-3xl bg-[#080911] border border-white/10 p-8 max-w-xl mx-auto">
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-white">
+                    <Ticket className="w-7 h-7" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-sans font-bold text-lg text-white">No Conference Passes Found</h4>
+                    <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                      You don't have any registered conference tickets yet. When you register or purchase delegate passes on ZEN.EVENTS, your QR entry tokens and committee passes will appear here.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => router.push('/events')}
+                      className="px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-sans font-semibold text-xs transition cursor-pointer shadow-sm"
+                    >
+                      Explore Upcoming Conferences
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tickets List */}
+              {!loadingTickets && userTickets.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userTickets.map((ticket) => {
+                    const isValid = ticket.status === 'VALID';
+                    const isCheckedIn = ticket.status === 'CHECKED_IN';
+                    
+                    return (
+                      <div
+                        key={ticket.id || ticket.ticketNumber}
+                        className="p-5 rounded-2xl bg-[#090a12] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between space-y-4 shadow-lg"
+                      >
+                        {/* Top Row: Tier and Status */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/10 text-white border border-white/10">
+                            {ticket.tierName || 'Delegate Pass'}
+                          </span>
+                          <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                            isCheckedIn
+                              ? 'bg-blue-500/10 text-blue-300 border-blue-500/20'
+                              : isValid
+                              ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                              : 'bg-white/5 text-neutral-400 border-white/10'
+                          }`}>
+                            {ticket.status || 'VALID'}
+                          </span>
+                        </div>
+
+                        {/* Conference Title and Details */}
+                        <div className="space-y-1.5">
+                          <h4 className="font-sans font-bold text-base text-white leading-snug">
+                            {ticket.eventTitle || 'Conference Pass'}
+                          </h4>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-400 font-mono">
+                            <span>Attendee: <strong className="text-white">{ticket.attendeeName}</strong></span>
+                            {ticket.price !== undefined && (
+                              <span>Paid: <strong className="text-white">{ticket.price > 0 ? `₹${ticket.price}` : 'Free Entry'}</strong></span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* QR Code / Pass Token Chamber Badge */}
+                        <div className="p-3.5 rounded-xl bg-black/60 border border-white/5 space-y-2">
+                          <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                            <span className="flex items-center gap-1.5">
+                              <QrCode className="w-3.5 h-3.5 text-white" />
+                              <span>PASS TOKEN</span>
+                            </span>
+                            <span className="text-white font-bold">{ticket.ticketNumber}</span>
+                          </div>
+                          <div className="font-mono text-[10px] text-neutral-300 bg-white/5 p-2 rounded-lg break-all select-all border border-white/5">
+                            {ticket.qrCodeToken || ticket.securityHash || 'ZEN-TICKET-AUTHENTICATED'}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                          <button
+                            type="button"
+                            onClick={() => router.push('/events')}
+                            className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-sans font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            <span>View on ZEN.EVENTS</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (typeof navigator !== 'undefined') {
+                                navigator.clipboard.writeText(ticket.ticketNumber || ticket.qrCodeToken);
+                              }
+                            }}
+                            className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-mono transition cursor-pointer"
+                            title="Copy Ticket ID"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── APPLICATIONS SUB-TAB ── */}
+          {ticketsSubTab === 'applications' && (
+            <div className="space-y-4">
+              {/* Loading Skeleton */}
+              {loadingApplications && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="p-5 rounded-2xl bg-[#090a12] border border-white/5 animate-pulse space-y-3">
+                      <div className="h-4 bg-white/10 rounded w-1/3" />
+                      <div className="h-6 bg-white/10 rounded w-2/3" />
+                      <div className="h-20 bg-white/5 rounded" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!loadingApplications && userApplications.length === 0 && (
+                <div className="py-16 text-center space-y-4 rounded-3xl bg-[#080911] border border-white/10 p-8 max-w-xl mx-auto">
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 mx-auto flex items-center justify-center text-white">
+                    <Briefcase className="w-7 h-7" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-sans font-bold text-lg text-white">No Staff Applications Found</h4>
+                    <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                      You haven't applied for any Organising Committee, Executive Board, or Secretariat posts yet. Browse open recruitments on ZEN.EVENTS to discover leadership opportunities.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => router.push('/events')}
+                      className="px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-sans font-semibold text-xs transition cursor-pointer shadow-sm"
+                    >
+                      Explore Open Staff Positions
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Applications List */}
+              {!loadingApplications && userApplications.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userApplications.map((app) => {
+                    const status = app.status;
+                    const isOffer = status === 'OFFER_SENT';
+                    const isAccepted = status === 'ACCEPTED';
+                    const isInterview = status === 'INTERVIEW';
+                    const isDeclined = status === 'DECLINED';
+                    const isShortlisted = status === 'SHORTLISTED';
+
+                    return (
+                      <div
+                        key={app.id || app.applicationNumber}
+                        className={`p-5 rounded-2xl bg-[#090a12] border transition-all flex flex-col justify-between space-y-4 shadow-lg ${
+                          isOffer
+                            ? 'border-white/40 ring-1 ring-white/20'
+                            : isAccepted
+                            ? 'border-emerald-500/40 bg-emerald-950/[0.05]'
+                            : 'border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        {/* Top Row: Department and Status Pill */}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/10 text-white border border-white/10 truncate">
+                            {app.post?.department || 'Executive Team'}
+                          </span>
+                          <span
+                            className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border shrink-0 ${
+                              isOffer
+                                ? 'bg-white text-black border-white animate-pulse'
+                                : isAccepted
+                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                : isInterview
+                                ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+                                : isShortlisted
+                                ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                                : isDeclined
+                                ? 'bg-red-500/15 text-red-300 border-red-500/30'
+                                : 'bg-white/5 text-neutral-400 border-white/10'
+                            }`}
+                          >
+                            {isOffer
+                              ? '● Offer Received'
+                              : isAccepted
+                              ? '● Confirmed Appointed'
+                              : isInterview
+                              ? '● Interview Scheduled'
+                              : isShortlisted
+                              ? '● Shortlisted'
+                              : status}
+                          </span>
+                        </div>
+
+                        {/* Post Title & Conference */}
+                        <div className="space-y-1.5">
+                          <h4 className="font-sans font-bold text-base text-white leading-snug">
+                            {app.post?.title || app.offerRole || 'Event Post'}
+                          </h4>
+                          <p className="text-xs text-neutral-300 font-sans">
+                            {app.event?.title || 'Conference Convening'}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-400 font-mono pt-1">
+                            <span>Ref: <strong className="text-white">{app.applicationNumber}</strong></span>
+                            <span>Applied: {new Date(app.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </div>
+                        </div>
+
+                        {/* Interview Details if Scheduled */}
+                        {isInterview && app.interviewDate && (
+                          <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-2">
+                            <div className="flex items-center justify-between text-xs text-blue-300 font-mono">
+                              <span className="flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                                <span>Interview Scheduled</span>
+                              </span>
+                              <span className="font-bold">
+                                {new Date(app.interviewDate).toLocaleString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                            {app.interviewMeetingUrl && (
+                              <a
+                                href={app.interviewMeetingUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs text-white bg-blue-600 hover:bg-blue-500 font-bold px-3 py-1.5 rounded-lg transition"
+                              >
+                                <span>Join Interview Meeting</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Appointment Offer Callout Banner */}
+                        {isOffer && (
+                          <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/20 space-y-3">
+                            <div className="space-y-1">
+                              <p className="text-xs text-white font-bold">
+                                Formal Appointment Offer Extended
+                              </p>
+                              <p className="text-[11px] text-neutral-300">
+                                The event leadership has officially selected you for the role of{' '}
+                                <strong className="text-white">{app.offerRole || app.post?.title}</strong>.
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 pt-1">
+                              <button
+                                type="button"
+                                disabled={respondingAppId === app.id}
+                                onClick={() => handleRespondToOffer(app.id, 'ACCEPT')}
+                                className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                              >
+                                <Check className="w-3.5 h-3.5 text-black" />
+                                <span>{respondingAppId === app.id ? 'Confirming...' : 'Accept Appointment'}</span>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={respondingAppId === app.id}
+                                onClick={() => handleRespondToOffer(app.id, 'DECLINE')}
+                                className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-neutral-300 hover:text-white text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Footer Actions */}
+                        <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/events/${app.eventId}/recruit`)}
+                            className="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-sans font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            <span>View Recruitment Portal</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (typeof navigator !== 'undefined') {
+                                navigator.clipboard.writeText(app.applicationNumber);
+                              }
+                            }}
+                            className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-mono transition cursor-pointer"
+                            title="Copy Application Number"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      </>
       )}
 
 
@@ -1468,6 +2167,34 @@ export function UserProfileView() {
                 </div>
               </div>
 
+              {/* Account Privacy Setting */}
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    {editIsPrivate ? <Lock className="w-4 h-4 text-amber-400" /> : <Globe className="w-4 h-4 text-emerald-400" />}
+                    <span className="text-xs font-bold text-white">
+                      {editIsPrivate ? 'Private Sovereign Account' : 'Public Sovereign Account'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed">
+                    {editIsPrivate
+                      ? 'Only approved followers can view your dispatches, SPARK reels, and profile content.'
+                      : 'Anyone on ZENVITRA can view your dispatches, SPARK reels, and sovereign profile.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditIsPrivate(!editIsPrivate)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition border cursor-pointer shrink-0 ${
+                    editIsPrivate
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25'
+                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25'
+                  }`}
+                >
+                  {editIsPrivate ? 'Make Public' : 'Make Private'}
+                </button>
+              </div>
+
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-800">
                 <button
                   type="button"
@@ -1787,24 +2514,43 @@ export function UserProfileView() {
 
               <div className="pt-4 border-t border-zinc-800 flex items-center justify-between">
                 <div>
-                  <span className="text-zinc-400 text-[11px] block">Civic Tier Plan</span>
-                  <strong className="text-white text-sm font-bold">100% Free for Youth Organizers</strong>
+                  <span className="text-zinc-400 text-[11px] block">Subscription Status</span>
+                  <strong className="text-white text-sm font-bold">
+                    {profile.isSubscribedOrganizer ? 'Active (Cashfree Verified)' : 'Upgrade via /pricing'}
+                  </strong>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    subscribeToOrganizerPro();
-                    setShowOrganizerModal(false);
-                  }}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-bold text-xs transition cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.4)]"
-                >
-                  {profile.isSubscribedOrganizer ? 'Active' : 'Activate Organizer Pro'}
-                </button>
+                {profile.isSubscribedOrganizer ? (
+                  <div className="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold text-xs flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Unlocked</span>
+                  </div>
+                ) : (
+                  <Link
+                    href="/pricing"
+                    onClick={() => setShowOrganizerModal(false)}
+                    className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>Upgrade on /pricing</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ─── ORGANIZER KYC MODAL ─── */}
+      <OrganizerKycModal
+        isOpen={kycModalOpen}
+        onClose={() => setKycModalOpen(false)}
+        userId={authUser?.id || effectiveMyUsername}
+        userEmail={authProfile?.email || authUser?.email || ''}
+        userHandle={effectiveMyUsername}
+        onSuccess={() => {
+          setKycStatus('VERIFIED');
+        }}
+      />
 
       {/* ─── SETTINGS MODAL ─── */}
       <SettingsModal

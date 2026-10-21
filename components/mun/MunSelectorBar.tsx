@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   Calendar,
   Clock,
@@ -13,18 +14,27 @@ import {
   CheckCircle2,
   AlertCircle,
   Building2,
-  Sparkles
+  Sparkles,
+  Menu,
+  Plus,
+  Layers,
+  ArrowRight,
+  Zap
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
 import { MunConferenceStatus } from '@/types/mun';
+import { computeConferenceStatus } from '@/lib/conferenceStatusHelper';
+import { CreateMunConferenceModal } from './CreateMunConferenceModal';
 
 interface MunSelectorBarProps {
   onOpenHistory?: () => void;
   onOpenSummary?: () => void;
+  onOpenInstantEvent?: () => void;
+  onOpenMatrix?: () => void;
   isEmbedded?: boolean;
 }
 
-export function MunSelectorBar({ onOpenHistory, onOpenSummary, isEmbedded = false }: MunSelectorBarProps) {
+export function MunSelectorBar({ onOpenHistory, onOpenSummary, onOpenInstantEvent, onOpenMatrix, isEmbedded = false }: MunSelectorBarProps) {
   const {
     conferences,
     activeConferenceId,
@@ -41,300 +51,337 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary, isEmbedded = fals
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSecControlsOpen, setIsSecControlsOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const getStatusBadge = (status: MunConferenceStatus, day?: number) => {
-    if (status === 'NOT_STARTED') {
+  const statusInfo = computeConferenceStatus(activeConference);
+
+  const getStatusBadge = () => {
+    if (!activeConference) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-          <Clock className="w-3 h-3 text-amber-400 animate-pulse" />
-          <span>NOT STARTED &bull; GAVEL PENDING</span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-neutral-500/15 text-neutral-400 border border-neutral-500/30">
+          <span>HOST TO LAUNCH CHAMBER</span>
         </span>
       );
     }
-    if (status === 'CONCLUDED') {
+    if (statusInfo.status === 'NOT_STARTED') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-neutral-500/20 text-neutral-300 border border-neutral-500/30">
-          <CheckCircle2 className="w-3 h-3 text-neutral-400" />
-          <span>CONCLUDED &bull; AWARDS ISSUED</span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+          <span>{statusInfo.displayText}</span>
         </span>
       );
     }
-    const currentNum = day !== undefined && day > 0 ? day : (status.startsWith('DAY_') ? parseInt(status.replace('DAY_', ''), 10) : 1);
+    if (statusInfo.status === 'CONCLUDED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-neutral-500/20 text-neutral-300 border border-neutral-500/30">
+          <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400" />
+          <span>CONCLUDED &bull; ADJOURNED SINE DIE</span>
+        </span>
+      );
+    }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 animate-pulse">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 animate-pulse">
         <span className="w-2 h-2 rounded-full bg-emerald-400" />
-        <span>DAY {currentNum} IN SESSION</span>
+        <span>{statusInfo.displayText}</span>
       </span>
     );
   };
 
   return (
-    <div className={
-      isEmbedded
-        ? "w-full bg-[#0a0c10]/95 rounded-3xl border border-white/10 backdrop-blur-xl px-4 py-3 shadow-xl"
-        : "w-full bg-[#0b0e14]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 sticky top-16 sm:top-[68px] xl:top-[72px] z-30 shadow-2xl"
-    }>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
-        
-        {/* Left: Active MUN Selector Dropdown */}
-        <div className="flex items-center gap-3 relative">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left cursor-pointer transition shadow-sm group"
-            >
-              <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 group-hover:scale-105 transition-transform">
-                <Building2 className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                  <span>Enrolled Conference</span>
-                  <span className="text-cyan-400 font-bold">&bull; Switch</span>
-                </div>
-                <div className="text-sm font-bold text-white flex items-center gap-2">
-                  <span className="truncate max-w-[220px] sm:max-w-[320px]">
-                    {(activeConference || conferences[0])?.name || 'Zen Diplomacy 2026'}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-neutral-400 group-hover:text-white transition-transform" />
-                </div>
-              </div>
-            </button>
-
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-[#0e121a] border border-white/15 p-2 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
-                <div className="px-3 py-2 text-[10px] font-mono text-neutral-400 uppercase tracking-wider border-b border-white/10">
-                  Your Enrolled MUN Conferences
-                </div>
-                <div className="space-y-1 mt-1">
-                  {conferences.map((conf) => {
-                    const isSelected = conf.id === (activeConferenceId || conferences[0]?.id);
-                    return (
-                      <button
-                        key={conf.id}
-                        type="button"
-                        onClick={() => {
-                          setActiveConferenceId(conf.id);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full p-3 rounded-xl text-left transition flex items-start justify-between gap-3 ${
-                          isSelected
-                            ? 'bg-cyan-500/15 border border-cyan-500/30 text-white'
-                            : 'hover:bg-white/5 border border-transparent text-neutral-300'
-                        }`}
-                      >
-                        <div className="space-y-1">
-                          <div className="font-bold text-xs sm:text-sm text-white flex items-center gap-1.5">
-                            <span>{conf.shortName}</span>
-                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />}
-                          </div>
-                          <div className="text-[11px] text-neutral-400 line-clamp-1">{conf.name}</div>
-                          <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-400">
-                            <Calendar className="w-3 h-3 text-neutral-500" />
-                            <span>{conf.startDate}</span>
-                          </div>
-                        </div>
-                        <div className="shrink-0">{getStatusBadge(conf.status)}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Current Status Badge */}
-          <div className="hidden sm:block">
-            {(activeConference || conferences[0]) && getStatusBadge((activeConference || conferences[0]).status, currentConferenceDay)}
-          </div>
-        </div>
-
-        {/* Right Actions: Secretariat Controls & Day History / Summary Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+    <>
+      <div className={
+        isEmbedded
+          ? "w-full bg-[#0a0c10]/95 rounded-3xl border border-white/10 backdrop-blur-xl px-4 py-3 shadow-xl relative z-40"
+          : "w-full bg-[#0b0e14]/95 border-b border-white/10 backdrop-blur-xl px-4 py-3 sticky top-16 sm:top-[68px] xl:top-[72px] z-40 shadow-2xl"
+      }>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
           
-          {/* Day History & GSL Logs */}
-          {onOpenHistory && (
+          {/* Left: Menu Drawer Toggle + Active MUN Selector Dropdown */}
+          <div className="flex items-center gap-2.5 relative flex-wrap sm:flex-nowrap">
+            {/* Inline Platform Drawer Toggle Button (Prevents floating button collision!) */}
             <button
               type="button"
-              onClick={onOpenHistory}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition cursor-pointer"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+              }}
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-md shrink-0 bg-[#0c101a] hover:bg-zinc-800 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105 active:scale-95"
+              title="Toggle Platform Navigation Menu"
+              aria-label="Toggle Platform Navigation Menu"
             >
-              <History className="w-3.5 h-3.5 text-amber-400" />
-              <span>Day 1/2/3 History</span>
-            </button>
-          )}
-
-          {/* Committee Valedictory Summary Paper */}
-          {onOpenSummary && (
-            <button
-              type="button"
-              onClick={onOpenSummary}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-mono text-amber-300 transition cursor-pointer"
-            >
-              <Award className="w-3.5 h-3.5 text-amber-400" />
-              <span>Summary Paper</span>
-            </button>
-          )}
-
-          {/* Secretariat Engine Toggle */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsSecControlsOpen(!isSecControlsOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-xs font-mono text-cyan-300 transition cursor-pointer"
-            >
-              <Shield className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Secretariat Dais</span>
-              <ChevronDown className="w-3 h-3 text-cyan-400" />
+              <Menu className="w-5 h-5" />
             </button>
 
-            {/* Secretariat Dais Control Panel */}
-            {isSecControlsOpen && activeConference && (
-              <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-[#0e121a] border border-cyan-500/30 p-4 shadow-2xl z-50 space-y-3 animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <div className="text-[11px] font-mono font-bold uppercase text-cyan-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Secretariat Day Engine</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-neutral-400">
-                    Day {activeConference.status === 'NOT_STARTED' ? '0 (Not Started)' : currentConferenceDay} of {activeConference.totalDays || 3}
-                  </span>
+            {/* Conference Selector Pill */}
+            <div className="relative flex-1 sm:flex-initial">
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full sm:w-auto flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left cursor-pointer transition shadow-sm group"
+              >
+                <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 group-hover:scale-105 transition-transform">
+                  <Building2 className="w-4 h-4" />
                 </div>
-
-                <div className="text-xs text-neutral-300">
-                  <span className="text-neutral-400">Chair: </span>
-                  <span className="font-semibold text-white">{activeConference.secretariatChair}</span>
-                </div>
-
-                {/* Total Days Selector (No Limit - Any Natural Number n) */}
-                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase text-neutral-400">Conference Total Days:</span>
-                    <span className="text-xs font-mono font-bold text-cyan-300">{activeConference.totalDays || 3} Days</span>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                    <span>Enrolled Conference</span>
+                    <span className="text-cyan-400 font-bold">&bull; Switch</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setConferenceTotalDays(activeConference.id, Math.max(1, (activeConference.totalDays || 3) - 1))}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-neutral-300 border border-white/10"
-                      title="Decrease total days"
-                    >
-                      -1
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => addConferenceDay(activeConference.id)}
-                      className="flex-1 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-xs font-mono font-bold text-cyan-300 border border-cyan-500/30 text-center"
-                      title="Add one more day to conference"
-                    >
-                      + Add Day (Day {(activeConference.totalDays || 3) + 1})
-                    </button>
+                  <div className="text-sm font-bold text-white flex items-center gap-2">
+                    <span className="truncate max-w-[180px] sm:max-w-[280px]">
+                      {activeConference?.name || 'No Active Event Selected'}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-neutral-400 group-hover:text-white transition-transform" />
                   </div>
                 </div>
+              </button>
 
-                {/* Day Switcher Grid */}
-                <div className="space-y-1.5">
-                  <div className="text-[10px] font-mono uppercase text-neutral-400">Switch Conference Day:</div>
-                  <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40 cursor-default"
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-[#0e121a] border border-white/15 p-2 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-3 py-2 text-[10px] font-mono text-neutral-400 uppercase tracking-wider border-b border-white/10 flex items-center justify-between">
+                    <span>Your Hosted &amp; Enrolled Events</span>
+                    <span className="text-cyan-400 font-bold">{conferences.length} Active</span>
+                  </div>
+                  <div className="space-y-1 mt-1 max-h-60 overflow-y-auto no-scrollbar">
+                    {conferences.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-neutral-400">
+                        No events hosted yet. Host a conference or summit below.
+                      </div>
+                    ) : (
+                      conferences.map((conf) => {
+                        const isSelected = conf.id === (activeConferenceId || conferences[0]?.id);
+                        const confInfo = computeConferenceStatus(conf);
+                        return (
+                          <button
+                            key={conf.id}
+                            type="button"
+                            onClick={() => {
+                              setActiveConferenceId(conf.id);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full p-2.5 rounded-xl text-left transition flex items-start justify-between gap-3 ${
+                              isSelected
+                                ? 'bg-cyan-500/15 border border-cyan-500/30 text-white'
+                                : 'hover:bg-white/5 border border-transparent text-neutral-300'
+                            }`}
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="font-bold text-xs sm:text-sm text-white flex items-center gap-1.5">
+                                <span className="truncate">{conf.shortName || conf.name}</span>
+                                {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />}
+                              </div>
+                              <div className="text-[11px] text-neutral-400 truncate">{conf.name}</div>
+                              <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-400">
+                                <Calendar className="w-3 h-3 text-neutral-500" />
+                                <span>{conf.startDate}</span>
+                              </div>
+                            </div>
+                            <div className="shrink-0 text-[10px] font-mono font-bold">
+                              {confInfo.status === 'NOT_STARTED' && (
+                                <span className="text-amber-400">UPCOMING</span>
+                              )}
+                              {confInfo.status === 'CONCLUDED' && (
+                                <span className="text-neutral-400">CONCLUDED</span>
+                              )}
+                              {confInfo.status.startsWith('DAY_') && (
+                                <span className="text-emerald-400">LIVE</span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Host New Conference Button */}
+                  <div className="pt-2 border-t border-white/10 mt-1">
                     <button
                       type="button"
                       onClick={() => {
-                        setConferenceStatus(activeConference.id, 'NOT_STARTED');
-                        setConferenceDay(activeConference.id, 0);
-                        setIsSecControlsOpen(false);
+                        setIsDropdownOpen(false);
+                        setIsCreateModalOpen(true);
                       }}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition ${
-                        activeConference.status === 'NOT_STARTED'
-                          ? 'bg-amber-500 text-black'
-                          : 'bg-white/5 hover:bg-white/10 text-neutral-300'
-                      }`}
+                      className="w-full p-2.5 rounded-xl bg-gradient-to-r from-cyan-500/15 via-emerald-500/15 to-transparent hover:from-cyan-500/25 hover:to-emerald-500/25 border border-cyan-500/30 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition shadow-sm"
                     >
-                      Not Started
+                      <Plus className="w-4 h-4 text-cyan-400" />
+                      <span>Host New Event</span>
                     </button>
-                    {Array.from({ length: Math.max(activeConference.totalDays || 3, currentConferenceDay, 1) }, (_, i) => i + 1).map((d) => (
+                  </div>
+                </div>
+              </>
+            )}
+            </div>
+
+            {/* Current Real-Time Date Status Badge */}
+            <div className="hidden sm:block">
+              {getStatusBadge()}
+            </div>
+          </div>
+
+          {/* Right Actions: Connect Matrix, Secretariat Controls & Day History */}
+          <div className="flex flex-wrap items-center gap-2">
+            
+            {/* ── CONNECT MATRIX BUTTON ── */}
+            {onOpenMatrix ? (
+              <button
+                type="button"
+                onClick={onOpenMatrix}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-bold text-xs transition cursor-pointer shadow-md group active:scale-95"
+                title="Inspect Live Country & Portfolio Matrix"
+              >
+                <Layers className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span>Connect Matrix</span>
+              </button>
+            ) : (
+              <Link
+                href={activeConference?.id ? `/${activeConference.id}/matrix` : '/mun/matrix'}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-bold text-xs transition cursor-pointer shadow-md group active:scale-95"
+                title="Inspect Live Country & Portfolio Matrix"
+              >
+                <Layers className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span>Connect Matrix</span>
+              </Link>
+            )}
+
+            {/* ── CREATE INSTANT EVENT BUTTON ── */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenInstantEvent) {
+                  onOpenInstantEvent();
+                } else {
+                  setIsCreateModalOpen(true);
+                }
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500/15 via-cyan-500/15 to-emerald-500/15 hover:from-amber-500/25 hover:via-cyan-500/25 hover:to-emerald-500/25 border border-amber-400/40 text-amber-200 font-bold text-xs transition cursor-pointer shadow-md group active:scale-95"
+              title="Create an Instant Event (Live Chamber / Assembly Now)"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300 group-hover:scale-110 transition-transform" />
+              <span>Instant Event</span>
+            </button>
+
+            {/* Day History & GSL Logs */}
+            {onOpenHistory && (
+              <button
+                type="button"
+                onClick={onOpenHistory}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition cursor-pointer"
+              >
+                <History className="w-3.5 h-3.5 text-amber-400" />
+                <span>Day 1/2/3 History</span>
+              </button>
+            )}
+
+            {/* Committee Valedictory Summary Paper */}
+            {onOpenSummary && (
+              <button
+                type="button"
+                onClick={onOpenSummary}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-mono text-amber-300 transition cursor-pointer"
+              >
+                <Award className="w-3.5 h-3.5 text-amber-400" />
+                <span>Summary Paper</span>
+              </button>
+            )}
+
+            {/* Secretariat Engine Toggle */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsSecControlsOpen(!isSecControlsOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-xs font-mono text-cyan-300 transition cursor-pointer"
+              >
+                <Shield className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Secretariat Dais</span>
+                <ChevronDown className="w-3 h-3 text-cyan-400" />
+              </button>
+
+              {/* Secretariat Dais Control Panel */}
+              {isSecControlsOpen && activeConference && (
+                <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-[#0e121a] border border-cyan-500/30 p-4 shadow-2xl z-50 space-y-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div className="text-[11px] font-mono font-bold uppercase text-cyan-300 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Secretariat Day Engine</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-neutral-400">
+                      Day {currentConferenceDay} of {activeConference.totalDays || 2}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs font-mono">
+                    <div className="text-[11px] text-neutral-400">
+                      Dates: <strong className="text-white">{activeConference.startDate}</strong> to <strong className="text-white">{activeConference.endDate}</strong>
+                    </div>
+
+                    {/* Day Advancer Buttons */}
+                    <div className="grid grid-cols-2 gap-2 pt-1">
                       <button
-                        key={d}
                         type="button"
                         onClick={() => {
-                          setConferenceDay(activeConference.id, d);
+                          setConferenceDay(activeConference.id, Math.max(0, currentConferenceDay - 1));
                           setIsSecControlsOpen(false);
                         }}
-                        className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition ${
-                          activeConference.status !== 'NOT_STARTED' && activeConference.status !== 'CONCLUDED' && currentConferenceDay === d
-                            ? 'bg-cyan-500 text-black'
-                            : 'bg-white/5 hover:bg-white/10 text-neutral-300'
-                        }`}
+                        className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-bold transition cursor-pointer"
                       >
-                        Day {d}
+                        &larr; Prev Day
                       </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        concludeConference(activeConference.id);
-                        setIsSecControlsOpen(false);
-                      }}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition ${
-                        activeConference.status === 'CONCLUDED'
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-white/5 hover:bg-white/10 text-neutral-300'
-                      }`}
-                    >
-                      Concluded
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          advanceConferenceDay(activeConference.id);
+                          setIsSecControlsOpen(false);
+                        }}
+                        className="py-2 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-[11px] font-bold flex items-center justify-center gap-1 transition cursor-pointer shadow-md"
+                      >
+                        <span>Next Day</span>
+                        <FastForward className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/10 space-y-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConferenceStatus(activeConference.id, 'NOT_STARTED');
+                          setIsSecControlsOpen(false);
+                        }}
+                        className="w-full py-1.5 px-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-[10px] transition cursor-pointer text-left flex items-center gap-1.5"
+                      >
+                        <Clock className="w-3 h-3 text-amber-400" />
+                        <span>Reset to Pre-Session Recess</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          concludeConference(activeConference.id);
+                          setIsSecControlsOpen(false);
+                        }}
+                        className="w-full py-1.5 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-[10px] transition cursor-pointer text-left flex items-center gap-1.5"
+                      >
+                        <CheckCircle2 className="w-3 h-3 text-rose-400" />
+                        <span>Adjourn Conference Sine Die</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
+              )}
+            </div>
 
-                {/* Action Buttons */}
-                {activeConference.status === 'NOT_STARTED' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConferenceDay(activeConference.id, 1);
-                      setIsSecControlsOpen(false);
-                    }}
-                    className="w-full py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-black" />
-                    <span>Secretariat: Start Day 1</span>
-                  </button>
-                )}
-
-                {activeConference.status !== 'NOT_STARTED' && activeConference.status !== 'CONCLUDED' && (
-                  <div className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        advanceConferenceDay(activeConference.id);
-                        setIsSecControlsOpen(false);
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <FastForward className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Advance to Day {currentConferenceDay + 1} &rarr;</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        concludeConference(activeConference.id);
-                        setIsSecControlsOpen(false);
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-rose-400" />
-                      <span>Adjourn Conference (Conclude)</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
-
         </div>
-
       </div>
-    </div>
+
+      {/* Host New Conference Modal */}
+      <CreateMunConferenceModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+    </>
   );
 }

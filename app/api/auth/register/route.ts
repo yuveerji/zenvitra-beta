@@ -38,8 +38,8 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // 3. Founder Prerogative Check
-    const founderEmail = process.env.FOUNDER_EMAIL?.trim().toLowerCase() || 'founder@zenvitra.org';
-    const isFounder = Boolean(cleanEmail === 'founder@zenvitra.org' || (founderEmail && cleanEmail === founderEmail));
+    const founderEmail = process.env.FOUNDER_EMAIL?.trim().toLowerCase() || 'founder@zenvitra.xyz';
+    const isFounder = Boolean(cleanEmail === 'founder@zenvitra.xyz' || cleanEmail === 'founder@zenvitra.org' || (founderEmail && cleanEmail === founderEmail));
     const assignedRole = isFounder ? 'FOUNDER' : 'USER';
 
     // 4. Mint Node in Database

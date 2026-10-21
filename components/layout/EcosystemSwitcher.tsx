@@ -16,6 +16,7 @@ import {
   Sparkles,
   ExternalLink,
   Award,
+  Newspaper,
 } from 'lucide-react';
 import { EcosystemApp } from '@/types/zenvitra';
 
@@ -24,7 +25,7 @@ const ECOSYSTEM_APPS: EcosystemApp[] = [
     id: 'zen-passport',
     name: 'ZEN.PASSPORT',
     code: 'PASSPORT',
-    version: 'V-1.0',
+    version: 'V1',
     tagline: 'Permanent Identity & Record',
     description: 'Verified MUN, Press, Speaking credentials & Living Timeline.',
     href: '/passport',
@@ -37,7 +38,7 @@ const ECOSYSTEM_APPS: EcosystemApp[] = [
     id: 'zen-leaderboard',
     name: 'ZEN.LEADERBOARD',
     code: 'RANK',
-    version: 'V-1.0',
+    version: 'V1',
     tagline: 'Recognise the Work',
     description: 'Verified community leaderboards, pillars & seasons.',
     href: '/leaderboard',
@@ -50,7 +51,7 @@ const ECOSYSTEM_APPS: EcosystemApp[] = [
     id: 'zenvitra-id',
     name: 'ZENVITRA ID',
     code: 'AUTH',
-    version: 'V-0.0.1',
+    version: 'V1',
     tagline: 'Universal Identity',
     description: 'Unified cryptographic profile across all nodes.',
     href: '/profile',
@@ -63,38 +64,51 @@ const ECOSYSTEM_APPS: EcosystemApp[] = [
     id: 'zen-pulse',
     name: 'ZEN.PULSE',
     code: 'SOCIAL',
-    version: 'V-0.0.3',
+    version: 'V1',
     tagline: 'Youth Social Network',
     description: 'Post thoughts, event check-ins, debates & feeds.',
     href: '/pulse',
     iconName: 'Zap',
     accentColor: 'from-amber-500/20 to-orange-500/10 border-amber-500/30 text-amber-400',
-    badge: 'BETA',
+    badge: 'V1',
     isLive: true,
   },
   {
     id: 'events',
     name: 'EVENTS & MUN',
     code: 'HOST',
-    version: 'V-0.0.5',
+    version: 'V1',
     tagline: 'Event Hosting Engine',
     description: 'Operate MUNs, youth forums, tickets & registrations.',
     href: '/events',
     iconName: 'Calendar',
     accentColor: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400',
-    badge: 'PILOT',
+    badge: 'LIVE',
     isLive: true,
   },
   {
     id: 'zen-chat',
     name: 'ZEN.CHAT',
     code: 'COMMS',
-    version: 'V-0.1',
+    version: 'V1',
     tagline: 'Comms & Voice Rooms',
     description: '1-to-1, Secretariat channels, audio/video rooms.',
-    href: '/contact',
+    href: '/chat',
     iconName: 'MessageSquare',
     accentColor: 'from-blue-500/20 to-indigo-500/10 border-blue-500/30 text-blue-400',
+    badge: 'LIVE',
+    isLive: true,
+  },
+  {
+    id: 'zen-press',
+    name: 'ZEN.PRESS',
+    code: 'BUREAU',
+    version: 'V1',
+    tagline: 'Investigative Press Wire',
+    description: 'Independent youth journalism, verified citations & open publication.',
+    href: '/press',
+    iconName: 'Newspaper',
+    accentColor: 'from-cyan-500/20 to-teal-500/10 border-cyan-500/30 text-cyan-300',
     badge: 'LIVE',
     isLive: true,
   },
@@ -102,20 +116,20 @@ const ECOSYSTEM_APPS: EcosystemApp[] = [
     id: 'zen-flux',
     name: 'ZEN.FLUX',
     code: 'VIDEO',
-    version: 'V-0.0.4',
+    version: 'V1',
     tagline: 'Short-Form Video',
     description: 'Youth-focused discovery engine & culture clips.',
     href: '/flux',
     iconName: 'Video',
     accentColor: 'from-pink-500/20 to-purple-500/10 border-pink-500/30 text-pink-400',
-    badge: 'ROADMAP',
+    badge: 'LIVE',
     isLive: false,
   },
   {
     id: 'communities',
     name: 'COMMUNITIES',
     code: 'ORGS',
-    version: 'V-0.3',
+    version: 'V1',
     tagline: 'Youth Organizations',
     description: 'School chapters, NGO clusters & working groups.',
     href: '/core-team',
@@ -128,26 +142,26 @@ const ECOSYSTEM_APPS: EcosystemApp[] = [
     id: 'opportunities',
     name: 'OPPORTUNITIES',
     code: 'GRANTS',
-    version: 'V-0.6',
+    version: 'V1',
     tagline: 'Grants & Fellowships',
     description: 'Internships, scholarships & youth delegations.',
     href: '/why-zenvitra',
     iconName: 'Award',
     accentColor: 'from-emerald-500/20 to-green-500/10 border-emerald-500/30 text-emerald-300',
-    badge: 'SOON',
+    badge: 'V1',
     isLive: false,
   },
   {
     id: 'discover',
     name: 'DISCOVER',
     code: 'SEARCH',
-    version: 'V-0.5',
+    version: 'V1',
     tagline: 'Ecosystem Intelligence',
     description: 'Discover people, events, papers & communities.',
     href: '/forum',
     iconName: 'Compass',
     accentColor: 'from-yellow-500/20 to-amber-500/10 border-yellow-500/30 text-yellow-300',
-    badge: 'BETA',
+    badge: 'V1',
     isLive: true,
   },
 ];
@@ -233,7 +247,7 @@ export function EcosystemSwitcher() {
                       {app.id === 'events' && <Calendar className="w-4 h-4" />}
                       {app.id === 'zen-chat' && <MessageSquare className="w-4 h-4" />}
                       {app.id === 'zen-flux' && <Video className="w-4 h-4" />}
-                      {app.id === 'international-press' && <FileText className="w-4 h-4" />}
+                      {(app.id === 'zen-press' || app.id === 'international-press') && <Newspaper className="w-4 h-4" />}
                       {app.id === 'communities' && <Users className="w-4 h-4" />}
                       {app.id === 'opportunities' && <Award className="w-4 h-4" />}
                       {app.id === 'discover' && <Compass className="w-4 h-4" />}
@@ -252,7 +266,7 @@ export function EcosystemSwitcher() {
 
             {/* Matrix Footer */}
             <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-neutral-500">
-              <span>UNIFIED ARCHITECTURE V-0.0.1</span>
+              <span>UNIFIED ARCHITECTURE V1</span>
               <Link
                 href="/why-zenvitra"
                 onClick={() => setIsOpen(false)}

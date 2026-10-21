@@ -20,8 +20,10 @@ export interface WorldLocation {
   name: string;
   country?: string;
   city?: string;
+  address?: string;
   lat?: number;
   lng?: number;
+  placeId?: string;
   type?: 'city' | 'venue' | 'civic' | 'custom';
 }
 
@@ -29,6 +31,7 @@ interface WorldLocationPickerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectLocation: (loc: WorldLocation) => void;
+  onRemoveLocation?: () => void;
   initialLocation?: string;
   title?: string;
 }
@@ -92,8 +95,9 @@ export function WorldLocationPickerModal({
   isOpen,
   onClose,
   onSelectLocation,
+  onRemoveLocation,
   initialLocation = '',
-  title = 'World Location & Map Geotag'
+  title = 'Add Location'
 }: WorldLocationPickerModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<WorldLocation[]>([]);
@@ -126,7 +130,7 @@ export function WorldLocationPickerModal({
     }
   }, [isOpen, initialLocation]);
 
-  // Live Geocoding via OpenStreetMap Nominatim API + Fallback
+  // Live Geocoding via Google Places API (New) + Resilient Fallback
   useEffect(() => {
     const query = searchQuery.trim();
     if (!query) {
@@ -145,63 +149,30 @@ export function WorldLocationPickerModal({
 
     const debounceTimer = setTimeout(async () => {
       try {
-        // 1. First search in curated offline presets for instant responsiveness
+        // 1. Query Google Places API (New) via our secure Next.js route
+        const response = await fetch(`/api/places?query=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.results && data.results.length > 0) {
+            setSearchResults(data.results);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // 2. Fallback to curated presets
         const localMatches = GLOBAL_PRESET_LOCATIONS.filter(
           (loc) =>
             loc.name.toLowerCase().includes(query.toLowerCase()) ||
             (loc.city && loc.city.toLowerCase().includes(query.toLowerCase())) ||
             (loc.country && loc.country.toLowerCase().includes(query.toLowerCase()))
         );
-
-        // 2. Fetch live worldwide geocoding data from OpenStreetMap Nominatim
-        const endpoint = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          query
-        )}&addressdetails=1&limit=8`;
-
-        const response = await fetch(endpoint, {
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const apiResults: WorldLocation[] = data.map((item: any) => {
-            const addr = item.address || {};
-            const cityName = addr.city || addr.town || addr.village || addr.state || item.name;
-            const countryName = addr.country || '';
-            const cleanName = item.display_name.split(',').slice(0, 3).join(',').trim();
-
-            return {
-              name: cleanName,
-              city: cityName,
-              country: countryName,
-              lat: parseFloat(item.lat),
-              lng: parseFloat(item.lon),
-              type: 'city' as const,
-            };
-          });
-
-          // Merge without exact duplicates
-          const seen = new Set<string>();
-          const merged: WorldLocation[] = [];
-
-          for (const item of [...localMatches, ...apiResults]) {
-            const key = item.name.toLowerCase();
-            if (!seen.has(key)) {
-              seen.add(key);
-              merged.push(item);
-            }
-          }
-
-          setSearchResults(merged);
-        } else {
-          setSearchResults(localMatches);
-        }
+        setSearchResults(localMatches);
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          // Fallback to local matches
           const localMatches = GLOBAL_PRESET_LOCATIONS.filter(
             (loc) =>
               loc.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -213,7 +184,7 @@ export function WorldLocationPickerModal({
       } finally {
         setIsLoading(false);
       }
-    }, 280);
+    }, 250);
 
     return () => {
       clearTimeout(debounceTimer);
@@ -266,7 +237,7 @@ export function WorldLocationPickerModal({
     }
   };
 
-  // 1-Click "Use My Location" via Browser Geolocation
+  // 1-Click "Use My Location" via Browser Geolocation + Google Places API
   const handleUseCurrentLocation = () => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -280,43 +251,31 @@ export function WorldLocationPickerModal({
         setMapPin({ lat: latitude, lng: longitude });
 
         try {
-          // Reverse geocode via Nominatim
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
+          // Query Google Places searchNearby via Next.js route
+          const res = await fetch(`/api/places?lat=${latitude}&lng=${longitude}`);
           if (res.ok) {
             const data = await res.json();
-            const addr = data.address || {};
-            const city = addr.city || addr.town || addr.suburb || addr.state || 'Current City';
-            const country = addr.country || '';
-            const name = `${city}, ${country}`.replace(/^[,\s]+|[,\s]+$/g, '');
-
-            setSelectedLocation({
-              name: name || `Coordinates [${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°]`,
-              city,
-              country,
-              lat: latitude,
-              lng: longitude,
-              type: 'custom'
-            });
-          } else {
-            setSelectedLocation({
-              name: `Coordinates [${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°]`,
-              lat: latitude,
-              lng: longitude,
-              type: 'custom'
-            });
+            if (data.results && data.results.length > 0) {
+              const topPlace = data.results[0];
+              setSelectedLocation(topPlace);
+              setSearchResults(data.results);
+              setActiveTab('search');
+              setIsLocatingUser(false);
+              return;
+            }
           }
-        } catch {
-          setSelectedLocation({
-            name: `Coordinates [${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°]`,
-            lat: latitude,
-            lng: longitude,
-            type: 'custom'
-          });
-        } finally {
-          setIsLocatingUser(false);
+        } catch (e) {
+          console.warn('[GPS Places Nearby Error]', e);
         }
+
+        // Fallback coordinate pin
+        setSelectedLocation({
+          name: `Current Location (${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°)`,
+          lat: latitude,
+          lng: longitude,
+          type: 'custom',
+        });
+        setIsLocatingUser(false);
       },
       () => {
         setIsLocatingUser(false);
@@ -361,10 +320,10 @@ export function WorldLocationPickerModal({
               <h2 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
                 {title}
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/25">
-                  World Map API
+                  Google Maps API
                 </span>
               </h2>
-              <p className="text-[11px] text-zinc-400">Search any global city, UN hub, custom venue, or pin on the world map</p>
+              <p className="text-[11px] text-zinc-400">Search global venues, cities, or tag your GPS location like Instagram</p>
             </div>
           </div>
 
@@ -470,8 +429,8 @@ export function WorldLocationPickerModal({
               {searchQuery.trim().length > 0 ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono px-1">
-                    <span>GLOBAL SEARCH RESULTS ({searchResults.length})</span>
-                    <span>Powered by OpenStreetMap</span>
+                    <span>GOOGLE PLACES RESULTS ({searchResults.length})</span>
+                    <span className="text-cyan-400/80">Google Places API</span>
                   </div>
 
                   <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
@@ -504,6 +463,7 @@ export function WorldLocationPickerModal({
                             setMapPin({ lat: loc.lat, lng: loc.lng });
                           }
                         }}
+                        onDoubleClick={() => handleSelectAndConfirm(loc)}
                         className={`w-full text-left p-3 rounded-2xl border transition flex items-center justify-between cursor-pointer ${
                           selectedLocation?.name === loc.name
                             ? 'bg-white/15 border-cyan-400 shadow-md'
@@ -514,10 +474,10 @@ export function WorldLocationPickerModal({
                           <div className="p-2 rounded-xl bg-white/5 text-rose-400">
                             <MapPin className="w-4 h-4" />
                           </div>
-                          <div>
-                            <p className="text-xs font-bold text-white">{loc.name}</p>
-                            <p className="text-[10px] text-zinc-400 font-mono">
-                              {loc.city ? `${loc.city}, ` : ''}{loc.country || 'Global Coordinate'}
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate">{loc.name}</p>
+                            <p className="text-[10px] text-zinc-400 font-sans truncate">
+                              {loc.address || (loc.city ? `${loc.city}, ${loc.country || ''}` : loc.country || 'Google Maps Geotag')}
                               {loc.lat && loc.lng ? ` • (${loc.lat.toFixed(2)}°, ${loc.lng.toFixed(2)}°)` : ''}
                             </p>
                           </div>
@@ -813,14 +773,28 @@ export function WorldLocationPickerModal({
 
         {/* Modal Bottom Footer / Confirmation */}
         <div className="flex items-center justify-between px-5 py-3.5 border-t border-white/[0.08] bg-white/[0.02]">
-          <div className="truncate max-w-[55%]">
+          <div className="flex items-center gap-3 truncate max-w-[55%]">
             {selectedLocation ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 truncate">
                 <MapPin className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                 <span className="text-xs font-bold text-white truncate">{selectedLocation.name}</span>
               </div>
             ) : (
               <span className="text-[11px] text-zinc-500 font-mono">No location selected</span>
+            )}
+
+            {onRemoveLocation && (selectedLocation || initialLocation) && (
+              <button
+                type="button"
+                onClick={() => {
+                  onRemoveLocation();
+                  setSelectedLocation(null);
+                  onClose();
+                }}
+                className="text-[11px] text-rose-400 hover:text-rose-300 font-sans underline cursor-pointer shrink-0 ml-1"
+              >
+                Remove
+              </button>
             )}
           </div>
 

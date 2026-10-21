@@ -19,6 +19,10 @@ export async function GET(req: NextRequest) {
     const successfulPayment = payments.find((p) => p.payment_status === 'SUCCESS');
     const isPaid = order.order_status === 'PAID' || Boolean(successfulPayment);
 
+    const orderTags = (order as any).order_tags || {};
+    const planId = orderTags.planId || orderTags.productId || null;
+    const username = orderTags.username || order.customer_details?.customer_email?.split('@')[0] || '';
+
     return NextResponse.json({
       success: true,
       orderId: order.order_id,
@@ -30,6 +34,10 @@ export async function GET(req: NextRequest) {
       paymentId: successfulPayment?.cf_payment_id || null,
       paymentTime: successfulPayment?.payment_completion_time || order.created_at,
       paymentsCount: payments.length,
+      planId,
+      username,
+      customerDetails: order.customer_details,
+      orderTags,
     });
 
   } catch (error: any) {

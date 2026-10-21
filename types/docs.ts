@@ -120,4 +120,54 @@ export interface ZenDocument {
   updatedAt: string;
   createdAt: string;
   version: number;
+
+  // ─── BRAND PROFILE & AUTHOR ATTRIBUTION ───
+  brandProfile?: DocumentBrandProfile;
+
+  // ─── PAGE GEOMETRY & PRINT SETTINGS ───
+  pageSize?: DocumentPageSize;
+  orientation?: DocumentOrientation;
+  margins?: {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  };
+
+  // ─── ZEN.SOLUTIONS SOURCE LINKAGE ───
+  sourceSolutionId?: string;
+  sourceRevisionId?: string;
+  templateId?: string;
+}
+
+export type DocumentPageSize = 'A4' | 'LETTER' | 'LEGAL' | 'A3';
+export type DocumentOrientation = 'PORTRAIT' | 'LANDSCAPE';
+export type BrandAttributionMode = 'CO_BRANDED' | 'PERSONAL_ONLY' | 'ZENVITRA_OFFICIAL' | 'CLEAN_UNBRANDED';
+
+export interface DocumentBrandProfile {
+  id?: string;
+  authorName: string;
+  authorTitle?: string;
+  affiliation?: string;
+  personalLogoUrl?: string;
+  signatureUrl?: string;
+  brandMode: BrandAttributionMode;
+  accentColor: string;
+  copyrightText?: string;
+  watermarkText?: string;
+  placement?: {
+    coverPage?: boolean;
+    header?: boolean;
+    footer?: boolean;
+    closingPage?: boolean;
+  };
+}
+
+export interface DocumentExportRecord {
+  id: string;
+  format: 'pdf' | 'docx' | 'html' | 'md' | 'txt';
+  revision: number;
+  checksum: string;
+  exportedAt: string;
+  url?: string;
 }

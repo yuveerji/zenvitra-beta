@@ -26,6 +26,8 @@ export interface SocialLinks {
   instagram: string;
   instagramHandle: string;
   twitter?: string;
+  twitterHandle?: string;
+  whatsapp?: string;
   linkedin?: string;
 }
 

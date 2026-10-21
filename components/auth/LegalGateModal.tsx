@@ -7,9 +7,10 @@ interface LegalGateModalProps {
   isOpen: boolean;
   type: 'PRIVACY' | 'TOS';
   onComplete: () => void;
+  isMinor?: boolean;
 }
 
-export function LegalGateModal({ isOpen, type, onComplete }: LegalGateModalProps) {
+export function LegalGateModal({ isOpen, type, onComplete, isMinor }: LegalGateModalProps) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
@@ -17,7 +18,7 @@ export function LegalGateModal({ isOpen, type, onComplete }: LegalGateModalProps
   // Reset verification whenever the document type changes
   useEffect(() => {
     setHasScrolledToBottom(false);
-  }, [type]);
+  }, [type, isMinor]);
 
   // Check if content is already fully visible without needing to scroll
   const checkInitialVisibility = useCallback(() => {
@@ -56,7 +57,7 @@ export function LegalGateModal({ isOpen, type, onComplete }: LegalGateModalProps
       if (sentinel) observer.unobserve(sentinel);
       observer.disconnect();
     };
-  }, [isOpen, type, checkInitialVisibility]);
+  }, [isOpen, type, isMinor, checkInitialVisibility]);
 
   // Fallback onScroll handler with generous tolerance
   const handleScroll = () => {
@@ -82,15 +83,19 @@ export function LegalGateModal({ isOpen, type, onComplete }: LegalGateModalProps
             </div>
             <div>
               <h3 className="font-sans text-lg text-white font-semibold">
-                {type === 'PRIVACY' ? 'Sovereign Privacy Charter' : 'Platform Terms of Service'}
+                {type === 'PRIVACY' 
+                  ? (isMinor ? 'Under-18 Privacy & Parental Consent Policy' : 'Sovereign Privacy Charter') 
+                  : (isMinor ? 'Minor Terms of Service & Parental Consent Accord' : 'Platform Terms of Service')}
               </h3>
               <p className="font-mono text-[11px] text-neutral-400">
-                Scroll to the bottom of the document to unlock confirmation
+                {isMinor 
+                  ? 'Dedicated Under-18 safeguards under DPDP Act, 2023. Scroll to unlock.' 
+                  : 'Scroll to the bottom of the document to unlock confirmation.'}
               </p>
             </div>
           </div>
           <span className="font-mono text-[10px] px-2.5 py-1 rounded-full bg-white/5 text-amber-300 border border-white/5 uppercase tracking-widest">
-            Step Gate
+            {isMinor ? 'Under-18 Gate' : 'Step Gate'}
           </span>
         </div>
 
@@ -101,47 +106,139 @@ export function LegalGateModal({ isOpen, type, onComplete }: LegalGateModalProps
           className="p-6 overflow-y-auto space-y-5 text-xs text-neutral-300 leading-relaxed font-sans border-b border-white/5 relative"
         >
           {type === 'PRIVACY' ? (
-            <>
-              <p className="font-mono text-amber-300 uppercase tracking-widest">
-                [ZENVITRA PROTOCOL: ZERO SURVEILLANCE INVARIANT]
-              </p>
-              <p>
-                Zenvitra operates strictly on a non-surveillance foundation. We do not track cross-site behavioral telemetry, sell demographic packets to third-party ad networks, or execute rage-inducing algorithmic weighting across your feed.
-              </p>
-              <p>
-                All personal peer-to-peer transmissions across ZEN.CHAT utilize client-side ECDH key-pairs (Curve P-256) combined with symmetric AES-256-GCM ciphers. Private decryption keys reside entirely on your client device.
-              </p>
-              <p>
-                Contributions to the Public Impact Ledger are verified transparently to support open-source Linux computer installations across schools while preserving individual anonymity where requested.
-              </p>
-              <p>
-                Every user is granted sovereign data ownership. You reserve the absolute right to export, prune, or completely wipe your cryptographic identity node at any point in time without retention penalties.
-              </p>
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-neutral-400">
-                End of Privacy Charter. By clicking acknowledge, you confirm understanding of our cryptographic privacy standards.
-              </div>
-            </>
+            isMinor ? (
+              <>
+                <p className="font-mono text-amber-300 uppercase tracking-widest">
+                  [ZENVITRA PROTOCOL: UNDER-18 DPDP 2023 SAFEGUARDS]
+                </p>
+                <p>
+                  In accordance with India&apos;s Digital Personal Data Protection Act, 2023 and the DPDP Rules, 2025, ZENVITRA provides special statutory protections for all delegates, debaters, and citizens under 18 years of age.
+                </p>
+                <p>
+                  <strong>Zero Targeted Ads &amp; Zero Behavioural Tracking:</strong> We never track behavioural movements across the platform to serve targeted advertisements. Children are never commodified or profiled for marketing purposes.
+                </p>
+                <p>
+                  <strong>Protected Coordinates:</strong> Private telephone numbers, email addresses, residential coordinates, and parent contacts are strictly shielded from public directories, search engine indexing, and third-party brokers.
+                </p>
+                <p>
+                  <strong>Verifiable Guardian Consent:</strong> Parents or lawful guardians must verify consent for minor account creation and event registrations. Parents retain the unconditional right to review, update, or cryptographically erase their child&apos;s data at any time.
+                </p>
+                <div className="p-4 rounded-xl bg-amber-500/[0.05] border border-amber-400/20 text-neutral-300 space-y-2">
+                  <div className="text-amber-300 font-bold font-mono text-[11px]">DPDP Redressal Desk</div>
+                  <div>
+                    For parental rights, consent verification, or grievance redressal, contact <a href="mailto:privacy@zenvitra.xyz" className="text-white underline">privacy@zenvitra.xyz</a>.
+                  </div>
+                  <div>
+                    <a
+                      href="/privacy/minor"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-1 text-amber-300 underline font-mono text-[11px] hover:text-white"
+                    >
+                      Read Complete 6-Part Minor Privacy Policy (Opens in new tab) &rarr;
+                    </a>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="font-mono text-amber-300 uppercase tracking-widest">
+                  [ZENVITRA PROTOCOL: ZERO SURVEILLANCE INVARIANT]
+                </p>
+                <p>
+                  Zenvitra operates strictly on a non-surveillance foundation. We do not track cross-site behavioral telemetry, sell demographic packets to third-party ad networks, or execute rage-inducing algorithmic weighting across your feed.
+                </p>
+                <p>
+                  All personal peer-to-peer transmissions across ZEN.CHAT utilize client-side ECDH key-pairs (Curve P-256) combined with symmetric AES-256-GCM ciphers. Private decryption keys reside entirely on your client device.
+                </p>
+                <p>
+                  Contributions to the Public Impact Ledger are verified transparently to support open-source Linux computer installations across schools while preserving individual anonymity where requested.
+                </p>
+                <p>
+                  Every user is granted sovereign data ownership. You reserve the absolute right to export, prune, or completely wipe your cryptographic identity node at any point in time without retention penalties.
+                </p>
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-neutral-400 space-y-1">
+                  <div>End of Privacy Charter. By clicking acknowledge, you confirm understanding of our cryptographic privacy standards.</div>
+                  <div>
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cyan-300 underline font-mono text-[11px] hover:text-white"
+                    >
+                      Read Complete 22-Part Standard Privacy Policy (Opens in new tab) &rarr;
+                    </a>
+                  </div>
+                </div>
+              </>
+            )
           ) : (
-            <>
-              <p className="font-mono text-amber-300 uppercase tracking-widest">
-                [ZENVITRA PROTOCOL: DELEGATE CODE &amp; TERMS]
-              </p>
-              <p>
-                By claiming a verified node identity on Zenvitra, you commit to high-signal intellectual engagement, youth diplomacy, and constructive discourse across open discussions and summits.
-              </p>
-              <p>
-                Organizers utilizing ZEN.EVENTS and ZEN.BOOK retain complete ownership of their event intellectual property, delegate lists, and custom registration configurations.
-              </p>
-              <p>
-                Slander, automated spam scraping, coordinate spoofing, and malicious intrusion into closed committee rooms will lead to immediate node revocation without appeal.
-              </p>
-              <p>
-                Civic contributions and charitable allocations operate under a zero-kickback invariant to protect public trust.
-              </p>
-              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-neutral-400">
-                End of Terms of Service. Acknowledging unlocks full access to ZEN.PULSE, ZEN.EVENTS, and ZEN.PRESS.
-              </div>
-            </>
+            isMinor ? (
+              <>
+                <p className="font-mono text-amber-300 uppercase tracking-widest">
+                  [ZENVITRA PROTOCOL: MINOR CIVIC ACCORD &amp; TERMS]
+                </p>
+                <p>
+                  <strong>Age Accuracy &amp; Sovereign Representation:</strong> You confirm that the age coordinates you provide are truthful. Falsifying your age or bypassing guardian authorization is strictly prohibited.
+                </p>
+                <p>
+                  <strong>Parental / Guardian Sponsoring:</strong> In compliance with Indian contract law and statutory youth protections, users under 18 participate under the awareness and consent of their parent or lawful guardian.
+                </p>
+                <p>
+                  <strong>Diplomatic Decorum &amp; Mutual Respect:</strong> All participants, regardless of age, have the sovereign right to debate fearlessly, express viewpoints, and challenge orthodoxies. Harassment, abuse, coordinate doxxing, or malicious intrusion will result in immediate suspension.
+                </p>
+                <p>
+                  <strong>Statutory Supremacy:</strong> No clause in these terms supersedes or reduces any statutory rights granted to minors and guardians under mandatory national laws.
+                </p>
+                <div className="p-4 rounded-xl bg-amber-500/[0.05] border border-amber-400/20 text-neutral-300 space-y-2">
+                  <div className="text-amber-300 font-bold font-mono text-[11px]">Minor Support Desk</div>
+                  <div>
+                    Secretariat &amp; Parental Liaison: <a href="mailto:support@zenvitra.xyz" className="text-white underline">support@zenvitra.xyz</a>.
+                  </div>
+                  <div>
+                    <a
+                      href="/terms/minor"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-1 text-amber-300 underline font-mono text-[11px] hover:text-white"
+                    >
+                      Read Complete 8-Section Minor Terms of Service (Opens in new tab) &rarr;
+                    </a>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="font-mono text-amber-300 uppercase tracking-widest">
+                  [ZENVITRA PROTOCOL: DELEGATE CODE &amp; TERMS]
+                </p>
+                <p>
+                  By claiming a verified node identity on Zenvitra, you commit to high-signal intellectual engagement, youth diplomacy, and constructive discourse across open discussions and summits.
+                </p>
+                <p>
+                  Organizers utilizing ZEN.EVENTS and ZEN.BOOK retain complete ownership of their event intellectual property, delegate lists, and custom registration configurations.
+                </p>
+                <p>
+                  Slander, automated spam scraping, coordinate spoofing, and malicious intrusion into closed committee rooms will lead to immediate node revocation without appeal.
+                </p>
+                <p>
+                  Civic contributions and charitable allocations operate under a zero-kickback invariant to protect public trust.
+                </p>
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-neutral-400 space-y-1">
+                  <div>End of Terms of Service. Acknowledging unlocks full access to ZEN.PULSE, ZEN.EVENTS, and ZEN.PRESS.</div>
+                  <div>
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cyan-300 underline font-mono text-[11px] hover:text-white"
+                    >
+                      Read Complete 46-Section Standard Terms of Service (Opens in new tab) &rarr;
+                    </a>
+                  </div>
+                </div>
+              </>
+            )
           )}
 
           {/* Sentinel Element Target */}

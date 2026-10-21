@@ -87,17 +87,13 @@ interface PortfolioMatrixViewProps {
 
 export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, initialCommittee }: PortfolioMatrixViewProps) {
   const { user, profile } = useAuth();
-  const [activeCommittee, setActiveCommittee] = useState<'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC'>(() => {
-    if (initialCommittee) return initialCommittee;
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const c = params.get('committee')?.toUpperCase();
-      if (c === 'AIPPM' || c === 'EMI' || c === 'UNSC' || c === 'ECOSOC') {
-        return c as any;
-      }
-    }
-    return 'AIPPM';
-  });
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const [activeCommittee, setActiveCommittee] = useState<'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC'>(initialCommittee || 'AIPPM');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -166,10 +162,11 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
   const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
 
   const isAuthorizedOrganizerOrFounder = useMemo(() => {
+    if (!isMounted) return false;
     const cleanUsername = (profile?.username || user?.username || '').replace(/^@/, '').toLowerCase();
     const cleanEmail = (profile?.email || user?.email || '').toLowerCase();
 
-    if (cleanUsername === 'yuveer' || cleanEmail === 'founder@zenvitra.org') return true;
+    if (cleanUsername === 'yuveer' || cleanEmail === 'founder@zenvitra.xyz' || cleanEmail === 'founder@zenvitra.org') return true;
     if (isFounder(user) || isAdmin(user)) return true;
     if ((profile as any)?.isFounder) return true;
     if (
@@ -190,7 +187,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
         const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
         const su = (stored?.username || stored?.handle || '').replace(/^@/, '').toLowerCase();
         const se = (stored?.email || '').toLowerCase();
-        if (su === 'yuveer' || se === 'founder@zenvitra.org') return true;
+        if (su === 'yuveer' || se === 'founder@zenvitra.xyz' || se === 'founder@zenvitra.org') return true;
         if (stored?.isFounder) return true;
         const sRole = (stored?.role || '').toLowerCase();
         if (['admin', 'organizer', 'secretariat', 'core_team'].includes(sRole)) return true;
@@ -198,7 +195,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
       } catch (_) {}
     }
     return false;
-  }, [user, profile]);
+  }, [isMounted, user, profile]);
 
   const canManage = isAuthorizedOrganizerOrFounder;
 

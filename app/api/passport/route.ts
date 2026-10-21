@@ -6,6 +6,7 @@ import {
   saveServerPassport 
 } from '@/lib/passportsStorage';
 import { createDefaultPassport, ZenPassport } from '@/lib/passport';
+import { sheetSync } from '@/lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,6 +71,26 @@ export async function POST(req: NextRequest) {
     }
 
     const saved = saveServerPassport(passport);
+
+    // Asynchronously dispatch to Register 46_PASSPORT_LEDGER
+    sheetSync.passport({
+      Passport_ID: saved.passportId,
+      Person_ID: saved.userId || `zen_user_${saved.username}`,
+      Username: saved.username,
+      Full_Name: saved.fullName,
+      Role: (saved.verification?.zenvitraRoles && saved.verification.zenvitraRoles[0]) || (saved as any).role || 'DELEGATE',
+      Verification_Level: saved.verification?.level !== undefined ? `Level ${saved.verification.level}` : 'Level 0',
+      Total_Points: (saved as any).points ?? (saved.contributions || []).reduce((acc: number, c: any) => acc + (c.pointsEarned || 0), 0),
+      Staked_Points: (saved as any).stakedPoints ?? 0,
+      User_Number: (saved as any).userNumber ?? '',
+      Onboarding_Tier: (saved as any).onboardingTier ?? '',
+      Onboarding_Claimed: (saved as any).onboardingClaimed ? 'Yes' : 'No',
+      Contributed_Count: (saved.contributions || []).length,
+      QR_Token: (saved as any).qrCodeData || saved.passportId,
+      Last_Synced_At: new Date().toISOString(),
+      Notes: 'Server-side passport sync'
+    }).catch((err) => console.warn('[SHEETS-PASSPORT-SYNC-WARN]', err));
+
     return NextResponse.json({ success: true, passport: saved });
   } catch (err: any) {
     console.error('[API-PASSPORT-POST-ERROR]', err);

@@ -5,6 +5,10 @@ import { AuthProvider } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { ZenChatPlatformProvider } from '@/context/ZenChatPlatformContext';
 import { MunProvider } from '@/context/MunContext';
+import { ZenEventsPlatformProvider } from '@/context/ZenEventsPlatformContext';
+import { ZenPassProvider } from '@/context/ZenPassContext';
+import { ZenPressPlatformProvider } from '@/context/ZenPressPlatformContext';
+import { MatrixChatProvider } from '@/context/MatrixChatContext';
 import { MockModeBanner } from '@/components/ui/MockModeBanner';
 import { MunInviteModal } from '@/components/mun/MunInviteModal';
 import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt';
@@ -62,16 +66,24 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <LanguageProvider>
         <ZenChatPlatformProvider>
           <MunProvider>
-            <ContentProtectionProvider>
-              <GlobalAudioProvider>
-                <MaintenanceGate>
-                  {children}
-                  <MockModeBanner />
-                  <MunInviteModal />
-                  <PWAInstallPrompt />
-                </MaintenanceGate>
-              </GlobalAudioProvider>
-            </ContentProtectionProvider>
+            <ZenEventsPlatformProvider>
+              <ZenPassProvider>
+                <ZenPressPlatformProvider>
+                  <MatrixChatProvider>
+                    <ContentProtectionProvider>
+                      <GlobalAudioProvider>
+                        <MaintenanceGate>
+                          {children}
+                          <MockModeBanner />
+                          <MunInviteModal />
+                          <PWAInstallPrompt />
+                        </MaintenanceGate>
+                      </GlobalAudioProvider>
+                    </ContentProtectionProvider>
+                  </MatrixChatProvider>
+                </ZenPressPlatformProvider>
+              </ZenPassProvider>
+            </ZenEventsPlatformProvider>
           </MunProvider>
         </ZenChatPlatformProvider>
       </LanguageProvider>

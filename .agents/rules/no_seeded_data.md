@@ -1,4 +1,7 @@
-# Strict Data Integrity Rule: Zero Seeded / Fake Data for Real User Accounts
+# NO SEEDED DATA NO SEEDED ACCOUNTS ALLOWED
+
+## Sovereign Rule
+Under **NO circumstances** may any seeded data, hardcoded mock accounts, simulated user profiles, or artificial social graphs be introduced or attached to real user profiles, database records, state providers, or UI presentations in ZENVITRA.
 
 ## Core Mandates
 1. **Never Inject Seeded Accounts into Real Profiles**:

@@ -102,9 +102,9 @@ export default function ZenDiplomacyBrochurePage() {
           <div className="h-4 w-px bg-white/15" />
           <div className="flex items-center gap-2.5">
             <img 
-              src="/assets/logo.png" 
+              src="/assets/logo-new.png" 
               alt="ZENVITRA Logo" 
-              className="w-5 h-5 object-contain"
+              className="w-5 h-5 object-contain mix-blend-screen brand-logo-img"
             />
             <img 
               src="/assets/brochure/zenvitra-seal.png" 

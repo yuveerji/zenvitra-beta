@@ -53,26 +53,22 @@ export function computeTax(
     };
   }
 
-  // Flat Platform Fee: Standard ₹9, Pulse Pass ₹5, Pulse Elite ₹0
+  // Flat Attendee Convenience Fee: Standard ₹29, Pulse Pass ₹15, Pulse Elite ₹0
   const normalizedTier = (passTier || '').toLowerCase();
-  let gatewayTax = currency === 'INR' ? 9 : 0.15;
+  let gatewayTax = currency === 'INR' ? 29 : 0.40;
   if (normalizedTier.includes('elite')) {
     gatewayTax = 0;
   } else if (normalizedTier.includes('pass')) {
-    gatewayTax = currency === 'INR' ? 5 : 0.08;
+    gatewayTax = currency === 'INR' ? 15 : 0.20;
   }
 
-  let gstRate = 0.12;
-  let gstLabel = '12% Statutory GST';
+  // GST rules: Student under or equal to age 18: 0% GST; Student over 18: 6% GST
+  let gstRate = 0.06;
+  let gstLabel = '6% Student GST (Age > 18)';
 
   if (userAge <= 18) {
     gstRate = 0;
     gstLabel = '0% Student Exemption (Age ≤ 18)';
-  } else if ((userAge >= 19 && userAge <= 21) || isCollegeStudent) {
-    gstRate = 0.05;
-    gstLabel = isCollegeStudent && userAge > 21
-      ? '5% College Student Concession'
-      : '5% Concessional GST (Ages 19-21 / College)';
   }
 
   const gstAmount = Math.round((baseAmount * gstRate) * 100) / 100;

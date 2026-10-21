@@ -108,7 +108,7 @@ export function RedlineDiffStudioModal({ post, isOpen, onClose }: RedlineDiffStu
                   Legislative Redline Diff Studio
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                  {post.treatyVersion || 'v1.0'}
+                  {post.treatyVersion || 'V1'}
                 </span>
               </div>
               <p className="text-xs font-mono text-neutral-400">
@@ -169,7 +169,7 @@ export function RedlineDiffStudioModal({ post, isOpen, onClose }: RedlineDiffStu
             <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
               <span className="flex items-center gap-1.5 text-cyan-400">
                 <FileCode2 className="w-3.5 h-3.5" />
-                Live Enacted Text ({post.treatyVersion || 'v1.0'})
+                Live Enacted Text ({post.treatyVersion || 'V1'})
               </span>
               <span className="text-[11px] text-neutral-500">
                 Tip: Click any phrase or clause to load it into the amendment editor
@@ -387,7 +387,7 @@ export function RedlineDiffStudioModal({ post, isOpen, onClose }: RedlineDiffStu
             <div className="space-y-4">
               {revisions.length === 0 ? (
                 <div className="text-center py-12 text-neutral-500 font-mono text-xs">
-                  Initial version v1.0 currently active. No ratified changelogs recorded yet.
+                  Initial version V1 currently active. No ratified changelogs recorded yet.
                 </div>
               ) : (
                 revisions.map((rev, i) => (

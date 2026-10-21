@@ -265,8 +265,8 @@ export function ZenPassHolographicTicket({ ticket, onClose, isModal = true }: Ze
             </div>
             <span className="text-[9px] font-mono text-neutral-500 block">
               {ticket.status === 'refunded' 
-                ? `100% Refund credited to original payment method &bull; ID: RFND-${ticket.ticketNumber}` 
-                : `Gate Timestamp: ${currentTime} &bull; Screenshot Protection Active`}
+                ? `100% Refund credited to original payment method • ID: RFND-${ticket.ticketNumber}` 
+                : `Gate Timestamp: ${currentTime} • Screenshot Protection Active`}
             </span>
           </div>
 

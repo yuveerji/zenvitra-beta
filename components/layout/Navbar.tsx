@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -31,16 +31,33 @@ import {
   BookOpen,
   Video,
   Globe,
+  Award,
+  Newspaper,
+  Send,
+  LifeBuoy,
+  MessageCircle,
+  Twitter,
+  Cpu,
+  Orbit,
+  Target,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { SocialMindMapModal } from '@/components/home/SocialMindMapModal';
 import SocialHoverMenu from '@/components/home/SocialHoverMenu';
+import { EcosystemHoverMenu } from './EcosystemHoverMenu';
+import { EcosystemMindMapModal } from './EcosystemMindMapModal';
 import { SecurityShieldModal } from '@/components/security/SecurityShieldModal';
 import { SwitchAccountModal } from '@/components/pulse/SwitchAccountModal';
 import { NotificationBell } from '@/components/navigation/NotificationBell';
 import { AdminOmniModal } from '@/components/founder/AdminOmniModal';
 import { FounderOmniModal } from '@/components/founder/FounderOmniModal';
-import { isFounder as checkIsFounder, isAdmin as checkIsAdmin } from '@/lib/founderControl';
+import { 
+  isFounder as checkIsFounder, 
+  isAdmin as checkIsAdmin,
+  isFounderOrCoFounder,
+  isCurrentSessionFounderOrCoFounder 
+} from '@/lib/founderControl';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface NavbarProps {
@@ -60,8 +77,13 @@ export function Navbar({
 }: NavbarProps = {}) {
   const pathname = usePathname();
   const { profile, isAuthenticated, isMockMode, exitMockMode, signOut } = useAuth();
+  const profileRef = useRef(profile);
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
 
   const primaryNavLinks = [
+    { name: 'About', href: '/about', icon: Sparkles },
     { name: 'Constitution', href: '/constitution', icon: Scale },
     { name: 'Discussions', href: '/discussions', icon: Radio },
     { name: 'Summits', href: '/events', icon: Calendar },
@@ -70,25 +92,37 @@ export function Navbar({
   ];
 
   const secondaryNavLinks = [
+    { name: 'About Zenvitra', href: '/about', icon: Sparkles, tag: 'Genesis', desc: 'The Foundational Architecture, 4 Chambers & Sovereign Mission' },
+    { name: 'ZEN.APPS', href: '/apps', icon: Orbit, tag: 'Mind Map', desc: 'Interactive 360° Circular Ecosystem Mind Map & 7 Radial Clusters' },
+    { name: 'Model UN CV', href: '/cv', icon: Award, tag: 'Dossier', desc: 'Sovereign Diplomatic MUN CV, Verified Accreditations & Track Record' },
+    { name: "Who's Core Team", href: '/team', icon: Users, tag: 'Leadership', desc: "Who's Your Core Team? Sovereign Leadership, Co-Founders & Architects" },
     { name: 'ZEN.PASSPORT', href: '/passport', icon: ShieldCheck, tag: 'Identity', desc: 'Permanent Sovereign Identity, Verified Credentials & QR Terminal' },
     { name: 'ZEN.LEADERBOARD', href: '/leaderboard', icon: Trophy, tag: 'Rankings', desc: 'Verified Activity Leaderboards, Seasons, Merits & Recognition' },
     { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Studio', desc: 'Sovereign Form Studio, Shareable Templates & Direct Ledger Exports' },
-    { name: 'ZEN.SPACE', href: '/space', icon: Globe, tag: 'Civic Hub', desc: 'Custom Civic Bio, Portfolios, Verified Links & Custom Blocks' },
-    { name: 'ZEN.DIPLOMACY', href: '/zen-diplomacy', icon: Crown, tag: 'Flagship MUN', desc: 'Oct 24-25 Virtual MUN, Dossiers, Guidelines & Live Chambers' },
+    { name: 'ZEN.SPACE', href: '/space', icon: Globe, tag: 'Paused • Nov 25', desc: 'Paused Until Nov 25 — Something Special Coming Soon' },
+    { name: 'Country Matrix', href: '/mun/matrix', icon: Layers, tag: 'Allocations', desc: 'Interactive Portfolios, Allotment Ledgers & Country Matrices' },
     { name: 'ZEN.CALL', href: '/call', icon: Video, tag: 'Encrypted AV', desc: 'Sovereign High-Fidelity Diplomatic Audio & Video Chambers' },
+    { name: 'ZEN.MEET', href: '/meet', icon: Calendar, tag: 'Meetings', desc: 'Sovereign Meeting Scheduler, Virtual Stages & Waiting Rooms' },
     { name: 'ZEN.LEGISLATE', href: '/legislate', icon: Scale, tag: 'Lok Sabha', desc: 'Parliamentary Bill Drafting, Official Dispatches & Chamber Motions' },
     { name: 'ZEN.DOCS', href: '/docs', icon: BookOpen, tag: 'Workspace', desc: 'Sovereign Collaborative Drafting, Resolutions & Publishing' },
-    { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Encrypted', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
+    { name: 'ZEN.PRESS', href: '/press', icon: Newspaper, tag: 'Bureau', desc: 'Open Publishing, Authentic Citations, Investigative Desks & Editorial Wire' },
+    { name: 'Submit News Wire', href: '/news/submit', icon: Send, tag: 'Wire Desk', desc: 'Transmit Breaking Wire Dispatches & Press Reports across Network' },
+    { name: 'ZEN.CHAT', href: '/chat', icon: MessageSquare, tag: 'Community', desc: 'Sovereign Diplomatic Mesh, Snaps, Voice & Caucuses' },
+    { name: 'ZEN.SUPPORT', href: '/support', icon: LifeBuoy, tag: 'Helpdesk', desc: 'Official Helpdesk, Ticket Triage, Issue Resolution & Service Desk' },
     { name: 'Chamber Dais', href: '/committee', icon: Gavel, tag: 'Live Dais', desc: 'Active Committee Dais, Motions & Voting' },
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },
     { name: 'Conference OS', href: '/mun/conference', icon: Layers, tag: 'Secretariat', desc: 'Secretariat Command Center & Liveboard' },
     { name: 'Impact Ledger', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 6 Months with Video Proof' },
+    { name: 'Our Mission', href: '/mission', icon: Target, tag: 'Manifesto', desc: 'A Generation That Deserves to be Heard: By Youth. For Youth. Youth Comes First.' },
+    { name: 'Privacy Policy', href: '/privacy', icon: Lock, tag: 'Legal', desc: 'Zero Behavioral Surveillance, Cryptographic Privacy & RLS Security' },
+    { name: 'Terms of Service', href: '/terms', icon: Scale, tag: 'Legal', desc: 'Decentralized Civic Operating System Terms & Conditions' },
   ];
 
   const allNavLinks = [...primaryNavLinks, ...secondaryNavLinks];
 
   const [showNavbar, setShowNavbar] = useState(true);
   const [socialMindMapOpen, setSocialMindMapOpen] = useState(false);
+  const [ecosystemMindMapOpen, setEcosystemMindMapOpen] = useState(false);
   const [securityModalOpen, setSecurityModalOpen] = useState(false);
   const [switchAccountModalOpen, setSwitchAccountModalOpen] = useState(false);
   const [adminOmniModalOpen, setAdminOmniModalOpen] = useState(false);
@@ -112,24 +146,25 @@ export function Navbar({
     }, 150);
   };
 
-  // Auto-hide on scroll down, reveal on scroll up or mouse hovering top zone
+  // Auto-hide on scroll down, reveal on scroll up or at top of page
   useEffect(() => {
     let lastScrollY = window.scrollY;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > 80 && currentScrollY > lastScrollY) {
+      if (currentScrollY <= 20) {
+        setShowNavbar(true);
+      } else if (currentScrollY > 80 && currentScrollY > lastScrollY) {
         setShowNavbar(false);
         setUserDropdownOpen(false);
-      } else {
+      } else if (currentScrollY < lastScrollY) {
         setShowNavbar(true);
       }
       lastScrollY = currentScrollY;
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      // If mouse cursor moves up to the top 60px of the viewport, reveal the navbar immediately!
-      if (e.clientY <= 60) {
+      if (e.clientY <= 35) {
         setShowNavbar(true);
       }
     };
@@ -158,10 +193,19 @@ export function Navbar({
         setMobileMenuOpen(false);
         setEcosystemDropdownOpen(false);
       }
-      // Seeded Founder Sovereignty Shortcut (Ctrl+Shift+F or Cmd+Shift+F)
+      // Founder & Co-Founder Sovereignty Shortcut (Ctrl+Shift+F or Cmd+Shift+F)
+      // STRICT CLEARANCE: Only verified founders and co-founders using their own ID can open this menu
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'F' || event.key === 'f')) {
         event.preventDefault();
-        setFounderOmniModalOpen(true);
+        const curProfile = profileRef.current;
+        const isAuthorized =
+          isCurrentSessionFounderOrCoFounder() ||
+          isFounderOrCoFounder(curProfile?.username, curProfile?.role, curProfile?.id) ||
+          isFounderOrCoFounder(curProfile?.email, curProfile?.role, curProfile?.id);
+
+        if (isAuthorized) {
+          setFounderOmniModalOpen(true);
+        }
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -187,10 +231,40 @@ export function Navbar({
         const stored = localStorage.getItem('zenvitra_session_user') || localStorage.getItem('zenvitra_pulse_user_v6');
         if (stored) {
           const parsed = JSON.parse(stored);
+          const rawAvatar = parsed.avatar_url || parsed.avatar;
+          const cleanU = (parsed.username || '').toLowerCase().replace(/^@/, '').trim();
+
+          let resolvedAvatar = (rawAvatar && rawAvatar !== '/assets/default-avatar.svg' && !rawAvatar.includes('default-avatar')) ? rawAvatar : '';
+          if (!resolvedAvatar && cleanU) {
+            try {
+              const passRaw = localStorage.getItem(`zenvitra_passport_${cleanU}`);
+              if (passRaw) {
+                const pass = JSON.parse(passRaw);
+                if (pass?.avatarUrl && pass.avatarUrl !== '/assets/default-avatar.svg') {
+                  resolvedAvatar = pass.avatarUrl;
+                }
+              }
+            } catch (_) {}
+          }
+          if (!resolvedAvatar) {
+            try {
+              const pulseRaw = localStorage.getItem('zenvitra_pulse_my_profile_v1');
+              if (pulseRaw) {
+                const pulse = JSON.parse(pulseRaw);
+                if (pulse?.avatar && pulse.avatar !== '/assets/default-avatar.svg') {
+                  resolvedAvatar = pulse.avatar;
+                }
+              }
+            } catch (_) {}
+          }
+          if (!resolvedAvatar) {
+            resolvedAvatar = '/assets/default-avatar.svg';
+          }
+
           setLocalUserSession({
             name: parsed.display_name || parsed.name || parsed.username,
             username: parsed.username,
-            avatar: parsed.avatar_url || parsed.avatar,
+            avatar: resolvedAvatar,
             role: parsed.role,
           });
         } else {
@@ -204,9 +278,13 @@ export function Navbar({
     syncLocal();
     window.addEventListener('storage', syncLocal);
     window.addEventListener('zenvitra_auth_change', syncLocal);
+    window.addEventListener('zenvitra_passport_updated', syncLocal);
+    window.addEventListener('zenvitra_profile_sync', syncLocal);
     return () => {
       window.removeEventListener('storage', syncLocal);
       window.removeEventListener('zenvitra_auth_change', syncLocal);
+      window.removeEventListener('zenvitra_passport_updated', syncLocal);
+      window.removeEventListener('zenvitra_profile_sync', syncLocal);
     };
   }, []);
 
@@ -231,6 +309,29 @@ export function Navbar({
   const userHandle = profile?.username || localUserSession?.username || 'member';
   const initial = (displayName ? displayName.charAt(0).toUpperCase() : '') || 'Z';
 
+  const effectiveDisplayAvatar = useMemo(() => {
+    const rawAvatar = profile?.avatar_url || localUserSession?.avatar;
+    if (rawAvatar && rawAvatar !== '/assets/default-avatar.svg' && !rawAvatar.includes('default-avatar')) {
+      return rawAvatar;
+    }
+    const cleanU = (userHandle || '').toLowerCase().replace(/^@/, '').trim();
+    if (typeof window !== 'undefined' && cleanU) {
+      try {
+        const pass = JSON.parse(localStorage.getItem(`zenvitra_passport_${cleanU}`) || '{}');
+        if (pass?.avatarUrl && pass.avatarUrl !== '/assets/default-avatar.svg') {
+          return pass.avatarUrl;
+        }
+      } catch (_) {}
+      try {
+        const pulse = JSON.parse(localStorage.getItem('zenvitra_pulse_my_profile_v1') || '{}');
+        if (pulse?.avatar && pulse.avatar !== '/assets/default-avatar.svg') {
+          return pulse.avatar;
+        }
+      } catch (_) {}
+    }
+    return rawAvatar || '/assets/default-avatar.svg';
+  }, [profile?.avatar_url, localUserSession?.avatar, userHandle]);
+
   return (
     <>
       {/* Invisible Top Hover Trigger Zone: Re-engages Navbar when cursor moves to very top of page */}
@@ -248,8 +349,11 @@ export function Navbar({
         <div className="absolute inset-0 bg-[#030405]/92 backdrop-blur-2xl" />
         <div className="absolute bottom-0 left-0 h-[1px] w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-        {/* Navbar Container with 90% Zoom on Desktop to Prevent Overlap */}
-        <nav className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 lg:[zoom:0.90] xl:[zoom:0.95] 2xl:[zoom:1]">
+        {/* Navbar Container with 88% Zoom */}
+        <nav 
+          className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 [zoom:0.88]"
+          style={{ zoom: '88%' }}
+        >
 
           {/* LEFT: Brand Logo & Wordmark (with integrated Platform Drawer Toggle when hasPlatformSidebar=true) */}
           <div className="flex items-center shrink-0 mr-3 sm:mr-4 lg:mr-6 gap-2 sm:gap-2.5">
@@ -271,17 +375,17 @@ export function Navbar({
               </button>
             )}
 
-            <Link href="/" className="group flex items-center gap-2 sm:gap-2.5">
-              <div className="relative h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <Link href="/" className="group flex items-center gap-2.5 sm:gap-3">
+              <div className="relative h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
                 <img
-                  src="/assets/logo.png"
+                  src="/assets/logo-new.png"
                   alt="Zenvitra Logo"
-                  className="h-full w-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)] transition-opacity duration-300"
+                  className="h-full w-full object-contain mix-blend-screen filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] transition-opacity duration-300 brand-logo-img"
                 />
               </div>
 
               <span
-                className="uppercase text-[#f5f1ea] select-none tracking-[0.12em] sm:tracking-[0.14em] text-sm sm:text-base font-bold whitespace-nowrap group-hover:text-white transition-colors"
+                className="uppercase text-[#f5f1ea] select-none tracking-[0.13em] sm:tracking-[0.15em] text-base sm:text-lg font-bold whitespace-nowrap group-hover:text-white transition-colors"
                 style={{
                   fontFamily: 'Clash Display, var(--font-space), sans-serif',
                 }}
@@ -322,195 +426,11 @@ export function Navbar({
               );
             })}
 
-            {/* Ecosystem / More Dropdown */}
-            <div
-              ref={ecosystemRef}
-              className="relative"
-              onMouseEnter={handleEcosystemEnter}
-              onMouseLeave={handleEcosystemLeave}
-            >
-              <button
-                type="button"
-                onClick={() => setEcosystemDropdownOpen(!ecosystemDropdownOpen)}
-                className={`group relative px-2.5 xl:px-3 py-1.5 rounded-xl transition-all duration-200 flex items-center gap-1 shrink-0 cursor-pointer ${
-                  secondaryNavLinks.some(link => pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))) || ecosystemDropdownOpen
-                    ? 'bg-white/[0.08] text-white'
-                    : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                <span className="font-display uppercase text-[11px] xl:text-xs font-bold tracking-[0.14em] transition-colors whitespace-nowrap">
-                  Ecosystem
-                </span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    ecosystemDropdownOpen ? 'rotate-180 text-white' : 'text-neutral-400 group-hover:text-white'
-                  }`}
-                />
-
-                {/* Active indicator */}
-                <div
-                  className={`absolute -bottom-1 left-2.5 right-2.5 h-[2px] rounded-full transition-all duration-300 origin-center ${
-                    secondaryNavLinks.some(link => pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href)))
-                      ? 'opacity-100 scale-x-100 bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)]'
-                      : 'opacity-0 scale-x-0'
-                  }`}
-                />
-              </button>
-
-              <AnimatePresence>
-                {ecosystemDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute right-0 sm:-right-6 md:-right-12 lg:-right-16 top-full mt-3 w-[650px] max-w-[calc(100vw-2rem)] rounded-3xl border border-white/15 bg-[#06080e]/95 backdrop-blur-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_40px_rgba(6,182,212,0.06)] p-5 z-50 text-left overflow-hidden"
-                  >
-                    {/* Background Subtle Ambience Glow */}
-                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                    {/* Card Header */}
-                    <div className="relative z-10 flex items-center justify-between pb-3.5 mb-4 border-b border-white/10">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse" />
-                        <span className="font-mono text-[11px] uppercase tracking-[0.18em] font-bold text-neutral-200">
-                          ZENVITRA ECOSYSTEM &amp; DIPLOMACY OS
-                        </span>
-                      </div>
-                      <span className="font-mono text-[10px] text-cyan-400/90 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-full font-medium">
-                        12 Sovereign Nodes Active
-                      </span>
-                    </div>
-
-                    {/* Multi-Column Categorized Architecture */}
-                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Column 1: Core Diplomatic OS & Workspaces */}
-                      <div className="space-y-2">
-                        <div className="px-2 flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-cyan-400/90">
-                            Workspaces &amp; Assemblies
-                          </span>
-                          <span className="text-[9px] font-mono text-neutral-500">DAIS &amp; OS</span>
-                        </div>
-
-                        <div className="space-y-1">
-                          {secondaryNavLinks.slice(0, 6).map((item) => {
-                            const Icon = item.icon;
-                            const isCurrent = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-
-                            return (
-                              <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={() => setEcosystemDropdownOpen(false)}
-                                className={`group p-2.5 rounded-2xl transition-all duration-200 flex items-start gap-3 border ${
-                                  isCurrent
-                                    ? 'bg-white/[0.12] border-white/25 text-white shadow-[0_0_20px_rgba(255,255,255,0.06)]'
-                                    : 'bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.07] hover:border-white/15 text-neutral-300 hover:text-white'
-                                }`}
-                              >
-                                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                                  isCurrent
-                                    ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300'
-                                    : 'bg-white/[0.06] border-white/10 text-cyan-400 group-hover:bg-cyan-500/15 group-hover:border-cyan-500/30 group-hover:text-cyan-300'
-                                }`}>
-                                  <Icon className="w-4 h-4" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-white tracking-wide group-hover:text-cyan-200 transition-colors">
-                                      {item.name}
-                                    </span>
-                                    {item.tag && (
-                                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-white/[0.08] border border-white/10 text-neutral-300 group-hover:border-cyan-500/30 group-hover:text-cyan-200 transition-colors">
-                                        {item.tag}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-[11px] text-neutral-400 leading-snug mt-0.5 font-sans line-clamp-1 group-hover:text-neutral-300 transition-colors">
-                                    {item.desc}
-                                  </p>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Column 2: Governance, Civic Escrow & Architecture */}
-                      <div className="space-y-2">
-                        <div className="px-2 flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple-400/90">
-                            Civics, Doctrine &amp; Foundation
-                          </span>
-                          <span className="text-[9px] font-mono text-neutral-500">GOVERNANCE</span>
-                        </div>
-
-                        <div className="space-y-1">
-                          {secondaryNavLinks.slice(6).map((item) => {
-                            const Icon = item.icon;
-                            const isCurrent = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-
-                            return (
-                              <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={() => setEcosystemDropdownOpen(false)}
-                                className={`group p-2.5 rounded-2xl transition-all duration-200 flex items-start gap-3 border ${
-                                  isCurrent
-                                    ? 'bg-white/[0.12] border-white/25 text-white shadow-[0_0_20px_rgba(255,255,255,0.06)]'
-                                    : 'bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.07] hover:border-white/15 text-neutral-300 hover:text-white'
-                                }`}
-                              >
-                                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                                  isCurrent
-                                    ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
-                                    : 'bg-white/[0.06] border-white/10 text-purple-400 group-hover:bg-purple-500/15 group-hover:border-purple-500/30 group-hover:text-purple-300'
-                                }`}>
-                                  <Icon className="w-4 h-4" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-white tracking-wide group-hover:text-purple-200 transition-colors">
-                                      {item.name}
-                                    </span>
-                                    {item.tag && (
-                                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-white/[0.08] border border-white/10 text-neutral-300 group-hover:border-purple-500/30 group-hover:text-purple-200 transition-colors">
-                                        {item.tag}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-[11px] text-neutral-400 leading-snug mt-0.5 font-sans line-clamp-1 group-hover:text-neutral-300 transition-colors">
-                                    {item.desc}
-                                  </p>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Status Banner */}
-                    <div className="relative z-10 mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono">
-                      <div className="flex items-center gap-2 text-neutral-400">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>100% Sovereign Protocol &bull; Zero Surveillance</span>
-                      </div>
-                      <Link
-                        href="/manifesto"
-                        onClick={() => setEcosystemDropdownOpen(false)}
-                        className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition"
-                      >
-                        <span>Read Manifesto</span>
-                        <span>&rarr;</span>
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* Flabbergasting Ecosystem & Social Command Menu */}
+            <EcosystemHoverMenu 
+              onOpenSocialModal={() => setSocialMindMapOpen(true)} 
+              onOpenFullModal={() => setEcosystemMindMapOpen(true)} 
+            />
           </div>
 
           {/* RIGHT: Actions & Authentication */}
@@ -520,6 +440,15 @@ export function Navbar({
             <div className="hidden sm:block">
               <SocialHoverMenu onOpenFullModal={() => setSocialMindMapOpen(true)} />
             </div>
+
+            {/* ZENVITRA Test Node Sandbox Launcher */}
+            <Link
+              href="/test-node"
+              className="p-1.5 sm:p-2 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+              title="Launch ZENVITRA Test Node (Isolated Sandbox Orb)"
+            >
+              <Orbit className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 animate-spin" style={{ animationDuration: '14s' }} />
+            </Link>
 
             {/* 2. Platform & Feed Link Button (Primary CTA) */}
             {hasActiveSession ? (
@@ -557,16 +486,18 @@ export function Navbar({
                     className="h-8 w-8 sm:h-8.5 sm:w-8.5 rounded-full bg-gradient-to-tr from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 border border-white/25 hover:border-white/50 transition-all duration-200 flex items-center justify-center cursor-pointer shadow-[0_0_15px_rgba(0,0,0,0.6)] hover:scale-105 active:scale-95 shrink-0"
                     title={`Signed in as ${displayName}`}
                   >
-                    {profile?.avatar_url || localUserSession?.avatar ? (
+                    {effectiveDisplayAvatar ? (
                       <img
-                        src={profile?.avatar_url || localUserSession?.avatar}
+                        src={effectiveDisplayAvatar}
                         alt={displayName}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      <span className="font-display font-bold text-xs text-white tracking-wider">
-                        {initial}
-                      </span>
+                      <img
+                        src="/assets/default-avatar.svg"
+                        alt={displayName}
+                        className="w-full h-full rounded-full object-cover"
+                      />
                     )}
                   </button>
 
@@ -578,9 +509,10 @@ export function Navbar({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-11 w-60 rounded-2xl border border-white/15 bg-[#08080a]/98 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.95)] p-2 z-50 text-left"
+                        style={{ backgroundColor: '#07080d' }}
+                        className="absolute right-0 top-11 w-64 rounded-2xl border border-white/15 bg-[#07080d] shadow-[0_25px_80px_rgba(0,0,0,0.98),0_0_40px_rgba(0,0,0,0.95)] p-2 z-[100] text-left"
                       >
-                        <div className="p-2.5 border-b border-white/10 mb-1">
+                        <div className="p-2.5 border-b border-white/10 mb-1.5 bg-white/[0.04] rounded-xl">
                           <p className="text-xs font-bold text-white truncate">{displayName}</p>
                           <p className="text-[10px] font-mono text-neutral-400 capitalize">
                             @{userHandle} • {(profile?.role || localUserSession?.role || 'member').replace('_', ' ')}
@@ -635,6 +567,22 @@ export function Navbar({
                           >
                             <User className="w-3.5 h-3.5 text-cyan-400" />
                             <span>Profile Dossier</span>
+                          </Link>
+                          <Link
+                            href="/onboarding"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="w-full px-3 py-2 rounded-xl hover:bg-white/10 text-cyan-300 hover:text-white transition flex items-center gap-2"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>ZENVITRA Onboarding Tour</span>
+                          </Link>
+                          <Link
+                            href="/test-node"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="w-full px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-white transition flex items-center gap-2 border border-cyan-500/20"
+                          >
+                            <Orbit className="w-3.5 h-3.5 text-cyan-400" />
+                            <span className="font-semibold">🧪 ZENVITRA Test Node</span>
                           </Link>
                           <button
                             type="button"
@@ -788,6 +736,37 @@ export function Navbar({
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
+                    setEcosystemMindMapOpen(true);
+                  }}
+                  className="w-full p-3 rounded-xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-amber-500/10 border border-cyan-500/30 text-cyan-200 flex items-center justify-between cursor-pointer hover:border-cyan-500/50 transition font-display uppercase tracking-wider text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-cyan-500 via-purple-500 to-amber-500 p-[1px] flex items-center justify-center shrink-0">
+                      <div className="w-full h-full bg-[#07090e] rounded-[4px] flex items-center justify-center">
+                        <Cpu className="w-3 h-3 text-cyan-300 animate-pulse" />
+                      </div>
+                    </div>
+                    <span>Nexus Core &bull; Ecosystem Deck</span>
+                  </div>
+                  <span className="text-[10px] text-cyan-300 font-mono">&rarr;</span>
+                </button>
+
+                <Link
+                  href="/apps"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 hover:border-purple-500/50 text-purple-200 flex items-center justify-between cursor-pointer hover:bg-purple-500/20 transition font-display uppercase tracking-wider text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <Orbit className="w-4 h-4 text-purple-300 animate-spin" style={{ animationDuration: '8s' }} />
+                    <span>ZEN.APPS &bull; Circular Mind Map</span>
+                  </div>
+                  <span className="text-[10px] text-purple-300 font-mono">&rarr;</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
                     setSocialMindMapOpen(true);
                   }}
                   className="w-full p-3 rounded-xl bg-white/[0.04] border border-white/10 text-neutral-200 flex items-center justify-between cursor-pointer hover:bg-white/[0.08] transition"
@@ -798,6 +777,56 @@ export function Navbar({
                   </div>
                   <span className="text-[10px] text-purple-300 font-mono">View All Social Nodes &rarr;</span>
                 </button>
+
+                {/* Mission, Privacy & Terms Quick Links */}
+                <div className="grid grid-cols-3 gap-1.5 pt-1 text-[11px] font-mono text-center">
+                  <Link
+                    href="/mission"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center justify-center gap-1"
+                  >
+                    <Target className="w-3 h-3 text-cyan-400" />
+                    <span>Mission</span>
+                  </Link>
+                  <Link
+                    href="/privacy"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center justify-center gap-1"
+                  >
+                    <Lock className="w-3 h-3 text-emerald-400" />
+                    <span>Privacy</span>
+                  </Link>
+                  <Link
+                    href="/terms"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center justify-center gap-1"
+                  >
+                    <Scale className="w-3 h-3 text-amber-400" />
+                    <span>Terms</span>
+                  </Link>
+                </div>
+
+                {/* Direct WhatsApp Community & Twitter Links */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <a
+                    href="https://chat.whatsapp.com/Cmn9ihpEbRs7kLO1G83Fez"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 hover:border-emerald-500/50 text-emerald-300 flex items-center justify-center gap-2 text-xs font-semibold transition"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href="https://x.com/zenvitra_"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/25 hover:border-sky-500/50 text-sky-300 flex items-center justify-center gap-2 text-xs font-semibold transition"
+                  >
+                    <Twitter className="w-3.5 h-3.5" />
+                    <span>@zenvitra_</span>
+                  </a>
+                </div>
               </div>
             </motion.div>
           )}
@@ -808,6 +837,12 @@ export function Navbar({
       <SocialMindMapModal
         isOpen={socialMindMapOpen}
         onClose={() => setSocialMindMapOpen(false)}
+      />
+
+      {/* Comprehensive Ecosystem Command Mind Map Modal */}
+      <EcosystemMindMapModal
+        isOpen={ecosystemMindMapOpen}
+        onClose={() => setEcosystemMindMapOpen(false)}
       />
 
       {/* Sovereign Security & Anti-Theft Shield Modal */}
@@ -822,14 +857,21 @@ export function Navbar({
         onClose={() => setSwitchAccountModalOpen(false)}
         currentUsername={userHandle}
         currentDisplayName={displayName}
-        currentAvatar={profile?.avatar_url || localUserSession?.avatar}
+        currentAvatar={effectiveDisplayAvatar}
       />
 
       {/* Operational Admin & Committee Modal */}
       <AdminOmniModal
         isOpen={adminOmniModalOpen}
         onClose={() => setAdminOmniModalOpen(false)}
-        onOpenFounderMenu={() => setFounderOmniModalOpen(true)}
+        onOpenFounderMenu={() => {
+          if (
+            isCurrentSessionFounderOrCoFounder() ||
+            isFounderOrCoFounder(profile?.username, profile?.role, profile?.id)
+          ) {
+            setFounderOmniModalOpen(true);
+          }
+        }}
       />
 
       {/* Supreme Founder Sovereignty Modal */}

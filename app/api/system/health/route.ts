@@ -11,7 +11,7 @@ export async function GET() {
   let dbHealthy = true;
   let totalUsers = 0;
   let totalPosts = 0;
-  let totalDonations = 0;
+  let totalConferences = 0;
   let grossAmount = 0;
 
   try {
@@ -20,18 +20,17 @@ export async function GET() {
     dbLatencyMs = Math.max(1, Math.round(performance.now() - dbT0));
 
     // Real platform record counts from database
-    const [uCount, pCount, donations] = await Promise.all([
+    const [uCount, pCount, confs] = await Promise.all([
       db.user.count().catch(() => 0),
       db.post.count().catch(() => 0),
-      db.donationRecord.findMany({ select: { amount: true } }).catch(() => []),
+      db.conferenceListing.findMany({ select: { ticketPrice: true } }).catch(() => []),
     ]);
 
     totalUsers = Number(uCount) || 0;
     totalPosts = Number(pCount) || 0;
-    totalDonations = donations.length;
-    grossAmount = donations.reduce((sum, d) => {
-      const parsed = parseFloat(d.amount.replace(/[^0-9.]/g, '')) || 0;
-      return sum + parsed;
+    totalConferences = confs.length;
+    grossAmount = confs.reduce((sum: number, c: { ticketPrice: number }) => {
+      return sum + (c.ticketPrice || 0);
     }, 0);
   } catch (err) {
     dbLatencyMs = 999;
@@ -55,8 +54,8 @@ export async function GET() {
 
   // Calculate live platform pulse numbers without fake seeds
   const formattedGross = grossAmount > 0 
-    ? `$${grossAmount.toLocaleString()}` 
-    : '$0';
+    ? `₹${grossAmount.toLocaleString()}` 
+    : '₹0';
 
   const postsPerSec = totalPosts > 0 
     ? (totalPosts / 60).toFixed(1) 
@@ -71,7 +70,7 @@ export async function GET() {
       postsThroughput: `${postsPerSec}`,
       zenchatSockets: Math.max(1, totalUsers),
       grossVol: formattedGross,
-      statsSummary: `${totalDonations} donations, ${totalUsers} verified identities`
+      statsSummary: `${totalConferences} conference listings, ${totalUsers} verified identities`
     },
     subsystems: [
       {

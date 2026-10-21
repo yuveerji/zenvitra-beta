@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   FileText,
   Check,
+  Plus,
   X,
   Image as ImageIcon,
   Upload,
@@ -59,6 +60,7 @@ import {
 } from 'lucide-react';
 import { PressArticle, PressCategory, ArticleStatus } from '@/types/press';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
+import { DesktopModeAdvisory } from '@/components/common/DesktopModeAdvisory';
 
 const LS_ARTICLES = 'zenvitra_press_articles_v4_clean';
 const LS_PULSE_POSTS = 'zenvitra_pulse_posts_v6';
@@ -129,7 +131,55 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
   const [excerpt, setExcerpt] = useState('');
   const [coverImage, setCoverImage] = useState(COVER_PRESETS[0].url);
   const [sourceName, setSourceName] = useState('Zenvitra Founder Executive Office');
-  const [sourceUrl, setSourceUrl] = useState('https://zenvitra.org/manifesto');
+  const [sourceUrl, setSourceUrl] = useState('https://zenvitra.xyz/manifesto');
+  const [sources, setSources] = useState<{ id: string; name: string; url: string; label: string; domain?: string }[]>([
+    {
+      id: 'src_1',
+      name: 'Zenvitra Founder Executive Office',
+      url: 'https://zenvitra.xyz/manifesto',
+      label: 'Source #1'
+    }
+  ]);
+
+  const handleAddSource = () => {
+    setSources((prev) => [
+      ...prev,
+      {
+        id: `src_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        name: '',
+        url: '',
+        label: `Source #${prev.length + 1}`
+      }
+    ]);
+  };
+
+  const handleUpdateSource = (id: string, field: 'name' | 'url', val: string) => {
+    setSources((prev) => {
+      const updated = prev.map((s) => s.id === id ? { ...s, [field]: val } : s);
+      if (updated[0]) {
+        if (field === 'name') setSourceName(updated[0].name);
+        if (field === 'url') setSourceUrl(updated[0].url);
+      }
+      return updated;
+    });
+  };
+
+  const handleRemoveSource = (id: string) => {
+    setSources((prev) => {
+      if (prev.length <= 1) {
+        const reset = [{ id: `src_${Date.now()}`, name: '', url: '', label: 'Source #1' }];
+        setSourceName('');
+        setSourceUrl('');
+        return reset;
+      }
+      const filtered = prev.filter((s) => s.id !== id);
+      if (filtered[0]) {
+        setSourceName(filtered[0].name);
+        setSourceUrl(filtered[0].url);
+      }
+      return filtered;
+    });
+  };
 
   // Feature Toggles
   const [includeSignature, setIncludeSignature] = useState(true);
@@ -405,6 +455,11 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
     const nowIso = new Date().toISOString();
     const finalId = editingId || `art_founder_${Date.now()}`;
 
+    const validSources = sources
+      .map((s) => ({ ...s, name: s.name.trim(), url: s.url.trim() }))
+      .filter((s) => s.name || s.url);
+    const primarySource = validSources[0] || { name: sourceName.trim(), url: sourceUrl.trim() };
+
     return {
       id: finalId,
       title: title.trim() || 'Untitled Founder Dispatch',
@@ -412,8 +467,9 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
       content: contentHtml,
       excerpt: excerpt.trim() || (editorRef.current?.innerText.slice(0, 180).trim() + '…') || 'Founder executive memorandum.',
       coverImage: coverImage || undefined,
-      sourceName: sourceName.trim() || 'Zenvitra Founder Executive Office',
-      sourceUrl: sourceUrl.trim() || 'https://zenvitra.org',
+      sourceName: primarySource.name || sourceName.trim() || 'Zenvitra Founder Executive Office',
+      sourceUrl: primarySource.url || sourceUrl.trim() || 'https://zenvitra.xyz',
+      sources: validSources.length > 0 ? validSources : undefined,
       authorId: 'yuveer',
       authorName: 'Yuveer',
       authorUsername: 'yuveer',
@@ -426,8 +482,8 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
       updatedAt: nowIso,
       publishedAt: status === 'published' ? nowIso : undefined,
       readingTimeMinutes: readTimeMin,
-      upvotes: 7,
-      upvotedBy: ['yuveer'],
+      upvotes: 0,
+      upvotedBy: [],
       bookmarkedBy: [],
       commentCount: 0,
     };
@@ -540,6 +596,11 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
     setCoverImage(art.coverImage || COVER_PRESETS[0].url);
     setSourceName(art.sourceName);
     setSourceUrl(art.sourceUrl);
+    if (art.sources && art.sources.length > 0) {
+      setSources(art.sources);
+    } else {
+      setSources([{ id: 'src_1', name: art.sourceName || '', url: art.sourceUrl || '', label: 'Source #1' }]);
+    }
     setStudioView('editor');
     setTimeout(() => {
       if (editorRef.current) {
@@ -586,6 +647,7 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
 
   return (
     <div className={`space-y-6 w-full text-white font-sans ${zenMode ? 'fixed inset-0 z-[100] bg-black p-6 overflow-y-auto' : ''}`}>
+      <DesktopModeAdvisory studioName="Founder Press Studio" storageKey="zen_founder_press" />
       {/* ── TOP EXECUTIVE CONTROL BAR ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl bg-[#090b14] border border-amber-500/30 shadow-2xl">
         <div className="flex items-center gap-3.5">
@@ -928,6 +990,88 @@ export function FounderPressStudio({ onArticlePublished, notify }: FounderPressS
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Verified Sources & Institutional Citations System (Multiple Sources) */}
+            <div className="p-4 rounded-2xl bg-[#0e1222]/80 border border-amber-500/30 space-y-3.5 text-left">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  Verified Sources &amp; Evidence Citations ({sources.filter(s => s.name.trim() || s.url.trim()).length} Active)
+                </span>
+                <span className="text-[10px] font-mono text-amber-400/80 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                  Sovereign Wire Verified
+                </span>
+              </div>
+
+              {/* List of Dynamic Sources */}
+              <div className="space-y-3">
+                {sources.map((src, idx) => (
+                  <div 
+                    key={src.id}
+                    className="p-3.5 rounded-xl bg-black/60 border border-white/10 space-y-2.5 relative group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-[9px]">
+                          {idx + 1}
+                        </span>
+                        <span>Citation Source #{idx + 1} {idx === 0 && <span className="text-neutral-500 font-normal">(Primary)</span>}</span>
+                      </span>
+                      {sources.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSource(src.id)}
+                          className="text-neutral-500 hover:text-rose-400 p-1 rounded-md transition cursor-pointer"
+                          title="Remove this citation source"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-mono font-semibold text-neutral-400">
+                          SOURCE / PUBLISHER NAME {idx === 0 ? '*' : '(OPTIONAL)'}
+                        </label>
+                        <input
+                          type="text"
+                          required={idx === 0}
+                          value={src.name}
+                          onChange={(e) => handleUpdateSource(src.id, 'name', e.target.value)}
+                          placeholder="e.g. Zenvitra Founder Executive Office"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/80 border border-white/15 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-mono font-semibold text-neutral-400">
+                          SOURCE / EVIDENCE URL {idx === 0 ? '*' : '(OPTIONAL)'}
+                        </label>
+                        <input
+                          type="url"
+                          required={idx === 0}
+                          value={src.url}
+                          onChange={(e) => handleUpdateSource(src.id, 'url', e.target.value)}
+                          placeholder="https://zenvitra.xyz/manifesto"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/80 border border-white/15 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* + Add Another Source Citation Button */}
+              <button
+                type="button"
+                onClick={handleAddSource}
+                className="w-full py-2.5 px-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-300 font-mono text-xs flex items-center justify-center gap-2 transition cursor-pointer group"
+              >
+                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
+                <span className="font-semibold">+ Add Another Source Citation</span>
+              </button>
             </div>
 
             {/* Executive Syndication Toggles */}

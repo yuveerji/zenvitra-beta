@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
 import { useAuth } from '@/context/AuthContext';
+import { sheetSync } from '@/lib/googleSheets';
 
 interface DiplomaticChitsModalProps {
   isOpen: boolean;
@@ -54,6 +55,24 @@ export function DiplomaticChitsModal({ isOpen, onClose }: DiplomaticChitsModalPr
   const [chitContent, setChitContent] = useState<string>('');
   const [sentSuccess, setSentSuccess] = useState<boolean>(false);
   const [chits, setChits] = useState<DiplomaticChit[]>([]);
+
+  // Persistent storage key per committee
+  const storageKey = `zenvitra_mun_chits_${activeCommitteeId || 'general'}`;
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setChits(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse chits from localStorage', e);
+    }
+  }, [storageKey]);
 
   const COUNTRY_OPTIONS = React.useMemo(() => {
     const isIndian = committee?.type === 'AIPPM' || committee?.type === 'LOK_SABHA' || committee?.shortName?.includes('AIPPM');
@@ -141,9 +160,34 @@ export function DiplomaticChitsModal({ isOpen, onClose }: DiplomaticChitsModalPr
       status: 'delivered'
     };
 
-    setChits([newChit, ...chits]);
+    const updated = [newChit, ...chits];
+    setChits(updated);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to save chit to localStorage', e);
+      }
+    }
     setChitContent('');
     setSentSuccess(true);
+
+    try {
+      sheetSync.chit({
+        Chit_ID: newChit.id,
+        MUN_ID: (committee as any)?.eventId || activeCommitteeId || 'MUN-2026',
+        Committee_ID: committee?.id || activeCommitteeId || 'GENERAL',
+        Sender_Seat: myCountry,
+        Recipient_Seat: recipient,
+        Chit_Type: chitType,
+        Message_Content: chitContent.trim(),
+        Routing_Status: 'Delivered',
+        Sent_Time: new Date().toISOString(),
+        Delivered_Time: new Date().toISOString(),
+        EB_Flagged: 'No'
+      });
+    } catch (_) {}
+
     setTimeout(() => {
       setSentSuccess(false);
       setActiveTab('sent');

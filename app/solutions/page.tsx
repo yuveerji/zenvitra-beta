@@ -28,56 +28,12 @@ import { Footer } from '@/components/layout/Footer';
 import { SolutionDocument, DocumentType, SolutionCategory } from '@/types/solutions';
 import { DocEnginePostingModal } from '@/components/solutions/DocEnginePostingModal';
 import { DocumentReaderModal } from '@/components/solutions/DocumentReaderModal';
+import { SolutionsDraftingStudio } from '@/components/solutions/SolutionsDraftingStudio';
 import { RegisterSuggestionLayover } from '@/components/solutions/RegisterSuggestionLayover';
 import { useAuth } from '@/context/AuthContext';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
 import { parseDocument } from '@/lib/docEngine/parser';
-import { SAMPLE_DRAFTS } from '@/lib/docEngine/sampleDrafts';
-
-/* ─────────── INITIAL SAMPLE BILL (OFFICIAL STRUCTURED MODEL) ─────────── */
-
-function getInitialSeededDocuments(): SolutionDocument[] {
-  const sample = SAMPLE_DRAFTS[0]; // Private Coaching Institutes Bill
-  if (!sample) return [];
-  const parsed = parseDocument(sample.rawText, 'LEGISLATIVE_BILL');
-  return [{
-    id: 'doc_coaching_institutes_2026',
-    documentCode: 'BILL-2026-COACH-REG',
-    title: parsed.title,
-    documentType: 'LEGISLATIVE_BILL',
-    category: 'EDUCATION',
-    committee: 'Parliament of India / Lok Sabha Standing Committee',
-    status: 'PROPOSED',
-    leadSponsors: ['Hon. Member of Parliament', 'Youth Education Caucus'],
-    proposedByUsername: 'parliament_caucus',
-    signatories: ['Aarav Mehta', 'Diya Sen', 'Vikramaditya Roy'],
-    abstract: parsed.preamble || 'A Bill to provide for mandatory registration, academic regulation, mental health counselors, fee transparency, and holistic student welfare standards in private coaching institutes across India.',
-    enactingFormula: parsed.enactingFormula,
-    preamble: parsed.preamble,
-    chapters: parsed.chapters,
-    clauses: parsed.clauses.map(c => ({
-      ...c,
-      discussions: c.clauseNumber === '7' ? [
-        { id: 'comm_1', author: 'Dr. Anita Rao', authorUsername: 'anita_rao', text: '5 hours max instructional load is critical. Coaching centers currently conduct 8-9 hours without breaks.', createdAt: new Date(Date.now() - 3600000).toISOString() }
-      ] : [],
-      amendments: c.clauseNumber === '6' ? [
-        { id: 'amend_1', author: 'Devendra K.', authorUsername: 'devendra_k', proposedText: 'Every coaching institute enrolling more than thirty students (reduced from fifty) shall maintain a mental health counselor.', rationale: 'Smaller batches also face extreme suicide vulnerability.', votes: 12, createdAt: new Date(Date.now() - 7200000).toISOString() }
-      ] : []
-    })),
-    votes: {
-      inFavor: 48,
-      against: 3,
-      abstain: 4
-    },
-    votedUserIds: [],
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date().toISOString(),
-    publishedAt: new Date(Date.now() - 86400000).toISOString(),
-    isOfficial: true
-  }];
-}
-
-const INITIAL_DOCUMENTS: SolutionDocument[] = getInitialSeededDocuments();
+const INITIAL_DOCUMENTS: SolutionDocument[] = [];
 
 const TYPE_FILTERS: { type: DocumentType | 'ALL'; label: string; icon: React.ElementType }[] = [
   { type: 'ALL', label: 'All Documents', icon: BookOpen },
@@ -88,13 +44,14 @@ const TYPE_FILTERS: { type: DocumentType | 'ALL'; label: string; icon: React.Ele
   { type: 'WORKING_PAPER', label: 'Working Papers', icon: FileText },
 ];
 
-const LS_SOLUTIONS = 'zenvitra_solutions_v2_clean';
+const LS_SOLUTIONS = 'zenvitra_solutions_v3_clean';
 
 export default function SolutionsPage() {
   const { isAuthenticated, isGuest, profile, user } = useAuth();
 
   const isTestUser = Boolean(
     profile?.username === 'test' || 
+    user?.email === 'test@zenvitra.xyz' ||
     user?.email === 'test@zenvitra.org' ||
     (typeof window !== 'undefined' && (() => {
       try {
@@ -107,8 +64,22 @@ export default function SolutionsPage() {
   const [documents, setDocuments] = useState<SolutionDocument[]>(() => {
     if (typeof window === 'undefined') return INITIAL_DOCUMENTS;
     try {
+      // Purge legacy seeded solutions keys
+      localStorage.removeItem('zenvitra_solutions_v2_clean');
+      localStorage.removeItem('zenvitra_solutions_v1');
       const stored = localStorage.getItem(LS_SOLUTIONS);
-      return stored ? JSON.parse(stored) : INITIAL_DOCUMENTS;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed.map((d: SolutionDocument) => {
+            if (d.votes?.inFavor === 142 && d.votes?.against === 18 && d.votes?.abstain === 9) {
+              return { ...d, votes: { inFavor: 0, against: 0, abstain: 0 }, votedUserIds: [] };
+            }
+            return d;
+          });
+        }
+      }
+      return INITIAL_DOCUMENTS;
     } catch {
       return INITIAL_DOCUMENTS;
     }
@@ -126,7 +97,7 @@ export default function SolutionsPage() {
     fetch(`/api/solutions?includeTest=${isTestUser ? 'true' : 'false'}`)
       .then(res => res.json())
       .then(data => {
-        if (data.success && Array.isArray(data.documents) && data.documents.length > 0) {
+        if (data.success && Array.isArray(data.documents)) {
           setDocuments(data.documents);
         }
       })
@@ -138,28 +109,48 @@ export default function SolutionsPage() {
   const [selectedType, setSelectedType] = useState<DocumentType | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
+  const [studioDraftData, setStudioDraftData] = useState<any>(null);
   const [isRegisterPromptOpen, setIsRegisterPromptOpen] = useState(false);
   const [activeReadingDoc, setActiveReadingDoc] = useState<SolutionDocument | null>(null);
   const [importedDraftData, setImportedDraftData] = useState<any>(null);
 
-  // Check for incoming draft from ZenDocs editor
+  // Check for incoming draft from ZenDocs editor or studio query param
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const urlParams = new URLSearchParams(window.location.search);
+    const wantsStudio = urlParams.get('studio') === '1' || urlParams.get('studio') === 'true' || urlParams.get('mode') === 'drafting';
+
     if (urlParams.get('importZenDoc') === '1') {
       try {
         const importData = localStorage.getItem('zenvitra_solutions_import');
         if (importData) {
           const parsed = JSON.parse(importData);
-          setImportedDraftData(parsed);
-          setIsUploadModalOpen(true);
+          if (wantsStudio) {
+            setStudioDraftData(parsed);
+            setIsStudioOpen(true);
+          } else {
+            setImportedDraftData(parsed);
+            setIsUploadModalOpen(true);
+          }
           localStorage.removeItem('zenvitra_solutions_import');
         }
       } catch (err) {
         console.error('Failed to import draft from ZenDocs:', err);
       }
+    } else if (wantsStudio) {
+      setIsStudioOpen(true);
     }
   }, []);
+
+  const handleOpenStudio = (draft?: any) => {
+    if (!isAuthenticated || isGuest) {
+      setIsRegisterPromptOpen(true);
+      return;
+    }
+    setStudioDraftData(draft || null);
+    setIsStudioOpen(true);
+  };
 
   const handleOpenUpload = () => {
     if (!isAuthenticated || isGuest) {
@@ -174,7 +165,15 @@ export default function SolutionsPage() {
       (newDoc as any).isTest = true;
       newDoc.proposedByUsername = 'test';
     }
-    setDocuments([newDoc, ...documents]);
+    setDocuments(prev => {
+      const idx = prev.findIndex(d => d.id === newDoc.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = newDoc;
+        return next;
+      }
+      return [newDoc, ...prev];
+    });
     setActiveReadingDoc(newDoc);
     broadcastActivitySync({ source: 'press', action: 'create', timestamp: Date.now() });
 
@@ -184,6 +183,22 @@ export default function SolutionsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ document: newDoc })
     }).catch(err => console.warn('Failed to sync new solution to server:', err));
+  };
+
+  const handleEditDocument = (docToEdit: SolutionDocument) => {
+    setActiveReadingDoc(null);
+    setStudioDraftData({
+      id: docToEdit.id,
+      rawText: docToEdit.fullText || '',
+      title: docToEdit.title,
+      type: docToEdit.documentType,
+      category: docToEdit.category,
+      committee: docToEdit.committee,
+      editCount: docToEdit.editCount || 0,
+      maxEdits: docToEdit.maxEdits || 2,
+      existingDoc: docToEdit
+    });
+    setIsStudioOpen(true);
   };
 
   const handleUpdateDocument = (updatedDoc: SolutionDocument) => {
@@ -273,7 +288,7 @@ export default function SolutionsPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-display font-black text-white tracking-tight leading-tight">
-            Repository for Action Blueprints, Policy Bills &amp; Charters
+            Repository for Action Blueprints, <span className="font-serif italic font-normal text-cyan-200">Policy Bills &amp; Charters</span>
           </h1>
 
           <p className="text-sm sm:text-base text-neutral-400 font-sans leading-relaxed">
@@ -282,19 +297,27 @@ export default function SolutionsPage() {
 
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={handleOpenUpload}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-display font-bold text-xs uppercase tracking-wider hover:opacity-95 transition hover:scale-105 active:scale-95 cursor-pointer shadow-[0_0_25px_rgba(34,211,238,0.4)]"
+              onClick={() => handleOpenStudio()}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 via-cyan-400 to-blue-500 text-black font-display font-black text-xs uppercase tracking-wider hover:opacity-95 transition hover:scale-105 active:scale-95 cursor-pointer shadow-[0_0_30px_rgba(168,85,247,0.4)]"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Post Bill &amp; Structured Document</span>
+              <Sparkles className="w-4 h-4 text-black" />
+              <span>Drafting Studio ⚡</span>
+            </button>
+
+            <button
+              onClick={handleOpenUpload}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/20 text-white font-mono font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-cyan-400" />
+              <span>Quick Upload Modal</span>
             </button>
 
             <Link
               href="/discussions"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/15 text-neutral-300 hover:text-white hover:bg-white/10 text-xs font-mono transition"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 border border-white/15 text-neutral-300 hover:text-white hover:bg-white/10 text-xs font-mono transition"
             >
               <Radio className="w-4 h-4 text-cyan-400" />
-              <span>Join Open Deliberations &rarr;</span>
+              <span>Open Deliberations &rarr;</span>
             </Link>
           </div>
         </div>
@@ -340,7 +363,7 @@ export default function SolutionsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredDocuments.map((doc) => {
             const totalVotes = doc.votes.inFavor + doc.votes.against + doc.votes.abstain;
-            const inFavorPercent = totalVotes > 0 ? Math.round((doc.votes.inFavor / totalVotes) * 100) : 100;
+            const inFavorPercent = totalVotes > 0 ? Math.round((doc.votes.inFavor / totalVotes) * 100) : 0;
             const totalDebates = doc.clauses.reduce((acc, c) => acc + (c.discussions?.length || 0), 0);
             const totalAmendments = doc.clauses.reduce((acc, c) => acc + (c.amendments?.length || 0), 0);
 
@@ -401,10 +424,17 @@ export default function SolutionsPage() {
                       {totalAmendments > 0 && <span className="text-purple-300">⚖ {totalAmendments} Amendments</span>}
                     </div>
 
-                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                      <span>{inFavorPercent}% Aye ({totalVotes} votes)</span>
-                    </span>
+                    {totalVotes > 0 ? (
+                      <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                        <span>{inFavorPercent}% Aye ({totalVotes} votes)</span>
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="w-12 h-1.5 bg-neutral-700/80 rounded-full" />
+                        <span className="text-neutral-500 text-xs font-mono">No votes</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between gap-2 pt-1">
@@ -453,6 +483,21 @@ export default function SolutionsPage() {
         }}
         onDocumentCreated={handleDocumentCreated}
         initialDraft={importedDraftData}
+        onOpenDraftingStudio={(draftData) => {
+          setIsUploadModalOpen(false);
+          handleOpenStudio(draftData);
+        }}
+      />
+
+      {/* Flagship Interactive Solutions Drafting Studio */}
+      <SolutionsDraftingStudio
+        isOpen={isStudioOpen}
+        onClose={() => {
+          setIsStudioOpen(false);
+          setStudioDraftData(null);
+        }}
+        onDocumentCreated={handleDocumentCreated}
+        initialDraftData={studioDraftData}
       />
 
       {/* Interactive Document Reader Modal */}
@@ -462,6 +507,7 @@ export default function SolutionsPage() {
         document={activeReadingDoc}
         onVote={handleVote}
         onUpdateDocument={handleUpdateDocument}
+        onEditDocument={handleEditDocument}
       />
     </div>
   );

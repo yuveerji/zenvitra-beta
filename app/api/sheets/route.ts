@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { sanitizeForGoogleSheets } from '@/lib/googleSheets';
+import { getActiveIntegration } from '@/lib/sheets/sheetsConnectionManager';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,26 +24,51 @@ function appendToLocalLedger(entry: Record<string, any>) {
  */
 function mapTabToTarget(rawTab: string): string {
   const upper = (rawTab || '').toUpperCase().trim();
-  if (upper === 'AIPPM' || upper.includes('AIPPM')) return 'AIPPM';
-  if (upper === 'EMI' || upper.includes('EMI')) return 'EMI';
-  if (upper === 'UNSC' || upper.includes('UNSC')) return 'UNSC';
-  if (upper === 'UNODC' || upper.includes('UNODC')) return 'UNODC';
-  if (upper.includes('MATRIX') || upper.includes('PORTFOLIO')) return 'Matrix Portfolios';
-  if (upper.includes('EVENT') || upper.includes('PASS') || upper.includes('TICKET')) return 'Event Registrations';
-  if (upper.includes('SECRETARIAT') || upper.includes('SEC_APP')) return 'Secretariat Applications';
-  if (upper.includes('LOGIN')) return 'LOGIN_CORE';
-  if (upper.includes('REGISTER')) return 'REGISTER_CORE';
-  if (upper.includes('CONTACT')) return 'Contact Inquiries';
-  if (upper.includes('NEWSLETTER')) return 'NEWSLETTER';
-  if (upper.includes('COLLAB') || upper.includes('PARTNER')) return 'COLLAB';
-  if (upper.includes('CORE_TEAM') || upper.includes('TEAM') || upper.includes('CAREER')) return 'Core Team Applications';
-  if (upper.includes('COMMUNITY')) return 'COMMUNITY';
-  if (upper.includes('AMBASSADOR') || upper.includes('CAMPUS')) return 'CAMPUS_AMBASSADOR';
-  if (upper.includes('DONAT')) return 'DONATIONS';
-  if (upper.includes('MUN') || upper.includes('DIPLOMACY')) return 'ZEN DIPLOMACY MUN';
-  if (upper.includes('FEEDBACK') || upper.includes('GRIEVANCE')) return 'FEEDBACK';
-  if (upper.includes('PULSE') || upper.includes('POST')) return 'PULSE_POSTS';
-  return rawTab || 'REGISTER_CORE';
+  let resolved = '';
+
+  // Clean register names (zero numbers, zero underscores)
+  if (upper.includes('PEOPLE') || upper === 'USERS') resolved = 'People';
+  else if (upper.includes('CORE REG') || upper.includes('REGISTER_CORE') || upper.includes('REGISTER DATA')) resolved = 'Core Registrations';
+  else if (upper.includes('CORE TEAM') || upper.includes('CORE_TEAM')) resolved = 'Core Team Applications';
+  else if (upper.includes('TEAM APPL') || upper.includes('TEAM_APPL')) resolved = 'Team Applications';
+  else if (upper.includes('TEAM_ROLES') || upper.includes('TEAM ROLES') || upper.includes('ROLES ACCESS')) resolved = 'Team Roles Access';
+  else if (upper.includes('CONTACT') || upper.includes('INQUIR')) resolved = 'Contact Inquiries';
+  else if (upper.includes('NEWSLETTER')) resolved = 'Newsletter Subscribers';
+  else if (upper.includes('COLLAB') || upper.includes('PARTNERSHIP')) resolved = 'Collaborations';
+  else if (upper.includes('COMMUNITY')) resolved = 'Community Members';
+  else if (upper.includes('CAMPUS') || upper.includes('AMBASSADOR')) resolved = 'Campus Ambassadors';
+  else if (upper.includes('EVENT REGISTRATIONS') || upper.includes('EVENT_REGISTRATIONS') || upper.includes('PASS') || upper.includes('TICKET')) resolved = 'Event Registrations';
+  else if (upper === 'EVENTS' || upper.includes('CONFERENCE') || upper.includes('MUN') || upper.includes('DIPLOMACY')) resolved = 'Events';
+  else if (upper.includes('COMMITTEE')) resolved = 'Committees';
+  else if (upper.includes('DELEGATE') || upper.includes('ROSTER') || upper.includes('MATRIX') || upper.includes('PORTFOLIO') || upper === 'AIPPM' || upper === 'EMI' || upper === 'UNSC' || upper === 'UNODC') resolved = 'Delegate Rosters';
+  else if (upper.includes('SECRETARIAT') || upper.includes('DAIS') || upper.includes('EB')) resolved = 'EB Secretariat';
+  else if (upper.includes('ATTENDANCE') || upper.includes('ROLLCALL')) resolved = 'Attendance Rollcall';
+  else if (upper.includes('AWARDS') || upper.includes('CERTIFICATE')) resolved = 'Awards Certificates';
+  else if (upper.includes('PAYMENT') || upper.includes('CASHFREE') || upper.includes('TRANSACTION')) resolved = 'Payments';
+  else if (upper.includes('EXPENSE')) resolved = 'Expenses';
+  else if (upper.includes('BUDGET')) resolved = 'Budgets';
+  else if (upper.includes('TASK')) resolved = 'Tasks';
+  else if (upper.includes('FEEDBACK') || upper.includes('GRIEVANCE')) resolved = 'Feedback';
+  else if (upper.includes('SUPPORT') || upper.includes('TICKET') || upper.includes('CASE')) resolved = 'Support Cases';
+  else if (upper.includes('AUDIT') || upper.includes('LOG')) resolved = 'Audit Logs';
+  else if (upper.includes('CHIT') && upper.includes('ARCHIVE')) resolved = 'Chits Archive';
+  else if (upper.includes('CHIT')) resolved = 'Chits Active Roster';
+  else if (upper.includes('MEET') && upper.includes('ATTENDEE')) resolved = 'Meet Attendees';
+  else if (upper.includes('MEET') || upper.includes('CALL')) resolved = 'Meet Sessions';
+  else if (upper.includes('PULSE') && upper.includes('CHANNEL')) resolved = 'Pulse Channels';
+  else if (upper.includes('PULSE') && upper.includes('COMMENT')) resolved = 'Pulse Comments';
+  else if (upper.includes('PULSE') || upper.includes('POST')) resolved = 'Pulse Posts';
+  else if (upper.includes('CONTENT') || upper.includes('EDITORIAL') || upper.includes('NEWS')) resolved = 'Content Editorial';
+  else if (upper.includes('FEATURE') || upper.includes('BUG') || upper.includes('ISSUE')) resolved = 'Feature Bugs';
+  else if (upper.includes('MODULE')) resolved = 'Module Catalog';
+  else if (upper.includes('BILL') && upper.includes('AMENDMENT')) resolved = 'Bill Amendments';
+  else if (upper.includes('BILL') || upper.includes('LEGISLATION') || upper.includes('SOLUTION')) resolved = 'Legislation Bills';
+  else if (upper.includes('FORM')) resolved = 'Form Submissions';
+  else if (upper.includes('DOCS')) resolved = 'Zen Docs Metrics';
+  else resolved = rawTab || 'Core Registrations';
+
+  // Strip any leading numbers (e.g. "01 ", "02_") and underscores
+  return resolved.replace(/^\d+[\s_-]*/, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -63,8 +89,9 @@ export async function POST(req: NextRequest) {
     }
 
     const targetTab = rawTab ? mapTabToTarget(rawTab) : undefined;
-    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
+    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
+    const activeIntegration = getActiveIntegration(body.eventId || body.formId);
+    const webhookUrl = activeIntegration?.webhookExecUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || 'Browser Client';
 
@@ -133,8 +160,9 @@ export async function GET(req: NextRequest) {
     const tab = searchParams.get('tab') || 'Register Data Core';
     const action = searchParams.get('action') || 'GET_DATA';
     const query = searchParams.get('q') || '';
-    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
-    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
+    const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
+    const activeIntegration = getActiveIntegration(searchParams.get('eventId') || undefined);
+    const webhookUrl = activeIntegration?.webhookExecUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || process.env.NEXT_PUBLIC_GOOGLE_SHEETS_SCRIPT_URL || DEFAULT_WEBHOOK_URL;
 
     if (webhookUrl) {
       try {

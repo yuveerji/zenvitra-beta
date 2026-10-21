@@ -48,8 +48,8 @@ export function Ecosystem() {
         <p className="text-[10px] font-mono tracking-[0.25em] uppercase text-neutral-400 font-semibold">
           {(t as any)?.ecosystem?.tagline || "WHAT WE'RE BUILDING"}
         </p>
-        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
-          {(t as any)?.ecosystem?.title || 'An ecosystem. Endless possibilities.'}
+        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight text-white leading-tight uppercase">
+          An Ecosystem. <span className="font-serif italic font-normal text-cyan-200">Endless Possibilities.</span>
         </h2>
       </div>
 
@@ -69,10 +69,10 @@ export function Ecosystem() {
 
               {/* Title & Description with tight lockup */}
               <div className="space-y-1 w-full">
-                <h3 className="text-sm font-bold text-white tracking-tight">
+                <h3 className="text-sm font-bold text-white tracking-tight font-outfit">
                   {feature.title}
                 </h3>
-                <p className="text-[11px] text-neutral-400 font-light leading-snug">
+                <p className="text-[11px] text-neutral-300 font-sans leading-snug">
                   {feature.desc}
                 </p>
               </div>

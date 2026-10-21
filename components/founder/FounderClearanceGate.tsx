@@ -44,11 +44,8 @@ export function FounderClearanceGate({ children }: { children: React.ReactNode }
       currentUserUsername,
       profile?.username,
       (profile as any)?.handle,
-      user?.user_metadata?.username,
-      user?.user_metadata?.user_name,
-      user?.email?.split('@')[0],
-      (user as any)?.preferred_username,
-      typeof window !== 'undefined' ? localStorage.getItem('zenvitra_session_user') : null,
+      profile?.email,
+      user?.email,
     ].filter(Boolean) as string[];
 
     const isAuthorizedYuveer = usernameCandidates.some((cand) => isYuveer(cand));

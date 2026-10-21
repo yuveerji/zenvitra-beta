@@ -8,6 +8,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+---
+
+## 🚨 STRICT DATA INTEGRITY LAW: NO SEEDED DATA NO SEEDED ACCOUNTS ALLOWED
+
+1. **NO SEEDED ACCOUNTS**: Under no circumstance may hardcoded, mock, or fake user accounts/profiles ever be injected into the platform, database, state stores, or UI. Real user accounts must strictly initialize with zero fake followers, zero fake following, zero fake posts, and zero fake experiences.
+2. **NO SEEDED DATA**: No hardcoded conferences, seeded passes, mock tier prices (e.g. `1199`), hardcoded attendees, mock tickets, or artificial metrics. All pass tiers and event details must be 100% user/organizer configured.
+3. **CLEAN STATE BY DEFAULT**: All state providers (`ZenPulsePlatformContext`, `MunContext`, `ZenEventsPlatformContext`, `ZenPressPlatformContext`) must initialize empty (`[]` or clean empty objects) unless populated by legitimate user actions or verified database records.
+4. **NO ARTIFICIAL GRAPHS**: Never pre-fill follower/following lists or stats with hardcoded data.
 
 ---
 

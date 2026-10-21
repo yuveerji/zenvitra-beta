@@ -26,7 +26,10 @@ import {
   Users,
   Target,
   Clock,
-  BookOpen
+  BookOpen,
+  CircleDot,
+  Activity,
+  Rocket
 } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { EnterZenvitraButton } from '@/components/ui/EnterZenvitraButton';
@@ -41,8 +44,11 @@ export default function AboutUsPage() {
       title: 'Open Assembly & Chamber Matrix',
       desc: 'Real-time discussion chambers, moderated caucuses, resolution tabling, and accredited assembly passports for youth, thinkers, and delegates worldwide.',
       color: 'bg-amber-500/10 border-amber-500/25 text-amber-300',
+      hoverColor: 'hover:text-amber-300 hover:decoration-amber-300',
       tag: 'ASSEMBLY GRID',
-      termKey: 'assembly-os'
+      termKey: 'assembly-os',
+      href: '/events',
+      ctaText: 'Explore Assembly Grid',
     },
     {
       icon: FileText,
@@ -50,8 +56,11 @@ export default function AboutUsPage() {
       title: 'Solutions Policy Chamber',
       desc: 'Open-source civic policy repository where anyone can co-author, sponsor, and ratify real-world solutions to global challenges with verified sources.',
       color: 'bg-cyan-500/10 border-cyan-500/25 text-cyan-300',
+      hoverColor: 'hover:text-cyan-300 hover:decoration-cyan-300',
       tag: 'CIVIC DRAFTING',
-      termKey: 'proof-of-citation'
+      termKey: 'solutions-chamber',
+      href: '/solutions',
+      ctaText: 'Open Policy Chamber',
     },
     {
       icon: Newspaper,
@@ -59,8 +68,11 @@ export default function AboutUsPage() {
       title: 'Independent Press Bureau',
       desc: 'ZEN.FLUX vertical video dispatches and long-form investigative journalism with verifiable citation auditing and open peer review.',
       color: 'bg-purple-500/10 border-purple-500/25 text-purple-300',
+      hoverColor: 'hover:text-purple-300 hover:decoration-purple-300',
       tag: 'OPEN JOURNALISM',
-      termKey: 'sources-and-senses'
+      termKey: 'sources-and-senses',
+      href: '/press',
+      ctaText: 'Read Press Bureau',
     },
     {
       icon: HeartHandshake,
@@ -68,8 +80,11 @@ export default function AboutUsPage() {
       title: '10% Profit Civic Endowment',
       desc: 'A permanent constitutional covenant: 10% of all net profits are directly disbursed every 6 months to student scholarships and study kits, verified with offline handover videos and public receipts.',
       color: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300',
+      hoverColor: 'hover:text-emerald-300 hover:decoration-emerald-300',
       tag: 'CONSTITUTIONAL PROFIT ENDOWMENT',
-      termKey: 'escrow'
+      termKey: 'escrow',
+      href: '/impact',
+      ctaText: 'Inspect 10% Escrow',
     },
   ];
 
@@ -99,42 +114,61 @@ export default function AboutUsPage() {
   const roadmapPhases = [
     {
       phase: 'PHASE 01',
-      period: '2026 (Active)',
-      title: 'Genesis Platform Launch',
-      status: 'CURRENT MILESTONE',
-      items: [
-        'Decentralized Matrix Core & Dual-Key Identity deployment',
-        'Model UN Assembly Chamber & Policy Draft Engine live',
-        'Founding Ambassador Corps across 50+ universities',
-        '10% Escrow Charter: First ₹50,000 deployment threshold target',
+      period: 'Q1–Q2 2026',
+      title: 'Genesis Core & Sovereign Matrix',
+      status: '85% COMPLETED',
+      badgeClass: 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300',
+      progressPercent: 85,
+      color: 'border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-zinc-950/80 text-emerald-300',
+      completedItems: [
+        'Model UN Live Committee Chamber with real-time speaker queue & GSL timer',
+        'Dual-Key Sovereign Passport & cryptographic QR verification engine',
+        'ZEN.PULSE civic feed with YouTube Music integration & custom waveform trimmer',
+        'Cashfree PG production payment matrix & instant pass ticketing with dynamic seats',
+        'Sovereign Executive Council (Founder Yuveer & Co-Founders Khushi R B & Aarush Vijayivargiya) verified roster',
+        'International Press Bureau (ZEN.FLUX video dispatch & article reader)',
       ],
-      color: 'border-amber-400/40 bg-amber-500/5 text-amber-300',
+      inProgressItems: [
+        'WebRTC real-time Mesh Video Call rooms with speaker spotlights & roll-call HUD',
+        'Dynamic Google Sheets & webhook bidirectional sync for real-time delegate check-in',
+      ],
     },
     {
       phase: 'PHASE 02',
       period: 'Q3–Q4 2026',
-      title: 'Inter-Varsity Assembly Grid',
-      status: 'QUEUED',
-      items: [
-        'National Inter-College Crisis Summit integration',
-        'ZEN.FLUX Creator Studio with peer review fact-checking',
-        'Direct school solar lab installations in Rajasthan & Odisha',
-        'Diplomatic Dossier export for academic & fellowship credentialing',
+      title: 'Inter-Varsity Assembly & Policy Engine',
+      status: 'IN PROGRESS · 30%',
+      badgeClass: 'bg-amber-500/20 border-amber-400/40 text-amber-300',
+      progressPercent: 30,
+      color: 'border-amber-500/30 bg-gradient-to-b from-amber-950/15 to-zinc-950/80 text-amber-300',
+      completedItems: [
+        'ZEN.DOCS structured document studio & draft resolution formatter architecture',
+        'Constitutional 10% Profit Endowment escrow calculation ledger model',
       ],
-      color: 'border-white/10 bg-zinc-950/60 text-zinc-400',
+      inProgressItems: [
+        'Multi-chamber crisis matrix simulations with live presidential directives',
+        'Peer-reviewed citation checking algorithm & academic bibliography verification',
+        'Diplomatic Dossier export (PDF/DOCX) for college applications & fellowships',
+      ],
     },
     {
       phase: 'PHASE 03',
       period: '2027–2028',
-      title: 'Multilateral Youth Accord',
-      status: 'ROADMAP',
-      items: [
-        'Pan-Global Youth Policy Treaty presented to international bodies',
-        'Autonomous Civic Escrow smart contracts on decentralized ledger',
-        'Global Press Syndicate across 100+ nations',
-        '100 Rural Public School Labs fully powered & online',
+      title: 'Global Multilateral Youth Accord',
+      status: 'EXPANSION ROADMAP',
+      badgeClass: 'bg-cyan-500/20 border-cyan-400/40 text-cyan-300',
+      progressPercent: 5,
+      color: 'border-cyan-500/20 bg-gradient-to-b from-cyan-950/10 to-zinc-950/80 text-cyan-300',
+      completedItems: [
+        'Decentralized governance manifesto & open assembly constitution codified',
       ],
-      color: 'border-white/10 bg-zinc-950/60 text-zinc-400',
+      inProgressItems: [
+        'First ₹50,000 public school distribution threshold target (Rajasthan & Odisha)',
+        'Pan-Global Youth Policy Treaty presented to international multilateral summits',
+        'Autonomous Civic Escrow smart contracts on decentralized public ledger',
+        'Global Press Syndicate & collegiate investigative bureaus across 100+ nations',
+        '100 Rural Public School Labs fully equipped, solar-powered & permanently online',
+      ],
     },
   ];
 
@@ -204,27 +238,42 @@ export default function AboutUsPage() {
             {pillars.map((pillar) => {
               const Icon = pillar.icon;
               return (
-                <SpotlightCard key={pillar.num} className="p-8 rounded-3xl bg-zinc-950/80 border border-white/10 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className={`p-3 rounded-2xl border flex items-center justify-center ${pillar.color}`}>
-                      <Icon className="w-5 h-5" />
+                <SpotlightCard key={pillar.num} className="p-8 rounded-3xl bg-zinc-950/80 border border-white/10 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className={`p-3 rounded-2xl border flex items-center justify-center ${pillar.color}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="font-mono text-xs text-neutral-400 font-bold tracking-widest">
+                        {pillar.tag} &bull; {pillar.num}
+                      </span>
                     </div>
-                    <span className="font-mono text-xs text-neutral-400 font-bold tracking-widest">
-                      {pillar.tag} &bull; {pillar.num}
-                    </span>
+
+                    <h3 className="font-display font-bold text-xl text-white">
+                      <InteractiveWordHover termKey={pillar.termKey} side="top">
+                        <span className={`cursor-pointer underline decoration-white/20 underline-offset-4 transition ${pillar.hoverColor}`}>
+                          {pillar.title}
+                        </span>
+                      </InteractiveWordHover>
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">
+                      {pillar.desc}
+                    </p>
                   </div>
 
-                  <h3 className="font-display font-bold text-xl text-white">
-                    <InteractiveWordHover termKey={pillar.termKey}>
-                      <span className="underline decoration-white/30 underline-offset-4 hover:decoration-white cursor-pointer transition">
-                        {pillar.title}
-                      </span>
-                    </InteractiveWordHover>
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">
-                    {pillar.desc}
-                  </p>
+                  <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between">
+                    <Link
+                      href={pillar.href}
+                      className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-neutral-400 hover:text-white transition group cursor-pointer"
+                    >
+                      <span>{pillar.ctaText}</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                    <span className="font-mono text-[10px] text-neutral-600 uppercase tracking-wider">
+                      CHAMBER {pillar.num}
+                    </span>
+                  </div>
                 </SpotlightCard>
               );
             })}
@@ -251,11 +300,12 @@ export default function AboutUsPage() {
 
           <div className="text-xs sm:text-base text-neutral-300 font-light leading-relaxed max-w-3xl">
             We reject traditional non-profit opacity where overhead consumes 80% of resources. Under the{' '}
-            <InteractiveWordHover termKey="escrow">
-              <span className="text-white font-medium underline decoration-emerald-400/50 underline-offset-4 hover:decoration-emerald-300 cursor-pointer transition">
-                Zenvitra Constitutional Charter
-              </span>
-            </InteractiveWordHover>
+            <Link
+              href="/constitution"
+              className="text-white font-medium underline decoration-emerald-400/50 underline-offset-4 hover:decoration-emerald-300 hover:text-emerald-300 transition"
+            >
+              Zenvitra Constitutional Charter
+            </Link>
             , an immutable <strong className="text-white font-semibold">10% of all net platform profits</strong> is distributed <strong className="text-amber-300 font-semibold">every 6 months</strong> directly to student scholarships, school study kits, and rural computer labs. Every single distribution is held to radical accountability through itemized purchase receipts and offline on-the-ground giveaway videos broadcast publicly on <strong className="text-cyan-300 font-semibold">ZEN.FLUX</strong> and official social channels.
           </div>
 
@@ -300,8 +350,8 @@ export default function AboutUsPage() {
                     <Icon className="w-5 h-5" />
                   </div>
                   <h3 className="font-display font-bold text-sm text-white">
-                    <InteractiveWordHover termKey={termKeyMapping}>
-                      <span className="underline decoration-white/30 underline-offset-4 hover:decoration-white cursor-pointer transition">
+                    <InteractiveWordHover termKey={termKeyMapping} side="top">
+                      <span className="cursor-pointer hover:text-amber-300 underline decoration-white/20 underline-offset-4 hover:decoration-amber-300 transition">
                         {principle.title}
                       </span>
                     </InteractiveWordHover>
@@ -315,38 +365,110 @@ export default function AboutUsPage() {
 
         {/* ── 5. STRATEGIC ROADMAP ── */}
         <section className="space-y-8">
-          <div className="space-y-2 border-b border-white/10 pb-4">
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-400 font-bold">
-              EXECUTION TRAJECTORY
-            </span>
-            <h2 className="font-display font-bold text-2xl sm:text-4xl text-white uppercase tracking-tight">
-              Genesis 2026–2028 Roadmap
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-4">
+            <div className="space-y-1">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-400 font-bold">
+                EXECUTION TRAJECTORY · LIVE PROGRESS TRACKER
+              </span>
+              <h2 className="font-display font-bold text-2xl sm:text-4xl text-white uppercase tracking-tight">
+                The Genesis 2026–2028 Roadmap
+              </h2>
+            </div>
+            <div className="flex items-center gap-4 text-xs font-mono text-neutral-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                Done &amp; Deployed
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                In Active Pipeline
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {roadmapPhases.map((r, i) => (
-              <div key={i} className={`p-8 rounded-3xl border ${r.color} flex flex-col justify-between space-y-6 relative overflow-hidden`}>
-                <div className="space-y-3">
+              <div
+                key={i}
+                className={`p-7 rounded-3xl border ${r.color} flex flex-col justify-between space-y-6 relative overflow-hidden backdrop-blur-md shadow-2xl`}
+              >
+                <div className="space-y-4">
+                  {/* Phase & Period Header */}
                   <div className="flex items-center justify-between font-mono text-[10px] tracking-widest uppercase font-bold">
                     <span>{r.phase} &bull; {r.period}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-white">
+                    <span className={`px-2.5 py-0.5 rounded-full border text-[9px] font-mono font-bold tracking-wider ${r.badgeClass}`}>
                       {r.status}
                     </span>
                   </div>
 
-                  <h3 className="font-display font-bold text-xl text-white">
-                    {r.title}
-                  </h3>
+                  {/* Title & Progress Bar */}
+                  <div className="space-y-2">
+                    <h3 className="font-display font-bold text-lg sm:text-xl text-white">
+                      {r.title}
+                    </h3>
+                    
+                    {/* Visual Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400">
+                        <span>Milestone Completion</span>
+                        <span className="font-bold text-white">{r.progressPercent}%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            i === 0
+                              ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                              : i === 1
+                              ? 'bg-gradient-to-r from-amber-500 to-orange-400'
+                              : 'bg-gradient-to-r from-cyan-500 to-blue-400'
+                          }`}
+                          style={{ width: `${r.progressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-                  <ul className="space-y-2.5 text-xs text-neutral-300 font-light pt-2">
-                    {r.items.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white/60 shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Completed Accomplishments */}
+                  {r.completedItems.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-white/10">
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>Completed &amp; Live ({r.completedItems.length})</span>
+                      </div>
+                      <ul className="space-y-2 text-xs text-neutral-300 font-light">
+                        {r.completedItems.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
+                            <span className="leading-relaxed">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Active / In-Progress Pipelines */}
+                  {r.inProgressItems.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-white/10">
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-amber-300 font-semibold">
+                        <Activity className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
+                        <span>{i === 0 ? 'Active Pipelines' : 'Upcoming Horizons'}</span>
+                      </div>
+                      <ul className="space-y-2 text-xs text-neutral-400 font-light">
+                        {r.inProgressItems.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <CircleDot className="w-3 h-3 text-amber-400/80 shrink-0 mt-0.5" />
+                            <span className="leading-relaxed">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Tag */}
+                <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-[10px] font-mono text-neutral-500">
+                  <span>SOVEREIGN ARCHITECTURE</span>
+                  <span className="uppercase text-neutral-400 font-bold">{r.phase}</span>
                 </div>
               </div>
             ))}
@@ -387,7 +509,7 @@ export default function AboutUsPage() {
         </div>
         <div className="flex items-center gap-5 text-neutral-400 font-medium">
           <Link href="/manifesto" className="hover:text-white transition">Manifesto</Link>
-          <Link href="/donate/govt-schools" className="hover:text-white transition">10% Escrow</Link>
+          <Link href="/impact" className="hover:text-white transition">10% Escrow</Link>
           <Link href="/campus-ambassador" className="hover:text-white transition">Ambassadors</Link>
           <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
         </div>

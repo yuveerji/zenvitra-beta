@@ -315,6 +315,15 @@ export function suggestSmartThemes(profile: ZenSpaceProfile): ThemeRecommendatio
       : undefined
   }));
 
-  // Sort by match score descending
-  return enriched.sort((a, b) => b.matchScore - a.matchScore).slice(0, 4);
+  // Deduplicate candidates so every theme appears only once (with highest score)
+  const uniqueByTheme = new Map<ZenSpaceTheme, ThemeRecommendation>();
+  enriched
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .forEach(item => {
+      if (!uniqueByTheme.has(item.theme)) {
+        uniqueByTheme.set(item.theme, item);
+      }
+    });
+
+  return Array.from(uniqueByTheme.values()).slice(0, 4);
 }

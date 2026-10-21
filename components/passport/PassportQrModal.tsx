@@ -32,13 +32,13 @@ export function PassportQrModal({
   const levelNum = (passport?.verification?.level ?? rawLevel ?? 1) as VerificationLevel;
   const levelMeta = getVerificationLevelDetails(levelNum);
 
-  const verificationUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/passport/verify/${passportId}`
-    : `https://zenvitra.com/passport/verify/${passportId}`;
-
   useEffect(() => {
     if (!isOpen) return;
-    QRCode.toDataURL(verificationUrl, {
+    const fullUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/passport/verify/${passportId}`
+      : `https://zenvitra.xyz/passport/verify/${passportId}`;
+
+    QRCode.toDataURL(fullUrl, {
       width: 320,
       margin: 1.5,
       color: {
@@ -48,12 +48,15 @@ export function PassportQrModal({
     })
       .then((url) => setQrDataUrl(url))
       .catch((err) => console.error('Failed to generate QR code:', err));
-  }, [isOpen, verificationUrl]);
+  }, [isOpen, passportId]);
 
   if (!isOpen) return null;
 
   const copyLink = () => {
-    navigator.clipboard.writeText(verificationUrl);
+    const fullUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/passport/verify/${passportId}`
+      : `https://zenvitra.xyz/passport/verify/${passportId}`;
+    navigator.clipboard.writeText(fullUrl);
     setHasCopied(true);
     setTimeout(() => setHasCopied(false), 2000);
   };
@@ -135,7 +138,7 @@ export function PassportQrModal({
             <span>{hasCopied ? 'Link Copied' : 'Copy Verification URL'}</span>
           </button>
           <a
-            href={verificationUrl}
+            href={`/passport/verify/${passportId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="py-2.5 px-3 rounded-xl bg-purple-500 hover:bg-purple-600 text-white font-mono text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-purple-950/30 text-center font-bold"

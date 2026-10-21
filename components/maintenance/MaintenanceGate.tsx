@@ -206,7 +206,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
               </div>
               <div>
                 <h1 className="font-display font-black text-lg text-white tracking-wider uppercase">
-                  Protocol Omega Active
+                  System Maintenance Active
                 </h1>
                 <p className="text-[10px] text-amber-400/80 font-mono tracking-widest">
                   PLATFORM CORE UNDER SOVEREIGN UPGRADE
@@ -327,7 +327,7 @@ export function MaintenanceGate({ children }: MaintenanceGateProps) {
             </span>
             <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
             <span className="text-amber-200">
-              PROTOCOL OMEGA ACTIVE (PLATFORM IN LOCKDOWN) &bull; You are browsing with Founder/Admin Immunity
+              SYSTEM MAINTENANCE ACTIVE (PLATFORM IN LOCKDOWN) &bull; You are browsing with Founder/Admin Immunity
             </span>
           </div>
 

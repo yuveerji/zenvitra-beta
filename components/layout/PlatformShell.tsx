@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -108,33 +108,38 @@ export function PlatformShell({
     };
   }, [profile?.role]);
 
+  // Auto-launch ZENVITRA Onboarding Tour if pending or for new accounts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pendingTour = localStorage.getItem('zenvitra_auto_tour_trigger');
+      if (pendingTour === 'true' && !window.location.pathname.startsWith('/onboarding')) {
+        localStorage.removeItem('zenvitra_auto_tour_trigger');
+        window.location.href = '/onboarding';
+      }
+    }
+  }, []);
+
   const roleConfig = getRoleConfig(activeRole || profile?.role, isFounder);
 
-  // Smart scroll auto-hide & mouse cursor top reveal
+  // Smart scroll auto-hide & scroll up reveal
   useEffect(() => {
     let lastScrollY = window.scrollY;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > 80 && currentScrollY > lastScrollY) {
+      if (currentScrollY <= 20) {
+        setShowTopHeader(true);
+      } else if (currentScrollY > 80 && currentScrollY > lastScrollY) {
         setShowTopHeader(false);
-      } else {
+      } else if (currentScrollY < lastScrollY) {
         setShowTopHeader(true);
       }
       lastScrollY = currentScrollY;
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (e.clientY <= 60) {
-        setShowTopHeader(true);
-      }
-    };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 
@@ -147,18 +152,8 @@ export function PlatformShell({
       const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
       const pulseProfile = JSON.parse(localStorage.getItem('zenvitra_pulse_my_profile_v1') || '{}');
       let fallbackAvatar = stored.avatar || stored.avatar_url || pulseProfile.avatar || '';
-
       if (!fallbackAvatar) {
-        try {
-          const profiles = JSON.parse(
-            localStorage.getItem('zenvitra_pulse_profiles_v9_clean') || 
-            localStorage.getItem('zenvitra_pulse_profiles_v8_sovereign') || 
-            '[]'
-          );
-          const cleanUser = (stored.username || stored.handle || pulseProfile.username || '').toLowerCase().trim().replace(/^@/, '');
-          const myP = profiles.find((p: any) => (p.username && p.username.toLowerCase().trim().replace(/^@/, '') === cleanUser) || p.username === 'yuveer');
-          if (myP?.avatar) fallbackAvatar = myP.avatar;
-        } catch (_) {}
+        fallbackAvatar = '/assets/default-avatar.svg';
       }
 
       if (stored?.username || stored?.display_name || pulseProfile?.username || fallbackAvatar) {
@@ -247,14 +242,30 @@ export function PlatformShell({
     profile?.badge === '🧪 TEST PILOT'
   );
 
-  const currentAvatar = 
-    myProfile?.avatar || 
-    profile?.avatar_url || 
-    (profile as any)?.avatar || 
-    (session?.user as any)?.image || 
-    (session?.user?.user_metadata as any)?.avatar_url || 
-    (mounted ? localUser?.avatar : '') || 
-    '';
+  const currentAvatar = useMemo(() => {
+    const candidate = 
+      myProfile?.avatar || 
+      profile?.avatar_url || 
+      (profile as any)?.avatar || 
+      (mounted ? localUser?.avatar : '') || 
+      '';
+
+    if (candidate && candidate !== '/assets/default-avatar.svg' && !candidate.includes('default-avatar')) {
+      return candidate;
+    }
+
+    const cleanU = (currentUsername || '').toLowerCase().replace(/^@/, '').trim();
+    if (typeof window !== 'undefined' && cleanU) {
+      try {
+        const pass = JSON.parse(localStorage.getItem(`zenvitra_passport_${cleanU}`) || '{}');
+        if (pass?.avatarUrl && pass.avatarUrl !== '/assets/default-avatar.svg') {
+          return pass.avatarUrl;
+        }
+      } catch (_) {}
+    }
+
+    return candidate || '/assets/default-avatar.svg';
+  }, [myProfile?.avatar, profile?.avatar_url, mounted, localUser?.avatar, currentUsername]);
 
   const currentInitial = (currentDisplayName || currentUsername || 'U').charAt(0).toUpperCase() || 'U';
 
@@ -312,19 +323,21 @@ export function PlatformShell({
   }, []);
 
   // Strict Founder Access: Hidden for all regular users, delegates, and core team.
-  // ONLY visible when authenticated specifically as founder@zenvitra.org.
+  // ONLY visible when authenticated specifically as founder@zenvitra.xyz or founder@zenvitra.org.
   const hasFounderPrivileges = Boolean(
+    profile?.email?.trim().toLowerCase() === 'founder@zenvitra.xyz' ||
     profile?.email?.trim().toLowerCase() === 'founder@zenvitra.org' ||
+    session?.user?.email?.trim().toLowerCase() === 'founder@zenvitra.xyz' ||
     session?.user?.email?.trim().toLowerCase() === 'founder@zenvitra.org'
   );
 
   const navItems = React.useMemo(() => {
     if (roleConfig.id === 'delegate') {
       return [
+        { label: 'Home Feed', href: '/pulse', icon: Radio, description: 'Diplomatic Feed Stream' },
         { label: 'Chamber Dais', href: '/committee', icon: Award, tag: 'Live Dais', description: 'Assembly Chamber & Motions' },
         { label: 'Resolutions', href: '/solutions', icon: Scale, tag: 'Ballots', description: 'Debate & Civic Voting' },
         { label: 'MUN Summits', href: '/events', icon: Calendar, tag: 'MUN', description: 'Model UN Summits' },
-        { label: 'Home Feed', href: '/pulse', icon: Radio, description: 'Diplomatic Feed Stream' },
         { label: 'Passport', href: '/passport', icon: ShieldCheck, tag: 'Dossier', description: 'Delegate Credentials' },
         { label: 'Docs Drafting', href: '/docs', icon: BookOpen, description: 'Draft Treaties & Clauses' },
         { label: 'ZEN.GLIMPSE', href: '/glimpse', icon: Camera, tag: '24h', description: 'Visual Floor Snaps' },
@@ -333,7 +346,7 @@ export function PlatformShell({
       ];
     } else if (roleConfig.id === 'journalist') {
       return [
-        { label: 'Live Wire', href: '/pulse', icon: Radio, tag: 'Wire', description: 'Fast Feed & Bulletins' },
+        { label: 'Home Feed', href: '/pulse', icon: Radio, tag: 'Wire', description: 'Fast Feed & Bulletins' },
         { label: 'Press Bureau', href: '/press', icon: Newspaper, tag: 'Bureau', description: 'Investigative Desks' },
         { label: 'ZEN.GLIMPSE', href: '/glimpse', icon: Camera, tag: 'Live', description: '24h Visual Dispatches' },
         { label: 'DOI Library', href: '/docs', icon: BookOpen, tag: 'Archive', description: 'Academic Citations' },
@@ -345,11 +358,11 @@ export function PlatformShell({
       ];
     } else if (roleConfig.id === 'architect') {
       return [
-        { label: 'Protocol Engine', href: '/solutions', icon: Terminal, tag: 'Engine', description: 'Civic Micro-Tools' },
-        { label: 'Matrix Hub', href: '/matrix', icon: Layers, tag: 'OS', description: 'Adaptive Matrix OS' },
-        { label: 'Treasury Ledger', href: '/donate/govt-schools', icon: Heart, tag: '10% Aid', description: 'Public School Aid Ledger' },
-        { label: 'Developer Enclave', href: '/enclave', icon: ShieldCheck, tag: 'APIs', description: 'Open Protocol Tools' },
         { label: 'Home Feed', href: '/pulse', icon: Radio, description: 'Feed Stream' },
+        { label: 'Protocol Engine', href: '/solutions', icon: Terminal, tag: 'Engine', description: 'Civic Micro-Tools' },
+        { label: 'Matrix Hub', href: '/mun/matrix', icon: Layers, tag: 'OS', description: 'Adaptive Matrix OS' },
+        { label: 'Treasury Ledger', href: '/impact', icon: Heart, tag: '10% Aid', description: 'Public School Aid Ledger' },
+        { label: 'Developer Enclave', href: '/enclave', icon: ShieldCheck, tag: 'APIs', description: 'Open Protocol Tools' },
         { label: 'Messages', href: '/chat', icon: MessageSquare, description: 'Decentralized Chat' },
         { label: 'Dashboard', href: '/dashboard', icon: BarChart3, description: 'Matrix Telemetry' },
         { label: 'Profile', href: '/pulse?tab=profile', icon: User, description: 'Your Profile' },
@@ -357,7 +370,7 @@ export function PlatformShell({
     }
 
     return [
-      { label: 'Home', href: '/pulse', icon: Radio, description: 'Feed Stream' },
+      { label: 'Home Feed', href: '/pulse', icon: Radio, description: 'Feed Stream' },
       { label: 'FLUX', href: '/pulse?tab=flux', icon: Film, description: 'FLUX Video Reels' },
       { label: 'Messages', href: '/chat', icon: MessageSquare, description: 'ZEN.CHAT' },
       { label: 'Search', href: '/pulse?tab=explore', icon: Search, description: 'Search & Nodes' },
@@ -392,7 +405,15 @@ export function PlatformShell({
   return (
     <div className="min-h-screen bg-black text-white flex flex-col md:flex-row font-sans relative selection:bg-white/20 selection:text-white">
       {/* ─── THREE LINES HAMBURGER TRIGGER BUTTON (COLLAPSED DEFAULT - ONLY ON STUDIOS WITHOUT EMBEDDED NAVBAR NOR INLINE TOGGLE) ─── */}
-      {!hasEmbeddedNavbar && !pathname?.startsWith('/pulse') && (
+      {!hasEmbeddedNavbar && 
+        !pathname?.startsWith('/pulse') && 
+        !pathname?.startsWith('/committee') && 
+        !pathname?.startsWith('/call') && 
+        !pathname?.startsWith('/chat') && 
+        !pathname?.startsWith('/docs') && 
+        !pathname?.startsWith('/legislate') && 
+        !pathname?.startsWith('/glimpse') && 
+        !pathname?.includes('/matrix') && (
         <button
           type="button"
           onMouseEnter={handleMouseEnter}
@@ -460,8 +481,8 @@ export function PlatformShell({
               }}
               className="flex items-center gap-3 group min-w-0"
             >
-              <div className="w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <img src="/assets/logo.png" alt="Zenvitra Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]" />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <img src="/assets/logo-new.png" alt="Zenvitra Logo" className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] brand-logo-img" />
               </div>
 
               <div className="flex flex-col min-w-0">
@@ -854,31 +875,66 @@ export function PlatformShell({
             <div className="flex items-center gap-2.5 text-cyan-200 min-w-0 pr-2">
               <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 animate-pulse" />
               <span className="truncate">
-                Testing as <strong className="text-white">Test Node (@{currentUsername})</strong> &bull;{' '}
+                Testing as <strong className="text-white">Test Node (@{currentUsername})</strong> •{' '}
                 <span className="text-amber-300 font-bold px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] tracking-wide uppercase">
                   Officially Closes 19th Nov 2026
-                </span> &bull;{' '}
+                </span> •{' '}
                 <span className="text-emerald-400 font-semibold">ALL FEATURES UNLOCKED</span>
               </span>
             </div>
-            <div className="flex items-center gap-2.5 shrink-0 ml-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-3">
+              <Link
+                href="/cv"
+                className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] hover:bg-purple-500/30 transition shrink-0 uppercase tracking-wider font-bold"
+              >
+                Model UN CV &rarr;
+              </Link>
+              <Link
+                href="/pulse"
+                className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] hover:bg-emerald-500/30 transition shrink-0 uppercase tracking-wider font-bold hidden sm:inline-block"
+              >
+                Pulse Studio &rarr;
+              </Link>
+              <Link
+                href="/events"
+                className="px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] hover:bg-teal-500/30 transition shrink-0 uppercase tracking-wider font-bold hidden md:inline-block"
+              >
+                Events &amp; Sheets &rarr;
+              </Link>
+              <Link
+                href="/press"
+                className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] hover:bg-rose-500/30 transition shrink-0 uppercase tracking-wider font-bold hidden lg:inline-block"
+              >
+                Press Wire &rarr;
+              </Link>
               <Link
                 href="/passport"
                 className="px-2.5 py-1 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-[10px] hover:bg-cyan-400/30 transition shrink-0 uppercase tracking-wider font-bold"
               >
-                Inspect Passport &rarr;
+                Passport &rarr;
+              </Link>
+              <Link
+                href="/test"
+                className="px-2 py-1 rounded-full bg-white/10 text-white hover:bg-white/20 border border-white/20 text-[10px] transition shrink-0 uppercase tracking-wider font-bold"
+                title="Open Test Launchpad"
+              >
+                Launchpad •
               </Link>
               <button
                 type="button"
                 onClick={async () => {
-                  await signOut({ forceFullLogout: true });
-                  router.push('/login');
+                  const res = await signOut();
+                  if (res?.switchedTo) {
+                    window.location.reload();
+                  } else {
+                    router.push('/login');
+                  }
                 }}
                 className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 hover:text-white border border-rose-500/40 hover:bg-rose-500/40 text-[10px] transition shrink-0 uppercase tracking-wider font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(244,63,94,0.25)]"
-                title="Sign out of Test Node"
+                title="Leave Test Mode and return to your authentic account"
               >
                 <LogOut className="w-3 h-3" />
-                <span>Sign Out</span>
+                <span>Leave Test Mode</span>
               </button>
               <button
                 type="button"
@@ -899,7 +955,7 @@ export function PlatformShell({
             <div className="flex items-center gap-2 text-purple-200 min-w-0 pr-2">
               <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
               <span className="truncate">
-                Exploring as <strong>Guest Node (@{currentUsername})</strong> &bull; Dispatches enabled &bull; <span className="text-purple-300/80">Medals &amp; Dais voting locked</span>
+                Exploring as <strong>Guest Node (@{currentUsername})</strong> • Dispatches enabled • <span className="text-purple-300/80">Medals &amp; Dais voting locked</span>
               </span>
             </div>
             <div className="flex items-center gap-2.5 shrink-0 ml-3">
@@ -922,12 +978,6 @@ export function PlatformShell({
           </div>
         )}
         
-        {/* Invisible Top Hover Trigger Zone: Re-engages Header when cursor moves to very top of page */}
-        <div 
-          className="fixed top-0 left-0 right-0 h-4 z-40 pointer-events-auto"
-          onMouseEnter={() => setShowTopHeader(true)}
-        />
-
         {/* Global Constant Homepage Navbar (Consistent across entire app, excluded on full-bleed studios) */}
         {hasEmbeddedNavbar && (
           <div className="shrink-0 z-40">

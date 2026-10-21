@@ -32,12 +32,12 @@ import {
   UserCheck,
   ExternalLink,
   Lock,
-  Menu
+  Menu,
+  Hash
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
 import { getRoleConfig } from '@/lib/roleExperience';
-import { RoleExperienceSwitcherModal } from '@/components/modals/RoleExperienceSwitcherModal';
 import { StoriesTray } from './StoriesTray';
 import { FluxReelsFeed } from './FluxReelsFeed';
 import { StoryComposerModal } from './StoryComposerModal';
@@ -46,7 +46,6 @@ import { DiscoverProfiles } from './DiscoverProfiles';
 import { PostComposer } from './PostComposer';
 import { FluxComposer } from './FluxComposer';
 import { ZenSparkCard } from './ZenSparkCard';
-import { PulseMap } from './PulseMap';
 import { WhatsMovingTicker } from './WhatsMovingTicker';
 import { SpatialPostComposer } from './SpatialPostComposer';
 import { INITIAL_SPARKS, ZenSpark } from '@/types/sparks';
@@ -59,10 +58,11 @@ import { FloorSpeechTransceiverModal } from './FloorSpeechTransceiverModal';
 import { DelegatePassportModal } from './DelegatePassportModal';
 import { RevenueFeeSimulatorModal } from './RevenueFeeSimulatorModal';
 import { ChamberDirectiveModal, DIRECTIVE_DOSSIERS } from './ChamberDirectiveModal';
+import { ShareToChatModal } from './ShareToChatModal';
 import { PulsePost } from '@/types/pulse';
 import { getStoryFontStyle } from '@/lib/storyFonts';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getFounderDirective, FounderDirective, isFounder, isAdmin } from '@/lib/founderControl';
+import { getFounderDirective, FounderDirective, isFounder, isAdmin, isFounderOrCoFounder, isCurrentSessionFounderOrCoFounder } from '@/lib/founderControl';
 import { AdminOmniModal } from '@/components/founder/AdminOmniModal';
 import { FounderOmniModal } from '@/components/founder/FounderOmniModal';
 import { FounderNoteRenderer } from './FounderNoteRenderer';
@@ -143,7 +143,9 @@ export function ZenPulseCore() {
     currentUserUsername || 
     myProfile?.username || 
     (user?.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() : '');
-  const activeAvatar = profile?.avatar_url || myProfile?.avatar;
+  const rawActiveAvatar = profile?.avatar_url || myProfile?.avatar;
+  const isOAuthPulse = Boolean(rawActiveAvatar && (rawActiveAvatar.includes('googleusercontent.com') || rawActiveAvatar.includes('githubusercontent.com')));
+  const activeAvatar = (rawActiveAvatar && !isOAuthPulse) ? rawActiveAvatar : '/assets/default-avatar.svg';
   const activeInitial = (activeDisplayName || activeUsername || 'U').charAt(0).toUpperCase() || 'U';
 
   const router = useRouter();
@@ -171,7 +173,6 @@ export function ZenPulseCore() {
 
   /* Active Sovereign Role Persona & Directive */
   const [activeRole, setActiveRole] = useState<string | null>(null);
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
 
   useEffect(() => {
     const handleRoleSync = () => {
@@ -276,7 +277,10 @@ export function ZenPulseCore() {
       window.history.replaceState({}, '', url.toString());
     }
   };
-  const [feedFilter, setFeedFilter] = useState<'for_you' | 'following'>('for_you');
+  /* ZEN.FLUX Streams: 'for_you' | 'following' | 'trending' | 'topics' | 'saved' */
+  const [feedFilter, setFeedFilter] = useState<'for_you' | 'following' | 'trending' | 'topics' | 'saved'>('for_you');
+  const [selectedTopicTag, setSelectedTopicTag] = useState<string | null>(null);
+  const [activeShareToChatPost, setActiveShareToChatPost] = useState<PulsePost | null>(null);
   
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showPostComposerModal, setShowPostComposerModal] = useState(false);
@@ -286,7 +290,9 @@ export function ZenPulseCore() {
   const [showFounderModal, setShowFounderModal] = useState(false);
 
   const cleanUserCheck = (activeUsername || currentUserUsername || '').toLowerCase().trim().replace(/^@/, '');
-  const isFounderUser = isFounder(cleanUserCheck, (profile?.role as any) || (profile as any)?.badge);
+  const isFounderUser = 
+    isFounderOrCoFounder(cleanUserCheck, (profile?.role as any) || (profile as any)?.badge, profile?.id) || 
+    isCurrentSessionFounderOrCoFounder();
   const isAdminUser = isAdmin(cleanUserCheck, (profile?.role as any) || (profile as any)?.badge);
 
   const [founderDirective, setFounderDirective] = useState<FounderDirective>(getFounderDirective());
@@ -497,6 +503,24 @@ export function ZenPulseCore() {
     }
   };
 
+  const handleReportPost = async (postId: string) => {
+    try {
+      await fetch('/api/pulse/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reporterId: currentUserId || 'anonymous',
+          reporterName: activeDisplayName || currentUserUsername || 'Citizen',
+          reportedEntity: 'POST',
+          reportedId: postId,
+          reason: 'Flagged for moderation / community integrity check',
+        }),
+      });
+    } catch (_) {}
+    showToast('🚨 Dispatch flagged for Sovereign Council review.');
+    setActiveMenuPostId(null);
+  };
+
   const handleAddComment = (postId: string) => {
     const text = commentInputs[postId];
     if (!text || !text.trim()) return;
@@ -685,34 +709,60 @@ export function ZenPulseCore() {
   };
 
   // Determine active posts
-  const basePosts = navTab === 'saved' ? savedPosts : feedPosts;
+  const basePosts = (navTab === 'saved' || feedFilter === 'saved') ? savedPosts : feedPosts;
 
-  const filteredPosts = basePosts.filter((p) => {
-    if (hiddenPostIds.includes(p.id)) return false;
-    if (navTab === 'feed' && feedFilter === 'following') {
-      const matchesFollowing = isFollowing(p.authorUsername) || p.authorUsername === currentUserUsername;
-      if (!matchesFollowing) return false;
+  const filteredPosts = useMemo(() => {
+    let result = [...basePosts];
+
+    if (hiddenPostIds.length > 0) {
+      result = result.filter((p) => !hiddenPostIds.includes(p.id));
+    }
+
+    if (navTab === 'feed') {
+      if (feedFilter === 'following') {
+        result = result.filter((p) => isFollowing(p.authorUsername) || p.authorUsername === currentUserUsername);
+      } else if (feedFilter === 'trending') {
+        result = [...result].sort((a, b) => {
+          const scoreA = (a.likes || 0) * 2 + (a.replyCount || 0) * 3 + (a.reposts || 0) * 4;
+          const scoreB = (b.likes || 0) * 2 + (b.replyCount || 0) * 3 + (b.reposts || 0) * 4;
+          return scoreB - scoreA;
+        });
+      } else if (feedFilter === 'topics' && selectedTopicTag) {
+        const cleanTag = selectedTopicTag.toLowerCase().replace(/^#/, '');
+        result = result.filter((p) => {
+          const inTags = p.tags?.some((t) => t.toLowerCase().includes(cleanTag));
+          const inContent = p.content.toLowerCase().includes(cleanTag);
+          return inTags || inContent;
+        });
+      }
     }
 
     if (chamberFilter !== 'all') {
-      const cLower = p.content.toLowerCase();
-      if (chamberFilter === 'treaties' && !cLower.includes('treaty') && !cLower.includes('accord') && !p.tags?.some((t) => t.toLowerCase().includes('treaty'))) return false;
-      if (chamberFilter === 'plenary' && !cLower.includes('plenary') && !cLower.includes('un') && !cLower.includes('resolution')) return false;
-      if (chamberFilter === 'audio' && !(p as any).audioUrl && p.postType !== 'floor_speech' && !cLower.includes('speech') && !cLower.includes('floor')) return false;
-      if (chamberFilter === 'summits' && !cLower.includes('summit') && !cLower.includes('workshop') && !cLower.includes('event')) return false;
+      const cFilter = chamberFilter;
+      result = result.filter((p) => {
+        const cLower = p.content.toLowerCase();
+        if (cFilter === 'treaties' && !cLower.includes('treaty') && !cLower.includes('accord') && !p.tags?.some((t) => t.toLowerCase().includes('treaty'))) return false;
+        if (cFilter === 'plenary' && !cLower.includes('plenary') && !cLower.includes('un') && !cLower.includes('resolution')) return false;
+        if (cFilter === 'audio' && !(p as any).audioUrl && p.postType !== 'floor_speech' && !cLower.includes('speech') && !cLower.includes('floor')) return false;
+        if (cFilter === 'summits' && !cLower.includes('summit') && !cLower.includes('workshop') && !cLower.includes('event')) return false;
+        return true;
+      });
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      return (
-        p.content.toLowerCase().includes(q) ||
-        p.authorName.toLowerCase().includes(q) ||
-        p.authorUsername.toLowerCase().includes(q) ||
-        p.tags?.some((t) => t.toLowerCase().includes(q))
-      );
+      result = result.filter((p) => {
+        return (
+          p.content.toLowerCase().includes(q) ||
+          p.authorName.toLowerCase().includes(q) ||
+          p.authorUsername.toLowerCase().includes(q) ||
+          p.tags?.some((t) => t.toLowerCase().includes(q))
+        );
+      });
     }
-    return true;
-  });
+
+    return result;
+  }, [basePosts, hiddenPostIds, navTab, feedFilter, isFollowing, currentUserUsername, selectedTopicTag, chamberFilter, searchQuery]);
 
   const suggestedProfiles = profiles
     .filter((p) => p.username !== currentUserUsername && !isFollowing(p.username))
@@ -813,7 +863,7 @@ export function ZenPulseCore() {
               <Menu className="w-5 h-5" />
             </button>
             <span className="font-sans text-xs text-neutral-400 font-semibold tracking-wide uppercase">
-              Profile &bull; Sovereign Dossier
+              Profile &bull; Student Profile / MUN CV
             </span>
           </div>
         )}
@@ -821,31 +871,54 @@ export function ZenPulseCore() {
         {/* ── Pulse Command & Navigation Deck ── */}
         {navTab !== 'profile' && activeView !== 'profile' && (
           <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-wrap gap-4 select-none">
-            {/* Nav Pills */}
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#080a11]/90 border border-white/10 backdrop-blur-xl shadow-inner">
-              {[
-                { id: 'feed', label: 'Wire', icon: Home },
-                { id: 'explore', label: 'Explore', icon: Compass },
-                { id: 'flux', label: 'FLUX', icon: Film },
-                { id: 'saved', label: 'Saved', icon: Bookmark },
-              ].map((tab) => {
-                const Icon = tab.icon;
-                const active = navTab === tab.id;
-                return (
+            {/* Nav Pills & Ecosystem Search */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#080a11]/90 border border-white/10 backdrop-blur-xl shadow-inner">
+                {[
+                  { id: 'feed', label: 'Wire', icon: Home },
+                  { id: 'explore', label: 'Explore', icon: Compass },
+                  { id: 'flux', label: 'FLUX', icon: Film },
+                  { id: 'saved', label: 'Saved', icon: Bookmark },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const active = navTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleTabChange(tab.id as any)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-sans font-bold transition-all duration-200 cursor-pointer ${
+                        active
+                          ? 'bg-white text-black shadow-lg shadow-white/10'
+                          : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${active ? 'text-black stroke-[2.5]' : 'text-neutral-400'}`} />
+                      <span className="tracking-tight">{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* ZEN.SEARCH Ecosystem Bar */}
+              <div className="relative min-w-[200px] sm:w-64">
+                <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search dispatches & tags..."
+                  className="w-full pl-9 pr-7 py-2 rounded-xl bg-white/[0.05] border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400/60 font-sans transition"
+                />
+                {searchQuery && (
                   <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id as any)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-sans font-bold transition-all duration-200 cursor-pointer ${
-                      active
-                        ? 'bg-white text-black shadow-lg shadow-white/10'
-                        : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
-                    }`}
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
                   >
-                    <Icon className={`w-3.5 h-3.5 ${active ? 'text-black stroke-[2.5]' : 'text-neutral-400'}`} />
-                    <span className="tracking-tight">{tab.label}</span>
+                    <X className="w-3.5 h-3.5" />
                   </button>
-                );
-              })}
+                )}
+              </div>
             </div>
 
             {/* Quick Action Triggers */}
@@ -932,14 +1005,6 @@ export function ZenPulseCore() {
                   <span>{roleConfig.quickAction.label}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => setRoleModalOpen(true)}
-                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-200 hover:text-white transition font-sans font-semibold text-xs cursor-pointer border border-white/10 active:scale-95"
-                  title="Switch Persona / Experience"
-                >
-                  Switch Persona
-                </button>
               </div>
             </div>
 
@@ -992,7 +1057,62 @@ export function ZenPulseCore() {
                     {/* 3. What's Moving Live Velocity Ticker */}
                     <WhatsMovingTicker feedPosts={feedPosts} />
 
-                    {/* 4. Global Chamber Filter Bar */}
+                    {/* 4. ZEN.FLUX Canonical Stream Discovery */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#080b12]/90 border border-white/10 backdrop-blur-xl shadow-inner select-none overflow-x-auto scrollbar-none">
+                        {[
+                          { id: 'for_you', label: 'For You', icon: Sparkles },
+                          { id: 'following', label: 'Following', icon: UserCheck },
+                          { id: 'trending', label: 'Trending', icon: TrendingUp },
+                          { id: 'topics', label: 'Topics', icon: Hash },
+                          { id: 'saved', label: 'Saved Vault', icon: Bookmark },
+                        ].map((stream) => {
+                          const Icon = stream.icon;
+                          const active = feedFilter === stream.id;
+                          return (
+                            <button
+                              key={stream.id}
+                              onClick={() => {
+                                setFeedFilter(stream.id as any);
+                              }}
+                              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-sans font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                                active
+                                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20'
+                                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.06]'
+                              }`}
+                            >
+                              <Icon className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-zinc-400'}`} />
+                              <span>{stream.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Interactive Topic Filter Chips when 'topics' stream is selected */}
+                      {feedFilter === 'topics' && (
+                        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 select-none">
+                          {['All Topics', 'Diplomacy', 'ClimateAction', 'YouthVoice', 'Debate', 'Treaties', 'TechPolicy', 'Rights', 'Assembly'].map((topic) => {
+                            const isAll = topic === 'All Topics';
+                            const active = isAll ? !selectedTopicTag : selectedTopicTag === topic;
+                            return (
+                              <button
+                                key={topic}
+                                onClick={() => setSelectedTopicTag(isAll ? null : topic)}
+                                className={`px-3 py-1 rounded-xl text-[11px] font-sans font-bold tracking-tight transition cursor-pointer border whitespace-nowrap ${
+                                  active
+                                    ? 'bg-purple-500/20 border-purple-500/50 text-purple-200 shadow-sm'
+                                    : 'bg-white/[0.03] border-white/10 text-zinc-400 hover:text-white hover:bg-white/[0.07]'
+                                }`}
+                              >
+                                {isAll ? '🌐 All Topics' : `#${topic}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 5. Global Chamber Filter Bar */}
                     <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 select-none">
                       {[
                         { id: 'all', label: '🌐 All Wire' },
@@ -1017,14 +1137,6 @@ export function ZenPulseCore() {
                         );
                       })}
                     </div>
-
-                    {/* 5. The Pulse Map Constellation // Living Signal Network */}
-                    <PulseMap
-                      onSelectTopic={(topic) => {
-                        if (topic) setSearchQuery(topic);
-                        else setSearchQuery('');
-                      }}
-                    />
                   </>
                 )}
 
@@ -1083,8 +1195,10 @@ export function ZenPulseCore() {
 
                     <FounderNoteRenderer
                       body={founderDirective.body}
-                      defaultExpanded={false}
+                      defaultExpanded={true}
                       collapsible={true}
+                      hideDuplicateTitle={true}
+                      cardTitle={founderDirective.title || 'A NOTE FROM THE FOUNDER'}
                     />
 
                     <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-sans text-zinc-400">
@@ -1303,7 +1417,20 @@ export function ZenPulseCore() {
                                       <span>{hasSaved ? 'Remove from Saved' : 'Save Dispatch to Vault'}</span>
                                     </button>
 
-                                    {/* Option 2: Copy Link */}
+                                    {/* Option 2: Forward to ZEN.CHAT */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveShareToChatPost(post);
+                                        setActiveMenuPostId(null);
+                                      }}
+                                      className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-2.5 text-zinc-200 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                                    >
+                                      <MessageSquare className="w-4 h-4 text-violet-400 shrink-0" />
+                                      <span>Forward to ZEN.CHAT</span>
+                                    </button>
+
+                                    {/* Option 3: Copy Link */}
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -1392,10 +1519,7 @@ export function ZenPulseCore() {
                                     {/* Option 7: Report Dispatch */}
                                     <button
                                       type="button"
-                                      onClick={() => {
-                                        showToast('🚨 Dispatch flagged for Sovereign Council review.');
-                                        setActiveMenuPostId(null);
-                                      }}
+                                      onClick={() => handleReportPost(post.id)}
                                       className="w-full px-3 py-2 rounded-xl text-left flex items-center gap-2.5 text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition cursor-pointer"
                                     >
                                       <Flag className="w-4 h-4 text-amber-400 shrink-0" />
@@ -1797,8 +1921,9 @@ export function ZenPulseCore() {
 
                             {/* Share */}
                             <button
-                              onClick={() => handleSharePost(post.id)}
+                              onClick={() => setActiveShareToChatPost(post)}
                               className="p-2 rounded-xl bg-white/[0.04] border border-white/10 text-zinc-300 hover:text-white hover:bg-white/[0.08] transition cursor-pointer active:scale-95"
+                              title="Share to ZEN.CHAT & copy link"
                             >
                               <Share2 className="w-4 h-4" />
                             </button>
@@ -2011,6 +2136,14 @@ export function ZenPulseCore() {
         onClose={() => setShowPassportModal(false)}
       />
 
+      {/* ── ZEN.CHAT Direct Interoperable Signal Sharing Modal ── */}
+      <ShareToChatModal
+        isOpen={Boolean(activeShareToChatPost)}
+        onClose={() => setActiveShareToChatPost(null)}
+        post={activeShareToChatPost}
+        onSuccess={(msg) => showToast(msg)}
+      />
+
       <ChamberDirectiveModal
         isOpen={showDirectiveModal}
         onClose={() => {
@@ -2038,12 +2171,6 @@ export function ZenPulseCore() {
         isOpen={showFounderModal}
         onClose={() => setShowFounderModal(false)}
         onOpenAdminMenu={() => setShowAdminModal(true)}
-      />
-
-      {/* ── Sovereign Role Persona Switcher Modal ── */}
-      <RoleExperienceSwitcherModal
-        isOpen={roleModalOpen}
-        onClose={() => setRoleModalOpen(false)}
       />
     </div>
   );

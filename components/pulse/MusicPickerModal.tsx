@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { POPULAR_MUSIC_TRACKS, MusicTrack } from '@/lib/musicTracks';
+import { useGlobalAudio } from '@/components/audio/GlobalAudioContext';
 
 export interface SelectedTrackPayload {
   title: string;
@@ -62,6 +63,8 @@ export function MusicPickerModal({
   selectedTrackTitle,
   mode = 'post',
 }: MusicPickerModalProps) {
+  const { isPlaying: isGlobalAudioPlaying, playTrack, pauseTrack, stopTrack, updateTimestamp } = useGlobalAudio();
+
   const [activeTab, setActiveTab] = useState<'ytmusic' | 'featured' | 'custom'>('ytmusic');
   const [search, setSearch] = useState('Oasis Wonderwall');
   const [ytResults, setYtResults] = useState<YTTrackItem[]>([]);
@@ -149,15 +152,25 @@ export function MusicPickerModal({
     }
   };
 
-  const toggleYTPreview = (videoId: string, trackId: string) => {
+  const toggleYTPreview = (videoId: string, track: YTTrackItem) => {
     if (audioRef.current) {
       audioRef.current.pause();
     }
     setPlayingTrackId(null);
-    if (activeYtEmbedId === videoId) {
+    if (activeYtEmbedId === videoId && isGlobalAudioPlaying) {
+      pauseTrack();
       setActiveYtEmbedId(null);
     } else {
       setActiveYtEmbedId(videoId);
+      playTrack({
+        videoId,
+        title: track.title,
+        artist: track.artist,
+        thumbnailUrl: track.thumbnail,
+        startTime: 0,
+        frameDuration: 60,
+        source: 'YouTube Music'
+      });
     }
   };
 
@@ -187,13 +200,23 @@ export function MusicPickerModal({
   };
 
   const openTrimForTrack = (track: YTTrackItem | MusicTrack) => {
-    audioRef.current?.pause();
+    if (audioRef.current) audioRef.current.pause();
     setPlayingTrackId(null);
     setActiveYtEmbedId(null);
     setTrimTrack(track);
     setStartTime(15);
-    setFrameDuration(Math.min(60, maxLimit));
+    const dur = Math.min(60, maxLimit);
+    setFrameDuration(dur);
     setIsTrimPlaying(true);
+    playTrack({
+      videoId: (track as any).videoId || track.id,
+      title: track.title,
+      artist: track.artist,
+      thumbnailUrl: (track as any).thumbnailUrl || (track as any).thumbnail,
+      startTime: 15,
+      frameDuration: dur,
+      source: 'YouTube Music'
+    });
   };
 
   const confirmAttachTrack = (
@@ -201,9 +224,10 @@ export function MusicPickerModal({
     start: number,
     durationSecs: number
   ) => {
-    audioRef.current?.pause();
+    if (audioRef.current) audioRef.current.pause();
     setPlayingTrackId(null);
     setActiveYtEmbedId(null);
+    stopTrack();
 
     const isYT = 'videoId' in track || (track as any).source === 'YouTube Music';
     const videoId = (track as any).videoId || (isYT ? track.id : undefined);
@@ -308,6 +332,7 @@ export function MusicPickerModal({
                 audioRef.current?.pause();
                 setPlayingTrackId(null);
                 setActiveYtEmbedId(null);
+                stopTrack();
                 onClose();
               }}
               className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
@@ -423,13 +448,17 @@ export function MusicPickerModal({
                 </div>
 
                 {/* Range Slider for Start Time */}
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <input
                     type="range"
                     min={0}
                     max={Math.max(0, parseDurationSeconds(trimTrack.duration) - frameDuration)}
                     value={startTime}
-                    onChange={(e) => setStartTime(Number(e.target.value))}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setStartTime(val);
+                      updateTimestamp(val, frameDuration);
+                    }}
                     className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-rose-500"
                   />
                   <div className="flex justify-between text-[10px] font-mono text-zinc-500">
@@ -437,38 +466,133 @@ export function MusicPickerModal({
                     <span>Drag timeline to select song section</span>
                     <span>{trimTrack.duration || '3:30'}</span>
                   </div>
+
+                  {/* Quick Nudges & Section Presets */}
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = Math.max(0, startTime - 5);
+                        setStartTime(val);
+                        updateTimestamp(val, frameDuration);
+                      }}
+                      className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 font-mono text-[10px] border border-white/10 transition cursor-pointer"
+                    >
+                      -5s
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = Math.min(Math.max(0, parseDurationSeconds(trimTrack.duration) - frameDuration), startTime + 5);
+                        setStartTime(val);
+                        updateTimestamp(val, frameDuration);
+                      }}
+                      className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 font-mono text-[10px] border border-white/10 transition cursor-pointer"
+                    >
+                      +5s
+                    </button>
+                    <div className="h-3 w-px bg-white/10 mx-1" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStartTime(0);
+                        updateTimestamp(0, frameDuration);
+                      }}
+                      className={`px-2 py-1 rounded-lg font-mono text-[10px] border transition cursor-pointer ${
+                        startTime === 0
+                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                          : 'bg-white/5 hover:bg-white/10 text-zinc-400 border-white/10'
+                      }`}
+                    >
+                      Intro (0:00)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = Math.min(30, Math.max(0, parseDurationSeconds(trimTrack.duration) - frameDuration));
+                        setStartTime(val);
+                        updateTimestamp(val, frameDuration);
+                      }}
+                      className={`px-2 py-1 rounded-lg font-mono text-[10px] border transition cursor-pointer ${
+                        startTime === 30
+                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                          : 'bg-white/5 hover:bg-white/10 text-zinc-400 border-white/10'
+                      }`}
+                    >
+                      Verse (0:30)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = Math.min(60, Math.max(0, parseDurationSeconds(trimTrack.duration) - frameDuration));
+                        setStartTime(val);
+                        updateTimestamp(val, frameDuration);
+                      }}
+                      className={`px-2 py-1 rounded-lg font-mono text-[10px] border transition cursor-pointer ${
+                        startTime === 60
+                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                          : 'bg-white/5 hover:bg-white/10 text-zinc-400 border-white/10'
+                      }`}
+                    >
+                      Chorus (1:00)
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Audio Preview Engine with Play/Pause */}
-              <div className="p-3 rounded-2xl bg-black border border-rose-500/30 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              {/* Audio Preview Engine with Play/Pause & Album Artwork */}
+              <div className="p-3 rounded-2xl bg-black border border-rose-500/30 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <button
                     type="button"
-                    onClick={() => setIsTrimPlaying(!isTrimPlaying)}
-                    className="w-9 h-9 rounded-xl bg-rose-500 hover:bg-rose-400 text-white flex items-center justify-center cursor-pointer shadow"
+                    onClick={() => {
+                      if (isTrimPlaying) {
+                        pauseTrack();
+                        setIsTrimPlaying(false);
+                      } else {
+                        if (trimTrack) {
+                          playTrack({
+                            videoId: (trimTrack as any).videoId || trimTrack.id,
+                            title: trimTrack.title,
+                            artist: trimTrack.artist,
+                            thumbnailUrl: (trimTrack as any).thumbnailUrl || (trimTrack as any).thumbnail,
+                            startTime,
+                            frameDuration,
+                            source: 'YouTube Music'
+                          });
+                        }
+                        setIsTrimPlaying(true);
+                      }
+                    }}
+                    className="w-9 h-9 rounded-xl bg-rose-500 hover:bg-rose-400 text-white flex items-center justify-center cursor-pointer shadow shrink-0"
                   >
                     {isTrimPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                   </button>
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-xs font-mono font-bold text-white block">Previewing Frame</span>
-                    <span className="text-[10px] font-mono text-zinc-400">
+                    <span className="text-[10px] font-mono text-zinc-400 block truncate">
                       {formatSeconds(startTime)} - {formatSeconds(startTime + frameDuration)} ({frameDuration}s)
                     </span>
                   </div>
                 </div>
 
-                {/* Embedded Hidden YouTube Player for Exact Window */}
-                {isTrimPlaying && (
-                  <div className="w-1 h-1 opacity-0 overflow-hidden pointer-events-none">
-                    <iframe
-                      key={`${(trimTrack as any).videoId || trimTrack.id}-${startTime}-${startTime + frameDuration}`}
-                      src={`https://www.youtube-nocookie.com/embed/${(trimTrack as any).videoId || trimTrack.id}?autoplay=1&enablejsapi=1&start=${startTime}&end=${startTime + frameDuration}&loop=1&playsinline=1`}
-                      title="Audio Preview"
-                      allow="autoplay"
+                {/* Clean Album Artwork Cover with Vinyl Spin (No video box) */}
+                <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-zinc-900 border border-white/20 shrink-0 shadow-md flex items-center justify-center">
+                  {((trimTrack as any).thumbnailUrl || (trimTrack as any).thumbnail) ? (
+                    <img 
+                      src={(trimTrack as any).thumbnailUrl || (trimTrack as any).thumbnail} 
+                      alt={trimTrack.title} 
+                      className={`w-full h-full object-cover ${isTrimPlaying ? 'animate-spin' : ''}`}
+                      style={{ animationDuration: '8s' }}
                     />
-                  </div>
-                )}
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-rose-400">
+                      <Music className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+                  <div className="absolute w-2 h-2 rounded-full bg-white border border-black shadow" />
+                </div>
               </div>
 
               {/* Attach Button */}
@@ -557,26 +681,39 @@ export function MusicPickerModal({
             {/* ── TAB 1: YOUTUBE MUSIC ── */}
             {activeTab === 'ytmusic' && (
               <div className="space-y-2">
-                {/* Active Embed Player */}
+                {/* Active Audio Preview Bar (No video screen) */}
                 {activeYtEmbedId && (
-                  <div className="p-3 rounded-2xl bg-black border border-rose-500/40 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-mono text-rose-300">
-                      <span>YouTube Music Audio Stream</span>
+                  <div className="p-3 rounded-2xl bg-black border border-rose-500/40 flex items-center justify-between gap-3 shadow-md">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                        <Volume2 className="w-4 h-4 animate-pulse" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-white block truncate">
+                          {ytResults.find(t => t.videoId === activeYtEmbedId)?.title || 'Playing Preview'}
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-400 block truncate">
+                          YouTube Music Preview Stream
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-end gap-0.5 h-3">
+                        {[40, 80, 50, 100, 60, 90].map((h, i) => (
+                          <div key={i} className="w-0.5 rounded-full bg-rose-400 animate-pulse" style={{ height: `${h}%`, animationDelay: `${i * 100}ms` }} />
+                        ))}
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setActiveYtEmbedId(null)}
-                        className="text-zinc-400 hover:text-white"
+                        onClick={() => {
+                          stopTrack();
+                          setActiveYtEmbedId(null);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono text-zinc-300 hover:text-white transition cursor-pointer"
                       >
-                        Close Preview
+                        Stop
                       </button>
-                    </div>
-                    <div className="w-full h-24 rounded-xl overflow-hidden bg-black">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${activeYtEmbedId}?autoplay=1&playsinline=1`}
-                        title="YouTube Music Player"
-                        className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      />
                     </div>
                   </div>
                 )}
@@ -613,7 +750,7 @@ export function MusicPickerModal({
                           )}
                           <button
                             type="button"
-                            onClick={() => toggleYTPreview(track.videoId || track.id, track.id)}
+                            onClick={() => toggleYTPreview(track.videoId || track.id, track)}
                             className="absolute inset-0 bg-black/60 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition cursor-pointer"
                             title="Preview track"
                           >

@@ -22,7 +22,7 @@ model User {
   updatedAt     DateTime       @updatedAt
   posts         Post[]
   applications  Application[]
-  donations     DonationRecord[]
+  conferences   ConferenceListing[]
 }
 
 model SystemProtocolState {
@@ -60,15 +60,737 @@ model Application {
   appliedAt      DateTime @default(now())
 }
 
-model DonationRecord {
-  id             String   @id @default(cuid())
-  userId         String?
-  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  donorName      String
-  donorEmail     String
-  amount         String
-  utrOrTxnId     String   @unique
-  projectStream  String
-  status         String   @default("PENDING_AUDIT")
-  createdAt      DateTime @default(now())
+model ConferenceListing {
+  id                  String   @id @default(cuid())
+  slug                String   @unique
+  title               String
+  shortName           String
+  category            String   @default("MUN") // MUN, SUMMIT, HACKATHON, DEBATE, WORKSHOP, POLICY
+  format              String   @default("physical") // physical, virtual, hybrid
+  venue               String
+  city                String   @default("New Delhi")
+  startDate           DateTime
+  endDate             DateTime
+  organizerName       String
+  organizerEmail      String
+  organizerPhone      String?
+  organizerHandle     String?
+  institution         String?
+  description         String
+  coverImage          String?
+  ticketPrice         Float    @default(0)
+  tierPlansJson       String?
+  committeesJson      String?
+  status              String   @default("PENDING") // PENDING, VERIFIED, REJECTED
+  verified            Boolean  @default(false)
+  verifiedAt          DateTime?
+  verifiedBy          String?
+  userId              String?
+  user                User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model EventTicket {
+  id             String    @id @default(cuid())
+  ticketNumber   String    @unique
+  qrCodeToken    String    @unique
+  eventId        String
+  eventTitle     String
+  attendeeName   String
+  attendeeEmail  String
+  attendeeHandle String?
+  attendeePhone  String?
+  tierName       String    @default("General Pass")
+  isStudent      Boolean   @default(false)
+  studentIdUrl   String?
+  price          Float     @default(0)
+  currency       String    @default("INR")
+  paymentId      String?
+  orderId        String?
+  status         String    @default("VALID") // VALID, CHECKED_IN, CANCELLED, REFUNDED, REVOKED
+  securityHash   String
+  checkedInAt    DateTime?
+  checkedInBy    String?
+  issuedAt       DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model SupportTicket {
+  id                 String                @id @default(cuid())
+  ticketNumber       String                @unique // e.g. ZEN-1042
+  subject            String
+  category           String                // ACCOUNT, EVENTS, MUN, PAYMENTS, TECHNICAL, SAFETY, GENERAL
+  subcategory        String?
+  description        String
+  priority           String                @default("P3_NORMAL") // P1_CRITICAL, P2_HIGH, P3_NORMAL, P4_LOW
+  status             String                @default("NEW")       // NEW, OPEN, IN_PROGRESS, WAITING_USER, WAITING_INTERNAL, ESCALATED, RESOLVED, CLOSED
+  userId             String?
+  userEmail          String
+  userName           String
+  userHandle         String?
+  assignedToId       String?
+  assignedToName     String?
+  assignedTeam       String?               // Account Support, Event Support, MUN Support, Finance Support, Technical Support, Safety Review, Founder Desk
+  escalatedTo        String?               // SENIOR_ADMIN, FOUNDER
+  escalationReason   String?
+  relatedEventId     String?
+  relatedTxnId       String?
+  attachmentUrls     String?               // JSON array string
+  resolutionSummary  String?
+  resolutionCode     String?               // RESOLVED_CONFIRMED, DUPLICATE, CANCELLED_BY_USER, POLICY_EXPLANATION, REFUND_ISSUED
+  rating             Int?                  // 1 to 5
+  feedbackComment    String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  resolvedAt         DateTime?
+  closedAt           DateTime?
+
+  messages           SupportMessage[]
+  internalNotes      SupportInternalNote[]
+  auditLogs          SupportAuditLog[]
+}
+
+model SupportMessage {
+  id          String        @id @default(cuid())
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId    String
+  senderName  String
+  senderRole  String        // USER, STAFF, ADMIN, FOUNDER, SYSTEM
+  content     String
+  attachments String?       // JSON array string
+  isOfficial  Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+}
+
+model SupportInternalNote {
+  id          String        @id @default(cuid())
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId    String
+  authorName  String
+  authorRole  String        // STAFF, ADMIN, FOUNDER
+  note        String
+  createdAt   DateTime      @default(now())
+}
+
+model SupportAuditLog {
+  id          String        @id @default(cuid())
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actorId     String
+  actorName   String
+  actorRole   String
+  action      String        // CREATED, STATUS_CHANGED, ASSIGNED, ESCALATED, NOTE_ADDED, REPLY_SENT, RESOLVED, REOPENED, CLOSED
+  details     String?       // JSON string or summary
+  createdAt   DateTime      @default(now())
+}
+
+model SupportPolicy {
+  id                 String   @id @default("GLOBAL_SUPPORT_POLICY")
+  p1SlaHours         Int      @default(2)
+  p2SlaHours         Int      @default(8)
+  p3SlaHours         Int      @default(24)
+  p4SlaHours         Int      @default(72)
+  autoCloseDays      Int      @default(5)
+  maintenanceNotice  String?
+  activeIncidents    String?  // JSON string
+  updatedAt          DateTime @updatedAt
+}
+
+model CallSession {
+  id                 String                   @id @default(cuid())
+  callNumber         String                   @unique // e.g. CALL-7821
+  type               String                   @default("VIDEO") // VOICE, VIDEO, MEET, STAGE, ROOM
+  title              String                   @default("Instant Secure Chamber")
+  status             String                   @default("CONNECTED") // RINGING, CONNECTING, CONNECTED, RECONNECTING, ENDED
+  hostId             String
+  hostName           String
+  roomCode           String                   @unique // e.g. zen-room-xyz
+  isStage            Boolean                  @default(false)
+  committeeId        String?
+  startedAt          DateTime                 @default(now())
+  endedAt            DateTime?
+  durationSeconds    Int                      @default(0)
+  recordingUrl       String?
+  participantsCount  Int                      @default(1)
+  
+  participants       CallParticipantRecord[]
+  speakerQueue       CallSpeakerQueueRecord[]
+  reports            CallReportRecord[]
+}
+
+model CallParticipantRecord {
+  id              String       @id @default(cuid())
+  sessionId       String
+  session         CallSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId          String
+  userName        String
+  userRole        String       @default("PARTICIPANT") // HOST, CO_HOST, CHAIR, DELEGATE, SPEAKER, PARTICIPANT, OBSERVER
+  isMuted         Boolean      @default(false)
+  isCameraOn      Boolean      @default(true)
+  isScreenSharing Boolean      @default(false)
+  isHandRaised    Boolean      @default(false)
+  joinedAt        DateTime     @default(now())
+  leftAt          DateTime?
+}
+
+model CallMeeting {
+  id              String    @id @default(cuid())
+  meetingId       String    @unique // e.g. mtg-882-991
+  title           String
+  description     String?
+  scheduledStart  DateTime
+  scheduledEnd    DateTime
+  hostId          String
+  hostName        String
+  hostEmail       String?
+  passcode        String?
+  waitingRoom     Boolean   @default(true)
+  inviteesJson    String?   // JSON array of emails / handles
+  roomUrl         String
+  status          String    @default("SCHEDULED") // SCHEDULED, LIVE, COMPLETED, CANCELLED
+  type            String    @default("GROUP")     // PERSONAL, GROUP, COMMUNITY, MUN_COMMITTEE, STAGE, SUPPORT
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model CallSpeakerQueueRecord {
+  id                   String      @id @default(cuid())
+  sessionId            String
+  session              CallSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId               String
+  userName             String
+  delegationCountry    String      @default("Delegate")
+  speakDurationSeconds Int         @default(90)
+  status               String      @default("QUEUED") // QUEUED, SPEAKING, CONCLUDED, YIELDED
+  queuedAt             DateTime    @default(now())
+  startedAt            DateTime?
+}
+
+model CallReportRecord {
+  id             String      @id @default(cuid())
+  sessionId      String
+  session        CallSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  reporterId     String
+  reporterName   String
+  reportedUserId String?
+  reason         String
+  status         String      @default("PENDING") // PENDING, INVESTIGATING, RESOLVED, DISMISSED
+  createdAt      DateTime    @default(now())
+}
+
+model CallPolicy {
+  id                      String   @id @default("GLOBAL_CALL_POLICY")
+  callsActive             Boolean  @default(true)
+  maxParticipantsPerCall  Int      @default(50)
+  screenShareAllowed      Boolean  @default(true)
+  recordingAllowed        Boolean  @default(true)
+  p2pMeshLimit            Int      @default(12)
+  emergencyCallLockdown   Boolean  @default(false)
+  updatedAt               DateTime @updatedAt
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════
+// ZEN.PULSE — Unified Social Architecture (ZEN.FLUX, ZEN.POST, ZEN.PROFILE,
+// ZEN.PASSPORT, ZEN.CIRCLES, ZEN.NOTIFY, ZEN.SEARCH)
+// ══════════════════════════════════════════════════════════════════════════
+
+model PulseProfile {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  username                String    @unique
+  displayName             String
+  avatarUrl               String?
+  bannerUrl               String?
+  bio                     String?
+  profileType             String    @default("PERSONAL") // PERSONAL, CREATOR, ORGANISATION, OFFICIAL, TEAM_MANAGED
+  organisationName        String?
+  website                 String?
+  location                String?
+  interestsJson           String?   // JSON array
+  isVerified              Boolean   @default(false)
+  verifiedBadge           String?   // OFFICIAL_DELEGATE, SECRETARIAT, VERIFIED_ORGANISATION
+  verificationDetailsJson String?
+  followersCount          Int       @default(0)
+  followingCount          Int       @default(0)
+  postsCount              Int       @default(0)
+  karmaScore              Int       @default(100)
+  privacySettingsJson     String?   // JSON
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+model PulseFollow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model PulsePostRecord {
+  id                 String    @id @default(cuid())
+  authorId           String
+  authorUsername     String
+  authorName         String
+  authorAvatar       String?
+  authorRole         String    @default("DELEGATE")
+  postType           String    @default("STANDARD") // STANDARD, ARTICLE, POLL, ANNOUNCEMENT, THREAD
+  title              String?
+  content            String
+  coverImage         String?
+  mediaUrlsJson      String?   // JSON array string
+  mediaType          String?   // IMAGE, VIDEO, AUDIO, DOCUMENT
+  topic              String?
+  tagsJson           String?   // JSON array string
+  communityId        String?
+  communityName      String?
+  audience           String    @default("PUBLIC") // PUBLIC, FOLLOWERS, COMMUNITY, DRAFT
+  status             String    @default("PUBLISHED") // DRAFT, QUEUED, PUBLISHED, ARCHIVED
+  isPinned           Boolean   @default(false)
+  isAnnouncement     Boolean   @default(false)
+  readingTimeMinutes Int       @default(1)
+  citationsJson      String?   // JSON array of citations/sources
+  pollDataJson       String?   // JSON poll structure
+  threadParentId     String?
+  canonicalUrl       String?
+  likesCount         Int       @default(0)
+  repostsCount       Int       @default(0)
+  commentsCount      Int       @default(0)
+  viewsCount         Int       @default(0)
+  bookmarksCount     Int       @default(0)
+  publishedAt        DateTime  @default(now())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model PulseReaction {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  type      String   @default("LIKE") // LIKE, APPLAUD, DIPLOMATIC_AGREE, INSIGHTFUL
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId, type])
+}
+
+model PulseComment {
+  id             String    @id @default(cuid())
+  postId         String
+  authorId       String
+  authorUsername String
+  authorName     String
+  authorAvatar   String?
+  content        String
+  parentId       String?
+  likesCount     Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model PulseBookmark {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model PulseCommunity {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  name          String
+  description   String
+  avatarUrl     String?
+  bannerUrl     String?
+  type          String    @default("PUBLIC") // PUBLIC, PRIVATE, APPROVAL_BASED
+  category      String    @default("GENERAL") // MUN, DIPLOMACY, DEBATE, YOUTH_CLUB, ACADEMIC
+  ownerId       String
+  ownerUsername String?
+  membersCount  Int       @default(1)
+  rulesJson     String?   // JSON array string
+  linkedEventId String?
+  isVerified    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model PulseCommunityMember {
+  id          String   @id @default(cuid())
+  communityId String
+  userId      String
+  role        String   @default("MEMBER") // OWNER, ADMIN, MODERATOR, MEMBER
+  status      String   @default("ACTIVE") // ACTIVE, PENDING_APPROVAL, BANNED
+  joinedAt    DateTime @default(now())
+
+  @@unique([communityId, userId])
+}
+
+model PulseNotification {
+  id             String    @id @default(cuid())
+  recipientId    String
+  actorId        String?
+  actorUsername  String?
+  actorName      String?
+  actorAvatar    String?
+  type           String    // FOLLOW, LIKE, COMMENT, MENTION, REPOST, ANNOUNCEMENT, CREDENTIAL_ISSUED, EVENT_UPDATE
+  entityType     String?   // POST, PROFILE, COMMUNITY, CREDENTIAL, EVENT
+  entityId       String?
+  message        String
+  linkUrl        String?
+  isRead         Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+}
+
+model PulseCredential {
+  id                 String    @id @default(cuid())
+  userId             String
+  userUsername       String
+  title              String
+  category           String    // MUN_PARTICIPATION, DELEGATE_AWARD, ORGANIZER_ROLE, PUBLISHED_ARTICLE, SPECIAL_CLEARANCE
+  issuerName         String
+  issuerId           String?
+  issuerSignature    String?
+  credentialId       String    @unique // e.g. CRED-2026-UNSC-098
+  proofUrl           String?
+  issuedAt           DateTime  @default(now())
+  verificationStatus String    @default("VERIFIED") // VERIFIED, CONTESTED, REVOKED
+  isPublicOnPassport Boolean   @default(true)
+  auditNotes         String?
+}
+
+model PulseReport {
+  id             String    @id @default(cuid())
+  reporterId     String
+  reporterName   String?
+  reportedEntity String    // POST, COMMENT, USER, COMMUNITY
+  reportedId     String
+  reason         String
+  details        String?
+  status         String    @default("PENDING") // PENDING, REVIEWED, RESOLVED, DISMISSED
+  reviewedBy     String?
+  actionTaken    String?
+  createdAt      DateTime  @default(now())
+  resolvedAt     DateTime?
+}
+
+model OrganizerKyc {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  userEmail          String
+  userHandle         String?
+  legalName          String
+  organizationName   String?
+  organizationType   String    @default("INDIVIDUAL") // INDIVIDUAL, STUDENT_BODY, COLLEGE_SOCIETY, NGO, TRUST, COMPANY
+  panNumber          String
+  bankAccountNumber  String
+  bankIfscCode       String
+  bankName           String?
+  accountHolderName  String
+  upiVpa             String?
+  documentUrl        String?
+  status             String    @default("VERIFIED") // PENDING, VERIFIED, REJECTED
+  rejectionReason    String?
+  verifiedAt         DateTime? @default(now())
+  verifiedBy         String?   @default("CASHFREE_SECURE_ID")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model EventPost {
+  id                  String             @id @default(cuid())
+  eventId             String
+  title               String
+  department          String             @default("Organising Committee") // Secretariat, Executive Board, Organising Committee, Press & Media, Operations, Design & Tech, Delegate Affairs, Adjudicators & Judges, Volunteers
+  description         String
+  responsibilities    String?            // JSON string array
+  requirements        String?            // JSON string array
+  slots               Int                @default(1)
+  filledSlots         Int                @default(0)
+  status              String             @default("OPEN") // OPEN, PAUSED, CLOSED
+  deadline            DateTime?
+  isCompensated       Boolean            @default(false)
+  compensationDetails String?            // e.g. Voluntary, Stipend, Perks & Honors
+  applicationMethod   String             @default("DEFAULT") // DEFAULT, ZEN_FORMS, GOOGLE_FORMS_EMBED, GOOGLE_FORMS_LINK, EXTERNAL_URL
+  externalFormUrl     String?
+  visibility          String             @default("PUBLIC") // PUBLIC, UNLISTED, INVITATION_ONLY, CLOSED
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  applications        EventApplication[]
+
+  @@index([eventId])
+}
+
+model EventRecruitmentConfig {
+  id                  String    @id @default(cuid())
+  eventId             String    @unique
+  enabled             Boolean   @default(true)
+  visibility          String    @default("PUBLIC") // PUBLIC, REGISTERED_ONLY, PRIVATE_LINK, CLOSED
+  method              String    @default("ZEN_FORMS") // ZEN_FORMS, GOOGLE_FORMS_EMBED, GOOGLE_FORMS_LINK, EXTERNAL_URL
+  googleFormsUrl      String?
+  headline            String?   @default("Join the Organizing & Executive Team")
+  description         String?   @default("Recruiting Secretariat, Executive Board, Committee Leads, and Event Staff for this convening.")
+  deadline            DateTime?
+  formSchemaJson      String?   // Custom questions array
+  layoutMode          String    @default("BOTH") // BOTH, SHOWCASE_ONLY, RECRUIT_ONLY, NEITHER
+  showTeam            Boolean   @default(true)
+  showRecruitment     Boolean   @default(true)
+  teamHeadline        String?   @default("Our Team & Leadership")
+  teamDescription     String?   @default("Meet the Secretariat, Executive Board, and Organising Committee behind this convening.")
+  sectionOrder        String?   @default("overview,team,recruitment") // CSV order
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model EventTeamMemberListing {
+  id                  String    @id @default(cuid())
+  eventId             String
+  teamName            String    @default("Organising Committee") // Secretariat, Executive Board, Judges, Mentors, Logistics, Media, etc.
+  role                String    // Secretary-General, Chairperson, Head of Design, Chief Adjudicator, Mentor, etc.
+  name                String    // Display name
+  handle              String?   // Optional ZENVITRA handle / username
+  profileUrl          String?   // Optional profile URL
+  avatarUrl           String?   // Optional profile photo / avatar
+  description         String?   // Responsibilities or introduction bio
+  displayOrder        Int       @default(0)
+  visibility          String    @default("PUBLIC") // PUBLIC, HIDDEN, MEMBERS_ONLY
+  status              String    @default("CONFIRMED") // CONFIRMED, INVITED, ARCHIVED
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([eventId])
+  @@index([teamName])
+}
+
+model EventApplication {
+  id                  String     @id @default(cuid())
+  applicationNumber   String     @unique // e.g. APP-2026-X892
+  eventId             String
+  postId              String
+  post                EventPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  applicantId         String?
+  applicantName       String
+  applicantEmail      String
+  applicantHandle     String?
+  applicantPhone      String?
+  experience          String?
+  motivation          String?
+  portfolioUrl        String?
+  resumeUrl           String?
+  answersJson         String?    // JSON answers map for custom questions
+  status              String     @default("SUBMITTED") // SUBMITTED, UNDER_REVIEW, SHORTLISTED, INTERVIEW, OFFER_SENT, ACCEPTED, DECLINED, REJECTED, WAITLISTED, WITHDRAWN
+  reviewerNotes       String?
+  rating              Int?       // 1 to 5
+  interviewDate       DateTime?
+  interviewMeetingUrl String?
+  interviewNotes      String?
+  offerRole           String?
+  offerSentAt         DateTime?
+  offerExpiresAt      DateTime?
+  offerRespondedAt    DateTime?
+  submittedAt         DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  @@index([eventId])
+  @@index([applicantEmail])
+  @@index([applicantHandle])
+}
+
+// ==========================================
+// ZEN.SHEETS — Universal Data & Operations
+// ==========================================
+
+model IntegrationConnection {
+  id              String                @id @default(cuid())
+  ownerId         String                // User ID of the organizer
+  provider        String                @default("GOOGLE_SHEETS") // GOOGLE_SHEETS, GOOGLE_DRIVE
+  accountEmail    String
+  accountName     String?
+  status          String                @default("CONNECTED") // CONNECTED, REVOKED, EXPIRED, PAUSED
+  tokenReference  String?               // Secure token reference or config
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  workbooks       SpreadsheetWorkbook[]
+
+  @@index([ownerId])
+  @@index([provider])
+}
+
+model SpreadsheetWorkbook {
+  id                String                 @id @default(cuid())
+  eventId           String                 @unique
+  connectionId      String
+  connection        IntegrationConnection  @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  spreadsheetId     String                 // Google Sheets Spreadsheet ID
+  spreadsheetUrl    String?                // Web link to open in Google Sheets
+  templateKey       String                 @default("CONFERENCE") // CONFERENCE, COMPETITION, TALENT_SHOW, WORKSHOP, FESTIVAL, CUSTOM
+  status            String                 @default("SYNCED") // SYNCED, SYNCING, CONFLICT, ACTION_REQUIRED, DISCONNECTED, PAUSED
+  syncHealthScore   Int                    @default(100)
+  lastSyncedAt      DateTime?
+  lastReconciledAt  DateTime?
+  webhookSecret     String?                // Secret key for Apps Script inbound webhook
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  tabs              SpreadsheetTab[]
+  jobs              SyncJob[]
+  conflicts         SyncConflict[]
+
+  @@index([eventId])
+  @@index([spreadsheetId])
+}
+
+model SpreadsheetTab {
+  id              String              @id @default(cuid())
+  workbookId      String
+  workbook        SpreadsheetWorkbook @relation(fields: [workbookId], references: [id], onDelete: Cascade)
+  entityType      String              // DASHBOARD, EVENT_CONFIG, TEAM_SECRETARIAT, COMMITTEES_ROLES, RECRUITMENT, APPLICATIONS, ALLOCATIONS, REGISTRATIONS, ATTENDANCE, TASKS_OPERATIONS, PAYMENTS_SUMMARY, AUDIT_SYNC_LOG, CUSTOM
+  sheetId         Int                 @default(0) // Numeric sheet ID in Google Sheets
+  tabName         String              // e.g. "00 — Dashboard", "01 — Event Config", etc.
+  schemaVersion   Int                 @default(1)
+  syncEnabled     Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  mappings        SyncMapping[]
+  records         SyncRecord[]
+
+  @@unique([workbookId, entityType])
+  @@index([workbookId])
+}
+
+model SyncMapping {
+  id              String          @id @default(cuid())
+  tabId           String
+  tab             SpreadsheetTab  @relation(fields: [tabId], references: [id], onDelete: Cascade)
+  fieldKey        String          // e.g. application_id, status, role, committee_id
+  columnIndex     String          // e.g. "A", "B", "C" or column index
+  columnHeader    String          // Display header in Google Sheets
+  syncPolicy      String          @default("TWO_WAY") // TWO_WAY, WEBSITE_AUTHORITATIVE, SHEETS_AUTHORITATIVE, APPROVAL_REQUIRED, READ_ONLY, DERIVED_FORMULA
+  dataType        String          @default("STRING") // STRING, NUMBER, BOOLEAN, DATE, JSON
+  required        Boolean         @default(false)
+  validationRules String?         // JSON string for enum values or ranges
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([tabId])
+}
+
+model SyncRecord {
+  id                String          @id @default(cuid())
+  tabId             String
+  tab               SpreadsheetTab  @relation(fields: [tabId], references: [id], onDelete: Cascade)
+  entityId          String          // Stable internal record ID
+  entityType        String
+  lastSyncedVersion Int             @default(1)
+  rowReference      Int             @default(2) // 1-based row index in Google Sheets
+  status            String          @default("IN_SYNC") // IN_SYNC, PENDING_PUSH, PENDING_PULL, CONFLICT, ERROR
+  checksum          String?
+  lastWebsiteValue  String?         // JSON snapshot of website state
+  lastSheetValue    String?         // JSON snapshot of sheet row
+  lastSyncedAt      DateTime        @default(now())
+
+  @@unique([tabId, entityId])
+  @@index([entityId])
+}
+
+model SyncJob {
+  id              String              @id @default(cuid())
+  workbookId      String
+  workbook        SpreadsheetWorkbook @relation(fields: [workbookId], references: [id], onDelete: Cascade)
+  operation       String              // OUTBOUND_CREATE, OUTBOUND_UPDATE, OUTBOUND_DELETE, INBOUND_EDIT, RECONCILE, GENERATE_WORKBOOK, SCHEMA_MIGRATE
+  entityType      String
+  entityId        String?
+  payload         String              // JSON payload
+  status          String              @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED, DEAD_LETTER
+  attemptCount    Int                 @default(0)
+  maxAttempts     Int                 @default(5)
+  lastError       String?
+  scheduledFor    DateTime            @default(now())
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([workbookId])
+  @@index([status])
+}
+
+model SyncConflict {
+  id              String              @id @default(cuid())
+  workbookId      String
+  workbook        SpreadsheetWorkbook @relation(fields: [workbookId], references: [id], onDelete: Cascade)
+  entityId        String
+  entityType      String
+  fieldKey        String
+  websiteValue    String?
+  sheetValue      String?
+  status          String              @default("UNRESOLVED") // UNRESOLVED, RESOLVED_WEBSITE, RESOLVED_SHEETS, RESOLVED_MERGED, DISCARDED
+  resolutionNotes String?
+  resolvedBy      String?
+  resolvedAt      DateTime?
+  createdAt       DateTime            @default(now())
+
+  @@index([workbookId])
+  @@index([status])
+  @@index([entityId])
+}
+
+model SyncEvent {
+  id                String    @id @default(cuid())
+  source            String    // WEBSITE, APPS_SCRIPT, RECONCILIATION_CRON, MANUAL_IMPORT
+  eventKey          String    @unique // Deduplication key
+  processingStatus  String    @default("PROCESSED") // PROCESSED, IGNORED, FAILED
+  rawPayload        String?
+  receivedAt        DateTime  @default(now())
+
+  @@index([source])
+}
+
+model AuditSyncEvent {
+  id          String    @id @default(cuid())
+  actorId     String?
+  actorEmail  String?
+  eventId     String?
+  workbookId  String?
+  action      String    // WORKBOOK_CREATED, WORKBOOK_RECONNECTED, TAB_ADDED, OUTBOUND_SYNC, INBOUND_SYNC, CONFLICT_DETECTED, CONFLICT_RESOLVED, SYNC_PAUSED, SYNC_RESUMED, RECONCILIATION_RUN, PERMISSION_REVOKED
+  entityType  String?
+  entityId    String?
+  details     String?   // JSON details
+  timestamp   DateTime  @default(now())
+
+  @@index([eventId])
+  @@index([workbookId])
+  @@index([action])
+}
+
+model CashfreePaymentOrder {
+  id               String       @id @default(cuid())
+  orderId          String       @unique
+  orderAmount      Float
+  orderCurrency    String       @default("INR")
+  orderStatus      String       @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  customerId       String
+  customerEmail    String
+  customerPhone    String
+  customerName     String
+  username         String?
+  productId        String?
+  planId           String?
+  paymentSessionId String?
+  paymentMethod    String?
+  cfPaymentId      String?
+  bankReference    String?
+  idempotencyKey   String?      @unique
+  paidAt           DateTime?
+  refundedAt       DateTime?
+  rawWebhookData   String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([orderId])
+  @@index([customerEmail])
+  @@index([orderStatus])
 }

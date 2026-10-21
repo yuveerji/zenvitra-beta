@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { sanitizeForGoogleSheets } from '@/lib/googleSheets';
+import { sanitizeForGoogleSheets, sheetSync } from '@/lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       else if (commChoice.includes('UNODC')) committeeTab = 'UNODC';
     }
 
-    const targetTab = body.targetTab || body.sheetTab || (isSec ? 'Secretariat Applications' : (committeeTab || (isMun ? 'ZEN DIPLOMACY MUN' : (formSlug ? `ZEN_${formSlug.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}` : 'ZEN_FORMS'))));
+    const targetTab = body.targetTab || body.sheetTab || (isSec ? 'Secretariat Applications' : (committeeTab || (isMun ? '14 Delegate Rosters' : (formSlug ? `ZEN ${formSlug.toUpperCase().replace(/[^A-Z0-9 ]/g, ' ')}`.trim() : '45 Form Submissions'))));
     const sheetTab = targetTab;
 
     const timestamp = submittedAt || new Date().toISOString();
@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
     appendToLocalLedger(sanitizedLedgerEntry);
 
     // 3. Forward to Google Sheets webhook
-    const targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
+    const targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
     if (targetWebhook && typeof targetWebhook === 'string' && targetWebhook.startsWith('http')) {
       try {
         await fetch(targetWebhook, {
@@ -153,6 +153,23 @@ export async function POST(req: NextRequest) {
         console.warn('[SHEETS-ZENFORMS-WEBHOOK-WARN]', webhookErr?.message);
       }
     }
+
+    // 4. Also asynchronously dispatch to universal Register 45_FORM_SUBMISSIONS
+    sheetSync.formSubmission({
+      Submission_ID: subId,
+      Form_ID: formId || 'universal_form',
+      Form_Slug: formSlug || formId || '',
+      Form_Title: body.formTitle || formSlug || formId || '',
+      Submitter_Name: sanitizedLedgerEntry.fullName || submitterHandle || 'Anonymous',
+      Submitter_Email: sanitizedLedgerEntry.email || googleUserEmail || '',
+      Submitter_Phone: sanitizedLedgerEntry.phoneNumber || '',
+      Submitter_Handle: submitterHandle || 'anonymous',
+      Responses_Summary: JSON.stringify(rawData).slice(0, 500),
+      Full_Responses_JSON: JSON.stringify(rawData),
+      Submitted_At: timestamp,
+      IP_Address: req.headers.get('x-forwarded-for') || '127.0.0.1',
+      Notes: `Target Tab: ${targetTab}`
+    }).catch((err) => console.warn('[SHEETS-FORM-SUBMISSION-SYNC-WARN]', err));
 
     return NextResponse.json({ success: true, submissionId: subId, submission: structuredSub });
   } catch (err: any) {

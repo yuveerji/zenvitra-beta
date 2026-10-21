@@ -134,7 +134,7 @@ export function HolographicPassport({
 
           {/* Header */}
           <div className="flex items-center justify-between text-neutral-400 font-mono text-[9px]">
-            <span>SECURITY CHIP: NXP-SOVEREIGN-V4</span>
+            <span>SECURITY CHIP: NXP-SOVEREIGN-V1</span>
             <span>RATIFIED: 2026</span>
           </div>
 

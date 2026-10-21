@@ -12,9 +12,6 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
-  Copy,
-  Check,
-  Sparkles,
   Quote
 } from 'lucide-react';
 
@@ -39,38 +36,14 @@ export function ZenDocsBubbleMenu({
   onTextColor,
   onHighlight,
   onAlignment,
-  onAskAi
+  onAskAi: _onAskAi
 }: ZenDocsBubbleMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
 
-  const handleCopySelection = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const selection = window.getSelection();
-    if (selection) {
-      const text = selection.toString();
-      if (text) {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(text);
-        } else {
-          document.execCommand('copy');
-        }
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    }
-  };
-
-  const handleAskAiClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const selection = window.getSelection();
-    const text = selection ? selection.toString() : '';
-    if (onAskAi) {
-      onAskAi(text);
-    }
-  };
+  // Note: [Copy] and [Ask AI] buttons temporarily removed until AI credits are active.
+  // When credits are available, restore handleCopySelection & handleAskAiClick and re-add to JSX.
 
   const updatePosition = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -81,33 +54,49 @@ export function ZenDocsBubbleMenu({
       return;
     }
 
+    const text = selection.toString();
+    if (!text || text.trim().length === 0) {
+      setIsVisible(false);
+      return;
+    }
+
     const editor = editorRef.current;
     if (!editor) {
       setIsVisible(false);
       return;
     }
 
+    // Check if selection intersects the editor container
+    const isAnchorInside = selection.anchorNode
+      ? editor === selection.anchorNode || editor.contains(selection.anchorNode)
+      : false;
+    const isFocusInside = selection.focusNode
+      ? editor === selection.focusNode || editor.contains(selection.focusNode)
+      : false;
+
+    if (!isAnchorInside && !isFocusInside) {
+      setIsVisible(false);
+      return;
+    }
+
     const range = selection.getRangeAt(0);
-    const commonAncestor = range.commonAncestorContainer;
-    const targetNode =
-      commonAncestor.nodeType === Node.ELEMENT_NODE
-        ? commonAncestor
-        : commonAncestor.parentNode;
-
-    if (!targetNode || !editor.contains(targetNode)) {
-      setIsVisible(false);
-      return;
+    let rect = range.getBoundingClientRect();
+    if (!rect || (rect.width === 0 && rect.height === 0)) {
+      const clientRects = range.getClientRects();
+      if (clientRects.length > 0) {
+        rect = clientRects[0];
+      } else {
+        setIsVisible(false);
+        return;
+      }
     }
 
-    const rect = range.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0) {
-      setIsVisible(false);
-      return;
-    }
-
-    // Determine bubble dimensions (or sensible defaults before DOM measure)
-    const menuWidth = menuRef.current?.offsetWidth || 440;
-    const menuHeight = menuRef.current?.offsetHeight || 80;
+    // Determine bubble dimensions clamped to viewport width
+    const padding = 12;
+    const measuredWidth = menuRef.current?.offsetWidth || 340;
+    const maxAvailableWidth = window.innerWidth - padding * 2;
+    const menuWidth = Math.min(measuredWidth, maxAvailableWidth);
+    const menuHeight = menuRef.current?.offsetHeight || 44;
 
     // Position 10px above selection, centered horizontally
     let x = rect.left + rect.width / 2 - menuWidth / 2;
@@ -119,7 +108,6 @@ export function ZenDocsBubbleMenu({
     }
 
     // Clamp horizontally and vertically within viewport bounds
-    const padding = 12;
     const clampedX = Math.max(padding, Math.min(window.innerWidth - menuWidth - padding, x));
     const clampedY = Math.max(padding, Math.min(window.innerHeight - menuHeight - padding, y));
 
@@ -127,16 +115,26 @@ export function ZenDocsBubbleMenu({
     setIsVisible(true);
   }, [editorRef]);
 
-  // Selection change, scroll, and resize listeners
+  // Selection change, mouseup, touchend, keyup, scroll, and resize listeners
   useEffect(() => {
-    document.addEventListener('selectionchange', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
+    const handleEvent = () => {
+      requestAnimationFrame(updatePosition);
+    };
+
+    document.addEventListener('selectionchange', handleEvent);
+    document.addEventListener('mouseup', handleEvent);
+    document.addEventListener('touchend', handleEvent);
+    document.addEventListener('keyup', handleEvent);
+    window.addEventListener('scroll', handleEvent, true);
+    window.addEventListener('resize', handleEvent);
 
     return () => {
-      document.removeEventListener('selectionchange', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
+      document.removeEventListener('selectionchange', handleEvent);
+      document.removeEventListener('mouseup', handleEvent);
+      document.removeEventListener('touchend', handleEvent);
+      document.removeEventListener('keyup', handleEvent);
+      window.removeEventListener('scroll', handleEvent, true);
+      window.removeEventListener('resize', handleEvent);
     };
   }, [updatePosition]);
 
@@ -170,44 +168,10 @@ export function ZenDocsBubbleMenu({
             top: `${position.y}px`
           }}
           onMouseDown={(e) => e.preventDefault()}
-          className="fixed z-50 rounded-2xl bg-[#0a0d16]/95 backdrop-blur-2xl border border-blue-500/30 shadow-[0_12px_36px_rgba(0,0,0,0.65),0_0_24px_rgba(37,99,235,0.2)] p-2 select-none pointer-events-auto flex flex-col gap-1.5"
+          className="fixed z-[100] max-w-[calc(100vw-24px)] overflow-x-auto scrollbar-none rounded-xl bg-[#0a0d16]/98 backdrop-blur-2xl border border-blue-500/40 shadow-[0_16px_40px_rgba(0,0,0,0.8),0_0_24px_rgba(37,99,235,0.25)] p-1.5 select-none pointer-events-auto"
         >
-          {/* Top Interactive Bar: What do you want to do with it? */}
-          <div className="flex items-center justify-between gap-3 px-1.5 pb-1 border-b border-white/10 text-[11px] font-mono">
-            <span className="text-blue-300 font-semibold flex items-center gap-1.5 tracking-tight">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              What do you want to do with it?
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={handleCopySelection}
-                className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-all flex items-center gap-1 cursor-pointer font-bold ${
-                  copied
-                    ? 'bg-emerald-500/25 border border-emerald-500/50 text-emerald-300'
-                    : 'bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/40 text-blue-200'
-                }`}
-                title="Copy selected text to clipboard"
-              >
-                {copied ? <Check className="w-3 h-3 text-emerald-300" /> : <Copy className="w-3 h-3" />}
-                <span>{copied ? 'Copied!' : 'Copy'}</span>
-              </button>
-              {onAskAi && (
-                <button
-                  type="button"
-                  onClick={handleAskAiClick}
-                  className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-500/25 hover:bg-indigo-500/40 border border-indigo-500/40 text-indigo-200 transition-all flex items-center gap-1 cursor-pointer font-bold"
-                  title="Ask AI to analyze or rephrase this selection"
-                >
-                  <Sparkles className="w-3 h-3 text-indigo-300" />
-                  <span>Ask AI</span>
-                </button>
-              )}
-            </div>
-          </div>
-
           {/* Formatting Controls Row */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5 shrink-0">
           {/* Formatting Group */}
           <button
             type="button"

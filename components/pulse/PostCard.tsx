@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { 
   Heart, 
   MessageCircle, 
@@ -27,10 +28,14 @@ import {
   Scale,
   Vote,
   FileText,
+  Newspaper,
   ChevronDown,
   ChevronUp,
   Send,
-  X
+  X,
+  MapPin,
+  BookOpen,
+  Feather
 } from 'lucide-react';
 import { PulsePost } from '@/types/pulse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
@@ -208,6 +213,23 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
+      {/* Sovereign Wire Dispatch Banner */}
+      {((post.tags && post.tags.some(t => /wire|livedispatch|press|news/i.test(t))) || post.content.includes('OFFICIAL WIRE DISPATCH')) && (
+        <div className="flex items-center justify-between gap-2 text-xs font-mono font-semibold text-rose-300 mb-3.5 bg-rose-950/40 py-1.5 px-3.5 rounded-xl border border-rose-500/30 shadow-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span className="tracking-wider uppercase text-[11px] font-bold">SOVEREIGN WIRE TRANSMISSION</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] font-mono">
+            <Link href="/news" className="text-neutral-400 hover:text-white transition">ZEN.NEWS</Link>
+            <span className="text-neutral-600">&bull;</span>
+            <Link href="/press" className="text-neutral-400 hover:text-white transition">ZEN.PRESS</Link>
+            <span className="text-neutral-600">&bull;</span>
+            <Link href="/news/submit" className="text-rose-400 hover:text-rose-300 font-bold transition">+ WIRE</Link>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-3.5 sm:gap-4">
         {/* Avatar */}
         <div className="relative shrink-0">
@@ -222,34 +244,51 @@ export function PostCard({ post }: PostCardProps) {
         <div className="flex-1 min-w-0">
           {/* Author Header */}
           <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
-              <span className="font-display font-black text-base text-white hover:text-cyan-200 transition cursor-pointer flex items-center gap-1.5" onClick={openDetail}>
-                {post.authorName}
-                {(post.authorUsername.toLowerCase() === 'yuveer' || post.authorUsername.toLowerCase() === 'founder' || (post as any).isVerified || (post as any).is_verified) && (
-                  <CheckCircle2 className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] inline-block" />
-                )}
-              </span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-sans font-medium text-xs text-neutral-400">@{post.authorUsername}</span>
-                <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-sans font-bold tracking-wide ${badge.color}`}>
-                  {badge.text}
+            <div className="flex flex-col min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+                <span className="font-display font-black text-base text-white hover:text-cyan-200 transition cursor-pointer flex items-center gap-1.5" onClick={openDetail}>
+                  {post.authorName}
+                  {(post.authorUsername.toLowerCase() === 'yuveer' || post.authorUsername.toLowerCase() === 'founder' || (post as any).isVerified || (post as any).is_verified) && (
+                    <CheckCircle2 className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] inline-block" />
+                  )}
                 </span>
-                {(post as any).feedReason === 'following' && (
-                  <span className="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-[10px] font-sans text-blue-300 font-semibold flex items-center gap-1">
-                    👥 Following
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-sans font-medium text-xs text-neutral-400">@{post.authorUsername}</span>
+                  <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-sans font-bold tracking-wide ${badge.color}`}>
+                    {badge.text}
                   </span>
-                )}
-                {(post as any).feedReason === 'fresh' && (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-sans text-emerald-300 font-bold flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.3)]">
-                    ⚡ Fresh
-                  </span>
-                )}
-                {(post as any).feedReason === 'trending' && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-sans text-amber-300 font-semibold flex items-center gap-1">
-                    🔥 Trending
-                  </span>
-                )}
+                  {(post as any).feedReason === 'following' && (
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-[10px] font-sans text-blue-300 font-semibold flex items-center gap-1">
+                      👥 Following
+                    </span>
+                  )}
+                  {(post as any).feedReason === 'fresh' && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-sans text-emerald-300 font-bold flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.3)]">
+                      ⚡ Fresh
+                    </span>
+                  )}
+                  {(post as any).feedReason === 'trending' && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-sans text-amber-300 font-semibold flex items-center gap-1">
+                      🔥 Trending
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {/* Instagram-style Geotag / Location Pill */}
+              {post.location && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post.location)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 text-[11px] font-sans text-cyan-400/90 hover:text-cyan-300 transition-colors w-fit mt-0.5 group/loc"
+                  title={`View "${post.location}" on Google Maps`}
+                >
+                  <MapPin className="w-3 h-3 text-rose-400 shrink-0 group-hover/loc:scale-110 transition-transform" />
+                  <span className="truncate hover:underline max-w-[280px] sm:max-w-[420px]">{post.location}</span>
+                </a>
+              )}
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
@@ -268,12 +307,59 @@ export function PostCard({ post }: PostCardProps) {
 
           {/* Post Content */}
           <div className="cursor-pointer mt-3" onClick={openDetail}>
-            <p 
-              className="text-[14px] sm:text-[15px] text-neutral-100 leading-relaxed whitespace-pre-wrap break-words selection:bg-cyan-500/30 font-sans"
-              style={getStoryFontStyle(post.fontStyle)}
-            >
-              {post.content}
-            </p>
+            {/* Creative Format Pill Badge */}
+            {post.postFormat && post.postFormat !== 'dispatch' && (
+              <div className="mb-2">
+                {post.postFormat === 'blog' && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-medium">
+                    <BookOpen className="w-3 h-3 text-cyan-400" />
+                    <span>Blog / Article</span>
+                  </span>
+                )}
+                {post.postFormat === 'poetry' && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-[11px] font-mono font-medium">
+                    <Feather className="w-3 h-3 text-purple-400" />
+                    <span>Poetry & Verses</span>
+                  </span>
+                )}
+                {post.postFormat === 'essay' && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-[11px] font-mono font-medium">
+                    <FileText className="w-3 h-3 text-blue-400" />
+                    <span>Civic Policy Essay</span>
+                  </span>
+                )}
+                {post.postFormat === 'treaty' && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-medium">
+                    <Scale className="w-3 h-3 text-amber-400" />
+                    <span>Treaty & Accord</span>
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Optional Title / Headline */}
+            {post.title && (
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight mb-2 selection:bg-cyan-500/30 font-display">
+                {post.title}
+              </h3>
+            )}
+
+            {/* Content Body */}
+            {post.postFormat === 'poetry' ? (
+              <p 
+                className="text-[14px] sm:text-[15px] text-neutral-100 whitespace-pre-wrap break-words selection:bg-cyan-500/30 font-serif italic leading-loose py-2 pl-3.5 border-l-2 border-purple-500/30 bg-purple-500/[0.03] rounded-r-xl"
+                style={getStoryFontStyle(post.fontStyle)}
+              >
+                {post.content}
+              </p>
+            ) : (
+              <p 
+                className="text-[14px] sm:text-[15px] text-neutral-100 leading-relaxed whitespace-pre-wrap break-words selection:bg-cyan-500/30 font-sans"
+                style={getStoryFontStyle(post.fontStyle)}
+              >
+                {post.content}
+              </p>
+            )}
 
             {/* AI Executive Summary Card */}
             {showAiSummary && (
@@ -475,20 +561,68 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             )}
 
-            {/* Verified Source Citation Pill */}
-            {(post.sourceName || (post.citations && post.citations.length > 0)) && (
+            {/* Verified Source Citation Pills (Multiple Sources & Auto Headings) */}
+            {(((post as any).sources && (post as any).sources.length > 0) || (post.citations && post.citations.length > 0) || post.sourceName || (post as any).sourceData?.sourceName) && (
               <div className="mt-3.5 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                {post.sourceName && (
-                  <a
-                    href={post.sourceUrl || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 text-cyan-300 text-xs font-sans transition shadow-[0_0_12px_rgba(6,182,212,0.15)] group/source"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                    <span className="font-semibold">Source: {post.sourceName}</span>
-                    <ExternalLink className="w-3 h-3 text-cyan-400 group-hover/source:translate-x-0.5 group-hover/source:-translate-y-0.5 transition-transform" />
-                  </a>
+                {(post as any).sources && (post as any).sources.length > 0 ? (
+                  (post as any).sources.map((src: any, idx: number) => {
+                    const isInternal = src.url?.startsWith('/');
+                    return (
+                      <a
+                        key={src.id || idx}
+                        href={src.url.startsWith('http') ? src.url : isInternal ? src.url : `https://${src.url}`}
+                        target={isInternal ? '_self' : '_blank'}
+                        rel={isInternal ? undefined : 'noopener noreferrer'}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 text-cyan-300 text-xs font-sans transition shadow-[0_0_12px_rgba(6,182,212,0.15)] group/source"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                        <span className="font-semibold">{src.name || src.url}</span>
+                        <span className="text-[10px] bg-cyan-500/20 px-1.5 py-0.2 rounded text-cyan-200 font-mono">
+                          {src.label || `Source #${idx + 1}`}
+                        </span>
+                        <ExternalLink className="w-3 h-3 text-cyan-400 group-hover/source:translate-x-0.5 group-hover/source:-translate-y-0.5 transition-transform" />
+                      </a>
+                    );
+                  })
+                ) : post.citations && post.citations.length > 0 ? (
+                  post.citations.map((cit, idx) => {
+                    const targetUrl = cit.archiveUrl || '/news';
+                    const isInternal = targetUrl.startsWith('/');
+                    return (
+                      <a
+                        key={cit.id || idx}
+                        href={targetUrl}
+                        target={isInternal ? '_self' : '_blank'}
+                        rel={isInternal ? undefined : 'noopener noreferrer'}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 text-cyan-300 text-xs font-sans transition shadow-[0_0_12px_rgba(6,182,212,0.15)] group/source"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                        <span className="font-semibold">{cit.title || cit.institution}</span>
+                        <span className="text-[10px] bg-cyan-500/20 px-1.5 py-0.2 rounded text-cyan-200 font-mono">
+                          Source #{idx + 1}
+                        </span>
+                        <ExternalLink className="w-3 h-3 text-cyan-400 group-hover/source:translate-x-0.5 group-hover/source:-translate-y-0.5 transition-transform" />
+                      </a>
+                    );
+                  })
+                ) : (
+                  (() => {
+                    const resolvedName = post.sourceName || (post as any).sourceData?.sourceName;
+                    const resolvedUrl = post.sourceUrl || (post as any).sourceData?.sourceUrl || '/news';
+                    const isInternal = resolvedUrl.startsWith('/');
+                    return (
+                      <Link
+                        href={resolvedUrl}
+                        target={isInternal ? '_self' : '_blank'}
+                        rel={isInternal ? undefined : 'noopener noreferrer'}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 text-cyan-300 text-xs font-sans transition shadow-[0_0_12px_rgba(6,182,212,0.15)] group/source"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                        <span className="font-semibold">Source: {resolvedName}</span>
+                        <ExternalLink className="w-3 h-3 text-cyan-400 group-hover/source:translate-x-0.5 group-hover/source:-translate-y-0.5 transition-transform" />
+                      </Link>
+                    );
+                  })()
                 )}
               </div>
             )}

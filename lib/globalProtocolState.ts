@@ -4,12 +4,25 @@ import path from 'path';
 export interface GlobalProtocolState {
   maintenanceMode: boolean;
   registrationsOpen: boolean;
+  registrationControl?: 'OPEN' | 'PAUSED' | 'CLOSED';
+  emergencyLockdown?: boolean;
   chatMeshEnabled: boolean;
   fluxReelsEnabled: boolean;
   assemblyOsEnabled: boolean;
   escrowMandateActive: boolean;
   zeroSurveillanceActive: boolean;
   readOnlyMode: boolean;
+  modulePulseEnabled?: boolean;
+  moduleMunEnabled?: boolean;
+  moduleFormsEnabled?: boolean;
+  modulePressEnabled?: boolean;
+  modulePassportEnabled?: boolean;
+  moduleCallEnabled?: boolean;
+  moduleLegislateEnabled?: boolean;
+  moduleDocsEnabled?: boolean;
+  moduleChatEnabled?: boolean;
+  modulePaymentsEnabled?: boolean;
+  announcements?: Array<{ id: string; title: string; body: string; priority: 'NORMAL' | 'URGENT' | 'CRITICAL'; active: boolean; timestamp: string }>;
   updatedAt: string;
   updatedBy: string;
 }
@@ -32,12 +45,34 @@ export interface AdminEnclaveInvite {
 const DEFAULT_STATE: GlobalProtocolState = {
   maintenanceMode: false,
   registrationsOpen: true,
+  registrationControl: 'OPEN',
+  emergencyLockdown: false,
   chatMeshEnabled: true,
   fluxReelsEnabled: true,
   assemblyOsEnabled: true,
   escrowMandateActive: true,
   zeroSurveillanceActive: true,
   readOnlyMode: false,
+  modulePulseEnabled: true,
+  moduleMunEnabled: true,
+  moduleFormsEnabled: true,
+  modulePressEnabled: true,
+  modulePassportEnabled: true,
+  moduleCallEnabled: true,
+  moduleLegislateEnabled: true,
+  moduleDocsEnabled: true,
+  moduleChatEnabled: true,
+  modulePaymentsEnabled: true,
+  announcements: [
+    {
+      id: 'genesis-announcement-01',
+      title: 'PLATFORM PROTOCOL V4 ACTIVE',
+      body: 'All multilateral nodes and Sovereign Press bureaus synchronized across the ZENVITRA mesh.',
+      priority: 'NORMAL',
+      active: true,
+      timestamp: new Date().toISOString()
+    }
+  ],
   updatedAt: new Date().toISOString(),
   updatedBy: '@yuveer (Founder)',
 };
@@ -111,9 +146,9 @@ export function getGlobalServerProtocols(): GlobalProtocolState {
     }
   } catch (_) {}
 
-  // Automatic Launch Threshold: October 11, 2026, 14:00:00 IST (UTC+05:30) - Shubh Navratri Launch
+  // Automatic Launch Threshold: October 25, 2026, 14:00:00 IST (UTC+05:30)
   // When target launch time passes, Delegate Identity Registration turns ON automatically
-  const LAUNCH_TIMESTAMP = new Date('2026-10-11T14:00:00+05:30').getTime();
+  const LAUNCH_TIMESTAMP = new Date('2026-10-25T14:00:00+05:30').getTime();
   if (Date.now() >= LAUNCH_TIMESTAMP && !memoryState.registrationsOpen) {
     memoryState.registrationsOpen = true;
     try {

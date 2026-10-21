@@ -49,17 +49,17 @@ export default function ContactPage() {
   const dispatchChannels = [
     {
       title: 'Secretariat & Partnerships',
-      email: 'secretariat@zenvitra.org',
+      email: 'secretariat@zenvitra.xyz',
       detail: 'Model UN alliances, school partnerships & delegation logistics.',
     },
     {
       title: 'Press & Research Bureau',
-      email: 'press@zenvitra.org',
+      email: 'press@zenvitra.xyz',
       detail: 'Student journalistic submissions, columns & editorial inquiries.',
     },
     {
       title: 'Genesis Council Core',
-      email: 'council@zenvitra.org',
+      email: 'council@zenvitra.xyz',
       detail: 'Executive recruitment, architectural oversight & grant auditing.',
     },
   ];
@@ -115,6 +115,37 @@ export default function ContactPage() {
                     </p>
                   </div>
                 ))}
+              </div>
+
+              {/* Community & Real-time Wire Channels */}
+              <div className="p-4 rounded-xl bg-black/60 border border-white/5 space-y-2.5">
+                <span className="text-[10px] text-neutral-500 uppercase font-mono block">Community Channels</span>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href="https://chat.whatsapp.com/Cmn9ihpEbRs7kLO1G83Fez"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:text-white transition flex items-center justify-between text-xs font-mono group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                      <span>WhatsApp Community</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 font-bold uppercase">Join &rarr;</span>
+                  </a>
+                  <a
+                    href="https://x.com/zenvitra_"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 hover:text-white transition flex items-center justify-between text-xs font-mono group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Globe2 className="w-4 h-4 text-sky-400 group-hover:scale-110 transition-transform" />
+                      <span>X (Twitter) @zenvitra_</span>
+                    </div>
+                    <span className="text-[10px] text-sky-400 font-bold uppercase">Follow &rarr;</span>
+                  </a>
+                </div>
               </div>
 
               <div className="p-4 rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20 flex items-center gap-3">

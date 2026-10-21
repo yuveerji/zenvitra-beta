@@ -34,16 +34,16 @@ export function WhyZenvitra() {
           {(t as any)?.why?.badge || (t as any)?.why?.tagline || 'WHY ZENVITRA?'}
         </p>
 
-        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight text-white leading-tight uppercase">
           {locale === 'hi' ? (
             <>
               हम सिर्फ एक मंच नहीं बना रहे हैं। <br />
-              <span className="text-neutral-400">हम एक आंदोलन का निर्माण कर रहे हैं।</span>
+              <span className="text-neutral-400 font-serif italic">हम एक आंदोलन का निर्माण कर रहे हैं।</span>
             </>
           ) : (
             <>
-              {(t as any)?.why?.title1 || "We're building more than a platform."} <br />
-              <span className="text-neutral-400">{(t as any)?.why?.title2 || "We're building a movement."}</span>
+              {(t as any)?.why?.title1 || "We're Building More Than A Platform."} <br />
+              <span className="font-serif italic font-normal text-cyan-200">{(t as any)?.why?.title2 || "We're Building A Movement."}</span>
             </>
           )}
         </h2>
@@ -62,10 +62,10 @@ export function WhyZenvitra() {
 
               {/* Title & Description */}
               <div className="space-y-1.5 text-left">
-                <h3 className="text-base font-bold text-white tracking-tight">
+                <h3 className="text-base font-bold text-white tracking-tight font-outfit">
                   {pillar.title}
                 </h3>
-                <p className="text-xs text-neutral-400 font-light leading-relaxed">
+                <p className="text-xs text-neutral-300 font-sans leading-relaxed">
                   {pillar.desc}
                 </p>
               </div>

@@ -24,7 +24,17 @@ const nextConfig = {
       },
       {
         source: '/preregister',
-        destination: '/statusregister',
+        destination: '/pre-register',
+        permanent: true,
+      },
+      {
+        source: '/statusregister',
+        destination: '/pre-register',
+        permanent: true,
+      },
+      {
+        source: '/statussignin',
+        destination: '/pre-login',
         permanent: true,
       },
       {

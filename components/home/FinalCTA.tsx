@@ -13,10 +13,10 @@ export function FinalCTA() {
     <section className="w-full max-w-7xl mx-auto px-6 sm:px-8 py-16 sm:py-20 relative z-10 text-left">
       <div className="rounded-3xl bg-gradient-to-b from-[#0c0d14] via-[#08090d] to-[#030405] border border-white/15 p-8 sm:p-14 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-[0_30px_90px_rgba(0,0,0,0.9)] relative overflow-hidden">
         <div className="space-y-4 max-w-xl text-center lg:text-left z-10">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.12]">
-            {(t as any)?.cta?.title || 'Be Part of the Beginning'}
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-display text-white uppercase tracking-tight leading-[1.12]">
+            Be Part of <span className="font-serif italic font-normal text-cyan-200">The Beginning</span>
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">
+          <p className="text-xs sm:text-sm text-neutral-300 font-sans leading-relaxed">
             {(t as any)?.cta?.desc ||
               'Join our waitlist and get early access, exclusive updates, and opportunities before anyone else.'}
           </p>
@@ -46,7 +46,7 @@ export function FinalCTA() {
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
-              className="px-8 py-4 rounded-full bg-white text-black font-bold text-xs sm:text-sm flex items-center gap-2 shadow-[0_0_35px_rgba(255,255,255,0.25)] hover:bg-neutral-200 transition cursor-pointer"
+              className="px-8 py-4 rounded-full bg-white text-black font-display font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-[0_0_35px_rgba(255,255,255,0.25)] hover:bg-neutral-200 transition cursor-pointer"
             >
               <span>{(t as any)?.cta?.button || 'Join the Waitlist'}</span>
               <ArrowRight className="w-4 h-4" />

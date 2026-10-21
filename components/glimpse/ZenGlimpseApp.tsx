@@ -28,7 +28,8 @@ import {
   Sliders,
   Maximize2,
   Globe,
-  Music
+  Music,
+  Menu
 } from 'lucide-react';
 import { ZenGlimpse, INITIAL_GLIMPSES } from '@/types/glimpse';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
@@ -312,27 +313,49 @@ export function ZenGlimpseApp() {
       {/* ─── TOP HERO HEADER & NAVIGATION ─── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 sm:p-8 rounded-3xl bg-[#080a11]/90 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
         
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-              24H Live Lens
-            </span>
-            <span className="font-sans text-xs text-neutral-400 font-medium">
-              Zero Vanity Filters • Authentic Floor Dispatches
-            </span>
-          </div>
+        <div className="flex items-start sm:items-center gap-3.5">
+          {/* Inline Platform Drawer Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+            }}
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-md shrink-0 bg-[#0c101a] hover:bg-zinc-800 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105 active:scale-95"
+            title="Toggle Platform Navigation Menu"
+            aria-label="Toggle Platform Navigation Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
 
-          <h1 className="font-display font-black text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight flex items-center gap-3">
-            <span>ZEN.GLIMPSE</span>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-cyan-500/20 border border-white/15 flex items-center justify-center">
-              <Camera className="w-4 h-4 text-rose-400" />
+          {/* Logo */}
+          <Link href="/pulse" className="flex items-center gap-2.5 group shrink-0">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-black border border-white/10 flex items-center justify-center p-2 shadow-sm group-hover:scale-105 transition shrink-0">
+              <img src="/assets/logo-new.png" alt="Zenvitra" className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] brand-logo-img" />
             </div>
-          </h1>
+          </Link>
 
-          <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
-            Real-time visual transmissions from active Model UN chambers, secretariats, research labs, and civic chapters.
-          </p>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="px-3 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+                24H Live Lens
+              </span>
+              <span className="font-sans text-xs text-neutral-400 font-medium">
+                Zero Vanity Filters • Authentic Floor Dispatches
+              </span>
+            </div>
+
+            <h1 className="font-display font-black text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight flex items-center gap-3">
+              <span>ZEN.GLIMPSE</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-cyan-500/20 border border-white/15 flex items-center justify-center">
+                <Camera className="w-4 h-4 text-rose-400" />
+              </div>
+            </h1>
+
+            <p className="text-xs sm:text-sm text-neutral-400 max-w-xl font-sans">
+              Real-time visual transmissions from active Model UN chambers, secretariats, research labs, and civic chapters.
+            </p>
+          </div>
         </div>
 
         {/* Track Switcher */}

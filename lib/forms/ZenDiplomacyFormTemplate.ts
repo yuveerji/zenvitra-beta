@@ -3,14 +3,14 @@ import { ZenForm, ZenFormField } from '@/types/forms';
 export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
   id: 'zen-diplomacy-2026-registration',
   slug: 'zen-diplomacy-2026',
-  title: 'ZEN.DIPLOMACY 2026 — Official Delegate Registration',
-  description: 'National Youth Diplomatic & Multilateral Assembly. Register your committee preference, portfolio allocations, and ratified credentials.',
+  title: 'Official Delegate Registration — Sovereign Assembly',
+  description: 'Register your committee preference, portfolio allocations, and ratified credentials.',
   category: 'MUN_REGISTRATION',
   theme: 'amber',
   submitButtonText: 'Submit Delegate Registration & Lock Portfolios',
   successMessage: 'Your delegate registration has been securely recorded on the sovereign ledger! The Secretariat will review your portfolio preferences and sync allocations to the live matrix.',
   ownerHandle: 'yuveer',
-  submissionsCount: 42,
+  submissionsCount: 0,
   isPublished: true,
   allowAnonymous: false,
   acceptingResponses: true,
@@ -19,8 +19,8 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
   updatedAt: new Date().toISOString(),
   googleSheetsConfig: {
     isConnected: true,
-    sheetTab: 'ZEN DIPLOMACY MUN',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec',
+    sheetTab: '12 Event Registrations',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec',
     autoSync: true,
     sheetUrl: 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit'
   },

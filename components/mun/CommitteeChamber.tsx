@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -40,12 +40,13 @@ import {
   Bookmark,
   BookmarkCheck,
   BookOpen,
-  X
+  X,
+  LifeBuoy
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
 import { useMun } from '@/context/MunContext';
-import { MotionType, PointType, MunSessionMode, StagePerformer } from '@/types/mun';
+import { MotionType, PointType, MunSessionMode, StagePerformer, MunCommitteeType } from '@/types/mun';
 import { LiveVotingModal } from './LiveVotingModal';
 import { LiveVotingCenter } from './LiveVotingCenter';
 import { OpenMicStage } from './OpenMicStage';
@@ -64,8 +65,17 @@ import { DelegatePerformanceRadar } from './DelegatePerformanceRadar';
 import { MunSelectorBar } from './MunSelectorBar';
 import { MunNotStartedView } from './MunNotStartedView';
 import { ChamberDayHistoryModal } from './ChamberDayHistoryModal';
+import { ChamberMatrixModal } from './ChamberMatrixModal';
+import { CommitteeMatrixChatModal } from './CommitteeMatrixChatModal';
+import { useMatrixChat } from '@/context/MatrixChatContext';
 import { CommitteeSummaryPaperModal } from './CommitteeSummaryPaperModal';
+import { CreateMunConferenceModal } from './CreateMunConferenceModal';
+import { computeConferenceStatus } from '@/lib/conferenceStatusHelper';
 import { LokSabhaDraftModal, UnDocsDraftModal } from '@/components/docs/modals';
+import { ActiveEmergencyBroadcastBanner } from './ActiveEmergencyBroadcastBanner';
+import { CommitteeLogoBadge } from './CommitteeLogoBadges';
+import { daisAudio } from '@/lib/daisAudio';
+import { DaisSupportHotlineModal } from './support/DaisSupportHotlineModal';
 import { useRouter } from 'next/navigation';
 import { ScrollText, FileCheck } from 'lucide-react';
 
@@ -79,6 +89,8 @@ export function CommitteeChamber() {
     getCommitteeById,
     updateCommitteeDetails,
     addCustomCommittee,
+    deleteCommittee,
+    clearFloorSession,
     sessionState,
     toggleTimer,
     resetTimer,
@@ -110,15 +122,15 @@ export function CommitteeChamber() {
   } = useMun();
 
   const DEFAULT_COMMITTEE = {
-    id: 'unsc-2026',
-    name: 'United Nations Security Council (UNSC)',
-    shortName: 'UNSC',
+    id: 'chamber-1',
+    name: 'Assembly Committee Chamber',
+    shortName: 'CHAMBER',
     type: 'UNSC' as const,
-    agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.',
+    agenda: 'General Deliberations & Resolution Mandate',
     presentCount: 0,
     presentAndVotingCount: 0,
     totalDelegates: 15,
-    quorumNeeded: 9,
+    quorumNeeded: 8,
     dais: {
       chair: 'Presiding Officer',
       coChair: 'Rapporteur',
@@ -144,6 +156,7 @@ export function CommitteeChamber() {
 
   const [isInPracticeMode, setIsInPracticeMode] = useState(false);
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [showHostMunModal, setShowHostMunModal] = useState(false);
 
   const hasActiveEvent = userInvites.some((i) => i.status === 'accepted') || (registrations && registrations.length > 0) || Boolean(userAcceptedInvite);
 
@@ -163,6 +176,27 @@ export function CommitteeChamber() {
   const [showSummaryPaperModal, setShowSummaryPaperModal] = useState(false);
   const [showLokSabhaDraftModal, setShowLokSabhaDraftModal] = useState(false);
   const [showUnDocsDraftModal, setShowUnDocsDraftModal] = useState(false);
+  const [showMatrixChatModal, setShowMatrixChatModal] = useState(false);
+  const [showPortfolioMatrixModal, setShowPortfolioMatrixModal] = useState(false);
+  const [showDaisSupportModal, setShowDaisSupportModal] = useState(false);
+  const { getRoom } = useMatrixChat();
+
+  const activeMatrixRoom = useMemo(() => {
+    if (!committee) return undefined;
+    const targetMunId = activeConference?.id || committee.eventId || 'chamber';
+    const targetCommId = committee.shortName || committee.id;
+    const targetDate = activeConference?.startDate || new Date().toISOString().slice(0, 10);
+    return getRoom(targetMunId, targetCommId, targetDate);
+  }, [committee, activeConference, getRoom]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('matrix') === 'connect' || params.get('matrix') === 'true' || params.get('connect') === 'matrix') {
+        setShowMatrixChatModal(true);
+      }
+    }
+  }, []);
 
   // New Motion Form State
   const [motionType, setMotionType] = useState<MotionType>('MODERATED_CAUCUS');
@@ -185,42 +219,66 @@ export function CommitteeChamber() {
   const [customAgendaInput, setCustomAgendaInput] = useState('');
   const [presetSavedNotice, setPresetSavedNotice] = useState(false);
 
+  // Fast Create New Committee Modal State
+  const [showCreateCommitteeModal, setShowCreateCommitteeModal] = useState(false);
+  const [newCommName, setNewCommName] = useState('');
+  const [newCommShortName, setNewCommShortName] = useState('');
+  const [newCommAgenda, setNewCommAgenda] = useState('');
+  const [newCommType, setNewCommType] = useState<MunCommitteeType>('UNSC');
+  const [newCommDelegates, setNewCommDelegates] = useState(15);
+
+  // Inline Agenda Edit State
+  const [isEditingAgenda, setIsEditingAgenda] = useState(false);
+  const [agendaInputValue, setAgendaInputValue] = useState('');
+
   // Gavel Strike state & Audio Synthesizer
   const [gavelActive, setGavelActive] = useState(false);
+  const [soundActive, setSoundActive] = useState(true);
+
+  useEffect(() => {
+    setSoundActive(daisAudio.isEnabled());
+  }, []);
 
   const playGavelSound = () => {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      
-      // Double strike gavel knock
-      const strike = (delayTime: number, freq: number, gainVal: number) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + delayTime);
-        osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + delayTime + 0.12);
-        
-        gain.gain.setValueAtTime(gainVal, ctx.currentTime + delayTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delayTime + 0.14);
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + delayTime);
-        osc.stop(ctx.currentTime + delayTime + 0.15);
-      };
-
-      strike(0, 180, 0.9);
-      strike(0.12, 140, 0.7);
-      strike(0.26, 110, 0.8);
-    } catch {
-      // Audio not permitted or supported
-    }
-
+    daisAudio.playDoubleGavel();
     setGavelActive(true);
     setTimeout(() => setGavelActive(false), 2400);
   };
+
+  // Keyboard Shortcuts for Committee Chamber (Gavelling standard)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.target as HTMLElement)?.tagName === 'INPUT' ||
+        (e.target as HTMLElement)?.tagName === 'TEXTAREA' ||
+        (e.target as HTMLElement)?.tagName === 'SELECT'
+      ) {
+        return;
+      }
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleTimer();
+      } else if (e.key === 'g' || e.key === 'G') {
+        e.preventDefault();
+        playGavelSound();
+      } else if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        setShowFullscreenView(true);
+      } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        resetTimer(sessionState.timer.totalSeconds || 90, sessionState.timer.label, sessionState.sessionMode);
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        setShowRaiseMotionModal(true);
+      } else if (e.key === 'v' || e.key === 'V') {
+        e.preventDefault();
+        setShowLiveVotingModal(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleTimer, resetTimer, sessionState.timer]);
 
   // Format MM:SS
   const formatTime = (sec: number) => {
@@ -275,19 +333,51 @@ export function CommitteeChamber() {
     userRole === 'admin'
   );
 
-  if (activeConference?.status === 'NOT_STARTED') {
+  const conferenceStatusInfo = computeConferenceStatus(activeConference);
+
+  // Auto-sync active committee if none is selected but committees exist
+  useEffect(() => {
+    if ((!activeCommitteeId || !committees.some((c) => c.id === activeCommitteeId)) && committees.length > 0) {
+      setActiveCommitteeId(committees[0].id);
+    }
+  }, [activeCommitteeId, committees, setActiveCommitteeId]);
+
+  const hasSelectedCommittee = Boolean(
+    activeCommitteeId && (
+      committees.some((c) => c.id === activeCommitteeId) ||
+      chamberRooms.some((r) => r.id === activeCommitteeId) ||
+      Boolean(getCommitteeById(activeCommitteeId))
+    )
+  );
+  const hasAnyChambers = committees.length > 0 || chamberRooms.length > 0;
+  const isConferenceLive = Boolean(activeConference && conferenceStatusInfo.isLive && conferenceStatusInfo.status !== 'NOT_STARTED');
+
+  if (!hasSelectedCommittee && !hasAnyChambers && !isConferenceLive) {
     return (
       <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-neutral-100 select-none space-y-6 pb-12">
         <MunSelectorBar
           isEmbedded={true}
           onOpenHistory={() => setShowDayHistoryModal(true)}
           onOpenSummary={() => setShowSummaryPaperModal(true)}
+          onOpenInstantEvent={() => setShowCreateEventModal(true)}
+          onOpenMatrix={() => setShowMatrixChatModal(true)}
         />
-        <MunNotStartedView />
+        <MunNotStartedView 
+          onCreateInstantEvent={() => setShowCreateEventModal(true)}
+          onHostNewEvent={() => setShowHostMunModal(true)}
+        />
+        <CreateChamberEventModal
+          isOpen={showCreateEventModal}
+          onClose={() => setShowCreateEventModal(false)}
+        />
+        <CreateMunConferenceModal
+          isOpen={showHostMunModal}
+          onClose={() => setShowHostMunModal(false)}
+        />
         <ChamberDayHistoryModal
           isOpen={showDayHistoryModal}
           onClose={() => setShowDayHistoryModal(false)}
-          committeeName={committee.name}
+          committeeName={committee?.name || 'Chamber'}
         />
         <CommitteeSummaryPaperModal
           isOpen={showSummaryPaperModal}
@@ -300,16 +390,20 @@ export function CommitteeChamber() {
 
   return (
     <div className="w-full min-h-[calc(100vh-6rem)] flex flex-col font-sans text-neutral-100 select-none space-y-6 pb-12">
+      <ActiveEmergencyBroadcastBanner currentCommitteeId={activeCommitteeId} allowDismiss={false} />
+
       <MunSelectorBar
         isEmbedded={true}
         onOpenHistory={() => setShowDayHistoryModal(true)}
         onOpenSummary={() => setShowSummaryPaperModal(true)}
+        onOpenInstantEvent={() => setShowCreateEventModal(true)}
+        onOpenMatrix={() => setShowMatrixChatModal(true)}
       />
       
       {/* ─────────────────────────────────────────────────────────────
           1. TOP DAIS BANNER & COMMITTEE SELECTOR
       ───────────────────────────────────────────────────────────── */}
-      <div className="relative p-5 sm:p-7 rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl backdrop-blur-3xl overflow-visible">
+      <div className="relative z-10 p-5 sm:p-7 rounded-3xl bg-[#0a0c10] border border-white/10 shadow-xl backdrop-blur-3xl overflow-visible">
         {/* Subtle Ambient Light */}
         <div className="absolute -top-16 left-1/4 w-96 h-32 bg-white/[0.02] blur-[90px] rounded-full pointer-events-none" />
 
@@ -330,37 +424,95 @@ export function CommitteeChamber() {
                 SESSION #{sessionState.sessionNumber} &bull; IN ORDER
               </div>
               <span className="px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono text-neutral-300 font-medium">
-                {committee.type || 'PARLIAMENTARY'}
+                {String(committee.type || 'PARLIAMENTARY').replace(/_/g, ' ')}
               </span>
+              {activeMatrixRoom && activeMatrixRoom.status === 'ACTIVE' && (
+                <div 
+                  onClick={() => setShowMatrixChatModal(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[10px] font-mono text-cyan-300 font-bold cursor-pointer hover:bg-cyan-500/25 transition shadow-sm"
+                  title={`Matrix Room Active: ${activeMatrixRoom.matrixRoomAlias}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <span>MATRIX: {activeMatrixRoom.matrixRoomAlias.split(':')[0]}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-white/[0.03] border border-white/10 text-xs font-mono text-neutral-300">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span>{activeConference?.shortName || 'ZEN DIPLOMACY'} &bull; DAY {currentConferenceDay}</span>
+              <span>{activeConference?.shortName || activeConference?.name || 'CONFERENCE'} &bull; DAY {currentConferenceDay}</span>
             </div>
           </div>
 
           {/* Committee Name Selector & Action Controls */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
-            <div className="relative min-w-0 flex-1 max-w-full lg:max-w-xl xl:max-w-2xl">
-              <select
-                value={activeCommitteeId}
-                onChange={(e) => setActiveCommitteeId(e.target.value)}
-                className="appearance-none w-full bg-[#111319] border border-white/15 hover:border-white/30 text-white font-display font-semibold text-base sm:text-xl lg:text-2xl px-3.5 sm:px-4 py-2.5 pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
+            <div className="flex items-center gap-2.5 min-w-0 flex-1 max-w-full lg:max-w-xl xl:max-w-2xl">
+              {/* Chamber Insignia or Emblem Badge */}
+              {committee?.iconUrl ? (
+                <img
+                  src={committee.iconUrl}
+                  alt="Chamber Crest"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl object-cover border border-amber-400/30 bg-black/60 shadow-md shadow-amber-500/10 shrink-0"
+                />
+              ) : committee?.logoKey ? (
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/[0.05] border border-white/15 flex items-center justify-center shadow-inner shrink-0 overflow-hidden">
+                  <CommitteeLogoBadge logoKey={committee.logoKey} size={32} />
+                </div>
+              ) : (
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/[0.05] border border-white/15 flex items-center justify-center text-xl sm:text-2xl shadow-inner shrink-0">
+                  {committee?.emblem || '🇺🇳'}
+                </div>
+              )}
+
+              <div className="relative flex-1 min-w-0">
+                <select
+                  value={activeCommitteeId}
+                  onChange={(e) => setActiveCommitteeId(e.target.value)}
+                  className="appearance-none w-full bg-[#111319] border border-white/15 hover:border-white/30 text-white font-display font-semibold text-base sm:text-xl lg:text-2xl px-3.5 sm:px-4 py-2.5 pr-10 rounded-2xl cursor-pointer focus:outline-none transition shadow-inner truncate"
+                >
+                  {committees.map((c) => {
+                    const isOther = c.id === 'custom-chamber-other' || c.type === 'OTHER';
+                    const displayName = isOther
+                      ? `Other / Custom Forum${c.name && c.name !== 'Universal Youth Assembly & Multidisciplinary Forum' ? `: ${c.name}` : ''}`
+                      : (c.name.includes(`(${c.shortName})`) ? c.name : `${c.name} (${c.shortName})`);
+                    return (
+                      <option key={c.id} value={c.id} className="bg-black text-white font-sans text-sm">
+                        {displayName}
+                      </option>
+                    );
+                  })}
+                </select>
+                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+
+              {/* + New Committee Button (Fast creation like MUN Command app) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setNewCommName('');
+                  setNewCommShortName('');
+                  setNewCommAgenda('');
+                  setShowCreateCommitteeModal(true);
+                }}
+                className="px-3.5 py-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm active:scale-95 whitespace-nowrap group"
+                title="Create & Start New Committee (MUN Command style)"
               >
-                {committees.map((c) => {
-                  const isOther = c.id === 'custom-chamber-other' || c.type === 'OTHER';
-                  const displayName = isOther
-                    ? `Other / Custom Forum${c.name && c.name !== 'Universal Youth Assembly & Multidisciplinary Forum' ? `: ${c.name}` : ''}`
-                    : (c.name.includes(`(${c.shortName})`) ? c.name : `${c.name} (${c.shortName})`);
-                  return (
-                    <option key={c.id} value={c.id} className="bg-black text-white font-sans text-sm">
-                      {displayName}
-                    </option>
-                  );
-                })}
-              </select>
-              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                <span className="hidden sm:inline">New Committee</span>
+                <span className="sm:hidden">New</span>
+              </button>
+
+              {/* + Create Instant Event Button */}
+              <button
+                type="button"
+                onClick={() => setShowCreateEventModal(true)}
+                className="px-3.5 py-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:via-cyan-500/30 hover:to-emerald-500/30 border border-amber-400/40 text-amber-200 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm active:scale-95 whitespace-nowrap group"
+                title="Create an Instant Event (Launch Live Chamber / Room Now)"
+              >
+                <Zap className="w-4 h-4 text-amber-300 fill-amber-300 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">Instant Event</span>
+                <span className="sm:hidden">Instant</span>
+              </button>
             </div>
 
             {/* Action Bar (Observer, Gavel, Edit Details, Secretariat) */}
@@ -406,6 +558,81 @@ export function CommitteeChamber() {
                 )}
               </button>
 
+              {/* Projector View / Stage Mode Button (Gavelling Style) */}
+              <button
+                type="button"
+                onClick={() => setShowFullscreenView(true)}
+                className="p-2 px-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 shrink-0 whitespace-nowrap group"
+                title="Launch Projector View for Room Screens [P]"
+              >
+                <Maximize2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                <span>Projector [P]</span>
+              </button>
+
+              {/* Dais Audio Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  const next = daisAudio.toggle();
+                  setSoundActive(next);
+                }}
+                className={`p-2 px-3 rounded-2xl border font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 shrink-0 whitespace-nowrap ${
+                  soundActive
+                    ? 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-neutral-300'
+                    : 'bg-red-500/10 border-red-500/30 text-red-400'
+                }`}
+                title={soundActive ? 'Mute Dais Sound Effects' : 'Unmute Dais Sound Effects'}
+              >
+                {soundActive ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">{soundActive ? 'Audio ON' : 'Audio OFF'}</span>
+              </button>
+
+              {/* Connect Matrix Button */}
+              <button
+                type="button"
+                onClick={() => setShowMatrixChatModal(true)}
+                className="p-2 px-3.5 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm shadow-cyan-500/10 shrink-0 whitespace-nowrap active:scale-95 group"
+                title="Connect Matrix — Dedicated committee-based federated conversation room"
+              >
+                <Layers className="w-3.5 h-3.5 text-cyan-400 group-hover:rotate-12 transition-transform" />
+                <span>Connect Matrix</span>
+                {activeMatrixRoom && activeMatrixRoom.status === 'ACTIVE' && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" title="Matrix Room Active" />
+                )}
+              </button>
+
+              {/* Country Portfolio Matrix Button */}
+              <button
+                type="button"
+                onClick={() => setShowPortfolioMatrixModal(true)}
+                className="p-2 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap active:scale-95"
+                title="View Country Delegation Matrix"
+              >
+                <Users className="w-3.5 h-3.5 text-neutral-400" />
+                <span className="hidden md:inline">Country Matrix</span>
+              </button>
+
+              {/* Quick Committee Setup Studio Button */}
+              <Link
+                href="/committee/create"
+                className="p-2 px-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:brightness-110 text-black font-sans text-xs font-extrabold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-500/20 shrink-0 whitespace-nowrap active:scale-95"
+                title="Instant Committee & Dais Setup Studio (Quick Bundles, Roster Builder & Roll Call)"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>New Committee Session</span>
+              </Link>
+
+              {/* Create Instant Event Button */}
+              <button
+                type="button"
+                onClick={() => setShowCreateEventModal(true)}
+                className="p-2 px-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-cyan-500/15 to-emerald-500/15 hover:from-amber-500/25 hover:via-cyan-500/25 hover:to-emerald-500/25 border border-amber-400/40 text-amber-200 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 whitespace-nowrap active:scale-95 group"
+                title="Create an Instant Event (Launch Live Chamber / Room Now)"
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300 group-hover:scale-110 transition-transform" />
+                <span>Instant Event</span>
+              </button>
+
               {/* Customize Committee, Agenda & Portfolios Button */}
               <button
                 type="button"
@@ -415,6 +642,21 @@ export function CommitteeChamber() {
               >
                 <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
                 <span>Edit Details</span>
+              </button>
+
+              {/* Reset Floor / New Session */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm(`Reset floor session for ${committee.name}? This will clear active motions, reset the clock to 90s GSL, and clear the speakers list.`)) {
+                    clearFloorSession(committee.id);
+                  }
+                }}
+                className="p-2 px-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0 whitespace-nowrap active:scale-95"
+                title="Reset Floor (Clears current motion, resets timer to 90s, and clears speaker list)"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-red-400" />
+                <span>Reset Floor</span>
               </button>
 
               {/* Direct Connect to Secretariat Command Center */}
@@ -495,14 +737,66 @@ export function CommitteeChamber() {
             </motion.div>
           )}
 
-          {/* Agenda Mandate Banner */}
-          <div className="p-3.5 px-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-start gap-3 shadow-inner">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 shrink-0 mt-0.5 px-2.5 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-              AGENDA
-            </span>
-            <span className="text-xs sm:text-sm text-neutral-200 font-mono leading-relaxed">
-              {committee.agenda}
-            </span>
+          {/* Agenda Mandate Banner (Inline Editable like MUN Command) */}
+          <div className="p-3.5 px-4 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-inner">
+            <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0 w-full">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 shrink-0 px-2.5 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                AGENDA
+              </span>
+              {isEditingAgenda ? (
+                <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
+                  <input
+                    type="text"
+                    value={agendaInputValue}
+                    onChange={(e) => setAgendaInputValue(e.target.value)}
+                    placeholder="Enter debate agenda mandate..."
+                    className="flex-1 bg-black/60 border border-cyan-500/40 focus:border-cyan-400 px-3 py-1.5 rounded-xl text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none font-mono"
+                    autoFocus
+                  />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const trimmed = agendaInputValue.trim();
+                        if (trimmed) {
+                          updateCommitteeDetails(committee.id, { agenda: trimmed });
+                        }
+                        setIsEditingAgenda(false);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono font-semibold text-xs transition cursor-pointer active:scale-95 flex items-center gap-1"
+                    >
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span>Save</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingAgenda(false)}
+                      className="px-2.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-neutral-300 font-mono text-xs transition cursor-pointer active:scale-95"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-xs sm:text-sm text-neutral-200 font-mono leading-relaxed truncate">
+                  {committee.agenda || 'No agenda set. Click edit to set agenda.'}
+                </span>
+              )}
+            </div>
+            {!isEditingAgenda && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAgendaInputValue(committee.agenda || '');
+                  setIsEditingAgenda(true);
+                }}
+                className="px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-cyan-300 font-mono text-xs transition flex items-center gap-1 cursor-pointer shrink-0"
+                title="Edit committee agenda"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>Edit</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -579,6 +873,17 @@ export function CommitteeChamber() {
             >
               <BookOpen className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
               <span>Sources</span>
+            </button>
+
+            {/* Dais Support & Secretariat Hotline */}
+            <button
+              type="button"
+              onClick={() => setShowDaisSupportModal(true)}
+              className="px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap active:scale-95"
+              title="Dais & Secretariat Real-Time Support Hotline"
+            >
+              <LifeBuoy className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span>Dais Support</span>
             </button>
 
             {/* Direct ZEN.LEGISLATE / ZEN.DOCS Drafting Gateway */}
@@ -1868,6 +2173,162 @@ export function CommitteeChamber() {
         onSelectDraftType={(type, title) => {
           router.push(`/docs?committee=${encodeURIComponent(committee.shortName || committee.name)}&mode=docs&type=${type}`);
         }}
+      />
+
+      {/* QUICK NEW COMMITTEE CREATION MODAL (MUN Command style) */}
+      <AnimatePresence>
+        {showCreateCommitteeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-lg bg-[#0e121a] border border-white/15 rounded-3xl p-6 shadow-2xl space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-display font-semibold text-white">Create New Committee</h3>
+                    <p className="text-xs font-mono text-neutral-400">Start a new chamber from scratch</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateCommitteeModal(false)}
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3 font-mono text-xs">
+                <div>
+                  <label className="text-neutral-400 block mb-1">Committee Name</label>
+                  <input
+                    type="text"
+                    value={newCommName}
+                    onChange={(e) => setNewCommName(e.target.value)}
+                    placeholder="e.g. Disarmament and International Security (DISEC)"
+                    className="w-full bg-black/60 border border-white/15 focus:border-cyan-400 rounded-xl px-3 py-2 text-white placeholder-neutral-600 focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-neutral-400 block mb-1">Short Name / Code</label>
+                    <input
+                      type="text"
+                      value={newCommShortName}
+                      onChange={(e) => setNewCommShortName(e.target.value)}
+                      placeholder="e.g. DISEC"
+                      className="w-full bg-black/60 border border-white/15 focus:border-cyan-400 rounded-xl px-3 py-2 text-white placeholder-neutral-600 focus:outline-none uppercase"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-neutral-400 block mb-1">Chamber Type</label>
+                    <select
+                      value={newCommType}
+                      onChange={(e) => setNewCommType(e.target.value as MunCommitteeType)}
+                      className="w-full bg-black/60 border border-white/15 focus:border-cyan-400 rounded-xl px-3 py-2 text-white focus:outline-none"
+                    >
+                      <option value="UNSC">UNSC</option>
+                      <option value="UNGA">UNGA</option>
+                      <option value="UNHRC">UNHRC</option>
+                      <option value="CRISIS">Crisis Committee</option>
+                      <option value="LOK_SABHA">Lok Sabha</option>
+                      <option value="AIPPM">AIPPM</option>
+                      <option value="DISEC">DISEC</option>
+                      <option value="PARLIAMENTARY">Parliamentary</option>
+                      <option value="OTHER">Custom / Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-neutral-400 block mb-1">Debate Agenda / Topic</label>
+                  <textarea
+                    rows={2}
+                    value={newCommAgenda}
+                    onChange={(e) => setNewCommAgenda(e.target.value)}
+                    placeholder="Enter primary agenda or topic of deliberation..."
+                    className="w-full bg-black/60 border border-white/15 focus:border-cyan-400 rounded-xl px-3 py-2 text-white placeholder-neutral-600 focus:outline-none resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-neutral-400 block mb-1">Total Delegates (Quorum base)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={200}
+                    value={newCommDelegates}
+                    onChange={(e) => setNewCommDelegates(Math.max(1, parseInt(e.target.value) || 15))}
+                    className="w-full bg-black/60 border border-white/15 focus:border-cyan-400 rounded-xl px-3 py-2 text-white focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10 font-mono text-xs">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateCommitteeModal(false)}
+                  className="px-4 py-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/5 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const name = newCommName.trim() || 'New Committee';
+                    const shortName = newCommShortName.trim() || name.slice(0, 8).toUpperCase();
+                    const agenda = newCommAgenda.trim() || 'General Deliberations';
+                    const newComm = addCustomCommittee({
+                      name,
+                      shortName,
+                      agenda,
+                      type: newCommType,
+                      totalDelegates: newCommDelegates,
+                    });
+                    setActiveCommitteeId(newComm.id);
+                    setShowCreateCommitteeModal(false);
+                  }}
+                  className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold transition active:scale-95"
+                >
+                  Create & Launch Chamber
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MATRIX COMMITTEE CHAT INTEGRATION MODAL */}
+      <CommitteeMatrixChatModal
+        isOpen={showMatrixChatModal}
+        onClose={() => setShowMatrixChatModal(false)}
+        initialCommittee={committee}
+        initialConferenceId={activeConference?.id}
+        initialDate={activeConference?.startDate}
+      />
+
+      {/* COUNTRY PORTFOLIO MATRIX ALLOCATION MODAL */}
+      <ChamberMatrixModal
+        isOpen={showPortfolioMatrixModal}
+        onClose={() => setShowPortfolioMatrixModal(false)}
+        committee={committee}
+        conferenceId={activeConference?.id}
+        conferenceName={activeConference?.name}
+      />
+
+      {/* DAIS & SECRETARIAT SUPPORT HOTLINE MODAL */}
+      <DaisSupportHotlineModal
+        isOpen={showDaisSupportModal}
+        onClose={() => setShowDaisSupportModal(false)}
+        committeeName={committee?.name}
+        committeeId={committee?.id}
       />
     </div>
   );

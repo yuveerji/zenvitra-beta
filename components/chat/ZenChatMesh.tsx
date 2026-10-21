@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import { 
   Phone, 
   PhoneCall,
@@ -64,7 +65,8 @@ import {
   ChevronLeft,
   ArrowLeft,
   Zap,
-  Upload
+  Upload,
+  Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useZenChat } from '@/context/ZenChatPlatformContext';
@@ -323,7 +325,7 @@ const DEFAULT_COMMUNITIES: ChatCommunity[] = [
 
 const EMOJI_LIST = ['👍', '❤️', '⚡', '📜', '🔥', '👏', '🎯', '🤝', '💎', '🚀', '💡', '🛡️', '⚖️', '🌍', '✨'];
 
-export function ZenChatMesh() {
+export function ZenChatMesh({ initialConversationId }: { initialConversationId?: string } = {}) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { isMockMode } = useAuth();
@@ -511,6 +513,14 @@ export function ZenChatMesh() {
       if (sm) setMutedContexts(JSON.parse(sm));
     } catch (_) {}
   }, []);
+
+  // Auto-select conversation when loaded via /chat/[conversationId] deep link
+  useEffect(() => {
+    if (initialConversationId) {
+      setActiveConversationId(initialConversationId);
+      setMobileActiveView('chat');
+    }
+  }, [initialConversationId, setActiveConversationId]);
 
   // Update default user server title if current user name loads asynchronously
   useEffect(() => {
@@ -1586,6 +1596,29 @@ export function ZenChatMesh() {
         
         {/* Top App Tabs (WhatsApp Desktop style) */}
         <div className="flex flex-col items-center gap-2.5 w-full">
+          {/* Main Navigation Menu Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+            }}
+            title="Navigation Menu"
+            className="w-10 h-10 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] text-neutral-300 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-white/10 active:scale-95 shadow-xs"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Zenvitra Logo */}
+          <Link
+            href="/pulse"
+            title="Zenvitra"
+            className="w-12 h-12 rounded-2xl bg-black border border-white/10 hover:border-white/25 flex items-center justify-center p-2 hover:scale-105 transition-all shadow-sm group"
+          >
+            <img src="/assets/logo-new.png" alt="Zenvitra" className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_0_16px_rgba(255,255,255,0.5)] transition-all brand-logo-img" />
+          </Link>
+
+          <div className="w-8 h-px bg-white/[0.08] my-0.5" />
+
           {/* Chats Tab */}
           <button
             onClick={() => {
@@ -1906,6 +1939,26 @@ export function ZenChatMesh() {
                       >
                         <Globe2 className="w-4 h-4 text-emerald-400" />
                         <span>Establish Caucus</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          router.push('/chat/settings');
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                      >
+                        <Settings className="w-4 h-4 text-cyan-400" />
+                        <span>Chat &amp; Privacy Settings</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowSidebarHeaderMenu(false);
+                          router.push('/support');
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-neutral-200 hover:text-white hover:bg-white/[0.06] text-left transition cursor-pointer"
+                      >
+                        <HelpCircle className="w-4 h-4 text-amber-400" />
+                        <span>Official Support &rarr;</span>
                       </button>
                     </>
                   )}
@@ -3017,7 +3070,7 @@ export function ZenChatMesh() {
 
             // Determine role label and style
             const roleLabel = msg.senderRole || (
-              msg.senderUsername === 'yuveer' || msg.senderName?.toLowerCase().includes('yuveer') 
+              msg.senderUsername === 'yuveer'
                 ? '👑 FOUNDER' 
                 : msg.senderRole || null
             );

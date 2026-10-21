@@ -22,11 +22,16 @@ import {
   CivicClearance,
   DelegatePassportDossier,
   BountyTip,
-  RationaleTag
+  RationaleTag,
+  PulsePostFormat,
+  PulseSourceItem
 } from '@/types/pulse';
 import { auditFluxDispatch, auditPostDispatch } from '@/lib/fluxIntegrityGuard';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
 import { pushLiveNotification } from '@/lib/notificationStorage';
+import { notifyCategorySubscribers } from '@/lib/categorySubscriptionService';
+import { getActiveUserSubscription, normalizeUsername } from '@/lib/subscriptionTiers';
+import { sheetSync } from '@/lib/googleSheets';
 
 /* ─────────── CONTEXT SHAPE ─────────── */
 
@@ -48,7 +53,8 @@ interface ZenPulseContextType {
     effectStyle?: string,
     songData?: { songTitle?: string; songArtist?: string; songAudioUrl?: string; songVideoId?: string; songStartTime?: number; songEndTime?: number; songFrameDuration?: number },
     speechData?: { speechFormat?: 'video' | 'audio'; speechVideoUrl?: string; speechAudioUrl?: string; speechDuration?: number; speechTranscript?: string; speechDelegation?: string },
-    sourceData?: { sourceName?: string; sourceUrl?: string }
+    sourceData?: { sourceName?: string; sourceUrl?: string; sources?: PulseSourceItem[] },
+    metaData?: { title?: string; postFormat?: PulsePostFormat }
   ) => string;
   createTreatyPost: (data: { title: string; content: string; caucusTag?: string; citations?: ProofCitation[]; tags?: string[] }) => string;
   createFloorAudioPost: (data: { 
@@ -275,12 +281,25 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       try {
         const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
         if (stored && (stored.username || stored.id || stored.display_name || stored.email)) {
-          setClientSessionUser(stored);
+          setClientSessionUser((prev: any) => {
+            if (
+              prev &&
+              prev.id === stored.id &&
+              prev.username === stored.username &&
+              prev.email === stored.email &&
+              prev.role === stored.role &&
+              prev.display_name === stored.display_name &&
+              prev.avatar_url === stored.avatar_url
+            ) {
+              return prev;
+            }
+            return stored;
+          });
         } else {
-          setClientSessionUser(null);
+          setClientSessionUser((prev: any) => (prev === null ? prev : null));
         }
       } catch (_) {
-        setClientSessionUser(null);
+        setClientSessionUser((prev: any) => (prev === null ? prev : null));
       }
     };
     syncSession();
@@ -440,8 +459,51 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
         } catch (_) {}
       };
       window.addEventListener('zenvitra_pulse_sync', handlePulseSync);
+
+      // Asynchronously fetch canonical server database posts
+      fetch('/api/pulse/posts?feed=for_you')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.success && Array.isArray(data.posts) && data.posts.length > 0) {
+            setAllPosts((prev) => {
+              const existingIds = new Set(prev.map((p) => p.id));
+              const newServerPosts: PulsePost[] = data.posts
+                .filter((sp: any) => !existingIds.has(sp.id))
+                .map((sp: any) => ({
+                  id: sp.id,
+                  authorId: sp.authorId,
+                  authorName: sp.authorName,
+                  authorUsername: sp.authorUsername,
+                  authorAvatar: sp.authorAvatar || '',
+                  authorRole: sp.authorRole,
+                  content: sp.content,
+                  images: sp.mediaUrls || [],
+                  createdAt: sp.createdAt,
+                  likes: sp.likesCount || 0,
+                  likedBy: [],
+                  reposts: sp.repostsCount || 0,
+                  repostedBy: [],
+                  replyCount: sp.commentsCount || 0,
+                  location: sp.topic || undefined,
+                  tags: sp.tags || [],
+                }));
+              return [...newServerPosts, ...prev];
+            });
+          }
+        })
+        .catch(() => {});
+
+      const handleSubAllotment = () => {
+        try {
+          const rawProfiles = safeParse(localStorage.getItem(LS_PROFILES), []);
+          setAllProfiles(sanitizeProfilesList(rawProfiles));
+        } catch (_) {}
+      };
+      window.addEventListener('zenvitra_subscription_allotted', handleSubAllotment);
+
       return () => {
         window.removeEventListener('zenvitra_pulse_sync', handlePulseSync);
+        window.removeEventListener('zenvitra_subscription_allotted', handleSubAllotment);
       };
     } catch (_) {}
   }, [isMockMode, currentUserUsername, currentUserId]);
@@ -505,7 +567,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       (p) => (p.username && p.username.toLowerCase() === activeUsername.toLowerCase()) || p.id === currentUserId
     );
 
-    const isFounderUser = activeUsername === 'yuveer' || activeUsername === 'founder' || profile?.email === 'founder@zenvitra.org';
+    const isFounderUser = (activeUsername === 'yuveer' || activeUsername === 'founder') && (profile?.email === 'founder@zenvitra.xyz' || profile?.email === 'founder@zenvitra.org' || clientSessionUser?.id === 'zen_founder_root');
     const isVerifiedFlag = Boolean(
       isFounderUser || 
       profile?.is_verified || 
@@ -514,46 +576,43 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       existing?.isVerified
     );
 
-    const defaultHostedEvents: ProfileHostedEvent[] = isFounderUser ? [
-      {
-        id: 'evt_showcase_01',
-        title: 'Zenvitra Youth Diplomatic Plenary 2026',
-        date: 'Oct 12-14, 2026',
-        time: '09:00 AM CET',
-        location: 'Palais des Nations, Geneva & Virtual Node',
-        category: 'SUMMIT',
-        rsvpUrl: '/events',
-        registeredCount: 184,
-        maxCapacity: 250,
-        coverImage: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
-        description: 'Flagship global convention convening 500+ youth delegates, AI policy researchers, and sovereign civic leaders.'
-      },
-      {
-        id: 'evt_showcase_02',
-        title: 'Civic Treaty & Redline Diff Masterclass',
-        date: 'Nov 05, 2026',
-        time: '04:30 PM CET',
-        location: 'Virtual Cryptographic Chamber',
-        category: 'WORKSHOP',
-        rsvpUrl: '/events',
-        registeredCount: 92,
-        maxCapacity: 120,
-        coverImage: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
-        description: 'Hands-on session mastering multilateral resolution drafting, zero-hallucination verification, and sovereign quorum mechanics.'
-      }
-    ] : [];
+    const defaultHostedEvents: ProfileHostedEvent[] = [];
+
+    const isSeededProfileEvent = (e: any) => {
+      if (!e) return true;
+      const id = String(e.id || '').toLowerCase();
+      const title = String(e.title || '').toLowerCase();
+      return (
+        id.includes('evt_showcase') ||
+        id.includes('zenmun') ||
+        title.includes('zenvitra youth diplomatic plenary 2026') ||
+        title.includes('civic treaty & redline diff masterclass') ||
+        title.includes('model united nations 2026') ||
+        title.includes('global mun')
+      );
+    };
+
+    const activeSub = getActiveUserSubscription(activeUsername);
+    const resolvedSubPlan = isFounderUser 
+      ? 'ORGANIZER_PRO' 
+      : activeSub 
+      ? activeSub.planId 
+      : (existing?.subscriptionPlan ?? 'FREE');
+    const hasOrgAccess = isFounderUser || (activeSub ? ['org-pro', 'org-elite', 'org-enterprise', 'event-pro', 'event-elite'].includes(activeSub.planId) : Boolean(existing?.isSubscribedOrganizer));
 
     if (existing && (existing.username || existing.name)) {
+      const cleanedHostedEvents = (existing.hostedEvents || []).filter((e: any) => !isSeededProfileEvent(e));
+      const resolvedAvatar = existing?.avatar || profile?.avatar_url || (profile as any)?.avatar || '';
       return {
         ...existing,
         name: activeName || existing.name || activeUsername,
         username: activeUsername || existing.username,
-        avatar: profile?.avatar_url || (profile as any)?.avatar || existing.avatar || '',
+        avatar: resolvedAvatar,
         bio: profile?.bio || existing.bio || 'Sovereign Plenary Delegate on Zenvitra.',
         isVerified: isVerifiedFlag,
-        isSubscribedOrganizer: isFounderUser ? true : Boolean(existing.isSubscribedOrganizer),
-        subscriptionPlan: isFounderUser ? 'ORGANIZER_PRO' : (existing.subscriptionPlan ?? 'FREE'),
-        hostedEvents: existing.hostedEvents && existing.hostedEvents.length > 0 ? existing.hostedEvents : (isFounderUser ? defaultHostedEvents : []),
+        isSubscribedOrganizer: hasOrgAccess,
+        subscriptionPlan: resolvedSubPlan as any,
+        hostedEvents: cleanedHostedEvents,
       };
     }
     return {
@@ -561,12 +620,12 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       username: activeUsername,
       name: activeName,
       bio: profile?.bio || 'Sovereign Plenary Delegate on Zenvitra.',
-      avatar: profile?.avatar_url || '',
-      badge: isFounderUser ? 'FOUNDER' : 'DELEGATE',
+      avatar: profile?.avatar_url || (profile as any)?.avatar || clientSessionUser?.avatar_url || clientSessionUser?.avatar || '',
+      badge: isFounderUser ? 'FOUNDER' : (hasOrgAccess ? 'ORGANIZATION' : 'DELEGATE'),
       accountType: isFounderUser ? 'professional' : 'personal',
-      isSubscribedOrganizer: isFounderUser,
-      subscriptionPlan: isFounderUser ? 'ORGANIZER_PRO' : 'FREE',
-      hostedEvents: isFounderUser ? defaultHostedEvents : [],
+      isSubscribedOrganizer: hasOrgAccess,
+      subscriptionPlan: resolvedSubPlan as any,
+      hostedEvents: [],
       isVerified: isVerifiedFlag,
       isPrivate: false,
       followers: [],
@@ -600,6 +659,30 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       updated = [{ ...myProfile, ...data }, ...allProfiles];
     }
     saveProfiles(updated);
+
+    // Also update session user avatar if avatar was modified
+    if (data.avatar !== undefined || data.name !== undefined) {
+      try {
+        const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        if (stored && (stored.username || stored.id)) {
+          const nextSession = {
+            ...stored,
+            ...(data.name ? { name: data.name, display_name: data.name } : {}),
+            ...(data.avatar !== undefined ? { avatar_url: data.avatar, avatar: data.avatar } : {}),
+          };
+          localStorage.setItem('zenvitra_session_user', JSON.stringify(nextSession));
+          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new CustomEvent('zenvitra_auth_change', { detail: { profile: nextSession } }));
+        }
+      } catch (_) {}
+    }
+
+    broadcastActivitySync({
+      source: 'profile',
+      action: 'update',
+      timestamp: Date.now(),
+      metadata: { username: activeUsername, updates: data },
+    });
   }, [allProfiles, currentUserId, currentUserUsername, myProfile, saveProfiles]);
 
   const getProfileByUsername = useCallback((username: string): PulseProfile | undefined => {
@@ -702,6 +785,18 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     }
 
     saveProfiles(updated);
+
+    if (typeof window !== 'undefined') {
+      fetch('/api/pulse/follow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          followerId: currentUserId,
+          followerUsername: cleanCurrent,
+          followingUsername: cleanTarget,
+        }),
+      }).catch(() => {});
+    }
   }, [allProfiles, currentUserId, currentUserUsername, getProfileByUsername, myProfile, saveProfiles]);
 
   const approveFollowRequest = useCallback((requesterUsername: string) => {
@@ -875,7 +970,8 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     effectStyle?: string,
     songData?: { songTitle?: string; songArtist?: string; songAudioUrl?: string; songVideoId?: string; songStartTime?: number; songEndTime?: number; songFrameDuration?: number },
     speechData?: { speechFormat?: 'video' | 'audio'; speechVideoUrl?: string; speechAudioUrl?: string; speechDuration?: number; speechTranscript?: string; speechDelegation?: string },
-    sourceData?: { sourceName?: string; sourceUrl?: string }
+    sourceData?: { sourceName?: string; sourceUrl?: string; sources?: PulseSourceItem[] },
+    metaData?: { title?: string; postFormat?: PulsePostFormat }
   ) => {
     const audit = auditPostDispatch({ content, location, tags });
     if (!audit.passed) {
@@ -884,6 +980,12 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
 
     const isGuestUser = Boolean(clientSessionUser?.isGuest || clientSessionUser?.role === 'guest' || profile?.isGuest);
 
+    const resolvedSources = (sourceData?.sources && sourceData.sources.length > 0)
+      ? sourceData.sources.filter(s => s.name?.trim() || s.url?.trim())
+      : (sourceData?.sourceName?.trim() || sourceData?.sourceUrl?.trim()
+          ? [{ name: sourceData.sourceName?.trim() || 'Verified Source', url: sourceData.sourceUrl?.trim() || '' }]
+          : undefined);
+
     const newPost: PulsePost = {
       id: `post_${Date.now()}`,
       authorId: currentUserId,
@@ -891,12 +993,15 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       authorUsername: currentUserUsername,
       authorRole: isGuestUser ? 'GUEST' : (profile?.role || clientSessionUser?.role || 'delegate'),
       isGuest: isGuestUser,
+      title: metaData?.title?.trim() || undefined,
+      postFormat: metaData?.postFormat || 'dispatch',
       content,
       images,
-      location: location || 'Plenary Grid',
+      location: location?.trim() ? location.trim() : undefined,
       tags: tags.length > 0 ? tags : (content.match(/#[a-zA-Z0-9_]+/g)?.map(t => t.slice(1)) || []),
-      sourceName: sourceData?.sourceName?.trim() || undefined,
-      sourceUrl: sourceData?.sourceUrl?.trim() || undefined,
+      sourceName: sourceData?.sourceName?.trim() || (resolvedSources?.[0]?.name) || undefined,
+      sourceUrl: sourceData?.sourceUrl?.trim() || (resolvedSources?.[0]?.url) || undefined,
+      sources: resolvedSources,
       fontStyle: fontStyle || 'sans',
       effectStyle: effectStyle || 'none',
       songTitle: songData?.songTitle,
@@ -918,11 +1023,69 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       reposts: 0,
       repostedBy: [],
       replyCount: 0,
-      civicReliabilityScore: sourceData?.sourceName ? 98 : 90
     };
+
     savePosts([newPost, ...allPosts]);
+
+    if (typeof window !== 'undefined') {
+      fetch('/api/pulse/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          authorId: currentUserId,
+          authorUsername: currentUserUsername,
+          authorName: currentUserName,
+          authorAvatar: myProfile?.avatar,
+          authorRole: isGuestUser ? 'GUEST' : (profile?.role || clientSessionUser?.role || 'delegate'),
+          postType: 'STANDARD',
+          content,
+          mediaUrls: images || [],
+          mediaType: (images && images.length > 0) ? 'IMAGE' : undefined,
+          topic: location,
+          tags: tags || [],
+          audience: 'PUBLIC',
+        }),
+      }).catch((err) => {
+        console.warn('Failed to sync post to backend database:', err);
+      });
+
+      // Asynchronously dispatch to Google Sheets master pulse register
+      sheetSync.pulsePost({
+        postId: newPost.id,
+        authorUsername: currentUserUsername,
+        authorName: currentUserName,
+        authorEmail: profile?.email || '',
+        content: content.trim(),
+        tags: tags || [],
+        location: location?.trim() || 'General',
+      }).catch(() => {});
+    }
+
+    // Auto-deliver notification to subscribers of this topic
+    try {
+      const allTags = [...(tags || []), ...(content.match(/#[a-zA-Z0-9_]+/g)?.map(t => t.slice(1)) || [])];
+      let pulseCat = 'General';
+      const availableTopics = ['General', 'Diplomacy', 'Technology', 'Policy', 'Economics', 'Youth'];
+      for (const t of availableTopics) {
+        if (allTags.some(tag => tag.toLowerCase() === t.toLowerCase()) || (location && location.toLowerCase().includes(t.toLowerCase()))) {
+          pulseCat = t;
+          break;
+        }
+      }
+
+      notifyCategorySubscribers({
+        platform: 'pulse',
+        category: pulseCat,
+        title: content.slice(0, 60),
+        authorName: currentUserName,
+        excerpt: content,
+        link: '/pulse',
+        itemId: newPost.id,
+      });
+    } catch (_) {}
+
     return newPost.id;
-  }, [allPosts, currentUserId, currentUserName, currentUserUsername, savePosts]);
+  }, [allPosts, currentUserId, currentUserName, currentUserUsername, myProfile?.avatar, profile?.role, clientSessionUser?.role, savePosts]);
 
   const createTreatyPost = useCallback((data: { title: string; content: string; caucusTag?: string; citations?: ProofCitation[]; tags?: string[] }) => {
     const newTreaty: PulsePost = {
@@ -1056,6 +1219,18 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       return p;
     });
     savePosts(updated);
+
+    if (typeof window !== 'undefined') {
+      fetch('/api/pulse/reactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postId: id,
+          userId: currentUserId,
+          type: 'LIKE',
+        }),
+      }).catch(() => {});
+    }
   }, [allPosts, currentUserId, savePosts]);
 
   const repostPost = useCallback((id: string) => {

@@ -21,7 +21,10 @@ import {
   HelpCircle,
   Clock,
   Printer,
-  Music
+  Music,
+  HeartHandshake,
+  ChevronDown,
+  LifeBuoy
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -31,7 +34,9 @@ import {
   DataLifecycleExplainer,
   LegalPart,
   LegalClause,
-  LegalSubsection
+  LegalSubsection,
+  PRIVACY_POLICY_FAQS,
+  LegalFAQ
 } from '@/lib/legalData';
 
 // Helper to generate consistent element ID for each part
@@ -42,6 +47,23 @@ export default function PrivacyPolicyPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activePart, setActivePart] = useState<string>('PART I');
   const [selectedExplainer, setSelectedExplainer] = useState<DataLifecycleExplainer>(DATA_LIFECYCLE_EXPLAINERS[0]);
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [faqCategory, setFaqCategory] = useState<string>('ALL');
+
+  const faqCategories = useMemo(() => {
+    const cats = new Set(PRIVACY_POLICY_FAQS.map(f => f.category));
+    return ['ALL', ...Array.from(cats)];
+  }, []);
+
+  const filteredFaqs = useMemo(() => {
+    return PRIVACY_POLICY_FAQS.filter(faq => {
+      const matchCat = faqCategory === 'ALL' || faq.category === faqCategory;
+      const matchSearch = !searchQuery.trim() || 
+        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [faqCategory, searchQuery]);
 
   // Filter clauses based on search
   const filteredParts = useMemo(() => {
@@ -147,7 +169,23 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-[#030405] text-neutral-300 flex flex-col justify-between font-sans selection:bg-white selection:text-black pt-20 sm:pt-24">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-10">
+        {/* Policy Switcher Tabs: Major vs Minor */}
+        <div className="flex flex-wrap items-center gap-3 p-2 rounded-2xl bg-[#090b10] border border-white/10">
+          <div className="flex-1 min-w-[240px] px-4 py-3 rounded-xl text-center text-xs font-mono font-bold bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 shadow-md flex items-center justify-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Standard Privacy Policy (Adults 18+ &amp; Entities)</span>
+            <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-black">Active</span>
+          </div>
+          <Link
+            href="/privacy/minor"
+            className="flex-1 min-w-[240px] px-4 py-3 rounded-xl text-center text-xs font-mono font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition flex items-center justify-center gap-2"
+          >
+            <HeartHandshake className="w-4 h-4 text-amber-400" />
+            <span>Under-18 User Protection &amp; Parental Consent Policy</span>
+          </Link>
+        </div>
+
         {/* Header Banner */}
         <div className="space-y-4 border-b border-white/10 pb-8 text-left">
           <div className="flex flex-wrap items-center gap-2">
@@ -421,6 +459,87 @@ export default function PrivacyPolicyPage() {
             )}
           </main>
         </div>
+
+        {/* ── HELP & FREQUENTLY ASKED QUESTIONS (FAQS) ── */}
+        <section id="help-faqs" className="mt-20 pt-12 border-t border-white/10 space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[11px] mb-2">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>PRIVACY & SECURITY ASSISTANCE</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold font-display text-white tracking-tight">
+                Help & Frequently Asked Questions
+              </h2>
+              <p className="text-xs sm:text-sm text-neutral-400 font-sans mt-1 max-w-2xl">
+                Clear, transparent answers on how Zenvitra protects your data across the Drafting Studio, Test Node, Payments, and Sovereign Identity.
+              </p>
+            </div>
+
+            <Link
+              href="/support"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition shrink-0"
+            >
+              <LifeBuoy className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Contact DPO & Support &rarr;</span>
+            </Link>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {faqCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFaqCategory(cat)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono transition cursor-pointer ${
+                  faqCategory === cat
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold'
+                    : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/5'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Accordion Items */}
+          <div className="space-y-3">
+            {filteredFaqs.map((faq) => {
+              const isOpen = openFaqId === faq.id;
+              return (
+                <div
+                  key={faq.id}
+                  className="rounded-2xl border border-white/10 bg-[#07080d] overflow-hidden transition-all"
+                >
+                  <button
+                    onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] transition"
+                  >
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/80 px-2 py-0.5 rounded bg-emerald-500/10">
+                        {faq.category}
+                      </span>
+                      <h3 className="text-sm sm:text-base font-bold font-sans text-white pt-1">
+                        {faq.question}
+                      </h3>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-neutral-400 shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-emerald-400' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm font-sans text-neutral-300 leading-relaxed border-t border-white/5">
+                      <p>{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </div>
 
       <Footer />

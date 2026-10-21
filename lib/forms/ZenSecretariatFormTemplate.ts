@@ -19,8 +19,8 @@ export const ZEN_SECRETARIAT_2026_FORM_TEMPLATE: ZenForm = {
   updatedAt: new Date().toISOString(),
   googleSheetsConfig: {
     isConnected: true,
-    sheetTab: 'Secretariat Applications',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec',
+    sheetTab: '15 EB Secretariat',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec',
     autoSync: true
   },
   customStyle: {

@@ -429,12 +429,36 @@ input, textarea, select, [contenteditable="true"] {
 }
 
 /* ═══════════════════════════════════════
-   SELECTION STYLE — UNCOPYABLE
+   SELECTION STYLE — VISIBLE HIGHLIGHT
    ═══════════════════════════════════════ */
 
 ::selection {
-  background: transparent !important;
-  color: inherit !important;
+  background: rgba(6, 182, 212, 0.35) !important;
+  color: #fff !important;
+}
+
+::-moz-selection {
+  background: rgba(6, 182, 212, 0.35) !important;
+  color: #fff !important;
+}
+
+/* Editors & contenteditable get a stronger selection highlight */
+[contenteditable="true"]::selection,
+.doc-editor::selection,
+.zen-docs-editor::selection,
+textarea::selection,
+input::selection {
+  background: rgba(6, 182, 212, 0.45) !important;
+  color: #fff !important;
+}
+
+[contenteditable="true"]::-moz-selection,
+.doc-editor::-moz-selection,
+.zen-docs-editor::-moz-selection,
+textarea::-moz-selection,
+input::-moz-selection {
+  background: rgba(6, 182, 212, 0.45) !important;
+  color: #fff !important;
 }
 
 /* ═══════════════════════════════════════
@@ -446,7 +470,9 @@ input, textarea, select, [contenteditable="true"] {
 .font-bebas { font-family: 'Bebas Neue', sans-serif !important; letter-spacing: 0.06em; }
 .font-script { font-family: 'Dancing Script', cursive !important; }
 .font-orbitron { font-family: 'Orbitron', sans-serif !important; letter-spacing: 0.05em; }
-.font-editorial { font-family: var(--font-playfair), 'Playfair Display', serif !important; font-style: italic; }
+.font-editorial { font-family: var(--font-playfair), 'Playfair Display', Georgia, serif !important; font-style: italic; }
+.font-playfair { font-family: var(--font-playfair), 'Playfair Display', Georgia, serif !important; }
+.font-serif-luxury { font-family: var(--font-playfair), 'Playfair Display', Georgia, serif !important; letter-spacing: -0.01em; }
 .font-terminal { font-family: var(--font-mono), 'JetBrains Mono', monospace !important; }
 .font-typewriter { font-family: 'Special Elite', cursive !important; }
 .font-prata { font-family: 'Prata', 'Cinzel Decorative', serif !important; }
@@ -514,4 +540,92 @@ input, textarea, select, [contenteditable="true"] {
 
 .animate-glimpse-burst {
   animation: glimpse-burst 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ═══════════════════════════════════════
+   LUXURY DIPLOMATIC & SOVEREIGN UI EFFECTS
+   ═══════════════════════════════════════ */
+
+/* Gold foil shimmer for gavels & best delegate honors */
+.shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    rgba(251, 191, 36, 0.15) 0%,
+    rgba(254, 240, 138, 0.6) 50%,
+    rgba(251, 191, 36, 0.15) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+/* Glasscard specular highlight (Linear/Apple style top sheen) */
+.glass-specular {
+  position: relative;
+}
+.glass-specular::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  pointer-events: none;
+}
+
+/* Metallic gradient texts */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #a5f3fc 0%, #06b6d4 50%, #0284c7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #e9d5ff 0%, #a855f7 50%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Hologram diagonal shine */
+.hologram-shine {
+  position: relative;
+  overflow: hidden;
+}
+.hologram-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 70%
+  );
+  transform: rotate(25deg);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.hologram-shine:hover::after {
+  transform: translateY(100%) rotate(25deg);
+}
+
+/* ── Sovereign Logo Background Transparency ── */
+/* Automatically hides any dark/black background box from logo images seamlessly across the site */
+img[src*="logo-new"],
+img[src*="logo.png"],
+img[src*="logo.jpeg"],
+img[src*="/assets/logo"],
+.brand-logo-img,
+.zen-logo {
+  mix-blend-mode: screen !important;
+  background-color: transparent !important;
 }

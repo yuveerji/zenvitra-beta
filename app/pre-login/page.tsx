@@ -1,0 +1,405 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { 
+  KeyRound, 
+  ArrowRight, 
+  CheckCircle2, 
+  AlertCircle, 
+  Loader2, 
+  ShieldCheck, 
+  Lock, 
+  Sparkles, 
+  ArrowLeft, 
+  Eye, 
+  EyeOff 
+} from 'lucide-react';
+import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
+import { sheetSync } from '@/lib/googleSheets';
+import { recordSavedSession } from '@/context/AuthContext';
+import { signIn as nextAuthSignIn } from 'next-auth/react';
+import { PreLaunchPerks } from '@/components/auth/PreLaunchPerks';
+
+export default function PreLoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [grantedRole, setGrantedRole] = useState<string>('');
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+
+  // Auto-populate email from URL parameter or localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const emailParam = urlParams.get('email');
+      if (emailParam) {
+        setEmail(emailParam);
+      } else {
+        const savedEmail = localStorage.getItem('zenvitra_applicant_email');
+        if (savedEmail) setEmail(savedEmail);
+      }
+    }
+  }, []);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail) {
+      setErrorMessage('Please provide your registered email address.');
+      return;
+    }
+    if (!cleanPassword) {
+      setErrorMessage('Security Passphrase / Master PIN is required.');
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      // 1. Check live clearance & approval in Google Sheets and Database with credentials
+      const verifyRes = await fetch('/api/access/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (verifyRes.status === 401 || verifyData.status === 'INVALID_CREDENTIALS') {
+        setErrorMessage(verifyData.message || 'Invalid Access Key or Master PIN. Please verify your credentials.');
+        sheetSync.login({
+          userId: `fail_${Date.now().toString(36)}`,
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
+          authProvider: 'PRE_LOGIN_PASSWORD_FAILED',
+          loginStatus: 'FAILED',
+        }).catch(() => {});
+        return;
+      }
+
+      if (verifyData.unlocked || verifyData.isApproved || verifyData.status === 'APPROVED') {
+        setIsSuccess(true);
+        const approvedRole = verifyData.clearanceRole || verifyData.role || 'Executive Member';
+        setGrantedRole(approvedRole);
+
+        // Telemetry: Log successful pre-login clearance to Google Sheets 'Login Data Core'
+        sheetSync.login({
+          userId: verifyData.user?.id || `usr_${Date.now().toString(36)}`,
+          fullName: verifyData.user?.name || verifyData.fullName || cleanEmail.split('@')[0],
+          email: cleanEmail,
+          authProvider: 'PRE_LOGIN_CLEARANCE',
+          loginStatus: 'SUCCESS',
+        }).catch(() => {});
+
+        // 2. Establish genuine sovereign session across the entire app
+        if (typeof window !== 'undefined') {
+          const userSession = {
+            id: verifyData.user?.id || `zen_user_${cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, '')}`,
+            username: verifyData.user?.username || cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, ''),
+            display_name: verifyData.user?.name || verifyData.fullName || cleanEmail.split('@')[0],
+            name: verifyData.user?.name || verifyData.fullName || cleanEmail.split('@')[0],
+            email: cleanEmail,
+            role: (verifyData.role || 'delegate').toLowerCase(),
+            roleBadge: verifyData.roleBadge || 'DELEGATE',
+            impact_score: 500,
+            followers_count: 0,
+            following_count: 0,
+            is_verified: true,
+            is_onboarded: true,
+            created_at: new Date().toISOString(),
+          };
+
+          localStorage.setItem('zenvitra_session_user', JSON.stringify(userSession));
+          localStorage.setItem('zenvitra_applicant_email', cleanEmail);
+          recordSavedSession(userSession);
+          window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
+        }
+
+        // 3. Establish NextAuth session simultaneously so server components & middleware recognize login
+        try {
+          await nextAuthSignIn('credentials', {
+            redirect: false,
+            identifier: cleanEmail,
+            password: cleanPassword,
+          });
+        } catch (nextAuthErr) {
+          console.warn('[NEXTAUTH-SIGNIN-FALLBACK]', nextAuthErr);
+        }
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1600);
+      } else if (verifyData.status === 'PENDING' || verifyData.status === 'QUEUED' || verifyData.status === 'PENDING_REVIEW') {
+        sheetSync.login({
+          userId: `att_${Date.now().toString(36)}`,
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
+          authProvider: 'PRE_LOGIN_CHALLENGE',
+          loginStatus: '2FA_CHALLENGE',
+        }).catch(() => {});
+
+        setErrorMessage(
+          'Your application is still PENDING review in the Sovereign Ledger. An administrator must set your status to CONFIRM before clearance unlocks.'
+        );
+      } else if (verifyData.status === 'DENIED') {
+        sheetSync.login({
+          userId: `fail_${Date.now().toString(36)}`,
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
+          authProvider: 'PRE_LOGIN_DENIED',
+          loginStatus: 'FAILED',
+        }).catch(() => {});
+
+        setErrorMessage('Security clearance was not approved for this dossier.');
+      } else {
+        sheetSync.login({
+          userId: `unrec_${Date.now().toString(36)}`,
+          fullName: cleanEmail.split('@')[0],
+          email: cleanEmail,
+          authProvider: 'PRE_LOGIN_UNREGISTERED',
+          loginStatus: 'FAILED',
+        }).catch(() => {});
+
+        setErrorMessage(verifyData.message || 'No approved application or clearance credentials found for this email address.');
+      }
+    } catch (err: any) {
+      setErrorMessage('Ledger connectivity error. Please check your network and try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#03060a] text-neutral-100 flex flex-col justify-between selection:bg-amber-400 selection:text-black relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-b from-amber-500/10 via-cyan-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-purple-500/5 blur-3xl pointer-events-none -z-10" />
+
+      {/* Header */}
+      <header className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <img
+              src="/assets/logo.png"
+              alt="Zenvitra Logo"
+              className="h-full w-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+            />
+          </div>
+          <div>
+            <div 
+              className="tracking-[0.14em] text-sm sm:text-base font-bold text-[#f5f1ea] uppercase leading-none"
+              style={{ fontFamily: 'Clash Display, var(--font-space), sans-serif' }}
+            >
+              ZENVITRA
+            </div>
+            <div className="font-mono text-[9px] tracking-widest text-amber-400/90 uppercase mt-1">
+              PRE-LOGIN GATEWAY
+            </div>
+          </div>
+        </Link>
+
+        <div className="flex items-center gap-3">
+          <Link
+            href="/pre-register"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-mono text-neutral-300 transition"
+          >
+            <span>Pre-Register</span>
+            <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="relative z-10 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 flex flex-col items-center justify-center space-y-12">
+        {/* Login Card */}
+        <div className="w-full max-w-md rounded-[2.5rem] bg-[#07090e] border border-white/15 p-8 sm:p-10 space-y-7 shadow-[0_30px_90px_rgba(0,0,0,0.95)]">
+          {/* Badge */}
+          <div className="space-y-2 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/[0.08] border border-amber-400/30 text-[10px] font-mono tracking-widest text-amber-300 uppercase">
+              <KeyRound className="w-3 h-3 text-amber-400" />
+              <span>SOVEREIGN CLEARANCE PRE-LOGIN</span>
+            </div>
+            <h1 
+              className="text-2xl sm:text-3xl text-white font-bold tracking-tight"
+              style={{ fontFamily: 'Clash Display, sans-serif' }}
+            >
+              Claim Your Clearance
+            </h1>
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-xs mx-auto">
+              Sign in with your approved credentials to unlock early sovereign platform access.
+            </p>
+          </div>
+
+          {/* Success Box */}
+          {isSuccess && (
+            <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 space-y-2 font-mono text-xs text-center animate-in fade-in">
+              <div className="w-10 h-10 rounded-xl bg-emerald-400/20 border border-emerald-400/40 flex items-center justify-center mx-auto text-emerald-400">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <p className="font-bold text-white text-sm">Clearance Granted!</p>
+              <p className="text-neutral-300 text-[11px]">Role: <span className="text-emerald-300">{grantedRole}</span></p>
+              <p className="text-emerald-400 font-bold animate-pulse text-[11px]">Redirecting to Ecosystem...</p>
+            </div>
+          )}
+
+          {/* Error Box */}
+          {errorMessage && (
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 space-y-2 text-xs font-mono animate-in fade-in">
+              <div className="flex items-center gap-2 font-bold uppercase text-rose-400">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Clearance Alert</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-neutral-300">{errorMessage}</p>
+              <button
+                type="button"
+                onClick={() => setIsNotificationModalOpen(true)}
+                className="text-[11px] text-amber-300 hover:text-amber-200 underline pt-1 block"
+              >
+                Check live status in Sovereign Ledger →
+              </button>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase block font-medium">
+                Registered Email Address <span className="text-amber-400">*</span>
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="delegate@domain.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-amber-400/50 transition shadow-inner"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase block font-medium">
+                  Access Key / Master PIN <span className="text-amber-400">*</span>
+                </label>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={4}
+                  placeholder="Master PIN or Password (Required)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-amber-400/50 transition shadow-inner pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-4 text-neutral-500 hover:text-white transition"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <span className="text-[10px] font-mono text-neutral-500">Security PIN created during pre-registration or Founder PIN.</span>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !email || !password}
+              className="w-full py-4 rounded-2xl bg-white text-black font-mono text-xs font-bold hover:bg-neutral-200 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.2)] cursor-pointer"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                  <span>Verifying Clearance Ledger...</span>
+                </>
+              ) : (
+                <>
+                  <span>Authenticate &amp; Enter</span>
+                  <ArrowRight className="w-4 h-4 text-black" />
+                </>
+              )}
+            </button>
+
+            {/* Social OAuth Divider & Buttons */}
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase font-mono">
+                <span className="bg-[#0b0e14] px-3 text-neutral-400">or continue with</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => nextAuthSignIn('google', { callbackUrl: '/dashboard' })}
+                className="py-3 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-white/25 text-white font-mono text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <span>Google</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => nextAuthSignIn('github', { callbackUrl: '/dashboard' })}
+                className="py-3 px-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-white/25 text-white font-mono text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5 shrink-0 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                <span>GitHub</span>
+              </button>
+            </div>
+          </form>
+
+          {/* Sub Navigation */}
+          <div className="pt-2 border-t border-white/[0.08] flex flex-col items-center gap-2 text-center text-xs font-mono text-neutral-400">
+            <div>
+              Don't have clearance yet?{' '}
+              <Link href="/join-core-team" className="text-amber-400 hover:underline">
+                Apply for Core Team
+              </Link>
+            </div>
+            <div>
+              Want launch updates?{' '}
+              <Link href="/pre-register" className="text-white hover:underline">
+                Pre-Register Here
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* 5 Exclusive Pre-Launch Perks Showcase */}
+        <PreLaunchPerks mode="login" className="w-full" />
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-neutral-500">
+        <span>ZENVITRA SOVEREIGN PRE-LOGIN GATEWAY &copy; 2026</span>
+        <Link href="/countdown" className="hover:text-white transition flex items-center gap-1">
+          <ArrowLeft className="w-3 h-3" /> Back to Launch Countdown
+        </Link>
+      </footer>
+
+      {/* Status Modal */}
+      <StatusNotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        initialEmail={email}
+      />
+    </div>
+  );
+}

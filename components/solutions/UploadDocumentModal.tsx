@@ -140,11 +140,11 @@ export function UploadDocumentModal({ isOpen, onClose, onDocumentCreated }: Uplo
       fileName: fileName || `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`,
       fileSize: fileSize || '1.42 MB',
       votes: {
-        inFavor: 1,
+        inFavor: 0,
         against: 0,
         abstain: 0
       },
-      votedUserIds: [isTestAccount ? 'test' : (profile?.username || 'self')],
+      votedUserIds: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isOfficial: !isTestAccount,

@@ -10,6 +10,8 @@ import {
   getClientSessionId, 
   SecurityBroadcastMessage 
 } from '@/lib/securityShield';
+import { sheetSync } from '@/lib/googleSheets';
+import { deactivateFounderSession } from '@/lib/founderControl';
 
 interface AuthContextType {
   user: any | null;
@@ -76,6 +78,12 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const LS_SAVED_ACCOUNTS_ENABLED = 'zenvitra_save_accounts_enabled';
+export const DEFAULT_ZENVITRA_AVATAR = '/assets/default-avatar.svg';
+
+export function isOAuthAvatarUrl(_url?: string | null): boolean {
+  // Real user avatars (Google, GitHub, uploaded) are authentic and must never be stripped
+  return false;
+}
 
 export function isSavedAccountsEnabled(): boolean {
   if (typeof window === 'undefined') return true;
@@ -116,14 +124,40 @@ export function removeSavedSession(usernameOrId: string) {
   } catch (_) {}
 }
 
+export function isTestNodeUser(profOrUser: any): boolean {
+  if (!profOrUser) return false;
+  const username = (profOrUser.username || profOrUser.handle || '').toLowerCase().trim().replace(/^@/, '');
+  const id = profOrUser.id || '';
+  const badge = profOrUser.badge || '';
+  const email = (profOrUser.email || '').toLowerCase().trim();
+  return (
+    username === 'test' ||
+    username === 'tester' ||
+    id === 'zen_test_pilot_node' ||
+    badge === '🧪 TEST NODE' ||
+    badge.includes('TEST NODE') ||
+    email === 'test@zenvitra.xyz' ||
+    email === 'test@zenvitra.org' ||
+    email === 'test@zenvitra.local'
+  );
+}
+
 export function getSavedSessions(): any[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem('zenvitra_saved_sessions');
     const list = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(list)) return [];
-    const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova'];
-    return list.filter((a) => a && !fakeHandles.includes((a.username || '').replace(/^@/, '').toLowerCase()));
+    const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova', 'test', 'tester'];
+    const cleaned = list.filter((a) => a && !fakeHandles.includes((a.username || '').replace(/^@/, '').toLowerCase()) && !isTestNodeUser(a));
+    if (cleaned.length !== list.length) {
+      if (cleaned.length === 0) {
+        localStorage.removeItem('zenvitra_saved_sessions');
+      } else {
+        localStorage.setItem('zenvitra_saved_sessions', JSON.stringify(cleaned));
+      }
+    }
+    return cleaned;
   } catch {
     return [];
   }
@@ -131,12 +165,14 @@ export function getSavedSessions(): any[] {
 
 export function recordSavedSession(profile: UserProfile | any, force: boolean = false) {
   if (!profile) return;
+  // Test node must NEVER be stored in persistent saved accounts
+  if (isTestNodeUser(profile)) return;
   if (!force && !isSavedAccountsEnabled()) return;
   try {
     const raw = localStorage.getItem('zenvitra_saved_sessions');
     const list: any[] = raw ? JSON.parse(raw) : [];
     const cleanUsername = (profile.username || profile.handle || profile.id || '').replace(/^@/, '').toLowerCase();
-    if (!cleanUsername) return;
+    if (!cleanUsername || cleanUsername === 'test' || cleanUsername === 'tester') return;
 
     const existingIndex = list.findIndex(
       (a) => (a.username || '').replace(/^@/, '').toLowerCase() === cleanUsername || a.id === profile.id
@@ -151,9 +187,7 @@ export function recordSavedSession(profile: UserProfile | any, force: boolean = 
       email: profile.email || `${cleanUsername}@zenvitra.xyz`,
       role: profile.role || 'delegate',
       avatar: profile.avatar || profile.avatar_url || undefined,
-      avatar_url: profile.avatar || profile.avatar_url || undefined,
-      isFounder: cleanUsername === 'yuveer' || profile.email === 'founder@zenvitra.org',
-      lastActive: new Date().toISOString()
+      isFounder: (profile.email === 'founder@zenvitra.org' || profile.email === 'founder@zenvitra.xyz') && profile.id === 'zen_founder_root',
     };
 
     if (existingIndex >= 0) {
@@ -180,8 +214,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setIsSavedAccountsOn(isSavedAccountsEnabled());
-    const onSavedAccountsChange = () => {
-      setIsSavedAccountsOn(isSavedAccountsEnabled());
+    const onSavedAccountsChange = (e?: any) => {
+      if (e && e.key && e.key !== LS_SAVED_ACCOUNTS_ENABLED) return;
+      const nextVal = isSavedAccountsEnabled();
+      setIsSavedAccountsOn((prev) => (prev !== nextVal ? nextVal : prev));
     };
     window.addEventListener('storage', onSavedAccountsChange);
     window.addEventListener('zenvitra_saved_accounts_change', onSavedAccountsChange);
@@ -219,12 +255,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const rawName = userMeta?.full_name || userMeta?.name || userEmail.split('@')[0];
       const rawUser = userMeta?.user_name || userEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
 
+      const customAvatar = userMeta?.custom_avatar || userMeta?.avatar_url || userMeta?.picture;
+      const initialAvatar = customAvatar && !isOAuthAvatarUrl(customAvatar) ? customAvatar : DEFAULT_ZENVITRA_AVATAR;
+
       const fallbackProfile: UserProfile = {
         id: userId,
         username: rawUser || `zen_${userId.slice(0, 6)}`,
         display_name: rawName,
         email: userEmail,
-        avatar_url: userMeta?.avatar_url || userMeta?.picture || null,
+        avatar_url: initialAvatar,
         role: (userMeta?.role as UserRole) || 'delegate',
         impact_score: 100,
         followers_count: 0,
@@ -243,6 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         username: userEmail.split('@')[0].toLowerCase(),
         display_name: userEmail.split('@')[0],
         email: userEmail,
+        avatar_url: DEFAULT_ZENVITRA_AVATAR,
         role: 'delegate',
         impact_score: 100,
         followers_count: 0,
@@ -263,37 +303,123 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 1. Check for real authenticated session in local storage first
     const syncSessionFromStorage = () => {
       try {
-        const storedUser = localStorage.getItem('zenvitra_session_user');
+        const isTestTab = typeof window !== 'undefined' && sessionStorage.getItem('zenvitra_test_tab_active') === 'true';
+        const testSessionRaw = typeof window !== 'undefined' ? sessionStorage.getItem('zenvitra_test_node_session') : null;
+
+        let storedUser = typeof window !== 'undefined' ? localStorage.getItem('zenvitra_session_user') : null;
+
+        // If this tab was refreshed (F5), restore the test session from sessionStorage
+        if (isTestTab && testSessionRaw) {
+          storedUser = testSessionRaw;
+          try {
+            localStorage.setItem('zenvitra_session_user', testSessionRaw);
+            if (typeof document !== 'undefined') {
+              document.cookie = 'zenvitra_session=active; path=/; SameSite=Lax';
+              document.cookie = 'zenvitra_clearance=SOVEREIGN_GRANTED; path=/; SameSite=Lax';
+            }
+          } catch (_) {}
+        }
+
         if (storedUser) {
-          const parsedProf = JSON.parse(storedUser);
+          let parsedProf = JSON.parse(storedUser);
           if (parsedProf && parsedProf.id) {
+            // STRICT TEST NODE TAB CLOSURE ENFORCEMENT:
+            // If the user profile is the Test Node, but this browser tab lacks an active tab session,
+            // the tab was closed. Restore real user backup if available, or purge test state.
+            if (isTestNodeUser(parsedProf) && !isTestTab) {
+              const backupRaw = localStorage.getItem('zenvitra_real_user_session_backup');
+              let restoredProf: any = null;
+              if (backupRaw) {
+                try {
+                  const candidate = JSON.parse(backupRaw);
+                  if (candidate && candidate.id && !isTestNodeUser(candidate)) {
+                    restoredProf = candidate;
+                  }
+                } catch (_) {}
+              }
+
+              if (restoredProf) {
+                localStorage.setItem('zenvitra_session_user', backupRaw!);
+                localStorage.removeItem('zenvitra_real_user_session_backup');
+                parsedProf = restoredProf;
+              } else {
+                localStorage.removeItem('zenvitra_session_user');
+              }
+
+              localStorage.removeItem('zenvitra_pulse_user_v6');
+              localStorage.removeItem('zenvitra_professional_account_enabled');
+              localStorage.removeItem('zenvitra_event_account_enabled');
+              localStorage.removeItem('zenvitra_passport_level');
+              localStorage.removeItem('zenvitra_verified_student');
+              localStorage.removeItem('zenvitra_student_id_status');
+              localStorage.removeItem('zenvitra_gsheet_test_sync');
+              removeSavedSession('test');
+              removeSavedSession('zen_test_pilot_node');
+              if (typeof document !== 'undefined') {
+                document.cookie = 'zenvitra_session=; Max-Age=0; path=/;';
+                document.cookie = 'zenvitra_clearance=; Max-Age=0; path=/;';
+              }
+
+              if (!restoredProf) {
+                setUser((prev: any) => (prev === null ? prev : null));
+                setProfile((prev: any) => (prev === null ? prev : null));
+                setIsLoading(false);
+                return false;
+              }
+            }
+
             // Check if current device session was revoked
             if (isCurrentSessionRevoked(parsedProf.id)) {
               localStorage.removeItem('zenvitra_session_user');
-              setUser(null);
-              setProfile(null);
+              setUser((prev: any) => (prev === null ? prev : null));
+              setProfile((prev: any) => (prev === null ? prev : null));
               setIsLoading(false);
               return false;
             }
 
-            if (parsedProf.avatar_url && typeof parsedProf.avatar_url === 'string' && parsedProf.avatar_url.includes('images.unsplash.com')) {
-              parsedProf.avatar_url = undefined;
-              localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
+            let mutated = false;
+            if (!parsedProf.avatar_url && !parsedProf.avatar) {
+              parsedProf.avatar_url = DEFAULT_ZENVITRA_AVATAR;
+              mutated = true;
             }
             if (parsedProf.username === 'test') {
               parsedProf.display_name = 'Test Node';
               parsedProf.badge = '🧪 TEST NODE';
+              mutated = true;
+            }
+            if (mutated) {
               localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
             }
-            recordSavedSession(parsedProf);
-            try {
-              registerActiveDeviceSession(parsedProf.id);
-            } catch (_) {}
-            setUser({ id: parsedProf.id, email: parsedProf.email });
-            setProfile(parsedProf);
+
+            setUser((prevUser: any) => {
+              if (prevUser && prevUser.id === parsedProf.id && prevUser.email === parsedProf.email) {
+                return prevUser;
+              }
+              return { id: parsedProf.id, email: parsedProf.email };
+            });
+
+            setProfile((prevProf: any) => {
+              if (
+                prevProf &&
+                prevProf.id === parsedProf.id &&
+                prevProf.username === parsedProf.username &&
+                prevProf.role === parsedProf.role &&
+                prevProf.display_name === parsedProf.display_name &&
+                prevProf.avatar_url === parsedProf.avatar_url &&
+                prevProf.badge === parsedProf.badge
+              ) {
+                return prevProf;
+              }
+              return parsedProf;
+            });
+
             setIsLoading(false);
             return true;
           }
+        } else {
+          setUser((prev: any) => (prev === null ? prev : null));
+          setProfile((prev: any) => (prev === null ? prev : null));
+          setIsLoading(false);
         }
       } catch (_) {}
       return false;
@@ -327,7 +453,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const parsed = JSON.parse(e.newValue);
           handleSecurityEvent(parsed);
         } catch (_) {}
-      } else {
+      } else if (!e.key || e.key === 'zenvitra_session_user') {
         syncSessionFromStorage();
       }
     };
@@ -378,31 +504,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!mounted) return;
           if (data?.user?.email) {
             const stored = localStorage.getItem('zenvitra_session_user');
-            if (!stored) {
-              const email = data.user.email;
-              const cleanUsername = (data.user.username || email.split('@')[0] || 'user')
-                .toLowerCase()
-                .replace(/[^a-zA-Z0-9_]/g, '');
-              const isFounder = cleanUsername === 'yuveer' || email.includes('founder@zenvitra');
+            let parsedStored: any = null;
+            try {
+              if (stored) parsedStored = JSON.parse(stored);
+            } catch {}
+
+            const email = (data.user.email || '').toLowerCase().trim();
+            const isOAuthFounder = email === 'founder@zenvitra.org' || email === 'founder@zenvitra.xyz';
+
+            const RESERVED_HANDLES = ['yuveer', 'founder', 'aarush', 'admin', 'root', 'zenvitra', 'support', 'system', 'moderator', 'chair', 'khushi'];
+            let cleanUsername = (data.user.username || email.split('@')[0] || 'user')
+              .toLowerCase()
+              .replace(/[^a-zA-Z0-9_]/g, '');
+
+            // External OAuth accounts must NEVER claim reserved founder/system handles
+            if (RESERVED_HANDLES.includes(cleanUsername) && !isOAuthFounder) {
+              cleanUsername = `${cleanUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
+            }
+
+            // If a non-founder logs in via OAuth, purge all lingering founder override keys immediately
+            if (!isOAuthFounder && typeof window !== 'undefined') {
+              deactivateFounderSession();
+            }
+
+            // If no user stored or user switched via OAuth:
+            if (!stored || parsedStored?.email !== email) {
+              // Check user-scoped onboarding completion
+              const rawOnboarding = localStorage.getItem(`zenvitra_onboarding_state_${cleanUsername}`);
+              let hasCompletedOnboarding = false;
+              if (rawOnboarding) {
+                try {
+                  hasCompletedOnboarding = Boolean(JSON.parse(rawOnboarding).completed);
+                } catch {}
+              }
+
+              const isNewAccount = Boolean(
+                (data.user as any)?.isNewUser ||
+                (data.user as any)?.needsOnboarding ||
+                !hasCompletedOnboarding
+              );
+
               const oAuthProf: UserProfile = {
-                id: (data.user as any).id || (isFounder ? 'zen_founder_root' : `zen_user_${cleanUsername}`),
+                id: (data.user as any).id || (isOAuthFounder ? 'zen_founder_root' : `zen_user_${cleanUsername}`),
                 username: cleanUsername,
                 display_name: data.user.name || cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
                 email: email,
-                role: isFounder ? 'admin' : ((data.user as any).role || 'delegate'),
-                avatar_url: data.user.image || undefined,
-                impact_score: isFounder ? 9999 : 100,
-                followers_count: isFounder ? 5400 : 0,
-                following_count: isFounder ? 24 : 0,
-                is_verified: true,
-                is_onboarded: true,
+                role: isOAuthFounder ? 'admin' : ((data.user as any).role || 'delegate'),
+                avatar_url: DEFAULT_ZENVITRA_AVATAR,
+                impact_score: isOAuthFounder ? 9999 : 100,
+                followers_count: 0,
+                following_count: 0,
+                is_verified: isOAuthFounder,
+                is_onboarded: !isNewAccount,
                 created_at: new Date().toISOString(),
               };
+
               localStorage.setItem('zenvitra_session_user', JSON.stringify(oAuthProf));
               recordSavedSession(oAuthProf);
               setUser({ id: oAuthProf.id, email: oAuthProf.email });
               setProfile(oAuthProf);
               setIsLoading(false);
+
+              // Auto-launch ZENVITRA Onboarding Tour for new accounts
+              const oauthInFlight = localStorage.getItem('zenvitra_oauth_login_in_flight');
+              if (isNewAccount || oauthInFlight === 'true') {
+                localStorage.removeItem('zenvitra_oauth_login_in_flight');
+                if (!isOAuthFounder && !hasCompletedOnboarding) {
+                  localStorage.removeItem('zenvitra_onboarding_state_v1');
+                  localStorage.setItem('zenvitra_auto_tour_trigger', 'true');
+                  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/onboarding')) {
+                    window.location.href = '/onboarding';
+                  }
+                }
+              }
             }
           }
         })
@@ -446,12 +620,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     });
 
+    // Tab close / unload handler:
+    // If the active user is the Test Node, purge local storage & session cookies on tab close.
+    // If it's a page reload (F5), sessionStorage persists and syncSessionFromStorage restores it.
+    // If the tab was closed, sessionStorage is destroyed by the browser and the test session signs out automatically.
+    const handleTabUnload = () => {
+      try {
+        const stored = localStorage.getItem('zenvitra_session_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (isTestNodeUser(parsed)) {
+            const backup = localStorage.getItem('zenvitra_real_user_session_backup');
+            if (backup) {
+              localStorage.setItem('zenvitra_session_user', backup);
+              localStorage.removeItem('zenvitra_real_user_session_backup');
+            } else {
+              localStorage.removeItem('zenvitra_session_user');
+            }
+            localStorage.removeItem('zenvitra_pulse_user_v6');
+            localStorage.removeItem('zenvitra_professional_account_enabled');
+            localStorage.removeItem('zenvitra_event_account_enabled');
+            localStorage.removeItem('zenvitra_passport_level');
+            localStorage.removeItem('zenvitra_verified_student');
+            localStorage.removeItem('zenvitra_student_id_status');
+            localStorage.removeItem('zenvitra_gsheet_test_sync');
+            removeSavedSession('test');
+            removeSavedSession('zen_test_pilot_node');
+            if (typeof document !== 'undefined') {
+              document.cookie = 'zenvitra_session=; Max-Age=0; path=/;';
+              document.cookie = 'zenvitra_clearance=; Max-Age=0; path=/;';
+            }
+          }
+        }
+      } catch (_) {}
+    };
+
+    window.addEventListener('pagehide', handleTabUnload);
+    window.addEventListener('beforeunload', handleTabUnload);
+
     return () => {
       mounted = false;
       if (bc) bc.close();
       window.removeEventListener('zenvitra_security_matrix_event', handleCustomSecurityEvent);
       window.removeEventListener('zenvitra_auth_change', handleAuthChange);
       window.removeEventListener('storage', handleStorageEvent);
+      window.removeEventListener('pagehide', handleTabUnload);
+      window.removeEventListener('beforeunload', handleTabUnload);
       subscription.unsubscribe();
     };
   }, [loadProfile]);
@@ -496,7 +710,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const cleanIdentifier = email.trim().replace(/^@/, '').toLowerCase();
 
     // ─── STRICT FOUNDER AUTHENTICATION ───
-    if (cleanIdentifier === 'founder@zenvitra.org' || cleanIdentifier === 'founder' || cleanIdentifier === 'yuveer') {
+    if (cleanIdentifier === 'founder@zenvitra.xyz' || cleanIdentifier === 'founder@zenvitra.org' || cleanIdentifier === 'founder' || cleanIdentifier === 'yuveer' || cleanIdentifier === 'zenvitra') {
       const cleanPw = (password || '').trim();
       const cleanPwUpper = cleanPw.toUpperCase();
       const isFounderPassword =
@@ -525,21 +739,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: null };
       }
 
+      let existingCustomAvatar: string | undefined = undefined;
+      try {
+        const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        if (stored?.avatar_url && stored.avatar_url !== DEFAULT_ZENVITRA_AVATAR) {
+          existingCustomAvatar = stored.avatar_url;
+        } else if (stored?.avatar && stored.avatar !== DEFAULT_ZENVITRA_AVATAR) {
+          existingCustomAvatar = stored.avatar;
+        }
+      } catch (_) {}
+
       const founderProf: UserProfile = {
         id: 'zen_founder_root',
         username: 'yuveer',
         display_name: 'Yuveer Chhatwani',
-        email: 'founder@zenvitra.org',
+        email: 'founder@zenvitra.xyz',
         role: 'admin',
-        avatar_url: undefined,
+        avatar_url: existingCustomAvatar,
         banner_url: undefined,
         bio: 'Founder & Chief Architect of ZENVITRA. Sovereign Network State.',
         institution: 'Zenvitra Secretariat',
         city: 'Global',
         country: 'India',
         impact_score: 9999,
-        followers_count: 5400,
-        following_count: 24,
+        followers_count: 0,
+        following_count: 0,
         is_verified: true,
         is_onboarded: true,
         created_at: '2025-01-01T00:00:00Z',
@@ -550,6 +774,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       recordSavedSession(founderProf);
       setUser({ id: founderProf.id, email: founderProf.email });
       setProfile(founderProf);
+      setIsLoading(false);
+      return { error: null };
+    }
+
+    // ─── STRICT CO-FOUNDER AUTHENTICATION (Aarush Vijayivargiya) ───
+    if (cleanIdentifier === 'aarush' || cleanIdentifier === 'aarush@zenvitra.xyz' || cleanIdentifier === 'aarush@zenvitra.com' || cleanIdentifier === 'aarush@zenvitra.org') {
+      const cleanPwUpper = (password || '').trim().toUpperCase();
+      const isCoFounderPassword =
+        Boolean(password) && (
+          cleanPwUpper === 'AARUSH-COFOUNDER-2026' ||
+          cleanPwUpper === 'COFOUNDER-AARUSH' ||
+          cleanPwUpper === 'AARUSH@2026' ||
+          cleanPwUpper === 'AARUSH' ||
+          cleanPwUpper === '5747' ||
+          cleanPwUpper === 'YUVEER@5747R' ||
+          cleanPwUpper === 'ZEN-FOUNDER-PASSKEY-999'
+        );
+
+      if (!isCoFounderPassword) {
+        const err = new Error('Invalid co-founder credentials. Access denied.');
+        setError(err.message);
+        return { error: err };
+      }
+
+      if (options?.skipSession) {
+        return { error: null };
+      }
+
+      let existingCofounderAvatar: string | undefined = undefined;
+      try {
+        const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        if (stored?.avatar_url && stored.avatar_url !== DEFAULT_ZENVITRA_AVATAR) {
+          existingCofounderAvatar = stored.avatar_url;
+        } else if (stored?.avatar && stored.avatar !== DEFAULT_ZENVITRA_AVATAR) {
+          existingCofounderAvatar = stored.avatar;
+        }
+      } catch (_) {}
+
+      const cofounderProf: UserProfile = {
+        id: 'zen_cofounder_aarush',
+        username: 'aarush',
+        display_name: 'Aarush Vijayivargiya',
+        email: 'aarush@zenvitra.xyz',
+        role: 'admin',
+        avatar_url: existingCofounderAvatar,
+        banner_url: undefined,
+        bio: 'Co-Founder of ZENVITRA. Sovereign Network State & Executive Council.',
+        institution: 'Zenvitra Secretariat',
+        city: 'Global',
+        country: 'India',
+        impact_score: 100,
+        followers_count: 0,
+        following_count: 0,
+        is_verified: true,
+        is_onboarded: true,
+        created_at: new Date().toISOString(),
+      };
+
+      localStorage.removeItem('zenvitra_demo_role');
+      localStorage.setItem('zenvitra_session_user', JSON.stringify(cofounderProf));
+      recordSavedSession(cofounderProf);
+      setUser({ id: cofounderProf.id, email: cofounderProf.email });
+      setProfile(cofounderProf);
       setIsLoading(false);
       return { error: null };
     }
@@ -625,6 +912,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           username: verifiedUser.username,
           display_name: verifiedUser.name || verifiedUser.username,
           email: verifiedUser.email,
+          avatar_url: verifiedUser.avatar || verifiedUser.avatar_url || DEFAULT_ZENVITRA_AVATAR,
           role: (verifiedUser.role?.toLowerCase() as UserRole) || 'delegate',
           impact_score: 100,
           followers_count: 0,
@@ -645,10 +933,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // 2. Secondary check against Supabase
       const isEmailFormat = cleanIdentifier.includes('@');
-      const formattedEmail = isEmailFormat ? cleanIdentifier : `${cleanIdentifier}@zenvitra.local`;
+      let targetEmail = cleanIdentifier;
+
+      if (!isEmailFormat) {
+        try {
+          const { data: profileMatch } = await supabase
+            .from('profiles')
+            .select('email')
+            .or(`username.ilike.${cleanIdentifier},handle.ilike.${cleanIdentifier}`)
+            .single();
+
+          if (profileMatch?.email) {
+            targetEmail = profileMatch.email;
+          } else {
+            targetEmail = `${cleanIdentifier}@zenvitra.local`;
+          }
+        } catch (_) {
+          targetEmail = `${cleanIdentifier}@zenvitra.local`;
+        }
+      }
 
       const { data: sbData, error: sbErr } = await supabase.auth.signInWithPassword({
-        email: formattedEmail,
+        email: targetEmail,
         password,
       });
 
@@ -657,7 +963,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return { error: null };
         }
         setUser(sbData.user);
-        await loadProfile(sbData.user.id, sbData.user.email || formattedEmail);
+        await loadProfile(sbData.user.id, sbData.user.email || targetEmail);
         return { error: null };
       }
 
@@ -702,22 +1008,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         username: cleanHandle,
         display_name: displayName,
         email: cleanEmail,
+        avatar_url: DEFAULT_ZENVITRA_AVATAR,
         role,
         impact_score: 150,
         followers_count: 0,
         following_count: 0,
         is_verified: false,
-        is_onboarded: true,
+        is_onboarded: false,
         created_at: new Date().toISOString(),
       };
 
       localStorage.removeItem('zenvitra_demo_role');
+      localStorage.removeItem('zenvitra_onboarding_state_v1');
+      localStorage.setItem('zenvitra_auto_tour_trigger', 'true');
       localStorage.setItem('zenvitra_session_user', JSON.stringify(newProf));
       localStorage.setItem('zenvitra_user_role', role);
       recordSavedSession(newProf);
       setUser({ id: newProf.id, email: cleanEmail });
       setProfile(newProf);
       setIsLoading(false);
+
+      // Asynchronously dispatch to Google Sheets master core register
+      sheetSync.register({
+        userId: newProf.id,
+        fullName: displayName,
+        email: cleanEmail,
+        roleDesignation: role,
+        accessLevel: 'Member',
+        authProvider: 'email',
+        accountStatus: 'ACTIVE',
+      }).catch(() => {});
+
       return { error: null };
     } catch (err: any) {
       setError(err.message);
@@ -737,6 +1058,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setProfile(merged);
+
+      // Persist to session storage & recorded saved sessions immediately
+      try {
+        localStorage.setItem('zenvitra_session_user', JSON.stringify(merged));
+        recordSavedSession(merged, true);
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('zenvitra_auth_change', { detail: { profile: merged } }));
+      } catch (_) {}
 
       // Try updating in Supabase DB
       await supabase
@@ -792,11 +1121,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const savedOn = isSavedAccountsEnabled();
     const currentCleanHandle = (profile?.username || (profile as any)?.handle || user?.email?.split('@')[0] || '').replace(/^@/, '').toLowerCase();
     const currentId = profile?.id || user?.id;
+    const isCurrentTestNode = isTestNodeUser(profile) || isTestNodeUser(user);
 
-    // 1. If saved accounts is TURNED ON:
-    if (savedOn && !options?.forceFullLogout) {
+    // 1. If active user is Test Node, restore real user backup session if one was preserved
+    if (isCurrentTestNode) {
+      removeSavedSession('test');
+      removeSavedSession('zen_test_pilot_node');
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('zenvitra_test_tab_active');
+        sessionStorage.removeItem('zenvitra_test_node_session');
+      }
+      localStorage.removeItem('zenvitra_passport_level');
+      localStorage.removeItem('zenvitra_verified_student');
+      localStorage.removeItem('zenvitra_student_id_status');
+      localStorage.removeItem('zenvitra_gsheet_test_sync');
+      localStorage.removeItem('zenvitra_professional_account_enabled');
+      localStorage.removeItem('zenvitra_event_account_enabled');
+
+      const backup = typeof window !== 'undefined' ? localStorage.getItem('zenvitra_real_user_session_backup') : null;
+      if (backup && !options?.forceFullLogout) {
+        try {
+          const restoredProf = JSON.parse(backup);
+          if (restoredProf && restoredProf.id && !isTestNodeUser(restoredProf)) {
+            localStorage.removeItem('zenvitra_real_user_session_backup');
+            localStorage.setItem('zenvitra_session_user', backup);
+
+            setUser({ id: restoredProf.id, email: restoredProf.email });
+            setProfile(restoredProf);
+            setIsLoading(false);
+
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('storage'));
+              window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
+            }
+            return { switchedTo: restoredProf, loggedOut: false };
+          }
+        } catch (_) {}
+      }
+      localStorage.removeItem('zenvitra_real_user_session_backup');
+    }
+
+    // 2. If saved accounts is TURNED ON (and not signing out a temporary Test Node):
+    if (savedOn && !options?.forceFullLogout && !isCurrentTestNode) {
       // Ensure the signed-out account is safely preserved in saved accounts
-      if (profile) {
+      if (profile && !isTestNodeUser(profile)) {
         recordSavedSession(profile, true);
       }
 
@@ -842,7 +1210,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { switchedTo: nextAccount, loggedOut: false };
       }
     } else {
-      // 2. If saved accounts is NOT turned on:
+      // 3. If saved accounts is NOT turned on or signing out test node:
       // Remove current account from saved accounts list so it doesn't linger!
       if (currentCleanHandle || currentId) {
         removeSavedSession(currentCleanHandle || currentId);
@@ -851,6 +1219,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Standard complete logout
     try {
+      deactivateFounderSession();
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('zenvitra_test_tab_active');
+        sessionStorage.removeItem('zenvitra_test_node_session');
+      }
       localStorage.removeItem('zenvitra_demo_role');
       localStorage.removeItem('zenvitra_session_user');
       localStorage.removeItem('zenvitra_pulse_user_v6');
@@ -858,12 +1231,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('zenvitra_admin_active_session');
       localStorage.removeItem('zenvitra_active_account_id');
       localStorage.removeItem('zenvitra_active_session_id');
+      localStorage.removeItem('zenvitra_professional_account_enabled');
+      localStorage.removeItem('zenvitra_event_account_enabled');
+      localStorage.removeItem('zenvitra_passport_level');
+      localStorage.removeItem('zenvitra_verified_student');
+      localStorage.removeItem('zenvitra_student_id_status');
+      localStorage.removeItem('zenvitra_gsheet_test_sync');
+      removeSavedSession('test');
+      removeSavedSession('zen_test_pilot_node');
     } catch (_) {}
 
     // Expire cookies
     if (typeof document !== 'undefined') {
       try {
         document.cookie = 'zenvitra_session=; Max-Age=0; path=/;';
+        document.cookie = 'zenvitra_clearance=; Max-Age=0; path=/;';
         document.cookie = 'next-auth.session-token=; Max-Age=0; path=/;';
         document.cookie = '__Secure-next-auth.session-token=; Max-Age=0; path=/;';
         document.cookie = 'authjs.session-token=; Max-Age=0; path=/;';
@@ -922,6 +1304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       username: cleanUsername,
       display_name: cleanDisplayName,
       email: `${cleanUsername}@guest.zenvitra.local`,
+      avatar_url: DEFAULT_ZENVITRA_AVATAR,
       role: 'guest',
       badge: 'GUEST NODE',
       isGuest: true,
@@ -966,14 +1349,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: 'zen_test_pilot_node',
       username: 'test',
       display_name: 'Test Node',
-      email: 'test@zenvitra.org',
+      email: 'test@zenvitra.xyz',
       role: 'delegate', // Full delegate capabilities (not locked out like guest)
       badge: '🧪 TEST NODE',
       isGuest: false, // NOT guest-restricted: all platform features, bills, medals, documents unlocked!
       impact_score: 950,
-      followers_count: 142,
-      following_count: 36,
-      bio: 'Official Sovereign QA & Exploration Node. Full interactive access enabled across debate chambers, resolutions, ZEN.DOCS, ZEN.SOLUTIONS, and voting quorums.',
+      followers_count: 0,
+      following_count: 0,
+      bio: 'Official Sovereign QA & Exploration Node. Full interactive access enabled across debate chambers, resolutions, ZEN.DOCS, ZEN.SOLUTIONS, ZEN.EVENTS Google Sheets sync, ZEN.PRESS wire, and Model UN CV generation.',
       institution: 'Zenvitra Evaluation & QA Enclave',
       city: 'New Delhi',
       country: 'India',
@@ -983,18 +1366,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     try {
+      if (typeof window !== 'undefined') {
+        const existingSessionRaw = localStorage.getItem('zenvitra_session_user');
+        if (existingSessionRaw) {
+          try {
+            const parsed = JSON.parse(existingSessionRaw);
+            if (parsed && parsed.id && !isTestNodeUser(parsed)) {
+              localStorage.setItem('zenvitra_real_user_session_backup', existingSessionRaw);
+            }
+          } catch (_) {}
+        }
+        sessionStorage.setItem('zenvitra_test_tab_active', 'true');
+        sessionStorage.setItem('zenvitra_test_node_session', JSON.stringify(testProfile));
+      }
       localStorage.setItem('zenvitra_session_user', JSON.stringify(testProfile));
+      localStorage.setItem('zenvitra_professional_account_enabled', 'true');
+      localStorage.setItem('zenvitra_event_account_enabled', 'true');
+      localStorage.setItem('zenvitra_passport_level', '2');
+      localStorage.setItem('zenvitra_verified_student', 'true');
+      localStorage.setItem('zenvitra_student_id_status', 'VERIFIED');
+      localStorage.setItem('zenvitra_gsheet_test_sync', 'active');
       localStorage.removeItem('zenvitra_pulse_user_v6');
       localStorage.removeItem('zenvitra_demo_role');
+
+      // Ensure test node is purged from saved multi-account switchers
+      removeSavedSession('test');
+      removeSavedSession('zen_test_pilot_node');
 
       // Seed verified test registration for MUN matrix & status verification
       const existingRegs = localStorage.getItem('zenvitra_zendiplomacy_registrations_v1');
       const list = existingRegs ? JSON.parse(existingRegs) : [];
-      if (!list.some((r: any) => (r.email || '').toLowerCase() === 'test@zenvitra.org')) {
+      if (!list.some((r: any) => (r.email || '').toLowerCase() === 'test@zenvitra.xyz')) {
         list.push({
           id: 'ZNV-REG-TEST-001',
           name: 'Test Node',
-          email: 'test@zenvitra.org',
+          email: 'test@zenvitra.xyz',
           phone: '+91 99999 88888',
           institution: 'Zenvitra QA & Evaluation Enclave',
           experienceLevel: 'Advanced Delegate',
@@ -1014,12 +1420,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (typeof document !== 'undefined') {
-        document.cookie = 'zenvitra_session=active; path=/; max-age=2592000; SameSite=Lax';
-        document.cookie = 'zenvitra_clearance=SOVEREIGN_GRANTED; path=/; max-age=2592000; SameSite=Lax';
+        // Tab-bound session cookies (omitting max-age ensures browser discards them when browser/session ends)
+        document.cookie = 'zenvitra_session=active; path=/; SameSite=Lax';
+        document.cookie = 'zenvitra_clearance=SOVEREIGN_GRANTED; path=/; SameSite=Lax';
       }
     } catch (_) {}
 
-    recordSavedSession(testProfile);
     setUser({ id: testProfile.id, email: testProfile.email });
     setProfile(testProfile);
     setIsLoading(false);
@@ -1072,9 +1478,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('zenvitra_session_user', JSON.stringify(updated));
         localStorage.setItem('zenvitra_user_role', newRole);
         recordSavedSession(updated, true);
-        window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new CustomEvent('zenvitra_role_change', { detail: { role: newRole } }));
       } catch (_) {}
+
+      setTimeout(() => {
+        try {
+          window.dispatchEvent(new CustomEvent('zenvitra_role_change', { detail: { role: newRole } }));
+        } catch (_) {}
+      }, 0);
 
       return updated;
     });

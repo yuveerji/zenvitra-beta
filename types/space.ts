@@ -78,6 +78,9 @@ export interface ZenSpaceBlock {
     albumArt?: string;
     audioUrl?: string;
     videoId?: string;
+    startTime?: number;
+    endTime?: number;
+    frameDuration?: number;
     imageUrl?: string;
     imageCaption?: string;
     category?: string;

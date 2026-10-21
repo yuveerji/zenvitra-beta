@@ -72,6 +72,21 @@ export default function JoinCoreTeamPage() {
   // Validation errors state
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
+  // Auto-select leadership track from URL parameter if present (?track=engineering, etc.)
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const trackParam = urlParams.get('track') as TrackId;
+      if (trackParam && tracks.some((t) => t.id === trackParam)) {
+        setSelectedTrack(trackParam);
+        const match = tracks.find((t) => t.id === trackParam);
+        if (match && trackParam !== 'other') {
+          setFormData((prev) => ({ ...prev, primaryFocus: match.title }));
+        }
+      }
+    }
+  }, []);
+
   // Real-time validation checkers
   const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
   const validatePhone = (val: string) => {
@@ -221,11 +236,11 @@ export default function JoinCoreTeamPage() {
       <header className="sticky top-0 z-50 w-full bg-[#030405]/80 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/countdown" className="flex items-center gap-3 group">
-            <div className="relative h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <div className="relative h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
               <img
-                src="/assets/logo.png"
+                src="/assets/logo-new.png"
                 alt="Zenvitra Logo"
-                className="h-full w-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]"
+                className="h-full w-full object-contain mix-blend-screen filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] brand-logo-img"
               />
             </div>
             <div>
@@ -553,8 +568,10 @@ export default function JoinCoreTeamPage() {
                           {/* Contact Phone Number with Validation Warning */}
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                                Phone Number <span className="text-amber-400">*</span>
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium flex items-center gap-1.5">
+                                <span>Phone Number</span>
+                                <span className="text-emerald-400 font-mono text-[10px] tracking-normal font-medium">[Whatsapp Active]</span>
+                                <span className="text-amber-400">*</span>
                               </label>
                               {isPhoneInvalid && (
                                 <span className="text-[10px] font-mono text-rose-400 flex items-center gap-1 animate-in fade-in">
@@ -565,7 +582,7 @@ export default function JoinCoreTeamPage() {
                             <input
                               type="tel"
                               required
-                              placeholder="+91 98765 43210"
+                              placeholder="+91 98765 43210 (WhatsApp active)"
                               value={formData.phoneNumber}
                               onBlur={() => setTouched((prev) => ({ ...prev, phoneNumber: true }))}
                               onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
@@ -582,14 +599,14 @@ export default function JoinCoreTeamPage() {
                           {/* Telegram / Discord Channel */}
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium block">
-                                Telegram / Discord Handle <span className="text-amber-400">*</span>
+                              <label className="font-mono text-[11px] tracking-wider text-neutral-300 uppercase font-medium flex items-center justify-between w-full">
+                                <span>Telegram / Discord Handle</span>
+                                <span className="text-neutral-500 font-mono text-[10px]">(Optional)</span>
                               </label>
                             </div>
                             <input
                               type="text"
-                              required
-                              placeholder="t.me/handle or username#0000"
+                              placeholder="t.me/handle or username#0000 (optional)"
                               value={formData.contactChannel}
                               onChange={(e) => setFormData({ ...formData, contactChannel: e.target.value })}
                               className="w-full px-5 py-4 rounded-2xl bg-black/80 border border-white/10 text-white placeholder-neutral-600 text-sm font-mono focus:outline-none focus:border-white/30 transition shadow-inner"
@@ -624,7 +641,6 @@ export default function JoinCoreTeamPage() {
                               !validateEmail(formData.email) ||
                               !formData.phoneNumber ||
                               !validatePhone(formData.phoneNumber) ||
-                              !formData.contactChannel ||
                               (selectedTrack === 'other' && !formData.customTrackTitle)
                             }
                             onClick={() => setCurrentStep(2)}

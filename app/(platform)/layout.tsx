@@ -16,6 +16,7 @@ export default async function PlatformLayout({
 
   const isFounder = Boolean(
     (session?.user as any)?.role === 'FOUNDER' ||
+    session?.user?.email?.toLowerCase() === 'founder@zenvitra.xyz' ||
     session?.user?.email?.toLowerCase() === 'founder@zenvitra.org' ||
     (session?.user as any)?.username?.toLowerCase() === 'founder'
   );

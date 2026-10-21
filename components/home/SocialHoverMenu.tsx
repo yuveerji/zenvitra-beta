@@ -90,7 +90,7 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
       name: 'X (Twitter)',
       category: 'REALTIME WIRE',
       handle: '@zenvitra_',
-      url: 'https://x.com/zenvitrafoundation',
+      url: 'https://x.com/zenvitra_',
       icon: Twitter,
       accentBadge: 'text-sky-300 bg-sky-500/10 border-sky-500/30',
       tagline: 'Policy briefs, live discussion spaces & verified discourse',
@@ -133,7 +133,7 @@ export default function SocialHoverMenu({ onOpenFullModal }: SocialHoverMenuProp
         }`}
         style={{ width: '560px', maxWidth: 'calc(100vw - 40px)' }}
       >
-        <div className="w-full rounded-3xl bg-[#08080c]/98 border border-white/15 backdrop-blur-2xl shadow-[0_30px_90px_rgba(0,0,0,0.98)] p-4 text-left">
+        <div style={{ backgroundColor: '#08080c' }} className="w-full rounded-3xl bg-[#08080c] border border-white/15 shadow-[0_30px_90px_rgba(0,0,0,0.98)] p-4 text-left">
           {/* Header with directory modal link & close button */}
           <div className="flex items-center justify-between px-2 py-1 mb-3 border-b border-white/10">
             <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-300 font-bold flex items-center gap-1.5">

@@ -18,7 +18,6 @@ const PUBLIC_PREFIXES = [
   '/press',
   '/docs',
   '/solutions',
-  '/donate',
   '/about',
   '/campus-ambassador',
   '/chamber',
@@ -28,7 +27,6 @@ const PUBLIC_PREFIXES = [
   '/discussions',
   '/guidelines',
   '/impact',
-  '/invest-donate',
   '/join-core-team',
   '/manifesto',
   '/mission',
@@ -41,6 +39,8 @@ const PUBLIC_PREFIXES = [
   '/call',
   '/statusregister',
   '/statussignin',
+  '/pre-register',
+  '/pre-login',
   '/terms',
   '/vision',
   '/login',
@@ -50,9 +50,14 @@ const PUBLIC_PREFIXES = [
   '/legal',
   '/team',
   '/careers',
+  '/welcome',
+  '/onboarding',
   '/test',
   '/test-login',
   '/demo',
+  '/platform',
+  '/dashboard',
+  '/pulse',
 ];
 
 const PUBLIC_EXACT = new Set([
@@ -117,16 +122,37 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(registerUrl, { status: 308 });
   }
 
-  // Handle /preregister redirect to /statusregister
-  if (pathname === '/preregister' || pathname.startsWith('/preregister/')) {
-    const preregisterUrl = new URL('/statusregister', request.url);
+  // Handle /preregister and /statusregister redirect to /pre-register
+  if (pathname === '/preregister' || pathname.startsWith('/preregister/') || pathname === '/statusregister' || pathname.startsWith('/statusregister/')) {
+    const preregisterUrl = new URL('/pre-register', request.url);
     preregisterUrl.search = request.nextUrl.search;
     return NextResponse.redirect(preregisterUrl, { status: 308 });
   }
 
-  // Handle /brochure or /prospectus redirect to /zen-diplomacy/brochure
+  // Handle /statussignin redirect to /pre-login
+  if (pathname === '/statussignin' || pathname.startsWith('/statussignin/')) {
+    const preloginUrl = new URL('/pre-login', request.url);
+    preloginUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(preloginUrl, { status: 308 });
+  }
+
+  // Handle /platform redirect to /dashboard (Unified Platform Root)
+  if (pathname === '/platform' || pathname === '/platform/') {
+    const dashboardUrl = new URL('/dashboard', request.url);
+    dashboardUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(dashboardUrl, { status: 307 });
+  }
+
+  // Redirect legacy /zen-diplomacy to /events
+  if (pathname === '/zen-diplomacy' || pathname.startsWith('/zen-diplomacy/')) {
+    const eventsUrl = new URL('/events', request.url);
+    eventsUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(eventsUrl, { status: 308 });
+  }
+
+  // Handle /brochure or /prospectus redirect to /events
   if (pathname === '/brochure' || pathname.startsWith('/brochure/') || pathname === '/prospectus' || pathname.startsWith('/prospectus/')) {
-    const brochureUrl = new URL('/zen-diplomacy/brochure', request.url);
+    const brochureUrl = new URL('/events', request.url);
     brochureUrl.search = request.nextUrl.search;
     return NextResponse.redirect(brochureUrl, { status: 307 });
   }
@@ -140,30 +166,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Handle root single-segment user handles (e.g. /yuveer, /abc) redirecting to /space/xxx
+  // Single segment routes (e.g. /event-name) are handled directly by app/[mun]/page.tsx for event showcases
   const singleSegments = pathname.split('/').filter(Boolean);
-  if (singleSegments.length === 1 && !pathname.includes('.')) {
-    const candidateHandle = singleSegments[0].toLowerCase();
-    const KNOWN_ROUTES = new Set([
-      'about', 'admin', 'admin-access', 'auth', 'campus-ambassador', 'chamber', 'committee',
-      'constitution', 'contact', 'countdown', 'discussions', 'docs', 'donate',
-      'enclave', 'enclave-access', 'events', 'faq', 'forms', 'f', 'glimpse', 'guidelines', 'impact',
-      'invest-donate', 'join', 'join-core-team', 'legal', 'legislate', 'login',
-      'manifesto', 'mission', 'mun', 'news', 'onboarding', 'payments', 'pricing',
-      'privacy', 'profile', 'pulse', 'register', 'solutions', 'space',
-      'statusregister', 'statussignin', 'summits', 'terms', 'vision',
-      'zen-diplomacy', 'chat', 'call', 'dashboard', 'settings', 'matrix', 'signup', 'preregister',
-      'passport', 'leaderboard', 'test', 'test-login', 'demo', 'press', 'your_activity', 'zen-vault-root'
-    ]);
 
-    if (!KNOWN_ROUTES.has(candidateHandle) && !PUBLIC_PREFIXES.some((p) => p === `/${candidateHandle}`)) {
-      const spaceUrl = new URL(`/space/${encodeURIComponent(singleSegments[0])}`, request.url);
-      return NextResponse.redirect(spaceUrl, { status: 307 });
-    }
-  }
-
-  // Countdown Launch Date: October 11, 2026, 14:00:00 IST (UTC+05:30) - Shubh Navratri Launch
-  const LAUNCH_TIMESTAMP_MS = 1791707400000;
+  // Countdown Launch Date: October 25, 2026, 14:00:00 IST (UTC+05:30)
+  const LAUNCH_TIMESTAMP_MS = 1792917000000;
   const isPreReleasePeriod = Date.now() < LAUNCH_TIMESTAMP_MS;
 
   // Static files and internal Next.js paths are always allowed
@@ -205,6 +212,7 @@ export function middleware(request: NextRequest) {
 
   // Whitelisted public routes accessible even during pre-release countdown
   const isCountdownExempt = 
+    singleSegments.length === 1 ||
     pathname === '/countdown' ||
     pathname.startsWith('/countdown/') ||
     pathname === '/zen-diplomacy' ||
@@ -216,6 +224,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/prospectus/') ||
     pathname === '/matrix' ||
     pathname.startsWith('/matrix/') ||
+    pathname.endsWith('/matrix') ||
     pathname === '/call' ||
     pathname.startsWith('/call/') ||
     pathname === '/events' ||
@@ -231,6 +240,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/glimpse/') ||
     pathname === '/pulse' ||
     pathname.startsWith('/pulse/') ||
+    pathname === '/dashboard' ||
+    pathname.startsWith('/dashboard/') ||
+    pathname === '/platform' ||
+    pathname.startsWith('/platform/') ||
     pathname === '/passport' ||
     pathname.startsWith('/passport/') ||
     pathname === '/leaderboard' ||
@@ -253,8 +266,6 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/guidelines/') ||
     pathname === '/impact' ||
     pathname.startsWith('/impact/') ||
-    pathname === '/invest-donate' ||
-    pathname.startsWith('/invest-donate/') ||
     pathname === '/join-core-team' ||
     pathname.startsWith('/join-core-team/') ||
     pathname === '/manifesto' ||
@@ -275,8 +286,6 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/legislate/') ||
     pathname === '/payments' ||
     pathname.startsWith('/payments/') ||
-    pathname === '/donate' ||
-    pathname.startsWith('/donate/') ||
     pathname === '/campus-ambassador' ||
     pathname.startsWith('/campus-ambassador/') ||
     pathname === '/contact' ||
@@ -291,6 +300,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/careers/') ||
     pathname === '/login' ||
     pathname === '/register' ||
+    pathname === '/pre-register' ||
+    pathname.startsWith('/pre-register/') ||
+    pathname === '/pre-login' ||
+    pathname.startsWith('/pre-login/') ||
     pathname === '/statusregister' ||
     pathname.startsWith('/statusregister/') ||
     pathname === '/statussignin' ||

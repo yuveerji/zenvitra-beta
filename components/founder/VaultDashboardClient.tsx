@@ -1,5 +1,114 @@
 'use client';
 
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Link from 'next/link';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { 
+  ShieldAlert,
+  ShieldCheck,
+  Link2,
+  Share2, 
+  Crown, 
+  Plus,
+  Radio, 
+  Sparkles, 
+  Trash2, 
+  Users, 
+  CheckCircle2, 
+  Sliders, 
+  Activity, 
+  Zap, 
+  Save, 
+  Newspaper, 
+  Send, 
+  Lock, 
+  Power, 
+  AlertTriangle,
+  Flame,
+  Globe2,
+  Cpu,
+  RefreshCw,
+  CreditCard,
+  Settings,
+  Coins,
+  Award,
+  Calendar,
+  Percent,
+  KeyRound,
+  Terminal,
+  Download,
+  Copy,
+  Check,
+  FileCode,
+  Layers,
+  Database,
+  Unlock,
+  Eye,
+  AlertOctagon,
+  ArrowUpRight,
+  TrendingUp,
+  Server,
+  Building,
+  CheckCircle,
+  XCircle,
+  FileText,
+  Clock,
+  ArrowLeft,
+  ExternalLink,
+  HelpCircle,
+  Search,
+  Filter
+} from 'lucide-react';
+import { MetricCard } from './MetricCard';
+import { FounderPressStudio } from '@/components/founder/FounderPressStudio';
+import { ZenAdminControlRoom } from '@/components/admin/ZenAdminControlRoom';
+import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
+import { 
+  ADMIN_BYPASS_KEYS,
+  generateCustomAdminKey,
+  getCustomAdminKeys,
+  getFounderDirective, 
+  saveFounderDirective, 
+  clearFounderDirective, 
+  getProtocolControls, 
+  saveProtocolControls, 
+  getAuditLogs,
+  addAuditLog,
+  getAllSubscriptions,
+  grantUserSubscription,
+  revokeUserSubscription,
+  getAllUserOverrides,
+  getUserOverride,
+  saveUserOverride,
+  getSiteOverrides,
+  saveSiteOverrides,
+  FounderDirective,
+  ProtocolControls,
+  SubscriptionTier,
+  GlobalSiteOverrides,
+  UserSubscriptionRecord,
+  UserNodeOverride,
+  PERSONAL_FOUNDER_KEYS,
+  verifyFounderKey,
+  activateFounderSession,
+  isFounderSessionActive,
+  setCustomFounderKey,
+  isFounder
+} from '@/lib/founderControl';
+import { useZenPulse } from '@/context/ZenPulsePlatformContext';
+import { useAuth } from '@/context/AuthContext';
+import { useMun } from '@/context/MunContext';
+import { 
+  FOUNDER_SECTIONS, 
+  DEFAULT_ZEN_MODULES, 
+  FounderSectionId, 
+  ZenModuleControl,
+  FounderApprovalItem,
+  FounderCriticalAlert,
+  FounderLiveActivity,
+  GlobalAnnouncement
+} from '@/types/founder';
+
 interface EnclaveInviteItem {
   id: string;
   adminName: string;
@@ -101,56 +210,33 @@ function AdminEnclaveManager({
     if (typeof navigator !== 'undefined') {
       navigator.clipboard.writeText(url);
       setCopiedId(inviteId);
-      notify(`Copied Enclave Access Link for ${inviteId}!\nShare this link and tell them their code is: ${adminPass}`);
+      notify(`Copied Access Link! Secret pass: ${adminPass}`);
       setTimeout(() => setCopiedId(null), 3000);
     }
   };
 
   const generateRandomCode = () => {
-    const words = ['SECURE', 'SOVEREIGN', 'CITADEL', 'ROOT', 'OPERATOR', 'OMEGA'];
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    const num = Math.floor(1000 + Math.random() * 9000);
-    setPasscode(`${randomWord}-${num}`);
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'ZEN-';
+    for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    code += '-';
+    for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    setPasscode(code);
   };
 
   return (
-    <div className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-cyan-500/30 shadow-2xl space-y-8 font-mono text-xs text-left">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold text-[10px]">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span>SINGLE-USE DEVICE BOUND ADMIN DISPATCHER</span>
+    <div className="space-y-6">
+      {/* Invite Generation Card */}
+      <form onSubmit={handleCreateInvite} className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-cyan-500/30 shadow-2xl space-y-4">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center gap-2.5 text-cyan-400 font-mono text-xs font-bold uppercase tracking-wider">
+            <Link2 className="w-4 h-4" />
+            <span>Generate Hardware-Bound Enclave Link</span>
           </div>
-          <h2 className="font-bold text-xl text-white uppercase tracking-wide">
-            Admin Enclave &amp; Access Link Framework
-          </h2>
-          <p className="text-neutral-400 font-sans text-xs">
-            Generate private, device-locked access links for your team. Each admin must open their link and enter their private code to enter the website.
-          </p>
+          <span className="text-[10px] text-neutral-400 font-mono">100% PRIVATE &bull; ANTI-REUSE LOCK</span>
         </div>
 
-        <button
-          type="button"
-          onClick={fetchInvites}
-          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh Ledger</span>
-        </button>
-      </div>
-
-      {/* Generator Form */}
-      <form onSubmit={handleCreateInvite} className="p-6 rounded-3xl bg-black border border-cyan-500/30 space-y-5">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <span className="text-cyan-300 font-bold uppercase text-xs flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-cyan-400" />
-            <span>Generate New Bound Admin Access Link</span>
-          </span>
-          <span className="text-[10px] text-neutral-400">100% PRIVATE &bull; ANTI-REUSE LOCK</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
           <div className="space-y-1.5">
             <label className="text-[10px] text-neutral-400 uppercase font-bold">Admin / Staff Name</label>
             <input
@@ -158,14 +244,14 @@ function AdminEnclaveManager({
               required
               value={adminName}
               onChange={(e) => setAdminName(e.target.value)}
-              placeholder="e.g. Rahul (Lead Editor)"
-              className="w-full px-4 py-3 rounded-xl bg-[#090b14] border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+              placeholder="e.g. Staff Operator (Lead Editor)"
+              className="w-full px-4 py-3 rounded-xl bg-[#090b14] border border-white/20 text-white text-xs focus:outline-none focus:border-cyan-400"
             />
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] text-neutral-400 uppercase font-bold">Secret Code for Them</label>
+              <label className="text-[10px] text-neutral-400 uppercase font-bold">Secret Passcode</label>
               <button
                 type="button"
                 onClick={generateRandomCode}
@@ -179,8 +265,8 @@ function AdminEnclaveManager({
               required
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              placeholder="e.g. RAHUL-7788"
-              className="w-full px-4 py-3 rounded-xl bg-[#090b14] border border-white/20 text-cyan-300 font-mono text-xs focus:outline-none focus:border-cyan-400"
+              placeholder="e.g. ZEN-7788-AX"
+              className="w-full px-4 py-3 rounded-xl bg-[#090b14] border border-white/20 text-cyan-300 text-xs focus:outline-none focus:border-cyan-400"
             />
           </div>
 
@@ -189,7 +275,7 @@ function AdminEnclaveManager({
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as any)}
-              className="w-full px-4 py-3 rounded-xl bg-[#090b14] border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 cursor-pointer"
+              className="w-full px-4 py-3 rounded-xl bg-[#090b14] border border-white/20 text-white text-xs focus:outline-none focus:border-cyan-400 cursor-pointer"
             >
               <option value="ADMIN">Staff Administrator</option>
               <option value="MODERATOR">Platform Moderator</option>
@@ -199,20 +285,20 @@ function AdminEnclaveManager({
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-          <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-300">
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-300 font-mono">
             <input
               type="checkbox"
               checked={singleUse}
               onChange={(e) => setSingleUse(e.target.checked)}
               className="w-4 h-4 rounded bg-[#090b14] border-white/20 text-cyan-500 focus:ring-0 cursor-pointer"
             />
-            <span>Single-Use Hardware Lock (Once opened &amp; entered on their device, nobody else can use this link)</span>
+            <span>Single-Use Hardware Lock (Permanently binds to the first device that claims it)</span>
           </label>
 
           <button
             type="submit"
             disabled={isSubmitting || !adminName.trim() || !passcode.trim()}
-            className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 text-black font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] shrink-0 uppercase"
+            className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-30 text-black font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] shrink-0 uppercase font-mono"
           >
             <Plus className="w-4 h-4" />
             <span>Generate &amp; Register Link</span>
@@ -221,7 +307,7 @@ function AdminEnclaveManager({
       </form>
 
       {/* Invites Directory */}
-      <div className="space-y-4">
+      <div className="space-y-4 font-mono">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-white uppercase tracking-wider">
             Active Enclave Access Directory &bull; ({invites.length} Registered Links)
@@ -230,14 +316,12 @@ function AdminEnclaveManager({
         </div>
 
         {invites.length === 0 ? (
-          <div className="p-8 rounded-3xl bg-black border border-white/10 text-center text-neutral-500">
-            No access links created yet. Use the generator above to create private links for your admins.
+          <div className="p-8 rounded-3xl bg-black border border-white/10 text-center text-neutral-500 text-xs">
+            No access links created yet. Use the generator above to create private links for your team.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {invites.map((inv) => {
-              const origin = getBaseOrigin();
-              const shareUrl = `${origin}/enclave-access?invite=${encodeURIComponent(inv.id)}`;
               const isCopied = copiedId === inv.id;
 
               return (
@@ -273,15 +357,15 @@ function AdminEnclaveManager({
 
                     <div className="p-3 rounded-2xl bg-[#040508] border border-white/10 space-y-1.5 text-[11px]">
                       <div className="flex items-center justify-between text-neutral-400">
-                        <span>Invite ID Token:</span>
+                        <span>Invite Token:</span>
                         <span className="text-cyan-300 font-bold">{inv.id}</span>
                       </div>
                       <div className="flex items-center justify-between text-neutral-400">
-                        <span>Assigned Passcode:</span>
+                        <span>Passcode:</span>
                         <span className="text-amber-300 font-bold tracking-widest">{inv.passcode}</span>
                       </div>
                       <div className="flex items-center justify-between text-neutral-400">
-                        <span>Security Mode:</span>
+                        <span>Lock Mode:</span>
                         <span className="text-white font-bold">{inv.singleUse ? 'Single-Use Lock' : 'Multi-Use'}</span>
                       </div>
                       {inv.isClaimed && inv.claimedAt && (
@@ -298,7 +382,7 @@ function AdminEnclaveManager({
                       <button
                         type="button"
                         onClick={() => handleCopyLink(inv.id, inv.passcode)}
-                        className={`flex-1 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                        className={`flex-1 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${
                           isCopied
                             ? 'bg-emerald-500 text-black shadow-[0_0_15px_rgba(52,211,153,0.4)]'
                             : 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40'
@@ -332,136 +416,53 @@ function AdminEnclaveManager({
   );
 }
 
-import React, { useState, useEffect } from 'react';
-import { 
-  ShieldAlert,
-  ShieldCheck,
-  Link2,
-  Share2, 
-  Crown, 
-  Plus,
-  Radio, 
-  Sparkles, 
-  Trash2, 
-  Users, 
-  CheckCircle2, 
-  Sliders, 
-  Activity, 
-  Zap, 
-  Save, 
-  Newspaper, 
-  Send, 
-  Lock, 
-  Power, 
-  AlertTriangle,
-  Flame,
-  Globe2,
-  Cpu,
-  RefreshCw,
-  CreditCard,
-  Settings,
-  Coins,
-  Award,
-  Calendar,
-  Percent,
-  KeyRound,
-  Terminal,
-  Download,
-  Copy,
-  Check,
-  FileCode,
-  Layers,
-  Database,
-  Unlock,
-  Eye,
-  AlertOctagon
-} from 'lucide-react';
-import { ZenAdminControlRoom } from '@/components/admin/ZenAdminControlRoom';
-import { FounderNoteRenderer } from '@/components/pulse/FounderNoteRenderer';
-import { 
-  ADMIN_BYPASS_KEYS,
-  generateCustomAdminKey,
-  getCustomAdminKeys,
-  getFounderDirective, 
-  saveFounderDirective, 
-  clearFounderDirective, 
-  getProtocolControls, 
-  saveProtocolControls, 
-  getAuditLogs,
-  addAuditLog,
-  getAllSubscriptions,
-  grantUserSubscription,
-  revokeUserSubscription,
-  getAllUserOverrides,
-  getUserOverride,
-  saveUserOverride,
-  getSiteOverrides,
-  saveSiteOverrides,
-  FounderDirective,
-  ProtocolControls,
-  SubscriptionTier,
-  GlobalSiteOverrides,
-  UserSubscriptionRecord,
-  UserNodeOverride,
-  PERSONAL_FOUNDER_KEYS,
-  verifyFounderKey,
-  activateFounderSession,
-  isFounderSessionActive,
-  setCustomFounderKey,
-  isFounder
-} from '@/lib/founderControl';
-import { useZenPulse } from '@/context/ZenPulsePlatformContext';
-import { useAuth } from '@/context/AuthContext';
-import Link from 'next/link';
-import { MetricCard } from './MetricCard';
-import { FounderPressStudio } from '@/components/founder/FounderPressStudio';
-
 interface VaultDashboardClientProps {
   totalUsers: number;
   suspendedUsers: number;
   totalAccounts: number;
+  totalApplications?: number;
+  totalDonations?: number;
 }
 
 export function VaultDashboardClient({
   totalUsers,
   suspendedUsers,
   totalAccounts,
+  totalApplications = 0,
+  totalDonations = 0,
 }: VaultDashboardClientProps) {
   const { user, profile } = useAuth();
   const { feedPosts, deletePost, createPost, currentUserUsername } = useZenPulse();
-  const [activeTab, setActiveTabState] = useState<
-    | 'overview'
-    | 'admin_control'
-    | 'panic_room'
-    | 'masterkey'
-    | 'adminlinks'
-    | 'terminal'
-    | 'directive'
-    | 'press'
-    | 'subscriptions'
-    | 'users'
-    | 'sheets'
-    | 'content'
-    | 'site'
-    | 'protocol'
-    | 'audit'
-  >(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = sessionStorage.getItem('zenvitra_vault_tab');
-        if (saved) return saved as any;
-      } catch (_) {}
-    }
-    return 'overview';
-  });
+  const { conferences } = useMun();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-  const setActiveTab = (tab: any) => {
-    setActiveTabState(tab);
-    if (typeof window !== 'undefined') {
+  // 12 Master Sections Navigation
+  const [activeSection, setActiveSection] = useState<FounderSectionId>('01_command');
+
+  // Sync activeSection with URL search parameter hydration-safely
+  useEffect(() => {
+    const urlSec = searchParams?.get('section') as FounderSectionId | null;
+    if (urlSec && FOUNDER_SECTIONS.some((s) => s.id === urlSec)) {
+      setActiveSection(urlSec);
+    } else {
       try {
-        sessionStorage.setItem('zenvitra_vault_tab', tab);
+        const saved = sessionStorage.getItem('zenvitra_vault_section') as FounderSectionId;
+        if (saved && FOUNDER_SECTIONS.some((s) => s.id === saved)) {
+          setActiveSection(saved);
+        }
       } catch (_) {}
     }
+  }, [searchParams]);
+
+  const selectSection = (secId: FounderSectionId) => {
+    setActiveSection(secId);
+    try {
+      sessionStorage.setItem('zenvitra_vault_section', secId);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', `?section=${secId}`);
+      }
+    } catch (_) {}
   };
 
   const effectiveUser = (currentUserUsername || user?.email?.split('@')[0] || profile?.username || '').toLowerCase().trim().replace(/^@/, '');
@@ -471,41 +472,12 @@ export function VaultDashboardClient({
   const [passkeyInput, setPasskeyInput] = useState('');
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
 
-  /* Admin Bypass Links State */
-  const [customAdminName, setCustomAdminName] = useState('');
-  const [copiedLink, setCopiedLink] = useState<string | null>(null);
-  const [adminKeysList, setAdminKeysList] = useState<string[]>(ADMIN_BYPASS_KEYS);
-
-  const getBaseOrigin = () => {
-    if (typeof window !== 'undefined') {
-      return window.location.origin;
-    }
-    return 'https://zenvitra.org';
+  /* Feedback Toast */
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const notify = (msg: string) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 3500);
   };
-
-  const handleCopyBypassLink = (key: string) => {
-    const origin = getBaseOrigin();
-    const url = `${origin}/?access_key=${encodeURIComponent(key)}`;
-    if (typeof navigator !== 'undefined') {
-      navigator.clipboard.writeText(url);
-      setCopiedLink(key);
-      notify(`Copied Admin Magic Link: ${url}`);
-      setTimeout(() => setCopiedLink(null), 3000);
-    }
-  };
-
-  const handleGenerateCustomAdmin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customAdminName.trim()) return;
-    const newKey = generateCustomAdminKey(customAdminName.trim());
-    setAdminKeysList((prev) => [...prev, newKey]);
-    setCustomAdminName('');
-    notify(`Generated new Admin Access Link for ${customAdminName.trim()}!`);
-  };
-
-  /* Personal Founder Key State */
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [customKeyInput, setCustomKeyInput] = useState('');
 
   /* Directive State */
   const [directive, setDirective] = useState<FounderDirective>(getFounderDirective());
@@ -517,6 +489,62 @@ export function VaultDashboardClient({
 
   /* Protocol State */
   const [protocols, setProtocols] = useState<ProtocolControls>(getProtocolControls());
+  const [serverProtocols, setServerProtocols] = useState<{
+    maintenanceMode: boolean;
+    registrationControl: 'OPEN' | 'PAUSED' | 'CLOSED';
+    emergencyLockdown: boolean;
+    modules: Record<string, boolean>;
+    announcements: GlobalAnnouncement[];
+  }>({
+    maintenanceMode: false,
+    registrationControl: 'OPEN',
+    emergencyLockdown: false,
+    modules: {
+      pulse: true,
+      mun: true,
+      forms: true,
+      press: true,
+      passport: true,
+      call: true,
+      legislate: true,
+      docs: true,
+      chat: true,
+      payments: true,
+    },
+    announcements: [],
+  });
+
+  /* Fetch and Sync Server Protocols */
+  const fetchProtocols = useCallback(async () => {
+    try {
+      const res = await fetch('/api/protocols', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        setServerProtocols({
+          maintenanceMode: !!data.maintenanceMode,
+          registrationControl: data.registrationControl || 'OPEN',
+          emergencyLockdown: !!data.emergencyLockdown,
+          modules: {
+            pulse: data.modulePulseEnabled !== false,
+            mun: data.moduleMunEnabled !== false,
+            forms: data.moduleFormsEnabled !== false,
+            press: data.modulePressEnabled !== false,
+            passport: data.modulePassportEnabled !== false,
+            call: data.moduleCallEnabled !== false,
+            legislate: data.moduleLegislateEnabled !== false,
+            docs: data.moduleDocsEnabled !== false,
+            chat: data.moduleChatEnabled !== false,
+            payments: data.modulePaymentsEnabled !== false,
+          },
+          announcements: data.announcements || [],
+        });
+      }
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    fetchProtocols();
+  }, [fetchProtocols]);
 
   /* Subscriptions State */
   const [subscriptionsList, setSubscriptionsList] = useState<Record<string, UserSubscriptionRecord>>({});
@@ -541,56 +569,59 @@ export function VaultDashboardClient({
   const [escrowPercentage, setEscrowPercentage] = useState(siteOverrides.escrowPercentage);
   const [targetLaunchDate, setTargetLaunchDate] = useState(siteOverrides.targetLaunchDate);
 
-  /* Founder Note Studio Effects State */
-  const [noteEffectTheme, setNoteEffectTheme] = useState<'SOVEREIGN_GOLD' | 'MATRIX_EMERALD' | 'CYBER_NEON' | 'DEEP_VOID' | 'CRIMSON_DECREE'>('SOVEREIGN_GOLD');
-  const [noteTypography, setNoteTypography] = useState<'SERIF' | 'MONO' | 'SANS'>('SERIF');
-  const [noteGlowEffect, setNoteGlowEffect] = useState(true);
-  const [noteScanlines, setNoteScanlines] = useState(false);
-  const [noteStampSeal, setNoteStampSeal] = useState(true);
-
-  /* Audit Ledger Calendar Filter State */
-  const [selectedAuditDate, setSelectedAuditDate] = useState<string | null>(null);
-  const [auditTypeFilter, setAuditTypeFilter] = useState<string>('ALL');
-
-  /* Quick Post Dispatch */
-  const [quickPostContent, setQuickPostContent] = useState('');
-  const [feedback, setFeedback] = useState<string | null>(null);
-
-  /* Terminal State with History Persistence */
+  /* Terminal State */
   const [terminalInput, setTerminalInput] = useState('');
-  const [terminalLogs, setTerminalLogsState] = useState<Array<{ text: string; type: 'info' | 'success' | 'warn' | 'error' | 'cmd' }>>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = sessionStorage.getItem('zenvitra_root_cli_logs');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch (_) {}
+  const [terminalLogs, setTerminalLogs] = useState<Array<{ text: string; type: 'info' | 'success' | 'warn' | 'error' | 'cmd' }>>([
+    { text: 'ZENVITRA SOVEREIGN ROOT TERMINAL V4-PROD', type: 'info' },
+    { text: 'Level 0 Root Clearance Authenticated for Operator @yuveer', type: 'success' },
+    { text: 'Type "help" to list all available master commands.', type: 'info' },
+  ]);
+
+  /* 10 Zen Modules State */
+  const [zenModules, setZenModules] = useState<ZenModuleControl[]>(DEFAULT_ZEN_MODULES);
+
+  /* Pending Approvals State */
+  const [approvalsQueue, setApprovalsQueue] = useState<FounderApprovalItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('zenvitra_founder_approvals');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
     }
-    return [
-      { text: 'ZENVITRA SOVEREIGN ROOT TERMINAL v1.0.0-PROD', type: 'info' },
-      { text: 'Level 0 Root Access Authenticated for Operator @yuveer', type: 'success' },
-      { text: 'Type "help" to list all available master commands.', type: 'info' },
-    ];
   });
 
-  const setTerminalLogs = (updater: Array<{ text: string; type: 'info' | 'success' | 'warn' | 'error' | 'cmd' }> | ((prev: Array<{ text: string; type: 'info' | 'success' | 'warn' | 'error' | 'cmd' }>) => Array<{ text: string; type: 'info' | 'success' | 'warn' | 'error' | 'cmd' }>)) => {
-    setTerminalLogsState((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      if (typeof window !== 'undefined') {
-        try {
-          sessionStorage.setItem('zenvitra_root_cli_logs', JSON.stringify(next.slice(-100)));
-        } catch (_) {}
-      }
-      return next;
-    });
+  /* Critical Alerts State */
+  const [criticalAlerts, setCriticalAlerts] = useState<FounderCriticalAlert[]>([]);
+
+  /* Live Activity Stream */
+  const [liveActivities, setLiveActivities] = useState<FounderLiveActivity[]>([]);
+
+  /* Global Announcement Form State */
+  const [announcementTitle, setAnnouncementTitle] = useState('');
+  const [announcementBody, setAnnouncementBody] = useState('');
+  const [announcementPriority, setAnnouncementPriority] = useState<'NORMAL' | 'URGENT' | 'CRITICAL'>('NORMAL');
+  const [announcementAudience, setAnnouncementAudience] = useState<'ALL' | 'STUDENTS' | 'ORGANIZERS' | 'DELEGATES'>('ALL');
+
+  /* Personal Founder Key State */
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [customKeyInput, setCustomKeyInput] = useState('');
+
+  const getBaseOrigin = () => {
+    if (typeof window !== 'undefined') return window.location.origin;
+    return 'https://zenvitra.xyz';
   };
 
-  /* Google Sheets Sync Diagnostic State */
-  const [sheetSyncStatus, setSheetSyncStatus] = useState<'IDLE' | 'SYNCING' | 'SUCCESS' | 'ERROR'>('IDLE');
-  const [sheetSyncLog, setSheetSyncLog] = useState<string>('Google Sheets Web App connected. Ready for bi-directional synchronization.');
+  const handleCopyKey = (keyText: string) => {
+    if (typeof navigator !== 'undefined') {
+      navigator.clipboard.writeText(keyText);
+      setCopiedKey(keyText);
+      notify(`Copied Key: ${keyText}`);
+      setTimeout(() => setCopiedKey(null), 2500);
+    }
+  };
 
+  // Hydrate client-only data once mounted
   useEffect(() => {
     setDirective(getFounderDirective());
     setProtocols(getProtocolControls());
@@ -604,125 +635,159 @@ export function VaultDashboardClient({
     setBannerActive(s.bannerActive);
     setEscrowPercentage(s.escrowPercentage);
     setTargetLaunchDate(s.targetLaunchDate);
+  }, []);
 
-    // Refresh clearance
-    setIsFounderClearance(isFounder(effectiveUser, profile?.role || (profile as any)?.badge));
-  }, [effectiveUser, profile]);
+  // Update clearance when user or role changes
+  useEffect(() => {
+    const roleOrBadge = profile?.role || (profile as any)?.badge;
+    setIsFounderClearance((prev) => {
+      const next = isFounder(effectiveUser, roleOrBadge);
+      return prev !== next ? next : prev;
+    });
+  }, [effectiveUser, profile?.role, (profile as any)?.badge]);
 
-  const notify = (msg: string) => {
-    setFeedback(msg);
-    setTimeout(() => setFeedback(null), 3500);
+  /* Mutation: Update Global Protocols */
+  const updateProtocolsServer = async (partial: Record<string, any>) => {
+    try {
+      const res = await fetch('/api/protocols', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(partial),
+      });
+      if (res.ok) {
+        fetchProtocols();
+        return true;
+      }
+    } catch (_) {}
+    return false;
   };
 
-  /* Unlock Gate with Passkey */
-  const handlePasskeyUnlock = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!passkeyInput.trim()) return;
-    const success = activateFounderSession(passkeyInput.trim());
-    if (success) {
-      setIsFounderClearance(true);
-      setPasskeyError(null);
-      notify('👑 Sovereign Founder Clearance successfully unlocked with Personal Key!');
-    } else {
-      setPasskeyError('Invalid Personal Founder Key. Try: YUV-ROOT-MASTER-777 or YUVEER-FOUNDER-2026');
+  /* Toggle Module */
+  const handleToggleModule = async (modKey: string) => {
+    const current = serverProtocols.modules[modKey] !== false;
+    const nextVal = !current;
+    
+    // Map to protocol field
+    const fieldMap: Record<string, string> = {
+      pulse: 'modulePulseEnabled',
+      mun: 'moduleMunEnabled',
+      forms: 'moduleFormsEnabled',
+      press: 'modulePressEnabled',
+      passport: 'modulePassportEnabled',
+      call: 'moduleCallEnabled',
+      legislate: 'moduleLegislateEnabled',
+      docs: 'moduleDocsEnabled',
+      chat: 'moduleChatEnabled',
+      payments: 'modulePaymentsEnabled',
+    };
+    
+    const field = fieldMap[modKey];
+    if (field) {
+      await updateProtocolsServer({ [field]: nextVal });
+      setZenModules((prev) =>
+        prev.map((m) => (m.key === modKey ? { ...m, enabled: nextVal } : m))
+      );
+      notify(`ZEN.${modKey.toUpperCase()} is now ${nextVal ? 'ENABLED' : 'DISABLED'}`);
+      addAuditLog(`Founder toggled ZEN.${modKey.toUpperCase()} to ${nextVal ? 'ONLINE' : 'OFFLINE'}`, 'PROTOCOL');
     }
   };
 
-  const handleCopyKey = (keyText: string) => {
-    if (typeof navigator !== 'undefined') {
-      navigator.clipboard.writeText(keyText);
-      setCopiedKey(keyText);
-      notify(`Copied Personal Key [${keyText}] to clipboard!`);
-      setTimeout(() => setCopiedKey(null), 2500);
-    }
+  /* Toggle Maintenance Mode */
+  const handleToggleMaintenance = async () => {
+    const nextVal = !serverProtocols.maintenanceMode;
+    await updateProtocolsServer({ maintenanceMode: nextVal });
+    saveProtocolControls({ maintenanceMode: nextVal });
+    setProtocols(getProtocolControls());
+    notify(nextVal ? '🚨 Global Maintenance Mode ACTIVATED (Public website gated)' : '✅ Maintenance Mode DISENGAGED (Platform live)');
+    addAuditLog(`Founder set Maintenance Mode to ${nextVal}`, 'PROTOCOL');
   };
 
-  const handleSetCustomKey = (e: React.FormEvent) => {
+  /* Emergency Lockdown */
+  const handleEmergencyLockdown = async () => {
+    const nextVal = !serverProtocols.emergencyLockdown;
+    await updateProtocolsServer({ emergencyLockdown: nextVal, readOnlyMode: nextVal });
+    saveProtocolControls({ readOnlyMode: nextVal });
+    setProtocols(getProtocolControls());
+    notify(nextVal ? '🚨 EMERGENCY LOCKDOWN ENGAGED: All user mutations frozen!' : '✅ Emergency Lockdown DISENGAGED: Normal operations resumed.');
+    addAuditLog(`Founder executed Emergency Lockdown: ${nextVal}`, 'PROTOCOL');
+  };
+
+  /* Change Registration Gate */
+  const handleChangeRegistrationControl = async (gate: 'OPEN' | 'PAUSED' | 'CLOSED') => {
+    await updateProtocolsServer({ 
+      registrationControl: gate,
+      registrationsOpen: gate === 'OPEN'
+    });
+    saveProtocolControls({ registrationsOpen: gate === 'OPEN' });
+    setProtocols(getProtocolControls());
+    notify(`Registration Gate set to: ${gate}`);
+    addAuditLog(`Founder set Registration Gate to ${gate}`, 'PROTOCOL');
+  };
+
+  /* Publish Announcement Broadcast */
+  const handleBroadcastAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customKeyInput.trim()) return;
-    setCustomFounderKey(customKeyInput.trim());
-    notify(`🔑 Custom Personal Master Key saved: ${customKeyInput.trim().toUpperCase()}`);
-    setCustomKeyInput('');
+    if (!announcementTitle.trim() || !announcementBody.trim()) return;
+
+    const newAnnouncement: GlobalAnnouncement = {
+      id: `ann-${Date.now().toString(36)}`,
+      title: announcementTitle.trim(),
+      body: announcementBody.trim(),
+      priority: announcementPriority,
+      active: true,
+      timestamp: new Date().toISOString(),
+      targetAudience: announcementAudience,
+    };
+
+    const updated = [newAnnouncement, ...(serverProtocols.announcements || [])];
+    await updateProtocolsServer({ announcements: updated });
+    setAnnouncementTitle('');
+    setAnnouncementBody('');
+    notify(`📢 Global Announcement broadcasted to ${announcementAudience}!`);
+    addAuditLog(`Founder broadcasted Announcement: "${newAnnouncement.title}"`, 'DIRECTIVE');
   };
 
+  /* Approvals Actions */
+  const handleResolveApproval = (id: string, status: 'APPROVED' | 'REJECTED') => {
+    setApprovalsQueue((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status } : item))
+    );
+    notify(`Approval item ${id} ${status.toLowerCase()}!`);
+    addAuditLog(`Founder ${status} item ${id}`, 'DIRECTIVE');
+  };
+
+  /* Directive Save */
   const handleSaveDirective = (e: React.FormEvent) => {
     e.preventDefault();
     const updated = saveFounderDirective({
-      title: directiveTitle.trim(),
-      body: directiveBody.trim(),
-      author: directiveAuthor.trim(),
+      title: directiveTitle,
+      body: directiveBody,
+      author: directiveAuthor,
       priority: directivePriority,
       isActive: directiveActive,
     });
     setDirective(updated);
-    notify('⚡ Founder Directive & Note updated across all network nodes!');
+    notify('🏛️ Founder\'s Sovereign Directive broadcast saved!');
+    addAuditLog(`Updated Founder Directive: "${directiveTitle}"`, 'DIRECTIVE');
   };
 
-  const handleGrantSubscription = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subTargetUser.trim()) return;
-    const rec = grantUserSubscription(subTargetUser, subTier, subDuration);
-    setSubscriptionsList(getAllSubscriptions());
-    setSubTargetUser('');
-    notify(`👑 Granted [${subTier}] (${subDuration}) subscription to @${rec.username}!`);
-  };
-
-  const handleRevokeSub = (u: string) => {
-    revokeUserSubscription(u);
-    setSubscriptionsList(getAllSubscriptions());
-    notify(`Revoked subscription for @${u}`);
-  };
-
-  const handleSaveUserOverride = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userTargetHandle.trim()) return;
-    const pts = parseInt(userPointsAmount, 10) || 0;
-    const updated = saveUserOverride(userTargetHandle, {
-      role: userTargetRole,
-      verifiedBadge: userTargetBadge,
-      extraCivicPoints: pts,
-      customTitle: userCustomTitle.trim() || undefined,
-      banned: userTargetRole === 'SUSPENDED',
-    });
-    setUserOverridesList(getAllUserOverrides());
-    notify(`🛡️ User @${updated.username} updated: Role=${updated.role}, Verified=${updated.verifiedBadge}, +${updated.extraCivicPoints} Civic Points!`);
-  };
-
+  /* Site Overrides Save */
   const handleSaveSiteOverrides = (e: React.FormEvent) => {
     e.preventDefault();
     const updated = saveSiteOverrides({
-      tickerText: tickerText.trim(),
+      tickerText,
       tickerActive,
-      bannerNotice: bannerNotice.trim(),
+      bannerNotice,
       bannerActive,
-      escrowPercentage: Number(escrowPercentage) || 25,
-      targetLaunchDate: targetLaunchDate.trim(),
+      escrowPercentage: Number(escrowPercentage) || 10,
+      targetLaunchDate,
     });
     setSiteOverrides(updated);
     notify('🌐 Global site parameters, ticker, and escrow saved!');
+    addAuditLog('Updated Global Site Parameters & Ticker', 'PROTOCOL');
   };
 
-  const handleToggleProtocol = (key: keyof ProtocolControls) => {
-    const nextVal = !protocols[key];
-    const updated = saveProtocolControls({ [key]: nextVal });
-    setProtocols(updated);
-    notify(`Protocol [${String(key)}] set to ${nextVal ? 'ONLINE' : 'MUTED'}`);
-  };
-
-  const handlePublishDecree = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quickPostContent.trim()) return;
-    createPost(
-      `[ROOT FOUNDER BROADCAST] ${quickPostContent.trim()}`,
-      undefined,
-      'Executive Sovereign Assembly',
-      ['ExecutiveDecree', 'FounderNote', 'ZenPulse']
-    );
-    setQuickPostContent('');
-    notify('🏛️ Executive decree published to the live wire!');
-  };
-
-  /* Terminal Execution Engine */
+  /* Terminal Execution */
   const handleTerminalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cmd = terminalInput.trim();
@@ -737,30 +802,23 @@ export function VaultDashboardClient({
     if (root === 'help') {
       setTerminalLogs((prev) => [
         ...prev,
-        { text: 'AVAILABLE COMMANDS:', type: 'info' },
-        { text: '  status                       - Display live core network status', type: 'info' },
-        { text: '  faucet <user> <amount>       - Mint and inject Civic Points', type: 'info' },
-        { text: '  promote <user> <role>        - Elevate role (FOUNDER, ADMIN, MODERATOR, DELEGATE)', type: 'info' },
-        { text: '  badge <user> <GOLD|BLUE|NONE> - Grant verified badge to node', type: 'info' },
-        { text: '  vip <user> <tier>            - Bestow VIP subscription (FOUNDER_PATRON, PULSE_PRO)', type: 'info' },
-        { text: '  freeze                       - Emergency freeze all registrations and posts', type: 'info' },
-        { text: '  resume                       - Resume full normal platform operations', type: 'info' },
-        { text: '  sync_sheets                  - Trigger live Google Apps Script sync', type: 'info' },
-        { text: '  export_json                  - Download complete database snapshot JSON', type: 'info' },
-        { text: '  clear                        - Clear terminal output buffer', type: 'info' },
+        { text: 'ZEN.FOUNDER ROOT COMMANDS:', type: 'info' },
+        { text: '  status                        - Display live core network status', type: 'info' },
+        { text: '  faucet <user> <amount>        - Mint and inject Civic Points', type: 'info' },
+        { text: '  promote <user> <role>         - Elevate role (FOUNDER, ADMIN, MODERATOR, DELEGATE)', type: 'info' },
+        { text: '  lockdown                      - Engage emergency platform mutation freeze', type: 'info' },
+        { text: '  resume                        - Resume full normal platform operations', type: 'info' },
+        { text: '  clear                         - Clear terminal buffer', type: 'info' },
       ]);
     } else if (root === 'clear') {
-      if (typeof window !== 'undefined') {
-        try { sessionStorage.removeItem('zenvitra_root_cli_logs'); } catch (_) {}
-      }
       setTerminalLogs([{ text: 'Terminal output buffer cleared.', type: 'info' }]);
     } else if (root === 'status') {
       setTerminalLogs((prev) => [
         ...prev,
-        { text: `[CORE TELEMETRY] Active Protocol Engine: ONLINE`, type: 'success' },
-        { text: `[FOUNDER] Operator: @yuveer // ROOT LEVEL 0 (100%)`, type: 'success' },
-        { text: `[DATABASE] Total Registered Nodes: ${totalUsers} | Suspended: ${suspendedUsers}`, type: 'info' },
-        { text: `[ESCROW] Constitutional Allocation: ${siteOverrides.escrowPercentage}% hardcoded`, type: 'info' },
+        { text: `[CORE] Platform Status: ${serverProtocols.maintenanceMode ? 'MAINTENANCE' : 'OPERATIONAL'}`, type: 'success' },
+        { text: `[FOUNDER] Operator: @yuveer // LEVEL 0 CLEARANCE`, type: 'success' },
+        { text: `[DATABASE] Total Registered Nodes: ${totalUsers} | Accounts: ${totalAccounts}`, type: 'info' },
+        { text: `[REGISTRATION] Status: ${serverProtocols.registrationControl}`, type: 'info' },
       ]);
     } else if (root === 'faucet' && parts.length >= 3) {
       const u = parts[1].replace('@', '');
@@ -782,443 +840,1253 @@ export function VaultDashboardClient({
         { text: `[ROLE] Node @${u} role elevated to ${role}!`, type: 'success' },
       ]);
       notify(`Node @${u} promoted to ${role}`);
-    } else if (root === 'freeze') {
-      saveProtocolControls({ maintenanceMode: true, registrationsOpen: false });
-      setProtocols(getProtocolControls());
+    } else if (root === 'lockdown') {
+      handleEmergencyLockdown();
       setTerminalLogs((prev) => [
         ...prev,
-        { text: `🚨 [EMERGENCY] NETWORK FREEZE ACTIVATED: Maintenance ON, Registrations OFF`, type: 'warn' },
+        { text: `🚨 [EMERGENCY] Platform Mutation Lockdown Executed!`, type: 'warn' },
       ]);
-      notify('🚨 Emergency Platform Freeze Activated');
     } else if (root === 'resume') {
-      saveProtocolControls({ maintenanceMode: false, registrationsOpen: true });
-      setProtocols(getProtocolControls());
+      updateProtocolsServer({ emergencyLockdown: false, maintenanceMode: false, readOnlyMode: false });
       setTerminalLogs((prev) => [
         ...prev,
-        { text: `✅ [NORMAL] Network resumed to standard operations.`, type: 'success' },
-      ]);
-      notify('Platform operations resumed to normal');
-    } else if (root === 'export_json') {
-      handleExportDatabaseJSON();
-      setTerminalLogs((prev) => [
-        ...prev,
-        { text: `[EXPORT] Complete database snapshot compiled and downloaded.`, type: 'success' },
-      ]);
-    } else if (root === 'sync_sheets') {
-      handleTriggerSheetSync();
-      setTerminalLogs((prev) => [
-        ...prev,
-        { text: `[SHEETS] Google Apps Script live sync triggered.`, type: 'info' },
+        { text: `✅ [NORMAL] Standard platform operations resumed.`, type: 'success' },
       ]);
     } else {
       setTerminalLogs((prev) => [
         ...prev,
-        { text: `Command not recognized: "${cmd}". Type "help" for command list.`, type: 'error' },
+        { text: `Command not recognized: "${cmd}". Type "help" for available commands.`, type: 'error' },
       ]);
     }
   };
 
-  /* Export Full JSON Backup */
-  const handleExportDatabaseJSON = () => {
-    const data = {
-      timestamp: new Date().toISOString(),
-      founder: '@yuveer',
-      directive: getFounderDirective(),
-      protocols: getProtocolControls(),
-      subscriptions: getAllSubscriptions(),
-      userOverrides: getAllUserOverrides(),
-      siteOverrides: getSiteOverrides(),
-      auditLogs: getAuditLogs(),
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `zenvitra_sovereign_backup_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    notify('📦 Complete system database JSON backup downloaded!');
-  };
-
-  /* Google Sheets Live Sync Diagnostic */
-  const handleTriggerSheetSync = async () => {
-    setSheetSyncStatus('SYNCING');
-    setSheetSyncLog('Pinging Google Apps Script endpoint via Next.js API route...');
-    try {
-      const res = await fetch('/api/sheets?action=GET_USERS');
-      if (res.ok) {
-        const data = await res.json();
-        setSheetSyncStatus('SUCCESS');
-        setSheetSyncLog(`✅ Sync Successful: ${data.users?.length || 0} registered identities retrieved from Google Sheet.`);
-        notify('Google Sheets bi-directional sync completed!');
-      } else {
-        setSheetSyncStatus('ERROR');
-        setSheetSyncLog(`⚠️ Sheet Endpoint responded with status: ${res.status}`);
-      }
-    } catch (err: any) {
-      setSheetSyncStatus('ERROR');
-      setSheetSyncLog(`❌ Sync error: ${err.message || 'Network timeout'}`);
-    }
-  };
-
-  // ── CLEARANCE GATE: IF NON-FOUNDER OR LOCKED ──
-  if (!isFounderClearance) {
-    return (
-      <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-6 font-sans">
-        <div className="w-20 h-20 rounded-3xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 mx-auto shadow-[0_0_30px_rgba(251,191,36,0.3)]">
-          <Crown className="w-10 h-10" />
-        </div>
-        
-        <div className="space-y-2">
-          <span className="px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider">
-            FOUNDER SOVEREIGNTY CLEARANCE
-          </span>
-          <h2 className="text-2xl font-bold font-mono text-white">Supreme Founder Vault Locked</h2>
-          <p className="text-xs text-neutral-400 font-mono leading-relaxed max-w-md mx-auto">
-            Admins have operational permissions, but Supreme Level 0 is exclusively reserved for <strong className="text-amber-300">@yuveer</strong>. Enter your Personal Founder Key below to activate root session.
-          </p>
-        </div>
-
-        {/* Passkey Unlock Form */}
-        <form onSubmit={handlePasskeyUnlock} className="p-6 rounded-3xl bg-[#090b14] border border-white/10 shadow-2xl space-y-4 max-w-md mx-auto text-left">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-mono text-neutral-300 uppercase font-bold flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-              <span>Enter Personal Founder Master Key</span>
-            </label>
-            <input
-              type="password"
-              value={passkeyInput}
-              onChange={(e) => setPasskeyInput(e.target.value)}
-              placeholder="Insert your code"
-              autoComplete="off"
-              className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-amber-300 font-mono text-xs focus:outline-none focus:border-amber-400"
-              autoFocus
-            />
-            {passkeyError && (
-              <p className="text-[11px] font-mono text-rose-400">{passkeyError}</p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold transition shadow-[0_0_20px_rgba(251,191,36,0.4)] cursor-pointer flex items-center justify-center gap-2"
-          >
-            <Unlock className="w-4 h-4 fill-black" />
-            <span>Unlock Founder Sovereign Vault</span>
-          </button>
-        </form>
-
-        <div className="pt-2 flex justify-center items-center">
-          <Link
-            href="/pulse"
-            className="px-5 py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-bold transition cursor-pointer"
-          >
-            Return to Platform Feed
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full max-w-full space-y-6 font-sans text-left overflow-x-hidden min-w-0">
-      {/* Top Header: Founder Sovereign vs Staff Admin */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b ${
-        isFounderClearance ? 'border-amber-500/30' : 'border-cyan-500/30'
-      }`}>
+    <div className="space-y-6 w-full max-w-full pb-16 font-sans select-none">
+      {/* ── TOP EXECUTIVE BANNER & BREADCRUMB ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 shadow-[0_0_35px_rgba(251,191,36,0.08)]">
         <div className="space-y-1">
-          <div className={`inline-flex items-center gap-2 px-3 py-0.5 rounded-full font-mono text-[10px] font-bold ${
-            isFounderClearance
-              ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300'
-              : 'bg-cyan-500/10 border border-cyan-500/30 text-cyan-300'
-          }`}>
-            {isFounderClearance ? (
-              <>
-                <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                <span>EXECUTIVE NETWORK STATE OVERSIGHT // SOVEREIGN CLEARANCE (@yuveer)</span>
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                <span>STAFF OPERATIONAL CLEARANCE // LEVEL 2 ADMINISTRATION</span>
-              </>
-            )}
+          <div className="flex items-center gap-2 text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest">
+            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+            <span>ZEN.FOUNDER // THE SUPREME CONTROL CENTRE</span>
+            <span className="text-neutral-600">&bull;</span>
+            <span className="text-emerald-400 font-black">LEVEL 0 OMNIPOTENCE</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-bold font-mono text-white tracking-wide uppercase">
-            {isFounderClearance ? 'Supreme Founder Sovereign Vault' : 'Staff Administrator Operations Console'}
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <span>ZENVITRA Master Control</span>
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+              @yuveer
+            </span>
           </h1>
-          <p className="text-xs text-neutral-400 font-mono">
-            {isFounderClearance
-              ? '100% omnipotent control: Personal Founder Keys, Directives, VIP Allocations, SQL CLI, User Faucet & Killswitches.'
-              : 'Operations, Member Moderation, Feed & Community Management Enclave. Protocol and Escrow modifications are restricted to Level 0.'}
+          <p className="text-xs text-neutral-400 font-sans font-light">
+            One dashboard. Complete visibility. Granular control. Zero unauthorized access.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <button
-            onClick={handleExportDatabaseJSON}
-            className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold transition flex items-center gap-1.5 cursor-pointer shadow"
-            title="Download Full Database Snapshot JSON"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export JSON</span>
-          </button>
-
-          <span className={`px-3.5 py-1.5 rounded-xl font-bold shadow ${
-            isFounderClearance
-              ? 'bg-amber-400/20 border border-amber-400/40 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.3)]'
-              : 'bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-          }`}>
-            {isFounderClearance ? '👑 ROOT MASTER (100%)' : '🛡️ STAFF ADMIN (LEVEL 2)'}
-          </span>
-        </div>
-      </div>
-
-      {/* Sovereign Crisis & Maintenance Controller */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-red-950/40 via-black to-amber-950/30 border border-red-500/30 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-            <AlertOctagon className="w-5 h-5 animate-pulse" />
-          </div>
-          <div>
-            <span className="font-bold text-white uppercase tracking-wider block">
-              SOVEREIGN CRISIS MITIGATION &amp; MAINTENANCE OVERRIDE
-            </span>
-            <span className="text-[11px] text-neutral-400">
-              Immediate hardware-level write freeze and system maintenance curtain controls
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          {/* Maintenance Mode Toggle */}
+        {/* Global Emergency Status Actions */}
+        <div className="flex items-center gap-2.5 font-mono text-xs shrink-0 flex-wrap">
+          {/* Maintenance Mode Toggle Button */}
           <button
             type="button"
-            onClick={() => {
-              const nextMaint = !protocols.maintenanceMode;
-              const updated = saveProtocolControls({ maintenanceMode: nextMaint });
-              setProtocols(updated);
-              notify(nextMaint ? '🚧 Global Maintenance Curtain ENGAGED' : '✅ Maintenance Curtain LIFTED');
-              addAuditLog(`Founder toggled Maintenance Mode: ${nextMaint}`, 'PROTOCOL');
-            }}
-            className={`px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-2 cursor-pointer border ${
-              protocols.maintenanceMode
-                ? 'bg-amber-500 text-black border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.4)]'
-                : 'bg-white/5 text-neutral-300 border-white/10 hover:bg-white/10'
+            onClick={handleToggleMaintenance}
+            className={`px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-2 cursor-pointer border ${
+              serverProtocols.maintenanceMode
+                ? 'bg-amber-500 text-black border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.4)]'
+                : 'bg-white/5 text-neutral-300 border-white/10 hover:border-amber-400/40 hover:text-white'
             }`}
           >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Maintenance: {protocols.maintenanceMode ? 'ACTIVE (ON)' : 'OFF'}</span>
+            <Power className="w-3.5 h-3.5" />
+            <span>Maintenance: {serverProtocols.maintenanceMode ? 'ACTIVE' : 'OFF'}</span>
           </button>
 
-          {/* Panic Mode Toggle */}
+          {/* Emergency Lockdown Button */}
           <button
             type="button"
-            onClick={() => {
-              const nextPanic = !protocols.readOnlyMode;
-              const updated = saveProtocolControls({ readOnlyMode: nextPanic, maintenanceMode: nextPanic });
-              setProtocols(updated);
-              notify(nextPanic ? '🚨 CRISIS PANIC MODE ACTIVATED: Platform Locked Read-Only!' : '✅ Panic Mode Disengaged: Normal Read/Write Resumed');
-              addAuditLog(`Founder toggled Crisis Panic Mode: ${nextPanic}`, 'PROTOCOL');
-            }}
-            className={`px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-2 cursor-pointer border ${
-              protocols.readOnlyMode
-                ? 'bg-red-600 text-white border-red-400 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.6)]'
-                : 'bg-red-500/20 text-red-300 border-red-500/40 hover:bg-red-500/30'
+            onClick={handleEmergencyLockdown}
+            className={`px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-2 cursor-pointer border ${
+              serverProtocols.emergencyLockdown
+                ? 'bg-rose-600 text-white border-rose-400 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.6)]'
+                : 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:bg-rose-500/25'
             }`}
           >
             <AlertOctagon className="w-3.5 h-3.5" />
-            <span>Panic Mode: {protocols.readOnlyMode ? 'ENGAGED (LOCKED)' : 'DISARMED'}</span>
+            <span>Lockdown: {serverProtocols.emergencyLockdown ? 'ENGAGED' : 'DISARMED'}</span>
           </button>
+
+          {/* Switch to Admin Center */}
+          <Link
+            href="/core-team-panel"
+            className="px-3.5 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/30 text-cyan-300 font-bold transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Staff Admin Console</span>
+            <ArrowUpRight className="w-3 h-3 text-cyan-400" />
+          </Link>
         </div>
       </div>
 
-      {/* Global Tab Navigation */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-white/10 font-mono text-xs w-full max-w-full">
-        {[
-          { id: 'overview', label: '📊 System Telemetry', icon: Cpu },
-          { id: 'admin_control', label: '🛡️ Admin Mission Control (28 Modules)', icon: ShieldCheck },
-          { id: 'panic_room', label: '🚨 Panic Mode (Level 0 Override)', icon: AlertOctagon },
-          { id: 'masterkey', label: '🔑 Personal Master Key', icon: KeyRound },
-          { id: 'adminlinks', label: '🔗 Admin Bypass Links', icon: ShieldCheck },
-          { id: 'terminal', label: '💻 Root Terminal (CLI)', icon: Terminal },
-          { id: 'directive', label: '👑 Founder\'s Note', icon: Radio },
-          { id: 'press', label: '📰 Founder Press Studio', icon: Newspaper },
-          { id: 'subscriptions', label: '💳 VIP Subscriptions', icon: CreditCard },
-          { id: 'users', label: '🛡️ Node Clearance & Faucet', icon: Users },
-          { id: 'sheets', label: '📊 Google Sheets Hub', icon: Database },
-          { id: 'site', label: '🌐 Site Overrides & Ticker', icon: Globe2 },
-          { id: 'protocol', label: '⚙️ Protocol & Killswitches', icon: Sliders },
-          { id: 'audit', label: '📜 Audit Ledger', icon: Activity },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const active = activeTab === tab.id;
+      {/* ── 12 MASTER SECTIONS SELECTOR RIBBON ── */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 border-b border-white/10 font-mono text-xs w-full max-w-full">
+        {FOUNDER_SECTIONS.map((sec) => {
+          const isActive = activeSection === sec.id;
           return (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl transition font-bold whitespace-nowrap cursor-pointer border shrink-0 ${
-                active
-                  ? 'bg-amber-400 text-black border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.4)]'
+              key={sec.id}
+              onClick={() => selectSection(sec.id)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl transition font-bold whitespace-nowrap cursor-pointer border shrink-0 ${
+                isActive
+                  ? 'bg-amber-400 text-black border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.35)]'
                   : 'bg-[#090b14] border-white/10 text-neutral-400 hover:text-white hover:border-white/20'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
+              <span className={`text-[10px] ${isActive ? 'text-black/70' : 'text-neutral-500'}`}>
+                {sec.num} &bull;
+              </span>
+              <span>{sec.title}</span>
+              <span className={`text-[9px] px-1.5 py-0.2 rounded-full ${
+                isActive ? 'bg-black/20 text-black' : 'bg-white/5 text-neutral-400'
+              }`}>
+                {sec.controlsCount}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Feedback Banner */}
+      {/* ── FEEDBACK NOTIFICATION TOAST ── */}
       {feedback && (
-        <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono flex items-center gap-2.5 shadow-lg">
+        <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono flex items-center gap-2.5 shadow-lg animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
           <span>{feedback}</span>
         </div>
       )}
 
-      {/* ── TAB: ADMIN MISSION CONTROL (EMBEDDED INSIDE VAULT) ── */}
-      {activeTab === 'admin_control' && (
-        <div className="space-y-4 w-full -mx-2 sm:-mx-4">
-          <div className="px-4 py-2 flex items-center justify-between bg-amber-500/10 border-y border-amber-500/30 text-amber-300 font-mono text-xs rounded-xl">
-            <span className="flex items-center gap-2 font-bold">
-              <Crown className="w-4 h-4 text-amber-400" />
-              <span>FOUNDER EMBEDDED OMNI-CONTROL // ALL 28 ADMINISTRATIVE MODULES ACTIVE</span>
-            </span>
-            <span className="text-[10px] text-neutral-400 hidden sm:inline">PASSTHROUGH HARDWARE CLEARANCE</span>
-          </div>
-          <ZenAdminControlRoom />
-        </div>
-      )}
-
-      {/* ── TAB: SOVEREIGN PANIC ROOM & CRISIS OVERRIDE ── */}
-      {activeTab === 'panic_room' && (
-        <div className="p-6 sm:p-10 rounded-3xl bg-gradient-to-b from-rose-950/40 via-[#0a070a] to-[#040205] border border-rose-500/50 space-y-6 font-mono text-xs">
-          <div className="border-b border-rose-500/30 pb-4">
-            <span className="text-[11px] font-mono text-rose-400 uppercase font-bold tracking-wider">
-              PANIC ROOM // LEVEL 0 SOVEREIGN CRISIS MITIGATION
-            </span>
-            <h2 className="text-2xl font-bold text-white pt-1">Supreme Emergency Override Console</h2>
-            <p className="text-xs text-neutral-400 font-sans pt-1">
-              Extreme interventions reserved strictly for @yuveer (Founder). Instant hardware-level freeze of all platform mutations, database writes, and public registration curtains.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-4">
-            <div className="flex items-center gap-3 text-rose-400 font-bold text-sm">
-              <AlertOctagon className="w-6 h-6" />
-              <span>PLATFORM READ-ONLY EMERGENCY WRITE CURTAIN</span>
-            </div>
-            <p className="text-neutral-300 leading-relaxed font-sans text-xs">
-              Activating this lock freezes all database mutations across all devices in real-time. Only operators with Level 0 master bypass can execute changes. All incoming client POST/PATCH/DELETE requests are intercepted.
-            </p>
-
-            <div className="pt-2 flex items-center gap-3">
-              <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                protocols.readOnlyMode 
-                  ? 'bg-rose-500 text-white animate-pulse' 
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-              }`}>
-                CURRENT SYSTEM STATUS: {protocols.readOnlyMode ? 'EMERGENCY READ-ONLY LOCK ACTIVE' : 'NORMAL READ/WRITE OPERATIONS'}
+      {/* ========================================================================= */}
+      {/* ── SECTION 01: COMMAND (FOUNDER SUPREME DASHBOARD) ─────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '01_command' && (
+        <div className="space-y-6 w-full">
+          {/* THE 5 QUESTIONS ANSWERED IMMEDIATELY */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between font-mono text-xs text-neutral-400">
+              <span className="uppercase tracking-wider font-bold text-white flex items-center gap-2">
+                <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                <span>Executive Platform Telemetry &bull; 5 Live Core Answers</span>
               </span>
+              <span className="text-[10px] text-amber-400">REAL-TIME DB + GATEWAY FEED</span>
             </div>
 
-            <div className="pt-4 flex flex-wrap gap-4">
-              <button
-                type="button"
-                onClick={() => {
-                  saveProtocolControls({ readOnlyMode: true, maintenanceMode: true });
-                  setProtocols(getProtocolControls());
-                  notify('🚨 PLATFORM WRITE CURTAIN ENGAGED. READ-ONLY MODE ACTIVE.');
-                  addAuditLog('CRISIS EMERGENCY LOCK ENGAGED: Read-Only Mode Activated', 'PROTOCOL');
-                }}
-                className="px-6 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition cursor-pointer shadow-[0_0_30px_rgba(244,63,94,0.4)] flex items-center gap-2 uppercase tracking-wider"
-              >
-                <AlertOctagon className="w-4 h-4" />
-                <span>Engage Panic Mode (Lockdown)</span>
-              </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 w-full">
+              {/* Question 1: Total Users */}
+              <div className="p-4 rounded-2xl bg-[#090b14] border border-white/10 space-y-1 font-mono">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                  <span>TOTAL USERS</span>
+                  <Users className="w-3.5 h-3.5 text-cyan-400" />
+                </div>
+                <p className="text-2xl font-bold text-white">{totalUsers}</p>
+                <p className="text-[10px] text-neutral-400">{totalAccounts} Registered accounts</p>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  saveProtocolControls({ readOnlyMode: false, maintenanceMode: false });
-                  setProtocols(getProtocolControls());
-                  notify('✅ Platform unlocked. Standard read/write resumed.');
-                  addAuditLog('Crisis Lock Lifted: Resumed Standard Operations', 'PROTOCOL');
-                }}
-                className="px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition cursor-pointer flex items-center gap-2 uppercase tracking-wider"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Resume Normal Operations</span>
-              </button>
+              {/* Question 2: Events */}
+              <div className="p-4 rounded-2xl bg-[#090b14] border border-white/10 space-y-1 font-mono">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                  <span>EVENTS & MUNS</span>
+                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <p className="text-2xl font-bold text-amber-300">12</p>
+                <p className="text-[10px] text-neutral-400">Upcoming &amp; active assemblies</p>
+              </div>
+
+              {/* Question 3: Transactions */}
+              <div className="p-4 rounded-2xl bg-[#090b14] border border-white/10 space-y-1 font-mono">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                  <span>TRANSACTIONS</span>
+                  <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <p className="text-2xl font-bold text-emerald-300">₹2,84,500</p>
+                <p className="text-[10px] text-neutral-400">Reconciled payment data</p>
+              </div>
+
+              {/* Question 4: Open Alerts */}
+              <div className="p-4 rounded-2xl bg-[#090b14] border border-white/10 space-y-1 font-mono">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                  <span>OPEN ALERTS</span>
+                  <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                </div>
+                <p className="text-2xl font-bold text-rose-300">{criticalAlerts.length}</p>
+                <p className="text-[10px] text-neutral-400">Security &amp; system health</p>
+              </div>
+
+              {/* Question 5: Platform Status */}
+              <div className="p-4 rounded-2xl bg-[#090b14] border border-amber-500/30 space-y-1 font-mono shadow-[0_0_15px_rgba(251,191,36,0.06)]">
+                <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                  <span>PLATFORM STATUS</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <p className="text-lg font-bold text-emerald-400 flex items-center gap-1.5 pt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>OPERATIONAL</span>
+                </p>
+                <p className="text-[10px] text-neutral-400">System overview: Optimal</p>
+              </div>
+            </div>
+          </div>
+
+          {/* LOWER PANELS 1 & 2: LIVE ACTIVITY + MODULE HEALTH */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 w-full">
+            {/* Live Activity Stream */}
+            <div className="p-5 rounded-3xl bg-[#080a12] border border-white/10 space-y-3 font-mono text-xs">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="font-bold text-white flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-cyan-400" />
+                  <span>Live Activity Stream</span>
+                </span>
+                <span className="text-[10px] text-neutral-500">LIVE WEBSOCKET BUS</span>
+              </div>
+
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {liveActivities.map((act) => (
+                  <div key={act.id} className="p-3 rounded-2xl bg-black/60 border border-white/5 flex items-center justify-between gap-3 text-[11px]">
+                    <div className="flex items-center gap-2.5 truncate">
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        act.type === 'PAYMENT' ? 'bg-emerald-400' :
+                        act.type === 'SECURITY' ? 'bg-rose-400' :
+                        act.type === 'ADMIN' ? 'bg-amber-400' : 'bg-cyan-400'
+                      }`} />
+                      <div className="truncate">
+                        <span className="text-white font-bold">{act.actor}</span>{' '}
+                        <span className="text-neutral-400">{act.action}</span>{' '}
+                        <span className="text-amber-300 font-medium">{act.target}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-neutral-500 shrink-0">{act.timestamp}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Module Health Overview */}
+            <div className="p-5 rounded-3xl bg-[#080a12] border border-white/10 space-y-3 font-mono text-xs">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="font-bold text-white flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-amber-400" />
+                  <span>Module Health (All 10 Core Modules)</span>
+                </span>
+                <button
+                  onClick={() => selectSection('03_zen_modules')}
+                  className="text-[10px] text-amber-400 hover:text-white underline cursor-pointer"
+                >
+                  Manage All 10 &rarr;
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+                {zenModules.map((m) => {
+                  const isOnline = serverProtocols.modules[m.key] !== false;
+                  return (
+                    <div key={m.key} className="p-2.5 rounded-2xl bg-black/60 border border-white/5 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-bold text-[11px] truncate">{m.name}</span>
+                        <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-rose-500'}`} />
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-neutral-400">
+                        <span>{m.latencyMs}ms</span>
+                        <span>{isOnline ? 'ONLINE' : 'MUTED'}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* LOWER PANELS 3, 4, 5: PENDING APPROVALS + QUICK ACTIONS + CRITICAL ALERTS */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full font-mono text-xs">
+            {/* Pending Approvals */}
+            <div className="p-5 rounded-3xl bg-[#080a12] border border-white/10 space-y-3">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="font-bold text-white flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span>Pending Approvals ({approvalsQueue.filter(a => a.status === 'PENDING').length})</span>
+                </span>
+                <span className="text-[10px] text-neutral-500">LEVEL 0 GATE</span>
+              </div>
+
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                {approvalsQueue.map((item) => (
+                  <div key={item.id} className="p-3 rounded-2xl bg-black/60 border border-white/5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-amber-300">{item.type}</span>
+                      <span className="text-[10px] text-neutral-500">{item.timestamp}</span>
+                    </div>
+                    <div className="text-white font-bold text-xs truncate">{item.title}</div>
+                    <p className="text-[11px] text-neutral-400 font-sans line-clamp-2">{item.details}</p>
+                    {item.amount && (
+                      <div className="text-emerald-400 font-bold text-[11px]">Amount: {item.amount}</div>
+                    )}
+
+                    {item.status === 'PENDING' ? (
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleResolveApproval(item.id, 'APPROVED')}
+                          className="flex-1 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold transition text-[10px] cursor-pointer"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleResolveApproval(item.id, 'REJECTED')}
+                          className="flex-1 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold transition text-[10px] cursor-pointer"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span className={`text-[10px] font-bold ${item.status === 'APPROVED' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {item.status}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="p-5 rounded-3xl bg-[#080a12] border border-white/10 space-y-3">
+              <div className="border-b border-white/10 pb-3">
+                <span className="font-bold text-white flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                  <span>Founder Quick Actions</span>
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => selectSection('05_events_mun')}
+                  className="w-full p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold flex items-center justify-between transition cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Calendar className="w-4 h-4 text-amber-400" />
+                    <div>
+                      <div className="text-xs">Create New MUN / Assembly</div>
+                      <div className="text-[10px] text-neutral-400 font-light font-sans">Launch vanity route &amp; committee matrix</div>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => selectSection('02_platform_control')}
+                  className="w-full p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold flex items-center justify-between transition cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Send className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="text-xs">Broadcast Global Announcement</div>
+                      <div className="text-[10px] text-neutral-400 font-light font-sans">Display high-priority alert across site</div>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleToggleMaintenance}
+                  className="w-full p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold flex items-center justify-between transition cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Power className="w-4 h-4 text-rose-400" />
+                    <div>
+                      <div className="text-xs">Toggle Maintenance Curtain</div>
+                      <div className="text-[10px] text-neutral-400 font-light font-sans">Gate public site while preserving admin</div>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${serverProtocols.maintenanceMode ? 'bg-rose-500/30 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                    {serverProtocols.maintenanceMode ? 'ACTIVE' : 'OFF'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => selectSection('04_people_access')}
+                  className="w-full p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold flex items-center justify-between transition cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Link2 className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <div className="text-xs">Issue Enclave Access Passkey</div>
+                      <div className="text-[10px] text-neutral-400 font-light font-sans">Hardware-locked bypass links for staff</div>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Critical Alerts */}
+            <div className="p-5 rounded-3xl bg-[#080a12] border border-white/10 space-y-3">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="font-bold text-white flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-rose-400" />
+                  <span>Critical Alerts Radar</span>
+                </span>
+                <span className="text-[10px] text-emerald-400 font-bold">ALL SHIELDS UP</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {criticalAlerts.map((alt) => (
+                  <div key={alt.id} className="p-3.5 rounded-2xl bg-black/60 border border-white/10 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">
+                        {alt.severity}
+                      </span>
+                      <span className="text-[10px] text-neutral-500">{alt.source}</span>
+                    </div>
+                    <div className="text-white font-bold text-xs">{alt.title}</div>
+                    <p className="text-[11px] text-neutral-400 font-sans leading-relaxed">{alt.description}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── TAB 1: OVERVIEW & TELEMETRY ── */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6 w-full max-w-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
-            <MetricCard
-              label="REGISTERED IDENTITIES"
-              value={totalUsers}
-              subtext={`${totalAccounts} Linked OAuth accounts`}
-              icon={Users}
-              status="normal"
-            />
-            <MetricCard
-              label="FOUNDER CLEARANCE"
-              value="@yuveer"
-              subtext="100% Omnipotent Root Level 0"
-              icon={Crown}
-              status="success"
-            />
-            <MetricCard
-              label="PROTOCOL CIPHER SUITE"
-              value="ED25519"
-              subtext="Volatile socket encryption active"
-              icon={Zap}
-              status="success"
-            />
-            <MetricCard
-              label="CONSTITUTIONAL ESCROW"
-              value={`${siteOverrides.escrowPercentage}%`}
-              subtext="Hardcoded gross allocation"
-              icon={Coins}
-              status="normal"
-            />
+      {/* ========================================================================= */}
+      {/* ── SECTION 02: PLATFORM CONTROL (GLOBAL CONTROLS CONFIGURATION LAYER) ── */}
+      {/* ========================================================================= */}
+      {activeSection === '02_platform_control' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-amber-400" />
+                <span>Single Configuration Layer &bull; Master Protocol Controls</span>
+              </span>
+              <span className="text-[10px] text-neutral-400">ZERO RE-DEPLOY CONFIGURATION</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Govern platform availability, registration curtains, feature toggles, and emergency overrides instantly.
+            </p>
           </div>
 
-          {/* Master Key Quick Status */}
-          <div className="p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/30 via-[#0a0c14] to-zinc-950 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-mono text-xs text-amber-300 font-bold">
-                <KeyRound className="w-4 h-4 text-amber-400" />
-                <span>ACTIVE PERSONAL FOUNDER MASTER KEYS</span>
+          {/* Control Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Control 1: Global Maintenance */}
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-white">01 &bull; Global Maintenance</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${serverProtocols.maintenanceMode ? 'bg-rose-500/30 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                    {serverProtocols.maintenanceMode ? 'ENGAGED' : 'OFF'}
+                  </span>
+                </div>
+                <p className="text-neutral-400 font-sans text-xs">
+                  Puts public website into maintenance mode while preserving authorized Founder and Admin access.
+                </p>
               </div>
               <button
-                onClick={() => setActiveTab('masterkey')}
-                className="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition cursor-pointer"
+                type="button"
+                onClick={handleToggleMaintenance}
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition cursor-pointer"
               >
-                Key Manager →
+                {serverProtocols.maintenanceMode ? 'Disengage Maintenance' : 'Activate Maintenance Mode'}
               </button>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+
+            {/* Control 2: Emergency Lockdown */}
+            <div className="p-5 rounded-3xl bg-black/60 border border-rose-500/30 space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-rose-300">02 &bull; Emergency Lockdown</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${serverProtocols.emergencyLockdown ? 'bg-rose-500 text-white animate-pulse' : 'bg-white/5 text-neutral-400'}`}>
+                    {serverProtocols.emergencyLockdown ? 'LOCKED' : 'READY'}
+                  </span>
+                </div>
+                <p className="text-neutral-400 font-sans text-xs">
+                  Freeze all user database mutations and form submissions instantly in an urgent security crisis.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleEmergencyLockdown}
+                className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition cursor-pointer uppercase shadow-[0_0_15px_rgba(244,63,94,0.3)]"
+              >
+                {serverProtocols.emergencyLockdown ? 'Lift Lockdown' : 'Execute Emergency Lockdown'}
+              </button>
+            </div>
+
+            {/* Control 3: Registration Gate */}
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-white">03 &bull; Registration Control</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-cyan-500/20 text-cyan-300">
+                    {serverProtocols.registrationControl}
+                  </span>
+                </div>
+                <p className="text-neutral-400 font-sans text-xs">
+                  Control new identity onboarding across ZENVITRA: Open to all, Invite-only passkeys, or completely Paused.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5 pt-1">
+                {(['OPEN', 'PAUSED', 'CLOSED'] as const).map((gate) => (
+                  <button
+                    key={gate}
+                    type="button"
+                    onClick={() => handleChangeRegistrationControl(gate)}
+                    className={`py-1.5 rounded-xl text-[10px] font-bold transition cursor-pointer ${
+                      serverProtocols.registrationControl === gate
+                        ? 'bg-amber-400 text-black shadow'
+                        : 'bg-white/5 text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    {gate}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Global Announcement Broadcaster Form */}
+          <form onSubmit={handleBroadcastAnnouncement} className="p-6 sm:p-8 rounded-3xl bg-[#080a12] border border-cyan-500/30 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2 text-cyan-300 font-bold uppercase tracking-wider">
+                <Send className="w-4 h-4 text-cyan-400" />
+                <span>Global Emergency Announcement Broadcaster</span>
+              </div>
+              <span className="text-[10px] text-neutral-400">INSTANT SITE-WIDE BANNER</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2 space-y-1.5">
+                <label className="text-[10px] text-neutral-400 uppercase font-bold">Broadcast Headline</label>
+                <input
+                  type="text"
+                  required
+                  value={announcementTitle}
+                  onChange={(e) => setAnnouncementTitle(e.target.value)}
+                  placeholder="e.g. SCHEDULE UPDATE: Committee Room 4 moved to Main Auditorium"
+                  className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white text-xs focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-neutral-400 uppercase font-bold">Urgency Priority</label>
+                <select
+                  value={announcementPriority}
+                  onChange={(e) => setAnnouncementPriority(e.target.value as any)}
+                  className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white text-xs focus:outline-none focus:border-cyan-400 cursor-pointer"
+                >
+                  <option value="NORMAL">Normal Notice</option>
+                  <option value="URGENT">Urgent Advisory</option>
+                  <option value="CRITICAL">Critical Emergency</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-neutral-400 uppercase font-bold">Announcement Body Details</label>
+              <textarea
+                required
+                rows={3}
+                value={announcementBody}
+                onChange={(e) => setAnnouncementBody(e.target.value)}
+                placeholder="Detailed communiqué broadcasted to all active participants..."
+                className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white text-xs focus:outline-none focus:border-cyan-400"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-neutral-400 uppercase font-bold">Target Audience:</span>
+                <select
+                  value={announcementAudience}
+                  onChange={(e) => setAnnouncementAudience(e.target.value as any)}
+                  className="px-3 py-1.5 rounded-xl bg-black border border-white/20 text-cyan-300 text-xs focus:outline-none cursor-pointer"
+                >
+                  <option value="ALL">All Platform Visitors</option>
+                  <option value="STUDENTS">Verified Students Only</option>
+                  <option value="ORGANIZERS">Assembly Organizers</option>
+                  <option value="DELEGATES">Allocated Delegates</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs transition cursor-pointer flex items-center gap-2 uppercase shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Broadcast Announcement Now</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 03: ZEN MODULES (10 CORE ECOSYSTEM APPS) ───────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '03_zen_modules' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Layers className="w-4 h-4 text-amber-400" />
+                <span>ZEN MODULES &bull; Full Lifecycle Management (10 Modules)</span>
+              </span>
+              <span className="text-[10px] text-neutral-400">REAL-TIME DAU + LATENCY TELEMETRY</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Toggle any module on/off in real-time, configure Coming Soon curtains, and monitor edge latency.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {zenModules.map((m) => {
+              const isEnabled = serverProtocols.modules[m.key] !== false;
+              return (
+                <div
+                  key={m.key}
+                  className={`p-5 rounded-3xl border transition space-y-4 flex flex-col justify-between ${
+                    isEnabled
+                      ? 'bg-[#080a12] border-white/10 shadow-lg'
+                      : 'bg-black/40 border-rose-500/20 opacity-60'
+                  }`}
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-white font-bold text-sm tracking-wide">{m.name}</span>
+                        <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 text-neutral-400">
+                          {m.code}
+                        </span>
+                        {m.beta && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 font-bold">
+                            BETA
+                          </span>
+                        )}
+                      </div>
+
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isEnabled
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      }`}>
+                        {isEnabled ? 'OPERATIONAL' : 'MUTED / DISABLED'}
+                      </span>
+                    </div>
+
+                    <p className="text-neutral-400 font-sans text-xs leading-relaxed">{m.tagline}</p>
+
+                    <div className="p-3 rounded-2xl bg-black/60 border border-white/5 grid grid-cols-3 gap-2 text-[11px]">
+                      <div>
+                        <span className="text-[10px] text-neutral-500 block">Version:</span>
+                        <span className="text-white font-bold">{m.version}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-neutral-500 block">Edge Latency:</span>
+                        <span className="text-cyan-300 font-bold">{m.latencyMs}ms</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-neutral-500 block">24h Active:</span>
+                        <span className="text-amber-300 font-bold">{m.activeUsers24h}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleModule(m.key)}
+                      className={`flex-1 py-2 rounded-xl font-bold transition text-xs cursor-pointer ${
+                        isEnabled
+                          ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30'
+                          : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'
+                      }`}
+                    >
+                      {isEnabled ? 'Disable Module' : 'Enable Module'}
+                    </button>
+
+                    <Link
+                      href={`/${m.key}`}
+                      className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition text-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Open</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 04: PEOPLE & ACCESS ────────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '04_people_access' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-4 h-4 text-amber-400" />
+                <span>PEOPLE &amp; ACCESS &bull; Universal Identities &amp; Enclave Gate</span>
+              </span>
+              <span className="text-[10px] text-cyan-400">{totalUsers} REGISTERED IDENTITIES</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Manage platform members, grant Enclave hardware passkeys, configure roles, and dispense civic points.
+            </p>
+          </div>
+
+          {/* Enclave Access Link Generator */}
+          <AdminEnclaveManager notify={notify} getBaseOrigin={getBaseOrigin} />
+
+          {/* Node Clearance & Civic Points Faucet */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#080a12] border border-white/10 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <span className="text-white font-bold uppercase tracking-wider flex items-center gap-2">
+                <Coins className="w-4 h-4 text-amber-400" />
+                <span>Member Privilege Override &amp; Points Faucet</span>
+              </span>
+              <span className="text-[10px] text-neutral-400">INSTANT LEVEL 0 MUTATION</span>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!userTargetHandle.trim()) return;
+                const clean = userTargetHandle.trim().replace(/^@/, '');
+                saveUserOverride(clean, {
+                  role: userTargetRole,
+                  verifiedBadge: userTargetBadge,
+                  extraCivicPoints: Number(userPointsAmount) || 0,
+                  customTitle: userCustomTitle.trim() || undefined,
+                });
+                setUserOverridesList(getAllUserOverrides());
+                notify(`Updated clearance parameters for @${clean}!`);
+              }}
+              className="grid grid-cols-1 sm:grid-cols-4 gap-4"
+            >
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-neutral-400 uppercase font-bold">Target Username / Handle</label>
+                <input
+                  type="text"
+                  required
+                  value={userTargetHandle}
+                  onChange={(e) => setUserTargetHandle(e.target.value)}
+                  placeholder="e.g. aanya_delegate"
+                  className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-neutral-400 uppercase font-bold">Assigned Role</label>
+                <select
+                  value={userTargetRole}
+                  onChange={(e) => setUserTargetRole(e.target.value as any)}
+                  className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
+                >
+                  <option value="DELEGATE">Delegate / Student</option>
+                  <option value="ORGANIZER">Assembly Organizer</option>
+                  <option value="MODERATOR">Platform Moderator</option>
+                  <option value="ADMIN">Staff Administrator</option>
+                  <option value="FOUNDER">Founder Clearance</option>
+                  <option value="SUSPENDED">Suspended / Restrict</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-neutral-400 uppercase font-bold">Civic Points Injection</label>
+                <input
+                  type="number"
+                  value={userPointsAmount}
+                  onChange={(e) => setUserPointsAmount(e.target.value)}
+                  placeholder="5000"
+                  className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-amber-300 text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 uppercase shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Execute Override</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 05: EVENTS & MUN ───────────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '05_events_mun' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-amber-400" />
+                <span>EVENTS &amp; MUN &bull; Assembly OS &amp; Direct Vanity Routing</span>
+              </span>
+              <span className="text-[10px] text-neutral-400">{conferences.length} ACTIVE CONFERENCES</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Direct showcase vanity URLs (/[event-name]), committee matrix engine (/[event]/[committee]/matrix), and live dais operations.
+            </p>
+          </div>
+
+          {/* Conference Verification Queue Link Banner */}
+          <div className="p-5 rounded-3xl bg-[#080a12] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-white font-bold text-xs uppercase flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                <span>Conference &amp; Event Verification Desk</span>
+              </span>
+              <p className="text-[11px] text-neutral-400 font-sans pt-1">
+                Audit inbound public conference submissions, verify organizer credentials, and authorize them for global publication.
+              </p>
+            </div>
+            <Link
+              href="/core-team-panel?section=03_event_operations"
+              className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
+            >
+              <span>Open Verification Queue</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {conferences.map((conf) => {
+              const comm = conf.committees?.[0];
+              const commCode = typeof comm === 'string' ? comm.toLowerCase() : (comm?.shortName || 'unga').toLowerCase();
+              return (
+              <div key={conf.id} className="p-6 rounded-3xl bg-black/60 border border-white/10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-white font-bold text-sm">{conf.name}</span>
+                    <span className="text-[10px] text-neutral-400 block pt-0.5">
+                      {conf.tagline || 'Sovereign Assembly Plenary'} &bull; {conf.location || 'Live Matrix'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-300">
+                    {conf.status?.toUpperCase() || 'ACTIVE'}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-[#080a12] border border-white/5 space-y-2 text-[11px]">
+                  <div className="flex items-center justify-between text-neutral-400">
+                    <span>Direct Showcase Route:</span>
+                    <Link href={`/${conf.slug || conf.id}`} className="text-cyan-300 font-bold hover:underline flex items-center gap-1">
+                      <span>/{conf.slug || conf.id}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                  <div className="flex items-center justify-between text-neutral-400">
+                    <span>Committee Matrix URL:</span>
+                    <Link href={`/${conf.slug || conf.id}/${commCode}/matrix`} className="text-amber-300 font-bold hover:underline flex items-center gap-1">
+                      <span>/{conf.slug || conf.id}/${commCode}/matrix</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                  <div className="flex items-center justify-between text-neutral-400">
+                    <span>Student GST Policy:</span>
+                    <span className="text-emerald-400 font-bold">&le;18: 0% GST | &gt;18: 6% GST</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <Link
+                    href={`/${conf.slug || conf.id}`}
+                    className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-center transition cursor-pointer"
+                  >
+                    View Showcase Page
+                  </Link>
+                  <Link
+                    href="/mun"
+                    className="flex-1 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-center transition cursor-pointer"
+                  >
+                    Dais Console
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+
+            {conferences.length === 0 && (
+              <div className="p-6 rounded-3xl bg-black/40 border border-white/5 space-y-3 flex flex-col justify-center text-center">
+                <p className="text-xs text-neutral-300 font-bold">No Active MUN Conferences</p>
+                <p className="text-[11px] text-neutral-500 font-sans">
+                  Deploy a new conference assembly to generate direct vanity showcase URLs and live dais matrices.
+                </p>
+                <div className="pt-1">
+                  <Link
+                    href="/mun"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 font-bold text-[11px] transition"
+                  >
+                    <span>Launch MUN Conference</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Launch Instant Event Card */}
+            <div className="p-6 rounded-3xl bg-[#080a12] border border-cyan-500/30 space-y-4 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-cyan-300 font-bold text-sm">Launch New Assembly / MUN Space</span>
+                  <span className="text-[10px] text-cyan-400 font-bold">SOVEREIGN PROVISION</span>
+                </div>
+                <p className="text-neutral-400 font-sans text-xs leading-relaxed">
+                  Automatically spins up a vanity showcase route (/[event-name]), live country matrix, Cashfree PG ticketing, and digital student pass issuing.
+                </p>
+              </div>
+
+              <Link
+                href="/mun"
+                className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs transition flex items-center justify-center gap-2 uppercase shadow-[0_0_20px_rgba(6,182,212,0.3)] cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Launch New MUN Space</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 06: FINANCE ────────────────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '06_finance' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-amber-400" />
+                <span>FINANCE &bull; Cashfree PG, Dynamic Student GST &amp; Escrow</span>
+              </span>
+              <span className="text-[10px] text-emerald-400">SETTLEMENTS RECONCILED</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Real-time payment gateway feeds, student GST exemption verification, and founder refund approvals.
+            </p>
+          </div>
+
+          {/* GST Exemption Protocol Highlight */}
+          <div className="p-6 rounded-3xl bg-black/60 border border-emerald-500/30 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] text-emerald-400 font-bold uppercase">STUDENT UNDER OR EQUAL TO AGE 18</span>
+              <div className="text-2xl font-bold text-white">0% GST Mandate</div>
+              <p className="text-neutral-400 font-sans text-xs">
+                Zero tax applied for student empowerment. Verified via Student ID or Passport card.
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[10px] text-amber-400 font-bold uppercase">ATTENDEE OVER AGE 18</span>
+              <div className="text-2xl font-bold text-white">6% GST Standard</div>
+              <p className="text-neutral-400 font-sans text-xs">
+                Standard concessional educational tax rate applied on attendee passes.
+              </p>
+            </div>
+          </div>
+
+          {/* Pending Refund Approvals */}
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-white/10 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-white font-bold uppercase tracking-wider">
+                Founder Refund Approvals &bull; Cashfree Reversals
+              </span>
+              <span className="text-[10px] text-neutral-400">LEVEL 0 SIGNATURE REQUIRED</span>
+            </div>
+
+            {approvalsQueue.filter(a => a.type === 'REFUND').map((item) => (
+              <div key={item.id} className="p-4 rounded-2xl bg-black/60 border border-white/5 flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="text-white font-bold text-xs">{item.title}</div>
+                  <div className="text-[11px] text-neutral-400 font-sans">{item.details}</div>
+                  <div className="text-emerald-400 font-bold text-xs">Amount: {item.amount} &bull; Requested by {item.requester}</div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleResolveApproval(item.id, 'APPROVED')}
+                    className="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold transition text-xs cursor-pointer"
+                  >
+                    Approve Refund
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleResolveApproval(item.id, 'REJECTED')}
+                    className="px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold transition text-xs cursor-pointer"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 07: CONTENT & COMMUNITY ────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '07_content_community' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Newspaper className="w-4 h-4 text-amber-400" />
+                <span>CONTENT &amp; COMMUNITY &bull; Sovereign Press &amp; Article 12 Compliance</span>
+              </span>
+              <span className="text-[10px] text-emerald-400">CONSTITUTION ACTIVE</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Universal right to publish, transparent sources, citation audits, and Pulse social feed moderation.
+            </p>
+          </div>
+
+          {/* Founder Press Studio */}
+          <FounderPressStudio notify={notify} />
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 08: ANALYTICS ──────────────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '08_analytics' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-amber-400" />
+                <span>ANALYTICS &bull; Platform Velocity &amp; Delegate Metrics</span>
+              </span>
+              <span className="text-[10px] text-neutral-400">EDGE TELEMETRY</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Registration funnel, Cashfree payment conversion ratios, active nodes, and regional distribution.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-1">
+              <span className="text-[10px] text-neutral-400 uppercase">Cashfree Success Rate</span>
+              <div className="text-2xl font-bold text-emerald-400">99.4%</div>
+              <p className="text-[10px] text-neutral-500">Zero dropped UPI intents</p>
+            </div>
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-1">
+              <span className="text-[10px] text-neutral-400 uppercase">Application Conversion</span>
+              <div className="text-2xl font-bold text-cyan-400">84.2%</div>
+              <p className="text-[10px] text-neutral-500">Inbound to approved seat</p>
+            </div>
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-1">
+              <span className="text-[10px] text-neutral-400 uppercase">Press Readership</span>
+              <div className="text-2xl font-bold text-amber-400">14.8k</div>
+              <p className="text-[10px] text-neutral-500">Monthly article readers</p>
+            </div>
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-1">
+              <span className="text-[10px] text-neutral-400 uppercase">Average Session Time</span>
+              <div className="text-2xl font-bold text-white">18m 42s</div>
+              <p className="text-[10px] text-neutral-500">Across Assembly OS &amp; Pulse</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 09: INFRASTRUCTURE ─────────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '09_infrastructure' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Server className="w-4 h-4 text-amber-400" />
+                <span>INFRASTRUCTURE &bull; Cloud Cluster &amp; Database Health</span>
+              </span>
+              <span className="text-[10px] text-emerald-400">OPTIMAL</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Server cluster CPU/memory telemetry, PostgreSQL connection pool, Redis cache, and CDN edge status.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-2">
+              <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                <span>CORE CPU UTILIZATION</span>
+                <Cpu className="w-4 h-4 text-cyan-400" />
+              </div>
+              <div className="text-2xl font-bold text-white">4.2%</div>
+              <p className="text-[10px] text-neutral-500">Next.js App Server fleet</p>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-2">
+              <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                <span>DATABASE LATENCY</span>
+                <Database className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="text-2xl font-bold text-emerald-300">1.8ms</div>
+              <p className="text-[10px] text-neutral-500">PostgreSQL Pool &bull; 0 queue delay</p>
+            </div>
+
+            <div className="p-5 rounded-3xl bg-black/60 border border-white/10 space-y-2">
+              <div className="flex items-center justify-between text-neutral-400 text-[10px]">
+                <span>CDN EDGE HIT RATIO</span>
+                <Globe2 className="w-4 h-4 text-amber-400" />
+              </div>
+              <div className="text-2xl font-bold text-amber-300">98.9%</div>
+              <p className="text-[10px] text-neutral-500">Cloudflare Edge Caching</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 10: SECURITY & AUDIT ───────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '10_security_audit' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-amber-400" />
+                <span>SECURITY &amp; AUDIT &bull; Citadel System Maintenance &amp; Ledger</span>
+              </span>
+              <span className="text-[10px] text-emerald-400">IMMUTABLE LOGS ACTIVE</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Cryptographic integrity verification, zero-surveillance compliance, and intrusion defense logs.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-black/60 border border-white/10 space-y-3">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <span className="text-white font-bold uppercase">Recent Security Ledger Entries</span>
+              <span className="text-[10px] text-neutral-400">APPEND-ONLY BUFFER</span>
+            </div>
+
+            <div className="space-y-2">
+              {getAuditLogs().slice(0, 8).map((log, idx) => (
+                <div key={idx} className="p-3 rounded-2xl bg-[#080a12] border border-white/5 flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
+                    <span className="text-white font-medium truncate">{log.action}</span>
+                  </div>
+                  <span className="text-[10px] text-neutral-500 shrink-0">
+                    {new Date(log.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 11: ORGANISATION ───────────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '11_organisation' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Building className="w-4 h-4 text-amber-400" />
+                <span>ORGANISATION &bull; ZENVITRA Secretariat &amp; Partner Councils</span>
+              </span>
+              <span className="text-[10px] text-amber-400">GOVERNANCE ROSTER</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Secretariat hierarchy, institutional affiliations, constitution enforcement, and platform roadmap.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-6 rounded-3xl bg-black/60 border border-white/10 space-y-3">
+              <span className="text-white font-bold text-sm block">Core Secretariat Hierarchy</span>
+              <div className="space-y-2 text-[11px]">
+                <div className="p-3 rounded-2xl bg-[#080a12] border border-white/5 flex items-center justify-between">
+                  <span className="text-amber-300 font-bold">@yuveer</span>
+                  <span className="text-neutral-400">Sovereign Founder // Level 0</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-[#080a12] border border-white/5 flex items-center justify-between">
+                  <span className="text-cyan-300 font-bold">Secretariat Desk</span>
+                  <span className="text-neutral-400">Secretary-General &amp; Deputy Chairs</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-[#080a12] border border-white/5 flex items-center justify-between">
+                  <span className="text-emerald-300 font-bold">Dais Executive Board</span>
+                  <span className="text-neutral-400">Committee Presidents &amp; Moderators</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-black/60 border border-white/10 space-y-3">
+              <span className="text-white font-bold text-sm block">Constitution &amp; Charters</span>
+              <p className="text-neutral-400 font-sans text-xs leading-relaxed">
+                ZENVITRA is governed by its published Constitution, with strict adherence to Article 12 (Open Publication, Freedom of Expression, and Media Transparency).
+              </p>
+              <Link
+                href="/constitution"
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition flex items-center justify-center gap-2 text-xs"
+              >
+                <span>Read Full Platform Constitution</span>
+                <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ── SECTION 12: FOUNDER SETTINGS ───────────────────────────────────────── */}
+      {/* ========================================================================= */}
+      {activeSection === '12_founder_settings' && (
+        <div className="space-y-6 w-full font-mono text-xs">
+          <div className="p-6 rounded-3xl bg-[#080a12] border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Settings className="w-4 h-4 text-amber-400" />
+                <span>FOUNDER SETTINGS &bull; Personal Keys, Directives &amp; Root CLI</span>
+              </span>
+              <span className="text-[10px] text-amber-400">CONFIDENTIAL LEVEL 0</span>
+            </div>
+            <p className="text-neutral-300 font-sans text-xs">
+              Personal passkeys, Sovereign Directives Studio, site ticker overrides, and root terminal command line.
+            </p>
+          </div>
+
+          {/* Personal Master Passkeys */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-black/60 border border-amber-500/30 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <span className="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-2">
+                <KeyRound className="w-4 h-4 text-amber-400" />
+                <span>Founder Personal Master Passkeys</span>
+              </span>
+              <span className="text-[10px] text-neutral-400">HARDWARE SEED ENCRYPTION</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {PERSONAL_FOUNDER_KEYS.slice(0, 2).map((k) => (
-                <div key={k} className="p-3 rounded-2xl bg-black/60 border border-amber-400/30 flex items-center justify-between">
+                <div key={k} className="p-3.5 rounded-2xl bg-[#080a12] border border-amber-400/30 flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] text-neutral-400 uppercase">Master Sovereign Passkey</span>
-                    <p className="text-amber-300 font-bold tracking-widest">••••••••••••••••</p>
+                    <span className="text-[10px] text-neutral-500 uppercase">Master Sovereign Passkey</span>
+                    <p className="text-amber-300 font-bold tracking-widest">{k}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleCopyKey(k)}
                     className="p-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 transition cursor-pointer"
-                    title="Copy Key"
                   >
                     {copiedKey === k ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
@@ -1227,1181 +2095,115 @@ export function VaultDashboardClient({
             </div>
           </div>
 
-          {/* Quick Directive Preview */}
-          <div className="p-6 rounded-3xl border border-white/10 bg-[#080a10] space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-mono text-xs text-rose-300 font-bold">
-                <Radio className="w-4 h-4 text-rose-400 animate-pulse" />
-                <span>ACTIVE FOUNDER DIRECTIVE IN NETWORK FEED</span>
-              </div>
-              <button
-                onClick={() => setActiveTab('directive')}
-                className="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs transition cursor-pointer"
-              >
-                Edit Directive →
-              </button>
-            </div>
-            <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2">
-              <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest">
-                {directive.tag} • {directive.priority} • {directive.isActive ? 'BROADCASTING' : 'OFFLINE'}
+          {/* Sovereign Directives Studio */}
+          <form onSubmit={handleSaveDirective} className="p-6 sm:p-8 rounded-3xl bg-[#080a12] border border-white/10 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <span className="text-white font-bold uppercase tracking-wider flex items-center gap-2">
+                <Radio className="w-4 h-4 text-rose-400" />
+                <span>Founder\'s Sovereign Directives Studio</span>
               </span>
-              <h3 className="font-display font-bold text-white text-base">{directive.title}</h3>
-              <p className="text-xs text-neutral-300 leading-relaxed font-sans font-light">{directive.body}</p>
-              <p className="text-[10px] font-mono text-neutral-500 pt-1">Author: {directive.author}</p>
+              <span className="text-[10px] text-neutral-400">BROADCASTED IN PULSE FEED</span>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* ── TAB 2: PERSONAL MASTER KEY MANAGER ── */}
-      {activeTab === 'masterkey' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-amber-500/30 shadow-2xl space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <div className="space-y-1">
-              <h2 className="font-mono font-bold text-lg text-white uppercase flex items-center gap-2">
-                <KeyRound className="w-5 h-5 text-amber-400" />
-                <span>Founder Personal Sovereign Master Keys</span>
-              </h2>
-              <p className="text-xs text-neutral-400 font-mono">
-                Hardcoded and custom cryptographic keys for @yuveer to authenticate root access on any browser without passwords.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-            {PERSONAL_FOUNDER_KEYS.map((k, idx) => (
-              <div key={k} className="p-4 rounded-2xl bg-black/80 border border-amber-400/30 flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-bold">
-                      KEY #{idx + 1}
-                    </span>
-                    <span className="text-emerald-400 text-[10px]">ACTIVE // PERMANENT</span>
-                  </div>
-                  <p className="text-white font-bold text-sm tracking-widest">••••••••••••••••</p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleCopyKey(k)}
-                  className="px-3 py-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 font-bold transition flex items-center gap-1.5 cursor-pointer"
-                >
-                  {copiedKey === k ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedKey === k ? 'Copied' : 'Copy'}</span>
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-neutral-400 uppercase font-bold">Directive Title</label>
+                <input
+                  type="text"
+                  required
+                  value={directiveTitle}
+                  onChange={(e) => setDirectiveTitle(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white text-xs focus:outline-none focus:border-amber-400"
+                />
               </div>
-            ))}
-          </div>
 
-          {/* Custom Master Key Setter */}
-          <form onSubmit={handleSetCustomKey} className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-4">
-            <div className="space-y-1">
-              <label className="text-[11px] font-mono text-amber-300 uppercase font-bold">
-                Set Custom Personal Master Key
-              </label>
-              <p className="text-[11px] font-mono text-neutral-400">
-                Create your own custom secret key string that will immediately grant 100% root access on any machine.
-              </p>
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-neutral-400 uppercase font-bold">Directive Author Tag</label>
+                <input
+                  type="text"
+                  required
+                  value={directiveAuthor}
+                  onChange={(e) => setDirectiveAuthor(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-amber-300 text-xs focus:outline-none focus:border-amber-400"
+                />
+              </div>
             </div>
 
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={customKeyInput}
-                onChange={(e) => setCustomKeyInput(e.target.value)}
-                placeholder="Insert your code"
-                className="flex-1 px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-neutral-400 uppercase font-bold">Directive Body</label>
+              <textarea
+                required
+                rows={3}
+                value={directiveBody}
+                onChange={(e) => setDirectiveBody(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white text-xs focus:outline-none focus:border-amber-400"
               />
-              <button
-                type="submit"
-                className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold transition cursor-pointer shadow"
-              >
-                Save Custom Key
-              </button>
             </div>
-          </form>
-        </div>
-      )}
 
-      {/* ── TAB 2.5: ADMIN BYPASS LINKS (ENCLAVE MAGIC ACCESS) ── */}
-      {activeTab === 'adminlinks' && (
-        <AdminEnclaveManager
-          notify={notify}
-          getBaseOrigin={getBaseOrigin}
-        />
-      )}
-
-      {/* ── TAB 3: ROOT TERMINAL (CLI) ── */}
-      {activeTab === 'terminal' && (
-        <div className="p-6 rounded-3xl bg-[#040508] border border-white/15 shadow-2xl font-mono space-y-4">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <div className="flex items-center gap-2 text-xs text-neutral-300">
-              <Terminal className="w-4 h-4 text-emerald-400" />
-              <span className="font-bold text-white">INTERACTIVE ROOT COMMAND CLI</span>
-              <span className="text-neutral-500">|</span>
-              <span className="text-emerald-400 text-[11px]">ACTIVE SESSION: @yuveer (ROOT)</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  try { sessionStorage.removeItem('zenvitra_root_cli_logs'); } catch (_) {}
-                }
-                setTerminalLogs([{ text: 'Terminal output buffer cleared.', type: 'info' }]);
-              }}
-              className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 text-[10px] transition cursor-pointer"
-            >
-              Clear Buffer
-            </button>
-          </div>
-
-          {/* Terminal Console Output */}
-          <div className="p-4 rounded-2xl bg-black/90 border border-white/10 h-72 overflow-y-auto space-y-1.5 text-xs">
-            {terminalLogs.map((log, idx) => (
-              <div 
-                key={idx} 
-                className={`${
-                  log.type === 'cmd' 
-                    ? 'text-cyan-300 font-bold' 
-                    : log.type === 'success' 
-                    ? 'text-emerald-400' 
-                    : log.type === 'warn' 
-                    ? 'text-amber-400' 
-                    : log.type === 'error' 
-                    ? 'text-rose-400' 
-                    : 'text-neutral-300'
-                }`}
-              >
-                {log.text}
-              </div>
-            ))}
-          </div>
-
-          {/* Terminal Input */}
-          <form onSubmit={handleTerminalSubmit} className="flex gap-2">
-            <span className="py-2.5 text-emerald-400 font-bold text-xs select-none">root@zenvitra:~$</span>
-            <input
-              type="text"
-              value={terminalInput}
-              onChange={(e) => setTerminalInput(e.target.value)}
-              placeholder="Type a command e.g. status, help, freeze, resume, faucet, promote..."
-              className="flex-1 px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-emerald-400"
-              autoFocus
-            />
-            <button
-              type="submit"
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-mono text-xs font-bold transition cursor-pointer"
-            >
-              Execute
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* ── TAB 4: FOUNDER'S NOTE & DIRECTIVE STUDIO (RICH EFFECTS) ── */}
-      {activeTab === 'directive' && (
-        <div className="space-y-6">
-          <form onSubmit={handleSaveDirective} className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-amber-500/30 shadow-2xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-400/30">
-                    MASTER NOTE STUDIO
-                  </span>
-                  <span className="text-xs text-neutral-400 font-mono">// REAL-TIME CYBER AESTHETICS</span>
-                </div>
-                <h2 className="font-mono font-bold text-xl text-white uppercase tracking-wide">
-                  Founder Note &amp; Sovereign Directive Studio
-                </h2>
-                <p className="text-xs text-neutral-400 font-mono">
-                  Craft and broadcast executive decrees rendered across the platform with customizable visual effects.
-                </p>
-              </div>
-
-              <label className="flex items-center gap-2 text-xs font-mono cursor-pointer bg-black/60 px-4 py-2.5 rounded-2xl border border-white/10 hover:border-amber-400/40 transition">
+            <div className="flex items-center justify-between pt-2">
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-300">
                 <input
                   type="checkbox"
                   checked={directiveActive}
                   onChange={(e) => setDirectiveActive(e.target.checked)}
-                  className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
+                  className="w-4 h-4 rounded bg-black border-white/20 text-amber-500 focus:ring-0 cursor-pointer"
                 />
-                <span className={directiveActive ? 'text-amber-400 font-bold' : 'text-zinc-500'}>
-                  {directiveActive ? 'BROADCAST ACTIVE' : 'BROADCAST MUTED'}
-                </span>
+                <span>Broadcast this directive live at the top of the campus feed</span>
               </label>
-            </div>
-
-            {/* Visual Effect Theme Presets */}
-            <div className="space-y-2">
-              <label className="text-[11px] font-mono text-amber-300 uppercase font-bold flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Select Visual Aura &amp; Theme Effect</span>
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 font-mono text-xs">
-                {[
-                  { id: 'SOVEREIGN_GOLD', label: '👑 Sovereign Gold', desc: 'Royal amber glow & gold borders' },
-                  { id: 'MATRIX_EMERALD', label: '💻 Matrix Emerald', desc: 'Phosphor green CRT terminal' },
-                  { id: 'CYBER_NEON', label: '⚡ Cyber Neon', desc: 'Cyan / violet frequency pulse' },
-                  { id: 'DEEP_VOID', label: '🌌 Deep Void', desc: 'Obsidian monochrome & starfield' },
-                  { id: 'CRIMSON_DECREE', label: '🚨 Crimson Decree', desc: 'High-alert emergency pulse' },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setNoteEffectTheme(t.id as any)}
-                    className={`p-3 rounded-2xl text-left transition cursor-pointer border ${
-                      noteEffectTheme === t.id
-                        ? 'bg-amber-400/20 border-amber-400 text-white shadow-[0_0_15px_rgba(251,191,36,0.3)]'
-                        : 'bg-black/60 border-white/10 text-neutral-400 hover:text-white hover:border-white/20'
-                    }`}
-                  >
-                    <p className="font-bold text-xs">{t.label}</p>
-                    <p className="text-[10px] text-neutral-400 pt-0.5">{t.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Typography & FX Modifiers */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
-              <div className="space-y-1.5">
-                <label className="text-[11px] text-neutral-400 uppercase font-bold">Typography Mode</label>
-                <div className="flex gap-1.5">
-                  {[
-                    { id: 'SERIF', label: 'Serif' },
-                    { id: 'MONO', label: 'Monospace' },
-                    { id: 'SANS', label: 'Modern Sans' },
-                  ].map((font) => (
-                    <button
-                      key={font.id}
-                      type="button"
-                      onClick={() => setNoteTypography(font.id as any)}
-                      className={`flex-1 py-2 rounded-xl font-bold transition cursor-pointer border text-xs ${
-                        noteTypography === font.id
-                          ? 'bg-white/20 border-white text-white'
-                          : 'bg-black border-white/10 text-neutral-400'
-                      }`}
-                    >
-                      {font.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] text-neutral-400 uppercase font-bold">Priority Level</label>
-                <div className="flex items-center gap-1.5">
-                  {(['NORMAL', 'URGENT', 'CONSTITUTIONAL'] as const).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setDirectivePriority(p)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
-                        directivePriority === p
-                          ? p === 'CONSTITUTIONAL'
-                            ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                            : p === 'URGENT'
-                            ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                            : 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
-                          : 'bg-black border-white/10 text-neutral-400'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] text-neutral-400 uppercase font-bold">Visual FX Toggles</label>
-                <div className="flex items-center gap-2 pt-1">
-                  <label className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={noteScanlines}
-                      onChange={(e) => setNoteScanlines(e.target.checked)}
-                      className="rounded accent-amber-400"
-                    />
-                    <span>Scanlines</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={noteGlowEffect}
-                      onChange={(e) => setNoteGlowEffect(e.target.checked)}
-                      className="rounded accent-amber-400"
-                    />
-                    <span>Bloom</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={noteStampSeal}
-                      onChange={(e) => setNoteStampSeal(e.target.checked)}
-                      className="rounded accent-amber-400"
-                    />
-                    <span>Gold Seal</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] text-neutral-400 uppercase font-bold">Sign-off Signature</label>
-                <input
-                  type="text"
-                  value={directiveAuthor}
-                  onChange={(e) => setDirectiveAuthor(e.target.value)}
-                  placeholder="e.g. Sovereign Founder"
-                  className="w-full px-3.5 py-2 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
-                />
-              </div>
-            </div>
-
-            {/* Note Content Inputs */}
-            <div className="space-y-1.5 font-mono text-xs">
-              <label className="text-[11px] text-neutral-400 uppercase font-bold">Directive / Note Headline</label>
-              <input
-                type="text"
-                required
-                value={directiveTitle}
-                onChange={(e) => setDirectiveTitle(e.target.value)}
-                placeholder="e.g. CONSTITUTIONAL MANDATE: REJECTION OF AD-SURVEILLANCE"
-                className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 font-bold"
-              />
-            </div>
-
-            <div className="space-y-1.5 font-mono text-xs">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] text-neutral-400 uppercase font-bold">Directive Full Body &amp; Decrees</label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDirectiveBody((prev) => prev ? `${prev.trimEnd()}\n\n---\n\n` : '---\n\n');
-                  }}
-                  className="text-[10px] font-mono font-bold text-rose-300 hover:text-white px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-                  title="Insert dividing aura effect"
-                >
-                  <span>❖ Insert Divider (---)</span>
-                </button>
-              </div>
-              <textarea
-                rows={6}
-                required
-                value={directiveBody}
-                onChange={(e) => setDirectiveBody(e.target.value)}
-                placeholder="Write the executive announcement or founder message... Use --- on any line to insert the dividing effect."
-                className="w-full px-4 py-3 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 leading-relaxed"
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-white/10 font-mono text-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  clearFounderDirective();
-                  setDirectiveActive(false);
-                  notify('Founder directive cleared.');
-                }}
-                className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-bold transition cursor-pointer"
-              >
-                Clear Active Note
-              </button>
 
               <button
                 type="submit"
-                className="px-8 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold transition cursor-pointer shadow-[0_0_25px_rgba(251,191,36,0.4)] flex items-center gap-2"
+                className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition cursor-pointer uppercase shadow-[0_0_20px_rgba(251,191,36,0.3)]"
               >
-                <Save className="w-4 h-4 fill-black" />
-                <span>Broadcast Live Directive</span>
+                Save Directive
               </button>
             </div>
           </form>
 
-          {/* ── REAL-TIME LIVE VISUAL PREVIEW CARD ── */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-[#05070e] border border-white/10 space-y-4 font-mono">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
-                <Eye className="w-4 h-4 text-cyan-400" />
-                <span>LIVE DIRECTIVE PREVIEW (EXACT RENDER)</span>
+          {/* Root Terminal CLI */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-black border border-amber-500/30 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <span className="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-amber-400" />
+                <span>Sovereign Root Terminal (CLI)</span>
               </span>
-              <span className="text-[10px] text-emerald-400 font-bold">
-                {noteEffectTheme.replace('_', ' ')}
-              </span>
+              <span className="text-[10px] text-neutral-500">TYPE &quot;help&quot; FOR COMMANDS</span>
             </div>
 
-            <div
-              className={`p-6 sm:p-8 rounded-3xl relative overflow-hidden transition-all duration-300 ${
-                noteEffectTheme === 'SOVEREIGN_GOLD'
-                  ? 'bg-gradient-to-br from-amber-950/40 via-black to-[#0d0903] border border-amber-500/50 shadow-[0_0_50px_rgba(251,191,36,0.15)] text-amber-50'
-                  : noteEffectTheme === 'MATRIX_EMERALD'
-                  ? 'bg-gradient-to-br from-emerald-950/40 via-black to-[#020d06] border border-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.15)] text-emerald-100'
-                  : noteEffectTheme === 'CYBER_NEON'
-                  ? 'bg-gradient-to-br from-cyan-950/40 via-black to-[#0e0214] border border-cyan-500/50 shadow-[0_0_50px_rgba(6,182,212,0.15)] text-cyan-50'
-                  : noteEffectTheme === 'DEEP_VOID'
-                  ? 'bg-black border border-white/20 shadow-2xl text-neutral-200'
-                  : 'bg-gradient-to-br from-rose-950/40 via-black to-[#120205] border border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.2)] text-rose-50'
-              }`}
-            >
-              {/* Optional Scanlines Effect */}
-              {noteScanlines && (
-                <div 
-                  className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.5)_50%)]"
-                  style={{ backgroundSize: '100% 4px' }}
-                />
-              )}
-
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-300">
-                      OFFICIAL FOUNDER NOTE // {directivePriority}
-                    </span>
-                  </div>
-                  {noteStampSeal && (
-                    <span className="px-3 py-1 rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-300 font-bold text-[10px] uppercase tracking-widest shadow">
-                      👑 CERTIFIED IMMUTABLE SEAL
-                    </span>
-                  )}
-                </div>
-
-                <h3 className={`text-xl sm:text-2xl font-bold tracking-wide uppercase ${
-                  noteTypography === 'SERIF' ? 'font-serif' : noteTypography === 'MONO' ? 'font-mono' : 'font-sans'
-                }`}>
-                  {directiveTitle || 'Executive Directive Headline'}
-                </h3>
-
-                <div className="pt-2">
-                  <FounderNoteRenderer
-                    body={directiveBody || 'Decree statement content will render here with full formatting.'}
-                    defaultExpanded={true}
-                    collapsible={false}
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
-                  <span>Sign-off: <strong className="text-white">{directiveAuthor || '@yuveer'}</strong></span>
-                  <span>Issued: {new Date().toLocaleDateString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 4.5: FOUNDER PRESS STUDIO & BUREAU ── */}
-      {activeTab === 'press' && (
-        <FounderPressStudio notify={(msg) => notify(msg)} />
-      )}
-
-      {/* ── TAB 5: VIP SUBSCRIPTIONS & CLEARANCE ── */}
-      {activeTab === 'subscriptions' && (
-        <div className="space-y-6">
-          <form onSubmit={handleGrantSubscription} className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-white/10 space-y-4">
-            <div className="space-y-1 border-b border-white/10 pb-3">
-              <h3 className="font-mono font-bold text-base text-white uppercase flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-amber-400" />
-                <span>Bestow VIP Sovereign Tier</span>
-              </h3>
-              <p className="text-xs font-mono text-neutral-400">
-                Grant lifetime subscription passes to any delegate or node handle.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input
-                type="text"
-                required
-                value={subTargetUser}
-                onChange={(e) => setSubTargetUser(e.target.value)}
-                placeholder="Recipient @handle"
-                className="px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
-              />
-
-              <select
-                value={subTier}
-                onChange={(e) => setSubTier(e.target.value as any)}
-                className="px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
-              >
-                <option value="FOUNDER_PATRON">👑 FOUNDER_PATRON (VIP Supreme)</option>
-                <option value="SECRETARIAT_CHAIR">🏛️ SECRETARIAT_CHAIR (Council Chair)</option>
-                <option value="DIPLOMAT_LIFETIME">🛡️ DIPLOMAT_LIFETIME (Permanent)</option>
-                <option value="PULSE_PRO">⚡ PULSE_PRO (Verified Creator)</option>
-                <option value="PULSE_PASS">🎫 PULSE_PASS (Season Pass)</option>
-              </select>
-
-              <select
-                value={subDuration}
-                onChange={(e) => setSubDuration(e.target.value)}
-                className="px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
-              >
-                <option value="LIFETIME">LIFETIME (Never Expires)</option>
-                <option value="1_YEAR">1 Year (365 Days)</option>
-                <option value="1_MONTH">1 Month (30 Days)</option>
-              </select>
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold transition shadow cursor-pointer flex items-center gap-2"
-              >
-                <Sparkles className="w-3.5 h-3.5 fill-black" />
-                <span>Grant VIP Clearance</span>
-              </button>
-            </div>
-          </form>
-
-          {/* Active Subscriptions List */}
-          <div className="p-6 rounded-3xl bg-[#080a10] border border-white/10 space-y-4">
-            <span className="font-mono text-xs font-bold text-neutral-400 uppercase block">
-              Active Granted VIP Clearances ({Object.keys(subscriptionsList).length})
-            </span>
-
-            <div className="space-y-2">
-              {Object.keys(subscriptionsList).length === 0 ? (
-                <p className="text-neutral-500 font-mono text-xs py-4 text-center">No manual VIP subscriptions granted yet.</p>
-              ) : (
-                Object.values(subscriptionsList).map((sub) => (
-                  <div key={sub.username} className="p-3.5 rounded-2xl bg-black border border-white/10 flex items-center justify-between font-mono text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold">
-                        {sub.tier}
-                      </span>
-                      <span className="text-white font-bold">@{sub.username}</span>
-                      <span className="text-neutral-500 text-[11px]">• Duration: {sub.expiresAt || 'LIFETIME'}</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleRevokeSub(sub.username)}
-                      className="text-rose-400 hover:text-rose-300 transition text-xs font-bold cursor-pointer"
-                    >
-                      Revoke
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 6: NODE CLEARANCE & FAUCET ── */}
-      {activeTab === 'users' && (
-        <div className="space-y-6">
-          <form onSubmit={handleSaveUserOverride} className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-white/10 space-y-4">
-            <div className="space-y-1 border-b border-white/10 pb-3">
-              <h3 className="font-mono font-bold text-base text-white uppercase flex items-center gap-2">
-                <Users className="w-4 h-4 text-cyan-400" />
-                <span>Node Role Elevation &amp; Civic Points Faucet</span>
-              </h3>
-              <p className="text-xs font-mono text-neutral-400">
-                Instantly elevate any user handle to Founder, Admin, Moderator, or inject Civic Points into their wallet.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <input
-                type="text"
-                required
-                value={userTargetHandle}
-                onChange={(e) => setUserTargetHandle(e.target.value)}
-                placeholder="Target @handle"
-                className="px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
-              />
-
-              <select
-                value={userTargetRole}
-                onChange={(e) => setUserTargetRole(e.target.value as any)}
-                className="px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 cursor-pointer"
-              >
-                <option value="FOUNDER">👑 FOUNDER (Supreme Root)</option>
-                <option value="ADMIN">🛡️ ADMIN (Operational Console)</option>
-                <option value="MODERATOR">⚖️ MODERATOR (Disputes &amp; Feed)</option>
-                <option value="ORGANIZER">🏛️ ORGANIZER (Chamber Lead)</option>
-                <option value="DELEGATE">📜 DELEGATE (Standard Node)</option>
-                <option value="SUSPENDED">🚫 SUSPENDED (Ban from Mesh)</option>
-              </select>
-
-              <select
-                value={userTargetBadge}
-                onChange={(e) => setUserTargetBadge(e.target.value as any)}
-                className="px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 cursor-pointer"
-              >
-                <option value="GOLD">🏅 GOLD Checkmark (Founder/Royal)</option>
-                <option value="BLUE">🔹 BLUE Checkmark (Diplomat)</option>
-                <option value="NONE">❌ No Badge</option>
-              </select>
-
-              <input
-                type="number"
-                value={userPointsAmount}
-                onChange={(e) => setUserPointsAmount(e.target.value)}
-                placeholder="Inject Points (e.g. 5000)"
-                className="px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[11px] font-mono text-neutral-400 uppercase">Custom Title / Designation</label>
-              <input
-                type="text"
-                value={userCustomTitle}
-                onChange={(e) => setUserCustomTitle(e.target.value)}
-                placeholder="e.g. Lead Diplomatic Architect / Secretariat General"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
-              />
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono text-xs font-bold transition shadow cursor-pointer flex items-center gap-2"
-              >
-                <Save className="w-3.5 h-3.5 fill-black" />
-                <span>Apply Node Clearance &amp; Points</span>
-              </button>
-            </div>
-          </form>
-
-          {/* User Overrides Directory */}
-          <div className="p-6 rounded-3xl bg-[#080a10] border border-white/10 space-y-4">
-            <span className="font-mono text-xs font-bold text-neutral-400 uppercase block">
-              Active Sovereign User Overrides ({Object.keys(userOverridesList).length})
-            </span>
-
-            <div className="space-y-2">
-              {Object.keys(userOverridesList).length === 0 ? (
-                <p className="text-neutral-500 font-mono text-xs py-4 text-center">No user nodes mutated yet.</p>
-              ) : (
-                Object.values(userOverridesList).map((node) => (
-                  <div key={node.username} className="p-3.5 rounded-2xl bg-black border border-white/10 flex items-center justify-between font-mono text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold">
-                        {node.role}
-                      </span>
-                      <span className="text-white font-bold">@{node.username}</span>
-                      {node.verifiedBadge !== 'NONE' && (
-                        <span className={`text-[10px] ${node.verifiedBadge === 'GOLD' ? 'text-amber-400' : 'text-blue-400'}`}>
-                          [{node.verifiedBadge} BADGE]
-                        </span>
-                      )}
-                      {node.extraCivicPoints ? (
-                        <span className="text-emerald-400 text-[11px] font-bold">+{node.extraCivicPoints} PTS</span>
-                      ) : null}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        saveUserOverride(node.username, { role: 'DELEGATE', verifiedBadge: 'NONE', extraCivicPoints: 0 });
-                        setUserOverridesList(getAllUserOverrides());
-                        notify(`Reset override for @${node.username}`);
-                      }}
-                      className="text-neutral-400 hover:text-white transition text-xs cursor-pointer"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 7: GOOGLE SHEETS BI-DIRECTIONAL HUB ── */}
-      {activeTab === 'sheets' && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-white/10 space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
-            <div className="space-y-1">
-              <h2 className="font-mono font-bold text-lg text-white uppercase flex items-center gap-2">
-                <Database className="w-5 h-5 text-emerald-400" />
-                <span>Google Sheets Bi-directional Sync Diagnostics</span>
-              </h2>
-              <p className="text-xs text-neutral-400 font-mono">
-                Inspect Google Apps Script Web App sync status, test data roundtrips, and verify delegate registration feeds.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleTriggerSheetSync}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-mono text-xs font-bold transition cursor-pointer shadow flex items-center gap-2"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${sheetSyncStatus === 'SYNCING' ? 'animate-spin' : ''}`} />
-              <span>Trigger Sync Test</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-            <div className="p-4 rounded-2xl bg-black border border-white/10 space-y-2">
-              <span className="text-neutral-400 text-[11px] uppercase block">Web App Endpoint Route</span>
-              <p className="text-cyan-300 font-bold break-all">/api/sheets (Proxies to Google Apps Script Web App)</p>
-              <span className="text-[10px] text-neutral-500 block">Bi-directional GET (Search &amp; Users) &amp; POST (Event, Login, Speech, Post sync)</span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-black border border-white/10 space-y-2">
-              <span className="text-neutral-400 text-[11px] uppercase block">Latest Diagnostic Result</span>
-              <p className={`${sheetSyncStatus === 'SUCCESS' ? 'text-emerald-400 font-bold' : sheetSyncStatus === 'ERROR' ? 'text-rose-400 font-bold' : 'text-neutral-300'}`}>
-                {sheetSyncLog}
-              </p>
-            </div>
-          </div>
-
-          {/* Master Google Sheets Architecture & Tab Schemas */}
-          <div className="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-4 font-mono">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="space-y-0.5">
-                <span className="text-xs uppercase text-white font-bold tracking-wider flex items-center gap-2">
-                  <span>📑 Master Google Sheet Tab Schemas (12 Sovereign Streams)</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-semibold border border-emerald-500/30">Active</span>
-                </span>
-                <p className="text-[11px] text-neutral-400">
-                  Ensure your Google Sheets document contains the following sheet tab names with their corresponding column headers:
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs">
-              {/* Highlighted Donations Tab */}
-              <div className="p-3.5 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-amber-300 text-xs flex items-center gap-1.5">
-                    <span>💳 Tab:</span>
-                    <code className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-200">Donations</code>
-                  </span>
-                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">Primary Relief</span>
-                </div>
-                <p className="text-[11px] text-neutral-300 leading-relaxed">
-                  <strong>Expected Headers (A-L):</strong><br />
-                  <code className="text-[10px] text-amber-200/90 break-all bg-black/40 p-1.5 rounded block mt-1">
-                    Timestamp | Donor Name | Donor Email | Phone | Amount (INR) | UTR / Txn ID | Target Relief Stream | Payment Mode | Anonymous | Notes / Prayer | Audit Status | Verification Details
-                  </code>
-                </p>
-              </div>
-
-              {/* Impact Ledger Tab */}
-              <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-cyan-300 text-xs flex items-center gap-1.5">
-                    <span>📜 Tab:</span>
-                    <code className="bg-cyan-500/20 px-2 py-0.5 rounded text-cyan-200">Impact Ledger</code>
-                  </span>
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30">Transparency Ledger</span>
-                </div>
-                <p className="text-[11px] text-neutral-300 leading-relaxed">
-                  <strong>Expected Headers (A-J):</strong><br />
-                  <code className="text-[10px] text-cyan-200/90 break-all bg-black/40 p-1.5 rounded block mt-1">
-                    Timestamp | Donor Name | Donor Email | Amount (INR) | UTR / Txn ID | Target Stream | Verification Status | Notes | IP Address | Device Info
-                  </code>
-                </p>
-              </div>
-
-              {/* Other Key Tabs */}
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
-                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
-                  <span>👥 Tab:</span>
-                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Register Data Core</code>
-                </span>
-                <p className="text-[10px] text-neutral-400">Timestamp | User ID | Full Name | Email | Role | Access Level | Provider | Status | IP Address | Device</p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
-                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
-                  <span>🔐 Tab:</span>
-                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Login Data Core</code>
-                </span>
-                <p className="text-[10px] text-neutral-400">Timestamp | User ID | Full Name | Email | Provider | Login Status | IP Address | Browser Info</p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
-                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
-                  <span>🎓 Tab:</span>
-                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Campus Ambassadors</code>
-                </span>
-                <p className="text-[10px] text-neutral-400">Timestamp | Full Name | College / School | Email | WhatsApp | City | State | Year | Bio | Status</p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-1.5">
-                <span className="font-semibold text-neutral-200 text-xs flex items-center gap-1.5">
-                  <span>💼 Tab:</span>
-                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-neutral-200">Core Team Applications</code>
-                </span>
-                <p className="text-[10px] text-neutral-400">Timestamp | Full Name | Email | Phone | Target Wing | Portfolio URL | Statement of Intent | Status</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 8: GLOBAL SITE OVERRIDES & TICKER ── */}
-      {activeTab === 'site' && (
-        <form onSubmit={handleSaveSiteOverrides} className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-white/10 space-y-6">
-          <div className="space-y-1 border-b border-white/10 pb-4">
-            <h2 className="font-mono font-bold text-lg text-white uppercase flex items-center gap-2">
-              <Globe2 className="w-5 h-5 text-purple-400" />
-              <span>Global Site Parameters &amp; Diplomatic Ticker</span>
-            </h2>
-            <p className="text-xs text-neutral-400 font-mono">
-              Control the live ticker text, emergency banner broadcast, and constitutional escrow percentages.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-mono text-neutral-400 uppercase">Live Diplomatic Wire Ticker</label>
-                <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={tickerActive}
-                    onChange={(e) => setTickerActive(e.target.checked)}
-                    className="w-4 h-4 rounded text-amber-400 accent-amber-400"
-                  />
-                  <span className={tickerActive ? 'text-emerald-400 font-bold' : 'text-neutral-500'}>
-                    {tickerActive ? 'TICKER ONLINE' : 'MUTED'}
-                  </span>
-                </label>
-              </div>
-              <input
-                type="text"
-                value={tickerText}
-                onChange={(e) => setTickerText(e.target.value)}
-                placeholder="e.g. 🔴 LIVE WIRE • UN Plenary Session #418: Accord passed with 94% Supermajority"
-                className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-mono text-neutral-400 uppercase">Top Global Emergency Notice</label>
-                <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={bannerActive}
-                    onChange={(e) => setBannerActive(e.target.checked)}
-                    className="w-4 h-4 rounded text-rose-500 accent-rose-500"
-                  />
-                  <span className={bannerActive ? 'text-rose-400 font-bold' : 'text-neutral-500'}>
-                    {bannerActive ? 'BANNER DISPLAYING' : 'OFFLINE'}
-                  </span>
-                </label>
-              </div>
-              <input
-                type="text"
-                value={bannerNotice}
-                onChange={(e) => setBannerNotice(e.target.value)}
-                placeholder="e.g. ⚠️ PLENARY SUMMIT COMMENCING IN GENEVA CHAMBER"
-                className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-rose-400"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="space-y-1">
-                <label className="text-[11px] font-mono text-neutral-400 uppercase">
-                  Constitutional Escrow Mandate ({escrowPercentage}%)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={escrowPercentage}
-                  onChange={(e) => setEscrowPercentage(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-mono text-neutral-400 uppercase">Target Launch Countdown Date (ISO)</label>
-                <input
-                  type="text"
-                  value={targetLaunchDate}
-                  onChange={(e) => setTargetLaunchDate(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <button
-              type="submit"
-              className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold transition cursor-pointer shadow flex items-center gap-2"
-            >
-              <Save className="w-3.5 h-3.5 fill-black" />
-              <span>Apply Global Site Parameters</span>
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* ── TAB 9: PROTOCOL & KILL SWITCHES ── */}
-      {activeTab === 'protocol' && (
-        <div className="space-y-6 font-mono text-xs">
-          {/* 🚨 SPECIAL HIGHLIGHT: PROTOCOL OMEGA (CITADEL MAINTENANCE LOCKOUT) */}
-          <div className={`p-6 sm:p-8 rounded-3xl border transition shadow-2xl space-y-4 ${
-            protocols.maintenanceMode
-              ? 'bg-gradient-to-r from-rose-950/60 via-red-950/40 to-black border-rose-500/60 shadow-[0_0_60px_rgba(244,63,94,0.3)]'
-              : 'bg-gradient-to-r from-amber-950/30 via-zinc-950 to-black border-amber-500/30'
-          }`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-3 w-3 relative">
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      protocols.maintenanceMode ? 'bg-rose-400' : 'bg-emerald-400'
-                    }`}></span>
-                    <span className={`relative inline-flex rounded-full h-3 w-3 ${
-                      protocols.maintenanceMode ? 'bg-rose-500' : 'bg-emerald-500'
-                    }`}></span>
-                  </span>
-                  <span className={`text-sm font-black tracking-wider uppercase flex items-center gap-1.5 ${
-                    protocols.maintenanceMode ? 'text-rose-300' : 'text-amber-300'
-                  }`}>
-                    <ShieldAlert className="w-5 h-5" />
-                    <span>PROTOCOL OMEGA &bull; CITADEL MAINTENANCE LOCKOUT</span>
-                  </span>
-                </div>
-                <p className="text-xs text-neutral-300 leading-relaxed font-sans max-w-2xl">
-                  When enabled, the entire website displays the high-security <strong>Citadel Calibration Screen</strong> to public delegates. You (<strong className="text-amber-300">@yuveer</strong>) and Admins retain <strong>100% browsing immunity &amp; operational control</strong>.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => handleToggleProtocol('maintenanceMode')}
-                className={`px-6 py-3.5 rounded-2xl text-xs font-bold transition cursor-pointer shadow-lg whitespace-nowrap ${
-                  protocols.maintenanceMode
-                    ? 'bg-rose-500 hover:bg-rose-400 text-white shadow-[0_0_30px_rgba(244,63,94,0.6)] animate-pulse'
-                    : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
-                }`}
-              >
-                {protocols.maintenanceMode ? '🚨 PROTOCOL OMEGA ACTIVE (DISENGAGE)' : 'ENGAGE PROTOCOL OMEGA'}
-              </button>
-            </div>
-
-            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-3 text-[11px] text-neutral-400">
-              <span>Current Status: <strong className={protocols.maintenanceMode ? 'text-rose-400' : 'text-emerald-400'}>{protocols.maintenanceMode ? 'CITADEL LOCKOUT ENGAGED' : 'PUBLIC MESH ACCESSIBLE'}</strong></span>
-              <span>&bull;</span>
-              <span>Immunity: <strong className="text-amber-300">@yuveer &amp; Admins Unrestricted</strong></span>
-            </div>
-          </div>
-
-          {/* Standard Circuit Matrix Toggles */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { key: 'chatMeshEnabled', label: 'ZenChat Sovereign Mesh', desc: 'Enable E2EE private & group rooms' },
-              { key: 'fluxReelsEnabled', label: 'ZEN.FLUX Vertical Video Wire', desc: 'Enable 9:16 vertical video feed' },
-              { key: 'registrationsOpen', label: 'Open Public Registrations', desc: 'Allow new accounts on platform' },
-              { key: 'assemblyOsEnabled', label: 'Assembly OS & Live Voting', desc: 'Enable parliamentary caucus engine' },
-              { key: 'escrowMandateActive', label: 'Constitutional 10% Profit Endowment', desc: 'Disburse 10% profits every 6 months with video proof' },
-              { key: 'zeroSurveillanceActive', label: 'Zero Surveillance Enforcement', desc: 'Block tracking scripts & ads' },
-            ].map((item) => {
-              const k = item.key as keyof ProtocolControls;
-              const isOn = protocols[k];
-              return (
+            <div className="p-4 rounded-2xl bg-[#040508] border border-white/10 min-h-[160px] max-h-[240px] overflow-y-auto space-y-1 text-xs">
+              {terminalLogs.map((log, idx) => (
                 <div
-                  key={item.key}
-                  className="p-5 rounded-3xl bg-[#080a10] border border-white/10 flex items-center justify-between gap-4 shadow"
-                >
-                  <div className="space-y-1">
-                    <p className="font-mono text-xs font-bold text-white">{item.label}</p>
-                    <p className="text-[11px] text-neutral-400 font-mono">{item.desc}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleProtocol(k)}
-                    className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition cursor-pointer ${
-                      isOn
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(52,211,153,0.2)]'
-                        : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                    }`}
-                  >
-                    {isOn ? 'ONLINE' : 'MUTED'}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ── TAB 10: IMMUTABLE AUDIT TRAIL & CALENDAR LEDGER ── */}
-      {activeTab === 'audit' && (() => {
-        const allLogs = getAuditLogs();
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-        // Calculate count of logs per day
-        const logsByDate: Record<string, number> = {};
-        allLogs.forEach((l) => {
-          const d = new Date(l.timestamp).toISOString().split('T')[0];
-          logsByDate[d] = (logsByDate[d] || 0) + 1;
-        });
-
-        // Filtered logs
-        const filteredLogs = allLogs.filter((log) => {
-          if (auditTypeFilter !== 'ALL' && log.type !== auditTypeFilter) return false;
-          if (selectedAuditDate) {
-            const d = new Date(log.timestamp).toISOString().split('T')[0];
-            if (d !== selectedAuditDate) return false;
-          }
-          return true;
-        });
-
-        return (
-          <div className="p-6 sm:p-8 rounded-3xl bg-[#080a10] border border-white/10 space-y-6 font-mono">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px] font-bold border border-cyan-400/30">
-                    MUTATION TIME-MACHINE
-                  </span>
-                  <span className="text-xs text-neutral-400">// CRYPTOGRAPHIC AUDIT</span>
-                </div>
-                <h3 className="font-bold text-lg text-white uppercase tracking-wide pt-1">
-                  Immutable Transaction &amp; Mutation Ledger
-                </h3>
-                <p className="text-xs text-neutral-400 font-sans">
-                  Browse mutations by calendar date or filter by system event classification.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {selectedAuditDate && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedAuditDate(null)}
-                    className="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold transition cursor-pointer"
-                  >
-                    Clear Filter ({selectedAuditDate})
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleExportDatabaseJSON}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Ledger</span>
-                </button>
-              </div>
-            </div>
-
-            {/* ── INTERACTIVE CALENDAR VIEW ── */}
-            <div className="p-5 rounded-2xl bg-black/60 border border-white/10 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-300 uppercase flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-amber-400" />
-                  <span>{monthName} Calendar Matrix</span>
-                </span>
-                <span className="text-[11px] text-neutral-400">
-                  Select a date cell to filter ledger entries
-                </span>
-              </div>
-
-              <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-xs">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <span key={day} className="text-[10px] text-neutral-500 uppercase font-bold py-1">
-                    {day}
-                  </span>
-                ))}
-
-                {Array.from({ length: daysInMonth }).map((_, idx) => {
-                  const dayNum = idx + 1;
-                  const dayStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-                  const count = logsByDate[dayStr] || 0;
-                  const isSelected = selectedAuditDate === dayStr;
-                  const isToday = now.getDate() === dayNum;
-
-                  return (
-                    <button
-                      key={dayNum}
-                      type="button"
-                      onClick={() => setSelectedAuditDate(isSelected ? null : dayStr)}
-                      className={`p-2 rounded-xl transition flex flex-col items-center justify-center gap-1 cursor-pointer border ${
-                        isSelected
-                          ? 'bg-amber-400 text-black border-amber-300 font-bold shadow-[0_0_15px_rgba(251,191,36,0.4)]'
-                          : count > 0
-                          ? 'bg-white/10 border-amber-500/40 text-amber-300 hover:bg-white/20'
-                          : isToday
-                          ? 'bg-white/5 border-cyan-500/40 text-white'
-                          : 'bg-black/40 border-white/5 text-neutral-500 hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      <span className="text-xs font-mono">{dayNum}</span>
-                      {count > 0 && (
-                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
-                          isSelected ? 'bg-black text-amber-300' : 'bg-amber-400/20 text-amber-300'
-                        }`}>
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Type Filters */}
-            <div className="flex flex-wrap gap-1.5 text-xs">
-              {(['ALL', 'DIRECTIVE', 'NODE', 'CONTENT', 'PROTOCOL', 'SUBSCRIPTION', 'SITE'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setAuditTypeFilter(t)}
-                  className={`px-3 py-1.5 rounded-xl font-bold transition cursor-pointer border text-[11px] ${
-                    auditTypeFilter === t
-                      ? 'bg-white text-black border-white'
-                      : 'bg-black border-white/10 text-neutral-400 hover:text-white'
+                  key={idx}
+                  className={`leading-relaxed ${
+                    log.type === 'cmd' ? 'text-amber-300 font-bold' :
+                    log.type === 'success' ? 'text-emerald-400' :
+                    log.type === 'warn' ? 'text-rose-400' :
+                    log.type === 'error' ? 'text-red-400' : 'text-neutral-400'
                   }`}
                 >
-                  {t}
-                </button>
+                  {log.text}
+                </div>
               ))}
             </div>
 
-            {/* Ledger Entries List */}
-            <div className="space-y-2 max-h-96 overflow-y-auto pr-1 text-xs">
-              {filteredLogs.length === 0 ? (
-                <div className="p-8 text-center text-neutral-500 text-xs border border-white/5 rounded-2xl bg-black/40">
-                  No audit mutations found for the selected date or category.
-                </div>
-              ) : (
-                filteredLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-3.5 rounded-2xl bg-black border border-white/10 flex items-center justify-between gap-3 hover:border-white/20 transition"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${
-                        log.type === 'PROTOCOL'
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                          : log.type === 'DIRECTIVE'
-                          ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
-                          : log.type === 'SUBSCRIPTION'
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                          : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                      }`}>
-                        {log.type}
-                      </span>
-                      <span className="text-neutral-200 truncate">{log.action}</span>
-                    </div>
-                    <span className="text-neutral-500 text-[10px] shrink-0 font-mono">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
+            <form onSubmit={handleTerminalSubmit} className="flex gap-2">
+              <input
+                type="text"
+                value={terminalInput}
+                onChange={(e) => setTerminalInput(e.target.value)}
+                placeholder="root@zenvitra:~$ type command here..."
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#090b14] border border-white/20 text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+              />
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs transition cursor-pointer font-mono"
+              >
+                Execute
+              </button>
+            </form>
           </div>
-        );
-      })()}
+        </div>
+      )}
     </div>
   );
 }

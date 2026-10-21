@@ -228,6 +228,15 @@ export interface DualSidedFeeSimulatorConfig {
 
 /* ─────────── PRIMARY POST STRUCTURE ─────────── */
 
+export type PulsePostFormat = 'dispatch' | 'blog' | 'poetry' | 'essay' | 'treaty';
+
+export interface PulseSourceItem {
+  id?: string;
+  name: string;
+  url: string;
+  label?: string;
+}
+
 export interface PulsePost {
   id: string;
   authorId: string;
@@ -236,6 +245,8 @@ export interface PulsePost {
   authorAvatar?: string;
   authorRole?: string;
   isGuest?: boolean;
+  title?: string;
+  postFormat?: PulsePostFormat;
   content: string;
   images: string[];
   createdAt: string;
@@ -248,6 +259,7 @@ export interface PulsePost {
   tags?: string[];
   sourceName?: string;
   sourceUrl?: string;
+  sources?: PulseSourceItem[];
   isSaved?: boolean;
   fontStyle?: string;
   effectStyle?: string;

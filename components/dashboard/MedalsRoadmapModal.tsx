@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   X, 
@@ -63,19 +63,25 @@ export function MedalsRoadmapModal({ isOpen, onClose }: MedalsRoadmapModalProps)
   const [activeCategory, setActiveCategory] = useState<MedalCategory>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [localIsGuest, setLocalIsGuest] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+        if (stored?.isGuest || stored?.role === 'guest' || stored?.role === 'GUEST') {
+          setLocalIsGuest(true);
+        }
+      }
+    } catch (_) {}
+  }, []);
+
   const isGuestUser = Boolean(
     isGuest ||
     profile?.isGuest ||
     profile?.role === 'guest' ||
     profile?.role === 'GUEST' ||
-    (typeof window !== 'undefined' && (() => {
-      try {
-        const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
-        return stored?.isGuest || stored?.role === 'guest' || stored?.role === 'GUEST';
-      } catch (_) {
-        return false;
-      }
-    })())
+    localIsGuest
   );
 
   if (!isOpen) return null;
@@ -97,7 +103,7 @@ export function MedalsRoadmapModal({ isOpen, onClose }: MedalsRoadmapModalProps)
   const hasVerifiedCertificate = !isGuestUser && experiences.some((e) => e.verificationStatus.startsWith('VERIFIED'));
   const hasEscrowContribution = !isGuestUser && (passesCount > 0);
   const isSecretariatRole = !isGuestUser && (profile?.role === 'organizer' || profile?.role === 'admin' || profile?.role === 'core_team');
-  const isFounderOrAdmin = !isGuestUser && (profile?.role === 'admin' || profile?.role === 'core_team' || profile?.email?.trim().toLowerCase() === 'founder@zenvitra.org');
+  const isFounderOrAdmin = !isGuestUser && (profile?.role === 'admin' || profile?.role === 'core_team' || profile?.email?.trim().toLowerCase() === 'founder@zenvitra.xyz' || profile?.email?.trim().toLowerCase() === 'founder@zenvitra.org');
 
   /* ─────────── 28 COMPREHENSIVE SOVEREIGN MEDALS ─────────── */
   const ALL_MEDALS: MedalItem[] = [
@@ -364,9 +370,9 @@ export function MedalsRoadmapModal({ isOpen, onClose }: MedalsRoadmapModalProps)
       description: 'Directed funds to the permanent 10% escrow protocol funding govt schools.',
       isUnlocked: hasEscrowContribution,
       progressText: hasEscrowContribution ? 'Escrow Active' : '₹0 Allocated',
-      howToEarn: 'Register for an assembly pass or donate directly to the 10% govt school grant fund.',
+      howToEarn: 'Register for an assembly pass or contribute directly to the 10% govt school grant fund.',
       actionLabel: 'Support School Grants',
-      actionLink: '/donate/govt-schools',
+      actionLink: '/impact',
     },
     {
       id: 'smart-lab-benefactor',
@@ -392,7 +398,7 @@ export function MedalsRoadmapModal({ isOpen, onClose }: MedalsRoadmapModalProps)
       progressText: 'Grant Patron',
       howToEarn: 'Fund library books and science learning packages on the impact ledger.',
       actionLabel: 'Fund Books & Kits',
-      actionLink: '/donate/govt-schools',
+      actionLink: '/impact',
     },
     {
       id: 'audit-steward',

@@ -182,7 +182,7 @@ export function ArticleReader() {
         </div>
 
         {/* Title */}
-        <h1 className="font-display font-bold text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
+        <h1 className="font-serif font-bold text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
           {article.title}
         </h1>
 
@@ -194,7 +194,33 @@ export function ArticleReader() {
         )}
 
         {/* Compulsory Verified Source Citation Box */}
-        {article.sourceName && (
+        {(article.sources && article.sources.length > 0) ? (
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-cyan-500/[0.06] border border-cyan-500/25 space-y-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+              <span className="text-xs font-mono font-bold text-cyan-300">
+                VERIFIED SOURCE CITATIONS ({article.sources.length}):
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {article.sources.map((src, idx) => (
+                <a
+                  key={src.id || idx}
+                  href={src.url.startsWith('http') ? src.url : `https://${src.url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-200 text-xs font-mono transition group"
+                >
+                  <span className="font-bold">{src.name}</span>
+                  <span className="text-[10px] bg-cyan-400/20 px-1.5 py-0.5 rounded text-cyan-300">
+                    {src.label || `Source #${idx + 1}`}
+                  </span>
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : article.sourceName ? (
           <div className="p-3.5 sm:p-4 rounded-2xl bg-cyan-500/[0.06] border border-cyan-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
@@ -203,7 +229,7 @@ export function ArticleReader() {
             </div>
             {article.sourceUrl && (
               <a
-                href={article.sourceUrl}
+                href={article.sourceUrl.startsWith('http') ? article.sourceUrl : `https://${article.sourceUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-200 text-xs font-mono transition self-start sm:self-auto"
@@ -213,7 +239,7 @@ export function ArticleReader() {
               </a>
             )}
           </div>
-        )}
+        ) : null}
 
         {/* Author Byline Box */}
         <div className="flex items-center justify-between py-4 border-y border-white/[0.08]">
@@ -264,7 +290,13 @@ export function ArticleReader() {
           <img
             src={article.coverImage}
             alt={article.title}
-            className="w-full max-h-[480px] object-cover"
+            className="w-full max-h-[480px]"
+            style={{
+              transform: article.coverAdjustment ? `scale(${article.coverAdjustment.scale})` : undefined,
+              transformOrigin: article.coverAdjustment ? `${article.coverAdjustment.positionX}% ${article.coverAdjustment.positionY}%` : undefined,
+              objectPosition: article.coverAdjustment ? `${article.coverAdjustment.positionX}% ${article.coverAdjustment.positionY}%` : undefined,
+              objectFit: article.coverAdjustment?.fit || 'cover',
+            }}
           />
         </div>
       )}

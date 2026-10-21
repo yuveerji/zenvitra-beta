@@ -4,6 +4,100 @@
  */
 
 export type GoogleSheetTab =
+  | '01 People'
+  | '02 Core Registrations'
+  | '03 Login Activity'
+  | '04 Team Applications'
+  | '05 Team Roles Access'
+  | '06 Contact Inquiries'
+  | '07 Newsletter Subscribers'
+  | '08 Collaborations'
+  | '09 Community Members'
+  | '10 Campus Ambassadors'
+  | '11 Events'
+  | '12 Event Registrations'
+  | '13 Committees'
+  | '14 Delegate Rosters'
+  | '15 EB Secretariat'
+  | '16 Attendance Rollcall'
+  | '17 Awards Certificates'
+  | '18 Payments'
+  | '19 Expenses'
+  | '20 Donations Charity'
+  | '21 Budgets'
+  | '22 Tasks'
+  | '23 Feedback'
+  | '24 Grievances'
+  | '25 Support Cases'
+  | '26 Audit Logs'
+  | '27 Chits Active Roster'
+  | '28 Chits Archive'
+  | '29 Meet Sessions'
+  | '30 Meet Attendees'
+  | '31 Pulse Posts'
+  | '32 Pulse Channels'
+  | '33 Pulse Comments'
+  | '34 Content Editorial'
+  | '35 Feature Bugs'
+  | '36 Module Catalog'
+  | '37 Sync Audit Log'
+  | '38 Integrations'
+  | '39 Sync Queue'
+  | '40 Data Dictionary'
+  | '41 Retention Policies'
+  | '42 KPI Metrics'
+  | '43 Legislation Bills'
+  | '44 Bill Amendments'
+  | '45 Form Submissions'
+  | '46 Passport Ledger'
+  | '47 Zen Docs Metrics'
+  | '01_PEOPLE'
+  | '02_CORE_REGISTRATIONS'
+  | '03_LOGIN_ACTIVITY'
+  | '04_TEAM_APPLICATIONS'
+  | '05_TEAM_ROLES_ACCESS'
+  | '06_CONTACT_INQUIRIES'
+  | '07_NEWSLETTER_SUBSCRIBERS'
+  | '08_COLLABORATIONS'
+  | '09_COMMUNITY_MEMBERS'
+  | '10_CAMPUS_AMBASSADORS'
+  | '11_EVENTS'
+  | '12_EVENT_REGISTRATIONS'
+  | '13_COMMITTEES'
+  | '14_DELEGATE_ROSTERS'
+  | '15_EB_SECRETARIAT'
+  | '16_ATTENDANCE_ROLLCALL'
+  | '17_AWARDS_CERTIFICATES'
+  | '18_PAYMENTS'
+  | '19_EXPENSES'
+  | '20_DONATIONS_CHARITY'
+  | '21_BUDGETS'
+  | '22_TASKS'
+  | '23_FEEDBACK'
+  | '24_GRIEVANCES'
+  | '25_SUPPORT_CASES'
+  | '26_AUDIT_LOGS'
+  | '27_CHITS_ACTIVE_ROSTER'
+  | '28_CHITS_ARCHIVE'
+  | '29_MEET_SESSIONS'
+  | '30_MEET_ATTENDEES'
+  | '31_PULSE_POSTS'
+  | '32_PULSE_CHANNELS'
+  | '33_PULSE_COMMENTS'
+  | '34_CONTENT_EDITORIAL'
+  | '35_FEATURE_BUGS'
+  | '36_MODULE_CATALOG'
+  | '37_SYNC_AUDIT_LOG'
+  | '38_INTEGRATIONS'
+  | '39_SYNC_QUEUE'
+  | '40_DATA_DICTIONARY'
+  | '41_RETENTION_POLICIES'
+  | '42_KPI_METRICS'
+  | '43_LEGISLATION_BILLS'
+  | '44_BILL_AMENDMENTS'
+  | '45_FORM_SUBMISSIONS'
+  | '46_PASSPORT_LEDGER'
+  | '47_ZEN_DOCS_METRICS'
   | 'Login Data Core'
   | 'Register Data Core'
   | 'Contact Inquiries'
@@ -16,7 +110,8 @@ export type GoogleSheetTab =
   | 'Impact Ledger'
   | 'Donations'
   | 'Donations & Relief'
-  | 'Feedback & Grievance';
+  | 'Feedback & Grievance'
+  | (string & {});
 
 /**
  * Sanitizes values dispatched to Google Sheets to prevent formula injection or #ERROR!
@@ -214,26 +309,42 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   }
 
   // 2. Server-Side Direct Webhook Dispatch
-  const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
-  const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
+  const SECRETARIAT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
+  const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
   
-  // Normalize tab string to match Apps Script expected targetTab
-  const rawTab = (payload.tab || '').toUpperCase();
-  let targetTab = 'CORE_TEAM';
-  if (rawTab.includes('LOGIN')) targetTab = 'LOGIN_CORE';
-  else if (rawTab.includes('REGISTER')) targetTab = 'REGISTER_CORE';
-  else if (rawTab.includes('CONTACT')) targetTab = 'CONTACT';
-  else if (rawTab.includes('NEWSLETTER')) targetTab = 'NEWSLETTER';
-  else if (rawTab.includes('COLLAB') || rawTab.includes('PARTNER')) targetTab = 'COLLAB';
-  else if (rawTab.includes('SECRETARIAT') || rawTab.includes('SEC_APP')) targetTab = 'SECRETARIAT';
-  else if (rawTab.includes('CORE') || rawTab.includes('TEAM') || rawTab.includes('CAREER')) targetTab = 'CORE_TEAM';
-  else if (rawTab.includes('COMMUNITY')) targetTab = 'COMMUNITY';
-  else if (rawTab.includes('AMBASSADOR') || rawTab.includes('CAMPUS')) targetTab = 'CAMPUS_AMBASSADOR';
-  else if (rawTab.includes('EVENT')) targetTab = 'EVENTS';
-  else if (rawTab.includes('DONAT')) targetTab = 'DONATIONS';
-  else if (rawTab.includes('IMPACT') || rawTab.includes('LEDGER')) targetTab = 'IMPACT_LEDGER';
-  else if (rawTab.includes('FEEDBACK') || rawTab.includes('GRIEVANCE')) targetTab = 'FEEDBACK';
-  else if (rawTab.includes('PULSE') || rawTab.includes('POST')) targetTab = 'PULSE_POSTS';
+  // Normalize tab string to match Apps Script expected register without underscores
+  let targetTab: string = (payload.tab || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!/^\d{2}\s/.test(targetTab)) {
+    const rawTab = targetTab.toUpperCase();
+    if (rawTab.includes('LOGIN')) targetTab = '03 Login Activity';
+    else if (rawTab.includes('REGISTER')) targetTab = '02 Core Registrations';
+    else if (rawTab.includes('PEOPLE') || rawTab.includes('USER')) targetTab = '01 People';
+    else if (rawTab.includes('CONTACT')) targetTab = '06 Contact Inquiries';
+    else if (rawTab.includes('NEWSLETTER')) targetTab = '07 Newsletter Subscribers';
+    else if (rawTab.includes('COLLAB') || rawTab.includes('PARTNER')) targetTab = '08 Collaborations';
+    else if (rawTab.includes('SECRETARIAT') || rawTab.includes('SEC APP')) targetTab = '15 EB Secretariat';
+    else if (rawTab.includes('CORE TEAM')) targetTab = 'Core Team Applications';
+    else if (rawTab.includes('TEAM') || rawTab.includes('CAREER')) targetTab = '04 Team Applications';
+    else if (rawTab.includes('COMMUNITY')) targetTab = '09 Community Members';
+    else if (rawTab.includes('AMBASSADOR') || rawTab.includes('CAMPUS')) targetTab = '10 Campus Ambassadors';
+    else if (rawTab.includes('EVENT')) targetTab = '11 Events';
+    else if (rawTab.includes('PASS') || rawTab.includes('TICKET')) targetTab = '12 Event Registrations';
+    else if (rawTab.includes('PAYMENT') || rawTab.includes('CASHFREE')) targetTab = '18 Payments';
+    else if (rawTab.includes('DONAT') || rawTab.includes('IMPACT')) targetTab = '20 Donations Charity';
+    else if (rawTab.includes('FEEDBACK')) targetTab = '23 Feedback';
+    else if (rawTab.includes('GRIEVANCE')) targetTab = '24 Grievances';
+    else if (rawTab.includes('SUPPORT') || rawTab.includes('TICKET')) targetTab = '25 Support Cases';
+    else if (rawTab.includes('CHIT')) targetTab = '27 Chits Active Roster';
+    else if (rawTab.includes('PULSE') || rawTab.includes('POST')) targetTab = '31 Pulse Posts';
+    else if (rawTab.includes('BILL') || rawTab.includes('LEGISLATION') || rawTab.includes('SOLUTION')) targetTab = '43 Legislation Bills';
+    else if (rawTab.includes('AMENDMENT')) targetTab = '44 Bill Amendments';
+    else if (rawTab.includes('FORM') || rawTab.includes('SUBMISSION')) targetTab = '45 Form Submissions';
+    else if (rawTab.includes('PASSPORT') || rawTab.includes('REWARD')) targetTab = '46 Passport Ledger';
+    else if (rawTab.includes('DOC')) targetTab = '47 Zen Docs Metrics';
+  }
+
+  // Ensure 100% absence of underscores
+  targetTab = targetTab.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
 
   const webhookUrl = targetTab === 'SECRETARIAT' 
     ? SECRETARIAT_WEBHOOK_URL 
@@ -294,14 +405,41 @@ export const sheetSync = {
   impactLedger: (record: ImpactLedgerRecord) =>
     dispatchToGoogleSheets({ tab: 'Impact Ledger', data: record }),
 
-  donation: (record: DonationRecord) =>
-    dispatchToGoogleSheets({ tab: 'Donations', data: record }),
+  donation: (_record: any) => Promise.resolve(true),
 
-  donations: (record: DonationRecord) =>
-    dispatchToGoogleSheets({ tab: 'Donations', data: record }),
+  donations: (_record: any) => Promise.resolve(true),
 
   feedback: (record: FeedbackGrievanceRecord) =>
     dispatchToGoogleSheets({ tab: 'Feedback & Grievance', data: record }),
+
+  pulsePost: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Pulse Posts', data: record }),
+
+  event: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Events', data: record }),
+
+  payment: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Payments', data: record }),
+
+  bill: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Legislation Bills', data: record }),
+
+  amendment: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Bill Amendments', data: record }),
+
+  formSubmission: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Form Submissions', data: record }),
+
+  passport: (_record: Record<string, any>) => Promise.resolve(true),
+
+  chit: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Chits Active Roster', data: record }),
+
+  supportTicket: (record: Record<string, any>) =>
+    dispatchToGoogleSheets({ tab: 'Support Cases', data: record }),
+
+  dispatchRaw: (payload: { tab: string; data: Record<string, any> }) =>
+    dispatchToGoogleSheets({ tab: payload.tab as any, data: payload.data }),
 };
 
 // Backward-compatible alias

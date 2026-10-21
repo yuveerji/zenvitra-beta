@@ -1,6 +1,7 @@
 export interface MatrixPortfolioItem {
   id: string;
-  committee: 'AIPPM' | 'EMI' | 'UNSC' | 'ECOSOC';
+  conferenceId?: string;
+  committee: string;
   title: string;
   subTitle?: string;
   category: string;
@@ -281,3 +282,95 @@ export const OFFICIAL_240_PORTFOLIOS: MatrixPortfolioItem[] = [
   { id: 'ecosoc_59', committee: 'ECOSOC', title: 'Private Sector Representative', subTitle: 'UN Global Compact Sustainable Business Council', category: 'Civil Society', status: 'Vacant', difficulty: 'Beginner' },
   { id: 'ecosoc_60', committee: 'ECOSOC', title: 'International Press Representative', subTitle: 'International Federation of Journalists & Global Development Media', category: 'Civil Society', status: 'Vacant', difficulty: 'Intermediate' },
 ];
+
+/**
+ * Standard Member States presets for dynamic MUN committees
+ */
+export const STANDARD_UN_NATIONS = [
+  'United States of America', 'United Kingdom', 'France', 'Russian Federation', "People's Republic of China",
+  'India', 'Germany', 'Japan', 'Brazil', 'South Africa',
+  'Canada', 'Australia', 'Italy', 'Saudi Arabia', 'United Arab Emirates',
+  'Turkey', 'Egypt', 'Republic of Korea', 'Mexico', 'Argentina',
+  'Indonesia', 'Pakistan', 'Nigeria', 'Kenya', 'Singapore',
+  'Spain', 'Netherlands', 'Sweden', 'Switzerland', 'Ukraine',
+  'Poland', 'Iran', 'Israel', 'Qatar', 'Norway',
+  'New Zealand', 'Ireland', 'Greece', 'Vietnam', 'Philippines'
+];
+
+export const STANDARD_UNSC_NATIONS = [
+  { name: 'United States of America', category: 'P5 Permanent Member', diff: 'Advanced' },
+  { name: 'United Kingdom', category: 'P5 Permanent Member', diff: 'Advanced' },
+  { name: 'France', category: 'P5 Permanent Member', diff: 'Advanced' },
+  { name: 'Russian Federation', category: 'P5 Permanent Member', diff: 'Crisis' },
+  { name: "People's Republic of China", category: 'P5 Permanent Member', diff: 'Advanced' },
+  { name: 'Algeria', category: 'Elected Member (Africa)', diff: 'Intermediate' },
+  { name: 'Ecuador', category: 'Elected Member (GRULAC)', diff: 'Intermediate' },
+  { name: 'Guyana', category: 'Elected Member (GRULAC)', diff: 'Intermediate' },
+  { name: 'Japan', category: 'Elected Member (Asia-Pacific)', diff: 'Intermediate' },
+  { name: 'Malta', category: 'Elected Member (WEOG)', diff: 'Beginner' },
+  { name: 'Mozambique', category: 'Elected Member (Africa)', diff: 'Intermediate' },
+  { name: 'Republic of Korea', category: 'Elected Member (Asia-Pacific)', diff: 'Intermediate' },
+  { name: 'Sierra Leone', category: 'Elected Member (Africa)', diff: 'Intermediate' },
+  { name: 'Slovenia', category: 'Elected Member (Eastern Europe)', diff: 'Intermediate' },
+  { name: 'Switzerland', category: 'Elected Member (WEOG)', diff: 'Intermediate' },
+];
+
+export function generatePortfoliosForCommittee(
+  committeeCode: string,
+  committeeName: string,
+  type: string = 'UNSC',
+  confId: string = 'default'
+): MatrixPortfolioItem[] {
+  const upperType = type.toUpperCase();
+  const upperCode = committeeCode.toUpperCase();
+
+  if (upperType === 'UNSC' || upperCode.includes('UNSC')) {
+    return STANDARD_UNSC_NATIONS.map((n, idx) => ({
+      id: `${confId}_${upperCode}_${idx + 1}`,
+      conferenceId: confId,
+      committee: upperCode,
+      title: n.name,
+      subTitle: `Security Council Delegate Seat • ${n.category}`,
+      category: n.category,
+      status: 'Vacant',
+      difficulty: n.diff as any
+    }));
+  }
+
+  if (upperType === 'AIPPM' || upperCode.includes('AIPPM')) {
+    return OFFICIAL_240_PORTFOLIOS
+      .filter((p) => p.committee === 'AIPPM')
+      .map((p, idx) => ({
+        ...p,
+        id: `${confId}_${upperCode}_${idx + 1}`,
+        conferenceId: confId,
+        committee: upperCode,
+        status: 'Vacant',
+      }));
+  }
+
+  if (upperType === 'LOK_SABHA' || upperType === 'PARLIAMENTARY' || upperCode.includes('LOK') || upperCode.includes('EMI')) {
+    return OFFICIAL_240_PORTFOLIOS
+      .filter((p) => p.committee === 'EMI')
+      .map((p, idx) => ({
+        ...p,
+        id: `${confId}_${upperCode}_${idx + 1}`,
+        conferenceId: confId,
+        committee: upperCode,
+        status: 'Vacant',
+      }));
+  }
+
+  // Default multilateral member states list
+  return STANDARD_UN_NATIONS.slice(0, 25).map((nation, idx) => ({
+    id: `${confId}_${upperCode}_${idx + 1}`,
+    conferenceId: confId,
+    committee: upperCode,
+    title: nation,
+    subTitle: `${committeeName} Member State Delegation`,
+    category: idx < 5 ? 'Global Power' : 'Regional Actor',
+    status: 'Vacant',
+    difficulty: idx < 10 ? 'Advanced' : 'Intermediate',
+  }));
+}
+

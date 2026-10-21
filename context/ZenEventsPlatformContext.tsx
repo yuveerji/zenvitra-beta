@@ -5,10 +5,11 @@ import { useAuth } from '@/context/AuthContext';
 import {
   ZenEvent, EventAttendee, EventType, EventCategory,
   EventStatus, EventView, EventFilter, RsvpStatus,
-  EventTeamMember, EventOrganizerRole
+  EventTeamMember, EventOrganizerRole, RegistrationPlan
 } from '@/types/events';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
 import { pushLiveNotification } from '@/lib/notificationStorage';
+import { sheetSync } from '@/lib/googleSheets';
 
 /* ─────────── Location Types & Helpers ─────────── */
 
@@ -48,29 +49,8 @@ export function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lo
 
 export const calculateHaversineDistance = calculateDistanceKm;
 
-export const OFFICIAL_ZEN_DIPLOMACY_EVENT: ZenEvent = {
-  id: 'zen-diplomacy-mun-2026',
-  title: 'ZEN.DIPLOMACY MUN 2026',
-  description: 'Official Online Model United Nations assembly hosted on October 24th & 25th, 2026 live on ZEN.CALL. Featuring AIPPM, Education Ministry of India, UNESCO, and UNSC chambers with live resolution drafting on ZEN.DOCS.',
-  coverImage: '/assets/events/zen_diplomacy_mun_2026.png',
-  type: 'virtual',
-  location: 'ZEN.CALL Virtual Chambers & Encrypted Dais (Global Online)',
-  city: 'Global Online',
-  date: '2026-10-24T09:00:00.000Z',
-  endDate: '2026-10-25T19:00:00.000Z',
-  time: '09:00 AM – 07:00 PM IST',
-  capacity: 300,
-  attendees: [],
-  organizerId: 'yuveer',
-  organizerName: 'Yuveer',
-  organizerUsername: 'yuveer',
-  category: 'MUN',
-  status: 'upcoming',
-  tags: ['MUN', 'DIPLOMACY', 'ONLINE', 'AIPPM', 'UNSC', 'UNESCO', 'EDUCATION_MINISTRY'],
-  createdAt: '2026-09-19T00:00:00.000Z',
-};
-
-const INITIAL_DEMO_EVENTS: ZenEvent[] = [OFFICIAL_ZEN_DIPLOMACY_EVENT];
+export const DEFAULT_USER_EVENTS: ZenEvent[] = [];
+const INITIAL_DEMO_EVENTS: ZenEvent[] = [];
 
 /* ─────────── context shape ─────────── */
 
@@ -132,7 +112,7 @@ interface ZenEventsContextType {
 
 const ZenEventsContext = createContext<ZenEventsContextType | undefined>(undefined);
 
-const LS_EVENTS = 'zenvitra_events_v3';
+const LS_EVENTS = 'zenvitra_events_v4_clean';
 const LS_USER_LOCATION = 'zenvitra_user_location';
 const LS_ZENPASSES = 'zenvitra_user_zenpasses_v2';
 
@@ -174,6 +154,11 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
   /* persistence with safe parse */
   useEffect(() => {
     try {
+      // Purge legacy storage keys
+      ['zenvitra_events_v1', 'zenvitra_events_v2', 'zenvitra_events_v3'].forEach(k => {
+        try { localStorage.removeItem(k); } catch {}
+      });
+
       const safeParse = (val: string | null, fallback: any) => {
         if (!val || !val.trim() || val === 'undefined' || val === 'null') return fallback;
         try { return JSON.parse(val); } catch (_) { return fallback; }
@@ -181,19 +166,8 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
 
       const s = localStorage.getItem(LS_EVENTS);
       const parsed = safeParse(s, []);
-      const DUMMY_EVENT_IDS = new Set([
-        'delhi-mun-2026',
-        'cybercity-ai-hackathon',
-        'hauz-khas-spoken-word',
-        'mumbai-youth-parliament',
-        'bengaluru-deeptech-summit',
-        'pune-open-debate',
-        'geneva-unsc-summit'
-      ]);
-      let realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id && !DUMMY_EVENT_IDS.has(e.id)) : [];
-      if (!realEvents.some((e: any) => e.id === OFFICIAL_ZEN_DIPLOMACY_EVENT.id)) {
-        realEvents = [OFFICIAL_ZEN_DIPLOMACY_EVENT, ...realEvents];
-      }
+      const realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id) : [];
+
       setAllEvents(realEvents);
       localStorage.setItem(LS_EVENTS, JSON.stringify(realEvents));
 
@@ -201,6 +175,70 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
       if (savedLoc) {
         setUserLocation(safeParse(savedLoc, null));
       }
+
+      // Synchronize conference listings from database
+      fetch('/api/events/list')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.listings)) {
+            setAllEvents((prev) => {
+              const map = new Map<string, ZenEvent>();
+              prev.forEach((e) => map.set(e.slug || e.id, e));
+
+              let changed = false;
+              for (const item of data.listings) {
+                const key = item.slug || item.id;
+                if (!map.has(key)) {
+                  let plans: RegistrationPlan[] = [];
+                  try {
+                    if (item.tierPlansJson) plans = JSON.parse(item.tierPlansJson);
+                  } catch {}
+
+                  const startDateStr = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+                  const endDateStr = item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : startDateStr;
+
+                  const syncedEvt: ZenEvent = {
+                    id: item.slug || item.id,
+                    slug: item.slug,
+                    title: item.title,
+                    description: item.description || 'Sovereign diplomatic conference & committee session',
+                    type: (item.format as EventType) || 'physical',
+                    location: item.venue || 'Main Assembly Venue',
+                    city: item.city || 'New Delhi',
+                    date: startDateStr,
+                    endDate: endDateStr,
+                    time: '09:00 AM',
+                    category: (item.category as EventCategory) || 'MUN',
+                    ticketPrice: item.ticketPrice || (plans.length > 0 ? plans[0].price : 0),
+                    plans,
+                    coverImage: item.coverImage,
+                    verified: true,
+                    verificationStatus: 'VERIFIED',
+                    attendees: [],
+                    organizerId: item.userId || item.organizerEmail || 'organizer_host',
+                    organizerName: item.organizerName || 'Conference Secretariat',
+                    organizerUsername: item.organizerHandle || 'secretariat',
+                    tags: ['conference', 'event', (item.category || 'mun').toLowerCase()],
+                    status: computeStatus(startDateStr, endDateStr),
+                    createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
+                  };
+                  map.set(key, syncedEvt);
+                  changed = true;
+                }
+              }
+
+              if (changed) {
+                const nextList = Array.from(map.values());
+                try {
+                  localStorage.setItem(LS_EVENTS, JSON.stringify(nextList));
+                } catch {}
+                return nextList;
+              }
+              return prev;
+            });
+          }
+        })
+        .catch(() => {});
     } catch (_) {}
   }, []);
 
@@ -369,6 +407,48 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
     };
     saveEvents([event, ...allEvents]);
     setActiveView('list');
+
+    // Persist to backend database API
+    if (typeof window !== 'undefined') {
+      fetch('/api/events/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: data.title,
+          shortName: data.title.slice(0, 10).toUpperCase(),
+          category: data.category || 'MUN',
+          format: data.type || 'physical',
+          venue: data.location || 'Main Venue',
+          city: data.city || 'New Delhi',
+          startDate: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
+          endDate: data.endDate ? new Date(data.endDate).toISOString() : new Date().toISOString(),
+          organizerName: currentUserName || 'Event Host',
+          organizerEmail: profile?.email || 'host@zenvitra.xyz',
+          organizerHandle: currentUserUsername,
+          description: data.description || 'Sovereign diplomatic conference',
+          coverImage: data.coverImage || null,
+          ticketPrice: data.ticketPrice || (data.plans && data.plans.length > 0 ? data.plans[0].price : 0),
+          tierPlans: data.plans,
+          userId: currentUserId,
+        }),
+      }).catch((err) => {
+        console.warn('Failed to persist conference listing to database:', err);
+      });
+
+      // Asynchronously dispatch to Google Sheets 11 Events register
+      sheetSync.event({
+        eventId: id,
+        eventTitle: data.title,
+        eventType: data.category || 'MUN',
+        startDate: data.date,
+        endDate: data.endDate,
+        venue: data.location || 'Main Venue',
+        city: data.city || 'New Delhi',
+        organizerName: currentUserName || 'Event Host',
+        ticketPrice: data.ticketPrice || 0,
+      }).catch(() => {});
+    }
+
     return id;
   }, [allEvents, currentUserId, currentUserName, currentUserUsername, saveEvents]);
 

@@ -37,6 +37,8 @@ import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { getSecurityProfile, regenerateSovereignCode } from '@/lib/securityShield';
 import { UsernameAvailabilityButton } from '@/components/auth/UsernameAvailabilityButton';
 import { DATA_LIFECYCLE_EXPLAINERS, DataLifecycleExplainer } from '@/lib/legalData';
+import { compressAvatarImage } from '@/lib/imageUtils';
+import { VerificationModal } from '@/components/modals/VerificationModal';
 import {
   Bot,
   Gavel,
@@ -70,6 +72,7 @@ export function SettingsModal({
   const [activeTab, setActiveTab] = useState<SettingsTab>('account');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   // Form Fields
   const [displayName, setDisplayName] = useState('');
@@ -120,7 +123,21 @@ export function SettingsModal({
       const effName = profile?.display_name || (profile as any)?.name || stored?.display_name || stored?.name || currentUserName || myProfile?.name || '';
       const effUser = profile?.username || (profile as any)?.handle || stored?.username || stored?.handle || currentUserUsername || myProfile?.username || '';
       const effBio = profile?.bio || stored?.bio || myProfile?.bio || '';
-      const effAvatar = profile?.avatar_url || (profile as any)?.avatar || stored?.avatar_url || stored?.avatar || myProfile?.avatar || '';
+      const rawEffAvatar = profile?.avatar_url || (profile as any)?.avatar || stored?.avatar_url || stored?.avatar || myProfile?.avatar || '';
+      const isOAuth = Boolean(rawEffAvatar && (rawEffAvatar.includes('googleusercontent.com') || rawEffAvatar.includes('githubusercontent.com')));
+      let effAvatar = (rawEffAvatar && !isOAuth && rawEffAvatar !== '/assets/default-avatar.svg') ? rawEffAvatar : '';
+      if (!effAvatar) {
+        const cleanU = effUser.toLowerCase().replace(/^@/, '').trim();
+        try {
+          const pass = JSON.parse(localStorage.getItem(`zenvitra_passport_${cleanU}`) || '{}');
+          if (pass?.avatarUrl && pass.avatarUrl !== '/assets/default-avatar.svg') {
+            effAvatar = pass.avatarUrl;
+          }
+        } catch (_) {}
+        if (!effAvatar) {
+          effAvatar = '/assets/default-avatar.svg';
+        }
+      }
 
       const uId = profile?.id || user?.id || stored?.id || effUser || 'active_session';
       const sec = getSecurityProfile(uId);
@@ -136,14 +153,20 @@ export function SettingsModal({
     }
   }, [isOpen, profile, user, myProfile, currentUserName, currentUserUsername]);
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressAvatarImage(file, 400, 400, 0.88);
+        setAvatar(compressed);
+      } catch (err) {
+        console.warn('Avatar compression fallback to standard reader:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAvatar(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -187,6 +210,23 @@ export function SettingsModal({
         };
         localStorage.setItem('zenvitra_session_user', JSON.stringify(nextUser));
       } catch (_) {}
+
+      // 4. Update passport record to sync photo everywhere
+      try {
+        const passKey = `zenvitra_passport_${cleanUser}`;
+        const existingPass = localStorage.getItem(passKey);
+        if (existingPass) {
+          const parsed = JSON.parse(existingPass);
+          parsed.avatarUrl = avatar.trim();
+          parsed.fullName = cleanName;
+          localStorage.setItem(passKey, JSON.stringify(parsed));
+          window.dispatchEvent(new CustomEvent('zenvitra_passport_updated', { detail: { passport: parsed } }));
+        }
+      } catch (_) {}
+
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
+      window.dispatchEvent(new CustomEvent('zenvitra_profile_sync'));
 
       setSaveStatus('saved');
       setTimeout(() => {
@@ -357,7 +397,7 @@ export function SettingsModal({
                         {avatar ? (
                           <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                         ) : (
-                          (displayName || username || 'U').charAt(0).toUpperCase()
+                          <img src="/assets/default-avatar.svg" alt={displayName} className="w-full h-full object-cover" />
                         )}
                       </div>
                     </div>
@@ -483,6 +523,35 @@ export function SettingsModal({
                     <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] font-mono text-zinc-500">
                       <span>Saved Status: {isSavedAccountsOn ? 'Active (Saved on Exit)' : 'Inactive (Full Logout on Exit)'}</span>
                       <span className="text-cyan-400">{isSavedAccountsOn ? 'Multi-Account Enabled' : 'Single Session'}</span>
+                    </div>
+                  </div>
+
+                  {/* National Sovereign Clearance Card */}
+                  <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                          <h5 className="font-bold text-xs text-white">National Sovereign Clearance (ZEN.ID)</h5>
+                        </div>
+                        <p className="text-[11px] text-zinc-400">
+                          Official youth verification protocol. Validates student credentials, institution affiliation, and cryptographic sovereign standing for national assemblies.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsVerificationModalOpen(true)}
+                        className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 hover:text-white text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>{profile?.is_verified || myProfile?.isVerified ? 'View Certificate' : 'Verify Account'}</span>
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-cyan-500/20 text-[10px] font-mono text-zinc-400">
+                      <span>Accreditation: {profile?.is_verified || myProfile?.isVerified ? '100% Verified Sovereign Citizen' : 'Unverified Citizen Node'}</span>
+                      <span className={profile?.is_verified || myProfile?.isVerified ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
+                        {profile?.is_verified || myProfile?.isVerified ? 'ACTIVE CLEARANCE' : 'PENDING ATTESTATION'}
+                      </span>
                     </div>
                   </div>
 
@@ -1140,6 +1209,14 @@ export function SettingsModal({
           </div>
         </motion.div>
       </div>
+
+      {/* National Sovereign Clearance Protocol Modal */}
+      {isVerificationModalOpen && (
+        <VerificationModal
+          isOpen={isVerificationModalOpen}
+          onClose={() => setIsVerificationModalOpen(false)}
+        />
+      )}
     </AnimatePresence>
   );
 }

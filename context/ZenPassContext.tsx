@@ -62,7 +62,7 @@ export function ZenPassProvider({ children }: { children: React.ReactNode }) {
   const { profile, user, isMockMode } = useAuth();
   const currentUserName = profile?.display_name || user?.name || 'You';
   const currentUserHandle = profile?.username || 'you';
-  const currentUserEmail = profile?.email || user?.email || 'user@zenvitra.com';
+  const currentUserEmail = profile?.email || user?.email || 'user@zenvitra.xyz';
 
   const [userPasses, setUserPasses] = useState<ZenPassTicket[]>(INITIAL_DEMO_PASSES);
   const [mounted, setMounted] = useState(false);

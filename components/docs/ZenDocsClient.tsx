@@ -15,6 +15,8 @@ import { ZenDocsStatusBar } from './ZenDocsStatusBar';
 import { ZenDocsCommandPalette } from './ZenDocsCommandPalette';
 import { ZenDocsHomeDashboard } from './ZenDocsHomeDashboard';
 import { ExportFormat, exportDocument } from '@/lib/exportDocument';
+import { useCollaborativeEditor } from '@/hooks/useCollaborativeEditor';
+import { CollaborativePresenceBar } from './CollaborativePresenceBar';
 import {
   ShareModal,
   TableToChamberModal,
@@ -31,6 +33,8 @@ import {
 } from './modals';
 import { useSearchParams } from 'next/navigation';
 import { ScrollText, Globe2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { DesktopModeAdvisory } from '@/components/common/DesktopModeAdvisory';
 
 export interface ZenDocsClientProps {
   initialMode?: string;
@@ -49,6 +53,7 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
     modeParam === 'legislate';
   const isUnContext = !isIndianContext && (Boolean(committeeParam) || modeParam === 'docs');
 
+  const { user, profile } = useAuth();
   const editor = useDocumentEditor();
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChangeRef = useRef<boolean>(false);
@@ -79,25 +84,57 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
         ...editor.activeDoc,
         contentHtml: editorRef.current.innerHTML || editor.activeDoc.contentHtml,
       };
-      exportDocument(currentDoc, format, rawText);
+      exportDocument(currentDoc, format, rawText, {
+        username: user?.username || profile?.username,
+        name: user?.name || profile?.display_name,
+        email: user?.email,
+      });
       editor.triggerToast(`Exported document as ${format.toUpperCase()}`);
     }
-  }, [editor]);
+  }, [editor, user, profile]);
 
   // Slash Command State
   const [isSlashMenuOpen, setIsSlashMenuOpen] = useState<boolean>(false);
   const [slashPosition, setSlashPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [slashQuery, setSlashQuery] = useState<string>('');
 
+  // Enterprise Real-Time Collaborative Engine (Yjs CRDT + Presence)
+  const {
+    collaborators,
+    connectionStatus,
+    sendLocalChange,
+    sendCursorPosition,
+  } = useCollaborativeEditor({
+    docId: editor.activeDocId,
+    initialHtml: editor.activeDoc?.contentHtml || '',
+    user: {
+      userId: user?.id || profile?.id || 'delegate-guest',
+      username: user?.username || profile?.username || 'delegate',
+      displayName: user?.name || profile?.display_name || user?.username || 'Delegate',
+      role: profile?.role || 'Delegate',
+      committee: committeeParam || 'Assembly Chamber',
+    },
+    onRemoteUpdate: (remoteHtml) => {
+      if (editorRef.current && remoteHtml) {
+        isInternalChangeRef.current = true;
+        editorRef.current.innerHTML = remoteHtml;
+        editor.updateTelemetry(editorRef.current.innerText || '');
+        editor.saveDocument({ contentHtml: remoteHtml });
+      }
+    },
+  });
+
   // Handle Input in editor
   const handleEditorInput = useCallback(() => {
     isInternalChangeRef.current = true;
     if (editorRef.current) {
+      const html = editorRef.current.innerHTML || '';
       const text = editorRef.current.innerText || '';
       editor.updateTelemetry(text);
-      editor.saveDocument({ contentHtml: editorRef.current.innerHTML });
+      editor.saveDocument({ contentHtml: html });
+      sendLocalChange(html);
     }
-  }, [editor]);
+  }, [editor, sendLocalChange]);
 
   // Commands Hook
   const commands = useEditorCommands({
@@ -266,6 +303,7 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
 
   return (
     <div className="min-h-screen bg-[#06080e] text-neutral-200 flex flex-col justify-between font-sans selection:bg-cyan-500/30 print:pt-0 print:bg-white print:text-black">
+      <DesktopModeAdvisory studioName={isIndianContext ? "ZenLegislate Parliamentary Studio" : "ZenDocs Resolution Studio"} storageKey="zen_docs_editor" />
       {/* Floating Toast Notification */}
       {editor.toastMessage && (
         <div className="fixed top-24 right-6 z-50 px-4 py-2.5 rounded-2xl bg-cyan-500 text-black font-mono text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce border border-white/20">
@@ -338,6 +376,20 @@ export function ZenDocsClient({ initialMode, initialCommittee }: ZenDocsClientPr
               </button>
             </div>
           )}
+
+          {/* Enterprise Collaborative Presence & Sync Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+            <CollaborativePresenceBar
+              collaborators={collaborators}
+              connectionStatus={connectionStatus}
+              currentUserRole={profile?.role || 'Delegate'}
+              currentUsername={user?.username || profile?.username || 'you'}
+            />
+            <div className="text-[11px] font-mono text-neutral-400 hidden sm:flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              <span>Room: <strong className="text-white">{editor.activeDoc.docCode}</strong> ({editor.activeDoc.committeeOrChamber})</span>
+            </div>
+          </div>
 
           {/* Unified Top Toolbar */}
           <ZenDocsToolbar

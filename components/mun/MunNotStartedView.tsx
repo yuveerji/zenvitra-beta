@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Clock,
   Calendar,
@@ -11,30 +12,37 @@ import {
   AlertCircle,
   FileCheck2,
   Sparkles,
-  Users
+  Users,
+  Layers,
+  Zap
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
 
 interface MunNotStartedViewProps {
   onSwitchToActive?: () => void;
+  onCreateInstantEvent?: () => void;
+  onHostNewEvent?: () => void;
 }
 
-export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) {
+export function MunNotStartedView({ onSwitchToActive, onCreateInstantEvent, onHostNewEvent }: MunNotStartedViewProps) {
   const { activeConference, setConferenceStatus, conferences, setActiveConferenceId } = useMun();
 
-  // Target date for countdown (fallback to 7 days from now if not specified)
-  const targetTime = activeConference?.conveningDate 
-    ? new Date(activeConference.conveningDate).getTime() 
-    : Date.now() + 7 * 24 * 60 * 60 * 1000;
+  // Target date for countdown (fallback to startDate, then conveningDate, then 7 days)
+  const targetTime = activeConference?.startDate
+    ? new Date(`${activeConference.startDate}T00:00:00`).getTime()
+    : (activeConference?.conveningDate 
+        ? new Date(activeConference.conveningDate).getTime() 
+        : Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
-    days: 6,
-    hours: 14,
-    minutes: 32,
-    seconds: 45
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
   });
 
   useEffect(() => {
+    if (!activeConference) return;
     const updateCountdown = () => {
       const diff = Math.max(0, targetTime - Date.now());
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -46,9 +54,61 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
     updateCountdown();
     const timer = setInterval(updateCountdown, 1000);
     return () => clearInterval(timer);
-  }, [targetTime]);
+  }, [targetTime, activeConference]);
 
   const liveConference = conferences.find((c) => c.status !== 'NOT_STARTED' && c.id !== activeConference?.id);
+
+  if (!activeConference) {
+    return (
+      <div className="w-full max-w-3xl mx-auto py-16 px-4 text-center space-y-8 animate-fade-in">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold uppercase tracking-wider">
+          <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+          <span>NO CONFERENCES OR SUMMITS HOSTED YET</span>
+        </div>
+
+        <div className="space-y-3">
+          <h1 className="text-3xl sm:text-5xl font-black font-display tracking-tight text-white">
+            Host Your Summit or Conference
+          </h1>
+          <p className="text-sm sm:text-base text-neutral-400 max-w-xl mx-auto font-sans leading-relaxed">
+            Host a Model UN, Youth Summit, or Parliamentary Chamber. Committees, delegate speaker lists, electronic voting, and live country matrices will activate automatically.
+          </p>
+        </div>
+
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/committee/create"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:brightness-110 text-black font-extrabold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-amber-500/20 transition-transform active:scale-95"
+          >
+            <Play className="w-4 h-4 fill-black" />
+            <span>Start Committee Session (Quick Dais)</span>
+          </Link>
+
+          {onCreateInstantEvent && (
+            <button
+              type="button"
+              onClick={onCreateInstantEvent}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:via-cyan-500/30 hover:to-emerald-500/30 border border-cyan-400/40 text-cyan-200 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/10 transition-transform active:scale-95"
+            >
+              <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <span>Create Instant Event</span>
+            </button>
+          )}
+
+          {onHostNewEvent && (
+            <button
+              type="button"
+              onClick={onHostNewEvent}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20 transition-transform active:scale-95"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Host New Event</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto py-12 px-4 text-center space-y-8 animate-fade-in">
@@ -119,8 +179,39 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
         </div>
       </div>
 
-      {/* Secretariat Quick Launch & Switch Button */}
+      {/* Secretariat Quick Launch, Connect Matrix, Instant Event & Switch Button */}
       <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+        {/* Quick Committee Session Button */}
+        <Link
+          href="/committee/create"
+          className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 transition-transform active:scale-95"
+        >
+          <Play className="w-4 h-4 fill-black" />
+          <span>Start Quick Committee Dais</span>
+        </Link>
+
+        {/* Create Instant Event Button */}
+        {onCreateInstantEvent && (
+          <button
+            type="button"
+            onClick={onCreateInstantEvent}
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:via-cyan-500/30 hover:to-emerald-500/30 border border-cyan-400/40 text-cyan-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/10 transition-transform active:scale-95 group"
+          >
+            <Zap className="w-4 h-4 text-amber-300 fill-amber-300 group-hover:scale-110 transition-transform" />
+            <span>Create Instant Event</span>
+          </button>
+        )}
+
+        {/* Connect Matrix Button */}
+        <Link
+          href={activeConference?.id ? `/${activeConference.id}/matrix` : '/mun/matrix'}
+          className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/10 transition-transform active:scale-95 group"
+        >
+          <Layers className="w-4 h-4 text-cyan-400 group-hover:rotate-12 transition-transform" />
+          <span>Connect Matrix &amp; View Portfolios</span>
+          <ArrowRight className="w-4 h-4 text-cyan-400/70" />
+        </Link>
+
         {/* Switch to active MUN */}
         {liveConference && (
           <button
@@ -129,11 +220,10 @@ export function MunNotStartedView({ onSwitchToActive }: MunNotStartedViewProps) 
               setActiveConferenceId(liveConference.id);
               if (onSwitchToActive) onSwitchToActive();
             }}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20 transition-transform active:scale-95"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
           >
-            <Building2 className="w-4 h-4" />
-            <span>Switch to Active MUN: {liveConference.shortName || liveConference.name} (Live)</span>
-            <ArrowRight className="w-4 h-4" />
+            <Building2 className="w-4 h-4 text-neutral-400" />
+            <span>Switch to Active: {liveConference.shortName || liveConference.name}</span>
           </button>
         )}
 

@@ -32,7 +32,10 @@ export type ZenFormFieldType =
   | 'department_selector'
   | 'bandwidth_tier'
   | 'simulation_challenge'
-  | 'matrix_peeker';
+  | 'matrix_peeker'
+  // Media Framing & Citations
+  | 'photo_adjuster'
+  | 'source_citation';
 
 export interface ZenCommitteeChamber {
   id: string;
@@ -136,6 +139,19 @@ export interface ZenFormField {
   bandwidthTiers?: ZenBandwidthTier[];
   simulationConfig?: ZenSimulationConfig;
   matrixConfig?: ZenMatrixConfig;
+  // Media Framing & Citations
+  photoAdjusterConfig?: {
+    defaultAspectRatio?: '16:9' | '21:9' | '4:3' | '1:1';
+    allowCustomUpload?: boolean;
+    allowUrl?: boolean;
+    helperText?: string;
+  };
+  sourceCitationConfig?: {
+    maxSources?: number;
+    requireAtLeastOne?: boolean;
+    autoFetchHeading?: boolean;
+    helperText?: string;
+  };
 }
 
 export interface ZenFormStepHeading {
@@ -183,6 +199,13 @@ export interface ZenFormCustomStyle {
 
   // Branding & Media
   coverImageUrl?: string;
+  coverAdjustment?: {
+    scale: number;        // e.g. 1.0 - 2.5
+    positionX: number;    // 0 - 100%
+    positionY: number;    // 0 - 100%
+    aspectRatio: string;  // '16:9' | '21:9' | '4:3' | '1:1'
+    fit: 'cover' | 'contain';
+  };
   logoUrl?: string;
   
   // Card & Container

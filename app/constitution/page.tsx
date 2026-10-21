@@ -26,7 +26,10 @@ import {
   X,
   AlertTriangle,
   Send,
-  Copy
+  Copy,
+  ChevronDown,
+  HelpCircle,
+  LifeBuoy
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { InteractiveWordHover } from '@/components/home/InteractiveWordHover';
@@ -38,7 +41,9 @@ import { ReaderThemeToggle } from '@/components/ui/ReaderThemeToggle';
 import { 
   CONSTITUTION_ARTICLES, 
   type ArticleSection, 
-  type ConstitutionalClause 
+  type ConstitutionalClause,
+  CONSTITUTION_FAQS,
+  type ConstitutionalFAQ
 } from '@/lib/constitutionData';
 
 export default function ConstitutionPage() {
@@ -47,6 +52,23 @@ export default function ConstitutionPage() {
   const [activeArticleId, setActiveArticleId] = useState<string>('article-1');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [amendmentModalOpen, setAmendmentModalOpen] = useState(false);
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [faqCategory, setFaqCategory] = useState<string>('ALL');
+
+  const faqCategories = useMemo(() => {
+    const cats = new Set(CONSTITUTION_FAQS.map(f => f.category));
+    return ['ALL', ...Array.from(cats)];
+  }, []);
+
+  const filteredFaqs = useMemo(() => {
+    return CONSTITUTION_FAQS.filter(faq => {
+      const matchCat = faqCategory === 'ALL' || faq.category === faqCategory;
+      const matchSearch = !searchQuery.trim() || 
+        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [faqCategory, searchQuery]);
 
   const filteredArticles = useMemo(() => {
     if (!searchQuery.trim()) return CONSTITUTION_ARTICLES;
@@ -152,28 +174,35 @@ export default function ConstitutionPage() {
       <main className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-12 sm:py-20 space-y-16">
         
         {/* ── 1. CONSTITUTIONAL BANNER & HERO ── */}
-        <section className="text-left space-y-8 max-w-5xl">
+        <section className="text-left space-y-6 max-w-5xl">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest ${
+            <div className={`inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-widest ${
               isLight
-                ? 'bg-amber-100/80 text-amber-900 border-amber-300'
-                : 'border-amber-500/30 bg-amber-500/10 text-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
+                ? 'bg-amber-500/10 text-amber-900 border-amber-300/80 shadow-xs'
+                : 'border-amber-400/30 bg-amber-500/10 text-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.12)]'
             }`}>
-              <Crown className="w-3.5 h-3.5 text-amber-500" />
-              <span>FOUNDATIONAL CHARTER &bull; RATIFIED GENESIS 2026 &bull; IMMUTABLE LAW</span>
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span>Foundational Charter &bull; Ratified Genesis 2026 &bull; Immutable Law</span>
             </div>
 
             <ReaderThemeToggle isLight={isLight} onToggle={toggleTheme} />
           </div>
 
           <div className="space-y-4">
-            <h1 className={`font-display font-black text-5xl sm:text-7xl lg:text-8xl tracking-tight uppercase leading-[0.92] ${
-              isLight ? 'text-stone-950' : 'text-white'
-            }`}>
-              THE CONSTITUTION <br />
-              <span className={`font-serif italic font-light ${isLight ? 'text-amber-800' : 'text-[#efe7dc]'}`}>OF ZENVITRA.</span>
+            <h1 className="tracking-tight text-left">
+              <span className={`block font-display font-black text-4xl sm:text-6xl lg:text-7xl tracking-tight uppercase leading-[0.98] ${
+                isLight ? 'text-stone-900' : 'text-white'
+              }`}>
+                The Constitution
+              </span>
+              <span className={`block font-serif italic font-normal text-3xl sm:text-5xl lg:text-6xl mt-1 tracking-normal ${
+                isLight ? 'text-amber-900/90' : 'text-amber-200/90'
+              }`}>
+                of Zenvitra.
+              </span>
             </h1>
-            <div className={`text-sm sm:text-lg font-light leading-relaxed max-w-3xl font-sans ${
+
+            <div className={`text-sm sm:text-base font-normal leading-relaxed max-w-3xl font-sans pt-1 ${
               isLight ? 'text-stone-700' : 'text-neutral-300'
             }`}>
               The supreme legal, ethical, and organizational charter of Zenvitra. Establishing{' '}
@@ -210,35 +239,70 @@ export default function ConstitutionPage() {
             </div>
           </div>
 
-          {/* Quick Metrics & Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-            <div className={`p-4 rounded-2xl border space-y-1 ${
-              isLight ? 'bg-white border-stone-200 shadow-xs' : 'bg-white/[0.03] border-white/10'
+          {/* Refined Metrics & Badges */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 pt-3">
+            <div className={`p-4 rounded-2xl border transition-all ${
+              isLight 
+                ? 'bg-white/80 border-stone-200/80 shadow-xs' 
+                : 'bg-white/[0.02] border-white/10 hover:border-white/20'
             }`}>
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${isLight ? 'text-stone-500' : 'text-neutral-400'}`}>ARTICLES</span>
-              <p className={`text-xl font-bold font-display ${isLight ? 'text-stone-950' : 'text-white'}`}>XI Articles</p>
-              <p className={`text-[11px] font-mono ${isLight ? 'text-stone-500' : 'text-neutral-500'}`}>48 Operational Clauses</p>
+              <span className={`text-[10px] font-mono uppercase tracking-widest block font-medium ${
+                isLight ? 'text-stone-500' : 'text-neutral-400'
+              }`}>Articles</span>
+              <p className={`text-xl font-bold font-display mt-0.5 ${
+                isLight ? 'text-stone-950' : 'text-white'
+              }`}>XII Articles</p>
+              <p className={`text-[11px] font-mono mt-0.5 ${
+                isLight ? 'text-stone-500' : 'text-neutral-400'
+              }`}>54 Operational Clauses</p>
             </div>
-            <div className={`p-4 rounded-2xl border space-y-1 ${
-              isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/[0.05] border-emerald-500/20'
+
+            <div className={`p-4 rounded-2xl border transition-all ${
+              isLight 
+                ? 'bg-emerald-50/50 border-emerald-200/70 shadow-xs' 
+                : 'bg-emerald-500/[0.04] border-emerald-500/20 hover:border-emerald-500/30'
             }`}>
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>PROFIT ESCROW</span>
-              <p className={`text-xl font-bold font-display ${isLight ? 'text-emerald-900' : 'text-emerald-300'}`}>10.0% Profit</p>
-              <p className={`text-[11px] font-mono ${isLight ? 'text-emerald-600' : 'text-emerald-500/80'}`}>Every 4 Mos + Video Proof</p>
+              <span className={`text-[10px] font-mono uppercase tracking-widest block font-medium ${
+                isLight ? 'text-emerald-800' : 'text-emerald-400'
+              }`}>Profit Escrow</span>
+              <p className={`text-xl font-bold font-display mt-0.5 ${
+                isLight ? 'text-emerald-950' : 'text-emerald-300'
+              }`}>10.0% Profit</p>
+              <p className={`text-[11px] font-mono mt-0.5 ${
+                isLight ? 'text-emerald-700' : 'text-emerald-400/80'
+              }`}>Every 4 Mos + Proof</p>
             </div>
-            <div className={`p-4 rounded-2xl border space-y-1 ${
-              isLight ? 'bg-cyan-50 border-cyan-200' : 'bg-cyan-500/[0.05] border-cyan-500/20'
+
+            <div className={`p-4 rounded-2xl border transition-all ${
+              isLight 
+                ? 'bg-cyan-50/50 border-cyan-200/70 shadow-xs' 
+                : 'bg-cyan-500/[0.04] border-cyan-500/20 hover:border-cyan-500/30'
             }`}>
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${isLight ? 'text-cyan-700' : 'text-cyan-400'}`}>SURVEILLANCE</span>
-              <p className={`text-xl font-bold font-display ${isLight ? 'text-cyan-900' : 'text-cyan-300'}`}>Zero (0.0%)</p>
-              <p className={`text-[11px] font-mono ${isLight ? 'text-cyan-600' : 'text-cyan-500/80'}`}>No Behavioral Ads</p>
+              <span className={`text-[10px] font-mono uppercase tracking-widest block font-medium ${
+                isLight ? 'text-cyan-800' : 'text-cyan-400'
+              }`}>Surveillance</span>
+              <p className={`text-xl font-bold font-display mt-0.5 ${
+                isLight ? 'text-cyan-950' : 'text-cyan-300'
+              }`}>Zero (0.0%)</p>
+              <p className={`text-[11px] font-mono mt-0.5 ${
+                isLight ? 'text-cyan-700' : 'text-cyan-400/80'
+              }`}>No Behavioral Ads</p>
             </div>
-            <div className={`p-4 rounded-2xl border space-y-1 ${
-              isLight ? 'bg-purple-50 border-purple-200' : 'bg-purple-500/[0.05] border-purple-500/20'
+
+            <div className={`p-4 rounded-2xl border transition-all ${
+              isLight 
+                ? 'bg-purple-50/50 border-purple-200/70 shadow-xs' 
+                : 'bg-purple-500/[0.04] border-purple-500/20 hover:border-purple-500/30'
             }`}>
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${isLight ? 'text-purple-700' : 'text-purple-400'}`}>AUTHORITY</span>
-              <p className={`text-xl font-bold font-display ${isLight ? 'text-purple-900' : 'text-purple-300'}`}>Plenary Youth</p>
-              <p className={`text-[11px] font-mono ${isLight ? 'text-purple-600' : 'text-purple-500/80'}`}>Universal Assembly</p>
+              <span className={`text-[10px] font-mono uppercase tracking-widest block font-medium ${
+                isLight ? 'text-purple-800' : 'text-purple-400'
+              }`}>Authority</span>
+              <p className={`text-xl font-bold font-display mt-0.5 ${
+                isLight ? 'text-purple-950' : 'text-purple-300'
+              }`}>Plenary Youth</p>
+              <p className={`text-[11px] font-mono mt-0.5 ${
+                isLight ? 'text-purple-700' : 'text-purple-400/80'
+              }`}>Universal Assembly</p>
             </div>
           </div>
         </section>
@@ -728,6 +792,116 @@ export default function ConstitutionPage() {
           </div>
         </section>
 
+        {/* ── CONSTITUTIONAL HELP & FREQUENTLY ASKED QUESTIONS (FAQS) ── */}
+        <section id="constitution-faqs" className={`mt-20 pt-12 border-t space-y-8 ${
+          isLight ? 'border-stone-200' : 'border-white/10'
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full font-mono text-[11px] mb-2 ${
+                isLight ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
+              }`}>
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>CONSTITUTIONAL ASSISTANCE & LEGAL CLARITY</span>
+              </div>
+              <h2 className={`text-2xl sm:text-3xl font-bold font-display tracking-tight ${
+                isLight ? 'text-stone-900' : 'text-white'
+              }`}>
+                Constitutional Help & FAQs
+              </h2>
+              <p className={`text-xs sm:text-sm font-sans mt-1 max-w-2xl ${
+                isLight ? 'text-stone-600' : 'text-neutral-400'
+              }`}>
+                Direct explanations of the Genesis Lock, the 2-revision bill limit, the 10% profit civic endowment, data integrity laws, and assembly amendment workflows.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setAmendmentModalOpen(true)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-mono transition shrink-0 cursor-pointer ${
+                isLight ? 'bg-stone-900 text-white hover:bg-stone-800 border-stone-900' : 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 text-amber-300'
+              }`}
+            >
+              <FileEdit className="w-3.5 h-3.5 text-amber-400" />
+              <span>Petition an Amendment &rarr;</span>
+            </button>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {faqCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFaqCategory(cat)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono transition cursor-pointer ${
+                  faqCategory === cat
+                    ? (isLight ? 'bg-amber-100 text-amber-900 border border-amber-400 font-bold' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold')
+                    : (isLight ? 'bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200' : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/5')
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Accordion Items */}
+          <div className="space-y-3">
+            {filteredFaqs.map((faq) => {
+              const isOpen = openFaqId === faq.id;
+              return (
+                <div
+                  key={faq.id}
+                  className={`rounded-2xl border overflow-hidden transition-all ${
+                    isLight ? 'bg-white border-stone-200' : 'bg-[#07080d] border-white/10'
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
+                    className={`w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer transition ${
+                      isLight ? 'hover:bg-stone-50' : 'hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${
+                          isLight ? 'bg-amber-100 text-amber-800' : 'bg-amber-500/10 text-amber-400/80'
+                        }`}>
+                          {faq.category}
+                        </span>
+                        {faq.articleRef && (
+                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
+                            isLight ? 'bg-stone-100 text-stone-600' : 'bg-white/5 text-neutral-400'
+                          }`}>
+                            {faq.articleRef}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className={`text-sm sm:text-base font-bold font-sans pt-1 ${
+                        isLight ? 'text-stone-900' : 'text-white'
+                      }`}>
+                        {faq.question}
+                      </h3>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-amber-500' : (isLight ? 'text-stone-400' : 'text-neutral-400')
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className={`px-5 pb-5 pt-1 text-xs sm:text-sm font-sans leading-relaxed border-t ${
+                      isLight ? 'text-stone-700 border-stone-100' : 'text-neutral-300 border-white/5'
+                    }`}>
+                      <p>{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
       </main>
 
       {/* ── Footer ── */}
@@ -744,7 +918,7 @@ export default function ConstitutionPage() {
           <Link href="/manifesto" className="hover:text-amber-600 transition">Manifesto</Link>
           <Link href="/about" className="hover:text-amber-600 transition">About</Link>
           <Link href="/pulse" className="hover:text-amber-600 transition">Pulse Feed</Link>
-          <Link href="/donate/govt-schools" className="hover:text-amber-600 transition">10% Escrow</Link>
+          <Link href="/impact" className="hover:text-amber-600 transition">10% Escrow</Link>
           <Link href="/privacy" className="hover:text-amber-600 transition">Privacy</Link>
         </div>
       </footer>

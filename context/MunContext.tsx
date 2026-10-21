@@ -26,9 +26,13 @@ import {
   StagePerformer,
   ChamberRoom,
   MunConference,
-  MunConferenceStatus
+  MunConferenceStatus,
+  EmergencyBroadcast
 } from '@/types/mun';
+import { RegistrationPlan } from '@/types/events';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
+import { computeConferenceStatus } from '@/lib/conferenceStatusHelper';
+import { generatePortfoliosForCommittee } from '@/lib/matrixPortfoliosData';
 
 interface MunContextType {
   /* Conferences & Multi-MUN Day Engine */
@@ -36,6 +40,29 @@ interface MunContextType {
   activeConferenceId: string;
   activeConference?: MunConference;
   setActiveConferenceId: (id: string) => void;
+  createConference: (data: {
+    name: string;
+    shortName?: string;
+    tagline?: string;
+    startDate: string;
+    endDate: string;
+    status?: MunConferenceStatus;
+    location?: string;
+    secretariatChair?: string;
+    ticketPrice?: number;
+    plans?: RegistrationPlan[];
+    committees?: Array<{
+      id?: string;
+      name: string;
+      shortName: string;
+      type: MunCommitteeType;
+      agenda: string;
+      totalDelegates?: number;
+    }>;
+  }) => MunConference;
+  deleteConference: (confId: string) => void;
+  updateConference: (confId: string, data: Partial<MunConference>) => void;
+  updateConferenceMatrix: (confId: string, matrix: any[]) => void;
   setConferenceStatus: (confId: string, status: MunConferenceStatus) => void;
   setConferenceDay: (confId: string, day: number) => void;
   setConferenceTotalDays: (confId: string, totalDays: number) => void;
@@ -83,7 +110,21 @@ interface MunContextType {
     id: string,
     data: Partial<Pick<MunCommittee, 'name' | 'shortName' | 'type' | 'agenda' | 'totalDelegates' | 'presentCount' | 'presentAndVotingCount' | 'quorumNeeded'>>
   ) => void;
-  addCustomCommittee: (customData: { name: string; shortName?: string; agenda: string; type?: MunCommitteeType }) => MunCommittee;
+  addCustomCommittee: (customData: { 
+    name: string; 
+    shortName?: string; 
+    agenda: string; 
+    type?: MunCommitteeType; 
+    totalDelegates?: number;
+    emblem?: string;
+    logoKey?: string;
+    iconUrl?: string;
+    dais?: { chair: string; viceChair: string; rapporteur?: string };
+  }) => MunCommittee;
+  deleteCommittee: (committeeId: string) => void;
+  clearFloorSession: (committeeId: string) => void;
+  addSpeakerToQueue: (portfolio: string, delegateName?: string) => void;
+  removeSpeakerFromQueue: (speakerId: string) => void;
   sessionState: MunSessionState;
   
   /* Live Timer Controls */
@@ -139,141 +180,69 @@ interface MunContextType {
   advanceStagePerformer: () => void;
   triggerStageReaction: (emoji: string) => void;
   stageReactions: Array<{ id: string; emoji: string; count: number; x?: number }>;
+
+  /* ─────────── EMERGENCY PROTOCOL BROADCAST DISPATCHER ─────────── */
+  activeBroadcast: EmergencyBroadcast | null;
+  broadcastHistory: EmergencyBroadcast[];
+  transmitBroadcast: (broadcast: Omit<EmergencyBroadcast, 'id' | 'timestamp' | 'isActive'>) => EmergencyBroadcast;
+  dismissBroadcast: (broadcastId?: string) => void;
 }
 
 /* ─────────── LIVE ZERO-SEEDED PLATFORM DATA ─────────── */
 
-export const DEFAULT_CONFERENCES: MunConference[] = [
-  {
-    id: 'zen-diplomacy-2026',
-    name: 'Zen Diplomacy 2026 — National Youth Assembly',
-    shortName: 'ZEN DIPLOMACY',
-    tagline: 'Sovereign Youth Diplomacy & Parliamentary Chambers',
-    startDate: '2026-10-24',
-    endDate: '2026-10-25',
-    status: 'DAY_1',
-    currentDay: 1,
-    totalDays: 2,
-    conveningDate: '2026-10-24T09:00:00.000Z',
-    secretariatChair: 'Yuveer',
-    location: 'Sovereign Digital Enclave & Live Chambers',
-    committees: ['unsc-2026', 'aippm-2026', 'emi-2026', 'ecosoc-2026'],
-  }
-];
+export const DEFAULT_CONFERENCES: MunConference[] = [];
+export const DEFAULT_COMMITTEES: MunCommittee[] = [];
+const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [];
 
-const DEFAULT_COMMITTEES: MunCommittee[] = [
-  {
-    id: 'unsc-2026',
-    eventId: 'zen-diplomacy-2026',
-    name: 'United Nations Security Council (UNSC)',
-    shortName: 'UNSC',
-    type: 'UNSC',
-    agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.',
-    totalDelegates: 15,
-    presentCount: 0,
-    presentAndVotingCount: 0,
-    quorumNeeded: 9,
-    dais: { chair: 'Presiding Officer', viceChair: 'Rapporteur' },
-  },
-  {
-    id: 'aippm-2026',
-    eventId: 'zen-diplomacy-2026',
-    name: 'All India Political Parties Meet (AIPPM)',
-    shortName: 'AIPPM',
-    type: 'AIPPM',
-    agenda: 'Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India, with Focus on Delimitation, Representation and Reservation Reforms including Creamy Layer and NCL, Citizenship, Federalism, Public-Fund Accountability including PM CARES Fund, FCRA and Political Funding, Women’s Safety, SC/ST Protection, Criminal Justice, Police and Judicial Reforms, National Security, Examination Integrity and the Roadmap towards Viksit Bharat.',
-    totalDelegates: 20,
-    presentCount: 0,
-    presentAndVotingCount: 0,
-    quorumNeeded: 10,
-    dais: { chair: "Hon'ble Speaker of the House", viceChair: 'Deputy Speaker' },
-  },
-  {
-    id: 'emi-2026',
-    eventId: 'zen-diplomacy-2026',
-    name: 'Education Ministry of India (EMI)',
-    shortName: 'EMI',
-    type: 'PARLIAMENTARY',
-    agenda: 'Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026, with Particular Focus on Examination Integrity, Entrance Examinations, Curriculum and Assessment Reform, Coaching Regulation, School and Higher Education, Teacher Accountability, Digital and AI-Based Education, Skill Development, Accessibility, Student Welfare and Equal Educational Opportunity.',
-    totalDelegates: 16,
-    presentCount: 0,
-    presentAndVotingCount: 0,
-    quorumNeeded: 8,
-    dais: { chair: 'Union Minister of Education', viceChair: 'Principal Secretary' },
-  },
-  {
-    id: 'ecosoc-2026',
-    eventId: 'zen-diplomacy-2026',
-    name: 'United Nations Economic and Social Council (ECOSOC)',
-    shortName: 'ECOSOC',
-    type: 'ECOSOC',
-    agenda: 'Deliberation upon Building an Equitable and Sustainable Global Development Framework with Particular Focus on Poverty and Inequality, Development Financing, Debt Sustainability, Employment, Food and Energy Security, Climate-Resilient Development, Technology Access, Global Economic Cooperation and the Financing of the Sustainable Development Goals.',
-    totalDelegates: 16,
-    presentCount: 0,
-    presentAndVotingCount: 0,
-    quorumNeeded: 8,
-    dais: { chair: 'President of ECOSOC', viceChair: 'Vice-President / Rapporteur' },
-  },
-];
+export function eventToMunConference(event: any): MunConference {
+  const startDate = event.date ? String(event.date).split('T')[0] : new Date().toISOString().split('T')[0];
+  const endDate = event.endDate ? String(event.endDate).split('T')[0] : startDate;
+  const statusInfo = computeConferenceStatus({ startDate, endDate });
+  const id = event.slug || event.id;
+  const name = event.title || 'Platform Event';
+  const shortName = name.slice(0, 14).toUpperCase();
 
-const DEFAULT_CHAMBER_ROOMS: ChamberRoom[] = [
-  {
-    id: 'unsc-2026',
-    title: 'UN Security Council (UNSC) Plenary',
-    category: 'MUN_COMMITTEE',
-    agenda: 'Deliberation upon the Evolving Global Security Landscape with Particular Focus on the Risk of Nuclear Escalation, Militarisation and Strategic Competition in the Arctic, Emerging Shipping Routes, Territorial and Maritime Disputes, Military Alliances, Resource Competition and the Erosion of International Security Mechanisms.',
-    shortCode: 'UNSC',
-    hostName: 'Presiding Officer',
-    hostHandle: 'dais_unsc',
-    isLive: true,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-10-24T09:00:00.000Z',
-  },
-  {
-    id: 'aippm-2026',
-    title: 'All India Political Parties Meet (AIPPM)',
-    category: 'LOK_SABHA',
-    agenda: 'Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India, with Focus on Delimitation, Representation and Reservation Reforms including Creamy Layer and NCL, Citizenship, Federalism, Public-Fund Accountability including PM CARES Fund, FCRA and Political Funding, Women’s Safety, SC/ST Protection, Criminal Justice, Police and Judicial Reforms, National Security, Examination Integrity and the Roadmap towards Viksit Bharat.',
-    shortCode: 'AIPPM',
-    hostName: "Hon'ble Speaker",
-    hostHandle: 'speaker_aippm',
-    isLive: true,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-10-24T09:00:00.000Z',
-  },
-  {
-    id: 'emi-2026',
-    title: 'Education Ministry of India (EMI)',
-    category: 'LOK_SABHA',
-    agenda: 'Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026, with Particular Focus on Examination Integrity, Entrance Examinations, Curriculum and Assessment Reform, Coaching Regulation, School and Higher Education, Teacher Accountability, Digital and AI-Based Education, Skill Development, Accessibility, Student Welfare and Equal Educational Opportunity.',
-    shortCode: 'EMI',
-    hostName: 'Union Minister',
-    hostHandle: 'minister_emi',
-    isLive: true,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-10-24T09:00:00.000Z',
-  },
-  {
-    id: 'ecosoc-2026',
-    title: 'UN Economic and Social Council (ECOSOC)',
-    category: 'MUN_COMMITTEE',
-    agenda: 'Deliberation upon Building an Equitable and Sustainable Global Development Framework with Particular Focus on Poverty and Inequality, Development Financing, Debt Sustainability, Employment, Food and Energy Security, Climate-Resilient Development, Technology Access, Global Economic Cooperation and the Financing of the Sustainable Development Goals.',
-    shortCode: 'ECOSOC',
-    hostName: 'President of ECOSOC',
-    hostHandle: 'president_ecosoc',
-    isLive: true,
-    votingHistory: [],
-    performersQueue: [],
-    reactions: [],
-    createdAt: '2026-10-24T09:00:00.000Z',
-  },
-];
+  return {
+    id,
+    name,
+    shortName,
+    tagline: event.description || 'Sovereign Multilateral Assembly, Summit & Committees',
+    startDate,
+    endDate,
+    status: statusInfo.status,
+    currentDay: statusInfo.currentDay,
+    totalDays: statusInfo.totalDays,
+    conveningDate: `${startDate}T09:00:00.000Z`,
+    secretariatChair: event.organizerName || 'Executive Secretariat',
+    location: event.location || 'Plenary Enclave',
+    committees: [`${id}-chamber-1`],
+  };
+}
+
+export function createEmptySessionState(committeeId: string): MunSessionState {
+  return {
+    committeeId,
+    sessionNumber: 1,
+    status: 'in_session',
+    sessionMode: 'GSL',
+    timer: {
+      totalSeconds: 90,
+      remainingSeconds: 90,
+      isRunning: false,
+      label: 'GSL (General Speakers List)',
+      sessionType: 'GSL',
+    },
+    currentSpeaker: null,
+    currentMotion: null,
+    motionsQueue: [],
+    speakersList: [],
+    parliamentaryPoints: [],
+    resolutions: [],
+    motionHistory: [],
+    speakerHistory: [],
+    passedBills: [],
+  };
+}
 
 const INITIAL_COMMITTEES: MunCommittee[] = DEFAULT_COMMITTEES;
 const INITIAL_INVITES: MunInvite[] = [];
@@ -281,16 +250,19 @@ const INITIAL_SESSION_STATES: Record<string, MunSessionState> = {};
 
 const MunContext = createContext<MunContextType | undefined>(undefined);
 
-const LS_MUN_COMMITTEES = 'zenvitra_mun_committees_v2_clean';
-const LS_MUN_INVITES = 'zenvitra_mun_invites_v2_clean';
-const LS_MUN_REGISTRATIONS = 'zenvitra_mun_registrations_v2_clean';
-const LS_MUN_SESSION = 'zenvitra_mun_session_v2_clean';
-const LS_MUN_EXPERIENCES = 'zenvitra_mun_experiences_v2';
-const LS_CHAMBER_ROOMS = 'zenvitra_chamber_rooms_v2';
-const LS_CHAMBER_VOTES = 'zenvitra_chamber_votes_v2';
-const LS_STAGE_PERFORMERS = 'zenvitra_stage_performers_v2';
-const LS_MUN_CONFERENCES = 'zenvitra_mun_conferences_v1';
-const LS_ACTIVE_CONFERENCE = 'zenvitra_mun_active_conference_v1';
+const LS_MUN_COMMITTEES = 'zenvitra_mun_committees_v3_clean';
+const LS_MUN_INVITES = 'zenvitra_mun_invites_v3_clean';
+const LS_MUN_REGISTRATIONS = 'zenvitra_mun_registrations_v3_clean';
+const LS_MUN_SESSION = 'zenvitra_mun_session_v3_clean';
+const LS_MUN_EXPERIENCES = 'zenvitra_mun_experiences_v3_clean';
+const LS_CHAMBER_ROOMS = 'zenvitra_chamber_rooms_v3_clean';
+const LS_CHAMBER_VOTES = 'zenvitra_chamber_votes_v3_clean';
+const LS_STAGE_PERFORMERS = 'zenvitra_stage_performers_v3_clean';
+const LS_MUN_CONFERENCES = 'zenvitra_mun_conferences_v3_clean';
+const LS_ACTIVE_CONFERENCE = 'zenvitra_mun_active_conference_v3_clean';
+const LS_ACTIVE_COMMITTEE = 'zenvitra_mun_active_committee_v3_clean';
+const LS_ACTIVE_BROADCAST = 'zenvitra_active_mun_broadcast_v1';
+const LS_BROADCAST_HISTORY = 'zenvitra_mun_broadcast_history_v1';
 
 export function MunProvider({ children }: { children: React.ReactNode }) {
   const { profile, user } = useAuth();
@@ -298,26 +270,46 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   const currentUserName = profile?.display_name || user?.name || 'Delegate';
   const currentUserHandle = profile?.username || 'delegate';
 
+  /* Emergency Protocol Broadcast Engine */
+  const [activeBroadcast, setActiveBroadcast] = useState<EmergencyBroadcast | null>(null);
+  const [broadcastHistory, setBroadcastHistory] = useState<EmergencyBroadcast[]>([]);
+
   /* Conferences & Multi-MUN Day Engine */
   const [conferences, setConferences] = useState<MunConference[]>(DEFAULT_CONFERENCES);
   const [activeConferenceId, setActiveConferenceIdState] = useState<string>('');
 
   const [committees, setCommittees] = useState<MunCommittee[]>(INITIAL_COMMITTEES);
-  const [activeCommitteeId, setActiveCommitteeId] = useState<string>('');
+  const [activeCommitteeId, setActiveCommitteeIdState] = useState<string>('');
   const [selectedInviteModal, setSelectedInviteModal] = useState<MunInvite | null>(null);
 
+  const setActiveCommitteeId = useCallback((id: string) => {
+    setActiveCommitteeIdState(id);
+    try {
+      if (id) {
+        localStorage.setItem(LS_ACTIVE_COMMITTEE, id);
+      } else {
+        localStorage.removeItem(LS_ACTIVE_COMMITTEE);
+      }
+    } catch {}
+  }, []);
+
   const activeConference = useMemo(() => {
-    return conferences.find((c) => c.id === activeConferenceId) || conferences[0];
+    const raw = conferences.find((c) => c.id === activeConferenceId) || conferences[0];
+    if (!raw) return undefined;
+    const info = computeConferenceStatus(raw);
+    const effectiveStatus = (raw.status && (raw.status.startsWith('DAY_') || raw.status === 'IN_SESSION')) ? raw.status : info.status;
+    return {
+      ...raw,
+      status: effectiveStatus,
+      currentDay: effectiveStatus.startsWith('DAY_') ? (parseInt(effectiveStatus.replace('DAY_', ''), 10) || info.currentDay || 1) : info.currentDay,
+      totalDays: info.totalDays,
+    };
   }, [conferences, activeConferenceId]);
 
   const currentConferenceDay: number = useMemo(() => {
-    if (!activeConference) return 1;
-    if (activeConference.currentDay !== undefined && activeConference.currentDay > 0) {
-      return activeConference.currentDay;
-    }
-    const match = (activeConference.status || '').match(/DAY_(\d+)/i);
-    if (match && match[1]) return parseInt(match[1], 10);
-    return 1;
+    if (!activeConference) return 0;
+    const info = computeConferenceStatus(activeConference);
+    return info.currentDay;
   }, [activeConference]);
 
   const setActiveConferenceId = useCallback((id: string) => {
@@ -327,9 +319,187 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     } catch {}
     const conf = conferences.find((c) => c.id === id);
     if (conf && conf.committees.length > 0) {
-      setActiveCommitteeId(conf.committees[0]);
+      const firstComm = conf.committees[0];
+      const commId = typeof firstComm === 'string' ? firstComm : firstComm?.id;
+      if (commId) setActiveCommitteeId(commId);
     }
-  }, [conferences]);
+  }, [conferences, setActiveCommitteeId]);
+
+  const createConference = useCallback((data: {
+    name: string;
+    shortName?: string;
+    tagline?: string;
+    startDate: string;
+    endDate: string;
+    status?: MunConferenceStatus;
+    location?: string;
+    secretariatChair?: string;
+    ticketPrice?: number;
+    plans?: RegistrationPlan[];
+    committees?: Array<{
+      id?: string;
+      name: string;
+      shortName: string;
+      type: MunCommitteeType;
+      agenda: string;
+      totalDelegates?: number;
+    }>;
+  }) => {
+    const cleanName = data.name.trim();
+    const slug = cleanName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || `mun-${Date.now()}`;
+    const id = slug;
+    const shortName = data.shortName?.trim() || cleanName.slice(0, 14).toUpperCase();
+
+    const statusInfo = computeConferenceStatus({ startDate: data.startDate, endDate: data.endDate, status: data.status });
+    const finalStatus = data.status || statusInfo.status;
+    const finalCurrentDay = finalStatus.startsWith('DAY_') ? (parseInt(finalStatus.replace('DAY_', ''), 10) || 1) : statusInfo.currentDay;
+
+    const createdCommitteeIds: string[] = [];
+    const newCommittees: MunCommittee[] = [];
+    const allPortfolios: any[] = [];
+
+    const rawCommittees = data.committees || [];
+
+    rawCommittees.forEach((c, idx) => {
+      const commId = c.id || `${id}-${c.shortName.toLowerCase()}-${idx + 1}`;
+      createdCommitteeIds.push(commId);
+      newCommittees.push({
+        id: commId,
+        eventId: id,
+        name: c.name,
+        shortName: c.shortName,
+        agenda: c.agenda,
+        type: c.type,
+        totalDelegates: c.totalDelegates || 20,
+        presentCount: 0,
+        presentAndVotingCount: 0,
+        quorumNeeded: Math.ceil((c.totalDelegates || 20) / 2),
+        dais: { chair: 'Presiding Officer', viceChair: 'Rapporteur' },
+      });
+
+      const portfolios = generatePortfoliosForCommittee(c.shortName, c.name, c.type, id);
+      allPortfolios.push(...portfolios);
+    });
+
+    const newConf: MunConference = {
+      id,
+      name: cleanName,
+      shortName,
+      tagline: data.tagline?.trim() || 'Sovereign Youth Diplomacy & Parliamentary Chambers',
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: finalStatus,
+      currentDay: finalCurrentDay,
+      totalDays: statusInfo.totalDays,
+      conveningDate: `${data.startDate}T09:00:00.000Z`,
+      secretariatChair: data.secretariatChair?.trim() || currentUserName || 'Executive Secretariat',
+      location: data.location?.trim() || 'Digital Plenary Enclave',
+      committees: createdCommitteeIds,
+      matrix: allPortfolios,
+      plans: data.plans,
+    };
+
+    setCommittees((prev) => {
+      const existingIds = new Set(prev.map((c) => c.id));
+      const filteredNew = newCommittees.filter((c) => !existingIds.has(c.id));
+      const updatedPrev = prev.map((c) => {
+        const matching = newCommittees.find((nc) => nc.id === c.id);
+        return matching ? { ...c, eventId: id } : c;
+      });
+      const updated = [...updatedPrev, ...filteredNew];
+      try {
+        localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setConferences((prev) => {
+      const updated = [newConf, ...prev.filter((c) => c.id !== id)];
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setActiveConferenceIdState(id);
+    try {
+      localStorage.setItem(LS_ACTIVE_CONFERENCE, id);
+    } catch {}
+
+    if (createdCommitteeIds.length > 0) {
+      setActiveCommitteeId(createdCommitteeIds[0]);
+    }
+
+    // Seamlessly sync into platform events ecosystem (zenvitra_events_v4_clean)
+    try {
+      const storedEvtsRaw = localStorage.getItem('zenvitra_events_v4_clean');
+      const existingEvts = storedEvtsRaw ? JSON.parse(storedEvtsRaw) : [];
+      if (Array.isArray(existingEvts) && !existingEvts.some((e: any) => e.id === id || e.slug === id)) {
+        const syncedEvent = {
+          id,
+          slug: id,
+          title: cleanName,
+          description: data.tagline?.trim() || 'Sovereign Multilateral Youth Assembly, Summit & Committee Chambers',
+          type: 'hybrid',
+          location: data.location?.trim() || 'Digital Plenary Enclave',
+          date: data.startDate,
+          endDate: data.endDate,
+          time: '09:00 AM',
+          category: 'MUN',
+          status: statusInfo.status === 'CONCLUDED' ? 'past' : (statusInfo.isLive ? 'live' : 'upcoming'),
+          ticketPrice: data.ticketPrice || (data.plans && data.plans.length > 0 ? data.plans[0].price : 0),
+          plans: data.plans,
+          attendees: [],
+          organizerId: currentUserId,
+          organizerName: currentUserName,
+          organizerUsername: currentUserHandle,
+          tags: ['mun', 'summit', 'diplomacy', 'deliberation'],
+          createdAt: new Date().toISOString(),
+        };
+        const nextEvts = [syncedEvent, ...existingEvts];
+        localStorage.setItem('zenvitra_events_v4_clean', JSON.stringify(nextEvts));
+        broadcastActivitySync({ source: 'event', action: 'create', timestamp: Date.now() });
+      }
+    } catch {}
+
+    broadcastActivitySync({ source: 'mun_reg', action: 'create', timestamp: Date.now() });
+    return newConf;
+  }, [currentUserName, currentUserId, currentUserHandle]);
+
+  const deleteConference = useCallback((confId: string) => {
+    setConferences((prev) => {
+      const updated = prev.filter((c) => c.id !== confId);
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    broadcastActivitySync({ source: 'mun_reg', action: 'delete', timestamp: Date.now() });
+  }, []);
+
+  const updateConference = useCallback((confId: string, data: Partial<MunConference>) => {
+    setConferences((prev) => {
+      const updated = prev.map((c) => (c.id === confId ? { ...c, ...data } : c));
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
+  }, []);
+
+  const updateConferenceMatrix = useCallback((confId: string, matrix: any[]) => {
+    setConferences((prev) => {
+      const updated = prev.map((c) => (c.id === confId ? { ...c, matrix } : c));
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
+  }, []);
 
   const setConferenceStatus = useCallback((confId: string, status: MunConferenceStatus) => {
     setConferences((prev) => {
@@ -516,134 +686,193 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   // Load from localStorage on client mount & scrub any legacy seeded data
   useEffect(() => {
     try {
-      const BANNED_SEEDED_COMMITTEE_IDS = [
-        'open-mic-stage',
-        'pitch-arena',
-        'general-assembly',
-        'lok-sabha-2026',
-        'unga-plenary',
-        'unhrc-2026',
-        'constituent-assembly-2026',
-        'custom-chamber-other'
+      // Actively purge all legacy keys from user's browser
+      const LEGACY_KEYS_TO_PURGE = [
+        'zenvitra_mun_conferences_v1',
+        'zenvitra_mun_conferences_v2',
+        'zenvitra_mun_conferences_v2_clean',
+        'zenvitra_mun_active_conference_v1',
+        'zenvitra_mun_active_conference_v2',
+        'zenvitra_mun_active_conference_v2_clean',
+        'zenvitra_mun_committees_v1',
+        'zenvitra_mun_committees_v2',
+        'zenvitra_mun_committees_v2_clean',
+        'zenvitra_mun_session_v1',
+        'zenvitra_mun_session_v2',
+        'zenvitra_mun_session_v2_clean',
+        'zenvitra_chamber_rooms_v1',
+        'zenvitra_chamber_rooms_v2',
+        'zenvitra_mun_registrations_v1',
+        'zenvitra_mun_registrations_v2',
+        'zenvitra_mun_registrations_v2_clean',
+        'zenvitra_mun_invites_v1',
+        'zenvitra_mun_invites_v2',
+        'zenvitra_mun_invites_v2_clean',
+        'zenvitra_events_v1',
+        'zenvitra_events_v2',
+        'zenvitra_events_v3'
       ];
+      LEGACY_KEYS_TO_PURGE.forEach((key) => {
+        try { localStorage.removeItem(key); } catch {}
+      });
 
-      // 1. Conferences
+      // 1. Conferences & Ecosystem Connection (Events, Summits, MUNs)
+      const isSeededMunConference = (c: any) => {
+        if (!c) return true;
+        const id = String(c.id || '').toLowerCase();
+        const name = String(c.name || c.title || '').toLowerCase();
+        const slug = String(c.slug || '').toLowerCase();
+        return (
+          id === 'conf-zenmun-2026' ||
+          id === 'mun-zen-2026' ||
+          id.includes('evt_showcase') ||
+          id.includes('zen-diplomacy') ||
+          name.includes('zenmun 2026') ||
+          name.includes('model united nations 2026') ||
+          name.includes('global mun') ||
+          name.includes('geneva world mun') ||
+          name.includes('zenvitra youth diplomatic plenary 2026') ||
+          name.includes('civic treaty & redline diff') ||
+          slug === 'zen-diplomacy' ||
+          slug === 'zen-diplomacy-mun-2026'
+        );
+      };
+
       const storedConfs = localStorage.getItem(LS_MUN_CONFERENCES);
+      let loadedConfs: MunConference[] = [];
       if (storedConfs) {
-        const parsed = JSON.parse(storedConfs);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const cleaned = parsed.filter(
-            (c: any) => c && c.id !== 'mun_jharokha_2026' && c.id !== 'mun_horizon_2026'
-          );
-          if (cleaned.length > 0) {
-            setConferences(cleaned);
-          } else {
-            setConferences(DEFAULT_CONFERENCES);
-            localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(DEFAULT_CONFERENCES));
+        try {
+          const parsed = JSON.parse(storedConfs);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            loadedConfs = parsed.filter((c: any) => c && c.id && !isSeededMunConference(c));
           }
-        } else {
-          setConferences(DEFAULT_CONFERENCES);
-          localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(DEFAULT_CONFERENCES));
-        }
-      } else {
-        setConferences(DEFAULT_CONFERENCES);
-        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(DEFAULT_CONFERENCES));
+        } catch {}
       }
+
+      // Seamlessly bridge with platform events ecosystem (zenvitra_events_v4_clean)
+      const storedEvents = localStorage.getItem('zenvitra_events_v4_clean');
+      if (storedEvents) {
+        try {
+          const evts = JSON.parse(storedEvents);
+          if (Array.isArray(evts)) {
+            evts.forEach((e: any) => {
+              if (e && e.id && !isSeededMunConference(e)) {
+                if (!loadedConfs.some((c) => c.id === e.id || c.id === e.slug)) {
+                  loadedConfs.push(eventToMunConference(e));
+                }
+              }
+            });
+          }
+        } catch {}
+      }
+
+      setConferences(loadedConfs);
+      try {
+        localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(loadedConfs));
+      } catch {}
+
+      // Synchronize verified conferences from database
+      fetch('/api/events/list?status=VERIFIED')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.listings)) {
+            setConferences((prev) => {
+              let updated = [...prev];
+              let hasNew = false;
+              for (const item of data.listings) {
+                const confId = item.slug || item.id;
+                if (!updated.some((c) => c.id === confId)) {
+                  let plans: any[] = [];
+                  try { if (item.tierPlansJson) plans = JSON.parse(item.tierPlansJson); } catch {}
+                  const startDate = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+                  const endDate = item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : startDate;
+                  const statusInfo = computeConferenceStatus({ startDate, endDate });
+
+                  const newConf: MunConference = {
+                    id: confId,
+                    slug: item.slug,
+                    name: item.title,
+                    shortName: item.shortName || item.title.slice(0, 14).toUpperCase(),
+                    tagline: item.description || 'Sovereign Multilateral Assembly, Summit & Committees',
+                    startDate,
+                    endDate,
+                    status: statusInfo.status,
+                    currentDay: statusInfo.currentDay,
+                    totalDays: statusInfo.totalDays,
+                    conveningDate: `${startDate}T09:00:00.000Z`,
+                    secretariatChair: item.organizerName || 'Executive Secretariat',
+                    location: `${item.venue}, ${item.city}`,
+                    committees: [`${confId}-chamber-1`],
+                    plans,
+                    verified: true,
+                    verificationStatus: 'VERIFIED',
+                  };
+                  updated.push(newConf);
+                  hasNew = true;
+                }
+              }
+              if (hasNew) {
+                try { localStorage.setItem(LS_MUN_CONFERENCES, JSON.stringify(updated)); } catch {}
+              }
+              return updated;
+            });
+          }
+        })
+        .catch(() => {});
 
       // 2. Active Conference
       const storedActiveConf = localStorage.getItem(LS_ACTIVE_CONFERENCE);
-      if (storedActiveConf && storedActiveConf !== 'mun_jharokha_2026' && storedActiveConf !== 'mun_horizon_2026') {
+      if (storedActiveConf && loadedConfs.some((c) => c.id === storedActiveConf)) {
         setActiveConferenceIdState(storedActiveConf);
       } else {
-        setActiveConferenceIdState('zen-diplomacy-2026');
-        localStorage.setItem(LS_ACTIVE_CONFERENCE, 'zen-diplomacy-2026');
+        const fallbackConfId = loadedConfs[0]?.id || '';
+        setActiveConferenceIdState(fallbackConfId);
+        try {
+          if (fallbackConfId) localStorage.setItem(LS_ACTIVE_CONFERENCE, fallbackConfId);
+          else localStorage.removeItem(LS_ACTIVE_CONFERENCE);
+        } catch {}
       }
 
       // 3. Committees
       const storedCommittees = localStorage.getItem(LS_MUN_COMMITTEES);
+      let loadedCommittees: MunCommittee[] = [];
       if (storedCommittees) {
-        const parsed = JSON.parse(storedCommittees);
-        if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter(
-            (c: any) =>
-              c &&
-              c.eventId !== 'mun_jharokha_2026' &&
-              c.eventId !== 'mun_horizon_2026' &&
-              !BANNED_SEEDED_COMMITTEE_IDS.includes(c.id) &&
-              !BANNED_SEEDED_COMMITTEE_IDS.includes(c.name?.toLowerCase())
-          );
-          if (cleaned.length > 0) {
-            // Keep official 2026 committees and chambers updated with the official agendas
-            const synced = cleaned.map((c: any) => {
-              const def = DEFAULT_COMMITTEES.find(dc => dc.id === c.id || (c.id === 'unodc-2026' && dc.id === 'ecosoc-2026'));
-              if (def) {
-                return {
-                  ...c,
-                  id: def.id,
-                  name: def.name,
-                  shortName: def.shortName,
-                  type: def.type,
-                  agenda: def.agenda,
-                  dais: def.dais || c.dais,
-                };
-              }
-              return c;
-            });
-            setCommittees(synced);
-            localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(synced));
-            setActiveCommitteeId((prev) => (prev && synced.some(c => c.id === prev)) ? prev : synced[0].id);
-          } else {
-            setCommittees(DEFAULT_COMMITTEES);
-            localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(DEFAULT_COMMITTEES));
-            setActiveCommitteeId(DEFAULT_COMMITTEES[0].id);
+        try {
+          const parsed = JSON.parse(storedCommittees);
+          if (Array.isArray(parsed)) {
+            loadedCommittees = parsed.filter((c: any) => c && c.id);
           }
-        }
+        } catch {}
+      }
+      setCommittees(loadedCommittees);
+      try {
+        localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(loadedCommittees));
+      } catch {}
+
+      const storedActiveComm = localStorage.getItem(LS_ACTIVE_COMMITTEE);
+      if (storedActiveComm && loadedCommittees.some((c) => c.id === storedActiveComm)) {
+        setActiveCommitteeId(storedActiveComm);
+      } else if (loadedCommittees.length > 0) {
+        setActiveCommitteeId(loadedCommittees[0].id);
       } else {
-        setCommittees(DEFAULT_COMMITTEES);
-        localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(DEFAULT_COMMITTEES));
-        setActiveCommitteeId(DEFAULT_COMMITTEES[0].id);
+        setActiveCommitteeId('');
       }
 
       // 4. Chamber Rooms
       const storedRooms = localStorage.getItem(LS_CHAMBER_ROOMS);
+      let loadedRooms: ChamberRoom[] = [];
       if (storedRooms) {
-        const parsed = JSON.parse(storedRooms);
-        if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter(
-            (r: any) =>
-              r &&
-              !BANNED_SEEDED_COMMITTEE_IDS.includes(r.id) &&
-              r.eventId !== 'mun_jharokha_2026' &&
-              r.eventId !== 'mun_horizon_2026'
-          );
-          if (cleaned.length > 0) {
-            const syncedRooms = cleaned.map((r: any) => {
-              const def = DEFAULT_CHAMBER_ROOMS.find(dr => dr.id === r.id || (r.id === 'unodc-2026' && dr.id === 'ecosoc-2026'));
-              if (def) {
-                return {
-                  ...r,
-                  id: def.id,
-                  title: def.title,
-                  shortCode: def.shortCode,
-                  category: def.category,
-                  agenda: def.agenda,
-                  hostName: def.hostName,
-                  hostHandle: def.hostHandle,
-                };
-              }
-              return r;
-            });
-            setChamberRooms(syncedRooms);
-            localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(syncedRooms));
-          } else {
-            setChamberRooms(DEFAULT_CHAMBER_ROOMS);
-            localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(DEFAULT_CHAMBER_ROOMS));
+        try {
+          const parsed = JSON.parse(storedRooms);
+          if (Array.isArray(parsed)) {
+            loadedRooms = parsed.filter((r: any) => r && r.id);
           }
-        }
-      } else {
-        setChamberRooms(DEFAULT_CHAMBER_ROOMS);
-        localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(DEFAULT_CHAMBER_ROOMS));
+        } catch {}
       }
+      setChamberRooms(loadedRooms);
+      try {
+        localStorage.setItem(LS_CHAMBER_ROOMS, JSON.stringify(loadedRooms));
+      } catch {}
 
       const storedVotes = localStorage.getItem(LS_CHAMBER_VOTES);
       if (storedVotes) setVotingSessions(JSON.parse(storedVotes));
@@ -662,6 +891,25 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
       const storedSessions = localStorage.getItem(LS_MUN_SESSION);
       if (storedSessions) setSessionStates(JSON.parse(storedSessions));
+
+      // 5. Emergency Protocol Broadcasts
+      const storedActiveBroadcast = localStorage.getItem(LS_ACTIVE_BROADCAST);
+      if (storedActiveBroadcast) {
+        try {
+          const parsed = JSON.parse(storedActiveBroadcast);
+          if (parsed && parsed.isActive) {
+            setActiveBroadcast(parsed);
+          }
+        } catch {}
+      }
+
+      const storedHistory = localStorage.getItem(LS_BROADCAST_HISTORY);
+      if (storedHistory) {
+        try {
+          const parsed = JSON.parse(storedHistory);
+          if (Array.isArray(parsed)) setBroadcastHistory(parsed);
+        } catch {}
+      }
     } catch {}
     setIsMounted(true);
   }, []);
@@ -868,9 +1116,20 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addCustomCommittee = useCallback(
-    (customData: { name: string; shortName?: string; agenda: string; type?: MunCommitteeType }) => {
+    (customData: { 
+      name: string; 
+      shortName?: string; 
+      agenda: string; 
+      type?: MunCommitteeType; 
+      totalDelegates?: number;
+      emblem?: string;
+      logoKey?: string;
+      iconUrl?: string;
+      dais?: { chair: string; viceChair: string; rapporteur?: string };
+    }) => {
       const newId = `custom-preset-${Date.now()}`;
       const shortName = (customData.shortName?.trim() || customData.name.slice(0, 10).toUpperCase()).trim();
+      const totalDelegates = customData.totalDelegates || 25;
       const newCommittee: MunCommittee = {
         id: newId,
         eventId: 'evt_custom_user',
@@ -878,14 +1137,17 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
         shortName,
         type: customData.type || 'OTHER',
         agenda: customData.agenda.trim(),
-        totalDelegates: 25,
+        totalDelegates,
         presentCount: 0,
         presentAndVotingCount: 0,
-        quorumNeeded: 13,
-        dais: {
+        quorumNeeded: Math.ceil(totalDelegates / 3),
+        dais: customData.dais || {
           chair: 'Session Moderator',
           viceChair: 'Deputy Rapporteur'
-        }
+        },
+        emblem: customData.emblem || '🇺🇳',
+        logoKey: customData.logoKey || 'un',
+        iconUrl: customData.iconUrl,
       };
 
       setCommittees((prev) => {
@@ -928,12 +1190,12 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   );
 
   const currentSessionState: MunSessionState =
-    sessionStates[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+    sessionStates[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
 
   /* Timer Controls */
   const toggleTimer = useCallback(() => {
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -950,7 +1212,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   const resetTimer = useCallback(
     (totalSeconds: number, label: string, mode: MunSessionMode) => {
       setSessionStates((prev) => {
-        const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+        const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
         return {
           ...prev,
           [activeCommitteeId]: {
@@ -973,7 +1235,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   const setTimerSeconds = useCallback(
     (remainingSeconds: number) => {
       setSessionStates((prev) => {
-        const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+        const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
         return {
           ...prev,
           [activeCommitteeId]: {
@@ -999,8 +1261,8 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     const userAcceptedInvite = userInvites.find(
       (i) => i.committeeId === activeCommitteeId && i.status === 'accepted'
     );
-    const country = userAcceptedInvite?.portfolio || 'Delegation of France';
-    const flag = userAcceptedInvite?.flagEmoji || '🇫🇷';
+    const country = userAcceptedInvite?.portfolio || (profile?.display_name ? `Delegate (${profile.display_name})` : 'Delegate of Member State');
+    const flag = userAcceptedInvite?.flagEmoji || '🌐';
 
     const newMotion: MunMotion = {
       id: `mot_${Date.now()}`,
@@ -1024,7 +1286,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     };
 
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -1040,7 +1302,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   /* Start Running a Motion */
   const startMotion = (motionId: string) => {
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       const targetMotion = s.motionsQueue.find((m) => m.id === motionId);
       if (!targetMotion) return prev;
 
@@ -1082,7 +1344,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
   /* Vote on Motion */
   const voteOnMotion = (motionId: string, vote: 'for' | 'against') => {
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -1102,7 +1364,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
   const withdrawMotion = (motionId: string) => {
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       const targetMotion = s.motionsQueue.find((m) => m.id === motionId);
       const historyEntry = targetMotion ? [{
         ...targetMotion,
@@ -1127,8 +1389,8 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     const userAcceptedInvite = userInvites.find(
       (i) => i.committeeId === activeCommitteeId && i.status === 'accepted'
     );
-    const country = customPortfolio || userAcceptedInvite?.portfolio || 'Delegation of France (You)';
-    const flag = userAcceptedInvite?.flagEmoji || '🇫🇷';
+    const country = customPortfolio || userAcceptedInvite?.portfolio || (profile?.display_name ? `Delegate (${profile.display_name})` : 'Delegate of Member State');
+    const flag = userAcceptedInvite?.flagEmoji || '🌐';
 
     const newSpeaker: MunSpeaker = {
       id: `spk_${Date.now()}`,
@@ -1142,7 +1404,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     };
 
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       // avoid duplicates
       if (s.speakersList.some((sp) => sp.delegateName === currentUserName)) return prev;
 
@@ -1156,9 +1418,77 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const addSpeakerToQueue = useCallback((portfolio: string, delegateName?: string) => {
+    if (!portfolio.trim()) return;
+    const cleanPortfolio = portfolio.trim();
+    const newSpeaker: MunSpeaker = {
+      id: `spk_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      country: cleanPortfolio.replace('Delegation of ', '').replace('Delegate of ', ''),
+      portfolio: cleanPortfolio,
+      delegateName: delegateName?.trim() || cleanPortfolio,
+      flagEmoji: '🌐',
+      status: 'queued',
+      day: currentConferenceDay || 1,
+      listType: 'GSL',
+      timeRemainingSeconds: 90,
+    };
+
+    setSessionStates((prev) => {
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
+      return {
+        ...prev,
+        [activeCommitteeId]: {
+          ...s,
+          speakersList: [...s.speakersList, newSpeaker],
+        },
+      };
+    });
+  }, [activeCommitteeId, currentConferenceDay]);
+
+  const removeSpeakerFromQueue = useCallback((speakerId: string) => {
+    setSessionStates((prev) => {
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
+      return {
+        ...prev,
+        [activeCommitteeId]: {
+          ...s,
+          speakersList: s.speakersList.filter((sp) => sp.id !== speakerId),
+        },
+      };
+    });
+  }, [activeCommitteeId]);
+
+  const clearFloorSession = useCallback((committeeId: string) => {
+    setSessionStates((prev) => {
+      const current = prev[committeeId] || createEmptySessionState(committeeId);
+      const fresh: MunSessionState = {
+        ...createEmptySessionState(committeeId),
+        sessionNumber: (current.sessionNumber || 1) + 1,
+      };
+      const updated = { ...prev, [committeeId]: fresh };
+      try {
+        localStorage.setItem(LS_MUN_SESSION, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
+  const deleteCommittee = useCallback((committeeId: string) => {
+    setCommittees((prev) => {
+      const updated = prev.filter((c) => c.id !== committeeId);
+      try {
+        localStorage.setItem(LS_MUN_COMMITTEES, JSON.stringify(updated));
+      } catch {}
+      if (activeCommitteeId === committeeId && updated.length > 0) {
+        setActiveCommitteeId(updated[0].id);
+      }
+      return updated;
+    });
+  }, [activeCommitteeId]);
+
   const advanceSpeaker = () => {
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       if (s.speakersList.length === 0) return prev;
 
       const [nextSpeaker, ...remaining] = s.speakersList;
@@ -1189,7 +1519,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
   const yieldSpeakerTime = (type: 'chair' | 'points_of_info' | 'another_delegate') => {
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       if (!s.currentSpeaker) return prev;
 
       const yieldedLog = {
@@ -1222,8 +1552,8 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     const userAcceptedInvite = userInvites.find(
       (i) => i.committeeId === activeCommitteeId && i.status === 'accepted'
     );
-    const country = userAcceptedInvite?.portfolio || 'Delegation of France';
-    const flag = userAcceptedInvite?.flagEmoji || '🇫🇷';
+    const country = userAcceptedInvite?.portfolio || (profile?.display_name ? `Delegate (${profile.display_name})` : 'Delegate of Member State');
+    const flag = userAcceptedInvite?.flagEmoji || '🌐';
 
     const newPoint: MunParliamentaryPoint = {
       id: `pt_${Date.now()}`,
@@ -1238,7 +1568,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     };
 
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -1251,7 +1581,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
   const dismissPoint = (pointId: string) => {
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -1270,7 +1600,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     const country = userAcceptedInvite?.portfolio ? userAcceptedInvite.portfolio.replace('Delegation of ', '').replace('Delegate of ', '') : 'France';
 
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -1295,7 +1625,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     const country = userAcceptedInvite?.portfolio ? userAcceptedInvite.portfolio.replace('Delegation of ', '').replace('Delegate of ', '') : 'France';
 
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -1338,7 +1668,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     };
 
     setSessionStates((prev) => {
-      const s = prev[activeCommitteeId] || INITIAL_SESSION_STATES['unsc-2026'];
+      const s = prev[activeCommitteeId] || createEmptySessionState(activeCommitteeId);
       return {
         ...prev,
         [activeCommitteeId]: {
@@ -1796,7 +2126,7 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
           }
         ],
         fullText: bill.fullText || '',
-        votes: { inFavor: committee?.presentAndVotingCount || 24, against: 0, abstain: 0 },
+        votes: { inFavor: 0, against: 0, abstain: 0 },
         votedUserIds: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -1860,13 +2190,13 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
     const bestDelPortfolio = typeof winners.bestDelegate === 'string' ? winners.bestDelegate : winners.bestDelegate?.portfolio;
     if (bestDelPortfolio) {
       addExperience({
-        munName: activeConference?.name || 'Model United Nations 2026',
+        munName: activeConference?.name || 'Diplomatic Conference',
         editionYear: '2026',
         isHostedByMe: false,
         portfolioOrTitle: bestDelPortfolio,
         verificationStatus: 'VERIFIED_SECRETARIAT',
         eventId: activeConferenceId,
-        eventName: activeConference?.name || 'Model United Nations 2026',
+        eventName: activeConference?.name || 'Diplomatic Conference',
         role: 'DELEGATE',
         committee: commName,
         portfolio: bestDelPortfolio,
@@ -1879,6 +2209,101 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
 
     broadcastActivitySync({ source: 'mun_reg', action: 'update', timestamp: Date.now() });
   }, [committees, activeConferenceId, activeConference, addExperience]);
+
+  /* Emergency Broadcast Dispatcher Implementation */
+  const transmitBroadcast = useCallback((broadcastData: Omit<EmergencyBroadcast, 'id' | 'timestamp' | 'isActive'>): EmergencyBroadcast => {
+    const id = `eb_${Date.now()}`;
+    const newBroadcast: EmergencyBroadcast = {
+      ...broadcastData,
+      id,
+      timestamp: new Date().toISOString(),
+      isActive: true,
+    };
+
+    setActiveBroadcast(newBroadcast);
+    setBroadcastHistory((prev) => [newBroadcast, ...prev]);
+
+    try {
+      localStorage.setItem(LS_ACTIVE_BROADCAST, JSON.stringify(newBroadcast));
+      const existingHistory = JSON.parse(localStorage.getItem(LS_BROADCAST_HISTORY) || '[]');
+      localStorage.setItem(LS_BROADCAST_HISTORY, JSON.stringify([newBroadcast, ...existingHistory]));
+    } catch {}
+
+    broadcastActivitySync({
+      source: 'mun_reg',
+      action: 'create',
+      timestamp: Date.now(),
+      metadata: { type: 'EMERGENCY_BROADCAST', broadcast: newBroadcast },
+    });
+
+    return newBroadcast;
+  }, []);
+
+  const dismissBroadcast = useCallback((broadcastId?: string) => {
+    setActiveBroadcast(null);
+    try {
+      localStorage.removeItem(LS_ACTIVE_BROADCAST);
+      if (broadcastId) {
+        const storedHistory = JSON.parse(localStorage.getItem(LS_BROADCAST_HISTORY) || '[]');
+        const updatedHistory = storedHistory.map((b: EmergencyBroadcast) =>
+          b.id === broadcastId ? { ...b, isActive: false } : b
+        );
+        localStorage.setItem(LS_BROADCAST_HISTORY, JSON.stringify(updatedHistory));
+        setBroadcastHistory(updatedHistory);
+      }
+    } catch {}
+
+    broadcastActivitySync({
+      source: 'mun_reg',
+      action: 'update',
+      timestamp: Date.now(),
+      metadata: { type: 'EMERGENCY_BROADCAST_DISMISSED', broadcastId },
+    });
+  }, []);
+
+  // Real-time synchronization for Emergency Broadcasts across all tabs & routes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === LS_ACTIVE_BROADCAST) {
+        if (!e.newValue) {
+          setActiveBroadcast(null);
+        } else {
+          try {
+            const parsed = JSON.parse(e.newValue);
+            if (parsed && parsed.isActive) {
+              setActiveBroadcast(parsed);
+            } else {
+              setActiveBroadcast(null);
+            }
+          } catch {}
+        }
+      } else if (e.key === LS_BROADCAST_HISTORY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setBroadcastHistory(parsed);
+        } catch {}
+      }
+    };
+
+    const handleCustomSync = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.metadata?.type === 'EMERGENCY_BROADCAST') {
+        setActiveBroadcast(customEvent.detail.metadata.broadcast);
+      } else if (customEvent.detail?.metadata?.type === 'EMERGENCY_BROADCAST_DISMISSED') {
+        setActiveBroadcast(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('zenvitra_activity_sync', handleCustomSync);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('zenvitra_activity_sync', handleCustomSync);
+    };
+  }, []);
 
   const DEFAULT_SESSION_STATE: MunSessionState = {
     committeeId: activeCommitteeId || 'general-assembly',
@@ -1909,6 +2334,10 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
         activeConferenceId,
         activeConference,
         setActiveConferenceId,
+        createConference,
+        deleteConference,
+        updateConference,
+        updateConferenceMatrix,
         setConferenceStatus,
         setConferenceDay,
         setConferenceTotalDays,
@@ -1942,6 +2371,10 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
         setActiveCommitteeId,
         updateCommitteeDetails,
         addCustomCommittee,
+        deleteCommittee,
+        clearFloorSession,
+        addSpeakerToQueue,
+        removeSpeakerFromQueue,
         sessionState: activeSessionSnapshot,
         toggleTimer,
         resetTimer,
@@ -1972,6 +2405,10 @@ export function MunProvider({ children }: { children: React.ReactNode }) {
         advanceStagePerformer,
         triggerStageReaction,
         stageReactions,
+        activeBroadcast,
+        broadcastHistory,
+        transmitBroadcast,
+        dismissBroadcast,
       }}
     >
       {children}

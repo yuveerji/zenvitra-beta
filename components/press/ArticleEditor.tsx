@@ -30,11 +30,14 @@ import {
   Palette,
   Type,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { useZenPress } from '@/context/ZenPressPlatformContext';
 import { PressCategory } from '@/types/press';
 import { MediaStudioModal } from '@/components/creator/MediaStudioModal';
+import { DesktopModeAdvisory } from '@/components/common/DesktopModeAdvisory';
 
 const CATEGORIES: PressCategory[] = [
   'MANIFESTO',
@@ -62,6 +65,61 @@ export function ArticleEditor() {
   const [isCoverStudioOpen, setIsCoverStudioOpen] = useState(false);
   const [sourceName, setSourceName] = useState(editingArticle?.sourceName || '');
   const [sourceUrl, setSourceUrl] = useState(editingArticle?.sourceUrl || '');
+  const [sources, setSources] = useState<{ id: string; name: string; url: string; label: string; domain?: string }[]>(
+    editingArticle?.sources && editingArticle.sources.length > 0
+      ? editingArticle.sources
+      : [
+          {
+            id: 'src_1',
+            name: editingArticle?.sourceName || '',
+            url: editingArticle?.sourceUrl || '',
+            label: 'Source #1'
+          }
+        ]
+  );
+
+  const handleAddSource = () => {
+    setSources((prev) => [
+      ...prev,
+      {
+        id: `src_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        name: '',
+        url: '',
+        label: `Source #${prev.length + 1}`
+      }
+    ]);
+  };
+
+  const handleUpdateSource = (id: string, field: 'name' | 'url', val: string) => {
+    setSources((prev) => {
+      const updated = prev.map((s) => s.id === id ? { ...s, [field]: val } : s);
+      if (updated[0]) {
+        if (field === 'name') setSourceName(updated[0].name);
+        if (field === 'url') setSourceUrl(updated[0].url);
+      }
+      return updated;
+    });
+    if (showSourceError && val.trim()) {
+      setShowSourceError(false);
+    }
+  };
+
+  const handleRemoveSource = (id: string) => {
+    setSources((prev) => {
+      if (prev.length <= 1) {
+        const reset = [{ id: `src_${Date.now()}`, name: '', url: '', label: 'Source #1' }];
+        setSourceName('');
+        setSourceUrl('');
+        return reset;
+      }
+      const filtered = prev.filter((s) => s.id !== id);
+      if (filtered[0]) {
+        setSourceName(filtered[0].name);
+        setSourceUrl(filtered[0].url);
+      }
+      return filtered;
+    });
+  };
   const [category, setCategory] = useState<PressCategory>(editingArticle?.category || 'EDITORIAL');
   const [tagsInput, setTagsInput] = useState(editingArticle?.tags.join(', ') || '');
   const [isOfficial, setIsOfficial] = useState(editingArticle?.isOfficial || false);
@@ -142,9 +200,13 @@ export function ArticleEditor() {
       }
     }, 3000);
     return () => clearTimeout(timer);
-  }, [title, excerpt, tagsInput, sourceName, sourceUrl]);
+  }, [title, excerpt, tagsInput, sourceName, sourceUrl, sources]);
 
-  const isFormValid = title.trim() && sourceName.trim() && sourceUrl.trim();
+  const validSources = sources
+    .map((s) => ({ ...s, name: s.name.trim(), url: s.url.trim() }))
+    .filter((s) => s.name || s.url);
+  const primarySource = validSources[0] || { name: sourceName.trim(), url: sourceUrl.trim() };
+  const isFormValid = Boolean(title.trim() && primarySource.name && primarySource.url);
 
   const buildArticleData = (status: 'draft' | 'published') => {
     const tags = tagsInput
@@ -156,8 +218,9 @@ export function ArticleEditor() {
       content: getContent(),
       excerpt: excerpt.trim(),
       coverImage: coverImage.trim() || undefined,
-      sourceName: sourceName.trim(),
-      sourceUrl: sourceUrl.trim(),
+      sourceName: primarySource.name || sourceName.trim() || 'Zenvitra Sovereign Wire',
+      sourceUrl: primarySource.url || sourceUrl.trim() || '/press',
+      sources: validSources.length > 0 ? validSources : undefined,
       category,
       tags,
       isOfficial,
@@ -167,7 +230,8 @@ export function ArticleEditor() {
 
   const handleSaveDraft = () => {
     if (!title.trim()) return;
-    if (!sourceName.trim() || !sourceUrl.trim()) {
+    const hasValidSource = sources.some((s) => s.name.trim() && s.url.trim()) || (sourceName.trim() && sourceUrl.trim());
+    if (!hasValidSource) {
       setShowSourceError(true);
       return;
     }
@@ -184,7 +248,8 @@ export function ArticleEditor() {
 
   const handlePublish = () => {
     if (!title.trim()) return;
-    if (!sourceName.trim() || !sourceUrl.trim()) {
+    const hasValidSource = sources.some((s) => s.name.trim() && s.url.trim()) || (sourceName.trim() && sourceUrl.trim());
+    if (!hasValidSource) {
       setShowSourceError(true);
       return;
     }
@@ -208,6 +273,7 @@ export function ArticleEditor() {
 
   return (
     <div className="max-w-4xl mx-auto font-sans pb-24 space-y-6">
+      <DesktopModeAdvisory studioName="Press Article Editor" storageKey="zen_press_editor" />
       {/* Top Action Bar */}
       <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
         <button
@@ -292,53 +358,86 @@ export function ArticleEditor() {
           className="w-full bg-transparent text-sm sm:text-base font-serif italic text-neutral-300 placeholder:text-neutral-600 focus:outline-none border-l-2 border-cyan-400 pl-3"
         />
 
-        {/* COMPULSORY SOURCE ROW */}
-        <div className="p-4 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/20 space-y-3">
+        {/* COMPULSORY SOURCES ROW (MULTIPLE SOURCES SUPPORT) */}
+        <div className="p-4 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/20 space-y-3.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              Verified Source &amp; Evidence Citation (COMPULSORY)
+              Verified Sources &amp; Evidence Citations ({sources.filter(s => s.name.trim() || s.url.trim()).length} Active)
             </span>
             <span className="text-[10px] font-mono text-cyan-400/80 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/30">
-              Required for Verification
+              Compulsory Verification
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="block text-[10px] font-mono font-semibold text-neutral-400">
-                SOURCE / PUBLISHER NAME *
-              </label>
-              <input
-                type="text"
-                required
-                value={sourceName}
-                onChange={(e) => {
-                  setSourceName(e.target.value);
-                  if (showSourceError && e.target.value.trim() && sourceUrl.trim()) setShowSourceError(false);
-                }}
-                placeholder="e.g. UN Press Wire, Reuters, Government Gazette"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400"
-              />
-            </div>
+          {/* List of Dynamic Sources */}
+          <div className="space-y-3">
+            {sources.map((src, idx) => (
+              <div 
+                key={src.id}
+                className="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-2.5 relative group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold text-cyan-400 flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-cyan-500/20 flex items-center justify-center text-[9px]">
+                      {idx + 1}
+                    </span>
+                    <span>Citation Source #{idx + 1} {idx === 0 && <span className="text-neutral-500 font-normal">(Primary)</span>}</span>
+                  </span>
+                  {sources.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSource(src.id)}
+                      className="text-neutral-500 hover:text-rose-400 p-1 rounded-md transition cursor-pointer"
+                      title="Remove this citation source"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
 
-            <div className="space-y-1">
-              <label className="block text-[10px] font-mono font-semibold text-neutral-400">
-                SOURCE / EVIDENCE URL *
-              </label>
-              <input
-                type="url"
-                required
-                value={sourceUrl}
-                onChange={(e) => {
-                  setSourceUrl(e.target.value);
-                  if (showSourceError && sourceName.trim() && e.target.value.trim()) setShowSourceError(false);
-                }}
-                placeholder="https://official-source.org/dispatch"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400"
-              />
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono font-semibold text-neutral-400">
+                      SOURCE / PUBLISHER NAME {idx === 0 ? '*' : '(OPTIONAL)'}
+                    </label>
+                    <input
+                      type="text"
+                      required={idx === 0}
+                      value={src.name}
+                      onChange={(e) => handleUpdateSource(src.id, 'name', e.target.value)}
+                      placeholder="e.g. UN Press Wire, Reuters, Government Gazette"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono font-semibold text-neutral-400">
+                      SOURCE / EVIDENCE URL {idx === 0 ? '*' : '(OPTIONAL)'}
+                    </label>
+                    <input
+                      type="url"
+                      required={idx === 0}
+                      value={src.url}
+                      onChange={(e) => handleUpdateSource(src.id, 'url', e.target.value)}
+                      placeholder="https://official-source.org/dispatch"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/15 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+
+          {/* + Add Another Source Citation Button */}
+          <button
+            type="button"
+            onClick={handleAddSource}
+            className="w-full py-2.5 px-4 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 hover:border-cyan-500/50 text-cyan-300 font-mono text-xs flex items-center justify-center gap-2 transition cursor-pointer group"
+          >
+            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
+            <span className="font-semibold">+ Add Another Source Citation</span>
+          </button>
         </div>
 
         {/* Category + Cover Image + Tags Row */}

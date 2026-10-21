@@ -28,11 +28,12 @@ import {
   FileEdit,
   ExternalLink
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { SolutionDocument, DocumentType, SolutionCategory, DocumentClause, ClauseSubItem, ValidationIssue } from '@/types/solutions';
-import { parseDocument, detectDocumentType, DOCUMENT_TYPE_METADATA, ParsedDocResult } from '@/lib/docEngine/parser';
+import { SolutionDocument, DocumentType, SolutionCategory, DocumentClause, ClauseSubItem, ValidationIssue, OriginalSourceDocument } from '@/types/solutions';
+import { parseDocument, detectDocumentType, DOCUMENT_TYPE_METADATA, ParsedDocResult, analyzeDocumentWithLeftovers, DocumentAnalysisReport } from '@/lib/docEngine/parser';
 import { SAMPLE_DRAFTS } from '@/lib/docEngine/sampleDrafts';
+import { DocumentLeftoverReviewModal } from '@/components/solutions/DocumentLeftoverReviewModal';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export interface ImportedDraftPayload {
   rawText?: string;
@@ -47,9 +48,10 @@ interface DocEnginePostingModalProps {
   onClose: () => void;
   onDocumentCreated: (doc: SolutionDocument) => void;
   initialDraft?: ImportedDraftPayload | null;
+  onOpenDraftingStudio?: (draftData: any) => void;
 }
 
-export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, initialDraft }: DocEnginePostingModalProps) {
+export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, initialDraft, onOpenDraftingStudio }: DocEnginePostingModalProps) {
   const router = useRouter();
   const { profile, user } = useAuth();
 
@@ -75,6 +77,16 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
   const [checkboxReviewed, setCheckboxReviewed] = useState(false);
   const [checkboxConfirm, setCheckboxConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Leftover Review & Data Analysis State
+  const [isLeftoverReviewOpen, setIsLeftoverReviewOpen] = useState(false);
+  const [analysisReport, setAnalysisReport] = useState<DocumentAnalysisReport | null>(null);
+  const [analysisFileName, setAnalysisFileName] = useState('');
+  const [isAnalyzingFile, setIsAnalyzingFile] = useState(false);
+
+  // Original Document Attachment & Download Permission State
+  const [allowDownload, setAllowDownload] = useState(true);
+  const [originalDocData, setOriginalDocData] = useState<OriginalSourceDocument | null>(null);
 
   // Reset state when modal opens or initialDraft arrives
   useEffect(() => {
@@ -156,21 +168,56 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
     }
   };
 
-  // Handler: Simulated File Upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handler: Real File Upload (PDF, DOCX, TXT, MD) with Intelligent Data Analysis
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const content = event.target?.result as string;
-        if (content) {
-          setRawText(content);
-          const detection = detectDocumentType(content);
-          setForcedType(detection.type);
-        }
-      };
-      reader.readAsText(file);
+    if (!file) return;
+
+    setIsAnalyzingFile(true);
+    setAnalysisFileName(file.name);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/solutions/extract-document', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to extract text from document.');
+      }
+
+      // Preserve original source document payload for PIB reader & download
+      setOriginalDocData({
+        name: data.fileName,
+        type: data.fileType || 'pdf',
+        size: data.fileSize,
+        rawContent: data.text,
+        dataUrl: data.dataUrl,
+        allowDownload,
+        uploadedAt: new Date().toISOString()
+      });
+
+      // Run Intelligent Data Analysis & Unparsed Segment Detection
+      const report = analyzeDocumentWithLeftovers(data.text);
+      setAnalysisReport(report);
+      setIsLeftoverReviewOpen(true);
+    } catch (err: any) {
+      console.error('File analysis error:', err);
+      alert(`Error reading ${file.name}: ${err.message || 'Please check file format.'}`);
+    } finally {
+      setIsAnalyzingFile(false);
+      e.target.value = '';
     }
+  };
+
+  const handleApplyReviewedDocument = (finalText: string) => {
+    setRawText(finalText);
+    const detection = detectDocumentType(finalText);
+    setForcedType(detection.type);
   };
 
   // Handler: Update individual clause
@@ -261,6 +308,7 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
 
     const isTestAccount = Boolean(
       profile?.username === 'test' || 
+      user?.email === 'test@zenvitra.xyz' ||
       user?.email === 'test@zenvitra.org' ||
       (typeof window !== 'undefined' && (() => {
         try {
@@ -295,8 +343,21 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
       chapters: parsedResult.chapters,
       clauses: editedClauses,
       validationIssues: validationIssues.filter(i => !i.resolved),
-      votes: { inFavor: 1, against: 0, abstain: 0 },
-      votedUserIds: [authorUsername],
+      fileName: originalDocData?.name,
+      fileSize: originalDocData?.size ? `${Math.round(originalDocData.size / 1024)} KB` : undefined,
+      originalDocument: originalDocData ? {
+        ...originalDocData,
+        allowDownload
+      } : {
+        name: `${editedTitle || 'draft_document'}.txt`,
+        type: 'txt',
+        rawContent: rawText,
+        allowDownload,
+        uploadedAt: new Date().toISOString()
+      },
+      allowOriginalDownload: allowDownload,
+      votes: { inFavor: 0, against: 0, abstain: 0 },
+      votedUserIds: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       publishedAt: new Date().toISOString(),
@@ -310,7 +371,8 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
   };
 
   return (
-    <AnimatePresence>
+    <>
+      <AnimatePresence>
       <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -406,6 +468,26 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
                 <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
                   <label className="font-mono text-neutral-300 uppercase tracking-wider font-semibold">Paste Document or Legislative Bill Text</label>
                   <div className="flex items-center gap-3">
+                    {onOpenDraftingStudio && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenDraftingStudio({
+                            rawText,
+                            title: editedTitle,
+                            type: forcedType,
+                            category,
+                            committee
+                          });
+                          onClose();
+                        }}
+                        className="text-purple-300 hover:text-purple-200 cursor-pointer flex items-center gap-1 font-mono font-bold transition hover:underline"
+                        title="Open full Drafting Studio with interactive Tables, Graphs & Data Chapters"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                        <span>Drafting Studio ⚡</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={handleOpenInZenDocs}
@@ -416,9 +498,9 @@ export function DocEnginePostingModal({ isOpen, onClose, onDocumentCreated, init
                       <span>Draft in ZenDocs ↗</span>
                     </button>
                     <label className="text-neutral-400 hover:text-white cursor-pointer flex items-center gap-1 font-mono transition">
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Upload File (.txt, .md, .doc)</span>
-                      <input type="file" accept=".txt,.md,.doc,.docx" onChange={handleFileUpload} className="hidden" />
+                      <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>{isAnalyzingFile ? 'Analyzing File...' : 'Upload File (.pdf, .docx, .md)'}</span>
+                      <input type="file" accept=".pdf,.docx,.doc,.txt,.md" onChange={handleFileUpload} className="hidden" disabled={isAnalyzingFile} />
                     </label>
                   </div>
                 </div>
@@ -671,46 +753,62 @@ BE it enacted by Parliament...
 
               {/* Clauses Table / Cards */}
               <div className="space-y-3">
-                {editedClauses.map((clause) => {
+                {editedClauses.map((clause, clIdx) => {
                   const isEditing = activeEditingClauseId === clause.id;
+                  const isNewChapter = Boolean(
+                    clause.chapterNumber &&
+                    (clIdx === 0 || editedClauses[clIdx - 1]?.chapterNumber !== clause.chapterNumber)
+                  );
 
                   return (
-                    <div
-                      key={clause.id}
-                      className={`p-4 rounded-2xl border transition ${
-                        isEditing 
-                          ? 'bg-[#0f1422] border-cyan-400 shadow-lg' 
-                          : 'bg-white/[0.02] border-white/10 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 space-y-2">
-                          {/* Clause Header / Title */}
-                          {isEditing ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                              <input
-                                type="text"
-                                value={clause.clauseNumber}
-                                onChange={(e) => handleUpdateClause(clause.id!, 'clauseNumber', e.target.value)}
-                                placeholder="Num"
-                                className="px-3 py-1.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs"
-                              />
-                              <input
-                                type="text"
-                                value={clause.title || ''}
-                                onChange={(e) => handleUpdateClause(clause.id!, 'title', e.target.value)}
-                                placeholder="Clause Title"
-                                className="sm:col-span-3 px-3 py-1.5 rounded-xl bg-black border border-white/20 text-white font-bold text-xs"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-cyan-400 font-bold text-xs">Clause {clause.clauseNumber}</span>
-                              <span className="text-neutral-500">—</span>
-                              <span className="font-bold text-white text-xs">{clause.title}</span>
-                              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-neutral-400 font-mono">{clause.chapterNumber}</span>
-                            </div>
-                          )}
+                    <React.Fragment key={clause.id || `edit-clause-${clIdx}`}>
+                      {isNewChapter && (
+                        <div className="pt-4 pb-1.5 flex items-center justify-between border-b border-amber-500/25">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[11px] font-bold uppercase tracking-wider">
+                              {clause.chapterNumber}
+                            </span>
+                            <span className="font-serif font-bold text-white text-xs uppercase tracking-wide">
+                              {clause.chapterTitle || 'Chapter Section'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div
+                        className={`p-4 rounded-2xl border transition ${
+                          isEditing 
+                            ? 'bg-[#0f1422] border-cyan-400 shadow-lg' 
+                            : 'bg-white/[0.02] border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 space-y-2">
+                            {/* Clause Header / Title */}
+                            {isEditing ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                                <input
+                                  type="text"
+                                  value={clause.clauseNumber}
+                                  onChange={(e) => handleUpdateClause(clause.id!, 'clauseNumber', e.target.value)}
+                                  placeholder="Num"
+                                  className="px-3 py-1.5 rounded-xl bg-black border border-white/20 text-white font-mono text-xs"
+                                />
+                                <input
+                                  type="text"
+                                  value={clause.title || ''}
+                                  onChange={(e) => handleUpdateClause(clause.id!, 'title', e.target.value)}
+                                  placeholder="Clause Title"
+                                  className="sm:col-span-3 px-3 py-1.5 rounded-xl bg-black border border-white/20 text-white font-bold text-xs"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-cyan-400 font-bold text-xs">Clause {clause.clauseNumber}</span>
+                                <span className="text-neutral-500">—</span>
+                                <span className="font-bold text-white text-xs">{clause.title}</span>
+                              </div>
+                            )}
 
                           {/* Clause Body Text */}
                           {isEditing ? (
@@ -791,6 +889,7 @@ BE it enacted by Parliament...
                         </div>
                       </div>
                     </div>
+                  </React.Fragment>
                   );
                 })}
               </div>
@@ -838,6 +937,18 @@ BE it enacted by Parliament...
                   />
                   <span className="text-xs text-neutral-300 group-hover:text-white transition">
                     I confirm that this is the exact ratified version I want to publish under my sovereign profile.
+                  </span>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer group pt-1 border-t border-white/10">
+                  <input
+                    type="checkbox"
+                    checked={allowDownload}
+                    onChange={(e) => setAllowDownload(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-white/30 text-emerald-500 focus:ring-0 bg-black cursor-pointer"
+                  />
+                  <span className="text-xs text-neutral-300 group-hover:text-white transition">
+                    <strong className="text-emerald-400">Original Document Reader:</strong> Allow readers to view the authentic source document and download the original file ({originalDocData?.name || 'original document'}).
                   </span>
                 </label>
               </div>
@@ -909,5 +1020,15 @@ BE it enacted by Parliament...
         </motion.div>
       </div>
     </AnimatePresence>
-  );
+
+    {/* AI Data Analysis & Leftover Review Modal ("Is Something Left?") */}
+    <DocumentLeftoverReviewModal
+      isOpen={isLeftoverReviewOpen}
+      onClose={() => setIsLeftoverReviewOpen(false)}
+      report={analysisReport}
+      fileName={analysisFileName}
+      onApplyDocument={handleApplyReviewedDocument}
+    />
+  </>
+);
 }

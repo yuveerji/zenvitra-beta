@@ -11,6 +11,32 @@ interface FounderNoteRendererProps {
   size?: 'compact' | 'standard';
   isExpanded?: boolean;
   onToggleExpanded?: (expanded: boolean) => void;
+  hideDuplicateTitle?: boolean;
+  cardTitle?: string;
+}
+
+function renderFormattedText(text: string): React.ReactNode {
+  if (!text) return text;
+  const tokens = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  if (tokens.length === 1) return text.replace(/\*/g, '');
+
+  return tokens.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={i} className="text-white font-semibold">
+          {part.slice(2, -2).replace(/\*/g, '')}
+        </strong>
+      );
+    }
+    if (part.startsWith('*') && part.endsWith('*')) {
+      return (
+        <em key={i} className="text-zinc-200 italic font-medium">
+          {part.slice(1, -1).replace(/\*/g, '')}
+        </em>
+      );
+    }
+    return part.replace(/\*/g, '');
+  });
 }
 
 export function FounderNoteRenderer({
@@ -21,6 +47,8 @@ export function FounderNoteRenderer({
   size = 'standard',
   isExpanded: controlledExpanded,
   onToggleExpanded,
+  hideDuplicateTitle = false,
+  cardTitle = '',
 }: FounderNoteRendererProps) {
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
   const isExpanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
@@ -37,12 +65,16 @@ export function FounderNoteRenderer({
   // 1. Normalize line breaks
   // 2. Isolate any line containing 3+ hyphens (---), em-dashes (———), asterisks (***), or underscores (___)
   //    into a distinct standalone divider block
+  // 3. Ensure any markdown headings (e.g. #, ##, ###) are separated into their own distinct block
   const normalizedBody = body
     .replace(/\r\n/g, '\n')
-    .replace(/^[ \t]*(-{3,}|—{2,}|\*{3,}|_{3,})[ \t]*$/gm, '\n\n__DIVIDER__\n\n');
+    .replace(/^[ \t]*(-{3,}|—{2,}|\*{3,}|_{3,})[ \t]*$/gm, '\n\n__DIVIDER__\n\n')
+    .replace(/^(#{1,6}\s+[^\n]+)\n(?!\n)/gm, '$1\n\n');
 
   // Split into structural blocks
   const sections = normalizedBody.split(/\n\n+/).filter((s) => s.trim().length > 0);
+
+  const cleanCompare = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
 
   const renderContent = () => {
     return sections.map((section, idx) => {
@@ -64,15 +96,65 @@ export function FounderNoteRenderer({
         );
       }
 
+      // Strip asterisks for heading and tagline checks
+      const textWithoutStars = trimmed.replace(/\*/g, '').trim();
+      if (!textWithoutStars) return null;
+
+      // Check for closing signoff tagline (e.g., "BY YOUTH. FOR YOUTH. OWNED BY NO AGENDA.")
+      if (
+        textWithoutStars.includes('BY YOUTH. FOR YOUTH. OWNED BY NO AGENDA') ||
+        textWithoutStars.startsWith('BY YOUTH. FOR YOUTH')
+      ) {
+        return (
+          <p
+            key={idx}
+            className={`pt-2 font-display font-bold text-amber-300/90 tracking-wider text-xs sm:text-sm select-none`}
+          >
+            {textWithoutStars}
+          </p>
+        );
+      }
+
+      // Check if this is a markdown header (#, ##, ### ...)
+      if (trimmed.startsWith('#')) {
+        const headingText = trimmed.replace(/^#{1,6}\s+/, '').replace(/\*/g, '').trim();
+        if (
+          cleanCompare(headingText) === 'anotefromthefounder' ||
+          (hideDuplicateTitle &&
+            cardTitle &&
+            cleanCompare(headingText) === cleanCompare(cardTitle))
+        ) {
+          return null;
+        }
+        return (
+          <h3
+            key={idx}
+            className={`pt-1 pb-0.5 font-display font-bold text-white tracking-tight ${
+              size === 'compact' ? 'text-xs sm:text-[13px]' : 'text-sm sm:text-base'
+            }`}
+          >
+            {renderFormattedText(headingText)}
+          </h3>
+        );
+      }
+
       // Check if this is an all-caps section header (e.g., "WHAT IF THERE WAS ANOTHER WAY?")
       const isHeader =
-        trimmed.length > 3 &&
-        trimmed.length < 80 &&
-        trimmed === trimmed.toUpperCase() &&
-        /[A-Z]/.test(trimmed) &&
-        !trimmed.includes('\n');
+        textWithoutStars.length > 3 &&
+        textWithoutStars.length < 80 &&
+        textWithoutStars === textWithoutStars.toUpperCase() &&
+        /[A-Z]/.test(textWithoutStars) &&
+        !textWithoutStars.includes('\n');
 
       if (isHeader) {
+        if (
+          cleanCompare(textWithoutStars) === 'anotefromthefounder' ||
+          (hideDuplicateTitle &&
+            cardTitle &&
+            cleanCompare(textWithoutStars) === cleanCompare(cardTitle))
+        ) {
+          return null;
+        }
         return (
           <h4
             key={idx}
@@ -81,7 +163,7 @@ export function FounderNoteRenderer({
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
-            <span>{trimmed}</span>
+            <span>{textWithoutStars}</span>
           </h4>
         );
       }
@@ -96,7 +178,7 @@ export function FounderNoteRenderer({
               size === 'compact' ? 'text-[11px]' : 'text-xs sm:text-sm'
             }`}
           >
-            {trimmed}
+            {renderFormattedText(trimmed)}
           </blockquote>
         );
       }
@@ -112,7 +194,7 @@ export function FounderNoteRenderer({
         >
           {lines.map((line, lIdx) => (
             <React.Fragment key={lIdx}>
-              {line}
+              {renderFormattedText(line)}
               {lIdx < lines.length - 1 && <br />}
             </React.Fragment>
           ))}
@@ -121,7 +203,16 @@ export function FounderNoteRenderer({
     });
   };
 
-  const readableSectionsCount = sections.filter((s) => s.trim() !== '__DIVIDER__').length;
+  const readableSectionsCount = sections.filter((s) => {
+    const trimmed = s.trim();
+    if (trimmed === '__DIVIDER__') return false;
+    if (cleanCompare(trimmed) === 'anotefromthefounder') return false;
+    if (hideDuplicateTitle && cardTitle) {
+      const headingText = trimmed.replace(/^#{1,6}\s+/, '').trim();
+      if (cleanCompare(headingText) === cleanCompare(cardTitle)) return false;
+    }
+    return true;
+  }).length;
 
   return (
     <div className={`space-y-3 ${className}`}>

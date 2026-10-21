@@ -32,19 +32,25 @@ export function StoriesTray() {
     myProfile
   } = useZenPulse();
 
-  const userAvatar = 
-    myProfile?.avatar || 
-    (typeof window !== 'undefined' && (() => {
-      try {
+  const [localAvatar, setLocalAvatar] = useState('');
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
         const pulseProfile = JSON.parse(localStorage.getItem('zenvitra_pulse_my_profile_v1') || '{}');
-        if (pulseProfile?.avatar) return pulseProfile.avatar;
+        if (pulseProfile?.avatar) {
+          setLocalAvatar(pulseProfile.avatar);
+          return;
+        }
         const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
-        return stored?.avatar || stored?.avatar_url || '';
-      } catch (_) {
-        return '';
+        if (stored?.avatar || stored?.avatar_url) {
+          setLocalAvatar(stored.avatar || stored.avatar_url);
+        }
       }
-    })()) || 
-    '';
+    } catch (_) {}
+  }, []);
+
+  const userAvatar = myProfile?.avatar || localAvatar || '';
 
   const [activeStoryIdx, setActiveStoryIdx] = useState<number | null>(null);
   const [showComposer, setShowComposer] = useState(false);

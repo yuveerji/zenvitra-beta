@@ -17,7 +17,8 @@ import {
   Check, 
   ShieldAlert,
   HelpCircle,
-  Share2
+  Share2,
+  Plus
 } from 'lucide-react';
 import { DiscussionArgument, ArgumentStance } from '@/types/discussions';
 import { useAuth } from '@/context/AuthContext';
@@ -70,11 +71,37 @@ export function DiscussionDebateTree({
   const [replyEvidenceTitle, setReplyEvidenceTitle] = useState('');
   const [replyEvidenceUrl, setReplyEvidenceUrl] = useState('');
 
-  const STANCE_BADGES: Record<ArgumentStance, { label: string; style: string }> = {
-    PRO: { label: 'AFFIRMATIVE PROPOSAL', style: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' },
-    CON: { label: 'COUNTER-REBUTTAL', style: 'bg-rose-500/10 text-rose-300 border-rose-500/30' },
-    EVIDENCE: { label: 'EMPIRICAL EVIDENCE', style: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30' },
-    NEUTRAL: { label: 'NUANCED INQUIRY', style: 'bg-purple-500/10 text-purple-300 border-purple-500/30' },
+  const [showEvidenceInputs, setShowEvidenceInputs] = useState(false);
+
+  const STANCE_BADGES: Record<ArgumentStance, { label: string; icon: string; activeStyle: string; badgeStyle: string; style: string }> = {
+    PRO: { 
+      label: 'Support / Pro', 
+      icon: '🟢',
+      activeStyle: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-500/10',
+      badgeStyle: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+      style: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+    },
+    CON: { 
+      label: 'Rebuttal / Con', 
+      icon: '🔴',
+      activeStyle: 'bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm shadow-rose-500/10',
+      badgeStyle: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
+      style: 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+    },
+    EVIDENCE: { 
+      label: 'Evidence / Data', 
+      icon: '🔵',
+      activeStyle: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40 shadow-sm shadow-cyan-500/10',
+      badgeStyle: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+      style: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+    },
+    NEUTRAL: { 
+      label: 'Nuance / Inquiry', 
+      icon: '🟣',
+      activeStyle: 'bg-purple-500/15 text-purple-300 border-purple-500/40 shadow-sm shadow-purple-500/10',
+      badgeStyle: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
+      style: 'bg-purple-500/10 text-purple-300 border-purple-500/30'
+    },
   };
 
   const handleRootSubmit = (e: React.FormEvent) => {
@@ -102,6 +129,7 @@ export function DiscussionDebateTree({
     setRootContent('');
     setRootEvidenceTitle('');
     setRootEvidenceUrl('');
+    setShowEvidenceInputs(false);
     setIsComposerExpanded(false);
   };
 
@@ -136,134 +164,204 @@ export function DiscussionDebateTree({
 
   return (
     <div className="space-y-6">
-      {/* ── 1. ROOT DEBATE / COMMENT COMPOSER ── */}
-      <div className="rounded-3xl bg-white/[0.02] border border-white/10 p-5 sm:p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-cyan-400" />
-            <span className="font-mono text-xs text-white font-bold uppercase tracking-wider">
-              Participate in Structured Debate
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsComposerExpanded(!isComposerExpanded)}
-            className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-mono transition cursor-pointer"
+      {/* ── 1. MODERN SLEEK DEBATE COMPOSER ── */}
+      <div className="rounded-3xl bg-gradient-to-b from-[#0e121d]/90 via-[#0a0d16]/95 to-[#05070c] border border-white/10 hover:border-cyan-500/25 transition-all shadow-xl shadow-black/50 overflow-hidden backdrop-blur-xl">
+        
+        {!isComposerExpanded ? (
+          /* Collapsed Quick Trigger Bar */
+          <div 
+            onClick={() => setIsComposerExpanded(true)}
+            className="p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] transition group"
           >
-            {isComposerExpanded ? 'Minimize Form' : '+ Add Argument / Comment'}
-          </button>
-        </div>
+            <div className="flex items-center gap-3.5 flex-1">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-teal-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-300 font-mono text-sm font-bold shadow-inner">
+                {profile?.display_name ? profile.display_name[0] : 'Y'}
+              </div>
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm text-neutral-300 group-hover:text-white transition font-sans">
+                  Take the floor &bull; <span className="text-neutral-500">Share your stance, evidence, or rebuttal...</span>
+                </p>
+              </div>
+            </div>
 
-        {isComposerExpanded && (
-          <form onSubmit={handleRootSubmit} className="space-y-4 pt-3 border-t border-white/10 animate-in fade-in duration-200">
-            {/* Stance Selector */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">
-                Select Your Stance / Perspective
-              </label>
-              <div className="flex flex-wrap items-center gap-2">
-                {(['PRO', 'CON', 'EVIDENCE', 'NEUTRAL'] as ArgumentStance[]).map((stance) => (
-                  <button
-                    key={stance}
-                    type="button"
-                    onClick={() => setRootStance(stance)}
-                    className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition cursor-pointer ${
-                      rootStance === stance
-                        ? STANCE_BADGES[stance].style + ' shadow-sm'
-                        : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white'
-                    }`}
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-1.5">
+                {(['PRO', 'CON', 'EVIDENCE', 'NEUTRAL'] as ArgumentStance[]).map((s) => (
+                  <span
+                    key={s}
+                    className="px-2.5 py-1 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] font-mono text-neutral-400 group-hover:text-neutral-200 transition"
                   >
-                    {STANCE_BADGES[stance].label}
-                  </button>
+                    {STANCE_BADGES[s].icon} {STANCE_BADGES[s].label.split('/')[0]}
+                  </span>
                 ))}
               </div>
-            </div>
-
-            {/* Liberty Switch: Post as Self vs Anonymous */}
-            <div className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                {rootIsAnonymous ? (
-                  <div className="p-2 rounded-xl bg-purple-500/20 border border-purple-400/40 text-purple-300">
-                    <Ghost className="w-4 h-4" />
-                  </div>
-                ) : (
-                  <div className="p-2 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300">
-                    <User className="w-4 h-4" />
-                  </div>
-                )}
-                <div>
-                  <span className="text-xs font-mono font-bold text-white block">
-                    {rootIsAnonymous ? 'Posting as Anonymous (Privacy Mode)' : `Posting as Yourself (@${profile?.username || 'you'})`}
-                  </span>
-                  <span className="text-[10px] font-mono text-neutral-400">
-                    {rootIsAnonymous ? 'Your identity is stripped; speech is protected for candid open debate.' : 'Linked to your public profile and verified contribution score.'}
-                  </span>
-                </div>
-              </div>
-
               <button
                 type="button"
-                onClick={() => setRootIsAnonymous(!rootIsAnonymous)}
-                className={`px-3.5 py-1.5 rounded-xl border text-xs font-mono font-bold transition cursor-pointer shrink-0 ${
-                  rootIsAnonymous
-                    ? 'bg-purple-500/20 border-purple-400 text-purple-300'
-                    : 'bg-white/5 border-white/15 text-neutral-300 hover:text-white'
-                }`}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-neutral-950 font-bold font-mono text-xs shadow-lg shadow-cyan-500/20 transition flex items-center gap-1.5 cursor-pointer"
               >
-                {rootIsAnonymous ? '✓ Anonymous ON' : 'Make Anonymous'}
+                <Plus className="w-3.5 h-3.5 text-neutral-950" />
+                <span>Add Argument</span>
               </button>
             </div>
+          </div>
+        ) : (
+          /* Expanded Full Modern Editor */
+          <form onSubmit={handleRootSubmit} className="p-5 sm:p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Top Toolbar: Stance Selector + Identity & Minimize */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+              
+              {/* Stance Pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                {(['PRO', 'CON', 'EVIDENCE', 'NEUTRAL'] as ArgumentStance[]).map((stance) => {
+                  const info = STANCE_BADGES[stance];
+                  const isSelected = rootStance === stance;
+                  return (
+                    <button
+                      key={stance}
+                      type="button"
+                      onClick={() => setRootStance(stance)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        isSelected
+                          ? info.activeStyle
+                          : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white hover:bg-white/[0.05]'
+                      }`}
+                    >
+                      <span>{info.icon}</span>
+                      <span>{info.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* Title & Body */}
-            <div className="space-y-2">
+              {/* Author Mode & Minimize */}
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setRootIsAnonymous(!rootIsAnonymous)}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-mono transition flex items-center gap-1.5 cursor-pointer ${
+                    rootIsAnonymous
+                      ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 font-bold'
+                      : 'bg-white/5 border-white/10 text-neutral-400 hover:text-neutral-200'
+                  }`}
+                  title="Toggle Anonymous Privacy Mode"
+                >
+                  {rootIsAnonymous ? <Ghost className="w-3.5 h-3.5 text-purple-400" /> : <User className="w-3.5 h-3.5 text-cyan-400" />}
+                  <span>{rootIsAnonymous ? 'Anonymous' : `@${profile?.username || 'you'}`}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsComposerExpanded(false)}
+                  className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition cursor-pointer"
+                  title="Collapse Composer"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+              </div>
+
+            </div>
+
+            {/* Core Inputs: Headline + Body */}
+            <div className="space-y-3">
               <input
                 type="text"
-                placeholder="Argument Headline / Summary (Optional)"
+                placeholder="Argument Headline / Main Claim (Optional)"
                 value={rootTitle}
                 onChange={(e) => setRootTitle(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl bg-black/50 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50"
+                className="w-full px-4 py-2.5 rounded-2xl bg-black/40 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500/50 font-sans transition"
               />
-              <textarea
-                rows={3}
-                required
-                placeholder="Articulate your structured argument, empirical rationale, or civic observation..."
-                value={rootContent}
-                onChange={(e) => setRootContent(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50 resize-none font-sans"
-              />
+
+              <div className="relative">
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Articulate your structured argument, evidence-based reasoning, or counter-point..."
+                  value={rootContent}
+                  onChange={(e) => setRootContent(e.target.value)}
+                  className="w-full p-4 rounded-2xl bg-black/40 border border-white/10 text-sm text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-cyan-500/50 resize-none font-sans leading-relaxed transition"
+                />
+                <span className="absolute bottom-3 right-3 text-[10px] font-mono text-neutral-500">
+                  {rootContent.length} chars
+                </span>
+              </div>
             </div>
 
-            {/* Optional Citations */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <input
-                type="text"
-                placeholder="Evidence Citation Title (Optional)"
-                value={rootEvidenceTitle}
-                onChange={(e) => setRootEvidenceTitle(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50 font-mono"
-              />
-              <input
-                type="url"
-                placeholder="Evidence URL (https://...)"
-                value={rootEvidenceUrl}
-                onChange={(e) => setRootEvidenceUrl(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50 font-mono"
-              />
+            {/* Optional Citation Drawer */}
+            {showEvidenceInputs ? (
+              <div className="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 space-y-2.5 animate-in fade-in duration-150">
+                <div className="flex items-center justify-between text-xs font-mono text-cyan-300">
+                  <span className="flex items-center gap-1.5 font-bold">
+                    <LinkIcon className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Attach Evidence or Verified Source</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEvidenceInputs(false);
+                      setRootEvidenceTitle('');
+                      setRootEvidenceUrl('');
+                    }}
+                    className="text-neutral-400 hover:text-white transition"
+                  >
+                    &times; Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Citation Title (e.g. UN Policy Report 2026)"
+                    value={rootEvidenceTitle}
+                    onChange={(e) => setRootEvidenceTitle(e.target.value)}
+                    className="px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50 font-sans"
+                  />
+                  <input
+                    type="url"
+                    placeholder="Evidence URL (https://...)"
+                    value={rootEvidenceUrl}
+                    onChange={(e) => setRootEvidenceUrl(e.target.value)}
+                    className="px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50 font-mono"
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            {/* Bottom Actions Bar */}
+            <div className="flex items-center justify-between pt-1">
+              {!showEvidenceInputs ? (
+                <button
+                  type="button"
+                  onClick={() => setShowEvidenceInputs(true)}
+                  className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono text-cyan-300 transition flex items-center gap-1.5 cursor-pointer border border-white/5"
+                >
+                  <LinkIcon className="w-3.5 h-3.5" />
+                  <span>+ Attach Evidence Link</span>
+                </button>
+              ) : <div />}
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsComposerExpanded(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={!rootContent.trim()}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-neutral-950 font-display font-bold text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Publish Argument</span>
+                </button>
+              </div>
             </div>
 
-            {/* Submit */}
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button
-                type="submit"
-                className="px-6 py-2.5 rounded-full bg-white text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-neutral-200 transition flex items-center gap-2 shadow-sm cursor-pointer"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Publish Argument Node</span>
-              </button>
-            </div>
           </form>
         )}
+
       </div>
 
       {/* ── 2. NESTED DEBATE THREADS ── */}
@@ -402,12 +500,14 @@ export function DiscussionDebateTree({
             {replyingToId === arg.id && (
               <form
                 onSubmit={(e) => handleReplySubmit(arg.id, e)}
-                className="ml-6 sm:ml-11 p-4 rounded-2xl bg-black/60 border border-white/10 space-y-3 animate-in fade-in duration-150"
+                className="ml-4 sm:ml-11 p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#0c0e18] to-[#07090e] border border-cyan-500/25 space-y-3.5 shadow-xl animate-in fade-in duration-150"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-cyan-300 font-bold uppercase">
-                    Replying to @{arg.authorUsername}
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-cyan-300 font-bold">
+                      Replying to @{arg.authorUsername}
+                    </span>
+                  </div>
                   
                   {/* Stance Pill for Reply */}
                   <div className="flex items-center gap-1.5">
@@ -416,55 +516,64 @@ export function DiscussionDebateTree({
                         key={st}
                         type="button"
                         onClick={() => setReplyStance(st)}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold transition border ${
-                          replyStance === st ? STANCE_BADGES[st].style : 'bg-white/5 border-white/10 text-neutral-400'
+                        className={`px-2.5 py-1 rounded-xl text-[10px] font-mono font-bold transition flex items-center gap-1 border cursor-pointer ${
+                          replyStance === st 
+                            ? STANCE_BADGES[st].activeStyle 
+                            : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
                         }`}
                       >
-                        {st === 'CON' ? 'Counter' : st === 'PRO' ? 'Support' : 'Evidence'}
+                        <span>{STANCE_BADGES[st].icon}</span>
+                        <span>{st === 'CON' ? 'Rebuttal' : st === 'PRO' ? 'Support' : 'Evidence'}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Anonymous Toggle for Reply */}
-                <div className="flex items-center justify-between py-1">
-                  <span className="text-[10px] font-mono text-neutral-400">
-                    {replyIsAnonymous ? '👻 Reply will be posted anonymously' : `👤 Replying as @${profile?.username || 'you'}`}
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="Draft your rebuttal, support rationale, or empirical verification..."
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    className="w-full p-3.5 rounded-xl bg-black/40 border border-white/10 text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500/50 resize-none font-sans leading-relaxed transition"
+                  />
+                  <span className="absolute bottom-2.5 right-3 text-[10px] font-mono text-neutral-500">
+                    {replyContent.length} chars
                   </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
                   <button
                     type="button"
                     onClick={() => setReplyIsAnonymous(!replyIsAnonymous)}
-                    className={`px-2.5 py-0.5 rounded-md border text-[10px] font-mono transition cursor-pointer ${
-                      replyIsAnonymous ? 'bg-purple-500/20 border-purple-400 text-purple-300' : 'bg-white/5 border-white/10 text-neutral-400'
+                    className={`px-2.5 py-1 rounded-xl border text-[10px] font-mono transition flex items-center gap-1 cursor-pointer ${
+                      replyIsAnonymous 
+                        ? 'bg-purple-500/20 border-purple-500/40 text-purple-300 font-bold' 
+                        : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
                     }`}
                   >
-                    {replyIsAnonymous ? 'Anonymous: ON' : 'Reply Anonymously'}
+                    {replyIsAnonymous ? <Ghost className="w-3 h-3 text-purple-400" /> : <User className="w-3 h-3 text-cyan-400" />}
+                    <span>{replyIsAnonymous ? 'Anonymous ON' : `@${profile?.username || 'you'}`}</span>
                   </button>
-                </div>
 
-                <textarea
-                  rows={2}
-                  required
-                  placeholder="Draft your direct response, counter-argument, or verification..."
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/50 resize-none font-sans"
-                />
-
-                <div className="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setReplyingToId(null)}
-                    className="px-3 py-1 rounded-full text-xs font-mono text-neutral-400 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-1.5 rounded-full bg-white text-black font-mono text-xs font-bold uppercase hover:bg-neutral-200 transition cursor-pointer"
-                  >
-                    Post Reply Node
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setReplyingToId(null)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!replyContent.trim()}
+                      className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-neutral-950 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-cyan-500/20 disabled:opacity-40"
+                    >
+                      <Send className="w-3 h-3" />
+                      <span>Post Reply</span>
+                    </button>
+                  </div>
                 </div>
               </form>
             )}

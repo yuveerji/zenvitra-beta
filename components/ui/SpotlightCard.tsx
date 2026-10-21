@@ -45,6 +45,7 @@ export function SpotlightCard({
   return (
     <div
       ref={cardRef}
+      data-spotlight-card="true"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

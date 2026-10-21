@@ -110,7 +110,7 @@ export async function registerDelegate(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        targetTab: 'ZEN DIPLOMACY MUN',
+        targetTab: '14 Delegate Rosters',
         data: {
           action: 'NEW_DELEGATE_REGISTRATION',
           registrationId: newReg.id,
@@ -207,7 +207,7 @@ export async function allocatePortfolioAndNotify(
       message: `Congratulations ${delegateDisplayName}! You have been officially allocated "${portfolio}" in ${committee}. Directives and the live Portfolio Matrix have been ratified on the sovereign ledger.`,
       type: 'mun',
       priority: 'URGENT',
-      link: '/matrix',
+      link: '/mun/matrix',
       author: allottedBy || 'Executive Secretariat (@yuveer)',
       timestamp: 'Just now'
     });
@@ -216,7 +216,7 @@ export async function allocatePortfolioAndNotify(
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('ZEN.DIPLOMACY: Portfolio Allocated!', {
         body: `${delegateDisplayName}, your portfolio "${portfolio}" in ${committee} is live in the Assembly Matrix!`,
-        icon: '/assets/logo.png'
+        icon: '/assets/logo-new.png'
       });
     }
   } catch (notifErr) {
@@ -229,7 +229,7 @@ export async function allocatePortfolioAndNotify(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        targetTab: 'ZEN DIPLOMACY MUN',
+        targetTab: '14 Delegate Rosters',
         data: {
           action: 'ALLOCATE_PORTFOLIO',
           registrationId: updatedRecord.id,

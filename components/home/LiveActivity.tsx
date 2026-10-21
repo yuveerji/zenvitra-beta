@@ -37,7 +37,7 @@ export function LiveActivity() {
       text: 'Constitutional Charter Active: First grant cycle unlocks at ₹50,000 milestone for Rural School Labs',
       time: 'In Progress',
       badgeColor: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30',
-      link: '/donate/govt-schools',
+      link: '/impact',
     },
     {
       id: 'f3',

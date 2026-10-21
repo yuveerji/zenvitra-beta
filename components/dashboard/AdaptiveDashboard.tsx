@@ -65,6 +65,17 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
     return () => unsubscribe();
   }, []);
 
+  // Auto-launch Explore ZENVITRA Tour if triggered by registration
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pendingTour = localStorage.getItem('zenvitra_auto_tour_trigger');
+      if (pendingTour === 'true') {
+        localStorage.removeItem('zenvitra_auto_tour_trigger');
+        window.location.href = '/onboarding';
+      }
+    }
+  }, []);
+
   /* ─────────── 100% REAL VERIFIABLE DATA CALCULATIONS ─────────── */
   const savedCount = savedPostIds?.length || 0;
   const passesCount = registrations?.length || 0;
@@ -80,7 +91,7 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
   // Real 10% protocol calculation based on user's actual registered passes
   const totalPassSpend = passesCount * 1500; // standard registration unit
   const escrowContribution = Math.round(totalPassSpend * 0.10);
-  const mySpace = getZenSpaceProfile(currentUserUsername || profile?.username || 'yuveer');
+  const mySpace = getZenSpaceProfile(currentUserUsername || profile?.username || 'me');
 
   // Pro mode real stats
   const currentUserId = profile?.id || user?.id || '';
@@ -341,7 +352,7 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
                   </span>
                 </div>
                 <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                  <span>ZEN.SPACE — @{currentUserUsername || profile?.username || 'yuveer'}</span>
+                  <span>ZEN.SPACE — @{currentUserUsername || profile?.username || 'me'}</span>
                 </h3>
                 <p className="text-xs text-zinc-400">
                   Decentralized link-in-bio, interactive application forms, multimedia reels, and audio rotations.
@@ -350,14 +361,14 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
 
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/space/${currentUserUsername || profile?.username || 'yuveer'}`}
+                  href={`/space/${currentUserUsername || profile?.username || 'me'}`}
                   className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-white font-mono text-xs transition flex items-center gap-1.5"
                 >
                   <span>View Space</span>
                   <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
                 </Link>
                 <Link
-                  href={`/space/${currentUserUsername || profile?.username || 'yuveer'}`}
+                  href={`/space/${currentUserUsername || profile?.username || 'me'}`}
                   className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xs transition flex items-center gap-1.5 shadow-md"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -370,7 +381,7 @@ export function AdaptiveDashboard({ initialMode = 'user' }: AdaptiveDashboardPro
               <div className="p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 space-y-1">
                 <span className="text-[10px] font-mono uppercase text-zinc-500">Public Space URL</span>
                 <p className="text-xs font-mono text-amber-300 truncate">
-                  zenvitra.xyz/space/{currentUserUsername || profile?.username || 'yuveer'}
+                  zenvitra.xyz/space/{currentUserUsername || profile?.username || 'me'}
                 </p>
               </div>
               <div className="p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 space-y-1">

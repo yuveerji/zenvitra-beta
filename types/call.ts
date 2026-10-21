@@ -106,3 +106,87 @@ export interface CallDeviceSettings {
   virtualBackground: 'none' | 'blur' | 'chamber' | 'cyberpunk' | 'office' | 'stars';
 }
 
+export type CallLayoutMode = 'GALLERY' | 'SPEAKER' | 'PRESENTATION' | 'PIP';
+
+export type MeetingType = 
+  | 'PERSONAL' 
+  | 'GROUP' 
+  | 'COMMUNITY' 
+  | 'MUN_COMMITTEE' 
+  | 'STAGE' 
+  | 'SUPPORT';
+
+export interface CallSessionItem {
+  id: string;
+  callNumber: string;
+  type: 'VOICE' | 'VIDEO' | 'MEET' | 'STAGE' | 'ROOM';
+  title: string;
+  status: 'RINGING' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'ENDED';
+  hostId: string;
+  hostName: string;
+  roomCode: string;
+  isStage: boolean;
+  committeeId?: string | null;
+  startedAt: string;
+  endedAt?: string | null;
+  durationSeconds: number;
+  recordingUrl?: string | null;
+  participantsCount: number;
+  participants?: CallParticipant[];
+}
+
+export interface CallMeetingItem {
+  id: string;
+  meetingId: string;
+  title: string;
+  description?: string | null;
+  scheduledStart: string;
+  scheduledEnd: string;
+  hostId: string;
+  hostName: string;
+  hostEmail?: string | null;
+  passcode?: string | null;
+  waitingRoom: boolean;
+  inviteesJson?: string | null;
+  roomUrl: string;
+  status: 'SCHEDULED' | 'LIVE' | 'COMPLETED' | 'CANCELLED';
+  type: MeetingType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CallSpeakerQueueItem {
+  id: string;
+  sessionId: string;
+  userId: string;
+  userName: string;
+  delegationCountry: string;
+  speakDurationSeconds: number;
+  status: 'QUEUED' | 'SPEAKING' | 'CONCLUDED' | 'YIELDED';
+  queuedAt: string;
+  startedAt?: string | null;
+}
+
+export interface CallReportItem {
+  id: string;
+  sessionId: string;
+  reporterId: string;
+  reporterName: string;
+  reportedUserId?: string | null;
+  reason: string;
+  status: 'PENDING' | 'INVESTIGATING' | 'RESOLVED' | 'DISMISSED';
+  createdAt: string;
+}
+
+export interface CallPolicyData {
+  id: string;
+  callsActive: boolean;
+  maxParticipantsPerCall: number;
+  screenShareAllowed: boolean;
+  recordingAllowed: boolean;
+  p2pMeshLimit: number;
+  emergencyCallLockdown: boolean;
+  updatedAt: string;
+}
+
+

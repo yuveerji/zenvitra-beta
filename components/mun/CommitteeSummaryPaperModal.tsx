@@ -169,7 +169,7 @@ export function CommitteeSummaryPaperModal({
           {/* Official Document Banner */}
           <div className="text-center space-y-2 border-b border-amber-500/20 pb-6">
             <div className="text-[11px] font-mono uppercase tracking-widest text-amber-400/90 font-bold">
-              {activeConference?.name || 'MODEL UNITED NATIONS 2026'}
+              {activeConference?.name || 'DIPLOMATIC CHAMBER'}
             </div>
             <h1 className="text-2xl sm:text-3xl font-black font-display text-white tracking-tight">
               {currentCommittee?.name || 'Chamber Plenary Session'}

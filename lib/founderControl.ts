@@ -120,304 +120,48 @@ const USER_OVERRIDES_STORAGE_KEY = 'zenvitra_admin_user_overrides_v1';
 const SITE_OVERRIDES_STORAGE_KEY = 'zenvitra_admin_site_overrides_v1';
 
 export const DEFAULT_FOUNDER_DIRECTIVE: FounderDirective = {
-  id: 'genesis-directive-03',
+  id: 'genesis-directive-02',
   title: 'A NOTE FROM THE FOUNDER',
-  body: `Every generation inherits a world.
+  body: `# WE ARE THE YOUTH.
 
-And every once in a while—
+## WE ARE NOBODY'S PUPPETS. AND WE WILL BE HEARD.
 
-someone decides to rebuild it.
+We are tired of being dismissed because of our age. Tired of being expected to swallow narratives we never agreed with, defend figures we never chose, and stay silent simply because someone powerful spoke.
 
-Not because the old world has completely failed.
+WE ARE NOBODY'S GHULAAM. NOBODY'S DALLEY. NOBODY'S PUPPETS.
 
-But because they can see what it could become.
+ZENVITRA was never meant to be just another platform for vanity titles, sterile certificates, or packaged PR. We are building a sovereign space where young minds can question, write, debate, and expose the truth without surrendering their conscience to be heard.
 
-———
+### NO PARTY OWNS US. NO AGENDA DEFINES US.
 
-We grew up in a world of applications.
+Let this be absolute: We are not the PR machinery, IT cell, or mouthpieces for any political party, institution, sponsor, or individual. Influence and money cannot buy ownership of our voice. We respect debate, but we will never confuse respect with obedience.
 
-One for messaging.
-One for sharing.
-One for creating.
-One for reading.
-One for communities.
-One for events.
-One for work.
-One for everything.
+### SOURCE IS WHAT WE PLEASE.
 
-And somehow—
-despite being more connected than any generation before us—
-we became scattered.
+We refuse to be restricted to one approved narrative or state-sanctioned outlet. We examine competing evidence, investigate alternative accounts, and think for ourselves.
 
-Our conversations lived in one place.
-Our ideas in another.
-Our communities somewhere else.
+SOURCE IS WHAT WE PLEASE. TRUTH IS WHAT THE EVIDENCE CAN SUPPORT.
 
-Our voices were divided between platforms we didn't own, systems we couldn't understand, and algorithms we couldn't control.
+Our independence gives us the right to reference what we choose; our responsibility demands that we verify facts ruthlessly and separate truth from propaganda.
 
-The internet connected the world.
-But it also fragmented it.
+### TO OUR CORE TEAM: THINK INDEPENDENTLY.
 
-And we started asking a question:
+Your designation is a duty, not a crown. I do not want blind followers—I want people with conviction who challenge ideas, call out mistakes, and speak truth to power. If you believe I am wrong, say it. We build on mutual respect, not subservience.
 
-WHAT IF THERE WAS ANOTHER WAY?
+### WE WILL NOT ASK FOR PERMISSION TO THINK.
 
-Not another application.
-Not another feature.
-Not another company trying to capture attention.
+We will make mistakes, but we refuse to stay quiet. We will not sell our voice to belong, and we will never silence ourselves to make the powerful comfortable.
 
-Something bigger.
-Something connected.
-Something built around people.
+WE ARE HERE TO BUILD OUR OWN FUTURE.
 
-———
+We are the youth. We are independent. And we are just getting started.
 
-THAT IS WHERE ZENVITRA BEGAN.
+Yuveer Chhatwani
+Founder, ZENVITRA
 
-Not in a boardroom.
-Not with billions of dollars.
-Not with a finished product.
-
-But with an idea.
-
-A belief that technology could feel different.
-
-That the future did not have to be built only by the people who had already been given permission to build it.
-
-That young people could look at the systems around them and say—
-WE CAN DO BETTER.
-
-And then actually try.
-
-———
-
-ZENVITRA IS A BET ON POSSIBILITY.
-
-A bet that communication can be more meaningful.
-That communities can be stronger.
-That creators can have more freedom.
-That information can travel without losing its humanity.
-That independent voices deserve space.
-That events can be easier to build.
-That technology can connect experiences instead of separating them.
-
-We are building ZEN.chat because conversations matter.
-We are building ZEN.PULSE because ideas deserve movement.
-We are building ZEN.FLUX because creativity should have a stage.
-We are building ZENVITRA International Press because voices and stories deserve the freedom to exist.
-We are building the systems that connect communities, organizations, conferences, and events because people have always built extraordinary things when they come together.
-
-Different products.
-Different purposes.
-One ecosystem.
-
-ONE ZENVITRA.
-
-———
-
-BUT HERE IS WHAT MATTERS MOST:
-
-Technology is not the story.
-PEOPLE ARE.
-
-Every message begins with someone wanting to be understood.
-Every post begins with someone wanting to say something.
-Every article begins with someone believing a story matters.
-Every community begins with people deciding they belong together.
-Every event begins with an idea.
-
-And every great movement begins when someone refuses to believe that the world must remain exactly the way it is.
-
-ZENVITRA exists for those people.
-The curious.
-The ambitious.
-The creators.
-The builders.
-The organizers.
-The writers.
-The dreamers.
-
-And especially—
-the people who have been told:
-"You're too young."
-
-———
-
-WE DON'T BELIEVE THAT.
-
-History has never asked permission before changing.
-Ideas don't wait until you are old enough.
-Curiosity doesn't require experience.
-And ambition doesn't need an invitation.
-
-You can be young and still see something that the world has missed.
-You can be inexperienced and still ask the right question.
-You can start with nothing but an idea—
-and still begin something that matters.
-
-That belief is part of ZENVITRA's DNA.
-
-The future should not be something young people simply inherit.
-IT SHOULD BE SOMETHING THEY HELP CREATE.
-
-———
-
-REVOLUTIONS ARE NEVER WON BY ASKING FOR PERMISSION.
-
-Just as Bhagat Singh, Chandrashekhar Azad, and Veer Savarkar sparked their revolution through unyielding defiance, fiery conviction, and uncompromising sacrifice, we too are bringing a revolution.
-
-Not a quiet compromise.
-Not waiting for established gatekeepers to approve our vision.
-Not settling for comfortable mediocrity.
-
-True revolutions happen when people decide to act with absolute courage, ideological depth, and sovereign agency. That is the spirit that fuels ZENVITRA.
-
-———
-
-WE ARE NOT HERE TO BE ANOTHER COMPANY.
-
-We are here to build something worth remembering.
-
-That doesn't mean everything we create will succeed immediately.
-It doesn't mean every idea will survive.
-It doesn't mean we won't make mistakes.
-
-We will.
-
-We will build things that need to be rebuilt.
-We will make decisions that need to be reconsidered.
-We will discover that some of our biggest assumptions were wrong.
-
-And when that happens—
-we will learn.
-
-Because perfection has never built the future.
-ITERATION HAS.
-
-The willingness to try again.
-The courage to admit when something isn't good enough.
-The obsession to make it better.
-Again. And again. And again.
-Until something ordinary becomes something extraordinary.
-
-———
-
-WE ARE AT THE BEGINNING.
-
-That is the most exciting part.
-There are no limits written yet.
-No final chapter.
-No complete map.
-Just a direction. Forward.
-
-There are products that haven't been imagined yet.
-Technologies that haven't been created yet.
-Communities we haven't met yet.
-Stories we haven't heard yet.
-And people who have no idea that one day, their lives might intersect with this journey.
-
-Right now, ZENVITRA is still becoming.
-And perhaps that is exactly what makes this moment important.
-
-Because someday, people may see what ZENVITRA becomes.
-But very few will understand what it felt like at the beginning.
-When it was still an idea.
-When everything was uncertain.
-When the impossible still looked impossible.
-When we had more questions than answers.
-And we built anyway.
-
-———
-
-THIS IS WHAT I WANT ZENVITRA TO BECOME.
-
-To become the loudest company.
-Not the company with the most features.
-Not a company that measures its success only in numbers.
-
-I want ZENVITRA to become something people trust.
-Something people feel proud to build with.
-Something creators can call home.
-Something communities can depend on.
-Something that gives people more power—not less.
-A company that remembers that behind every screen—
-is a human being.
-
-BECAUSE THE BEST TECHNOLOGY DOESN'T MAKE PEOPLE FEEL SMALL.
-IT MAKES THEM FEEL CAPABLE.
-
-Capable of speaking.
-Capable of creating.
-Capable of connecting.
-Capable of building.
-Capable of changing something.
-
-That is the kind of technology we want to build.
-
-———
-
-TO EVERYONE WHO IS HERE BEFORE THE WORLD IS WATCHING—
-
-Thank you.
-Thank you for believing before there was proof.
-Thank you for supporting before there was certainty.
-Thank you for seeing possibility where others saw risk.
-
-One day, ZENVITRA will have users who never knew how difficult the beginning was.
-They will see the products.
-The technology.
-The ecosystem.
-The communities.
-They may see something polished.
-Something finished.
-Something that looks inevitable.
-
-But nothing meaningful is inevitable.
-Everything begins with someone choosing to start.
-
-And this—
-THIS IS OUR START.
-
-———
-
-We don't know exactly how far this journey will go.
-But we know why it began.
-
-We began because we believed the digital world could be more connected.
-More open.
-More creative.
-More human.
-
-We began because we believed that people deserved better tools to communicate, create, organize, and express themselves.
-We began because waiting for someone else to build the future didn't feel like an option.
-
-So we decided to try.
-
-ZENVITRA IS NOT THE FINISHED ANSWER.
-IT IS THE BEGINNING OF A QUESTION.
-
-What happens when people decide to build the world they wish existed?
-
-We're about to find out.
-
-———
-
-This is ZENVITRA.
-Built from an idea.
-Powered by people.
-Defined by possibility.
-And created for a future that has not been written yet.
-
-The world doesn't change when everyone agrees it's time.
-IT CHANGES WHEN SOMEONE BEGINS.
-
-We have begun.
-
-WELCOME TO ZENVITRA.
-The future isn't waiting.
-Neither are we.`,
-  author: 'Yuveer Chhatwani (Founder & System Architect, ZENVITRA)',
-  tag: 'FOUNDER\'S NOTE • OCTOBER 2026',
+BY YOUTH. FOR YOUTH. OWNED BY NO AGENDA.`,
+  author: 'Yuveer Chhatwani',
+  tag: 'THE ZENVITRA MANIFESTO • BY YOUTH. FOR YOUTH.',
   priority: 'CONSTITUTIONAL',
   isActive: true,
   updatedAt: new Date().toISOString(),
@@ -451,7 +195,12 @@ export function getFounderDirective(): FounderDirective {
     const raw = localStorage.getItem(DIRECTIVE_STORAGE_KEY);
     if (!raw) return DEFAULT_FOUNDER_DIRECTIVE;
     const parsed = JSON.parse(raw);
-    if (!parsed || parsed.id === 'genesis-directive-01' || parsed.id === 'genesis-directive-02') {
+    if (!parsed || parsed.id !== DEFAULT_FOUNDER_DIRECTIVE.id) {
+      localStorage.setItem(DIRECTIVE_STORAGE_KEY, JSON.stringify(DEFAULT_FOUNDER_DIRECTIVE));
+      return DEFAULT_FOUNDER_DIRECTIVE;
+    }
+    // Invalidate stale legacy directives that had older versions or asterisks
+    if (parsed.body && (!parsed.body.includes('SOURCE IS WHAT WE PLEASE') || !parsed.body.includes('NOBODY\'S PUPPETS') || parsed.body.includes('*'))) {
       localStorage.setItem(DIRECTIVE_STORAGE_KEY, JSON.stringify(DEFAULT_FOUNDER_DIRECTIVE));
       return DEFAULT_FOUNDER_DIRECTIVE;
     }
@@ -464,7 +213,32 @@ export function getFounderDirective(): FounderDirective {
 export function isYuveer(usernameOrEmail?: string | null): boolean {
   if (!usernameOrEmail) return false;
   const clean = usernameOrEmail.toLowerCase().trim().replace(/^@/, '');
-  return clean === 'yuveer' || clean.startsWith('yuveer') || clean === 'founder';
+  // Strict identity matching for Founder (Yuveer Chhatwani)
+  return (
+    clean === 'yuveer' ||
+    clean === 'founder' ||
+    clean === 'founder@zenvitra.xyz' ||
+    clean === 'founder@zenvitra.org' ||
+    clean === 'founder@zenvitra.com' ||
+    clean === 'yuveer@zenvitra.xyz' ||
+    clean === 'yuveer@zenvitra.org' ||
+    clean === 'yuveer@zenvitra.com' ||
+    clean === 'zen_founder_root' ||
+    clean === 'zen_user_yuveer'
+  );
+}
+
+export function isAarush(usernameOrEmail?: string | null): boolean {
+  if (!usernameOrEmail) return false;
+  const clean = usernameOrEmail.toLowerCase().trim().replace(/^@/, '');
+  return (
+    clean === 'aarush' ||
+    clean === 'aarush@zenvitra.xyz' ||
+    clean === 'aarush@zenvitra.com' ||
+    clean === 'aarush@zenvitra.org' ||
+    clean === 'zen_cofounder_aarush' ||
+    clean === 'aarush-vijayivargiya-cofounder'
+  );
 }
 
 export function saveFounderDirective(directive: Partial<FounderDirective>, editorUsername?: string): FounderDirective {
@@ -676,8 +450,8 @@ export function getProtocolControls(): ProtocolControls {
     const raw = localStorage.getItem(PROTOCOL_STORAGE_KEY);
     let parsed = raw ? { ...DEFAULT_PROTOCOL_CONTROLS, ...JSON.parse(raw) } : { ...DEFAULT_PROTOCOL_CONTROLS };
 
-    // Auto-turn on Delegate Identity Registration once October 11, 2026, 14:00:00 IST is reached (Shubh Navratri)
-    const LAUNCH_TIMESTAMP = new Date('2026-10-11T14:00:00+05:30').getTime();
+    // Auto-turn on Delegate Identity Registration once October 25, 2026, 14:00:00 IST is reached
+    const LAUNCH_TIMESTAMP = new Date('2026-10-25T14:00:00+05:30').getTime();
     if (Date.now() >= LAUNCH_TIMESTAMP && !parsed.registrationsOpen) {
       parsed.registrationsOpen = true;
       localStorage.setItem(PROTOCOL_STORAGE_KEY, JSON.stringify(parsed));
@@ -760,11 +534,14 @@ export const PERSONAL_FOUNDER_KEYS = [
   'FOUNDER-100000',
   'ROOT-YUVEER',
   'ZEN-FOUNDER-PASSKEY-999',
+  'AARUSH-COFOUNDER-2026',
+  'COFOUNDER-AARUSH',
   '5747',
   '574729',
   '0000',
   '7788',
   'YUVEER',
+  'AARUSH',
   'FOUNDER',
 ];
 
@@ -807,6 +584,49 @@ export function activateFounderSession(key: string): boolean {
 
 export function isFounderSessionActive(): boolean {
   if (typeof window === 'undefined') return false;
+
+  // Strict session owner verification:
+  // If an active session user exists and is NOT verified as Founder or Co-Founder, founder session CANNOT be active.
+  try {
+    const rawUser = localStorage.getItem('zenvitra_session_user');
+    if (rawUser) {
+      const parsed = JSON.parse(rawUser);
+      const userHandle = (parsed?.username || parsed?.handle || '').toLowerCase().trim().replace(/^@/, '');
+      const userEmail = (parsed?.email || '').toLowerCase().trim();
+      const userId = (parsed?.id || '').toLowerCase().trim();
+      const userRole = (parsed?.role || '').toUpperCase().trim();
+
+      const isAuthorizedUser =
+        isYuveer(userHandle) ||
+        isYuveer(userEmail) ||
+        userId === 'zen_founder_root' ||
+        userId === 'zen_user_yuveer' ||
+        isAarush(userHandle) ||
+        isAarush(userEmail) ||
+        userId === 'zen_cofounder_aarush' ||
+        userId === 'aarush-vijayivargiya-cofounder' ||
+        userHandle === 'khushi' ||
+        userEmail === 'khushi@zenvitra.xyz' ||
+        userEmail === 'khushi@zenvitra.org' ||
+        userEmail === 'khushi@zenvitra.com' ||
+        userId === 'zen_cofounder_khushi' ||
+        userId === 'khushi-rb-cofounder' ||
+        userId === 'cofounder-cto-partner' ||
+        userId === 'cofounder-alliances' ||
+        userRole === 'FOUNDER' ||
+        userRole === 'CO_FOUNDER' ||
+        userRole === 'COFOUNDER';
+
+      if (!isAuthorizedUser) {
+        // Active session belongs to an unauthorized non-founder user! Cleanse lingering founder session keys immediately.
+        localStorage.removeItem(FOUNDER_MASTER_KEY_STORAGE);
+        localStorage.removeItem(FOUNDER_OVERRIDE_STORAGE);
+        localStorage.removeItem('zenvitra_founder_active_session');
+        return false;
+      }
+    }
+  } catch (_) {}
+
   const storedKey = localStorage.getItem(FOUNDER_MASTER_KEY_STORAGE);
   const override = localStorage.getItem(FOUNDER_OVERRIDE_STORAGE);
   return override === 'true' || (Boolean(storedKey) && verifyFounderKey(storedKey || ''));
@@ -816,6 +636,7 @@ export function deactivateFounderSession(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(FOUNDER_MASTER_KEY_STORAGE);
   localStorage.removeItem(FOUNDER_OVERRIDE_STORAGE);
+  localStorage.removeItem('zenvitra_founder_active_session');
 }
 
 export function setCustomFounderKey(newKey: string): void {
@@ -824,16 +645,108 @@ export function setCustomFounderKey(newKey: string): void {
   addAuditLog(`Founder updated Personal Sovereign Master Key`, 'PROTOCOL');
 }
 
+export function isCoFounder(usernameOrEmail?: string | null, role?: string | null): boolean {
+  if (!usernameOrEmail && !role) return false;
+  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
+  const r = (role || '').toUpperCase().trim();
+  if (r === 'CO_FOUNDER' || r === 'COFOUNDER') return true;
+  return (
+    isAarush(clean) ||
+    clean === 'khushi' ||
+    clean === 'khushi@zenvitra.xyz' ||
+    clean === 'khushi@zenvitra.org' ||
+    clean === 'khushi@zenvitra.com' ||
+    clean === 'zen_cofounder_khushi' ||
+    clean === 'khushi-rb-cofounder' ||
+    clean === 'cofounder-cto-partner' ||
+    clean === 'cofounder-alliances'
+  );
+}
+
 export function isFounder(usernameOrEmail?: string | null, role?: string | null): boolean {
+  const r = (role || '').toUpperCase().trim();
+  if (r === 'FOUNDER') return true;
+  // If a specific username or email is checked, it MUST match the strict Founder identity
+  if (usernameOrEmail) {
+    return isYuveer(usernameOrEmail);
+  }
+  // If no username/email was passed, check the verified active founder session
+  if (typeof window !== 'undefined') {
+    return isFounderSessionActive();
+  }
+  return false;
+}
+
+export function isFounderOrCoFounder(
+  usernameOrEmail?: string | null,
+  role?: string | null,
+  id?: string | null
+): boolean {
+  if (!usernameOrEmail && !role && !id) {
+    if (typeof window !== 'undefined') {
+      return isFounderSessionActive();
+    }
+    return false;
+  }
+
+  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
+  const r = (role || '').toUpperCase().trim();
+  const cleanId = (id || '').toLowerCase().trim();
+
+  // 1. Role check
+  if (r === 'FOUNDER' || r === 'CO_FOUNDER' || r === 'COFOUNDER') {
+    return true;
+  }
+
+  // 2. Founder identity check
+  if (isFounder(clean, r) || isFounder(cleanId, r)) {
+    return true;
+  }
+
+  // 3. Co-Founder identity check
+  if (isCoFounder(clean, r) || isCoFounder(cleanId, r)) {
+    return true;
+  }
+
+  // 4. Session check fallback
   if (typeof window !== 'undefined' && isFounderSessionActive()) {
     return true;
   }
-  if (!usernameOrEmail) return false;
-  return isYuveer(usernameOrEmail);
+
+  return false;
+}
+
+export function isCurrentSessionFounderOrCoFounder(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const raw = localStorage.getItem('zenvitra_session_user') || localStorage.getItem('zenvitra_pulse_user_v6');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const username = parsed?.username || parsed?.handle || '';
+      const email = parsed?.email || '';
+      const role = parsed?.role || '';
+      const id = parsed?.id || '';
+
+      if (
+        isFounderOrCoFounder(username, role, id) ||
+        isFounderOrCoFounder(email, role, id)
+      ) {
+        return true;
+      }
+    }
+  } catch (_) {}
+
+  if (isFounderSessionActive()) {
+    return true;
+  }
+
+  return false;
 }
 
 export function isAdmin(usernameOrEmail?: string | null, role?: string | null): boolean {
   if (isFounder(usernameOrEmail, role)) return true;
+  if (isCoFounder(usernameOrEmail, role)) return true;
   const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
   const r = (role || '').toUpperCase().trim();
   return (

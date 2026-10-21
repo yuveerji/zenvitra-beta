@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -40,46 +40,64 @@ export function ManageCommunityGroupModal({
   onDeleteGroup,
   onToast,
 }: ManageCommunityGroupModalProps) {
-  if (!isOpen || !group) return null;
-
   const [activeTab, setActiveTab] = useState<'general' | 'members' | 'permissions' | 'danger'>('general');
 
   // General Settings State
-  const [name, setName] = useState(group.name);
-  const [icon, setIcon] = useState(group.icon || '💬');
-  const [description, setDescription] = useState(group.description || '');
+  const [name, setName] = useState(group?.name || '');
+  const [icon, setIcon] = useState(group?.icon || '💬');
+  const [description, setDescription] = useState(group?.description || '');
 
   // Members Management State
   const communityMembers: CommunityMember[] = useMemo(() => {
-    if (community.members && community.members.length > 0) {
+    if (community?.members && community.members.length > 0) {
       return community.members;
     }
     return [];
-  }, [community.members]);
+  }, [community?.members]);
 
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all');
 
   // Assigned members in this subgroup
   const [assignedMemberIds, setAssignedMemberIds] = useState<string[]>(() => {
-    if (group.members && group.members.length > 0) {
+    if (group?.members && group.members.length > 0) {
       return group.members.map((m) => m.id);
     }
-    return communityMembers.map((m) => m.id);
+    return (community?.members || []).map((m) => m.id);
   });
 
   // Permissions Settings State
   const [postingMode, setPostingMode] = useState<'all' | 'admins' | 'roles'>(() => {
-    if (group.onlyAdminsCanPost) return 'admins';
-    if (group.allowedRoleIds && group.allowedRoleIds.length > 0) return 'roles';
+    if (group?.onlyAdminsCanPost) return 'admins';
+    if (group?.allowedRoleIds && group.allowedRoleIds.length > 0) return 'roles';
     return 'all';
   });
-  const [allowedRoleIds, setAllowedRoleIds] = useState<string[]>(group.allowedRoleIds || []);
-  const [allowMediaUploads, setAllowMediaUploads] = useState<boolean>(group.allowMediaUploads !== false);
-  const [allowPolls, setAllowPolls] = useState<boolean>(group.allowPolls !== false);
-  const [isLocked, setIsLocked] = useState<boolean>(!!group.isLocked);
+  const [allowedRoleIds, setAllowedRoleIds] = useState<string[]>(group?.allowedRoleIds || []);
+  const [allowMediaUploads, setAllowMediaUploads] = useState<boolean>(group?.allowMediaUploads !== false);
+  const [allowPolls, setAllowPolls] = useState<boolean>(group?.allowPolls !== false);
+  const [isLocked, setIsLocked] = useState<boolean>(!!group?.isLocked);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useEffect(() => {
+    if (group) {
+      setName(group.name);
+      setIcon(group.icon || '💬');
+      setDescription(group.description || '');
+      if (group.members && group.members.length > 0) {
+        setAssignedMemberIds(group.members.map((m) => m.id));
+      } else {
+        setAssignedMemberIds((community?.members || []).map((m) => m.id));
+      }
+      setPostingMode(
+        group.onlyAdminsCanPost ? 'admins' : (group.allowedRoleIds && group.allowedRoleIds.length > 0 ? 'roles' : 'all')
+      );
+      setAllowedRoleIds(group.allowedRoleIds || []);
+      setAllowMediaUploads(group.allowMediaUploads !== false);
+      setAllowPolls(group.allowPolls !== false);
+      setIsLocked(!!group.isLocked);
+    }
+  }, [group, isOpen, community?.members]);
 
   // Filtered members list
   const filteredMembers = useMemo(() => {
@@ -117,6 +135,7 @@ export function ManageCommunityGroupModal({
   };
 
   const handleSave = () => {
+    if (!group) return;
     if (!name.trim()) {
       onToast('Group name cannot be empty');
       return;
@@ -126,6 +145,7 @@ export function ManageCommunityGroupModal({
 
     const updated: ChatCommunityGroup = {
       ...group,
+      id: group.id,
       name: name.trim(),
       icon,
       description: description.trim(),
@@ -144,12 +164,14 @@ export function ManageCommunityGroupModal({
   };
 
   const handleDelete = () => {
-    if (onDeleteGroup) {
+    if (onDeleteGroup && group) {
       onDeleteGroup(group.id);
       onToast(`Subgroup "${group.name}" deleted`);
       onClose();
     }
   };
+
+  if (!isOpen || !group) return null;
 
   return (
     <AnimatePresence>

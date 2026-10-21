@@ -11,13 +11,37 @@ module.exports = {
         sans: ['var(--font-inter)', 'sans-serif'],
         display: ['"Clash Display"', 'sans-serif'],
         serif: ['var(--font-playfair)', 'serif'],
+        playfair: ['var(--font-playfair)', 'serif'],
         mono: ['var(--font-mono)', 'monospace'],
+        outfit: ['var(--font-outfit)', 'sans-serif'],
+        space: ['var(--font-space)', 'sans-serif'],
+        jakarta: ['var(--font-plus-jakarta)', 'sans-serif'],
+        syne: ['Syne', 'sans-serif'],
+        cinzel: ['"Cinzel Decorative"', 'serif'],
+        bebas: ['"Bebas Neue"', 'sans-serif'],
+        orbitron: ['Orbitron', 'sans-serif'],
       },
       colors: {
         obsidian: {
           950: '#020203',
           900: '#050608',
           800: '#08090c',
+        },
+      },
+      animation: {
+        'shimmer': 'shimmer 2.5s infinite linear',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'glow-drift': 'glowDrift 10s ease-in-out infinite alternate',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        glowDrift: {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '50%': { transform: 'translate(25px, -20px) scale(1.08)' },
+          '100%': { transform: 'translate(-20px, 15px) scale(0.96)' },
         },
       },
     },

@@ -11,5 +11,8 @@ export const SITE_CONFIG: SiteConfig = {
   socials: {
     instagram: 'https://instagram.com/zenvitrafoundation',
     instagramHandle: '@zenvitrafoundation',
+    twitter: 'https://x.com/zenvitra_',
+    twitterHandle: '@zenvitra_',
+    whatsapp: 'https://chat.whatsapp.com/Cmn9ihpEbRs7kLO1G83Fez',
   },
 };

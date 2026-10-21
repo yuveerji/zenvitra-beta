@@ -700,7 +700,7 @@ export function FluxReelsFeed() {
                         </span>
                       </h4>
                       <p className="text-[11px] font-mono text-neutral-400">
-                        Fast sovereign dossiers &amp; policy briefs on the FLUX feed
+                        Fast Student Profiles & MUN CVs &amp; policy briefs on the FLUX feed
                       </p>
                     </div>
                   </div>

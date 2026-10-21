@@ -80,15 +80,15 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
         localStorage.setItem('zenvitra_applicant_email', cleanEmail);
       }
 
-      // If approved, proceed directly to /statussignin
+      // If approved, proceed directly to /pre-login
       if (isApprovedClean) {
         setTimeout(() => {
-          window.location.href = `/statussignin?email=${encodeURIComponent(cleanEmail)}`;
+          window.location.href = `/pre-login?email=${encodeURIComponent(cleanEmail)}`;
         }, 1600);
       } else if (!isFound) {
-        // If not registered in the ledger, auto-redirect to /statusregister
+        // If not registered in the ledger, auto-redirect to /pre-register
         setTimeout(() => {
-          window.location.href = `/statusregister?email=${encodeURIComponent(cleanEmail)}`;
+          window.location.href = `/pre-register?email=${encodeURIComponent(cleanEmail)}`;
         }, 2200);
       }
     } catch (err: any) {
@@ -267,7 +267,7 @@ export function StatusNotificationModal({ isOpen, onClose, initialEmail = '' }: 
                   </p>
                   <div className="pt-1 space-y-2">
                     <a
-                      href={`/statusregister?email=${encodeURIComponent(result.email || '')}`}
+                      href={`/pre-register?email=${encodeURIComponent(result.email || '')}`}
                       className="w-full py-2.5 px-4 rounded-xl bg-amber-400 text-black font-mono text-xs font-bold hover:bg-amber-300 transition flex items-center justify-center gap-2 text-center"
                     >
                       <span>Complete Pre-Registration Now</span>

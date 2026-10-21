@@ -16,7 +16,9 @@ import {
   PressSortBy,
   PressView,
 } from '@/types/press';
+import { NewsStory, NewsCategory } from '@/types/news';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
+import { notifyCategorySubscribers } from '@/lib/categorySubscriptionService';
 
 /* ─────────── helpers ─────────── */
 
@@ -62,6 +64,7 @@ interface ZenPressContextType {
     tags: string[];
     sourceName: string;
     sourceUrl: string;
+    sources?: { id: string; name: string; url: string; label: string; domain?: string }[];
     coverImage?: string;
     excerpt?: string;
     isOfficial?: boolean;
@@ -70,7 +73,7 @@ interface ZenPressContextType {
   updateArticle: (
     id: string,
     data: Partial<
-      Pick<PressArticle, 'title' | 'content' | 'category' | 'tags' | 'coverImage' | 'status' | 'excerpt' | 'isOfficial' | 'sourceName' | 'sourceUrl'>
+      Pick<PressArticle, 'title' | 'content' | 'category' | 'tags' | 'coverImage' | 'status' | 'excerpt' | 'isOfficial' | 'sourceName' | 'sourceUrl' | 'sources'>
     >,
   ) => void;
   publishArticle: (id: string) => void;
@@ -252,6 +255,7 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
       tags: string[];
       sourceName: string;
       sourceUrl: string;
+      sources?: { id: string; name: string; url: string; label: string; domain?: string }[];
       coverImage?: string;
       excerpt?: string;
       isOfficial?: boolean;
@@ -283,6 +287,7 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
         coverImage: data.coverImage?.trim() || undefined,
         sourceName: data.sourceName?.trim() || 'Zenvitra Sovereign Wire',
         sourceUrl: data.sourceUrl?.trim() || '/press',
+        sources: data.sources,
         authorId: currentUserId,
         authorName: currentUserName,
         authorUsername: currentUserUsername,
@@ -334,25 +339,67 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
         try {
           const newsRaw = localStorage.getItem('zenvitra_news_stories_v2_clean');
           const newsList = newsRaw ? JSON.parse(newsRaw) : [];
-          const newNewsStory = {
+          
+          const mappedCategory: NewsCategory = 
+            data.category === 'ARCHITECTURE' ? 'TECHNOLOGY' :
+            data.category === 'UPDATES' ? 'BREAKING' :
+            data.category === 'MANIFESTO' ? 'SOCIETY' :
+            data.category === 'EDITORIAL' ? 'INTERNATIONAL_AFFAIRS' :
+            'YOUTH';
+
+          const newNewsStory: NewsStory = {
             id: `news_${id}`,
+            slug: generateSlug(cleanTitle),
             headline: wireFormattedTitle,
             summary: wireExcerpt,
-            content: formattedContent,
-            category: (data.category as string) === 'TECH' ? 'TECHNOLOGY' : (data.category as string) === 'CLIMATE' ? 'ENVIRONMENT' : (data.category as any),
-            author: currentUserName,
-            authorRole: 'Verified Correspondent',
-            location: 'Global Wire Mesh',
-            publishedAt: now,
-            readTime: `${estimateReadingTime(data.content)} min read`,
-            tags: data.tags || ['#Wire', '#Diplomacy'],
+            whatHappened: formattedContent,
+            category: mappedCategory,
             isBreaking: true,
-            isFeatured: true,
-            imageUrl: data.coverImage || undefined,
-            source: data.sourceName || 'Zenvitra Press Wire'
+            isDeveloping: true,
+            publishedAt: now,
+            lastUpdatedAt: now,
+            location: 'Global Wire Mesh',
+            coverImage: data.coverImage || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80',
+            timeline: [
+              {
+                id: `tl_${id}_1`,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                headline: wireFormattedTitle,
+                content: wireExcerpt,
+                sourceName: data.sourceName || 'Zenvitra Sovereign Wire',
+                sourceUrl: `/press?article=${id}`,
+                isConfirmed: true,
+              }
+            ],
+            whatWeKnow: [wireExcerpt],
+            whatRemainsUnclear: ['Further updates pending from regional delegates.'],
+            contextExplanation: {
+              background: `Verified editorial dispatch filed via ZENVITRA Press Bureau under Charter Article XII protection. Full primary source citations confirmed.`,
+              keyTerms: [
+                { term: 'Article XII', definition: 'Universal youth publishing charter protecting editorial independence and verified citations.' },
+                { term: 'Sovereign Wire', definition: 'Unfiltered, peer-reviewed dispatch network for international youth affairs.' }
+              ],
+              relevantInstitutions: ['ZENVITRA Editorial Bureau', data.sourceName || 'Press Council'],
+              previousDevelopments: ['Wire dispatch ratified and synchronized across News, Press, and Pulse.']
+            },
+            readCount: 1,
+            linkedDiscussionId: undefined
           };
           localStorage.setItem('zenvitra_news_stories_v2_clean', JSON.stringify([newNewsStory, ...newsList]));
           window.dispatchEvent(new CustomEvent('zenvitra_news_sync'));
+        } catch (_) {}
+
+        // Notify subscribers to this Press category
+        try {
+          notifyCategorySubscribers({
+            platform: 'press',
+            category: data.category,
+            title: cleanTitle,
+            authorName: currentUserName,
+            excerpt: wireExcerpt,
+            link: `/press?article=${id}`,
+            itemId: id,
+          });
         } catch (_) {}
       }
 
@@ -370,7 +417,7 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
   const updateArticle = useCallback(
     (
       id: string,
-      data: Partial<Pick<PressArticle, 'title' | 'content' | 'category' | 'tags' | 'coverImage' | 'status' | 'excerpt' | 'isOfficial' | 'sourceName' | 'sourceUrl'>>,
+      data: Partial<Pick<PressArticle, 'title' | 'content' | 'category' | 'tags' | 'coverImage' | 'status' | 'excerpt' | 'isOfficial' | 'sourceName' | 'sourceUrl' | 'sources'>>,
     ) => {
       const now = new Date().toISOString();
       const updated = allArticles.map((a) => {
@@ -391,6 +438,20 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
       saveArticles(updated);
 
       if (data.status === 'published') {
+        const publishedArt = allArticles.find((a) => a.id === id);
+        if (publishedArt && typeof window !== 'undefined') {
+          try {
+            notifyCategorySubscribers({
+              platform: 'press',
+              category: publishedArt.category,
+              title: publishedArt.title,
+              authorName: publishedArt.authorName,
+              excerpt: publishedArt.excerpt,
+              link: `/press?article=${id}`,
+              itemId: id,
+            });
+          } catch (_) {}
+        }
         setActiveView('feed');
         setEditingArticleId(null);
       }

@@ -511,7 +511,7 @@ export function ZenChatSettingsModal({ isOpen, onClose }: ZenChatSettingsModalPr
           {/* Footer */}
           <div className="p-4 border-t border-white/[0.08] bg-[#08090d] flex items-center justify-between">
             <span className="font-mono text-[10px] text-neutral-500">
-              ZENVITRA OS • ZEN.CHAT v8.0 Secure
+              ZENVITRA OS • ZEN.CHAT V1 Secure
             </span>
 
             <button

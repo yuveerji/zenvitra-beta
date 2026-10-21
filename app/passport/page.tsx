@@ -18,6 +18,7 @@ import PassportWalletTab from '@/components/passport/PassportWalletTab';
 import PassportTimelineTab from '@/components/passport/PassportTimelineTab';
 import PassportSectionsTab from '@/components/passport/PassportSectionsTab';
 import PassportVerificationModal from '@/components/passport/PassportVerificationModal';
+import PointsHistoryModal from '@/components/passport/PointsHistoryModal';
 import { 
   ShieldCheck, 
   QrCode, 
@@ -40,35 +41,34 @@ import {
 
 export default function PassportPage() {
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [passport, setPassport] = useState<ZenPassport | null>(null);
   const [activeTab, setActiveTab] = useState<'CARD' | 'WALLET' | 'TIMELINE' | 'SECTIONS' | 'PRIVACY'>('CARD');
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+  const [pointsHistoryModalOpen, setPointsHistoryModalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [copiedPublicLink, setCopiedPublicLink] = useState(false);
 
   useEffect(() => {
-    // Retrieve real logged-in session user
-    let username = 'test';
-    let fullName = 'Test Node';
+    let username = profile?.username || '';
+    let fullName = profile?.display_name || '';
+    let avatarUrl = profile?.avatar_url || '';
 
     try {
       const storedSession = localStorage.getItem('zenvitra_session_user');
       if (storedSession) {
         const parsed = JSON.parse(storedSession);
-        if (parsed.username) username = parsed.username;
-        if (parsed.display_name || parsed.name || parsed.displayName) {
-          fullName = parsed.display_name || parsed.name || parsed.displayName;
-        } else if (username === 'yuveer') {
-          fullName = 'Yuveer Chhatwani';
-        } else if (username === 'test') {
-          fullName = 'Test Node';
-        } else {
-          fullName = username.charAt(0).toUpperCase() + username.slice(1);
-        }
+        if (parsed.username && !username) username = parsed.username;
+        if ((parsed.display_name || parsed.name) && !fullName) fullName = parsed.display_name || parsed.name;
+        if ((parsed.avatar_url || parsed.avatar) && !avatarUrl) avatarUrl = parsed.avatar_url || parsed.avatar;
       }
     } catch (_) {}
+
+    if (!username) {
+      username = user?.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() : 'delegate';
+      fullName = fullName || (username === 'yuveer' ? 'Yuveer Chhatwani' : username.charAt(0).toUpperCase() + username.slice(1));
+    }
 
     if (username === 'test') {
       fullName = 'Test Node';
@@ -85,13 +85,13 @@ export default function PassportPage() {
       } catch (_) {}
     }
 
-    const userPassport = getOrCreateDefaultPassport(username, fullName);
+    const userPassport = getOrCreateDefaultPassport(username, fullName, avatarUrl);
     if (username === 'test') {
       userPassport.fullName = 'Test Node';
       userPassport.statusLabel = 'Test Node';
     }
     setPassport(userPassport);
-  }, []);
+  }, [profile, user]);
 
   if (!passport) {
     return (
@@ -201,6 +201,15 @@ export default function PassportPage() {
               <span>QR Terminal</span>
             </button>
 
+            {/* Model UN CV link */}
+            <Link
+              href={`/cv/${passport.username}`}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-sans font-semibold text-amber-300 transition-all cursor-pointer shadow-sm active:scale-95"
+            >
+              <Award className="w-4 h-4 text-amber-400" />
+              <span>Model UN CV</span>
+            </Link>
+
             {/* Share / Public View Link */}
             <button
               type="button"
@@ -266,16 +275,35 @@ export default function PassportPage() {
           {/* 1. Zen Points */}
           <div className="relative group p-5 rounded-2xl bg-[#080a11]/70 border border-white/10 hover:border-cyan-500/30 transition-all duration-300 flex items-center justify-between">
             <div className="space-y-1">
-              <span className="text-xs font-sans font-medium text-neutral-400 block">ZEN MERIT POINTS</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-sans font-medium text-neutral-400 block">ZEN MERIT POINTS</span>
+                <button
+                  type="button"
+                  onClick={() => setPointsHistoryModalOpen(true)}
+                  className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition cursor-pointer"
+                >
+                  View History
+                </button>
+              </div>
               <span className="text-2xl sm:text-3xl font-display font-black text-cyan-300 tracking-tight">{points}</span>
             </div>
-            <Link 
-              href="/leaderboard" 
-              className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 hover:scale-105 transition-all"
-              title="View Sovereign Leaderboard"
-            >
-              <Trophy className="w-5 h-5" />
-            </Link>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPointsHistoryModalOpen(true)}
+                className="p-3 rounded-xl bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:scale-105 transition-all cursor-pointer"
+                title="View Immutable Point History Ledger"
+              >
+                <Clock className="w-5 h-5" />
+              </button>
+              <Link 
+                href="/leaderboard" 
+                className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 hover:scale-105 transition-all"
+                title="View Sovereign Leaderboard"
+              >
+                <Trophy className="w-5 h-5" />
+              </Link>
+            </div>
           </div>
 
           {/* 2. Tier Status */}
@@ -568,6 +596,14 @@ export default function PassportPage() {
         onClose={() => setVerificationModalOpen(false)}
         passport={passport}
         onUpgradeLevel={handleUpgradeLevel}
+      />
+
+      {/* Sovereign Point History Ledger Modal */}
+      <PointsHistoryModal
+        isOpen={pointsHistoryModalOpen}
+        onClose={() => setPointsHistoryModalOpen(false)}
+        username={passport.username}
+        userDisplayName={passport.fullName}
       />
     </div>
   );

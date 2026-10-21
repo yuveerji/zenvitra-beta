@@ -23,6 +23,7 @@ import {
   BackgroundPreset 
 } from '@/lib/spaceStylistAlgo';
 import { useAuth } from '@/context/AuthContext';
+import { useGlobalAudio, GlobalAudioTrack } from '@/components/audio/GlobalAudioContext';
 import { 
   Share2, 
   Check, 
@@ -40,6 +41,10 @@ import {
   Plus, 
   Play, 
   Pause, 
+  Sliders,
+  FastForward,
+  Rewind,
+  RotateCcw,
   Globe, 
   Twitter, 
   Github, 
@@ -608,9 +613,13 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  const currentUrl = typeof window !== 'undefined' 
-    ? window.location.href 
-    : `https://zenvitra.xyz/space/${username}`;
+  const [currentUrl, setCurrentUrl] = useState(`https://zenvitra.xyz/space/${username}`);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href);
+    }
+  }, [username]);
 
   const handleShare = async () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -636,6 +645,19 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  // Global Audio Engine Integration (YouTube Music API + Instagram Trimmer)
+  const { 
+    currentTrack: globalCurrentTrack, 
+    isPlaying: isGlobalPlaying, 
+    playTrack, 
+    pauseTrack, 
+    toggleTrack, 
+    updateTimestamp: updateGlobalTimestamp,
+    openAdjuster 
+  } = useGlobalAudio();
+
+  const [activeAdjusterBlockId, setActiveAdjusterBlockId] = useState<string | null>(null);
 
   // Helper to construct exact YouTube Music URL with timestamp
   const getYouTubeMusicUrlWithTimestamp = (block: ZenSpaceBlock, currentSec: number = 0) => {
@@ -667,56 +689,68 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
 
   const handleOpenMusicWithTimestamp = (block: ZenSpaceBlock, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const currentSec = (playingBlockId === block.id && audioRef.current) ? audioRef.current.currentTime : 0;
+    const isThisTrackActive = globalCurrentTrack && (globalCurrentTrack.id === block.id || globalCurrentTrack.title === block.title);
+    const currentSec = isThisTrackActive ? (globalCurrentTrack?.startTime || 0) : (block.metadata?.startTime || 0);
     const targetUrl = getYouTubeMusicUrlWithTimestamp(block, currentSec);
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
   };
 
-  // Real Audio Toggle Handler
-  const handleTogglePlay = (blockId: string, trackUrl?: string) => {
-    const fallbackUrl = '/music/starboy_preview.wav';
-    const targetUrl = trackUrl || fallbackUrl;
+  // Sovereign Audio Toggle via Global Audio Engine (YouTube Music API + Audio Fallback)
+  const handleTogglePlay = (block: ZenSpaceBlock, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
 
-    if (playingBlockId === blockId && isPlaying) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      setIsPlaying(false);
-      return;
+    let videoId = block.metadata?.videoId;
+    if (!videoId && block.url) {
+      const match = block.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+      if (match && match[1]) videoId = match[1];
+    }
+    if (!videoId && (block.title.toLowerCase().includes('starboy') || (block.subtitle || '').toLowerCase().includes('starboy'))) {
+      videoId = '34Na4j8AVgA';
     }
 
-    try {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(targetUrl);
-      } else if (audioRef.current.src !== targetUrl) {
-        audioRef.current.pause();
-        audioRef.current.src = targetUrl;
-      }
+    const startTime = block.metadata?.startTime ?? 30;
+    const frameDuration = block.metadata?.frameDuration ?? 60;
+    const endTime = block.metadata?.endTime ?? (startTime + frameDuration);
 
-      audioRef.current.volume = 0.85;
-      audioRef.current.onended = () => {
-        setIsPlaying(false);
-        setPlayingBlockId(null);
-      };
+    const trackObj: GlobalAudioTrack = {
+      id: block.id,
+      title: block.title,
+      artist: block.subtitle || block.metadata?.artist || 'Sovereign Soundtrack',
+      audioUrl: block.metadata?.audioUrl || '/music/starboy_preview.wav',
+      videoId: videoId,
+      thumbnailUrl: block.metadata?.albumArt || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : undefined),
+      startTime,
+      endTime,
+      frameDuration,
+      source: 'YouTube Music'
+    };
 
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-            setPlayingBlockId(blockId);
-            if (profile) trackBlockClick(profile.username, blockId);
-          })
-          .catch((err) => {
-            console.warn('Audio play request interrupted:', err);
-            setIsPlaying(true);
-            setPlayingBlockId(blockId);
-          });
+    toggleTrack(trackObj);
+    if (profile) trackBlockClick(profile.username, block.id);
+  };
+
+  const handleSaveTrackTimestamp = (blockId: string, newStart: number, newDur: number = 60) => {
+    if (!profile) return;
+    const updatedBlocks = profile.blocks.map((b) => {
+      if (b.id === blockId) {
+        return {
+          ...b,
+          metadata: {
+            ...b.metadata,
+            startTime: newStart,
+            frameDuration: newDur,
+            endTime: newStart + newDur
+          }
+        };
       }
-    } catch (err) {
-      console.warn('Audio playback error:', err);
-      setIsPlaying(!isPlaying);
-    }
+      return b;
+    });
+
+    const updatedProfile = { ...profile, blocks: updatedBlocks };
+    setProfile(updatedProfile);
+    saveZenSpaceProfile(updatedProfile);
+    updateGlobalTimestamp(newStart, newDur);
+    showToast(`Timestamp set to ${Math.floor(newStart / 60)}:${(newStart % 60).toString().padStart(2, '0')}`);
   };
 
   const handleBlockClick = (block: ZenSpaceBlock) => {
@@ -964,7 +998,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       effect: 'none',
       layout: 'stream',
       socials: {
-        twitter: 'https://x.com/zenvitra',
+        twitter: 'https://x.com/zenvitra_',
         github: 'https://github.com/zenvitra',
         instagram: 'https://instagram.com/zenvitra'
       },
@@ -1677,22 +1711,38 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 );
               }
 
-              // MUSIC BLOCK (With Real Audio Playback & Live Soundbar Waves)
+              // MUSIC BLOCK (With Real Audio Playback & Live Soundbar Waves & Instagram Timestamp Adjuster)
               if (block.type === 'music') {
-                const trackIsPlaying = isPlaying && playingBlockId === block.id;
+                const isThisTrackActive = Boolean(
+                  globalCurrentTrack && 
+                  (globalCurrentTrack.id === block.id || globalCurrentTrack.title.toLowerCase() === block.title.toLowerCase())
+                );
+                const trackIsPlaying = isThisTrackActive && isGlobalPlaying;
+                const isAdjusterActive = activeAdjusterBlockId === block.id;
+                const blockStartTime = (isThisTrackActive && globalCurrentTrack?.startTime !== undefined) 
+                  ? globalCurrentTrack.startTime 
+                  : (block.metadata?.startTime ?? 30);
+                const blockDuration = (isThisTrackActive && globalCurrentTrack?.frameDuration !== undefined)
+                  ? globalCurrentTrack.frameDuration
+                  : (block.metadata?.frameDuration ?? 60);
 
                 return (
                   <div
                     key={block.id}
-                    onClick={() => handleOpenMusicWithTimestamp(block)}
-                    className={`rounded-3xl border ${themeStyle.border} ${themeStyle.cardBg} backdrop-blur-xl p-4 transition-all duration-300 hover:scale-[1.01] cursor-pointer ${bentoSpanClass} ${block.highlight ? themeStyle.accentGlow : ''}`}
-                    title="Click to open this track on YouTube Music at current timestamp"
+                    className={`rounded-3xl border ${themeStyle.border} ${themeStyle.cardBg} backdrop-blur-xl p-4 transition-all duration-300 ${bentoSpanClass} ${block.highlight ? themeStyle.accentGlow : ''} space-y-3`}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3.5 min-w-0">
+                      <div 
+                        className="flex items-center gap-3.5 min-w-0 flex-1 cursor-pointer"
+                        onClick={(e) => handleTogglePlay(block, e)}
+                      >
                         <div className="relative w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 border border-black/10 dark:border-white/10" onClick={(e) => e.stopPropagation()}>
                           {block.metadata?.albumArt ? (
-                            <img src={block.metadata.albumArt} alt={block.title} className="w-full h-full object-cover" />
+                            <img 
+                              src={block.metadata.albumArt} 
+                              alt={block.title} 
+                              className={`w-full h-full object-cover transition-transform duration-700 ${trackIsPlaying ? 'scale-105' : ''}`} 
+                            />
                           ) : (
                             <div className="w-full h-full bg-neutral-900 text-white flex items-center justify-center">
                               <Music className="w-6 h-6" />
@@ -1700,10 +1750,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                           )}
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleTogglePlay(block.id, block.metadata?.audioUrl);
-                            }}
+                            onClick={(e) => handleTogglePlay(block, e)}
                             className="absolute inset-0 bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors text-white cursor-pointer"
                             title={trackIsPlaying ? "Pause preview" : "Play live audio"}
                           >
@@ -1716,17 +1763,43 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                             <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border ${
                               isLight ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
                             }`}>
-                              {block.metadata?.category || 'Music Rotation'}
+                              {block.metadata?.category || 'Current Rotation'}
                             </span>
                             {/* Live Jumping Soundbar Waves */}
                             <LiveSoundbarWaves isPlaying={trackIsPlaying} isLight={isLight} />
+                            {blockStartTime > 0 && (
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                                {Math.floor(blockStartTime / 60)}:{(blockStartTime % 60).toString().padStart(2, '0')}
+                              </span>
+                            )}
                           </div>
-                          <h3 className="text-sm font-bold truncate hover:underline">{block.title}</h3>
+                          <h3 className="text-sm font-bold truncate hover:underline text-white">{block.title}</h3>
                           <p className={`text-xs truncate ${themeStyle.textMuted}`}>{block.subtitle || block.metadata?.artist}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {/* Instagram-Style Timestamp Adjuster Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!isThisTrackActive) {
+                              handleTogglePlay(block);
+                            }
+                            setActiveAdjusterBlockId(isAdjusterActive ? null : block.id);
+                          }}
+                          className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                            isAdjusterActive
+                              ? 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
+                              : isLight
+                              ? 'bg-neutral-100 border-black/10 hover:bg-neutral-200 text-zinc-700'
+                              : 'bg-white/5 border-white/10 hover:bg-white/10 text-zinc-400 hover:text-cyan-300'
+                          }`}
+                          title="Adjust song timestamp (Instagram-style)"
+                        >
+                          <Sliders className="w-4 h-4" />
+                        </button>
+
                         {isOwner && (
                           <button
                             type="button"
@@ -1737,6 +1810,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
+
                         <button
                           type="button"
                           onClick={(e) => handleOpenMusicWithTimestamp(block, e)}
@@ -1750,8 +1824,122 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px] opacity-60 font-mono">
-                      <span>Click track to open on YouTube Music at current timestamp</span>
+                    {/* ── EXPANDABLE INLINE INSTAGRAM MUSIC TRIMMER DRAWER ── */}
+                    {isAdjusterActive && (
+                      <div className="pt-3 border-t border-white/10 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <div className="flex items-center gap-1.5 text-cyan-300 font-bold">
+                            <Sliders className="w-3.5 h-3.5" />
+                            <span>Instagram Soundtrack Adjuster</span>
+                          </div>
+                          <span className="text-[11px] text-zinc-400">
+                            {Math.floor(blockStartTime / 60)}:{(blockStartTime % 60).toString().padStart(2, '0')} → {Math.floor((blockStartTime + blockDuration) / 60)}:{((blockStartTime + blockDuration) % 60).toString().padStart(2, '0')} ({blockDuration}s)
+                          </span>
+                        </div>
+
+                        {/* Waveform Bar Graphic Simulation */}
+                        <div className="relative h-11 w-full bg-black/60 rounded-xl border border-white/10 overflow-hidden flex items-center px-2">
+                          <div className="flex items-center justify-between gap-[2px] w-full h-8 opacity-40">
+                            {[30, 45, 60, 80, 50, 90, 75, 40, 65, 85, 100, 70, 55, 95, 80, 60, 45, 70, 85, 90, 65, 50, 75, 95, 80, 60, 40, 55, 70, 85, 90, 60, 45, 35].map((h, i) => (
+                              <div
+                                key={i}
+                                className={`w-1 rounded-full transition-all duration-150 ${
+                                  trackIsPlaying ? 'bg-gradient-to-t from-cyan-400 to-rose-400' : 'bg-zinc-500'
+                                }`}
+                                style={{ height: `${h}%` }}
+                              />
+                            ))}
+                          </div>
+
+                          {/* Active Audio Frame Window Highlight */}
+                          <div
+                            className="absolute top-1 bottom-1 rounded-lg bg-cyan-500/20 border-2 border-cyan-400 pointer-events-none shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                            style={{
+                              left: `${(blockStartTime / 240) * 100}%`,
+                              width: `${Math.min(100 - (blockStartTime / 240) * 100, (blockDuration / 240) * 100)}%`
+                            }}
+                          />
+                        </div>
+
+                        {/* Range Slider for Start Time */}
+                        <div className="space-y-1">
+                          <input
+                            type="range"
+                            min={0}
+                            max={Math.max(0, 240 - blockDuration)}
+                            value={blockStartTime}
+                            onChange={(e) => {
+                              const newStart = Number(e.target.value);
+                              handleSaveTrackTimestamp(block.id, newStart, blockDuration);
+                            }}
+                            className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                          />
+                        </div>
+
+                        {/* Quick Preset Buttons & Micro Nudges */}
+                        <div className="flex items-center justify-between pt-1">
+                          <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newStart = Math.max(0, blockStartTime - 5);
+                                handleSaveTrackTimestamp(block.id, newStart, blockDuration);
+                              }}
+                              className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 flex items-center gap-1 cursor-pointer"
+                              title="Nudge back 5 seconds"
+                            >
+                              <Rewind className="w-2.5 h-2.5" />
+                              <span>-5s</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newStart = Math.min(240 - blockDuration, blockStartTime + 5);
+                                handleSaveTrackTimestamp(block.id, newStart, blockDuration);
+                              }}
+                              className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 flex items-center gap-1 cursor-pointer"
+                              title="Nudge forward 5 seconds"
+                            >
+                              <span>+5s</span>
+                              <FastForward className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-1 text-[10px] font-mono">
+                            <button
+                              type="button"
+                              onClick={() => handleSaveTrackTimestamp(block.id, 0, blockDuration)}
+                              className={`px-2 py-0.5 rounded transition ${
+                                blockStartTime === 0 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'bg-white/5 text-zinc-400 hover:text-white'
+                              }`}
+                            >
+                              Intro
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveTrackTimestamp(block.id, 30, blockDuration)}
+                              className={`px-2 py-0.5 rounded transition ${
+                                blockStartTime === 30 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'bg-white/5 text-zinc-400 hover:text-white'
+                              }`}
+                            >
+                              Verse (0:30)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveTrackTimestamp(block.id, 60, blockDuration)}
+                              className={`px-2 py-0.5 rounded transition ${
+                                blockStartTime === 60 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'bg-white/5 text-zinc-400 hover:text-white'
+                              }`}
+                            >
+                              Chorus (1:00)
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[10px] opacity-60 font-mono">
+                      <span>Click track to stream • Adjuster sets persistent starting frame</span>
                       <span>© Sovereign Audio</span>
                     </div>
                   </div>
@@ -2656,9 +2844,9 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                 </p>
 
                 <div className="space-y-2">
-                  {stylistRecommendations.map((rec) => (
+                  {stylistRecommendations.map((rec, idx) => (
                     <div 
-                      key={rec.theme}
+                      key={`${rec.theme}-${idx}`}
                       className="p-3 rounded-xl bg-neutral-950/80 border border-neutral-800 hover:border-amber-400/50 transition-all flex flex-col gap-1.5"
                     >
                       <div className="flex items-center justify-between">
@@ -3043,7 +3231,7 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
                           : newBlockButtonAction === 'call'
                           ? 'Phone Number to dial (e.g. +91 9876543210)'
                           : newBlockButtonAction === 'email'
-                          ? 'Recipient Email (e.g. contact@zenvitra.com)'
+                          ? 'Recipient Email (e.g. contact@zenvitra.xyz)'
                           : 'Destination URL (e.g. https://... or /forms/...)'
                         : newBlockType === 'form' && newBlockFormMode === 'redirect'
                         ? 'External Form URL (Google Forms / Typeform)'

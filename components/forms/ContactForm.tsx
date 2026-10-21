@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Send, Loader2, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useChat } from '@/context/ChatContext';
+import { sheetSync } from '@/lib/googleSheets';
 
 const DEPARTMENTS = [
   { id: 'GENERAL_SECRETARIAT', label: 'Executive Secretariat (General & Strategic)' },
@@ -33,7 +34,18 @@ export function ContactForm() {
 
     setIsSubmitting(true);
 
-    // Automatically transition to Zen.chat active conversation
+    // 1. Dispatch to Google Sheets (Contact Inquiries tab)
+    sheetSync.contact({
+      fullName: formData.name.trim(),
+      email: formData.email.trim(),
+      subject: formData.subject.trim() || formData.department,
+      queryType: formData.department,
+      message: formData.message.trim(),
+      sourceUrl: typeof window !== 'undefined' ? window.location.pathname : '/contact',
+      status: 'PENDING_REVIEW',
+    });
+
+    // 2. Automatically transition to Zen.chat active conversation
     startOrOpenThread({
       name: formData.name.trim(),
       email: formData.email.trim(),

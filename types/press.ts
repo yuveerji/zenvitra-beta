@@ -36,8 +36,22 @@ export interface PressArticle {
   content: string; // HTML
   excerpt: string;
   coverImage?: string;
+  coverAdjustment?: {
+    scale: number;
+    positionX: number;
+    positionY: number;
+    aspectRatio: string;
+    fit: 'cover' | 'contain';
+  };
   sourceName: string;
   sourceUrl: string;
+  sources?: {
+    id: string;
+    name: string;
+    url: string;
+    label: string;
+    domain?: string;
+  }[];
   authorId: string;
   authorName: string;
   authorUsername: string;

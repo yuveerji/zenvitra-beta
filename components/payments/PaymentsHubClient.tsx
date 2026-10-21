@@ -821,7 +821,7 @@ export function PaymentsHubClient() {
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="space-y-0.5">
                   <span className="text-[10px] font-mono text-neutral-400 uppercase">ACTIVE EVENT REVENUE</span>
-                  <h4 className="text-lg font-bold text-white">ZENMUN 2026 — Sovereign Youth Diplomatic Assembly</h4>
+                  <h4 className="text-lg font-bold text-white">Event Registration Revenue</h4>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
                   {munTxns.length} Paid {munTxns.length === 1 ? 'Registration' : 'Registrations'}
@@ -903,11 +903,11 @@ export function PaymentsHubClient() {
         <ZenCheckoutModal
           isOpen={isCheckoutOpen}
           onClose={() => setIsCheckoutOpen(false)}
-          product="ZEN.MUN"
-          title="ZENMUN 2026 - Sovereign Delegate Pass"
+          product="ZEN.EVENTS"
+          title="Official Delegate Registration Pass"
           baseAmount={299}
           currency="INR"
-          merchantName="ZENMUN Secretariat"
+          merchantName="ZENVITRA Payments"
           onSuccess={(txn) => {
             setTransactions([txn, ...transactions]);
           }}

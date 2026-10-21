@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRight, Sparkles, Shield, Newspaper, Calendar, Heart } from 'lucide-react';
+import { X, ArrowRight, Sparkles, Shield, Newspaper, Calendar, Heart, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useProtocolControls } from '@/lib/founderControl';
 
@@ -190,6 +190,20 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     tagColor: 'text-amber-300 border-amber-500/30 bg-amber-500/10',
     dotColor: 'bg-amber-400',
   },
+  'solutions-chamber': {
+    id: 'solutions-chamber',
+    term: 'Solutions Policy Chamber',
+    tag: 'CIVIC DRAFTING & POLICY VAULT',
+    icon: FileText,
+    definition: 'An open-source legislative repository and policy drafting workbench where delegates, researchers, and sovereign youth co-author real-world draft resolutions, legislative bills, and multilateral action charters with verified primary citations.',
+    platformRelation: 'Powers ZEN.SOLUTIONS with clause-level debates, line-item redline amendments, community co-sponsorships, and verified delegate voting.',
+    protocolBadge: 'ZEN.SOLUTIONS // POLICY ENGINE',
+    ctaText: 'Explore Policy Chamber',
+    ctaHref: '/solutions',
+    accentColor: 'from-cyan-400/20 via-blue-500/10 to-transparent text-cyan-300 border-cyan-500/30',
+    tagColor: 'text-cyan-300 border-cyan-500/30 bg-cyan-500/10',
+    dotColor: 'bg-cyan-400',
+  },
   'zero-surveillance': {
     id: 'zero-surveillance',
     term: 'Zero Surveillance Advertising',
@@ -253,7 +267,7 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     icon: Sparkles,
     definition: 'A clean chronological social mesh where dispatches, resolutions, and floor audio are surfaced purely on merit, timestamps, and verifiable citations without algorithmic manipulation.',
     platformRelation: 'Explore the live civic wire with redline diff audits, roll-call voting, and sovereign floor speeches.',
-    protocolBadge: 'ZEN.PULSE // PROTOCOL v6',
+    protocolBadge: 'ZEN.PULSE // PROTOCOL V1',
     ctaText: 'Launch Zen Pulse',
     ctaHref: '/pulse',
     accentColor: 'from-purple-400/20 via-purple-500/10 to-transparent text-purple-300 border-purple-500/30',
@@ -381,7 +395,7 @@ export const GLOSSARY_TERMS: Record<string, TermDefinition> = {
     platformRelation: 'Funded autonomously via our 10% constitutional escrow and tracked live on our public grant ledger.',
     protocolBadge: 'ZEN.IMPACT // SMART LAB ENDOWMENT',
     ctaText: 'View Smart Lab Deployments',
-    ctaHref: '/donate/govt-schools',
+    ctaHref: '/impact',
     accentColor: 'from-emerald-400/20 via-emerald-500/10 to-transparent text-emerald-300 border-emerald-500/30',
     tagColor: 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10',
     dotColor: 'bg-emerald-400',

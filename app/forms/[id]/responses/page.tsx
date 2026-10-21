@@ -23,10 +23,18 @@ import {
   PenTool,
   Coins,
   ShieldCheck,
-  FileText
+  FileText,
+  Download,
+  Sparkles
 } from 'lucide-react';
-import { ZenForm, ZenFormField, ZenFormSubmission } from '@/types/forms';
-import { getZenFormById, fetchFormSubmissions } from '@/lib/formsStorage';
+import { ZenForm, ZenFormField, ZenFormSubmission, ZenFormsAccountSheetsConfig } from '@/types/forms';
+import { 
+  getZenFormById, 
+  fetchFormSubmissions, 
+  syncFormSubmissionsToGoogleSheets, 
+  exportSubmissionsToCsv, 
+  getZenFormsSheetsConfig 
+} from '@/lib/formsStorage';
 import { getFontCssFamily } from '@/lib/formsThemes';
 
 export default function ZenFormsPublicResponsesPage() {
@@ -40,6 +48,9 @@ export default function ZenFormsPublicResponsesPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [textSearchQuery, setTextSearchQuery] = useState<Record<string, string>>({});
   const [copiedLink, setCopiedLink] = useState(false);
+  const [sheetsConfig, setSheetsConfig] = useState<ZenFormsAccountSheetsConfig | null>(null);
+  const [isSyncingSheets, setIsSyncingSheets] = useState(false);
+  const [syncToast, setSyncToast] = useState<string | null>(null);
 
   // Load Form & Live Submissions
   const loadData = async () => {
@@ -63,6 +74,10 @@ export default function ZenFormsPublicResponsesPage() {
         const liveSubs = await fetchFormSubmissions(currentForm.id);
         setSubmissions(liveSubs);
       }
+
+      // 3. Load sheets config
+      const sc = getZenFormsSheetsConfig();
+      if (sc) setSheetsConfig(sc);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -74,6 +89,46 @@ export default function ZenFormsPublicResponsesPage() {
       loadData();
     }
   }, [idOrSlug]);
+
+  const handleSyncToSheets = async () => {
+    if (!form) return;
+    setIsSyncingSheets(true);
+    setSyncToast('Streaming responses to Google Sheets...');
+
+    try {
+      const activeSheetUrl = form.googleSheetsConfig?.sheetUrl || sheetsConfig?.defaultSheetUrl;
+      const res = await syncFormSubmissionsToGoogleSheets(
+        form,
+        submissions,
+        sheetsConfig?.userEmail,
+        activeSheetUrl
+      );
+
+      if (res.success) {
+        setSyncToast(`Synced ${res.count || submissions.length} responses to Google Sheets!`);
+      } else {
+        setSyncToast(`Sync note: ${res.error || 'Check Google Sheet webhook'}`);
+      }
+    } catch (err: any) {
+      setSyncToast(`Sync error: ${err?.message || 'Network error'}`);
+    } finally {
+      setIsSyncingSheets(false);
+      setTimeout(() => setSyncToast(null), 4000);
+    }
+  };
+
+  const handleDownloadCsv = () => {
+    if (!form || submissions.length === 0) return;
+    const csvContent = exportSubmissionsToCsv(form, submissions);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${(form.slug || form.title || 'form').replace(/[^a-z0-9_-]/gi, '_')}_responses.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Accent & Font styles
   const defaultAccents: Record<string, string> = {
@@ -199,11 +254,47 @@ export default function ZenFormsPublicResponsesPage() {
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          {/* Download CSV */}
+          <button
+            onClick={handleDownloadCsv}
+            disabled={submissions.length === 0}
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono disabled:opacity-40 cursor-pointer"
+            title="Download CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden sm:inline">Export CSV</span>
+          </button>
+
+          {/* Sync to Google Sheets */}
+          <button
+            onClick={handleSyncToSheets}
+            disabled={isSyncingSheets || submissions.length === 0}
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 text-emerald-300 font-mono text-xs font-semibold transition flex items-center gap-1.5 disabled:opacity-40 cursor-pointer shadow-sm"
+            title="Sync all responses to Google Sheets"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSheets ? 'animate-spin' : ''} text-emerald-400`} />
+            <span>{isSyncingSheets ? 'Syncing...' : 'Sync to Sheet'}</span>
+          </button>
+
+          {/* Open Google Sheet if URL exists */}
+          {(form.googleSheetsConfig?.sheetUrl || sheetsConfig?.defaultSheetUrl) && (
+            <a
+              href={form.googleSheetsConfig?.sheetUrl || sheetsConfig?.defaultSheetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono"
+              title="Open linked Google Sheet"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">Open Sheet</span>
+            </a>
+          )}
+
           <button
             onClick={loadData}
             disabled={isRefreshing}
-            className="p-2 sm:px-3.5 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono disabled:opacity-50"
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono disabled:opacity-50"
             title="Refresh responses"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -216,7 +307,7 @@ export default function ZenFormsPublicResponsesPage() {
               setCopiedLink(true);
               setTimeout(() => setCopiedLink(false), 2000);
             }}
-            className="p-2 sm:px-3.5 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono"
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1.5 text-xs font-mono"
             title="Copy share link"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -236,6 +327,16 @@ export default function ZenFormsPublicResponsesPage() {
           </Link>
         </div>
       </header>
+
+      {/* Sync Status Toast Banner */}
+      {syncToast && (
+        <div className="max-w-4xl lg:max-w-5xl mx-auto w-full z-10 -mt-2 mb-4 animate-in fade-in duration-200">
+          <div className="p-3 rounded-2xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center gap-2 shadow-xl backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{syncToast}</span>
+          </div>
+        </div>
+      )}
 
       {/* Main Analytics Content */}
       <main className="max-w-4xl lg:max-w-5xl mx-auto w-full z-10 py-8 space-y-6">

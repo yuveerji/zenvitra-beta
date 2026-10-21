@@ -247,7 +247,7 @@ export function CinematicPortal() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <div className="font-mono text-[10px] text-neutral-500 tracking-widest">
-              ZENVITRA v1.0 • SOVEREIGN OPERATING ENVIRONMENT
+              ZENVITRA V1 • SOVEREIGN OPERATING ENVIRONMENT
             </div>
           </div>
         </div>

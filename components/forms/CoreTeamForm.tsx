@@ -239,8 +239,10 @@ export function CoreTeamForm() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-neutral-400 mb-2 font-medium">
-                  {t.coreTeam.phone} <span className="text-amber-400">*</span>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-neutral-400 mb-2 font-medium flex items-center gap-1.5">
+                  <span>{t.coreTeam.phone}</span>
+                  <span className="text-emerald-400 font-mono text-[10px] tracking-normal font-medium">[Whatsapp Active]</span>
+                  <span className="text-amber-400">*</span>
                 </label>
                 <input
                   type="tel"

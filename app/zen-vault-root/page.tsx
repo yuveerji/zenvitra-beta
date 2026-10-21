@@ -1,3 +1,4 @@
+import React, { Suspense } from 'react';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { VaultDashboardClient } from '@/components/founder/VaultDashboardClient';
@@ -19,10 +20,12 @@ export default async function SovereignVaultPage() {
   } catch {}
 
   return (
-    <VaultDashboardClient
-      totalUsers={totalUsers}
-      suspendedUsers={suspendedUsers}
-      totalAccounts={totalAccounts}
-    />
+    <Suspense fallback={<div className="p-8 text-neutral-500 font-mono text-xs">Loading Sovereign Vault...</div>}>
+      <VaultDashboardClient
+        totalUsers={totalUsers}
+        suspendedUsers={suspendedUsers}
+        totalAccounts={totalAccounts}
+      />
+    </Suspense>
   );
 }

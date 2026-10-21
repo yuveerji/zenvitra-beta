@@ -296,9 +296,9 @@ export function ZenDiplomacyPortal() {
               <div className="space-y-3 sm:space-y-4 max-w-3xl">
                 <div className="flex items-center gap-2.5 sm:gap-3">
                   <img 
-                    src="/assets/logo.png" 
+                    src="/assets/logo-new.png" 
                     alt="ZENVITRA Logo" 
-                    className="w-7 h-7 sm:w-10 sm:h-10 object-contain filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] shrink-0"
+                    className="w-9 h-9 sm:w-12 sm:h-12 object-contain mix-blend-screen filter drop-shadow-[0_0_14px_rgba(255,255,255,0.35)] shrink-0 brand-logo-img"
                   />
                   <img 
                     src="/assets/brochure/zenvitra-seal.png" 
@@ -341,7 +341,7 @@ export function ZenDiplomacyPortal() {
                   </Link>
 
                   <Link
-                    href="/matrix"
+                    href="/mun/matrix"
                     className="justify-center px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 border border-emerald-500/40 text-emerald-300 font-mono text-[11px] sm:text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer hover:scale-105 active:scale-95 text-center"
                     title="Open live Interactive Portfolio Matrix"
                   >
@@ -536,7 +536,7 @@ export function ZenDiplomacyPortal() {
                           <span>Notification dispatched to your bell with urgent priority.</span>
                         </div>
                         <Link
-                          href="/matrix"
+                          href="/mun/matrix"
                           className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-bold transition flex items-center gap-1.5"
                         >
                           <Grid className="w-3.5 h-3.5" />

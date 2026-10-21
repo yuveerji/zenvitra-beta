@@ -16,7 +16,11 @@ import {
   Radio,
   CheckCircle2,
   Lock,
-  Music
+  Music,
+  HeartHandshake,
+  ChevronDown,
+  HelpCircle,
+  LifeBuoy
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -25,13 +29,32 @@ import { ReaderThemeToggle } from '@/components/ui/ReaderThemeToggle';
 import {
   TERMS_OF_SERVICE_DATA,
   LegalSection,
-  LegalSubsection
+  LegalSubsection,
+  TERMS_OF_SERVICE_FAQS,
+  LegalFAQ
 } from '@/lib/legalData';
 
 export default function TermsOfServicePage() {
   const { isLight, toggleTheme } = useReaderTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSectionId, setActiveSectionId] = useState<string>('1');
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [faqCategory, setFaqCategory] = useState<string>('ALL');
+
+  const faqCategories = useMemo(() => {
+    const cats = new Set(TERMS_OF_SERVICE_FAQS.map(f => f.category));
+    return ['ALL', ...Array.from(cats)];
+  }, []);
+
+  const filteredFaqs = useMemo(() => {
+    return TERMS_OF_SERVICE_FAQS.filter(faq => {
+      const matchCat = faqCategory === 'ALL' || faq.category === faqCategory;
+      const matchSearch = !searchQuery.trim() || 
+        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [faqCategory, searchQuery]);
 
   // Filter sections based on search
   const filteredSections = useMemo(() => {
@@ -113,7 +136,33 @@ export default function TermsOfServicePage() {
     }`}>
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-10">
+        {/* Terms Switcher Tabs: Major vs Minor */}
+        <div className={`flex flex-wrap items-center gap-3 p-2 rounded-2xl border ${
+          isLight ? 'bg-stone-100 border-stone-200' : 'bg-[#090b10] border-white/10'
+        }`}>
+          <div className={`flex-1 min-w-[240px] px-4 py-3 rounded-xl text-center text-xs font-mono font-bold shadow-md flex items-center justify-center gap-2 ${
+            isLight
+              ? 'bg-white border border-stone-300 text-stone-900'
+              : 'bg-white/10 border border-white/20 text-white'
+          }`}>
+            <Scale className="w-4 h-4 text-cyan-400" />
+            <span>Standard Terms of Service (Adults 18+ &amp; Organizers)</span>
+            <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-black ${
+              isLight ? 'bg-stone-200 text-stone-800' : 'bg-white/20 text-white'
+            }`}>Active</span>
+          </div>
+          <Link
+            href="/terms/minor"
+            className={`flex-1 min-w-[240px] px-4 py-3 rounded-xl text-center text-xs font-mono font-medium transition flex items-center justify-center gap-2 ${
+              isLight ? 'text-stone-600 hover:text-stone-900 hover:bg-white' : 'text-neutral-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <HeartHandshake className="w-4 h-4 text-amber-400" />
+            <span>Minor Terms of Service &amp; Parental Consent Accord</span>
+          </Link>
+        </div>
+
         {/* Header Banner */}
         <div className={`space-y-4 border-b pb-8 text-left ${isLight ? 'border-stone-200' : 'border-white/10'}`}>
           <div className="flex flex-wrap items-center gap-2">
@@ -345,6 +394,107 @@ export default function TermsOfServicePage() {
             )}
           </main>
         </div>
+
+        {/* ── HELP & FREQUENTLY ASKED QUESTIONS (FAQS) ── */}
+        <section id="help-faqs" className={`mt-20 pt-12 border-t space-y-8 ${
+          isLight ? 'border-stone-200' : 'border-white/10'
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full font-mono text-[11px] mb-2 ${
+                isLight ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
+              }`}>
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>TERMS & PLATFORM GOVERNANCE HELP</span>
+              </div>
+              <h2 className={`text-2xl sm:text-3xl font-bold font-display tracking-tight ${
+                isLight ? 'text-stone-900' : 'text-white'
+              }`}>
+                Help & Frequently Asked Questions
+              </h2>
+              <p className={`text-xs sm:text-sm font-sans mt-1 max-w-2xl ${
+                isLight ? 'text-stone-600' : 'text-neutral-400'
+              }`}>
+                Practical guidelines on legislative drafting rules, the 2-edit limit, intellectual property, floor amendments, and platform invariants.
+              </p>
+            </div>
+
+            <Link
+              href="/support"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-mono transition shrink-0 ${
+                isLight ? 'bg-stone-100 hover:bg-stone-200 text-stone-800 border-stone-300' : 'bg-white/5 hover:bg-white/10 border-white/10 text-neutral-300 hover:text-white'
+              }`}
+            >
+              <LifeBuoy className="w-3.5 h-3.5 text-amber-500" />
+              <span>Grievance Desk & Support &rarr;</span>
+            </Link>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {faqCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFaqCategory(cat)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono transition cursor-pointer ${
+                  faqCategory === cat
+                    ? (isLight ? 'bg-amber-100 text-amber-900 border border-amber-400 font-bold' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold')
+                    : (isLight ? 'bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200' : 'bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/5')
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Accordion Items */}
+          <div className="space-y-3">
+            {filteredFaqs.map((faq) => {
+              const isOpen = openFaqId === faq.id;
+              return (
+                <div
+                  key={faq.id}
+                  className={`rounded-2xl border overflow-hidden transition-all ${
+                    isLight ? 'bg-white border-stone-200' : 'bg-[#07080d] border-white/10'
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
+                    className={`w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer transition ${
+                      isLight ? 'hover:bg-stone-50' : 'hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${
+                        isLight ? 'bg-amber-100 text-amber-800' : 'bg-amber-500/10 text-amber-400/80'
+                      }`}>
+                        {faq.category}
+                      </span>
+                      <h3 className={`text-sm sm:text-base font-bold font-sans pt-1 ${
+                        isLight ? 'text-stone-900' : 'text-white'
+                      }`}>
+                        {faq.question}
+                      </h3>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-amber-500' : (isLight ? 'text-stone-400' : 'text-neutral-400')
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className={`px-5 pb-5 pt-1 text-xs sm:text-sm font-sans leading-relaxed border-t ${
+                      isLight ? 'text-stone-700 border-stone-100' : 'text-neutral-300 border-white/5'
+                    }`}>
+                      <p>{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </div>
 
       <Footer />

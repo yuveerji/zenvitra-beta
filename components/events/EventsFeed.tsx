@@ -33,8 +33,8 @@ import { ZenPassHolographicTicket } from './ZenPassHolographicTicket';
 import { ZenPassScannerModal } from './ZenPassScannerModal';
 import { ZenPassUserPassesModal } from './ZenPassUserPassesModal';
 import { RevenueFeeSimulatorModal } from '@/components/pulse/RevenueFeeSimulatorModal';
+import { EventsFaqSection } from './EventsFaqSection';
 import { useAuth } from '@/context/AuthContext';
-import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
 
 const CATEGORIES: (EventCategory | 'ALL')[] = ['ALL', 'SUMMIT', 'WORKSHOP', 'KEYNOTE', 'MEETUP', 'HACKATHON'];
 
@@ -73,6 +73,7 @@ export function EventsFeed() {
     profile?.role === 'admin' ||
     (profile?.role as string) === 'organizer' ||
     (profile?.role as string) === 'secretariat' ||
+    profile?.email?.toLowerCase() === 'founder@zenvitra.xyz' ||
     profile?.email?.toLowerCase() === 'founder@zenvitra.org' ||
     (events && events.some((e) => e.organizerUsername === currentUserUsername || e.organizerId === currentUserId))
   );
@@ -168,23 +169,14 @@ export function EventsFeed() {
           )}
 
           {/* Create Event Button — STRICTLY RESTRICTED TO EVENT MANAGERS & HOST PAGES */}
-          {isEventManager ? (
-            <button
-              onClick={() => setActiveView('create')}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white hover:bg-zinc-200 text-black text-xs font-semibold transition shadow-sm cursor-pointer"
-            >
-              <Plus className="w-4 h-4 shrink-0" />
-              <span>Create Event</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowPassWalletModal(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-200 text-xs font-semibold transition shadow-sm cursor-pointer"
-            >
-              <Ticket className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Show Passes & Enter</span>
-            </button>
-          )}
+          {/* List Event Button — AVAILABLE TO EVERYONE */}
+          <button
+            onClick={() => setActiveView('create')}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white hover:bg-zinc-200 text-black text-xs font-bold transition shadow-sm cursor-pointer"
+          >
+            <Plus className="w-4 h-4 shrink-0" />
+            <span>List Your Event</span>
+          </button>
         </div>
       </div>
 
@@ -196,15 +188,6 @@ export function EventsFeed() {
       {featuredEvent && (
         <div
           onClick={() => {
-            const isOurMun = 
-              featuredEvent.id === 'zen-diplomacy-mun-2026' || 
-              (featuredEvent as any).isOfficialZenDiplomacy || 
-              (featuredEvent.title && featuredEvent.title.toLowerCase().includes('zen.diplomacy')) || 
-              (featuredEvent.title && featuredEvent.title.toLowerCase().includes('diplomacy mun'));
-            if (isOurMun) {
-              window.location.href = '/zen-diplomacy';
-              return;
-            }
             window.location.href = `/events/${featuredEvent.slug || featuredEvent.id}`;
           }}
           className="group relative rounded-3xl overflow-hidden card-luxury border border-cyan-500/30 hover:border-cyan-400/60 transition-all duration-500 cursor-pointer shadow-[0_0_40px_rgba(0,242,254,0.15)]"
@@ -212,9 +195,7 @@ export function EventsFeed() {
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Image */}
             <div className="relative h-64 sm:h-80 lg:h-auto overflow-hidden bg-neutral-900">
-              {featuredEvent.id === 'zen-diplomacy-mun-2026' || (featuredEvent as any).isOfficialZenDiplomacy ? (
-                <ZenDiplomacyCover variant="compact" interactive={false} className="h-full w-full" />
-              ) : featuredEvent.coverImage ? (
+              {featuredEvent.coverImage ? (
                 <img
                   src={featuredEvent.coverImage}
                   alt={featuredEvent.title}
@@ -371,6 +352,9 @@ export function EventsFeed() {
           </div>
         )}
       </div>
+
+      {/* ── FAQ SECTION (CLARIFYING ATTENDEE/DELEGATE VS ORGANIZER ROLES) ── */}
+      <EventsFaqSection />
 
       {/* ── ZENPASS DISTRICT MODALS ── */}
       {bookingEvent && (

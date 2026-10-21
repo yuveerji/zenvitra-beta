@@ -47,7 +47,8 @@ import {
   Compass,
   ExternalLink,
   QrCode,
-  Upload
+  Upload,
+  Menu
 } from 'lucide-react';
 
 const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -66,6 +67,8 @@ import {
 } from '@/types/call';
 import { ZenWhiteboard } from './ZenWhiteboard';
 import { MunCommitteeChamber } from './MunCommitteeChamber';
+import { ZenChamberMediaEngine, NetworkHealthMetrics } from '@/lib/call/ZenChamberMediaEngine';
+import { SfuBandwidthStatusBar } from './SfuBandwidthStatusBar';
 
 interface ZenCallActiveRoomProps {
   roomId: string;
@@ -87,6 +90,8 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   // Mode and initial params
   const paramMode = (searchParams.get('mode') as CallMode) || 'GROUP';
   const [mode, setMode] = useState<CallMode>(paramMode);
+  const paramRole = (searchParams.get('role') as CallRole) || 'HOST';
+  const [role, setRole] = useState<CallRole>(paramRole);
 
   // Local user states
   const [isMicOn, setIsMicOn] = useState(searchParams.get('mic') !== 'false');
@@ -144,6 +149,64 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const screenVideoRef = useRef<HTMLVideoElement | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+
+  // SFU & Adaptive Bandwidth State
+  const [networkHealth, setNetworkHealth] = useState<NetworkHealthMetrics | null>(null);
+  const [isChairPriorityActive, setIsChairPriorityActive] = useState<boolean>(false);
+  const mediaEngineRef = useRef<ZenChamberMediaEngine | null>(null);
+
+  // Initialize SFU Media & Dais Authority Engine
+  useEffect(() => {
+    const engine = new ZenChamberMediaEngine(
+      roomId,
+      'user-local',
+      role,
+      {
+        onAudioAnalysis: (analysis) => {
+          if (isMicOn) {
+            setMicLevel(analysis.volume);
+          }
+        },
+        onNetworkHealth: (health) => {
+          setNetworkHealth(health);
+        },
+        onChairDecree: (type, payload) => {
+          if (type === 'MUTE_ALL' || type === 'FORCE_MUTE') {
+            setIsMicOn(false);
+            if (mediaStreamRef.current) {
+              mediaStreamRef.current.getAudioTracks().forEach(t => t.enabled = false);
+            }
+          }
+          if (type === 'GAVEL_DUCK') {
+            setIsChairPriorityActive(true);
+            setTimeout(() => setIsChairPriorityActive(false), payload.durationMs || 4000);
+          }
+        },
+        onRemoteTrackChange: (peerId, trackType, enabled) => {
+          setParticipants(prev => prev.map(p => {
+            if (p.id === peerId) {
+              return trackType === 'audio' ? { ...p, isMuted: !enabled } : { ...p, isCameraOff: !enabled };
+            }
+            return p;
+          }));
+        }
+      }
+    );
+
+    mediaEngineRef.current = engine;
+
+    return () => {
+      engine.destroy();
+      mediaEngineRef.current = null;
+    };
+  }, [roomId, role]);
+
+  // Attach microphone stream to hardware Web Audio Analyser
+  useEffect(() => {
+    if (mediaStreamRef.current && mediaEngineRef.current) {
+      mediaEngineRef.current.attachAudioStreamForAnalysis(mediaStreamRef.current);
+    }
+  }, [isCamOn, isMicOn]);
 
   // Timer counter
   useEffect(() => {
@@ -517,8 +580,31 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
     <div className="relative w-full h-[calc(100vh-4rem)] bg-black text-white flex flex-col overflow-hidden select-none">
       {/* 1. TOP BAR */}
       <header className="h-14 border-b border-white/10 bg-slate-950/85 backdrop-blur-2xl px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
-        {/* Left: Mode badge, Room Code & Speed-Dial */}
+        {/* Left: Menu toggle, Logo, Mode badge, Room Code & Speed-Dial */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Platform Drawer Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+            }}
+            className="h-8 w-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 active:scale-95"
+            title="Navigation Menu"
+            aria-label="Toggle Navigation Menu"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+
+          {/* Logo & Brand Wordmark */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-black border border-white/10 flex items-center justify-center p-1.5 shadow-sm shrink-0">
+              <img src="/assets/logo-new.png" alt="Zenvitra" className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] brand-logo-img" />
+            </div>
+            <span className="text-xs sm:text-sm font-bold tracking-tight text-white font-display hidden md:inline">
+              ZEN<span className="text-cyan-400">.CALL</span>
+            </span>
+          </div>
+
           <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
             <Radio className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
             <span className="hidden sm:inline">{mode}</span>
@@ -685,6 +771,21 @@ export function ZenCallActiveRoom({ roomId }: ZenCallActiveRoomProps) {
       <div className="relative flex-1 flex overflow-hidden">
         {/* VIDEO VIEWPORT */}
         <main className="flex-1 relative flex flex-col p-3 md:p-4 overflow-y-auto">
+          {/* Enterprise SFU Bandwidth & Dais Authority Status Bar */}
+          <div className="mb-3 shrink-0">
+            <SfuBandwidthStatusBar
+              metrics={networkHealth}
+              isChairPriorityActive={isChairPriorityActive}
+              activeSpeakerCount={participants.filter(p => p.isSpeaking).length + (isMicOn && micLevel > 15 ? 1 : 0)}
+              onOptimizeForWeakConnection={() => {
+                setIsCamOn(false);
+                if (mediaStreamRef.current) {
+                  mediaStreamRef.current.getVideoTracks().forEach(t => t.stop());
+                }
+              }}
+            />
+          </div>
+
           {/* SCREEN SHARE PRESENTATION STAGE OR NORMAL CALL LAYOUTS */}
           {isScreenSharing ? (
             /* DEDICATED SCREEN PRESENTATION VIEWPORT (Replaces "You're the only one here") */

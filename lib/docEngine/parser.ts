@@ -1,4 +1,4 @@
-import { DocumentType, DocumentClause, DocumentChapter, ValidationIssue, ClauseSubItem } from '@/types/solutions';
+import { DocumentType, DocumentClause, DocumentChapter, ValidationIssue, ClauseSubItem, DocumentSchedule } from '@/types/solutions';
 
 export interface ParsedDocResult {
   detectedType: DocumentType;
@@ -9,9 +9,13 @@ export interface ParsedDocResult {
   enactingFormula: string;
   chapters: DocumentChapter[];
   clauses: DocumentClause[];
+  schedules?: DocumentSchedule[];
   validationIssues: ValidationIssue[];
   totalClauses: number;
   totalSections: number;
+  totalTables: number;
+  totalCharts: number;
+  totalMetrics: number;
 }
 
 export const DOCUMENT_TYPE_METADATA: Record<DocumentType, { label: string; badge: string; structureName: string; sectionName: string }> = {
@@ -186,66 +190,153 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
   let preamble = '';
   const chapters: DocumentChapter[] = [];
   const clauses: DocumentClause[] = [];
+  const schedules: DocumentSchedule[] = [];
   const validationIssues: ValidationIssue[] = [];
 
   let currentChapterNumber = 'General';
   let currentChapterTitle = 'General Provisions';
   let activeClause: DocumentClause | null = null;
+  let activeSchedule: DocumentSchedule | null = null;
   let activeSubClauses: ClauseSubItem[] = [];
+  let inCodeBlock = false;
 
-  const chapterRegex = /^(?:CHAPTER|PART)\s+([IVXLCDM\d]+)[—:\s-]+(.*)$/i;
+  const chapterRegex = /^(?:CHAPTER|PART)\s+([IVXLCDM\d]+)[—:\s.-]+(.*)$/i;
+  const scheduleRegex = /^(?:THE\s+)?([A-Z0-9IVXLCDM\w\s-]+SCHEDULE|SCHEDULE\s+[A-Z0-9IVXLCDM\w-]+)[—:\s.-]*(.*)$/i;
   const clauseRegex = /^(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:-]+(.*)$/i;
-  const subClauseRegex = /^(\d+\.\d+|\(\w+\)|\[\w+\])\s+(.*)$/i;
+  const subClauseRegex = /^(\(\d+\)|\([a-zA-Z]\)|\([ivxlcdmIVXLCDM]+\)|\[\w+\]|\d+\.\d+)\s*(.*)$/;
   const enactingRegex = /^(?:BE\s+it\s+enacted|WHEREAS|AND\s+WHEREAS|HAVING\s+CONSIDERED|NOTING\s+WITH\s+SATISFACTION)/i;
 
   let bodyStartIndex = titleEndIndex + 1;
 
+  const finalizeClause = (clause: DocumentClause | null, subClauses: ClauseSubItem[]): DocumentClause | null => {
+    if (!clause) return null;
+    if (subClauses.length > 0) {
+      clause.subClauses = [...subClauses];
+    }
+    if (!clause.text && (!clause.subClauses || clause.subClauses.length === 0)) {
+      clause.text = clause.title || `Clause ${clause.clauseNumber}`;
+    }
+    return clause;
+  };
+
   for (let i = bodyStartIndex; i < lines.length; i++) {
     const line = lines[i];
+    const trimmedLine = line.trim();
+    // Clean string without markdown header hashes or asterisks for structural matching
+    const strippedLine = trimmedLine.replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
+
+    // Code block tracking (for charts, graphs, and kpis)
+    if (trimmedLine.startsWith('```')) {
+      inCodeBlock = !inCodeBlock;
+      if (activeSchedule) {
+        activeSchedule.content += `\n${line}`;
+      } else if (activeClause) {
+        activeClause.text += `\n${line}`;
+      }
+      continue;
+    }
+    if (inCodeBlock) {
+      if (activeSchedule) {
+        activeSchedule.content += `\n${line}`;
+      } else if (activeClause) {
+        activeClause.text += `\n${line}`;
+      }
+      continue;
+    }
+
+    // Markdown Table Row preservation
+    if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
+      if (activeSchedule) {
+        activeSchedule.content += `\n${line}`;
+      } else if (activeClause) {
+        activeClause.text += `\n${line}`;
+      }
+      continue;
+    }
 
     // Check for Enacting formula
-    if (enactingRegex.test(line) || line.toLowerCase().includes('be it enacted by parliament')) {
-      enactingFormula = line;
+    if (enactingRegex.test(strippedLine) || strippedLine.toLowerCase().includes('be it enacted by parliament')) {
+      enactingFormula = trimmedLine;
       continue;
     }
 
     // Check for Preamble / Purpose preamble phrases
     if (
-      line.toUpperCase().startsWith('A BILL TO') || 
-      line.toUpperCase().startsWith('AN ACT TO') ||
-      line.toUpperCase().startsWith('A RESOLUTION TO')
+      strippedLine.toUpperCase().startsWith('A BILL TO') || 
+      strippedLine.toUpperCase().startsWith('AN ACT TO') ||
+      strippedLine.toUpperCase().startsWith('A RESOLUTION TO')
     ) {
-      preamble = line;
+      preamble = trimmedLine;
       continue;
     }
 
-    // Check for Chapter / Part header
-    const chapMatch = line.match(chapterRegex);
+    // Check for Schedule header (e.g. "THE FIRST SCHEDULE" or "SCHEDULE I")
+    const schedMatch = strippedLine.match(scheduleRegex);
+    if (schedMatch) {
+      if (activeClause) {
+        const finalized = finalizeClause(activeClause, activeSubClauses);
+        if (finalized) clauses.push(finalized);
+        activeClause = null;
+        activeSubClauses = [];
+      }
+      if (activeSchedule) {
+        schedules.push(activeSchedule);
+      }
+
+      const schedNum = schedMatch[1].trim().toUpperCase();
+      const schedTitle = schedMatch[2]?.trim() || 'Statutory Annexure';
+      activeSchedule = {
+        id: `sched_${schedules.length + 1}_${Date.now()}`,
+        number: schedNum,
+        title: schedTitle,
+        content: '',
+        isMakerSchedule: true
+      };
+      continue;
+    }
+
+    // If currently consuming a Schedule, append text to schedule content
+    if (activeSchedule) {
+      // Check if a new chapter or clause starts while inside schedule
+      const isNewChap = chapterRegex.test(strippedLine);
+      const isNewClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE|\d+\.)/i.test(strippedLine);
+      if (!isNewChap && !isNewClause) {
+        activeSchedule.content = activeSchedule.content ? `${activeSchedule.content}\n${line}` : line;
+        continue;
+      } else {
+        // Close schedule
+        schedules.push(activeSchedule);
+        activeSchedule = null;
+      }
+    }
+
+    // Check for Chapter / Part header (e.g. "# CHAPTER XII" or "CHAPTER I — PRELIMINARY")
+    const chapMatch = strippedLine.match(chapterRegex);
     if (chapMatch) {
       if (activeClause) {
-        if (activeSubClauses.length > 0) {
-          activeClause.subClauses = [...activeSubClauses];
-        }
-        clauses.push(activeClause);
+        const finalized = finalizeClause(activeClause, activeSubClauses);
+        if (finalized) clauses.push(finalized);
         activeClause = null;
         activeSubClauses = [];
       }
 
       currentChapterNumber = `Chapter ${chapMatch[1].toUpperCase()}`;
-      currentChapterTitle = chapMatch[2].trim() || 'General';
+      currentChapterTitle = chapMatch[2]?.trim() || 'General';
+      const isDataChapter = /data|metric|statistics|outlay|budget|empirical|analytical/i.test(currentChapterTitle);
       
       const chapId = `chap_${chapters.length + 1}`;
       chapters.push({
         id: chapId,
         number: currentChapterNumber,
         title: currentChapterTitle,
-        clauseIds: []
+        clauseIds: [],
+        isDataChapter
       });
       continue;
     }
 
-    // Check for Sub-clause (e.g. "6.1 Every institute..." or "(a) 'coaching' means...")
-    const subMatch = line.match(subClauseRegex);
+    // Check for Sub-clause (e.g. "(1) Every public authority..." or "(a) 'coaching' means..." or "6.1")
+    const subMatch = strippedLine.match(subClauseRegex);
     if (subMatch && activeClause) {
       activeSubClauses.push({
         number: subMatch[1],
@@ -254,96 +345,109 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       continue;
     }
 
-    // Check for Main Clause / Section
-    const clauseMatch = line.match(clauseRegex);
-    // Ensure this line actually looks like a clause (digits at start or preceded by 'Clause/Section')
-    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE|\d+\.)/i.test(line);
+    // Check for Main Clause / Section (e.g. "56. Public-service standards" or "Clause 1. Short Title")
+    const clauseMatch = strippedLine.match(clauseRegex);
+    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE|\d+[\.\)])/i.test(strippedLine);
 
     if (clauseMatch && isExplicitClause) {
       if (activeClause) {
-        if (activeSubClauses.length > 0) {
-          activeClause.subClauses = [...activeSubClauses];
-        }
-        clauses.push(activeClause);
+        const finalized = finalizeClause(activeClause, activeSubClauses);
+        if (finalized) clauses.push(finalized);
         activeSubClauses = [];
       }
 
       const num = clauseMatch[1];
-      let clauseTitleAndText = clauseMatch[2].trim();
-      let clauseTitle = `Clause ${num}`;
+      let clauseTitleAndText = clauseMatch[2]?.trim() || '';
+      let clauseTitle = '';
       let clauseText = clauseTitleAndText;
 
       // Extract clause title if separated by dash, period, or em-dash
       // e.g. "Short Title and Commencement. — (1) This Act may..."
       const titleSplit = clauseTitleAndText.split(/[.—–-]\s+/);
       if (titleSplit.length > 1 && titleSplit[0].length < 60) {
-        clauseTitle = titleSplit[0].trim();
+        clauseTitle = titleSplit[0].replace(/^[#\s*—:-]+/, '').replace(/[.—–-]+$/, '').trim();
         clauseText = titleSplit.slice(1).join(' — ').trim();
-      } else if (clauseTitleAndText.length < 50 && i + 1 < lines.length && !clauseRegex.test(lines[i + 1])) {
-        // Line itself might just be the clause title, with text following on next lines
-        clauseTitle = clauseTitleAndText;
-        clauseText = lines[i + 1];
-        i++; // skip next line as it's the body
+      } else if (
+        clauseTitleAndText.length < 60 &&
+        i + 1 < lines.length &&
+        !/^(?:CLAUSE|SECTION|ARTICLE|RULE|\d+[\.\)]|#)/i.test(lines[i + 1].trim()) &&
+        !subClauseRegex.test(lines[i + 1].trim())
+      ) {
+        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[.—–-]+$/, '').trim();
+        clauseText = lines[i + 1].trim();
+        i++;
+      } else if (clauseTitleAndText.length < 60 && !subClauseRegex.test(clauseTitleAndText)) {
+        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[.—–-]+$/, '').trim();
+        clauseText = '';
+      } else {
+        clauseTitle = '';
+        clauseText = clauseTitleAndText;
       }
 
-      // If chapter doesn't exist yet, create a default preliminary chapter
-      if (chapters.length === 0) {
-        chapters.push({
-          id: 'chap_1',
-          number: 'Chapter I',
-          title: 'Preliminary',
-          clauseIds: []
-        });
-        currentChapterNumber = 'Chapter I';
-        currentChapterTitle = 'Preliminary';
+      // Discard duplicate/redundant title (e.g. "Clause 5" or "Section 5")
+      if (
+        clauseTitle.toLowerCase() === `clause ${num.toLowerCase()}` ||
+        clauseTitle.toLowerCase() === `section ${num.toLowerCase()}` ||
+        clauseTitle.toLowerCase() === num.toLowerCase()
+      ) {
+        clauseTitle = '';
+      }
+
+      // Check if clauseText starts with an embedded subclause (e.g. "(1) Every public authority...")
+      if (clauseText) {
+        const subM = clauseText.match(subClauseRegex);
+        if (subM) {
+          activeSubClauses.push({
+            number: subM[1],
+            text: subM[2].trim()
+          });
+          clauseText = '';
+        }
       }
 
       activeClause = {
         id: `clause_${num}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         clauseNumber: num,
-        title: clauseTitle,
+        title: clauseTitle || undefined,
         type: docType === 'DRAFT_RESOLUTION' ? 'OPERATIVE' : docType === 'TREATY_CHARTER' ? 'ARTICLE' : 'SECTION',
-        text: clauseText || clauseTitle,
-        chapterNumber: currentChapterNumber,
-        chapterTitle: currentChapterTitle,
+        text: clauseText,
+        chapterNumber: currentChapterNumber || undefined,
+        chapterTitle: currentChapterTitle || undefined,
         subClauses: []
       };
 
-      // Register with chapter
-      const currentChapObj = chapters[chapters.length - 1];
-      if (currentChapObj && currentChapObj.clauseIds) {
-        currentChapObj.clauseIds.push(activeClause.id!);
+      // Register with chapter if one is active
+      if (chapters.length > 0) {
+        const currentChapObj = chapters[chapters.length - 1];
+        if (currentChapObj && currentChapObj.clauseIds) {
+          currentChapObj.clauseIds.push(activeClause.id!);
+        }
       }
       continue;
     }
 
-    // If text belongs to active clause body
+    // If text belongs to active clause body (append as regular continuous text, NEVER create fake subclauses)
     if (activeClause) {
-      if (activeClause.text && !activeClause.text.endsWith('.')) {
-        activeClause.text += ` ${line}`;
-      } else {
-        // Might be a paragraph sub-clause without explicit numbering
-        activeSubClauses.push({
-          number: `(${String.fromCharCode(97 + activeSubClauses.length)})`,
-          text: line
-        });
-      }
+      activeClause.text = activeClause.text ? `${activeClause.text}\n\n${trimmedLine}` : trimmedLine;
     } else {
       // General introductory text before first clause
       if (!preamble) {
-        preamble = line;
+        preamble = trimmedLine;
       } else {
-        preamble += ` ${line}`;
+        preamble += ` ${trimmedLine}`;
       }
     }
   }
 
+  // Close active schedule if present
+  if (activeSchedule) {
+    schedules.push(activeSchedule);
+  }
+
   // Push the final active clause
   if (activeClause) {
-    if (activeSubClauses.length > 0) {
-      activeClause.subClauses = [...activeSubClauses];
-    }
-    clauses.push(activeClause);
+    const finalized = finalizeClause(activeClause, activeSubClauses);
+    if (finalized) clauses.push(finalized);
   }
 
   // Fallback: If no clauses were recognized via regex, structure text by paragraphs
@@ -461,6 +565,14 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
     }
   });
 
+  chapters.forEach(chap => {
+    chap.clauses = clauses.filter(c => c.chapterNumber === chap.number);
+  });
+
+  const totalTables = (cleanText.match(/\|[\s-]+\|/g) || []).length;
+  const totalCharts = (cleanText.match(/```chart/gi) || []).length;
+  const totalMetrics = (cleanText.match(/```kpi/gi) || []).length;
+
   return {
     detectedType: docType,
     confidence: detection.confidence,
@@ -470,8 +582,149 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
     enactingFormula,
     chapters,
     clauses,
+    schedules,
     validationIssues,
     totalClauses: clauses.length,
-    totalSections: clauses.length + chapters.length
+    totalSections: clauses.length + chapters.length,
+    totalTables,
+    totalCharts,
+    totalMetrics
   };
 }
+
+export interface UnparsedSegment {
+  id: string;
+  originalIndex: number;
+  text: string;
+  suggestedType: 'CLAUSE' | 'PREAMBLE' | 'ANNEXURE' | 'TABLE_DATA' | 'METADATA';
+  detectionReason: string;
+  wordCount: number;
+}
+
+export interface DocumentAnalysisReport {
+  parsedDoc: ParsedDocResult;
+  totalInputLines: number;
+  totalInputWords: number;
+  matchedLinesCount: number;
+  coveragePercent: number;
+  unparsedSegments: UnparsedSegment[];
+  hasLeftoverContent: boolean;
+}
+
+/**
+ * Intelligent Data Analysis Engine:
+ * Converts document into clauses and identifies unparsed paragraphs or orphan sections
+ * so the author can review and decide if anything was left behind.
+ */
+export function analyzeDocumentWithLeftovers(rawText: string): DocumentAnalysisReport {
+  const parsedDoc = parseDocument(rawText);
+  const cleanText = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+
+  // Split into natural logical paragraphs (separated by blank lines or headers)
+  const rawParagraphs = cleanText
+    .split(/\n\s*\n+/)
+    .map(p => p.trim())
+    .filter(p => p.length > 0);
+
+  const totalInputWords = cleanText.split(/\s+/).filter(Boolean).length;
+  const totalInputLines = cleanText.split('\n').length;
+
+  // Build a corpus of all text contained in parsed structures
+  const parsedCorpus: string[] = [
+    parsedDoc.title?.toLowerCase() || '',
+    parsedDoc.preamble?.toLowerCase() || '',
+    parsedDoc.enactingFormula?.toLowerCase() || '',
+    ...parsedDoc.chapters.map(ch => `${ch.number} ${ch.title} ${ch.description || ch.summary || ''}`.toLowerCase()),
+    ...parsedDoc.clauses.map(cl => `${cl.clauseNumber} ${cl.title || ''} ${cl.text} ${(cl.subClauses || cl.subItems)?.map((s: ClauseSubItem) => s.text).join(' ') || ''}`.toLowerCase()),
+  ];
+
+  const unparsedSegments: UnparsedSegment[] = [];
+
+  rawParagraphs.forEach((para, idx) => {
+    // Ignore pure dividers, short metadata stamps, or single symbols
+    if (para.length < 18 || /^[=\-_#*~`\s]+$/.test(para)) return;
+
+    // Check if this paragraph is already incorporated into any parsed clause or header
+    const sampleSnippet = para.slice(0, Math.min(para.length, 50)).toLowerCase();
+    const isAlreadyParsed = parsedCorpus.some(corp => corp.includes(sampleSnippet));
+
+    if (!isAlreadyParsed) {
+      // Determine suggested classification
+      const lower = para.toLowerCase();
+      let suggestedType: UnparsedSegment['suggestedType'] = 'CLAUSE';
+      let detectionReason = 'Unnumbered paragraph or provision';
+
+      if (
+        lower.startsWith('whereas') ||
+        lower.startsWith('affirming') ||
+        lower.startsWith('recalling') ||
+        lower.startsWith('guided by') ||
+        lower.startsWith('deeply concerned') ||
+        lower.startsWith('noting') ||
+        lower.startsWith('bearing in mind')
+      ) {
+        suggestedType = 'PREAMBLE';
+        detectionReason = 'Preambulatory or introductory clause without numerical prefix';
+      } else if (
+        lower.startsWith('urges') ||
+        lower.startsWith('mandates') ||
+        lower.startsWith('resolves') ||
+        lower.startsWith('calls upon') ||
+        lower.startsWith('decides') ||
+        lower.startsWith('requests') ||
+        lower.startsWith('be it enacted') ||
+        lower.includes('shall be responsible') ||
+        lower.includes('punishable with') ||
+        lower.includes('shall ensure that')
+      ) {
+        suggestedType = 'CLAUSE';
+        detectionReason = 'Operative requirement missing standard clause number';
+      } else if (para.includes('|') && para.split('\n').some(l => l.includes('|'))) {
+        suggestedType = 'TABLE_DATA';
+        detectionReason = 'Tabular or matrix data not attached to a clause';
+      } else if (
+        lower.startsWith('schedule') ||
+        lower.startsWith('annexure') ||
+        lower.startsWith('appendix') ||
+        lower.startsWith('exhibit')
+      ) {
+        suggestedType = 'ANNEXURE';
+        detectionReason = 'Statutory appendix, schedule, or reference document';
+      } else if (
+        lower.includes('confidential') ||
+        lower.includes('all rights reserved') ||
+        lower.includes('drafted on') ||
+        lower.includes('page ')
+      ) {
+        suggestedType = 'METADATA';
+        detectionReason = 'Disclaimers, page numbering, or publication metadata';
+      }
+
+      unparsedSegments.push({
+        id: `unparsed_${idx}_${Date.now()}`,
+        originalIndex: idx,
+        text: para,
+        suggestedType,
+        detectionReason,
+        wordCount: para.split(/\s+/).filter(Boolean).length
+      });
+    }
+  });
+
+  const unparsedWords = unparsedSegments.reduce((acc, s) => acc + s.wordCount, 0);
+  const matchedWords = Math.max(0, totalInputWords - unparsedWords);
+  const coveragePercent = totalInputWords > 0 
+    ? Math.min(100, Math.max(10, Math.round((matchedWords / totalInputWords) * 100))) 
+    : 100;
+
+  return {
+    parsedDoc,
+    totalInputLines,
+    totalInputWords,
+    matchedLinesCount: totalInputLines - unparsedSegments.length,
+    coveragePercent,
+    unparsedSegments,
+    hasLeftoverContent: unparsedSegments.length > 0
+  };
+}
+

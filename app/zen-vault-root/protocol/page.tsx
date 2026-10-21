@@ -74,7 +74,7 @@ export default function ProtocolMatrixPage() {
     const updated = { ...controls, maintenanceMode: !controls.maintenanceMode };
     setControls(updated);
     saveProtocolControls(updated);
-    setFeedback(`🚨 PROTOCOL OMEGA ${updated.maintenanceMode ? 'ENGAGED &bull; PLATFORM IN LOCKDOWN' : 'DISENGAGED &bull; PLATFORM ONLINE'}`);
+    setFeedback(`🚨 SYSTEM MAINTENANCE ${updated.maintenanceMode ? 'ENGAGED • PLATFORM IN LOCKDOWN' : 'DISENGAGED • PLATFORM ONLINE'}`);
     setTimeout(() => setFeedback(null), 4000);
   };
 
@@ -90,11 +90,11 @@ export default function ProtocolMatrixPage() {
             LEVEL 0 FOUNDER SOVEREIGN CLEARANCE REQUIRED
           </span>
           <h2 className="text-2xl font-bold text-white uppercase tracking-wide">
-            Protocol Omega &amp; Killswitches Restricted
+            System Maintenance &amp; Killswitches Restricted
           </h2>
         </div>
         <p className="text-xs text-neutral-400 max-w-md mx-auto font-sans leading-relaxed">
-          Staff Administrators have operational permissions across users, content, and logs. Protocol Omega (Platform Maintenance Lockout) and core cryptographic killswitches can only be operated by Founder @yuveer.
+          Staff Administrators have operational permissions across users, content, and logs. System Maintenance (Platform Maintenance Lockout) and core cryptographic killswitches can only be operated by Founder @yuveer.
         </p>
         <Link
           href="/zen-vault-root"
@@ -115,7 +115,7 @@ export default function ProtocolMatrixPage() {
             <span>EXECUTIVE CITADEL MATRIX // FOUNDER LEVEL 0</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white uppercase tracking-wide">
-            Protocol Omega &amp; Citadel Controls
+            System Maintenance &amp; Citadel Controls
           </h1>
           <p className="text-xs text-neutral-400">
             Real-time platform emergency lockouts, network killswitches, and zero-trust protocol toggles.
@@ -136,7 +136,7 @@ export default function ProtocolMatrixPage() {
         </div>
       )}
 
-      {/* Protocol Omega Hero Lockout Banner */}
+      {/* System Maintenance Hero Lockout Banner */}
       <div className={`p-6 sm:p-8 rounded-3xl border transition shadow-2xl space-y-5 ${
         controls.maintenanceMode
           ? 'bg-gradient-to-r from-rose-950/80 via-black to-red-950/80 border-rose-500 shadow-[0_0_50px_rgba(244,63,94,0.3)] animate-pulse'
@@ -147,7 +147,7 @@ export default function ProtocolMatrixPage() {
             <div className="flex items-center gap-2">
               <span className={`w-3 h-3 rounded-full ${controls.maintenanceMode ? 'bg-rose-500 animate-ping' : 'bg-emerald-400'}`} />
               <span className="text-xs font-bold uppercase tracking-wider text-white">
-                🚨 PROTOCOL OMEGA &bull; CITADEL MAINTENANCE LOCKOUT
+                🚨 SYSTEM MAINTENANCE • TEMPORARY PLATFORM LOCKOUT
               </span>
             </div>
             <p className="text-xs text-neutral-300 max-w-xl font-sans leading-relaxed">
@@ -165,7 +165,7 @@ export default function ProtocolMatrixPage() {
             }`}
           >
             <Power className="w-4 h-4" />
-            <span>{controls.maintenanceMode ? 'DISENGAGE PROTOCOL OMEGA' : 'ENGAGE PROTOCOL OMEGA'}</span>
+            <span>{controls.maintenanceMode ? 'DISENGAGE SYSTEM MAINTENANCE' : 'ENGAGE SYSTEM MAINTENANCE'}</span>
           </button>
         </div>
       </div>

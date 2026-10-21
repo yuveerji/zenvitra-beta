@@ -83,7 +83,7 @@ export function RollCallRadar({ post, onOpenRedlineStudio }: RollCallRadarProps)
                 {post.treatyTitle || 'Sovereign Diplomatic Treaty'}
               </span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/10 text-cyan-300 border border-white/10">
-                {post.treatyVersion || 'v1.0'}
+                {post.treatyVersion || 'V1'}
               </span>
             </div>
             <p className="text-[11px] text-zinc-400 font-medium">
@@ -258,7 +258,7 @@ export function RollCallRadar({ post, onOpenRedlineStudio }: RollCallRadarProps)
 
             <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2 text-xs">
               <p className="text-neutral-300">
-                You are depositing your digital co-signature for <strong>{post.treatyTitle}</strong> ({post.treatyVersion || 'v1.0'}).
+                You are depositing your digital co-signature for <strong>{post.treatyTitle}</strong> ({post.treatyVersion || 'V1'}).
               </p>
               <p className="font-mono text-[11px] text-cyan-400">
                 Node ID: @{currentUserUsername} • Clearance Level {myProfile.civicClearance?.level || 3} ({myProfile.civicClearance?.title || 'Delegate'})

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { 
   Radio, 
   Film, 
@@ -9,7 +10,8 @@ import {
   PlusCircle, 
   Video, 
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Newspaper
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { PulseView } from '@/types/pulse';
@@ -18,10 +20,10 @@ export function PulseNavBar() {
   const { activeView, setActiveView, openUserProfile, currentUserUsername } = useZenPulse();
 
   const navItems: { view: PulseView; label: string; icon: React.ElementType; badge?: string }[] = [
-    { view: 'feed', label: 'Feed & Stories', icon: Radio },
-    { view: 'flux', label: 'SPARK Shorts', icon: Sparkles, badge: 'REELS' },
-    { view: 'discover', label: 'Discover Youth', icon: Users },
-    { view: 'profile', label: 'My Profile', icon: User },
+    { view: 'feed', label: 'ZEN.FLUX', icon: Radio },
+    { view: 'flux', label: 'FLUX Reels', icon: Film, badge: 'MEDIA' },
+    { view: 'discover', label: 'ZEN.CIRCLES', icon: Users },
+    { view: 'profile', label: 'ZEN.PROFILE', icon: User },
   ];
 
   return (
@@ -42,7 +44,7 @@ export function PulseNavBar() {
                   setActiveView(item.view);
                 }
               }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-sans text-xs font-semibold tracking-normal transition-all duration-200 cursor-pointer whitespace-nowrap ${
                 isActive
                   ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30'
                   : 'text-neutral-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
@@ -51,7 +53,7 @@ export function PulseNavBar() {
               <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-400' : 'text-neutral-400'}`} />
               <span>{item.label}</span>
               {item.badge && (
-                <span className="text-[8px] font-mono px-1.5 py-0.5 rounded-md bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold tracking-wider">
+                <span className="text-[8px] font-sans px-1.5 py-0.5 rounded-md bg-gradient-to-r from-rose-500 to-amber-500 text-white font-bold tracking-wider">
                   {item.badge}
                 </span>
               )}
@@ -61,10 +63,19 @@ export function PulseNavBar() {
       </div>
 
       {/* Creation Actions */}
-      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+        <Link
+          href="/news/submit"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl font-sans text-xs font-bold transition-all cursor-pointer bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/25"
+          title="Submit News & Wire Dispatch"
+        >
+          <Newspaper className="w-3.5 h-3.5 text-rose-400" />
+          <span>+ Wire News</span>
+        </Link>
+
         <a
           href="/pulse/create-story"
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer bg-gradient-to-r from-amber-400/15 via-rose-500/15 to-fuchsia-600/15 hover:from-amber-400/25 hover:via-rose-500/25 hover:to-fuchsia-600/25 text-rose-300 border border-rose-500/30"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl font-sans text-xs font-bold transition-all cursor-pointer bg-gradient-to-r from-amber-400/15 via-rose-500/15 to-fuchsia-600/15 hover:from-amber-400/25 hover:via-rose-500/25 hover:to-fuchsia-600/25 text-rose-300 border border-rose-500/30"
         >
           <Radio className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
           <span>+ Add Relay</span>
@@ -72,26 +83,26 @@ export function PulseNavBar() {
 
         <button
           onClick={() => setActiveView('create-flux')}
-          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl font-sans text-xs font-bold transition-all cursor-pointer ${
             activeView === 'create-flux'
               ? 'bg-rose-500 text-white border border-rose-400'
               : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>+ SPARK</span>
+          <span>+ FLUX</span>
         </button>
 
         <button
           onClick={() => setActiveView('compose')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl font-mono text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl font-sans text-xs font-bold transition-all cursor-pointer ${
             activeView === 'compose'
               ? 'bg-neutral-200 text-black'
               : 'bg-white text-black hover:bg-neutral-200'
           }`}
         >
           <PlusCircle className="w-3.5 h-3.5" />
-          <span>+ Post</span>
+          <span>+ Dispatch</span>
         </button>
       </div>
     </div>

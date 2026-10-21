@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import {
   FileText,
   Star,
@@ -52,10 +53,12 @@ import {
   Indent,
   Outdent,
   X,
-  Plus
+  Plus,
+  Menu
 } from 'lucide-react';
 import { ZenDocument } from '@/types/docs';
 import { ExportFormat } from '@/lib/exportDocument';
+import { FONT_OPTIONS } from './fontOptions';
 
 export interface ZenDocsToolbarProps {
   activeDoc: ZenDocument;
@@ -114,15 +117,6 @@ export interface ZenDocsToolbarProps {
   onClearFormatting?: () => void;
 }
 
-const FONT_OPTIONS = [
-  { name: 'Inter (Sans)', value: 'var(--font-inter), sans-serif' },
-  { name: 'Playfair Display (Serif)', value: 'var(--font-playfair), Georgia, serif' },
-  { name: 'JetBrains Mono (Code)', value: 'var(--font-jetbrains-mono), monospace' },
-  { name: 'Cinzel (Classical)', value: 'Cinzel, Georgia, serif' },
-  { name: 'Outfit (Modern)', value: 'Outfit, sans-serif' },
-  { name: 'Merriweather (Editorial)', value: 'Merriweather, serif' },
-  { name: 'Plus Jakarta Sans', value: '"Plus Jakarta Sans", sans-serif' },
-];
 
 const STYLE_OPTIONS: { label: string; value: 'p' | 'title' | 'subtitle' | 'h1' | 'h2' | 'h3' | 'code'; desc: string }[] = [
   { label: 'Normal text', value: 'p', desc: 'Body typography' },
@@ -212,6 +206,7 @@ export function ZenDocsToolbar({
   const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
   const [isStyleMenuOpen, setIsStyleMenuOpen] = useState(false);
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false);
+  const [fontSearch, setFontSearch] = useState('');
   const [isTextColorOpen, setIsTextColorOpen] = useState(false);
   const [isHighlightOpen, setIsHighlightOpen] = useState(false);
   const [isTablePickerOpen, setIsTablePickerOpen] = useState(false);
@@ -225,21 +220,38 @@ export function ZenDocsToolbar({
 
   const imageFileInputRef = useRef<HTMLInputElement>(null);
   const fileMenuRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
-  // Close menus on outside click
+  const closeAllMenusExcept = (menu?: 'file' | 'style' | 'font' | 'color' | 'highlight' | 'table' | 'spacing') => {
+    if (menu !== 'file') setIsFileMenuOpen(false);
+    if (menu !== 'style') setIsStyleMenuOpen(false);
+    if (menu !== 'font') {
+      setIsFontMenuOpen(false);
+      setFontSearch('');
+    }
+    if (menu !== 'color') setIsTextColorOpen(false);
+    if (menu !== 'highlight') setIsHighlightOpen(false);
+    if (menu !== 'table') setIsTablePickerOpen(false);
+    if (menu !== 'spacing') setIsLineSpacingOpen(false);
+  };
+
+  // Close menus on outside click anywhere on document
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (fileMenuRef.current && !fileMenuRef.current.contains(e.target as Node)) {
-        setIsFileMenuOpen(false);
+      if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
+        closeAllMenusExcept();
       }
     }
-    if (isFileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isFileMenuOpen]);
+  }, []);
+
+  const filteredFonts = FONT_OPTIONS.filter((f) =>
+    f.name.toLowerCase().includes(fontSearch.toLowerCase()) ||
+    f.category.toLowerCase().includes(fontSearch.toLowerCase())
+  );
 
   const handleLinkSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,11 +276,33 @@ export function ZenDocsToolbar({
   };
 
   return (
-    <div className="sticky top-2 z-30 bg-[#0b0e17]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-2xl print:hidden flex flex-col divide-y divide-white/[0.06]">
+    <div ref={toolbarRef} className="sticky top-2 z-30 bg-[#0b0e17]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-2xl print:hidden flex flex-col divide-y divide-white/[0.06]">
       {/* ROW 1: System bar (Dashboard, File Menu, Doc Title, Actions) */}
       <div className="flex items-center justify-between gap-2 px-3 py-2">
-        {/* Left: Dashboard + Library + File + Title */}
+        {/* Left: Menu Toggle + Logo + Dashboard + Library + File + Title */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Main Navigation Menu Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+            }}
+            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white transition cursor-pointer shrink-0 active:scale-95"
+            title="Navigation Menu"
+            aria-label="Toggle Navigation Menu"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+
+          {/* Logo */}
+          <Link
+            href="/pulse"
+            title="Zenvitra"
+            className="w-9 h-9 rounded-xl bg-black border border-white/10 flex items-center justify-center p-1.5 shrink-0 hover:scale-105 transition-all shadow-sm"
+          >
+            <img src="/assets/logo-new.png" alt="Zenvitra" className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] brand-logo-img" />
+          </Link>
+
           {/* Dashboard Switcher */}
           <button
             type="button"
@@ -545,11 +579,12 @@ export function ZenDocsToolbar({
       </div>
 
       {/* ROW 2: WORD & GOOGLE DOCS HIGH-TECH FORMATTING RIBBON */}
-      <div className="flex items-center gap-1 px-2.5 py-1.5 overflow-x-auto text-xs font-sans select-none scrollbar-none">
+      <div className="relative flex flex-wrap items-center gap-1 px-2.5 py-1.5 text-xs font-sans select-none overflow-visible">
         {/* Undo / Redo */}
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onUndo}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Undo (Ctrl+Z)"
@@ -558,6 +593,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onRedo}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Redo (Ctrl+Y)"
@@ -572,7 +608,11 @@ export function ZenDocsToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            onClick={() => setIsStyleMenuOpen(!isStyleMenuOpen)}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              closeAllMenusExcept('style');
+              setIsStyleMenuOpen(!isStyleMenuOpen);
+            }}
             className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 hover:text-white text-xs font-medium flex items-center gap-1.5 transition"
             title="Paragraph Styles"
           >
@@ -586,6 +626,7 @@ export function ZenDocsToolbar({
                 <button
                   key={style.value}
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     onApplyStyle?.(style.value);
                     setIsStyleMenuOpen(false);
@@ -604,33 +645,80 @@ export function ZenDocsToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            onClick={() => setIsFontMenuOpen(!isFontMenuOpen)}
-            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 hover:text-white text-xs font-medium flex items-center gap-1.5 transition max-w-[130px] truncate"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              closeAllMenusExcept('font');
+              setIsFontMenuOpen(!isFontMenuOpen);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 hover:text-white text-xs font-medium flex items-center gap-1.5 transition max-w-[170px] truncate"
             title="Font Family"
           >
             <span className="truncate">
-              {FONT_OPTIONS.find((f) => f.value === fontFamily)?.name.split(' ')[0] || 'Inter'}
+              {FONT_OPTIONS.find((f) => f.value === fontFamily || f.name === fontFamily)?.name || fontFamily || 'Times New Roman'}
             </span>
             <ChevronDown className="w-3 h-3 text-neutral-400 shrink-0" />
           </button>
 
           {isFontMenuOpen && (
-            <div className="absolute left-0 top-full mt-1.5 w-52 rounded-xl bg-[#0e121e] border border-white/15 shadow-2xl p-1 z-50 space-y-1">
-              {FONT_OPTIONS.map((font) => (
-                <button
-                  key={font.value}
-                  type="button"
-                  onClick={() => {
-                    onFontFamilyChange?.(font.value);
-                    setIsFontMenuOpen(false);
-                  }}
-                  className="w-full px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-left text-xs text-neutral-200 hover:text-white transition flex items-center justify-between"
-                  style={{ fontFamily: font.value }}
-                >
-                  <span>{font.name}</span>
-                  {fontFamily === font.value && <Check className="w-3 h-3 text-cyan-400" />}
-                </button>
-              ))}
+            <div className="absolute left-0 top-full mt-1.5 w-64 rounded-xl bg-[#0e121e] border border-white/15 shadow-2xl p-1.5 z-50 space-y-1 text-left">
+              <div className="p-1 border-b border-white/10">
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-black/60 border border-white/15 rounded-lg text-xs">
+                  <Search className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <input
+                    type="text"
+                    value={fontSearch}
+                    onChange={(e) => setFontSearch(e.target.value)}
+                    placeholder="Search fonts..."
+                    className="bg-transparent text-white text-xs placeholder:text-neutral-500 outline-none w-full font-sans"
+                    autoFocus
+                  />
+                  {fontSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setFontSearch('')}
+                      className="text-neutral-400 hover:text-white text-xs px-1"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="max-h-64 overflow-y-auto space-y-0.5 p-1 no-scrollbar">
+                {filteredFonts.map((font) => (
+                  <button
+                    key={font.value}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      onFontFamilyChange?.(font.value);
+                      setIsFontMenuOpen(false);
+                      setFontSearch('');
+                    }}
+                    className={`w-full px-2.5 py-1.5 rounded-lg text-left transition flex items-center justify-between group ${
+                      fontFamily === font.value || fontFamily === font.name
+                        ? 'bg-cyan-500/20 text-cyan-200 font-bold'
+                        : 'hover:bg-white/10 text-neutral-200 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex flex-col min-w-0 pr-2">
+                      <span className="text-xs truncate font-medium" style={{ fontFamily: font.value }}>
+                        {font.name}
+                      </span>
+                      <span className="text-[9px] text-neutral-500 font-mono tracking-wider uppercase">
+                        {font.category}
+                      </span>
+                    </div>
+                    {(fontFamily === font.value || fontFamily === font.name) && (
+                      <Check className="w-3 h-3 text-cyan-400 shrink-0" />
+                    )}
+                  </button>
+                ))}
+                {filteredFonts.length === 0 && (
+                  <div className="p-3 text-center text-xs text-neutral-500 font-mono">
+                    No fonts found
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -639,6 +727,7 @@ export function ZenDocsToolbar({
         <div className="flex items-center bg-white/5 border border-white/10 rounded-lg px-1 py-0.5 shrink-0">
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onFontSizeChange?.(Math.max(8, fontSize - 1))}
             className="px-1.5 py-0.5 rounded hover:bg-white/10 text-neutral-300 hover:text-white font-bold"
             title="Decrease font size"
@@ -650,6 +739,7 @@ export function ZenDocsToolbar({
           </span>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onFontSizeChange?.(Math.min(72, fontSize + 1))}
             className="px-1.5 py-0.5 rounded hover:bg-white/10 text-neutral-300 hover:text-white font-bold"
             title="Increase font size"
@@ -664,6 +754,7 @@ export function ZenDocsToolbar({
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onBold}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Bold (Ctrl+B)"
@@ -672,6 +763,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onItalic}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Italic (Ctrl+I)"
@@ -680,6 +772,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onUnderline}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Underline (Ctrl+U)"
@@ -688,6 +781,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onStrikethrough}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Strikethrough"
@@ -700,7 +794,11 @@ export function ZenDocsToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            onClick={() => setIsTextColorOpen(!isTextColorOpen)}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              closeAllMenusExcept('color');
+              setIsTextColorOpen(!isTextColorOpen);
+            }}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-0.5"
             title="Text Color"
           >
@@ -714,6 +812,7 @@ export function ZenDocsToolbar({
                 <button
                   key={swatch.color}
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     onTextColor?.(swatch.color);
                     setIsTextColorOpen(false);
@@ -731,7 +830,11 @@ export function ZenDocsToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            onClick={() => setIsHighlightOpen(!isHighlightOpen)}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              closeAllMenusExcept('highlight');
+              setIsHighlightOpen(!isHighlightOpen);
+            }}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-0.5"
             title="Highlight Color"
           >
@@ -745,6 +848,7 @@ export function ZenDocsToolbar({
                 <button
                   key={swatch.label}
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     onHighlight?.(swatch.color);
                     setIsHighlightOpen(false);
@@ -767,6 +871,7 @@ export function ZenDocsToolbar({
           {/* Insert Link */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setIsLinkModalOpen(true)}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Insert Link (Ctrl+K)"
@@ -784,6 +889,7 @@ export function ZenDocsToolbar({
           />
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => imageFileInputRef.current?.click()}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition cursor-pointer"
             title="Upload Image"
@@ -792,10 +898,14 @@ export function ZenDocsToolbar({
           </button>
 
           {/* Insert Table Picker */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               type="button"
-              onClick={() => setIsTablePickerOpen(!isTablePickerOpen)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                closeAllMenusExcept('table');
+                setIsTablePickerOpen(!isTablePickerOpen);
+              }}
               className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-0.5"
               title="Insert Table"
             >
@@ -816,6 +926,7 @@ export function ZenDocsToolbar({
                         <div
                           key={`${row}-${col}`}
                           onMouseEnter={() => setTableHover({ r: row, c: col })}
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
                             onInsertTable?.(row, col);
                             setIsTablePickerOpen(false);
@@ -837,6 +948,7 @@ export function ZenDocsToolbar({
           {/* Insert Checklist */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onInsertChecklist}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Insert Checklist Task"
@@ -847,6 +959,7 @@ export function ZenDocsToolbar({
           {/* Insert Glowing Divider (---) */}
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onInsertDivider}
             className="px-2 py-1 rounded-lg hover:bg-white/10 text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1 font-mono text-[11px] font-bold"
             title="Insert High-Tech Glowing Divider (or type ---)"
@@ -862,6 +975,7 @@ export function ZenDocsToolbar({
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onAlignment('left')}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Align Left"
@@ -870,6 +984,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onAlignment('center')}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Align Center"
@@ -878,6 +993,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onAlignment('right')}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Align Right"
@@ -886,6 +1002,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onAlignment('justify')}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Justify"
@@ -898,7 +1015,11 @@ export function ZenDocsToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            onClick={() => setIsLineSpacingOpen(!isLineSpacingOpen)}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              closeAllMenusExcept('spacing');
+              setIsLineSpacingOpen(!isLineSpacingOpen);
+            }}
             className="px-2 py-1 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition flex items-center gap-1 text-[11px] font-mono"
             title="Line Spacing"
           >
@@ -912,6 +1033,7 @@ export function ZenDocsToolbar({
                 <button
                   key={sp}
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     onLineSpacingChange?.(sp);
                     setIsLineSpacingOpen(false);
@@ -930,6 +1052,7 @@ export function ZenDocsToolbar({
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onBulletList}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Bullet List"
@@ -938,6 +1061,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onNumberedList}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Numbered List"
@@ -946,6 +1070,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onOutdent}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Decrease Indent"
@@ -954,6 +1079,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onIndent}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Increase Indent"
@@ -962,6 +1088,7 @@ export function ZenDocsToolbar({
           </button>
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={onClearFormatting}
             className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-300 hover:text-white transition"
             title="Clear Formatting"

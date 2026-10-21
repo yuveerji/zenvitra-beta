@@ -424,7 +424,7 @@ export const EventAccessSharingModal: React.FC<EventAccessSharingModalProps> = (
 
           {/* Footer */}
           <div className="border-t border-white/10 pt-4 flex items-center justify-between text-xs text-neutral-500 font-mono">
-            <span>ZENVITRA Sovereignty Protocol v2.6</span>
+            <span>ZENVITRA Sovereignty Protocol V1</span>
             <button
               type="button"
               onClick={onClose}

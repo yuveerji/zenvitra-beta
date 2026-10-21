@@ -44,8 +44,8 @@ export const TRANSLATIONS = {
     },
     why: {
       tagline: 'WHY ZENVITRA?',
-      title1: "We're building more than a platform.",
-      title2: "We're building a movement.",
+      title1: "We're Building More Than A Platform.",
+      title2: "We're Building A Movement.",
       p1Title: 'For Youth',
       p1Desc: 'A space for young people to voice their ideas, represent their communities, and lead with purpose.',
       p2Title: 'By Youth',
@@ -55,7 +55,7 @@ export const TRANSLATIONS = {
     },
     ecosystem: {
       tagline: "WHAT WE'RE BUILDING",
-      title: 'An ecosystem. Endless possibilities.',
+      title: 'An Ecosystem. Endless Possibilities.',
       community: 'Community',
       communityDesc: 'Connect with ambitious youth across the country.',
       forum: 'Youth Forum',
@@ -70,7 +70,7 @@ export const TRANSLATIONS = {
       impactDesc: 'Create measurable impact in communities.',
     },
     waitlistCTA: {
-      title: 'Be Part of the Beginning',
+      title: 'Be Part of The Beginning',
       desc: 'Join our waitlist and get early access, exclusive updates, and opportunities before anyone else.',
       badge1: 'Early Access',
       badge2: 'Exclusive Updates',

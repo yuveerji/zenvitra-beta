@@ -143,7 +143,7 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
         howToUseProperly: {
           title: '6-MONTH DISTRIBUTION AUDIT PROTOCOL',
           steps: [
-            'Nominate Beneficiaries: Submit rural schools, youth centers, or student delegates in need of kits or conference sponsorship via /donate/govt-schools.',
+            'Nominate Beneficiaries: Submit rural schools, youth centers, or student delegates in need of kits or conference sponsorship via /impact.',
             'Field Verification: Local ambassadors verify infrastructural readiness and student rolls.',
             'Watch Offline Giveaway on ZEN.FLUX & Socials: Watch the live proof-of-work video dispatches showing the physical supplies being handed over every 6 months.',
             'Audit Ledger Receipts: Download itemized vendor invoices and ledger reconciliations directly from the public audit portal.'
@@ -216,58 +216,85 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
   {
     id: 'article-4',
     articleNumber: 'ARTICLE IV',
-    title: 'THE ASSEMBLY OS (ZEN.EVENTS) & RULES OF PROCEDURE',
+    title: 'THE ASSEMBLY OS (ZEN.EVENTS & ZEN.MUN) & RULES OF PROCEDURE',
     badge: 'PARLIAMENTARY RULES',
     badgeColor: 'text-amber-300 bg-amber-500/10 border-amber-500/30',
-    summary: 'Codifies the parliamentary rules of procedure for Model UNs, youth summits, roll-call voting, caucus debate, points of order, and the 60-second guillotine relay.',
+    summary: 'Codifies the complete conference operating system, Secretariat command structure, parliamentary rules of procedure for Model UNs and parliamentary chambers, Dais mechanics, acoustic gavel standards, formal yields, diplomatic chits, and emergency protocol broadcasts.',
     sections: [
       {
         sectionNumber: 'Section 4.01',
-        heading: 'Universal Floor Standing & Democratic Access',
-        operationalTag: 'DEMOCRATIC RIGHT',
+        heading: 'Universal Floor Standing & Secretariat Command Hierarchy',
+        operationalTag: 'CONFERENCE ARCHITECTURE',
         content: [
           'Every registered delegate, regardless of high school or university prestige, economic tier, or regional background, holds equal constitutional standing in the Zenvitra Assembly OS.',
+          'Conference governance is operated through a transparent, role-partitioned Secretariat command hierarchy: Secretary-General (Conference Owner & Supreme Policy), Director-General (Operations & Logistics), USG/Department Heads (Departmental Deliverables), Committee Directors/EB (Committee Floor, Roll Calls, Speakers & Decorum), Rapporteurs (Documentation & Minutes), Finance (Registration Reconciliation & Approved Refunds), Press (Media Dispatches), and IT (Technical Diagnostic Troubleshooting).',
           'Gatekeeping by established delegations, favoritism by dais chairs, or backroom collusion to exclude smaller delegations is unparliamentary and subject to immediate review by the Secretariat.'
-        ]
+        ],
+        callout: 'Sovereign Floor Equality: Every delegate is equal before the Dais; no prestige bias, no gatekeeping, no arbitrary silencing.'
       },
       {
         sectionNumber: 'Section 4.02',
         heading: 'Parliamentary Rules of Procedure (Assembly OS)',
         operationalTag: 'RULES OF PROCEDURE',
         content: [
-          'All official Model UN simulations and youth assemblies governed by Zenvitra must operate under the standardized Assembly OS rules:',
+          'All official Model UN simulations and youth assemblies governed by Zenvitra must operate under standardized Assembly OS rules:',
           '1. Roll-Call Attendance: Delegates must declare "Present" or "Present and Voting". Delegates who declare "Present and Voting" forfeit the right to abstain on substantive resolution votes.',
-          '2. General Speaker\'s List (GSL): Governs formal debate. Speaking time is fixed by a majority procedural motion (typically 60 to 90 seconds).',
-          '3. Moderated Caucus: Time-boxed debate on a specific sub-topic (e.g., "15 minutes, 45 seconds individual speaking time on Renewable Technology Transfer").',
+          '2. General Speaker\'s List (GSL): Governs formal general debate. Default speaking time is fixed by a majority procedural motion (typically 60 to 90 seconds).',
+          '3. Moderated Caucus: Time-boxed debate on a specific sub-topic (e.g., "15 minutes, 45 seconds individual speaking time on Cross-Border Critical Mineral Supply Chains"). Dais maintains synchronized dual-timers tracking total caucus countdown and active speaker clock.',
           '4. Unmoderated Caucus: Informal lobbying session where delegates move freely to negotiate working papers and draft resolution blocs.',
-          '5. Points & Motions Priority Hierarchy: Point of Order (procedural infraction) > Point of Personal Privilege (audibility/comfort) > Point of Parliamentary Inquiry (rules query) > Motions to Caucus.'
+          '5. Points & Motions Priority Hierarchy: Point of Order (procedural infraction) > Point of Personal Privilege (audibility/comfort) > Point of Parliamentary Inquiry (rules query) > Right of Reply (grave personal/national insult) > Procedural Motions to Caucus > Substantive Treaty Motions.'
         ]
       },
       {
         sectionNumber: 'Section 4.03',
-        heading: 'The 60-Second Guillotine Speech Relay & Speaker Queue',
+        heading: 'Speech Timers, Acoustic Gavel Standards & Yield Protocols',
         operationalTag: 'SPEECH REGULATION',
         content: [
-          'To eliminate grandstanding, repetitive filibusters, and elitist domination, plenary floor relays operate under the 60-Second Guillotine Standard.',
-          'Floor microphones are strictly regulated by the Assembly OS timer. At 00:00, the audio feed automatically cuts off with zero administrative override. Delegates must yield their remaining time: (a) to the Chair, (b) to Points of Information, or (c) to another accredited delegate.'
+          'Floor microphones and speaking turns are strictly governed by the Assembly OS timer and acoustic gavel protocols. When a recognized speaker concludes with time remaining on the clock, the delegate must yield the floor under one of four constitutional modalities:',
+          '1. Yield to the Chair: Returns the remaining time back to the Dais, concluding the speech immediately with a formal gavel wrap.',
+          '2. Yield to Another Delegate: Concedes remaining seconds to a recognized allied delegation, who must speak without further yields.',
+          '3. Yield to Questions (Points of Information): Yields the floor to questions from fellow delegates, with the Chair allocating 30-second response intervals.',
+          '4. Yield to Comments: Allows the Chair to recognize two (2) delegates from the floor to deliver 30-second comments on the speech.',
+          'At 00:00, the digital speech clock expires, triggering an authoritative double gavel wrap. Delegates exceeding allocated time after the gavel strike are ruled dilatory.'
         ],
-        callout: 'The Guillotine Rule: 60 seconds forces clarity of intellect. If you cannot articulate your policy thesis in one minute, you do not understand it.'
+        callout: 'The Guillotine Rule: Clear thinking requires disciplined brevity. Respect the gavel; when your time expires, yield with honor.'
       },
       {
         sectionNumber: 'Section 4.04',
-        heading: 'Operational Protocol: How to Operate as an Effective Delegate',
+        heading: 'Substantive Resolution Voting, Quorum & UNSC P5 Veto Invariants',
+        operationalTag: 'VOTING MECHANICS',
+        content: [
+          'No substantive resolution or treaty draft may be voted upon without verified Quorum (minimum one-third of total accredited delegations present in the chamber).',
+          'Procedural motions require a Simple Majority (>50%) of all present delegates, with no abstentions permitted.',
+          'Substantive draft resolutions and formal amendments require a Two-Thirds (2/3) Supermajority (>66.7%) of present and voting delegates for adoption.',
+          'In United Nations Security Council (UNSC) chambers, adoption of substantive draft resolutions requires nine (9) affirmative votes and the concurring votes of the Permanent Five (P5) members (China, France, Russian Federation, United Kingdom, United States). A negative vote ("No") cast by any P5 member on a substantive resolution constitutes a constitutional Veto, immediately defeating the draft.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 4.05',
+        heading: 'Digital Diplomatic Chits & Emergency Protocol Broadcasts',
+        operationalTag: 'DIPLOMATIC COMMUNICATIONS',
+        content: [
+          'Chamber communication is facilitated through the Assembly OS Digital Chit Mesh, allowing delegations to pass confidential diplomatic dispatches to fellow states or send procedural notes to the Dais.',
+          'All digital chits are cryptographically logged in the chamber audit ledger to enable the Dais to prevent harassment and unparliamentary conduct. Chits are never scanned for commercial data mining.',
+          'The Secretariat retains the exclusive authority to trigger Emergency Protocol Broadcasts across all active committee rooms for genuine logistical, safety, or conference-wide schedule emergencies. Amber Operational Alerts notify participants of urgent operational updates; Red Emergency Broadcasts halt committee proceedings immediately for critical safety directives.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 4.06',
+        heading: 'Operational Protocol: How to Operate as an Effective Delegate & Dais',
         operationalTag: 'OPERATOR MANUAL',
         content: [
-          'Step-by-step delegate execution inside live committee sessions:'
+          'Step-by-step execution inside live conference chambers:'
         ],
         howToUseProperly: {
-          title: 'DELEGATE OPERATIONAL PLAYBOOK',
+          title: 'DELEGATE & DAIS MASTER PLAYBOOK',
           steps: [
-            'Joining the Floor: Access /events and enter your designated Committee Chamber. Verify your assigned country/portfolio credential on the screen.',
-            'Setting the Agenda: Move a procedural motion: "The Delegation of [Nation] moves to set the agenda to Topic A, with a 60-second speaking time."',
-            'Requesting the Floor: Tap [Request to Speak]. The Assembly OS queues your delegate avatar in real-time. When recognized, deliver your speech before the 60s timer expires.',
-            'Raising a Point of Order: If the dais skips procedural voting, click [Raise Point of Order] to alert the Event Moderator immediately.',
-            'Substantive Voting: When the Chair calls for final resolution voting, cast your vote (Yes / No / Abstain). A 2/3 supermajority is required for treaty adoption.'
+            'Roll Call Check-in: When your portfolio is called, state "Present" or "Present and Voting". Note that declaring "Present and Voting" binds you to vote on substantive treaties without abstaining.',
+            'Setting the Agenda & Motions: Raise a procedural motion: "The Delegation of [State] moves for a Moderated Caucus of 12 minutes, with a 45-second individual speaking time on [Topic]."',
+            'Delivering Speeches & Yielding: Deliver your policy arguments within the timer. If you finish early, clearly state your yield: "The Delegate yields remaining time to the Chair / to Questions."',
+            'Diplomatic Chits: Send bilateral chits to build voting blocs and draft working papers collaboratively in ZEN.SOLUTIONS.',
+            'Emergency Awareness: When an Amber or Red Emergency Broadcast appears on your screen, suspend unmoderated activities and heed Secretariat directives immediately.'
           ]
         }
       }
@@ -305,19 +332,52 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
       },
       {
         sectionNumber: 'Section 5.03',
-        heading: 'Operational Protocol: How to Draft & Table a Resolution',
+        heading: 'The Statutory Two-Revision Maximum (Anti-Tampering Invariant)',
+        operationalTag: 'STATUTORY LIMIT',
+        content: [
+          'Every legislative bill, draft resolution, or sovereign charter published in ZEN.SOLUTIONS is constitutionally subject to a maximum of two (2) direct revisions by its author (Revision 1/2 and Revision 2/2).',
+          'This invariant guarantees deliberative finality: once co-signatories endorse a bill or citizens cast affirmative votes, an author is structurally barred from covertly rewriting controversial clauses or altering legal liabilities in secret.',
+          'Upon publishing the second revision, the document is permanently locked against author edits. Any further legislative modification must occur exclusively through formal, recorded chamber amendments.'
+        ],
+        callout: 'Anti-Tampering Invariant: Two revisions maximum per sovereign bill. Once locked, legislation can only be altered on the open chamber floor.'
+      },
+      {
+        sectionNumber: 'Section 5.04',
+        heading: 'The Drafting Studio, Intelligent Document Ingestion & Sovereign Permissions',
+        operationalTag: 'DRAFTING OS',
+        content: [
+          'The ZEN.SOLUTIONS Drafting Studio provides sovereign parsing and bidirectional interoperability with ZEN.DOCS, PDF, DOCX, TXT, and Markdown files.',
+          '1. Memory Extraction: Document text is parsed strictly in ephemeral memory into chapters, clauses, schedules, tables, and financial charts without training external foundational AI models.',
+          '2. Leftover Clause Review: An automated diff auditor detects and surfaces any unparsed or leftover paragraphs to the author prior to publishing, ensuring zero legislative text is lost in translation.',
+          '3. Original Document Permissions: Authors retain a sovereign permission toggle ("Allow original document download"). When disabled, readers may inspect the typeset bill on-screen while raw file downloads remain cryptographically restricted.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 5.05',
+        heading: 'Unified Legislative Block Architecture & Contributor Point Mechanics',
+        operationalTag: 'LEGAL TYPESETTING',
+        content: [
+          'Amendments and schedules tabled under a bill must strictly adhere to unified legislative formatting:',
+          '1. Clause Unity: Each Clause must appear as one clearly defined continuous block, with all subclauses grouped directly beneath the main heading. Fragmented cards or disconnected boxes are prohibited.',
+          '2. Complete Schedule Grouping: Full Schedule texts must be presented as unified legal blocks with authentic statutory wording and internal numbering.',
+          '3. Amendment Docket & Merit Points: Adopted amendments are permanently cataloged in the bill\'s right-hand docket, crediting amending delegates with non-monetary contributor points.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 5.06',
+        heading: 'Operational Protocol: How to Draft, Revise & Amend a Resolution',
         operationalTag: 'OPERATOR MANUAL',
         content: [
-          'Step-by-step workflow for drafting, redlining, and ratifying youth treaties:'
+          'Step-by-step workflow for drafting, revising within the 2-edit limit, and ratifying youth treaties:'
         ],
         howToUseProperly: {
-          title: 'RESOLUTION DRAFTING & REDLINING PROCEDURE',
+          title: 'RESOLUTION DRAFTING, REVISION & AMENDMENT PROCEDURE',
           steps: [
-            'Create Working Paper: Navigate to /solutions > [Draft Policy Accord]. Select your committee and declare your preambular clauses.',
-            'Draft Operative Clauses: Use active diplomatic verbs (Calls upon, Mandates, Establishes, Recommends). Embed Tier-1 citations for all funding or legal mechanisms.',
-            'Gather Signatories: Share the Live Diff Link with peer delegations in ZenChat. Once the 20% signatory threshold is met, submit to the Dais for review.',
-            'Debate Redlines: When an unfriendly amendment is proposed, examine the diff view in the caucus chamber and cast your roll-call vote on the specific line-item.',
-            'Ratification & Archival: Upon achieving a 2/3 supermajority, the resolution is permanently archived into the Zenvitra Sovereign Codex with cryptographic hash verification.'
+            'Draft in Studio: Navigate to /solutions > [Draft Policy Accord]. Import from ZEN.DOCS or upload a PDF/Word document. Complete the Leftover Review to verify all clauses.',
+            'Publish & Circulate: Publish your draft bill to the Sovereign Solutions repository. Check your revision counter badge (0/2 edits used).',
+            'Exercise Revisions Responsibly: You may submit up to 2 revisions (Revision 1/2, Revision 2/2) to fix typographical errors or polish language before final floor lock.',
+            'Propose Floor Amendments: When amending peer legislation, select the target clause, choose Friendly or Unfriendly, and initiate a division vote.',
+            'Earn Contributor Credits: When an amendment passes with chamber concurrence, the change is etched into the bill docket and merit points are credited to your Sovereign Passport.'
           ]
         }
       }
@@ -483,7 +543,7 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
             'Claim Your Handle: Complete /onboarding/identity with your academic institution or sovereign alias.',
             'Deliver Speeches: Participate in registered assemblies to accumulate verified floor minutes and caucus points.',
             'Publish Research: Submit peer-reviewed investigative analyses to Zen Press to earn +50 to +200 Civic Points per publication.',
-            'Export Credential: Click [Export Sovereign Dossier] to generate a tamper-proof PDF CV complete with cryptographic verification QR code for university and scholarship applications.'
+            'Export Credential: Click [Export Student Profile / MUN CV] to generate a tamper-proof PDF CV complete with cryptographic verification QR code for university and scholarship applications.'
           ]
         }
       }
@@ -577,41 +637,48 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
         heading: 'The Genesis Lock (Immutable Core Invariants)',
         operationalTag: 'ETERNAL INVARIANTS',
         content: [
-          'The following three foundational provisions constitute the Zenvitra Genesis Lock and are declared eternal, unalterable, and immune to repeal under any circumstances:',
+          'The following four foundational provisions constitute the Zenvitra Genesis Lock and are declared eternal, unalterable, and immune to repeal or dilution under any circumstances:',
           '1. The Zero-Surveillance and Anti-Behavioral Advertising Mandate (Article I, Section 1.01).',
           '2. The Mandatory 10.0% Net Profit Civic Endowment for Rural Public Schools & Scholarships (Article II, Section 2.01).',
           '3. The Strict Secular Demarcation and Non-Sectarian Civic Standard (Article IX, Section 9.01).',
-          'Any amendment, legislative motion, or board vote attempting to dilute, lower, or abolish these three pillars is constitutionally void ab initio.'
+          '4. The Strict Data Integrity Law and Zero-Seeded Accounts Mandate: Absolute permanent prohibition against seeded, synthetic, mock, or fake user accounts, simulated follower graphs, artificial pass metrics, or fabricated conference attendees (Strict Data Integrity Law).',
+          'Any amendment, legislative motion, executive decree, or board vote attempting to dilute, lower, circumvent, or abolish any of these four pillars is constitutionally void ab initio.'
         ],
-        callout: 'The Genesis Lock: These three cornerstones can NEVER be repealed or reduced, by anyone, at any time, for any reason.'
+        callout: 'The Genesis Lock: These four cornerstones can NEVER be repealed, diluted, or circumvented, by anyone, at any time, for any reason.'
       },
       {
         sectionNumber: 'Section 10.04',
-        heading: 'Amendment Procedure for Operational Articles',
-        operationalTag: 'FORMAL AMENDMENT PROCEDURE',
+        heading: 'Comprehensive Multi-Tier Amendment Architecture & Ratification Lifecycle',
+        operationalTag: 'FORMAL AMENDMENT CODE',
         content: [
-          'Operational articles (Articles III through VIII, Article XI, and non-Genesis provisions) may only be amended through the formal Article VII petition mechanism:',
-          '1. Petition Initiation: A formal amendment petition must be tabled via the [Request Amendment] docket with a specific redline text and empirical justification.',
-          '2. Plenary Quorum: The petition must be formally debated across at least twenty-five (25) accredited youth assemblies or summits.',
-          '3. Supermajority Threshold: Requires a 75.0% supermajority roll-call vote of all active accredited delegates.',
-          '4. Executive Attestation: Ratification by the Founder Council (@yuveer, Secretariat, and Civic Escrow Auditors).'
+          'Operational, procedural, and structural articles (Articles III through IX, Article XI, Article XII, and non-Genesis operational provisions) may only be amended through the strict six-stage constitutional ratification lifecycle:',
+          'Stage 1 — Formal Filing & Co-Sponsorship Threshold: A proposed amendment must be submitted through the official Constitution Docket (#ZEN-AMD-YYYY-XXXX). The petition must contain a verbatim statutory redline diff (exact text to be deleted, amended, or inserted) and empirical justification with verifiable citations. The filing must be co-sponsored by at least fifty (50) accredited youth delegates across three distinct institutions OR five (5) active conference Secretariats.',
+          'Stage 2 — 14-Day Public Notice & Redline Diff Exhibition: Upon docketing, the petition is displayed across the Constitution Portal, the Secretariat Command Centre, and the ZEN.PULSE Civic Wire for a mandatory fourteen (14) day open public review and commentary period.',
+          'Stage 3 — Plenary Debate & Assembly Quorum: The docket must be formally deliberated, debated, and considered on the floor of a minimum of twenty-five (25) accredited youth assemblies, Model UN conferences, or parliamentary forums across the ecosystem.',
+          'Stage 4 — Tiered Ratification Thresholds:',
+          '• Category A (Operational & Administrative Amendments, e.g. default speech timers, caucus logistics, technical fee schedule formulas): Requires a 60.0% supermajority roll-call vote of all voting accredited delegates across the deliberating assemblies.',
+          '• Category B (Structural & Governance Amendments, e.g. Jury Tribunals, Assembly OS protocols, Press criteria, Secretariat powers): Requires a 75.0% constitutional supermajority roll-call vote.',
+          '• Category C (Genesis Lock Invariants): Non-amendable, non-derogable, and immune to repeal in perpetuity.',
+          'Stage 5 — Executive Attestation & Cryptographic Promulgation: Following successful assembly ratification, the amendment receives formal attestation by the Founder Council (@yuveer, Presiding Secretariat, and Civic Escrow Auditors) and is cryptographically hashed with SHA-256 and etched into the permanent public archive.',
+          'Stage 6 — Emergency Technical Amendments & 30-Day Sunset Protocol: In the critical event of zero-day security vulnerabilities, severe data breach hazards, or sudden statutory compliance emergencies, an Emergency Technical Amendment may be promulgated by unanimous approval of the Founder and Security Core. All Emergency Technical Amendments carry an automatic Thirty (30) Day Sunset Clause: they expire automatically after 30 days unless formally ratified through the complete Stage 1-5 assembly quorum lifecycle.'
         ]
       },
       {
         sectionNumber: 'Section 10.05',
-        heading: 'Operational Protocol: How to Formally Petition an Amendment',
+        heading: 'Operational Protocol: How to Formally Petition & Ratify an Amendment',
         operationalTag: 'OPERATOR MANUAL',
         content: [
-          'Follow the constitutional procedure to table a redline petition:'
+          'Follow the constitutional procedure to table, advocate, and ratify a redline petition:'
         ],
         howToUseProperly: {
-          title: 'CONSTITUTIONAL AMENDMENT PETITION WORKFLOW',
+          title: 'CONSTITUTIONAL AMENDMENT PETITION & RATIFICATION WORKFLOW',
           steps: [
-            'Click Request Amendment: Click the [Request Amendment] button in the Constitution sidebar or mobile toolbar.',
-            'Select Operational Article: Choose the target Article and Section (ensure it does not violate the Genesis Lock).',
-            'Draft Precise Redline: Write the exact statutory text modification, addition, or clarification.',
-            'Attach Empirical Citations: Cite at least one primary source or precedent justifying the operational necessity.',
-            'Submit to Plenary Docket: Once submitted, your petition receives a formal Docket ID (e.g. #ZEN-AMD-2026-XXXX) and is dispatched to all assemblies for caucus debate.'
+            'Initiate Docket Petition: Click [Request Amendment] in the Constitution portal. Select the operational Article and Section (ensuring it does not conflict with the Genesis Lock).',
+            'Draft Verbatim Redline Diff: Provide exact statutory modifications highlighting additions (+) and deletions (-). Attach empirical citations and rationale.',
+            'Gather Sovereign Co-Sponsorship: Circulate your draft petition to secure endorsements from 50 accredited delegates or 5 active Secretariats to meet the Stage 1 threshold.',
+            'Engage 14-Day Public Scrutiny: Monitor debate and feedback on ZEN.PULSE and participate in public town halls during the exhibition window.',
+            'Assembly Quorum & Roll-Call Vote: Table the docket for formal voting across participating assemblies. Attain 60.0% (Category A) or 75.0% (Category B) supermajority.',
+            'Promulgation: Upon Founder Council attestation, your ratified amendment is permanently codified with a unique cryptographic hash and etched into history.'
           ]
         }
       }
@@ -752,5 +819,155 @@ export const CONSTITUTION_ARTICLES: ArticleSection[] = [
         }
       }
     ]
+  },
+
+  // ─── ARTICLE XII ───
+  {
+    id: 'article-12',
+    articleNumber: 'ARTICLE XII',
+    title: 'OPEN PUBLICATION, FREEDOM OF EXPRESSION & MEDIA TRANSPARENCY',
+    badge: 'UNIVERSAL RIGHT TO PUBLISH',
+    badgeColor: 'text-sky-300 bg-sky-500/10 border-sky-500/30',
+    summary: 'Codifies the universal right to publish without institutional gatekeeping, free and accessible platform participation, uncompromised editorial independence, mandatory citation of authentic sources, distinction between opinion and fact, and radical equal opportunity advancing “By Youth, For Youth.”',
+    sections: [
+      {
+        sectionNumber: 'Section 12.01',
+        heading: 'Universal Right to Publish',
+        operationalTag: 'FUNDAMENTAL LIBERTY',
+        content: [
+          'ZENVITRA shall remain an open platform where every individual has the opportunity to write, publish, share ideas, express opinions, and contribute articles, blogs, reports, and other forms of written content, subject to transparent and reasonable community guidelines.',
+          'Publication shall not be restricted solely on the basis of an individual\'s institutional affiliation, professional status, experience, or ability to pay.'
+        ],
+        callout: 'Universal Invariant: Every individual has the unalienable opportunity to publish, share ideas, and contribute content evaluated strictly on merit.'
+      },
+      {
+        sectionNumber: 'Section 12.02',
+        heading: 'Free and Accessible Platform',
+        operationalTag: 'ACCESSIBILITY INVARIANT',
+        content: [
+          'ZENVITRA shall strive to provide its core writing, reading, and community participation features free of charge.',
+          'No mandatory payment shall be imposed merely to express an opinion, submit an article, or access publicly available written content.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 12.03',
+        heading: 'Editorial Independence',
+        operationalTag: 'EDITORIAL INTEGRITY',
+        content: [
+          'Every contributor shall have the freedom to express lawful opinions and present arguments independently.',
+          'ZENVITRA shall not permit political, commercial, institutional, or personal interests to dictate editorial conclusions.',
+          'Reasonable moderation may be applied to content involving unlawful material, targeted harassment, plagiarism, fabricated evidence, or other clearly defined violations of published policies.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 12.04',
+        heading: 'Authentic Sources and Citation',
+        operationalTag: 'EVIDENCE RIGOR',
+        content: [
+          'Contributors shall be encouraged, and where factual claims require substantiation, expected, to cite authentic and traceable sources.',
+          'These may include government records, legislation, court judgments, official datasets, peer-reviewed research, original documents, credible news organisations, and verifiable statements.',
+          'Sources must not be fabricated, misrepresented, or deliberately taken out of context.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 12.05',
+        heading: 'Transparency and Accountability',
+        operationalTag: 'MEDIA TRANSPARENCY',
+        content: [
+          'Opinions shall be distinguishable from factual reporting.',
+          'Unverified claims shall not be presented as established facts, and material inaccuracies shall be addressed through appropriate corrections.',
+          'Contributors shall retain appropriate attribution for their original work, while plagiarism and deliberate misinformation may be subject to moderation under published rules.'
+        ]
+      },
+      {
+        sectionNumber: 'Section 12.06',
+        heading: 'Equal Opportunity and Youth Empowerment',
+        operationalTag: 'BY YOUTH, FOR YOUTH',
+        content: [
+          'ZENVITRA shall promote an environment in which voices are evaluated on the merit of their ideas and the integrity of their contributions—not their popularity, financial resources, qualifications, or social standing.',
+          'Its purpose shall be to make publishing and public discourse accessible to everyone, advancing its founding principle: “By Youth, For Youth.”'
+        ],
+        callout: 'Founding Pillar: “By Youth, For Youth.” Every voice evaluated on intellectual merit and integrity, not popularity or financial resources.',
+        howToUseProperly: {
+          title: 'OPEN PUBLICATION & MEDIA TRANSPARENCY PROTOCOL',
+          steps: [
+            'Publish Freely: Access ZENVITRA International Press or ZEN.PULSE Dispatches without paywalls or institutional gatekeeping.',
+            'Cite Verifiable Records: Hyperlink legislation, court transcripts, peer-reviewed datasets, and verifiable statements when advancing factual claims.',
+            'Delineate Analysis vs. Fact: Clearly tag opinion columns, investigative reports, or editorial commentaries to preserve reader transparency.',
+            'Zero Pay-to-Speak: Core reading and writing features remain universally accessible to all sovereign youth delegates.'
+          ]
+        }
+      }
+    ]
   }
 ];
+
+// ─── CONSTITUTIONAL HELP & FAQS ───
+
+export interface ConstitutionalFAQ {
+  id: string;
+  category: string;
+  question: string;
+  answer: string;
+  articleRef?: string;
+}
+
+export const CONSTITUTION_FAQS: ConstitutionalFAQ[] = [
+  {
+    id: 'const-faq-1',
+    category: 'Treaty & Solutions OS',
+    articleRef: 'ARTICLE V',
+    question: 'What is the constitutional purpose of ZEN.SOLUTIONS and the Drafting Studio?',
+    answer: 'Under Article V, ZEN.SOLUTIONS treats public policy, Model UN resolutions, and civic accords with the engineering rigor of open-source software. The Drafting Studio provides multi-format parsing (PDF, DOCX, Markdown, ZEN.DOCS), leftover text auditing, and line-by-line redline diff tracking to guarantee transparent legislative codification.'
+  },
+  {
+    id: 'const-faq-2',
+    category: 'Legislative Integrity',
+    articleRef: 'ARTICLE V (SECTION 5.03)',
+    question: 'Why is the 2-revision limit on bills codified as a constitutional invariant?',
+    answer: 'Allowing unlimited post-publication edits introduces a fatal deliberative flaw where an author could table a consensus proposal, collect citizen votes or co-sponsor signatures, and subsequently rewrite contentious clauses in secret. The 2-revision cap establishes deliberative finality; once locked, changes must occur as transparent chamber floor amendments.'
+  },
+  {
+    id: 'const-faq-3',
+    category: 'Legal Typesetting',
+    articleRef: 'ARTICLE V (SECTION 5.05)',
+    question: 'How does the unified legislative block layout protect statutory integrity?',
+    answer: 'Splitting subclauses or schedules into disconnected UI cards dilutes legislative coherence. Under Section 5.05, each Clause and its subclauses must appear as one unified continuous block, preserving exact statutory numbering, em-dash title separators, cross-references, and schedule text without algorithmic truncation.'
+  },
+  {
+    id: 'const-faq-4',
+    category: 'Genesis Lock Invariants',
+    articleRef: 'ARTICLE X (SECTION 10.03)',
+    question: 'What are the Four Immutable Genesis Lock Pillars that can never be amended or repealed?',
+    answer: 'The Genesis Lock defines four perpetual, non-derogable pillars: (1) Zero-Surveillance and Anti-Behavioral Advertising Mandate (Article I); (2) Mandatory 10.0% Net Profit Civic Endowment for Rural Schools & Scholarships (Article II); (3) Strict Secular Demarcation and Non-Sectarian Standard (Article IX); and (4) Strict Data Integrity Law: Absolute permanent ban on seeded, synthetic, mock, or fake accounts/metrics.'
+  },
+  {
+    id: 'const-faq-5',
+    category: '10% Civic Endowment',
+    articleRef: 'ARTICLE II',
+    question: 'How does the 10% Profit Civic Endowment work, and how can students audit it?',
+    answer: 'Exactly 10.0% of all net platform profits are irreversibly partitioned into the Zenvitra Civic Endowment Vault for rural school labs and delegate scholarships. Funds are audited and distributed every 6 months, accompanied by publicly broadcast offline distribution video logs on ZEN.FLUX and independent student auditor verifications.'
+  },
+  {
+    id: 'const-faq-6',
+    category: 'Strict Data Integrity Law',
+    articleRef: 'ARTICLE X & ARTICLE XI',
+    question: 'What is the Strict Data Integrity Law and why does Zenvitra ban seeded accounts?',
+    answer: 'Vanity metrics and bot armies distort democratic discourse. The Strict Data Integrity Law mandates that all accounts, conference passes, attendees, and follower graphs must originate from authentic human users and verified organizers. Seeded mock profiles and fake numbers are strictly prohibited.'
+  },
+  {
+    id: 'const-faq-7',
+    category: 'Test Node Security',
+    articleRef: 'ARTICLE I & ARTICLE VIII',
+    question: 'How does the Test Node sandbox protect authentic user identities and passports?',
+    answer: 'Test Mode runs in an ephemeral sandbox under zen_test_pilot_node. When activated, the authentic user session, OAuth avatar, and Holographic Passport are encrypted in a secure local backup vault. Exiting via "Leave Test Mode" or closing the tab cleanly restores genuine credentials with zero profile thrashing.'
+  },
+  {
+    id: 'const-faq-8',
+    category: 'Amendment Lifecycle',
+    articleRef: 'ARTICLE X (SECTION 10.04)',
+    question: 'How can an accredited youth delegate formally petition for a constitutional amendment?',
+    answer: 'A delegate must submit a verbatim redline diff via the Constitution Docket (#ZEN-AMD-YYYY-XXXX), gather co-sponsorship from 50 delegates or 5 Secretariats, complete 14 days of open public review on ZEN.PULSE, debate across 25 assemblies, and achieve a 60% (Category A) or 75% (Category B) supermajority roll-call vote.'
+  }
+];
+

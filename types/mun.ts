@@ -8,6 +8,14 @@ export type MunCommitteeType =
   | 'LOK_SABHA' 
   | 'AIPPM' 
   | 'DISEC'
+  | 'WHO'
+  | 'UNESCO'
+  | 'ICJ'
+  | 'COP'
+  | 'NATO'
+  | 'G20'
+  | 'ARAB_LEAGUE'
+  | 'AU'
   | 'PARLIAMENTARY'
   | 'OTHER';
 
@@ -77,10 +85,13 @@ export interface MunInvite {
   acceptedAt?: string;
 }
 
+import { RegistrationPlan, CashfreePaymentLinkRecord } from './events';
+
 export type MunConferenceStatus = 'NOT_STARTED' | 'CONCLUDED' | `DAY_${number}` | string;
 
 export interface MunConference {
   id: string;
+  slug?: string;
   name: string;
   shortName: string;
   tagline?: string;
@@ -92,7 +103,14 @@ export interface MunConference {
   conveningDate: string; // for countdown when NOT_STARTED
   secretariatChair: string;
   location: string;
-  committees: string[]; // committee IDs belonging to this conference
+  committees: (string | MunCommittee)[]; // committee IDs or objects belonging to this conference
+  portfolios?: any[]; // custom or generated country portfolios
+  matrix?: any[]; // custom or generated country portfolios
+  ticketPrice?: number;
+  plans?: RegistrationPlan[];
+  paymentLinks?: CashfreePaymentLinkRecord[];
+  verified?: boolean;
+  verificationStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED';
 }
 
 export interface MunCommittee {
@@ -112,6 +130,9 @@ export interface MunCommittee {
     viceChair: string;
     rapporteur?: string;
   };
+  emblem?: string;
+  logoKey?: string;
+  iconUrl?: string;
 }
 
 export interface MunMotion {
@@ -398,4 +419,23 @@ export interface ChamberRoom {
   performersQueue: StagePerformer[];
   reactions: Array<{ id: string; emoji: string; count: number }>;
   createdAt: string;
+}
+
+export interface EmergencyBroadcast {
+  id: string;
+  conferenceId?: string;
+  severity: 'CRITICAL' | 'URGENT' | 'ADVISORY' | 'CRISIS_INJECTION';
+  category: 'SECURITY' | 'SCHEDULE' | 'PROCEDURAL' | 'CRISIS' | 'ANNOUNCEMENT';
+  title: string;
+  message: string;
+  targetScope: 'ALL_CHAMBERS' | 'SPECIFIC_CHAMBERS' | 'EB_ONLY' | 'ALL_ATTENDEES';
+  targetChambers?: string[]; // array of committee IDs
+  audioAlert: boolean;
+  bannerOverride: boolean;
+  injectFeed: boolean;
+  transmitterName: string;
+  transmitterRole: string;
+  transmitterHandle?: string;
+  timestamp: string;
+  isActive: boolean;
 }

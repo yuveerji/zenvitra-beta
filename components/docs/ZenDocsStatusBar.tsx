@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Check, ZoomIn, ZoomOut } from 'lucide-react';
+import { FONT_OPTIONS } from './fontOptions';
 
 interface ZenDocsStatusBarProps {
   saveStatus: string;
@@ -17,16 +18,6 @@ interface ZenDocsStatusBarProps {
   onFontSizeChange: (size: number) => void;
   onLineSpacingChange: (spacing: string) => void;
 }
-
-const FONT_OPTIONS = [
-  'Times New Roman',
-  'Georgia',
-  'Arial',
-  'Inter',
-  'Merriweather',
-  'Roboto Mono',
-  'Courier New',
-];
 
 const ZOOM_LEVELS = [75, 90, 100, 125, 150];
 
@@ -80,12 +71,12 @@ export function ZenDocsStatusBar({
         <select
           value={fontFamily}
           onChange={(e) => onFontFamilyChange(e.target.value)}
-          className="hidden lg:block px-1.5 py-0.5 rounded bg-transparent border border-white/[0.06] text-[9px] text-neutral-400 cursor-pointer focus:outline-none hover:border-white/15 max-w-[100px]"
+          className="hidden lg:block px-1.5 py-0.5 rounded bg-transparent border border-white/[0.06] text-[9px] text-neutral-400 cursor-pointer focus:outline-none hover:border-white/15 max-w-[130px]"
           title="Font Family"
         >
           {FONT_OPTIONS.map((f) => (
-            <option key={f} value={f} className="bg-[#0b0e17] text-white">
-              {f}
+            <option key={f.value} value={f.value} className="bg-[#0b0e17] text-white">
+              {f.name}
             </option>
           ))}
         </select>

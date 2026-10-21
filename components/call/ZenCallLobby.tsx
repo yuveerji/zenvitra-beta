@@ -35,7 +35,8 @@ import {
   Share2,
   ExternalLink,
   Clock,
-  Trash2
+  Trash2,
+  Menu
 } from 'lucide-react';
 import { CallMode } from '@/types/call';
 
@@ -294,13 +295,33 @@ export function ZenCallLobby() {
     <div className="min-h-screen bg-[#f8fafd] dark:bg-[#07090e] text-slate-900 dark:text-white font-sans flex flex-col selection:bg-blue-500/20 transition-colors duration-200">
       
       {/* ── TOP HEADER (Google Meet Parity) ── */}
-      <header className="h-16 px-4 sm:px-6 flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-white dark:bg-black/60 backdrop-blur-xl sticky top-0 z-30">
+      <header className="h-16 pl-0 pr-4 sm:pr-6 flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-white dark:bg-black/60 backdrop-blur-xl sticky top-0 z-30">
         
-        {/* Left: Official ZEN.CALL Brand */}
-        <div className="flex items-center gap-3">
-          <Link href="/pulse" className="flex items-center gap-2.5 cursor-pointer group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 flex items-center justify-center p-1.5 shadow-sm group-hover:scale-105 transition">
-              <img src="/assets/logo.png" alt="Zenvitra" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]" />
+        {/* Left: Aligned Hamburger Button + Official ZEN.CALL Brand & Logo */}
+        <div className="flex items-center">
+          {/* Hamburger Menu Toggle (perfectly aligned with sidebar rail below) */}
+          <div className="w-20 sm:w-24 flex items-center justify-center shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+              }}
+              className="h-10 w-10 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-200 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 active:scale-95 shadow-xs"
+              title="Navigation Menu"
+              aria-label="Toggle Navigation Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Logo & Brand Wordmark */}
+          <Link href="/pulse" className="flex items-center gap-2.5 cursor-pointer group shrink-0 pl-1 sm:pl-2">
+            <div className="w-11 h-11 rounded-2xl bg-black border border-white/10 flex items-center justify-center p-2 shadow-sm group-hover:scale-105 transition shrink-0">
+              <img 
+                src="/assets/logo-new.png" 
+                alt="Zenvitra" 
+                className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] brand-logo-img" 
+              />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-white font-display">

@@ -14,7 +14,9 @@ import {
   Check,
   Layers,
   Award,
-  Globe2
+  Globe2,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { useMun } from '@/context/MunContext';
 
@@ -40,58 +42,14 @@ const COMMITTEE_ROSTERS: Record<string, CountryRollCallEntry[]> = {
     { country: 'French Republic', flag: '🇫🇷', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
     { country: 'Russian Federation', flag: '🇷🇺', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
     { country: 'People’s Republic of China', flag: '🇨🇳', subTitle: 'Permanent Member (P5) • Veto Power', isP5: true, status: 'absent' },
-    { country: 'Republic of India', flag: '🇮🇳', subTitle: 'Special Invitee & G4 Candidate', status: 'absent' },
-    { country: 'Japan', flag: '🇯🇵', subTitle: 'Elected Member (Asia-Pacific)', status: 'absent' },
-    { country: 'Republic of Korea', flag: '🇰🇷', subTitle: 'Elected Member (Asia-Pacific)', status: 'absent' },
-    { country: 'Swiss Confederation', flag: '🇨🇭', subTitle: 'Elected Member (WEOG)', status: 'absent' },
-    { country: 'Republic of Sierra Leone', flag: '🇸🇱', subTitle: 'Elected Member (African Group)', status: 'absent' },
-    { country: 'People’s Democratic Republic of Algeria', flag: '🇩🇿', subTitle: 'Elected Member (Arab Group)', status: 'absent' },
-    { country: 'Co-operative Republic of Guyana', flag: '🇬🇾', subTitle: 'Elected Member (GRULAC)', status: 'absent' },
-    { country: 'Republic of Malta', flag: '🇲🇹', subTitle: 'Elected Member (WEOG)', status: 'absent' },
-    { country: 'Republic of Mozambique', flag: '🇲🇿', subTitle: 'Elected Member (African Group)', status: 'absent' },
-    { country: 'Republic of Slovenia', flag: '🇸🇮', subTitle: 'Elected Member (Eastern Europe)', status: 'absent' },
   ],
   AIPPM: [
-    { country: 'Narendra Modi', flag: '🇮🇳', subTitle: 'Prime Minister of India / Varanasi MP', status: 'absent' },
-    { country: 'Amit Shah', flag: '🇮🇳', subTitle: 'Minister of Home Affairs / Gandhinagar MP', status: 'absent' },
-    { country: 'Rahul Gandhi', flag: '🇮🇳', subTitle: 'Leader of Opposition (Lok Sabha)', status: 'absent' },
-    { country: 'Rajnath Singh', flag: '🇮🇳', subTitle: 'Minister of Defence', status: 'absent' },
-    { country: 'Nirmala Sitharaman', flag: '🇮🇳', subTitle: 'Minister of Finance', status: 'absent' },
-    { country: 'Mallikarjun Kharge', flag: '🇮🇳', subTitle: 'Leader of Opposition (Rajya Sabha)', status: 'absent' },
-    { country: 'Akhilesh Yadav', flag: '🇮🇳', subTitle: 'Samajwadi Party Chief / Kannauj MP', status: 'absent' },
-    { country: 'Mamata Banerjee', flag: '🇮🇳', subTitle: 'All India Trinamool Congress (TMC)', status: 'absent' },
-    { country: 'Nitin Gadkari', flag: '🇮🇳', subTitle: 'Minister of Road Transport & Highways', status: 'absent' },
-    { country: 'Asaduddin Owaisi', flag: '🇮🇳', subTitle: 'AIMIM Chief / Hyderabad MP', status: 'absent' },
-  ],
-  EMI: [
-    { country: 'Dharmendra Pradhan', flag: '🇮🇳', subTitle: 'Union Minister of Education', status: 'absent' },
-    { country: 'Prof. M. Jagadesh Kumar', flag: '🇮🇳', subTitle: 'Chairman, University Grants Commission (UGC)', status: 'absent' },
-    { country: 'Prof. T.G. Sitharam', flag: '🇮🇳', subTitle: 'Chairman, AICTE', status: 'absent' },
-    { country: 'Director, NCERT', flag: '🇮🇳', subTitle: 'Curriculum & Textbook Framework Directorate', status: 'absent' },
-    { country: 'Director, IIT Delhi', flag: '🇮🇳', subTitle: 'Institutes of National Importance (INIs)', status: 'absent' },
-    { country: 'Vice-Chancellor, Delhi University', flag: '🇮🇳', subTitle: 'Central Universities Consortium', status: 'absent' },
-    { country: 'State Education Secretary (Tamil Nadu)', flag: '🇮🇳', subTitle: 'State Language & Curriculum Autonomy', status: 'absent' },
-    { country: 'National Student Union Representative', flag: '🇮🇳', subTitle: 'Youth Democratic Student Body', status: 'absent' },
+    { country: 'Prime Minister of India', flag: '🇮🇳', subTitle: 'Leader of the House', status: 'absent' },
+    { country: 'Leader of Opposition', flag: '🇮🇳', subTitle: 'Lok Sabha Opposition Bench', status: 'absent' },
   ],
   ECOSOC: [
-    { country: 'Republic of India', flag: '🇮🇳', subTitle: 'President of ECOSOC Bureau / Global South Anchor', status: 'absent' },
-    { country: 'United States of America', flag: '🇺🇸', subTitle: 'Development Finance & Multilateral Aid Directorate', status: 'absent' },
-    { country: 'Federal Republic of Germany', flag: '🇩🇪', subTitle: 'Climate Adaptation & Green Transition Envoy', status: 'absent' },
-    { country: 'Federative Republic of Brazil', flag: '🇧🇷', subTitle: 'Troika / Global Alliance Against Hunger & Poverty', status: 'absent' },
-    { country: 'Republic of South Africa', flag: '🇿🇦', subTitle: 'African Union Debt Relief & Financing Caucus', status: 'absent' },
-    { country: 'Barbados (Prime Minister Envoy)', flag: '🇧🇧', subTitle: 'Bridgetown Initiative on Climate Finance Architecture', status: 'absent' },
-    { country: 'Republic of Kenya', flag: '🇰🇪', subTitle: 'East African Energy Transition & Digital Development', status: 'absent' },
-    { country: 'Japan', flag: '🇯🇵', subTitle: 'SDGs Financing & International Development Agency (JICA)', status: 'absent' },
-  ],
-  UNODC: [
-    { country: 'Republic of Colombia', flag: '🇨🇴', subTitle: 'Andean Narcotics & Crop Substitution Board', status: 'absent' },
-    { country: 'United Mexican States', flag: '🇲🇽', subTitle: 'Transnational Cartel Border & Maritime Taskforce', status: 'absent' },
-    { country: 'Kingdom of the Netherlands', flag: '🇳🇱', subTitle: 'Port of Rotterdam Interception Directorate', status: 'absent' },
-    { country: 'Republic of the Union of Myanmar', flag: '🇲🇲', subTitle: 'Golden Triangle Synthetic Drug Precursor Taskforce', status: 'absent' },
-    { country: 'Federal Republic of Nigeria', flag: '🇳🇬', subTitle: 'West African Transshipment Command', status: 'absent' },
-    { country: 'INTERPOL Secretariat', flag: '🌐', subTitle: 'Transnational Organized Crime Taskforce', status: 'absent' },
-    { country: 'Islamic Republic of Afghanistan', flag: '🇦🇫', subTitle: 'Opiate Eradication Directorate', status: 'absent' },
-    { country: 'Commonwealth of Australia', flag: '🇦🇺', subTitle: 'Pacific Border & Darknet Interdiction Branch', status: 'absent' },
+    { country: 'Republic of India', flag: '🇮🇳', subTitle: 'Bureau Member', status: 'absent' },
+    { country: 'United States of America', flag: '🇺🇸', subTitle: 'Development Directorate', status: 'absent' },
   ],
 };
 
@@ -99,10 +57,8 @@ function getRosterForCommittee(committee: any): CountryRollCallEntry[] {
   const norm = String(committee?.shortName || committee?.id || committee?.name || '').toUpperCase();
   if (norm.includes('UNSC')) return COMMITTEE_ROSTERS.UNSC;
   if (norm.includes('AIPPM')) return COMMITTEE_ROSTERS.AIPPM;
-  if (norm.includes('EMI')) return COMMITTEE_ROSTERS.EMI;
   if (norm.includes('ECOSOC')) return COMMITTEE_ROSTERS.ECOSOC;
-  if (norm.includes('UNODC')) return COMMITTEE_ROSTERS.ECOSOC;
-  return COMMITTEE_ROSTERS.UNSC;
+  return [];
 }
 
 export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementModalProps) {
@@ -110,9 +66,23 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
   const committee = getCommitteeById(activeCommitteeId) || committees[0];
 
   const [delegations, setDelegations] = useState<CountryRollCallEntry[]>([]);
+  const [newCountryName, setNewCountryName] = useState('');
+  const [newCountryRole, setNewCountryRole] = useState('');
+  const [newIsP5, setNewIsP5] = useState(false);
 
   useEffect(() => {
     if (isOpen && committee) {
+      try {
+        const stored = localStorage.getItem(`zenvitra_rollcall_${committee.id}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setDelegations(parsed);
+            return;
+          }
+        }
+      } catch {}
+
       const roster = getRosterForCommittee(committee);
       setDelegations(roster.map(r => ({ ...r, status: 'absent' })));
     }
@@ -128,7 +98,15 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
 
   const simpleMajority = Math.floor(totalPresent / 2) + 1;
   const twoThirdsMajority = Math.ceil((totalPresent * 2) / 3);
-  const quorumMet = totalPresent >= Math.ceil(totalDelegates / 3);
+  const quorumMet = totalDelegates > 0 ? totalPresent >= Math.ceil(totalDelegates / 3) : false;
+
+  const saveRoster = (updated: CountryRollCallEntry[]) => {
+    if (committee?.id) {
+      try {
+        localStorage.setItem(`zenvitra_rollcall_${committee.id}`, JSON.stringify(updated));
+      } catch {}
+    }
+  };
 
   const syncAttendanceToContext = (currentList: CountryRollCallEntry[]) => {
     if (!committee?.id) return;
@@ -141,6 +119,48 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
       totalDelegates: currentList.length,
       quorumNeeded: Math.ceil(currentList.length / 3),
     });
+    saveRoster(currentList);
+  };
+
+  const handleAddCountry = () => {
+    const trimmedName = newCountryName.trim();
+    if (!trimmedName) return;
+
+    const flag = trimmedName.toLowerCase().includes('india') ? '🇮🇳'
+      : trimmedName.toLowerCase().includes('united states') || trimmedName.toLowerCase().includes('usa') ? '🇺🇸'
+      : trimmedName.toLowerCase().includes('united kingdom') || trimmedName.toLowerCase().includes('uk') ? '🇬🇧'
+      : trimmedName.toLowerCase().includes('france') ? '🇫🇷'
+      : trimmedName.toLowerCase().includes('russia') ? '🇷🇺'
+      : trimmedName.toLowerCase().includes('china') ? '🇨🇳'
+      : '🌐';
+
+    const newEntry: CountryRollCallEntry = {
+      country: trimmedName,
+      flag,
+      subTitle: newCountryRole.trim() || undefined,
+      isP5: newIsP5,
+      status: 'present_voting',
+    };
+
+    const updated = [...delegations, newEntry];
+    setDelegations(updated);
+    setNewCountryName('');
+    setNewCountryRole('');
+    setNewIsP5(false);
+    syncAttendanceToContext(updated);
+  };
+
+  const handleRemoveCountry = (country: string) => {
+    const updated = delegations.filter((d) => d.country !== country);
+    setDelegations(updated);
+    syncAttendanceToContext(updated);
+  };
+
+  const handleClearRoster = () => {
+    if (window.confirm('Clear all delegates from this committee roster? You will build a fresh roster from scratch.')) {
+      setDelegations([]);
+      syncAttendanceToContext([]);
+    }
   };
 
   const setCountryStatus = (country: string, status: AttendanceStatus) => {
@@ -253,12 +273,12 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
             </div>
           </div>
 
-          {/* Quick Bulk Actions */}
+          {/* Quick Bulk Actions & Add Delegate Bar */}
           <div className="px-5 py-3 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 bg-white/[0.01]">
             <span className="text-xs font-mono text-neutral-400">
               Bulk Roll Call Controls:
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => markAll('present_voting')}
@@ -280,73 +300,135 @@ export function RollCallManagementModal({ isOpen, onClose }: RollCallManagementM
               >
                 Reset All (0 Present)
               </button>
+              <button
+                type="button"
+                onClick={handleClearRoster}
+                className="px-3 py-1 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-mono transition cursor-pointer"
+                title="Clear all delegates to build custom roster"
+              >
+                Clear Roster
+              </button>
             </div>
+          </div>
+
+          {/* Add Delegate Bar (MUN Command style) */}
+          <div className="p-4 bg-white/[0.02] border-b border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <input
+              type="text"
+              value={newCountryName}
+              onChange={(e) => setNewCountryName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddCountry()}
+              placeholder="Country or Delegate Name (e.g. Canada, Shashi Tharoor)"
+              className="flex-1 bg-black/60 border border-white/15 focus:border-cyan-400 px-3 py-1.5 rounded-xl text-xs text-white placeholder-neutral-500 font-mono focus:outline-none"
+            />
+            <input
+              type="text"
+              value={newCountryRole}
+              onChange={(e) => setNewCountryRole(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddCountry()}
+              placeholder="Title/Role (optional)"
+              className="sm:w-48 bg-black/60 border border-white/15 focus:border-cyan-400 px-3 py-1.5 rounded-xl text-xs text-white placeholder-neutral-500 font-mono focus:outline-none"
+            />
+            <label className="flex items-center gap-1.5 text-xs font-mono text-neutral-400 cursor-pointer select-none shrink-0 px-2">
+              <input
+                type="checkbox"
+                checked={newIsP5}
+                onChange={(e) => setNewIsP5(e.target.checked)}
+                className="rounded border-white/20 text-cyan-500 focus:ring-0"
+              />
+              <span>P5 Veto</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleAddCountry}
+              className="px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1 shrink-0 active:scale-95"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Add Delegate</span>
+            </button>
           </div>
 
           {/* Country / Portfolio Delegation List */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-2.5 max-h-[50vh]">
-            {delegations.map((d) => (
-              <div
-                key={d.country}
-                className="p-3 sm:p-3.5 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-between gap-3 hover:border-white/20 transition"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-2xl">{d.flag}</span>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs sm:text-sm text-white truncate">{d.country}</span>
-                      {d.isP5 && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                          P5 VETO
-                        </span>
+            {delegations.length === 0 ? (
+              <div className="py-12 text-center space-y-2 text-neutral-500 font-mono text-xs">
+                <Users className="w-8 h-8 text-neutral-600 mx-auto" />
+                <p>No delegates in this chamber roster yet.</p>
+                <p className="text-[11px] text-neutral-600">Type a country or delegate name above and click "+ Add Delegate".</p>
+              </div>
+            ) : (
+              delegations.map((d) => (
+                <div
+                  key={d.country}
+                  className="p-3 sm:p-3.5 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-between gap-3 hover:border-white/20 transition"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-2xl">{d.flag}</span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs sm:text-sm text-white truncate">{d.country}</span>
+                        {d.isP5 && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            P5 VETO
+                          </span>
+                        )}
+                      </div>
+                      {d.subTitle && (
+                        <p className="text-[11px] font-mono text-neutral-400 truncate">{d.subTitle}</p>
                       )}
                     </div>
-                    {d.subTitle && (
-                      <p className="text-[11px] font-mono text-neutral-400 truncate">{d.subTitle}</p>
-                    )}
+                  </div>
+
+                  {/* 3 Status Switcher Buttons + Delete */}
+                  <div className="flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setCountryStatus(d.country, 'present_voting')}
+                      className={`px-2.5 py-1.5 rounded-xl border transition cursor-pointer font-bold ${
+                        d.status === 'present_voting'
+                          ? 'bg-emerald-500 text-black border-emerald-400 shadow-sm'
+                          : 'bg-white/5 text-neutral-400 hover:text-white border-white/10'
+                      }`}
+                    >
+                      Present &amp; Voting
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCountryStatus(d.country, 'present')}
+                      className={`px-2.5 py-1.5 rounded-xl border transition cursor-pointer font-bold ${
+                        d.status === 'present'
+                          ? 'bg-blue-500 text-white border-blue-400 shadow-sm'
+                          : 'bg-white/5 text-neutral-400 hover:text-white border-white/10'
+                      }`}
+                    >
+                      Present
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCountryStatus(d.country, 'absent')}
+                      className={`px-2.5 py-1.5 rounded-xl border transition cursor-pointer ${
+                        d.status === 'absent'
+                          ? 'bg-rose-500/30 text-rose-300 border-rose-500/50 font-bold'
+                          : 'bg-white/5 text-neutral-500 hover:text-white border-white/10'
+                      }`}
+                    >
+                      Absent
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCountry(d.country)}
+                      className="p-1.5 rounded-lg text-neutral-500 hover:text-red-400 hover:bg-white/5 transition"
+                      title="Remove delegate from roster"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
-
-                {/* 3 Status Switcher Buttons */}
-                <div className="flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
-                  <button
-                    type="button"
-                    onClick={() => setCountryStatus(d.country, 'present_voting')}
-                    className={`px-2.5 py-1.5 rounded-xl border transition cursor-pointer font-bold ${
-                      d.status === 'present_voting'
-                        ? 'bg-emerald-500 text-black border-emerald-400 shadow-sm'
-                        : 'bg-white/5 text-neutral-400 hover:text-white border-white/10'
-                    }`}
-                  >
-                    Present &amp; Voting
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setCountryStatus(d.country, 'present')}
-                    className={`px-2.5 py-1.5 rounded-xl border transition cursor-pointer font-bold ${
-                      d.status === 'present'
-                        ? 'bg-blue-500 text-white border-blue-400 shadow-sm'
-                        : 'bg-white/5 text-neutral-400 hover:text-white border-white/10'
-                    }`}
-                  >
-                    Present
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setCountryStatus(d.country, 'absent')}
-                    className={`px-2.5 py-1.5 rounded-xl border transition cursor-pointer ${
-                      d.status === 'absent'
-                        ? 'bg-rose-500/30 text-rose-300 border-rose-500/50 font-bold'
-                        : 'bg-white/5 text-neutral-500 hover:text-white border-white/10'
-                    }`}
-                  >
-                    Absent
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Footer */}

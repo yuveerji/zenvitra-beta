@@ -53,6 +53,7 @@ import {
   getSecurityProfile 
 } from '@/lib/securityShield';
 import { sheetSync } from '@/lib/googleSheets';
+import { deactivateFounderSession } from '@/lib/founderControl';
 
 interface SovereignPillar {
   id: string;
@@ -86,7 +87,7 @@ const SOVEREIGN_PILLARS: SovereignPillar[] = [
   {
     id: 'delegate',
     title: 'Diplomatic Chamber Engine',
-    badge: 'CHAMBER SOVEREIGN',
+    badge: 'VERIFIED DELEGATE',
     icon: Users,
     tagline: 'Lead multilateral summits, draft binding resolutions, execute cryptographic roll-call votes, and coordinate caucus floor orders.',
     capabilities: ['Live Speaker Order', 'Encrypted Chit Mesh', 'Permanent Accolades'],
@@ -214,7 +215,23 @@ function LoginForm() {
     if (is2FAStep) return;
     try {
       const stored = typeof window !== 'undefined' ? localStorage.getItem('zenvitra_session_user') : null;
-      if ((isAuthenticated || profile || stored) && !is2FAStep) {
+      let isValidSession = Boolean(isAuthenticated || profile);
+      if (!isValidSession && stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const isTestNode = parsed.username === 'test' || parsed.id === 'zen_test_pilot_node' || parsed.badge === '🧪 TEST NODE';
+          if (isTestNode) {
+            const isTabActive = typeof window !== 'undefined' && sessionStorage.getItem('zenvitra_test_tab_active') === 'true';
+            isValidSession = isTabActive;
+          } else {
+            isValidSession = true;
+          }
+        } catch {
+          isValidSession = false;
+        }
+      }
+
+      if (isValidSession && !is2FAStep) {
         const timer = setTimeout(() => {
           if (!is2FAStep) {
             router.replace(targetDestination);
@@ -273,7 +290,7 @@ function LoginForm() {
       }
       // Purge any auto-seeded unauthenticated founder entry or mock test accounts
       if (Array.isArray(parsed)) {
-        const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova'];
+        const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova', 'test', 'tester'];
         parsed = parsed.filter(a => {
           const u = (a.username || a.handle || a.id || '').replace(/^@/, '').toLowerCase();
           if (fakeHandles.includes(u)) return false;
@@ -291,7 +308,7 @@ function LoginForm() {
       setSavedAccounts(parsed);
       if (parsed.length > 0) {
         setSelectedAccount(parsed[0]);
-        setEmail(parsed[0].username || parsed[0].email || '');
+        setEmail(parsed[0].username ? parsed[0].username.replace(/^@/, '') : (parsed[0].email || ''));
       } else {
         setSelectedAccount(null);
         setEmail('');
@@ -301,7 +318,7 @@ function LoginForm() {
 
   const handleSelectAccount = (acc: SavedAccount) => {
     setSelectedAccount(acc);
-    setEmail(acc.username || acc.email || '');
+    setEmail(acc.username ? acc.username.replace(/^@/, '') : (acc.email || ''));
     setPassword('');
     setIsManualInputMode(false);
   };
@@ -317,7 +334,7 @@ function LoginForm() {
     if (selectedAccount && (selectedAccount.username || selectedAccount.handle || '').replace(/^@/, '').toLowerCase() === clean) {
       if (updated.length > 0) {
         setSelectedAccount(updated[0]);
-        setEmail(updated[0].username || updated[0].email || '');
+        setEmail(updated[0].username ? updated[0].username.replace(/^@/, '') : (updated[0].email || ''));
       } else {
         setSelectedAccount(null);
         setEmail('');
@@ -338,6 +355,10 @@ function LoginForm() {
     setErrorMessage(null);
     setLoading(true);
     try {
+      if (typeof window !== 'undefined') {
+        deactivateFounderSession();
+        localStorage.setItem('zenvitra_oauth_login_in_flight', 'true');
+      }
       await nextAuthSignIn(provider, { 
         redirectTo: targetDestination, 
         callbackUrl: targetDestination 
@@ -386,7 +407,7 @@ function LoginForm() {
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setErrorMessage('Please enter your identifier and master passphrase.');
+      setErrorMessage('Please enter your username or email and master passphrase.');
       return;
     }
 
@@ -411,18 +432,18 @@ function LoginForm() {
 
       if (isTwoFactorRequired) {
         // Validate password credentials first WITHOUT creating a session
-        const { error: authError } = await signInWithEmail(email, password, { skipSession: true });
+        const { error: authError } = await signInWithEmail(cleanUser, password, { skipSession: true });
         if (authError) {
           throw new Error(authError.message || 'Invalid credentials.');
         }
         setIs2FAStep(true);
         setLoading(false);
-        setSuccessMessage('Sovereign 2FA Challenge: Enter your Master PIN, Sovereign Code, or Emergency Passkey.');
+        setSuccessMessage('Two-Factor Verification: Enter your PIN or 10-digit security code.');
         return;
       }
 
       // Direct Sign In (no 2FA required on this account)
-      const { error: authError } = await signInWithEmail(email, password);
+      const { error: authError } = await signInWithEmail(cleanUser, password);
       if (authError) {
         throw new Error(authError.message || 'Invalid credentials.');
       }
@@ -438,7 +459,8 @@ function LoginForm() {
       recordSuccessfulAuth(cleanUser);
 
       // Save Login Info handling
-      const effectiveRole = cleanUser === 'yuveer' ? 'founder' : (selectedAccount?.role || selectedRole);
+      const isActualFounder = cleanUser === 'yuveer' && (email.toLowerCase().trim() === 'founder@zenvitra.xyz' || email.toLowerCase().trim() === 'founder@zenvitra.org' || selectedAccount?.id === 'zen_founder_root');
+      const effectiveRole = isActualFounder ? 'founder' : (selectedAccount?.role || selectedRole);
       try {
         localStorage.setItem('zenvitra_user_role', effectiveRole);
       } catch (_) {}
@@ -448,10 +470,10 @@ function LoginForm() {
         const userProf: any = {
           id: selectedAccount?.id || `zen_user_${cleanUser}`,
           username: cleanUser,
-          display_name: selectedAccount?.name || (cleanUser === 'yuveer' ? 'Yuveer Chhatwani' : cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1)),
+          display_name: selectedAccount?.name || (isActualFounder ? 'Yuveer Chhatwani' : cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1)),
           email: cleanUser.includes('@') ? cleanUser : `${cleanUser}@zenvitra.xyz`,
           role: effectiveRole,
-          isFounder: cleanUser === 'yuveer' || cleanUser.includes('founder'),
+          isFounder: isActualFounder,
           avatar: selectedAccount?.avatar || undefined,
           lastActive: new Date().toISOString()
         };
@@ -460,7 +482,7 @@ function LoginForm() {
       } else {
         setSavedAccountsEnabled(false);
         removeSavedSession(cleanUser);
-        setSuccessMessage('Access granted! Authenticating sovereign clearance...');
+        setSuccessMessage('Access granted! Authenticating verified delegate session...');
       }
 
       setTimeout(() => {
@@ -494,9 +516,9 @@ function LoginForm() {
     const isValid = verifySecurityCode(targetUserId, code);
     if (isValid) {
       recordSuccessfulAuth(targetUserId);
-      setSuccessMessage('🛡️ Code Authenticated! Unlocking Sovereign Clearance...');
+      setSuccessMessage('🛡️ Code Authenticated! Logging you in...');
 
-      const { error: authErr } = await signInWithEmail(email || targetUserId, password || '');
+      const { error: authErr } = await signInWithEmail(targetUserId, password || '');
       if (authErr) {
         setErrorMessage(authErr.message || 'Verification error.');
         setLoading(false);
@@ -506,7 +528,7 @@ function LoginForm() {
       sheetSync.login({
         userId: targetUserId,
         fullName: targetUserId,
-        email: email || targetUserId,
+        email: email.includes('@') ? email : targetUserId,
         authProvider: 'email_password',
         loginStatus: 'SUCCESS',
       });
@@ -519,7 +541,7 @@ function LoginForm() {
           display_name: selectedAccount?.name || (targetUserId === 'yuveer' ? 'Yuveer Chhatwani' : targetUserId.charAt(0).toUpperCase() + targetUserId.slice(1)),
           email: email.includes('@') ? email : `${targetUserId}@zenvitra.xyz`,
           role: targetUserId === 'yuveer' ? 'founder' : (selectedAccount?.role || 'delegate'),
-          isFounder: targetUserId === 'yuveer' || targetUserId.includes('founder'),
+          isFounder: targetUserId === 'yuveer' && (email === 'founder@zenvitra.xyz' || email === 'founder@zenvitra.org' || selectedAccount?.id === 'zen_founder_root'),
           avatar: selectedAccount?.avatar || undefined,
           lastActive: new Date().toISOString()
         };
@@ -575,14 +597,14 @@ function LoginForm() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
-              <span className="tracking-wider uppercase font-semibold text-neutral-200">SOVEREIGN IDENTITY GATEWAY</span>
+              <span className="tracking-wider uppercase font-semibold text-neutral-200">STUDENT & DELEGATE PORTAL</span>
               <span className="text-neutral-600">|</span>
               <span className="text-neutral-400">ZERO TRACKING PROTOCOL</span>
             </div>
 
             <div className="space-y-3">
               <h1 className="font-sans font-black text-4xl sm:text-5xl lg:text-[3.25rem] text-white tracking-tight leading-[1.08]">
-                One Sovereign Identity.<br />
+                One Unified Account.<br />
                 <span className="text-neutral-400 font-light italic font-serif">
                   The Entire Diplomatic Ecosystem.
                 </span>
@@ -615,9 +637,9 @@ function LoginForm() {
               <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
                 <span className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="tracking-wider uppercase font-semibold">SOVEREIGN ARCHITECTURE PILLARS</span>
+                  <span className="tracking-wider uppercase font-semibold">FOUNDATIONAL PILLARS</span>
                 </span>
-                <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase">ENCLAVE VERIFIED</span>
+                <span className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase">SECURE PORTAL</span>
               </div>
 
               <div className="space-y-2.5">
@@ -681,8 +703,8 @@ function LoginForm() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-white font-mono flex items-center gap-1.5">
-                    <span>Sovereign Security Shield Active</span>
-                    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">v2.4</span>
+                    <span>Secure 256-Bit SSL Protection Active</span>
+                    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-mono">V1</span>
                   </p>
                   <p className="text-[11px] text-neutral-400 mt-0.5">
                     Biometric passkeys, zero-knowledge tokens, and instant remote anti-theft session revocation.
@@ -713,17 +735,17 @@ function LoginForm() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
                     </span>
-                    <span className="tracking-wider uppercase text-neutral-300 font-semibold">SOVEREIGN AUTHENTICATION</span>
+                    <span className="tracking-wider uppercase text-neutral-300 font-semibold">ACCOUNT LOGIN</span>
                   </div>
                   <span className="text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
-                    256-BIT ENCLAVE
+                    VERIFIED & ENCRYPTED
                   </span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight pt-2">
                   Authenticate Node
                 </h3>
                 <p className="text-xs text-neutral-400">
-                  Enter your unique handle or email and master passphrase.
+                  Enter your username or email and master passphrase. No &apos;@&apos; required.
                 </p>
               </div>
 
@@ -741,7 +763,7 @@ function LoginForm() {
                       ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
                       : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                   }`}>
-                    {selectedRole === 'delegate' ? 'CHAMBER SOVEREIGN' : selectedRole === 'journalist' ? 'WIRE BUREAU' : 'PROTOCOL ENGINE'}
+                    {selectedRole === 'delegate' ? 'VERIFIED DELEGATE' : selectedRole === 'journalist' ? 'WIRE BUREAU' : 'PROTOCOL ENGINE'}
                   </span>
                 </div>
 
@@ -810,7 +832,7 @@ function LoginForm() {
                 <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs font-mono flex items-start gap-2.5 shadow-lg shadow-amber-950/20">
                   <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold text-amber-300">🔒 Sovereign Emergency Lockdown Active</p>
+                    <p className="font-bold text-amber-300">🔒 Account Security Lock Active</p>
                     <p className="text-[11px] text-amber-300/80 mt-0.5">
                       This account is currently frozen against unauthorized access. Enter your Master Founder Key or Sovereign Passkey to unfreeze.
                     </p>
@@ -990,7 +1012,7 @@ function LoginForm() {
                             {loading ? (
                               <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>Unlocking Sovereign Session...</span>
+                                <span>Signing in securely...</span>
                               </>
                             ) : (
                               <>
@@ -1097,7 +1119,7 @@ function LoginForm() {
                               setIsManualInputMode(false);
                               if (savedAccounts.length > 0) {
                                 setSelectedAccount(savedAccounts[0]);
-                                setEmail(savedAccounts[0].username || savedAccounts[0].email || '');
+                                setEmail(savedAccounts[0].username ? savedAccounts[0].username.replace(/^@/, '') : (savedAccounts[0].email || ''));
                               }
                             }}
                             className="text-xs font-mono text-purple-400 hover:text-purple-300 transition cursor-pointer flex items-center gap-1.5"
@@ -1109,8 +1131,8 @@ function LoginForm() {
 
                       <div className="space-y-1.5">
                         <label className="text-xs font-mono font-semibold text-neutral-300 flex items-center justify-between">
-                          <span>IDENTIFIER (@HANDLE OR EMAIL)</span>
-                          <span className="text-[10px] text-neutral-500 font-normal">DELEGATE / PRESS / CITIZEN</span>
+                          <span>USERNAME OR EMAIL</span>
+                          <span className="text-[10px] text-cyan-400/90 font-normal">NO &apos;@&apos; NEEDED</span>
                         </label>
                         <div className="relative group">
                           <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
@@ -1118,7 +1140,7 @@ function LoginForm() {
                             type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="@username or email"
+                            placeholder="Username or email (e.g. yuveer)"
                             disabled={loading}
                             required
                             className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
@@ -1169,7 +1191,7 @@ function LoginForm() {
                         </label>
                         <span className="text-[10px] font-mono text-emerald-400/80 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                          <span>ENCLAVE SECURED</span>
+                          <span>SECURE LOGIN</span>
                         </span>
                       </div>
 
@@ -1185,7 +1207,7 @@ function LoginForm() {
                           </>
                         ) : (
                           <>
-                            <span>Enter Sovereign Platform</span>
+                            <span>Sign In to Zenvitra</span>
                             <ArrowRight className="w-4 h-4" />
                           </>
                         )}
@@ -1250,7 +1272,7 @@ function LoginForm() {
                     <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
                       <div className="flex items-center gap-2 text-xs font-bold text-white">
                         <Shield className="w-4 h-4 text-emerald-400" />
-                        <span>Sovereign Identity Verification</span>
+                        <span>Two-Factor Verification</span>
                       </div>
                       <p className="text-[11px] font-mono text-neutral-400 leading-relaxed">
                         Enter your Master PIN, Sovereign Passkey, or 10-digit 2FA code.
@@ -1285,7 +1307,7 @@ function LoginForm() {
                         </>
                       ) : (
                         <>
-                          <span>Verify Sovereign Clearance</span>
+                          <span>Verify & Continue</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
@@ -1296,7 +1318,7 @@ function LoginForm() {
               {/* Footer Switcher */}
               <div className="pt-4 border-t border-white/10 text-center space-y-3">
                 <p className="text-xs text-neutral-400 font-mono">
-                  Don't have a sovereign key?{' '}
+                  New to Zenvitra?{' '}
                   <Link href="/register" className="text-white font-bold hover:underline">
                     Mint New ZEN.ID
                   </Link>

@@ -497,7 +497,7 @@ export function downloadTemplateJsonFile(form: ZenForm): void {
  * Generate a shareable URL that embeds the template data or links to template slug
  */
 export function generateShareableTemplateUrl(form: ZenForm): string {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://zenvitra.org';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://zenvitra.xyz';
   
   // If it matches an official or registered template, link directly by slug
   if (form.slug === 'zen-diplomacy-2026' || form.id === 'zen-diplomacy-2026-registration') {

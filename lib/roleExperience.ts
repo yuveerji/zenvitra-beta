@@ -43,6 +43,7 @@ export const SOVEREIGN_ROLE_CONFIGS: Record<SovereignRoleType, RoleExperienceCon
     tagline: 'Lead multilateral summits, draft binding resolutions & execute roll-call votes',
     capabilities: ['Roll-Call Voting', 'Dais Clearance', 'Encrypted Chits', 'Verified MUN Accolades'],
     focusRoutes: [
+      { label: 'Home Feed', href: '/pulse', tag: 'Live', description: 'Diplomatic Feed Stream' },
       { label: 'Chamber Dais', href: '/committee', tag: 'Live', description: 'Assembly Chamber & Motions' },
       { label: 'MUN Summits', href: '/events', tag: 'MUN', description: 'Flagship Gatherings & Model UN' },
       { label: 'Resolutions', href: '/solutions', tag: 'Ballot', description: 'Debate & Civic Voting' },
@@ -69,8 +70,8 @@ export const SOVEREIGN_ROLE_CONFIGS: Record<SovereignRoleType, RoleExperienceCon
     tagline: 'Publish uncompromised student dispatches, fast-wire bulletins & permanent DOI research',
     capabilities: ['Fast-Wire Publishing', 'DOI Research Registry', 'Spark Feed Sync', 'Editorial Desk'],
     focusRoutes: [
+      { label: 'Home Feed', href: '/pulse', tag: 'Live', description: 'Fast Feed Stream & Alerts' },
       { label: 'Press Bureau', href: '/press', tag: 'Wire', description: 'Autonomous Student News Desk' },
-      { label: 'Live Wire', href: '/pulse', tag: 'Live', description: 'Fast Feed Stream & Alerts' },
       { label: 'ZEN.GLIMPSE', href: '/glimpse', tag: '24h', description: 'Visual Ephemeral Dispatches' },
       { label: 'DOI Library', href: '/docs', tag: 'Dossier', description: 'Permanent Academic Citations' },
     ],
@@ -95,14 +96,15 @@ export const SOVEREIGN_ROLE_CONFIGS: Record<SovereignRoleType, RoleExperienceCon
     tagline: 'Build civic tools, govern smart assemblies & audit public school 10% aid ledger',
     capabilities: ['Treasury Audits', 'Open Protocol Tools', 'Decentralized ID', 'Smart Assemblies'],
     focusRoutes: [
+      { label: 'Home Feed', href: '/pulse', tag: 'Live', description: 'Feed Stream' },
       { label: 'Protocol Engine', href: '/solutions', tag: 'Build', description: 'Civic Micro-Tools & Voting' },
-      { label: 'Matrix Hub', href: '/matrix', tag: 'Engine', description: 'Adaptive Matrix OS' },
-      { label: 'Treasury Ledger', href: '/donate/govt-schools', tag: '10% Aid', description: 'Public School Aid Ledger' },
+      { label: 'Matrix Hub', href: '/mun/matrix', tag: 'Engine', description: 'Adaptive Matrix OS' },
+      { label: 'Treasury Ledger', href: '/impact', tag: '10% Aid', description: 'Public School Aid Ledger' },
       { label: 'Developer Enclave', href: '/enclave', tag: 'APIs', description: 'Open Protocol Endpoints' },
     ],
     quickAction: {
       label: 'Audit School Aid Ledger',
-      href: '/donate/govt-schools',
+      href: '/impact',
       type: 'audit',
     },
   },
@@ -123,12 +125,12 @@ export const SOVEREIGN_ROLE_CONFIGS: Record<SovereignRoleType, RoleExperienceCon
     focusRoutes: [
       { label: 'Home Feed', href: '/pulse', tag: 'All', description: 'Full Platform Stream' },
       { label: 'Chamber Dais', href: '/committee', tag: 'Live', description: 'Assembly Chamber' },
-      { label: 'Matrix Hub', href: '/matrix', tag: 'Engine', description: 'Adaptive Matrix OS' },
-      { label: 'Treasury Ledger', href: '/donate/govt-schools', tag: '10% Aid', description: 'Public School Aid' },
+      { label: 'Matrix Hub', href: '/mun/matrix', tag: 'Engine', description: 'Adaptive Matrix OS' },
+      { label: 'Treasury Ledger', href: '/impact', tag: '10% Aid', description: 'Public School Aid' },
     ],
     quickAction: {
       label: 'Command Matrix',
-      href: '/matrix',
+      href: '/zen-vault-root',
       type: 'general',
     },
   },

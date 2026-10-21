@@ -22,9 +22,10 @@ import { isFounder, isAdmin } from '@/lib/founderControl';
 
 interface EventAccessGateProps {
   onUnlock?: () => void;
+  onReturnToFeed?: () => void;
 }
 
-export function EventAccessGate({ onUnlock }: EventAccessGateProps) {
+export function EventAccessGate({ onUnlock, onReturnToFeed }: EventAccessGateProps) {
   const { profile } = useAuth();
   const isPrivilegedTester = React.useMemo(() => {
     const userIdentifier = profile?.username || profile?.email || '';
@@ -56,6 +57,32 @@ export function EventAccessGate({ onUnlock }: EventAccessGateProps) {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-rose-500/10 blur-[100px] pointer-events-none rounded-full" />
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-cyan-500/10 blur-[100px] pointer-events-none rounded-full" />
 
+        {/* Delegate Notice Bar */}
+        <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-left relative z-10">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+            <p className="text-xs text-neutral-300">
+              <strong className="text-white">Attending as a Delegate?</strong> You do not need an organizer account to browse summits or book passes!
+            </p>
+          </div>
+          {onReturnToFeed ? (
+            <button
+              type="button"
+              onClick={onReturnToFeed}
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold underline whitespace-nowrap cursor-pointer"
+            >
+              ← Back to Events Feed
+            </button>
+          ) : (
+            <Link
+              href="/events"
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold underline whitespace-nowrap"
+            >
+              ← Back to Events Feed
+            </Link>
+          )}
+        </div>
+
         {/* Top Header Badge */}
         <div className="space-y-4 relative z-10">
           <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto shadow-[0_0_30px_rgba(244,63,94,0.25)]">
@@ -64,15 +91,15 @@ export function EventAccessGate({ onUnlock }: EventAccessGateProps) {
 
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 text-[11px] font-mono tracking-wider uppercase">
             <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span>ACCREDITED EVENT ORGANIZERS ONLY</span>
+            <span>EVENT CREATORS &amp; ORGANIZERS ONLY</span>
           </div>
 
           <h2 className="text-2xl sm:text-4xl font-display font-bold text-white tracking-tight">
-            Event Chamber Access Restricted
+            Organizer Chamber Restricted
           </h2>
 
           <p className="text-xs sm:text-sm text-neutral-400 max-w-lg mx-auto leading-relaxed">
-            The <span className="text-white font-semibold">ZEN.EVENTS</span> dais, summit coordination tools, and the <span className="text-white font-semibold text-cyan-300">100% FREE ZEN.MUN Operating System</span> are accessible to verified Event Organizers, MUN Secretariats, and student delegations with zero software fees.
+            Publishing new events, hosting summits, and managing executive dais consoles is restricted to <span className="text-white font-semibold">Organizers &amp; Professional Accounts</span>. Delegates can freely attend and register without upgrading.
           </p>
         </div>
 
@@ -153,7 +180,21 @@ export function EventAccessGate({ onUnlock }: EventAccessGateProps) {
             )}
           </div>
 
-          <div className="flex items-center justify-center gap-4 text-xs font-mono text-neutral-500 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-neutral-500 pt-2">
+            {onReturnToFeed ? (
+              <button
+                type="button"
+                onClick={onReturnToFeed}
+                className="text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>← Browse All Events as Delegate</span>
+              </button>
+            ) : (
+              <Link href="/events" className="text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1">
+                <span>← Browse All Events as Delegate</span>
+              </Link>
+            )}
+            <span>•</span>
             <Link href="/pricing?tab=events" className="hover:text-cyan-400 transition flex items-center gap-1">
               <span>View Event Pro Pricing</span>
               <ArrowRight className="w-3 h-3" />

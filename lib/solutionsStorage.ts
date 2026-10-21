@@ -14,49 +14,10 @@ function ensureDir() {
 }
 
 /**
- * Creates initial official sample bills
+ * Baseline documents: Strictly zero seeded bills in compliance with NO-SEED guidelines
  */
 function getBaselineDocuments(): SolutionDocument[] {
-  const sample = SAMPLE_DRAFTS[0];
-  if (!sample) return [];
-  const parsed = parseDocument(sample.rawText, 'LEGISLATIVE_BILL');
-  return [{
-    id: 'doc_coaching_institutes_2026',
-    documentCode: 'BILL-2026-COACH-REG',
-    title: parsed.title,
-    documentType: 'LEGISLATIVE_BILL',
-    category: 'EDUCATION',
-    committee: 'Parliament of India / Lok Sabha Standing Committee',
-    status: 'PROPOSED',
-    leadSponsors: ['Hon. Member of Parliament', 'Youth Education Caucus'],
-    proposedByUsername: 'parliament_caucus',
-    signatories: ['Aarav Mehta', 'Diya Sen', 'Vikramaditya Roy'],
-    abstract: parsed.preamble || 'A Bill to provide for mandatory registration, academic regulation, mental health counselors, fee transparency, and holistic student welfare standards in private coaching institutes across India.',
-    enactingFormula: parsed.enactingFormula,
-    preamble: parsed.preamble,
-    chapters: parsed.chapters,
-    clauses: parsed.clauses.map(c => ({
-      ...c,
-      discussions: c.clauseNumber === '7' ? [
-        {
-          id: 'disc_1',
-          author: 'Delegate of Education Policy',
-          authorUsername: 'yuveer',
-          text: 'Clause 7 must mandate an independent student grievance ombudsman appointed outside institute management.',
-          createdAt: new Date().toISOString()
-        }
-      ] : []
-    })),
-    votes: {
-      inFavor: 142,
-      against: 18,
-      abstain: 9
-    },
-    votedUserIds: ['user_yuveer', 'user_arjun'],
-    createdAt: '2026-09-18T10:00:00Z',
-    updatedAt: '2026-09-24T12:00:00Z',
-    isOfficial: true
-  }];
+  return [];
 }
 
 /**
@@ -68,19 +29,17 @@ export function getAllServerDocuments(includeTest = false): SolutionDocument[] {
     if (fs.existsSync(SOLUTIONS_FILE)) {
       const content = fs.readFileSync(SOLUTIONS_FILE, 'utf-8');
       const list: SolutionDocument[] = JSON.parse(content);
-      if (Array.isArray(list) && list.length > 0) {
+      if (Array.isArray(list)) {
         if (!includeTest) {
           return list.filter((d: any) => !d.isTest && d.proposedByUsername !== 'test');
         }
         return list;
       }
     }
-    const baseline = getBaselineDocuments();
-    saveAllServerDocuments(baseline);
-    return baseline;
+    return [];
   } catch (err) {
     console.warn('[SOLUTIONS-STORAGE-READ-ERROR]', err);
-    return getBaselineDocuments();
+    return [];
   }
 }
 
@@ -106,6 +65,7 @@ export function getServerDocumentById(id: string): SolutionDocument | null {
 
 /**
  * Creates or updates a solution document
+ * Enforces maximum 2 edits rule per bill
  */
 export function saveServerDocument(doc: SolutionDocument): SolutionDocument {
   doc.updatedAt = new Date().toISOString();
@@ -115,8 +75,31 @@ export function saveServerDocument(doc: SolutionDocument): SolutionDocument {
   const index = all.findIndex(d => d.id === doc.id);
 
   if (index >= 0) {
-    all[index] = { ...all[index], ...doc };
+    const existing = all[index];
+    const previousEditCount = existing.editCount ?? 0;
+
+    // Detect if this update is an author edit (title, clauses, chapters, abstract, preamble modified)
+    const isAuthorContentEdit = 
+      doc.title !== existing.title ||
+      doc.abstract !== existing.abstract ||
+      JSON.stringify(doc.clauses) !== JSON.stringify(existing.clauses) ||
+      JSON.stringify(doc.chapters) !== JSON.stringify(existing.chapters) ||
+      JSON.stringify(doc.schedules) !== JSON.stringify(existing.schedules);
+
+    if (isAuthorContentEdit) {
+      if (previousEditCount >= (existing.maxEdits || 2)) {
+        throw new Error('This bill has reached its statutory limit of 2 edits and is finalized as an Enacted Draft.');
+      }
+      doc.editCount = previousEditCount + 1;
+    } else {
+      doc.editCount = previousEditCount;
+    }
+
+    doc.maxEdits = 2;
+    all[index] = { ...existing, ...doc };
   } else {
+    doc.editCount = doc.editCount ?? 0;
+    doc.maxEdits = 2;
     all.unshift(doc);
   }
 

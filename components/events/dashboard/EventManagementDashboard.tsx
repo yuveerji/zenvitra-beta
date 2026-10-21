@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, Users, IndianRupee, ShieldCheck, QrCode, 
   Settings, KeyRound, Plus, Calendar, Clock, MapPin, 
   CheckCircle2, AlertTriangle, ArrowLeft, ExternalLink, 
-  Radio, Edit3, Trash2, ShieldAlert, Sparkles, Filter, Search
+  Radio, Edit3, Trash2, ShieldAlert, Sparkles, Filter, Search, CreditCard,
+  Briefcase
 } from 'lucide-react';
 import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { ZenEvent, EventOrganizerRole, EventTeamMember, EventStatus } from '@/types/events';
@@ -15,9 +16,17 @@ import { EventAccessSharingModal } from './EventAccessSharingModal';
 import { AttendeeRosterModal } from './AttendeeRosterModal';
 import { EditEventModal } from './EditEventModal';
 import { ZenPassScannerModal } from '../ZenPassScannerModal';
+import { EventPlansPaymentLinksModal } from '@/components/payments/EventPlansPaymentLinksModal';
+import { DistrictHostCommandCenter } from './DistrictHostCommandCenter';
+import { RevenueFeeSimulatorModal } from '@/components/pulse/RevenueFeeSimulatorModal';
 import { useProtocolControls } from '@/lib/founderControl';
+import { DesktopModeAdvisory } from '@/components/common/DesktopModeAdvisory';
 
-export const EventManagementDashboard: React.FC = () => {
+interface EventManagementDashboardProps {
+  defaultEventId?: string;
+}
+
+export const EventManagementDashboard: React.FC<EventManagementDashboardProps> = ({ defaultEventId }) => {
   const { escrowMandateActive } = useProtocolControls();
   const {
     getOrganizerEvents,
@@ -38,15 +47,34 @@ export const EventManagementDashboard: React.FC = () => {
 
   const organizerEvents = getOrganizerEvents();
 
+  // Active Managing Event for District Host Command Center
+  const [activeManagingEvent, setActiveManagingEvent] = useState<ZenEvent | null>(() => {
+    if (defaultEventId) {
+      return organizerEvents.find((e) => e.id === defaultEventId) || null;
+    }
+    return organizerEvents.length > 0 ? organizerEvents[0] : null;
+  });
+
+  // Keep activeManagingEvent synced if organizerEvents update
+  useEffect(() => {
+    if (defaultEventId) {
+      const match = organizerEvents.find((e) => e.id === defaultEventId);
+      if (match) setActiveManagingEvent(match);
+    }
+  }, [defaultEventId, organizerEvents]);
+
   // Search & Status filter inside dashboard
   const [dashboardFilter, setDashboardFilter] = useState<'all' | 'upcoming' | 'live' | 'past' | 'cancelled'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [hostTab, setHostTab] = useState<'roster' | 'sheets' | 'simulator' | 'scanner' | 'recruitment'>('roster');
 
   // Active Modals
   const [selectedEventForAccess, setSelectedEventForAccess] = useState<ZenEvent | null>(null);
   const [selectedEventForRoster, setSelectedEventForRoster] = useState<ZenEvent | null>(null);
   const [selectedEventForEdit, setSelectedEventForEdit] = useState<ZenEvent | null>(null);
+  const [selectedEventForPlans, setSelectedEventForPlans] = useState<ZenEvent | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isRevenueSimulatorOpen, setIsRevenueSimulatorOpen] = useState(false);
 
   // Cancellation prompt
   const [eventToCancel, setEventToCancel] = useState<ZenEvent | null>(null);
@@ -112,6 +140,7 @@ export const EventManagementDashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-16">
+      <DesktopModeAdvisory studioName="Event Management Operations Studio" storageKey="zen_events_manage" />
       {/* Top Banner Navigation */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div className="space-y-1">
@@ -138,6 +167,15 @@ export const EventManagementDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setIsRevenueSimulatorOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
+          >
+            <CreditCard className="w-4 h-4 text-purple-400" />
+            <span>Revenue Simulator</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsScannerOpen(true)}
@@ -253,8 +291,75 @@ export const EventManagementDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Summits List */}
-      <div className="space-y-4">
+      {/* View Mode Switcher: All Hosted Summits vs Dedicated District Host Command Center */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-[#0c0f1b] border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setActiveManagingEvent(null)}
+            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition cursor-pointer ${
+              !activeManagingEvent
+                ? 'bg-cyan-500 text-neutral-950 shadow-md shadow-cyan-500/20'
+                : 'text-neutral-400 hover:text-white bg-white/5'
+            }`}
+          >
+            All Hosted Summits ({organizerEvents.length})
+          </button>
+
+          {organizerEvents.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!activeManagingEvent) setActiveManagingEvent(organizerEvents[0]);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer ${
+                activeManagingEvent
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-neutral-950 shadow-md shadow-cyan-500/20'
+                  : 'text-neutral-400 hover:text-white bg-white/5'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>District Host Command Center</span>
+            </button>
+          )}
+        </div>
+
+        {activeManagingEvent && (
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="text-neutral-400">Managing:</span>
+            <select
+              value={activeManagingEvent.id}
+              onChange={(e) => {
+                const match = organizerEvents.find((ev) => ev.id === e.target.value);
+                if (match) setActiveManagingEvent(match);
+              }}
+              className="bg-[#111422] border border-cyan-500/30 text-cyan-300 rounded-lg px-2.5 py-1 text-xs focus:outline-none"
+            >
+              {organizerEvents.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Render Command Center if active, else render portfolio list */}
+      {activeManagingEvent ? (
+        <DistrictHostCommandCenter
+          event={activeManagingEvent}
+          allEvents={organizerEvents}
+          initialTab={hostTab}
+          onSelectEvent={(ev) => setActiveManagingEvent(ev)}
+          onUpdateEvent={(id, updates) => updateEvent(id, updates)}
+          onCheckInAttendee={(attendeeId) => checkInAttendee(activeManagingEvent.id, attendeeId)}
+          onOpenAccessModal={() => setSelectedEventForAccess(activeManagingEvent)}
+          onOpenEditModal={() => setSelectedEventForEdit(activeManagingEvent)}
+        />
+      ) : (
+        /* Summits List */
+        <div className="space-y-4">
         {displayedEvents.length === 0 ? (
           <div className="p-12 rounded-3xl bg-[#0b0e17] border border-white/5 text-center space-y-3">
             <Calendar className="w-10 h-10 text-neutral-600 mx-auto" />
@@ -395,6 +500,16 @@ export const EventManagementDashboard: React.FC = () => {
                 {/* Action Buttons Hub */}
                 <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/5 flex-wrap">
                   <div className="flex items-center gap-2 flex-wrap">
+                    {/* District Host Command Center */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveManagingEvent(ev)}
+                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-neutral-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/20 transition cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Host Command Center</span>
+                    </button>
+
                     {/* Delegate Roster & Check-In */}
                     <button
                       type="button"
@@ -413,6 +528,29 @@ export const EventManagementDashboard: React.FC = () => {
                     >
                       <KeyRound className="w-3.5 h-3.5" />
                       <span>Share Access & Roles ({team.length})</span>
+                    </button>
+
+                    {/* Registration Plans & Cashfree Payment Links */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedEventForPlans(ev)}
+                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-cyan-500/15 hover:from-amber-500/25 hover:to-cyan-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <CreditCard className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Plans &amp; Payment Links</span>
+                    </button>
+
+                    {/* Staff Recruitment & Applications */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHostTab('recruitment');
+                        setActiveManagingEvent(ev);
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                    >
+                      <Briefcase className="w-3.5 h-3.5 text-black" />
+                      <span>Recruit Staff</span>
                     </button>
 
                     {/* Edit Specifications */}
@@ -459,6 +597,7 @@ export const EventManagementDashboard: React.FC = () => {
           })
         )}
       </div>
+      )}
 
       {/* Role Delegation Modal */}
       {selectedEventForAccess && (
@@ -499,7 +638,43 @@ export const EventManagementDashboard: React.FC = () => {
       <ZenPassScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
+        eventId={activeManagingEvent?.id || selectedEventForRoster?.id}
+        eventTitle={activeManagingEvent?.title || selectedEventForRoster?.title}
+        venueName={activeManagingEvent?.location || activeManagingEvent?.city}
+        eventStartTime={activeManagingEvent?.date}
+        onTicketScanned={(scannedTicket) => {
+          if (activeManagingEvent?.id && scannedTicket?.id) {
+            checkInAttendee(activeManagingEvent.id, scannedTicket.id);
+          }
+        }}
       />
+
+      {/* Full Revenue & Fee Settlement Simulator Modal */}
+      <RevenueFeeSimulatorModal
+        isOpen={isRevenueSimulatorOpen}
+        onClose={() => setIsRevenueSimulatorOpen(false)}
+      />
+
+      {/* Registration Plans & Cashfree Payment Links Modal */}
+      {selectedEventForPlans && (
+        <EventPlansPaymentLinksModal
+          isOpen={Boolean(selectedEventForPlans)}
+          onClose={() => setSelectedEventForPlans(null)}
+          eventId={selectedEventForPlans.id}
+          eventTitle={selectedEventForPlans.title}
+          initialPlans={selectedEventForPlans.plans}
+          initialPaymentLinks={selectedEventForPlans.paymentLinks}
+          onSavePlans={(plans) => {
+            updateEvent(selectedEventForPlans.id, { plans });
+          }}
+          onSavePaymentLink={(link) => {
+            const existing = selectedEventForPlans.paymentLinks || [];
+            updateEvent(selectedEventForPlans.id, {
+              paymentLinks: [link, ...existing.filter((l) => l.linkId !== link.linkId)],
+            });
+          }}
+        />
+      )}
 
       {/* Cancel Summit Confirmation Dialog */}
       {eventToCancel && (

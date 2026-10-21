@@ -869,7 +869,7 @@ export default function ProfessionalEventRegisterPage() {
               </div>
               <div className="flex justify-between text-neutral-400">
                 <span>Verified Status:</span>
-                <strong className="text-emerald-400">ACTIVE &bull; LEVEL 3 CLEARANCE</strong>
+                <strong className="text-emerald-400">ACTIVE • VERIFIED DELEGATE</strong>
               </div>
             </div>
 

@@ -17,16 +17,19 @@ import {
 } from 'lucide-react';
 import { ZenPassport, getVerificationLevelDetails } from '@/lib/passport';
 import { PassportQrModal } from './PassportQrModal';
+import { PointsHistoryModal } from './PointsHistoryModal';
 
 interface ZenPassportCardProps {
   passport: ZenPassport;
   isOwner?: boolean;
   onOpenQr?: () => void;
   onOpenVerifyModal?: () => void;
+  onOpenPointHistory?: () => void;
 }
 
-export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVerifyModal }: ZenPassportCardProps) {
+export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVerifyModal, onOpenPointHistory }: ZenPassportCardProps) {
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
   const verificationMeta = getVerificationLevelDetails(passport.verification.level);
@@ -82,8 +85,8 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
                       ZENVITRA PROTOCOL
                     </span>
                   </div>
-                  <h3 className="font-display text-xs sm:text-sm font-extrabold tracking-wider text-white uppercase">
-                    SOVEREIGN DIPLOMATIC PASSPORT
+                  <h3 className="font-serif italic text-xs sm:text-sm font-bold tracking-wider text-white">
+                    Sovereign Diplomatic Passport
                   </h3>
                 </div>
               </div>
@@ -120,7 +123,7 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
 
                 {/* Identity Information */}
                 <div className="space-y-1.5 min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-display font-black text-white tracking-tight truncate leading-tight">
+                  <h2 className="text-xl sm:text-2xl font-serif font-black text-white tracking-tight truncate leading-tight">
                     {passport.fullName}
                   </h2>
                   
@@ -212,12 +215,20 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
                   JOURNEY
                 </span>
               </div>
-              <div className="space-y-0.5 border-l border-white/10">
-                <span className="text-base sm:text-xl font-display font-black text-purple-300">{contributionCount}</span>
-                <span className="text-[10px] font-sans font-bold tracking-wider text-neutral-400 block uppercase">
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenPointHistory) onOpenPointHistory();
+                  else setIsHistoryOpen(true);
+                }}
+                className="space-y-0.5 border-l border-white/10 hover:bg-white/[0.04] transition rounded-lg p-0.5 cursor-pointer text-center block w-full"
+                title="View Sovereign Point History Ledger"
+              >
+                <span className="text-base sm:text-xl font-display font-black text-purple-300 block">{contributionCount}</span>
+                <span className="text-[10px] font-sans font-bold tracking-wider text-purple-300/80 block uppercase">
                   MERITS
                 </span>
-              </div>
+              </button>
             </div>
 
             {/* Action CTAs */}
@@ -264,6 +275,14 @@ export function ZenPassportCard({ passport, isOwner = false, onOpenQr, onOpenVer
         passport={passport}
         isOpen={isQrOpen}
         onClose={() => setIsQrOpen(false)}
+      />
+
+      {/* Sovereign Point History Modal */}
+      <PointsHistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        username={passport.username}
+        userDisplayName={passport.fullName}
       />
     </>
   );

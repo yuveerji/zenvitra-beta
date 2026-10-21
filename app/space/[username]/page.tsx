@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { ZenSpaceView } from '@/components/space/ZenSpaceView';
+import { ZenSpacePaused } from '@/components/space/ZenSpacePaused';
 import { getZenSpaceProfile } from '@/lib/spaceStorage';
 
 interface Props {
@@ -14,11 +14,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const profile = getZenSpaceProfile(cleanUser);
 
   return {
-    title: `${profile.displayName} (@${profile.username}) | ZEN.SPACE`,
-    description: profile.bio,
+    title: `ZEN.SPACE Paused — Coming Nov 25 | ${profile.displayName || 'ZENVITRA'}`,
+    description: 'ZEN.SPACE is temporarily paused until November 25, 2026. Something special is coming soon.',
     openGraph: {
-      title: `${profile.displayName} (@${profile.username}) • ZEN.SPACE`,
-      description: profile.bio,
+      title: `ZEN.SPACE Paused — Resuming Nov 25, 2026`,
+      description: 'Something special coming soon to ZEN.SPACE.',
       images: profile.avatar ? [profile.avatar] : ['/brand/logo.png'],
     },
   };
@@ -27,5 +27,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SpaceUserPage({ params }: Props) {
   const { username } = await params;
   const cleanUser = (username || '').toLowerCase().replace('@', '').trim();
-  return <ZenSpaceView username={cleanUser} />;
+  return <ZenSpacePaused username={cleanUser} />;
 }

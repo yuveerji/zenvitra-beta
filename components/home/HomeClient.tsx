@@ -38,7 +38,8 @@ import {
   Flame,
   Stethoscope,
   AlertTriangle,
-  Gavel
+  Gavel,
+  Award
 } from 'lucide-react';
 import MonolithCard from '@/components/home/MonolithCard';
 import LiveTelemetryBanner from '@/components/home/LiveTelemetryBanner';
@@ -46,8 +47,8 @@ import SocialHoverMenu from '@/components/home/SocialHoverMenu';
 import { InteractiveWordModal } from '@/components/home/InteractiveWordModal';
 import { InteractiveWordHover, InteractiveWordGroup } from '@/components/home/InteractiveWordHover';
 import { EcosystemMindMapModal } from '@/components/home/EcosystemMindMapModal';
+import { ListConferenceModal } from '@/components/events/ListConferenceModal';
 import { FeaturedEvents } from '@/components/home/FeaturedEvents';
-import { JoinZenDiplomacyCard } from '@/components/mun/JoinZenDiplomacyCard';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { AnimatedSection, StaggerChildren, StaggerItem } from '@/components/ui/AnimatedSection';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
@@ -70,6 +71,7 @@ export default function HomeClient({ session }: HomeClientProps) {
   const { profile, isAuthenticated, isMockMode } = useAuth();
   const [hasSavedSession, setHasSavedSession] = useState(false);
   const { escrowMandateActive } = useProtocolControls();
+  const [isListConferenceOpen, setIsListConferenceOpen] = useState(false);
 
   useEffect(() => {
     const checkSession = () => {
@@ -333,7 +335,7 @@ export default function HomeClient({ session }: HomeClientProps) {
             <AnimatedSection delay={0.1}>
               <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-white/15 bg-white/[0.02] text-[10px] sm:text-[11px] font-mono tracking-widest text-neutral-300 uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-                <span>SOVEREIGN NETWORK FOR YOUTH WITH SENSES &amp; SOURCES</span>
+                <span>OFFICIAL NETWORK FOR YOUTH CIVIC LEADERSHIP</span>
               </div>
             </AnimatedSection>
 
@@ -506,8 +508,10 @@ export default function HomeClient({ session }: HomeClientProps) {
                     <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/[0.08] text-neutral-200">
                       <FounderNoteRenderer
                         body={founderDirective.body}
-                        defaultExpanded={false}
+                        defaultExpanded={true}
                         collapsible={true}
+                        hideDuplicateTitle={true}
+                        cardTitle={founderDirective.title || 'A Note from the Founder'}
                       />
                     </div>
 
@@ -527,10 +531,10 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <div className="pt-5 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                     <div className="space-y-0.5">
                       <h4 className="font-display font-medium text-base text-white">
-                        {founderDirective.author || 'Founder & System Architect'}
+                        {founderDirective.author || 'Yuveer Chhatwani'}
                       </h4>
                       <p className="font-mono text-xs text-neutral-400">
-                        Founder &amp; System Architect, Zenvitra &bull; <span className="text-neutral-300">@founder</span>
+                        Founder, ZENVITRA &bull; <span className="text-neutral-300">@founder</span>
                       </p>
                     </div>
 
@@ -567,7 +571,7 @@ export default function HomeClient({ session }: HomeClientProps) {
               </span>
               <h2 className="font-display font-medium text-3xl sm:text-5xl text-white tracking-tight leading-snug max-w-2xl mx-auto">
                 We&apos;re building more than a platform.{' '}
-                <span className="text-gradient-shimmer">We&apos;re building a movement.</span>
+                <span className="font-serif italic font-normal text-cyan-200">We&apos;re building a movement.</span>
               </h2>
             </div>
           </AnimatedSection>
@@ -623,7 +627,7 @@ export default function HomeClient({ session }: HomeClientProps) {
               </div>
 
               <div className="lg:col-span-4 space-y-4 text-xs sm:text-sm text-neutral-400 font-mono leading-relaxed border-l border-purple-500/30 pl-6 text-left">
-                <p className="text-white font-semibold text-base font-sans leading-snug">
+                <p className="text-white font-serif italic font-normal text-lg sm:text-xl leading-relaxed">
                   &ldquo;You can ignore a generation for only so long before it builds platforms of its own.&rdquo;
                 </p>
                 <p className="text-neutral-400 font-sans font-light">
@@ -704,6 +708,206 @@ export default function HomeClient({ session }: HomeClientProps) {
           </div>
         </section>
 
+        {/* 5.6 LIST YOUR CONFERENCE OR EVENT — 3RD PLACE SPOTLIGHT ABOVE ECOSYSTEM */}
+        <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-20 space-y-10 text-left">
+          <AnimatedSection>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-white/10">
+              <div className="space-y-2">
+                <span className="font-mono text-[10px] tracking-[0.3em] text-cyan-300 uppercase font-bold flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  CONFERENCE &amp; ASSEMBLY HOSTING &bull; OPEN TO EVERYONE
+                </span>
+                <h2 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight uppercase leading-tight">
+                  LIST YOUR CONFERENCE <span className="font-serif italic font-normal text-cyan-300 text-3xl sm:text-5xl tracking-normal">Or Summit.</span>
+                </h2>
+              </div>
+              <p className="text-xs text-neutral-400 max-w-md font-light leading-relaxed font-sans">
+                Host your Model UN, youth parliament, academic summit, or civic conclave on ZENVITRA. Free for all organizers—every event gets verified by our Secretariat so it goes live securely.
+              </p>
+            </div>
+          </AnimatedSection>
+
+          {/* Master Hero Listing Card */}
+          <div className="relative rounded-3xl p-8 sm:p-10 bg-[#08090f] border border-white/10 shadow-2xl overflow-hidden">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-8 space-y-5">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-mono text-[11px] font-bold uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Modern Conference & MUN Engine • Open Access</span>
+                </div>
+
+                <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
+                  Organizing a Model UN or Youth Summit? <span className="font-serif italic font-normal text-cyan-200">List It in Seconds.</span>
+                </h3>
+
+                <p className="text-xs sm:text-sm text-neutral-400 font-sans font-light leading-relaxed max-w-2xl">
+                  Anyone can submit an event or MUN. You get automated Cashfree pass checkout, real-time country matrix allocations, verifiable anti-fraud QR gate passes, and virtual dais chambers. Once verified by our Core Team, your conference goes live globally.
+                </p>
+
+                <div className="flex flex-wrap gap-4 pt-1">
+                  <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
+                    <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+                    <span>Open to Every School, College &amp; Club</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
+                    <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+                    <span>Fast Core Secretariat Verification</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
+                    <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+                    <span>Anti-Counterfeit QR Tickets</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Direct CTA Box */}
+              <div className="lg:col-span-4 flex flex-col gap-3 justify-center bg-white/[0.03] backdrop-blur-xl p-6 sm:p-7 rounded-2xl border border-white/10 text-center">
+                <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest font-bold">
+                  100% Free Hosting for Free Events
+                </span>
+                <div className="text-xl sm:text-2xl font-display font-bold text-white">
+                  Publish Your Event
+                </div>
+                <p className="text-[11px] text-neutral-400 font-mono leading-tight">
+                  Reach delegates, sell passes, and run smooth on-ground check-ins.
+                </p>
+                <div className="pt-2 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsListConferenceOpen(true)}
+                    className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-extrabold uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95"
+                  >
+                    <span>List Your Conference Now</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <Link
+                    href="/events"
+                    className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white font-mono text-xs font-semibold transition flex items-center justify-center gap-1.5 border border-white/10"
+                  >
+                    <span>Explore Live Assemblies</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3 Pillars of ZENVITRA Event Infrastructure */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1: Country Matrix & Portfolios */}
+            <SpotlightCard paddingClassName="p-6">
+              <div className="flex flex-col justify-between h-full space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                      <Layers className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 px-2 py-0.5 rounded-full uppercase">
+                      ALLOTMENT ENGINE
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h4 className="font-display font-bold text-lg text-white">
+                      Country Matrix &amp; Portfolios
+                    </h4>
+                    <p className="text-xs text-neutral-400 font-light font-sans leading-relaxed">
+                      Instant interactive country matrix with dynamic portfolio allocations, committee quotas, and delegate dossier tracking.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-neutral-400">Automated Allotments</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsListConferenceOpen(true)}
+                    className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 group cursor-pointer"
+                  >
+                    <span>List MUN</span>
+                    <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </SpotlightCard>
+
+            {/* Card 2: Zero-Counterfeit QR Scanner */}
+            <SpotlightCard paddingClassName="p-6">
+              <div className="flex flex-col justify-between h-full space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full uppercase">
+                      DOOR ENTRY OS
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h4 className="font-display font-bold text-lg text-white">
+                      Anti-Fraud Gate Scanner
+                    </h4>
+                    <p className="text-xs text-neutral-400 font-light font-sans leading-relaxed">
+                      Cryptographically signed QR gate passes. Armed on-ground scanners automatically open when event timings begin with audio chimes.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-neutral-400">Real-Time Turnout</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsListConferenceOpen(true)}
+                    className="text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 group cursor-pointer"
+                  >
+                    <span>Deploy Gate</span>
+                    <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </SpotlightCard>
+
+            {/* Card 3: Cashfree Pass Escrow & GST */}
+            <SpotlightCard paddingClassName="p-6">
+              <div className="flex flex-col justify-between h-full space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                      <Coins className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 rounded-full uppercase">
+                      FINANCE &amp; GST
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h4 className="font-display font-bold text-lg text-white">
+                      Cashfree Passes &amp; 0% Student GST
+                    </h4>
+                    <p className="text-xs text-neutral-400 font-light font-sans leading-relaxed">
+                      Direct UPI, card, and netbanking pass checkout with automated age-aware GST exemption (0% GST for students &le;18) and organizer payouts.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-neutral-400">Direct Payouts</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsListConferenceOpen(true)}
+                    className="text-xs font-mono text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 group cursor-pointer"
+                  >
+                    <span>Start Listing</span>
+                    <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </SpotlightCard>
+          </div>
+        </section>
+
         {/* 6. "WHAT WE'RE BUILDING" */}
         <section className="max-w-6xl mx-auto px-6 sm:px-12 py-20 space-y-12 text-center">
           <AnimatedSection>
@@ -712,7 +916,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                 WHAT WE&apos;RE BUILDING
               </span>
               <h2 className="font-display font-medium text-3xl sm:text-5xl text-white tracking-tight">
-                An ecosystem. <span className="text-gradient-shimmer">Endless possibilities.</span>
+                An ecosystem. <span className="font-serif italic font-normal text-cyan-200">Endless possibilities.</span>
               </h2>
             </div>
           </AnimatedSection>
@@ -743,10 +947,6 @@ export default function HomeClient({ session }: HomeClientProps) {
           </StaggerChildren>
         </section>
 
-        {/* Real & Raw Events: Join ZEN.DIPLOMACY MUN 2026 */}
-        <AnimatedSection className="relative z-10">
-          <JoinZenDiplomacyCard />
-        </AnimatedSection>
 
         {/* 7. The Sovereign Universe Matrix: Three Worlds & Platform Ecosystem */}
         <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-24 space-y-16">
@@ -760,7 +960,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                   </span>
                 </div>
                 <h2 className="font-display font-medium text-3xl sm:text-4xl text-white tracking-tight">
-                  One Universe. Three Sovereign Worlds.
+                  One Universe. <span className="font-serif italic font-normal text-cyan-200">Three Dedicated Arenas.</span>
                 </h2>
               </div>
               <p className="font-mono text-xs text-neutral-400 max-w-md text-left lg:text-right leading-relaxed">
@@ -917,7 +1117,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                   ACTIVE DEBATES
                 </span>
                 <h2 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight uppercase leading-tight">
-                  DISCUSSIONS THAT DON&apos;T DISAPPEAR.
+                  DISCUSSIONS THAT <span className="font-serif italic font-normal text-cyan-200 tracking-normal">Don&apos;t Disappear.</span>
                 </h2>
               </div>
               <p className="text-xs text-neutral-400 max-w-sm font-light leading-relaxed font-sans">
@@ -930,49 +1130,54 @@ export default function HomeClient({ session }: HomeClientProps) {
           <div className="border-y border-white/10 divide-y divide-white/10">
             {[
               {
+                id: 'disc-marvel-doctor-doom-geopolitics',
                 category: 'MARVEL & GEOPOLITICS',
                 badgeColor: 'text-amber-400 border-amber-400/30 bg-amber-400/10',
                 title: 'Doctor Doom, Latverian Sovereignty & Multiverse Incursions: Is authoritarian order justified when global systems fail?',
-                meta: '0 Replies • Be The First To Deliberate',
-                badgeText: '0 Replies',
+                status: 'Be The First To Deliberate',
+                author: '@yuveer',
                 tag: 'Marvel & Theory'
               },
               {
+                id: 'disc-standup-free-speech',
                 category: 'POLITICS & FREE SPEECH',
                 badgeColor: 'text-amber-400 border-amber-400/30 bg-amber-400/10',
                 title: 'Samay Raina, Ranveer & Ashish Solanki: Is comedy & podcasting becoming a political crime?',
-                meta: '0 Replies • Open Debate',
-                badgeText: '0 Replies',
+                status: 'Open Debate',
+                author: '@yuveer',
                 tag: 'Free Speech'
               },
               {
+                id: 'disc-neet-paper-leaks',
                 category: 'EDUCATION & INTEGRITY',
                 badgeColor: 'text-cyan-400 border-cyan-400/30 bg-cyan-400/10',
                 title: 'The NEET-UG Paper Leak Scandal: 2.4 Million students betrayed by systemic corruption.',
-                meta: '0 Replies • Academic Justice',
-                badgeText: '0 Replies',
+                status: 'Academic Justice',
+                author: '@yuveer',
                 tag: 'Paper Leak'
               },
               {
+                id: 'disc-godi-media-collapse',
                 category: 'MEDIA & DEMOCRACY',
                 badgeColor: 'text-purple-400 border-purple-400/30 bg-purple-400/10',
                 title: 'The \'Godi Media\' Surrender: Has Indian prime-time television traded truth for state theatrics?',
-                meta: '0 Replies • Fourth Pillar',
-                badgeText: '0 Replies',
+                status: 'Fourth Pillar',
+                author: '@yuveer',
                 tag: 'Press Freedom'
               },
               {
+                id: 'disc-algorithmic-surveillance-dpdp',
                 category: 'TECHNOLOGY & RIGHTS',
                 badgeColor: 'text-emerald-400 border-emerald-400/30 bg-emerald-400/10',
                 title: 'Algorithmic Surveillance, Deepfakes & DPDP: Are youth sleepwalking into a digital panopticon?',
-                meta: '0 Replies • Digital Privacy',
-                badgeText: '0 Replies',
+                status: 'Digital Privacy',
+                author: '@yuveer',
                 tag: 'Digital Rights'
               }
             ].map((d) => (
               <Link
                 key={d.title}
-                href="/discussions"
+                href={`/discussions?id=${d.id}`}
                 className="group relative grid grid-cols-1 lg:grid-cols-[0.25fr_1fr_auto] gap-4 sm:gap-6 items-center p-6 sm:p-8 transition-all duration-300 hover:bg-white/[0.025]"
               >
                 {/* Category badge */}
@@ -987,9 +1192,14 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <h3 className="font-display font-medium text-lg sm:text-xl text-white group-hover:text-cyan-200 transition-colors leading-snug">
                     {d.title}
                   </h3>
-                  <div className="flex items-center gap-3 font-mono text-xs text-neutral-400">
-                    <span className="text-emerald-400 font-semibold">{d.meta}</span>
-                    <span>•</span>
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 font-mono text-xs text-neutral-400">
+                    <span className="text-purple-400 font-semibold flex items-center gap-1">
+                      <span className="text-neutral-500 font-normal">By</span>
+                      <span className="underline decoration-purple-500/40">{d.author}</span>
+                    </span>
+                    <span className="text-neutral-600">•</span>
+                    <span className="text-emerald-400 font-semibold">{d.status}</span>
+                    <span className="text-neutral-600">•</span>
                     <span className="text-neutral-500">{d.tag}</span>
                   </div>
                 </div>
@@ -1021,10 +1231,10 @@ export default function HomeClient({ session }: HomeClientProps) {
         {/* 7.6 DOCUMENTATION ARCHIVE */}
         <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-20 space-y-12 text-left">
           <AnimatedSection>
-            <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-b from-[#18132c]/90 to-[#0b0916]/95 border border-white/12 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(168,85,247,0.12)] space-y-8">
+            <div className="p-8 sm:p-12 rounded-3xl bg-[#08090f] border border-white/10 shadow-2xl space-y-8">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
                 <div className="space-y-1">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-purple-300 font-bold">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-bold">
                     Documentation Archive
                   </span>
                   <h3 className="font-display font-black text-2xl sm:text-3xl text-white tracking-tight uppercase">
@@ -1032,7 +1242,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                   </h3>
                 </div>
                 <Link
-                  href={isUserLoggedIn ? '/press' : `/login?redirect=${encodeURIComponent('/press')}`}
+                  href={isUserLoggedIn ? '/solutions' : `/login?redirect=${encodeURIComponent('/solutions')}`}
                   className="px-5 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition shrink-0"
                 >
                   View Full Archive
@@ -1040,35 +1250,41 @@ export default function HomeClient({ session }: HomeClientProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <SpotlightCard paddingClassName="p-5">
-                  <div className="space-y-2.5">
-                    <span className="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px] font-mono font-bold uppercase">
-                      DRAFT RESOLUTION
-                    </span>
-                    <h4 className="font-display font-medium text-sm text-white">Addressing Climate Migration and Urban Displacement</h4>
-                    <p className="text-[10px] text-neutral-400 font-mono">Archived 2026 • Geneva Caucus</p>
-                  </div>
-                </SpotlightCard>
+                <Link href={isUserLoggedIn ? '/solutions' : `/login?redirect=${encodeURIComponent('/solutions')}`} className="block">
+                  <SpotlightCard paddingClassName="p-5" className="h-full hover:border-purple-400/50 transition">
+                    <div className="space-y-2.5">
+                      <span className="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px] font-mono font-bold uppercase">
+                        DRAFT RESOLUTION
+                      </span>
+                      <h4 className="font-display font-medium text-sm text-white">Addressing Climate Migration and Urban Displacement</h4>
+                      <p className="text-[10px] text-neutral-400 font-mono">Archived 2026 • Geneva Caucus</p>
+                    </div>
+                  </SpotlightCard>
+                </Link>
 
-                <SpotlightCard paddingClassName="p-5">
-                  <div className="space-y-2.5">
-                    <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[10px] font-mono font-bold uppercase">
-                      POLICY DRAFT
-                    </span>
-                    <h4 className="font-display font-medium text-sm text-white">Framework for Youth Representation in Digital Governance</h4>
-                    <p className="text-[10px] text-neutral-400 font-mono">Archived 2026 • Vienna Summit</p>
-                  </div>
-                </SpotlightCard>
+                <Link href={isUserLoggedIn ? '/solutions' : `/login?redirect=${encodeURIComponent('/solutions')}`} className="block">
+                  <SpotlightCard paddingClassName="p-5" className="h-full hover:border-cyan-400/50 transition">
+                    <div className="space-y-2.5">
+                      <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[10px] font-mono font-bold uppercase">
+                        POLICY DRAFT
+                      </span>
+                      <h4 className="font-display font-medium text-sm text-white">Framework for Youth Representation in Digital Governance</h4>
+                      <p className="text-[10px] text-neutral-400 font-mono">Archived 2026 • Vienna Summit</p>
+                    </div>
+                  </SpotlightCard>
+                </Link>
 
-                <SpotlightCard paddingClassName="p-5">
-                  <div className="space-y-2.5">
-                    <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-mono font-bold uppercase">
-                      PRESS RELEASE
-                    </span>
-                    <h4 className="font-display font-medium text-sm text-white">Official Outcomes of the Asia-Pacific Youth Dialogue</h4>
-                    <p className="text-[10px] text-neutral-400 font-mono">Archived 2026 • Tokyo Assembly</p>
-                  </div>
-                </SpotlightCard>
+                <Link href={isUserLoggedIn ? '/solutions' : `/login?redirect=${encodeURIComponent('/solutions')}`} className="block">
+                  <SpotlightCard paddingClassName="p-5" className="h-full hover:border-amber-400/50 transition">
+                    <div className="space-y-2.5">
+                      <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-mono font-bold uppercase">
+                        PRESS RELEASE
+                      </span>
+                      <h4 className="font-display font-medium text-sm text-white">Official Outcomes of the Asia-Pacific Youth Dialogue</h4>
+                      <p className="text-[10px] text-neutral-400 font-mono">Archived 2026 • Tokyo Assembly</p>
+                    </div>
+                  </SpotlightCard>
+                </Link>
               </div>
 
               <p className="text-xs text-neutral-400 font-mono pt-4 border-t border-white/5 text-center sm:text-left">
@@ -1078,203 +1294,14 @@ export default function HomeClient({ session }: HomeClientProps) {
           </AnimatedSection>
         </section>
 
-        {/* 7.7 DONATION & CIVIC IMPACT GRID — THE ZENVITRA PLEDGE */}
-        <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-20 space-y-12 text-left">
-          <AnimatedSection>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-white/10">
-              <div className="space-y-2">
-                <span className="font-mono text-[10px] tracking-[0.3em] text-amber-300 uppercase font-bold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                  CIVIC IMPACT &amp; DONATION GRID
-                </span>
-                <h2 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight uppercase leading-tight">
-                  FROM DIALOGUE TO DIRECT IMPACT.
-                </h2>
-              </div>
-              <p className="text-xs text-neutral-400 max-w-md font-light leading-relaxed font-sans">
-                ZENVITRA doesn&apos;t just host discussions—we bridge youth leadership directly to grassroots action, transparent philanthropy, and public school modernizations.
-              </p>
-            </div>
-          </AnimatedSection>
 
-          {/* Master 10% Sovereign Pledge Bento Hero */}
-          {escrowMandateActive && (
-            <div className="relative rounded-3xl p-8 sm:p-10 bg-gradient-to-br from-[#1a1408] via-[#0d0d14] to-[#120a1c] border border-amber-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_50px_rgba(245,158,11,0.1)] overflow-hidden">
-              {/* Ambient Background Glow */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-8 space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold uppercase tracking-wider">
-                    <Coins className="w-3.5 h-3.5 text-amber-400" />
-                    <span>The 10% Profit Endowment Pledge</span>
-                  </div>
-                  <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
-                    Every Summit. Every Community Action. Direct Educational Capital.
-                  </h3>
-                  <p className="text-xs sm:text-sm text-neutral-300 font-sans font-light leading-relaxed max-w-2xl">
-                    A guaranteed 10% of all net platform profits are distributed every 6 months into verified school laboratories, curriculum kits, and delegate grants—verified with unedited offline giveaway videos and public receipts broadcast on ZEN.FLUX and social platforms.
-                  </p>
-                  <div className="flex flex-wrap gap-4 pt-2">
-                    <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>Every 6 Months Distribution</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>Offline Giveaway Videos on ZEN.FLUX</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>Public Itemized Receipts Ledger</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Direct CTA Box */}
-                <div className="lg:col-span-4 flex flex-col gap-3 justify-center bg-black/60 backdrop-blur-xl p-6 rounded-2xl border border-white/15 text-center">
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
-                    Direct Citizen &amp; CSR Giving
-                  </span>
-                  <div className="text-xl sm:text-2xl font-display font-bold text-white">
-                    Join the Movement
-                  </div>
-                  <p className="text-[11px] text-neutral-400 font-mono leading-tight">
-                    Transform a government school or back a grassroots civic grant today.
-                  </p>
-                  <div className="pt-2">
-                    <Link
-                      href="/donate/govt-schools"
-                      className="w-full py-3 px-4 rounded-xl bg-white text-black hover:bg-neutral-200 font-mono text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-                    >
-                      <span>Govt Schools Giving</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 3 Impact Channels Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: Library & Science Kit Upgrade */}
-            <SpotlightCard paddingClassName="p-6">
-              <div className="flex flex-col justify-between h-full space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                      <BookOpen className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 rounded-full uppercase">
-                      TIER 1 • ₹3,500
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <h4 className="font-display font-bold text-lg text-white">
-                      Library &amp; Science Kits
-                    </h4>
-                    <p className="text-xs text-neutral-400 font-light font-sans leading-relaxed">
-                      Provides 25 curriculum-aligned science experiment kits and storybooks for rural public school libraries.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-neutral-400">Equips 1 Classroom</span>
-                  <Link
-                    href="/donate/govt-schools"
-                    className="text-xs font-mono text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 group"
-                  >
-                    <span>Sponsor Kits</span>
-                    <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </div>
-            </SpotlightCard>
-
-            {/* Card 2: Digital Smart Labs */}
-            <SpotlightCard paddingClassName="p-6">
-              <div className="flex flex-col justify-between h-full space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                      <Laptop className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 px-2 py-0.5 rounded-full uppercase">
-                      TIER 2 • ₹18,000
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <h4 className="font-display font-bold text-lg text-white">
-                      Digital Smart Lab Setup
-                    </h4>
-                    <p className="text-xs text-neutral-400 font-light font-sans leading-relaxed">
-                      Deploys open-source digital coding stations, multimedia projector setups, and digital literacy tools for underprivileged students.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-neutral-400">Equips 1 Lab Hub</span>
-                  <Link
-                    href="/donate/govt-schools"
-                    className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 group"
-                  >
-                    <span>Deploy Lab</span>
-                    <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </div>
-            </SpotlightCard>
-
-            {/* Card 3: School Sanitation & Infrastructure */}
-            <SpotlightCard paddingClassName="p-6">
-              <div className="flex flex-col justify-between h-full space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                      <Building className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full uppercase">
-                      TIER 3 • ₹50,000
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <h4 className="font-display font-bold text-lg text-white">
-                      Infrastructure Overhaul
-                    </h4>
-                    <p className="text-xs text-neutral-400 font-light font-sans leading-relaxed">
-                      Complete classroom study desk repairs, roof weather-proofing, clean drinking water filters, and hygienic sanitation facility restoration.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-neutral-400">Full School Node</span>
-                  <Link
-                    href="/donate/govt-schools"
-                    className="text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 group"
-                  >
-                    <span>Adopt School</span>
-                    <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </div>
-            </SpotlightCard>
-          </div>
-        </section>
 
         {/* 8. Principles */}
         <section className="relative z-10 border-t border-white/10 bg-[#020304] py-24 px-6 sm:px-12">
           <div className="max-w-6xl mx-auto space-y-16">
             <AnimatedSection className="text-center space-y-2 max-w-xl mx-auto">
               <span className="font-mono text-[10px] tracking-[0.3em] text-neutral-400 uppercase">
-                SOVEREIGN ARCHITECTURE
+                CORE ARCHITECTURE
               </span>
               <h2 className="font-display font-medium text-3xl sm:text-4xl text-white tracking-tight">
                 Constitutional Principles
@@ -1310,6 +1337,12 @@ export default function HomeClient({ session }: HomeClientProps) {
 
         {/* 9. High-Fi Detailed Sovereign Footer */}
         <Footer />
+
+        {/* List Your Conference / Event Modal */}
+        <ListConferenceModal
+          isOpen={isListConferenceOpen}
+          onClose={() => setIsListConferenceOpen(false)}
+        />
       </div>
     </div>
   );

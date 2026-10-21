@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
 
     // Check founder credentials
     const isFounderEmail =
-      email === 'founder@zenvitra.org' ||
       email === 'founder@zenvitra.xyz' ||
+      email === 'founder@zenvitra.org' ||
       email === 'founder@zenvitra.com' ||
       email === (process.env.FOUNDER_EMAIL?.toLowerCase() || '');
 

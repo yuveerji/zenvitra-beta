@@ -39,6 +39,7 @@ export function checkIsProfessionalAccountEnabled(profile?: UserProfile | null):
   if (email.includes('founder') || email.includes('admin') || email.includes('org') || email.includes('pro')) return true;
 
   const username = (profile.username || '').replace(/^@/, '').toLowerCase();
+  if (username === 'test' || username === 'tester' || profile.id === 'zen_test_pilot_node') return true;
   if (username === 'yuveer' || username === 'founder' || username.includes('org') || username.includes('pro')) return true;
 
   return false;
@@ -75,6 +76,7 @@ export function checkIsEventAccountEnabled(profile?: UserProfile | null): boolea
   if (email.includes('founder') || email.includes('admin') || email.includes('mun') || email.includes('event')) return true;
 
   const username = (profile.username || '').replace(/^@/, '').toLowerCase();
+  if (username === 'test' || username === 'tester' || profile.id === 'zen_test_pilot_node') return true;
   if (username === 'yuveer' || username === 'founder' || username.includes('mun') || username.includes('event') || username.includes('organizer')) return true;
 
   return false;

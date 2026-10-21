@@ -52,7 +52,13 @@ import {
   Compass,
   BookOpen,
   ExternalLink,
-  Grid
+  Grid,
+  Sliders,
+  Link2,
+  Loader2,
+  Plus,
+  Trash2,
+  Image as ImageIcon
 } from 'lucide-react';
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { registerDelegate } from '@/lib/zenDiplomacyService';
@@ -765,7 +771,7 @@ export default function ZenFormPublicPage() {
       }
 
       // 4. Single authoritative server-side dispatch to Ledger and Google Sheets webhook
-      const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
+      const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
       
       let committeeTab = '';
       if (!isSecForm && isMunForm) {
@@ -776,7 +782,7 @@ export default function ZenFormPublicPage() {
         else if (commChoice.includes('ECOSOC') || commChoice.includes('UNODC') || commChoice.includes('UNESCO')) committeeTab = 'ECOSOC';
       }
 
-      const targetSheetTab = form.googleSheetsConfig?.sheetTab || (isSecForm ? 'Secretariat Applications' : (committeeTab || 'ZEN DIPLOMACY MUN'));
+      const targetSheetTab = form.googleSheetsConfig?.sheetTab || (isSecForm ? 'Secretariat Applications' : (committeeTab || '14 Delegate Rosters'));
 
       try {
         await fetch('/api/forms/submit', {
@@ -898,7 +904,7 @@ export default function ZenFormPublicPage() {
           </span>
 
           <Link
-            href="/matrix"
+            href="/mun/matrix"
             target="_blank"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-mono text-cyan-300 hover:text-white transition"
             title="Open Live Matrix Ledger"
@@ -990,7 +996,7 @@ export default function ZenFormPublicPage() {
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/matrix"
+                href="/mun/matrix"
                 target="_blank"
                 className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 font-mono text-xs transition flex items-center justify-center gap-2 border border-cyan-500/30 shadow-sm"
               >
@@ -1032,15 +1038,30 @@ export default function ZenFormPublicPage() {
               boxShadow: custom.cardStyle === 'cyber-neon' ? `0 0 35px ${accentColor}25` : undefined,
             }}
           >
-            {/* ── Optional Cover Image ── */}
+            {/* ── Optional Cover Image with Visual Framing ── */}
             {custom.coverImageUrl && (
-              <div className="w-full h-44 sm:h-56 overflow-hidden relative border-b border-white/10">
+              <div 
+                className="w-full overflow-hidden relative border-b border-white/10 bg-black/60"
+                style={{
+                  aspectRatio: custom.coverAdjustment?.aspectRatio === '21:9' ? '21 / 9' :
+                               custom.coverAdjustment?.aspectRatio === '16:9' ? '16 / 9' :
+                               custom.coverAdjustment?.aspectRatio === '4:3' ? '4 / 3' :
+                               custom.coverAdjustment?.aspectRatio === '1:1' ? '1 / 1' : undefined,
+                  maxHeight: !custom.coverAdjustment?.aspectRatio ? '16rem' : undefined,
+                  minHeight: '11rem',
+                }}
+              >
                 <img
                   src={custom.coverImageUrl}
                   alt={form.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full transition-transform duration-200"
+                  style={{
+                    transform: `scale(${custom.coverAdjustment?.scale ?? 1})`,
+                    objectPosition: `${custom.coverAdjustment?.positionX ?? 50}% ${custom.coverAdjustment?.positionY ?? 50}%`,
+                    objectFit: custom.coverAdjustment?.fit ?? 'cover',
+                  }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
               </div>
             )}
 
@@ -1582,7 +1603,7 @@ export default function ZenFormPublicPage() {
                           {(field.type === 'matrix_peeker' || Boolean(field.matrixConfig) || field.id === 'step5_portfolios') && (() => {
                             const mCfg = field.matrixConfig || {};
                             const mTitle = mCfg.title || 'Live Dais Matrix HUD • Vacancy Peeker';
-                            const mUrl = mCfg.matrixUrl || '/matrix';
+                            const mUrl = mCfg.matrixUrl || '/mun/matrix';
                             const mBtn = mCfg.buttonText || 'Open Live Matrix in New Tab';
                             const mInst = mCfg.instructions || 'Inspect live occupancy across AIPPM, EMI, ECOSOC & UNSC on the sovereign ledger before entering your preferences. Cross-reference vacant countries, portfolios, or ministerial seats to guarantee allotment priority.';
                             const mFmt = mCfg.recommendedFormat || 'Recommended format: 1. Country / Seat, 2. Country / Seat, 3. Country / Seat';
@@ -2332,7 +2353,7 @@ export default function ZenFormPublicPage() {
                                       </div>
                                       <div className="flex items-center gap-2">
                                         <Link
-                                          href="/matrix"
+                                          href="/mun/matrix"
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           onClick={(e) => e.stopPropagation()}
@@ -2619,6 +2640,460 @@ export default function ZenFormPublicPage() {
                           )}
                         </div>
                       )}
+                      {/* 19. Photo Adjuster & Visual Framing */}
+                      {field.type === 'photo_adjuster' && (() => {
+                        const rawVal = formData[field.id];
+                        const photoData = (typeof rawVal === 'object' && rawVal !== null)
+                          ? rawVal
+                          : {
+                              url: typeof rawVal === 'string' ? rawVal : '',
+                              scale: 1,
+                              positionX: 50,
+                              positionY: 50,
+                              aspectRatio: field.photoAdjusterConfig?.defaultAspectRatio || '16:9',
+                              fit: 'cover' as const,
+                              showGrid: false,
+                            };
+
+                        const updatePhoto = (patch: Record<string, any>) => {
+                          handleInputChange(field.id, { ...photoData, ...patch });
+                        };
+
+                        const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              if (typeof reader.result === 'string') {
+                                updatePhoto({ url: reader.result, scale: 1, positionX: 50, positionY: 50 });
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        };
+
+                        return (
+                          <div className="space-y-4 pt-1">
+                            {field.photoAdjusterConfig?.helperText && (
+                              <p className="text-xs text-neutral-400 font-sans">
+                                {field.photoAdjusterConfig.helperText}
+                              </p>
+                            )}
+
+                            {!photoData.url ? (
+                              <div className="border-2 border-dashed border-white/20 hover:border-amber-400/50 rounded-2xl p-6 sm:p-8 text-center transition bg-black/40 space-y-4">
+                                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto">
+                                  <Camera className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-semibold text-white">Upload or Provide Visual Asset</h4>
+                                  <p className="text-xs text-neutral-400 mt-1">
+                                    Upload a high-resolution image to crop and adjust framing
+                                  </p>
+                                </div>
+                                <div className="flex flex-wrap items-center justify-center gap-3">
+                                  <label className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-lg">
+                                    <UploadCloud className="w-4 h-4" />
+                                    <span>Browse Photo</span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleFileChange}
+                                      className="hidden"
+                                    />
+                                  </label>
+                                  <span className="text-xs font-mono text-neutral-500">or</span>
+                                  <input
+                                    type="url"
+                                    placeholder="Paste image URL (https://...)"
+                                    onBlur={(e) => {
+                                      if (e.target.value.trim()) {
+                                        updatePhoto({ url: e.target.value.trim() });
+                                      }
+                                    }}
+                                    className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/15 text-xs text-white placeholder-neutral-500 font-mono focus:border-amber-400 outline-none w-56 sm:w-64"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-4 rounded-2xl bg-black/50 border border-white/15 p-4 sm:p-5">
+                                {/* Visual Framing Canvas */}
+                                <div className="relative rounded-xl overflow-hidden bg-black/90 border border-white/20 shadow-2xl flex items-center justify-center">
+                                  <div
+                                    className={`w-full overflow-hidden relative flex items-center justify-center transition-all ${
+                                      photoData.aspectRatio === '21:9' ? 'aspect-[21/9]' :
+                                      photoData.aspectRatio === '16:9' ? 'aspect-video' :
+                                      photoData.aspectRatio === '4:3' ? 'aspect-[4/3]' : 'aspect-square'
+                                    }`}
+                                  >
+                                    <img
+                                      src={photoData.url}
+                                      alt="Framing preview"
+                                      className="w-full h-full transition-transform duration-100 select-none"
+                                      style={{
+                                        transform: `scale(${photoData.scale ?? 1})`,
+                                        objectPosition: `${photoData.positionX ?? 50}% ${photoData.positionY ?? 50}%`,
+                                        objectFit: photoData.fit ?? 'cover',
+                                      }}
+                                    />
+
+                                    {/* Rule of Thirds Grid Overlay */}
+                                    {photoData.showGrid && (
+                                      <div className="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 z-10">
+                                        <div className="border-r border-b border-amber-400/40" />
+                                        <div className="border-r border-b border-amber-400/40" />
+                                        <div className="border-b border-amber-400/40" />
+                                        <div className="border-r border-b border-amber-400/40" />
+                                        <div className="border-r border-b border-amber-400/40" />
+                                        <div className="border-b border-amber-400/40" />
+                                        <div className="border-r border-amber-400/40" />
+                                        <div className="border-r border-amber-400/40" />
+                                        <div />
+                                      </div>
+                                    )}
+
+                                    {/* Framing HUD Overlay */}
+                                    <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-amber-300 z-20">
+                                      {photoData.aspectRatio} &bull; {Math.round((photoData.scale ?? 1) * 100)}% ZOOM
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Controls Strip */}
+                                <div className="space-y-3 pt-2">
+                                  {/* Aspect Ratio Selector */}
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                                        Aspect:
+                                      </span>
+                                      {(['16:9', '21:9', '4:3', '1:1'] as const).map((ratio) => (
+                                        <button
+                                          key={ratio}
+                                          type="button"
+                                          onClick={() => updatePhoto({ aspectRatio: ratio })}
+                                          className={`px-2.5 py-1 rounded-lg text-[10px] font-mono transition cursor-pointer ${
+                                            photoData.aspectRatio === ratio
+                                              ? 'bg-amber-500 text-black font-bold shadow-sm'
+                                              : 'bg-white/5 hover:bg-white/10 text-neutral-300'
+                                          }`}
+                                        >
+                                          {ratio}
+                                        </button>
+                                      ))}
+                                    </div>
+
+                                    {/* Fit & Grid Toggles */}
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => updatePhoto({ showGrid: !photoData.showGrid })}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-mono transition flex items-center gap-1 cursor-pointer ${
+                                          photoData.showGrid
+                                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                            : 'bg-white/5 text-neutral-400 hover:text-white'
+                                        }`}
+                                        title="Toggle Rule-of-Thirds Composition Grid"
+                                      >
+                                        <Grid className="w-3 h-3" />
+                                        <span>3x3 Grid</span>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => updatePhoto({ fit: photoData.fit === 'contain' ? 'cover' : 'contain' })}
+                                        className="px-2.5 py-1 rounded-lg text-[10px] font-mono bg-white/5 hover:bg-white/10 text-neutral-300 transition cursor-pointer"
+                                      >
+                                        Fit: {photoData.fit || 'cover'}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Zoom Slider */}
+                                  <div className="space-y-1">
+                                    <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                                      <span className="flex items-center gap-1">
+                                        <Sliders className="w-3 h-3 text-amber-400" />
+                                        Zoom / Scale
+                                      </span>
+                                      <span className="text-white font-bold">{Math.round((photoData.scale ?? 1) * 100)}%</span>
+                                    </div>
+                                    <input
+                                      type="range"
+                                      min={1}
+                                      max={2.5}
+                                      step={0.05}
+                                      value={photoData.scale ?? 1}
+                                      onChange={(e) => updatePhoto({ scale: parseFloat(e.target.value) })}
+                                      className="w-full accent-amber-400 cursor-pointer"
+                                    />
+                                  </div>
+
+                                  {/* Horizontal & Vertical Pan */}
+                                  <div className="grid grid-cols-2 gap-3 text-[11px] font-mono text-neutral-400">
+                                    <div className="space-y-1">
+                                      <div className="flex items-center justify-between">
+                                        <span>Pan X</span>
+                                        <span className="text-white font-bold">{photoData.positionX ?? 50}%</span>
+                                      </div>
+                                      <input
+                                        type="range"
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        value={photoData.positionX ?? 50}
+                                        onChange={(e) => updatePhoto({ positionX: parseInt(e.target.value) })}
+                                        className="w-full accent-amber-400 cursor-pointer"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center justify-between">
+                                        <span>Pan Y</span>
+                                        <span className="text-white font-bold">{photoData.positionY ?? 50}%</span>
+                                      </div>
+                                      <input
+                                        type="range"
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        value={photoData.positionY ?? 50}
+                                        onChange={(e) => updatePhoto({ positionY: parseInt(e.target.value) })}
+                                        className="w-full accent-amber-400 cursor-pointer"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Bottom Actions: Reset & Replace */}
+                                  <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs font-mono">
+                                    <button
+                                      type="button"
+                                      onClick={() => updatePhoto({ scale: 1, positionX: 50, positionY: 50, fit: 'cover' })}
+                                      className="text-neutral-400 hover:text-white flex items-center gap-1 transition cursor-pointer"
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5" />
+                                      <span>Reset Framing</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => updatePhoto({ url: '' })}
+                                      className="text-rose-400 hover:text-rose-300 flex items-center gap-1 transition cursor-pointer"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                      <span>Remove Asset</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* 20. Multiple Sources & Automated URL Heading Reader */}
+                      {field.type === 'source_citation' && (() => {
+                        const rawSources = formData[field.id];
+                        const sourcesList = Array.isArray(rawSources) && rawSources.length > 0
+                          ? rawSources
+                          : [{ id: 'src_1', name: '', url: '', label: 'Source #1', domain: '' }];
+                        const maxAllowed = field.sourceCitationConfig?.maxSources ?? 5;
+
+                        const updateSourcesList = (updated: any[]) => {
+                          handleInputChange(field.id, updated);
+                        };
+
+                        const handleAddSourceItem = () => {
+                          if (sourcesList.length >= maxAllowed) return;
+                          const nextIdx = sourcesList.length + 1;
+                          updateSourcesList([
+                            ...sourcesList,
+                            {
+                              id: `src_${Date.now()}_${nextIdx}`,
+                              name: '',
+                              url: '',
+                              label: `Source #${nextIdx}`,
+                              domain: '',
+                            }
+                          ]);
+                        };
+
+                        const handleRemoveSourceItem = (idx: number) => {
+                          const remaining = sourcesList.filter((_: any, i: number) => i !== idx);
+                          const reindexed = remaining.map((s: any, i: number) => ({
+                            ...s,
+                            label: `Source #${i + 1}`,
+                          }));
+                          updateSourcesList(
+                            reindexed.length > 0
+                              ? reindexed
+                              : [{ id: `src_${Date.now()}`, name: '', url: '', label: 'Source #1', domain: '' }]
+                          );
+                        };
+
+                        const handleUpdateSourceVal = (idx: number, prop: 'name' | 'url', val: string) => {
+                          const updated = sourcesList.map((s: any, i: number) =>
+                            i === idx ? { ...s, [prop]: val } : s
+                          );
+                          updateSourcesList(updated);
+                        };
+
+                        const handleAutoFetchHeading = async (idx: number) => {
+                          const item = sourcesList[idx];
+                          if (!item?.url?.trim()) return;
+
+                          // Set loading state
+                          const loadingState = sourcesList.map((s: any, i: number) =>
+                            i === idx ? { ...s, isLoading: true, error: undefined } : s
+                          );
+                          updateSourcesList(loadingState);
+
+                          try {
+                            const res = await fetch('/api/fetch-title', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ url: item.url.trim() }),
+                            });
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                              const heading = data.formattedHeading || `${data.publication} - ${data.title}`;
+                              const updated = sourcesList.map((s: any, i: number) =>
+                                i === idx
+                                  ? {
+                                      ...s,
+                                      name: `${heading} ${s.label || `source #${i + 1}`}`,
+                                      domain: data.domain,
+                                      isLoading: false,
+                                      error: undefined,
+                                    }
+                                  : s
+                              );
+                              updateSourcesList(updated);
+                            } else {
+                              const updated = sourcesList.map((s: any, i: number) =>
+                                i === idx
+                                  ? { ...s, isLoading: false, error: data.error || 'Could not fetch title' }
+                                  : s
+                              );
+                              updateSourcesList(updated);
+                            }
+                          } catch {
+                            const updated = sourcesList.map((s: any, i: number) =>
+                              i === idx ? { ...s, isLoading: false, error: 'Network error reading title' } : s
+                            );
+                            updateSourcesList(updated);
+                          }
+                        };
+
+                        return (
+                          <div className="space-y-3 pt-1">
+                            {field.sourceCitationConfig?.helperText && (
+                              <p className="text-xs text-neutral-400 font-sans">
+                                {field.sourceCitationConfig.helperText}
+                              </p>
+                            )}
+
+                            <div className="space-y-3">
+                              {sourcesList.map((srcItem: any, sIdx: number) => (
+                                <div
+                                  key={srcItem.id || sIdx}
+                                  className="p-4 rounded-xl bg-black/40 border border-white/15 space-y-3 shadow-inner"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-mono font-bold text-amber-400">
+                                      {srcItem.label || `Source #${sIdx + 1}`}
+                                    </span>
+                                    {sourcesList.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveSourceItem(sIdx)}
+                                        className="text-neutral-500 hover:text-rose-400 p-1 transition cursor-pointer"
+                                        title="Remove source"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  {/* URL Input & Auto-Read Button */}
+                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                    <div className="relative flex-1">
+                                      <Globe className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-3 pointer-events-none" />
+                                      <input
+                                        type="url"
+                                        placeholder="https://example.com/article-url"
+                                        value={srcItem.url || ''}
+                                        onChange={(e) => handleUpdateSourceVal(sIdx, 'url', e.target.value)}
+                                        className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white text-xs font-mono focus:border-amber-400 outline-none"
+                                      />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      disabled={!srcItem.url?.trim() || srcItem.isLoading}
+                                      onClick={() => handleAutoFetchHeading(sIdx)}
+                                      className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 disabled:opacity-40 cursor-pointer shrink-0"
+                                    >
+                                      {srcItem.isLoading ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      ) : (
+                                        <Sparkles className="w-3.5 h-3.5" />
+                                      )}
+                                      <span>{srcItem.isLoading ? 'Reading...' : 'Auto-Read Heading'}</span>
+                                    </button>
+                                  </div>
+
+                                  {/* Auto-read Heading / Title */}
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block">
+                                      Source Title / Citation Headline:
+                                    </label>
+                                    <input
+                                      type="text"
+                                      placeholder="e.g. TOI - Article X source #1"
+                                      value={srcItem.name || ''}
+                                      onChange={(e) => handleUpdateSourceVal(sIdx, 'name', e.target.value)}
+                                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-sans focus:border-white/30 outline-none"
+                                    />
+                                  </div>
+
+                                  {/* Clickable Verified Badge Link */}
+                                  {srcItem.name && srcItem.url && (
+                                    <div className="pt-1">
+                                      <a
+                                        href={srcItem.url.startsWith('http') ? srcItem.url : `https://${srcItem.url}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono hover:bg-emerald-500/20 transition group"
+                                      >
+                                        <Link2 className="w-3 h-3 text-emerald-400" />
+                                        <span className="font-semibold underline decoration-emerald-500/40">{srcItem.name}</span>
+                                        <ExternalLink className="w-3 h-3 opacity-70 group-hover:opacity-100" />
+                                      </a>
+                                    </div>
+                                  )}
+
+                                  {srcItem.error && (
+                                    <p className="text-[11px] font-mono text-rose-400">
+                                      {srcItem.error}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Add More Sources Button */}
+                            {sourcesList.length < maxAllowed && (
+                              <button
+                                type="button"
+                                onClick={handleAddSourceItem}
+                                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 text-xs font-mono transition flex items-center gap-2 cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5 text-amber-400" />
+                                <span>Add Another Source Citation ({sourcesList.length}/{maxAllowed})</span>
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })}
@@ -2626,7 +3101,7 @@ export default function ZenFormPublicPage() {
                 <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-1.5 text-[11px] font-mono text-neutral-400">
                     <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Sovereign Ledger Intake &bull; Zero Tracking</span>
+                    <span>Official Registration Form • Verified & Secure</span>
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -2683,9 +3158,9 @@ export default function ZenFormPublicPage() {
 
       </main>
 
-      {/* ── Sovereign Guarantee Footer ── */}
+      {/* ── Official Guarantee Footer ── */}
       <div className="max-w-4xl lg:max-w-5xl mx-auto w-full text-center py-6 text-[11px] font-mono text-neutral-500 border-t border-white/10 relative z-10 px-2 sm:px-0">
-        <span>Powered by <strong className="text-neutral-300">ZenForms</strong> &bull; The Sovereign Multilateral Intake Engine</span>
+        <span>Powered by <strong className="text-neutral-300">ZenForms</strong> • The Official Event & Intake System</span>
       </div>
 
     </div>

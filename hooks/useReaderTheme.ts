@@ -13,6 +13,9 @@ export function useReaderTheme() {
       const saved = localStorage.getItem('zenvitra_reader_theme') as ReaderTheme | null;
       if (saved === 'light' || saved === 'dark') {
         setTheme(saved);
+      } else {
+        // Enforce dark theme by default across Zenvitra
+        setTheme('dark');
       }
     } catch (_) {}
     setMounted(true);

@@ -398,7 +398,7 @@ export function JoinZenDiplomacyCard() {
               </Link>
 
               <Link
-                href="/matrix"
+                href="/mun/matrix"
                 className="justify-center px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer hover:scale-105 text-center"
                 title="View 240-seat live portfolio matrix"
               >

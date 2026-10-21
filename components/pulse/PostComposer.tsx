@@ -46,9 +46,14 @@ import {
   Landmark,
   ExternalLink,
   Ban,
-  Globe2
+  Globe2,
+  BookOpen,
+  Feather,
+  Scale,
+  FileText
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
+import { PulsePostFormat, PulseSourceItem } from '@/types/pulse';
 import { MusicPickerModal, SelectedTrackPayload } from './MusicPickerModal';
 import { UniversalEmojiGifPicker } from '@/components/common/UniversalEmojiGifPicker';
 import { WorldLocationPickerModal, WorldLocation } from '@/components/common/WorldLocationPickerModal';
@@ -166,13 +171,76 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
   const [attachedSong, setAttachedSong] = useState<SelectedTrackPayload | null>(null);
   const [isMusicPickerOpen, setIsMusicPickerOpen] = useState(false);
   const [showUniversalEmojiPicker, setShowUniversalEmojiPicker] = useState(false);
-  const [sourceName, setSourceName] = useState('');
-  const [sourceUrl, setSourceUrl] = useState('');
+
+  // Creative Post Format (Micro Dispatch, Blog / Essay, Poetry & Verses, Treaty)
+  const [postFormat, setPostFormat] = useState<PulsePostFormat>('dispatch');
+  const [postTitle, setPostTitle] = useState('');
+  const [poetryAlign, setPoetryAlign] = useState<'left' | 'center'>('left');
+
+  // Multiple Sources Citation System
+  const [sources, setSources] = useState<PulseSourceItem[]>([
+    { id: 'src_1', name: '', url: '', label: 'Source #1' }
+  ]);
   const [showSourceFields, setShowSourceFields] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const handleAddSource = (name = '', url = '') => {
+    setSources((prev) => [
+      ...prev,
+      {
+        id: `src_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        name,
+        url,
+        label: `Source #${prev.length + 1}`
+      }
+    ]);
+    setShowSourceFields(true);
+  };
+
+  const handleUpdateSource = (id: string | undefined, field: 'name' | 'url', val: string) => {
+    if (!id) return;
+    setSources((prev) => prev.map((s) => s.id === id ? { ...s, [field]: val } : s));
+  };
+
+  const handleRemoveSource = (id: string | undefined) => {
+    if (!id) return;
+    setSources((prev) => {
+      if (prev.length <= 1) {
+        return [{ id: `src_${Date.now()}`, name: '', url: '', label: 'Source #1' }];
+      }
+      return prev.filter((s) => s.id !== id);
+    });
+  };
+
+  const handleQuickAddSource = (name: string, url: string) => {
+    setShowSourceFields(true);
+    setSources((prev) => {
+      const last = prev[prev.length - 1];
+      if (last && !last.name.trim() && !last.url.trim()) {
+        return prev.map((s, idx) => idx === prev.length - 1 ? { ...s, name, url } : s);
+      }
+      return [
+        ...prev,
+        {
+          id: `src_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          name,
+          url,
+          label: `Source #${prev.length + 1}`
+        }
+      ];
+    });
+  };
+
   /* ── 3D FLIP FX STUDIO STATE ── */
   const [isStudioFlipped, setIsStudioFlipped] = useState(false);
+
+  // Automatically return to main face if all images are removed
+  useEffect(() => {
+    if (images.length === 0 && isStudioFlipped) {
+      setIsStudioFlipped(false);
+    }
+  }, [images.length, isStudioFlipped]);
+
   const [studioTab, setStudioTab] = useState<'filters' | 'tune' | 'text' | 'stickers' | 'transform'>('filters');
   const [activeFilterId, setActiveFilterId] = useState<string>('none');
   const [brightness, setBrightness] = useState<number>(100);
@@ -386,9 +454,15 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
     });
   }, [content, location, tags]);
 
-  const charLimit = 500;
+  const charLimit = postFormat === 'blog' || postFormat === 'essay' 
+    ? 12000 
+    : postFormat === 'poetry' 
+    ? 6000 
+    : postFormat === 'treaty' 
+    ? 12000 
+    : 1000;
   const remaining = charLimit - content.length;
-  const isPostValid = (content.trim() || images.length > 0) && auditResult.passed;
+  const isPostValid = (content.trim() || images.length > 0 || postTitle.trim()) && auditResult.passed;
 
   const handleClose = () => {
     if (onClose) {
@@ -592,10 +666,14 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
       }
     }
 
+    const validSources = sources
+      .map(s => ({ name: s.name.trim(), url: s.url.trim(), label: s.label }))
+      .filter(s => s.name || s.url);
+
     createPost(
       content.trim(),
       processedImages.length > 0 ? processedImages : undefined,
-      location.trim() || 'Global Youth Grid',
+      location.trim() || undefined,
       tags,
       selectedFont,
       'none',
@@ -609,14 +687,21 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
         songFrameDuration: attachedSong.frameDuration,
       } : undefined,
       undefined,
-      sourceName.trim() || sourceUrl.trim() ? {
-        sourceName: sourceName.trim(),
-        sourceUrl: sourceUrl.trim()
-      } : undefined
+      validSources.length > 0 ? {
+        sourceName: validSources[0].name,
+        sourceUrl: validSources[0].url,
+        sources: validSources
+      } : undefined,
+      {
+        title: postTitle.trim() || undefined,
+        postFormat
+      }
     );
 
     setContent('');
+    setPostTitle('');
     setImages([]);
+    setSources([{ id: 'src_1', name: '', url: '', label: 'Source #1' }]);
     handleClose();
   };
 
@@ -649,14 +734,14 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
   const activeOverlayObj = textOverlays.find((o) => o.id === activeOverlayId);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl flex flex-col justify-start sm:justify-center items-center p-3 sm:p-6 select-none animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl flex flex-col justify-start sm:justify-center items-center p-2 sm:p-6 select-none animate-in fade-in duration-200">
       {/* Container Dialog */}
       <div 
-        className="w-full max-w-4xl my-auto max-h-[94vh] bg-[#090a0f] border border-white/15 rounded-3xl shadow-[0_25px_80px_rgba(0,0,0,0.98)] flex flex-col overflow-hidden text-white backdrop-blur-3xl"
+        className="w-full max-w-4xl my-auto max-h-[94vh] bg-[#090a0f] border border-white/15 rounded-2xl sm:rounded-3xl shadow-[0_25px_80px_rgba(0,0,0,0.98)] flex flex-col overflow-hidden text-white backdrop-blur-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── TOP HEADER ── */}
-        <div className="h-14 px-6 border-b border-white/10 flex items-center justify-between bg-black/60 backdrop-blur-md">
+        <div className="h-14 px-3 sm:px-6 border-b border-white/10 flex items-center justify-between bg-black/60 backdrop-blur-md">
           <button
             onClick={handleClose}
             className="text-xs font-semibold text-zinc-400 hover:text-white transition flex items-center gap-2 cursor-pointer"
@@ -669,7 +754,19 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
             className="text-sm font-bold tracking-tight text-white flex items-center gap-2 uppercase tracking-widest"
             style={{ fontFamily: 'Clash Display, var(--font-space), sans-serif' }}
           >
-            <span>{isStudioFlipped ? 'FX & Media Studio' : 'Create New Dispatch'}</span>
+            <span>
+              {isStudioFlipped 
+                ? 'FX & Media Studio' 
+                : postFormat === 'blog' 
+                ? 'Blog & Journal Article' 
+                : postFormat === 'poetry' 
+                ? 'Poetry & Lyrical Verses' 
+                : postFormat === 'essay' 
+                ? 'Civic Policy Essay' 
+                : postFormat === 'treaty' 
+                ? 'Treaty & Civic Accord' 
+                : 'Create New Dispatch'}
+            </span>
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           </div>
 
@@ -723,157 +820,180 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
           {/* ── LEFT: MEDIA STAGE (7 cols) ── */}
           <div className="md:col-span-7 bg-black/60 border-b md:border-b-0 md:border-r border-white/10 flex flex-col items-center justify-between p-4 relative min-h-[340px] md:min-h-[500px]">
             {/* Top Media Bar */}
-            <div className="w-full flex items-center justify-between z-10 gap-2">
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] font-mono text-zinc-300 relative">
-                <span className="text-zinc-500 text-[10px]">Aspect:</span>
-                {(['original', '1:1', '4:5', '16:9'] as const).map((ratio) => (
-                  <button
-                    key={ratio}
-                    type="button"
-                    onClick={() => {
-                      setAspectRatio(ratio);
-                      setShowCustomAspectPopup(false);
-                    }}
-                    className={`px-2 py-0.5 rounded-md font-semibold transition cursor-pointer text-[11px] ${
-                      aspectRatio === ratio ? 'bg-white text-black font-bold' : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    {ratio === 'original' ? 'Original' : ratio}
-                  </button>
-                ))}
+            <div className="w-full flex items-center justify-between z-10 gap-2 min-h-[38px]">
+              {images.length > 0 ? (
+                <>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] font-mono text-zinc-300 relative shrink-0">
+                    <span className="text-zinc-500 text-[10px]">Aspect:</span>
+                    {(['original', '1:1', '4:5', '16:9'] as const).map((ratio) => (
+                      <button
+                        key={ratio}
+                        type="button"
+                        onClick={() => {
+                          setAspectRatio(ratio);
+                          setShowCustomAspectPopup(false);
+                        }}
+                        className={`px-2 py-0.5 rounded-md font-semibold transition cursor-pointer text-[11px] ${
+                          aspectRatio === ratio ? 'bg-white text-black font-bold' : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {ratio === 'original' ? 'Original' : ratio}
+                      </button>
+                    ))}
 
-                {/* Custom Button with Toggle Popover */}
-                <div className="relative inline-block">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAspectRatio('custom');
-                      setShowCustomAspectPopup((prev) => !prev);
-                    }}
-                    className={`px-2 py-0.5 rounded-md font-semibold transition cursor-pointer text-[11px] flex items-center gap-1 ${
-                      aspectRatio === 'custom'
-                        ? 'bg-white text-black font-bold shadow-sm'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    <span>{aspectRatio === 'custom' && (customWidth !== 4 || customHeight !== 3) ? `${customWidth}:${customHeight}` : 'Custom'}</span>
-                  </button>
-
-                  {/* Pop-up dropdown right beneath the Custom button */}
-                  {showCustomAspectPopup && (
-                    <div 
-                      className="absolute top-full left-0 mt-2 z-50 w-60 p-3 rounded-2xl bg-[#090a12]/98 border border-white/20 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.95)] space-y-2.5 animate-in fade-in zoom-in-95 duration-150 text-white"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center justify-between pb-1 border-b border-white/10">
-                        <span className="text-[11px] font-bold text-white font-mono uppercase tracking-wider">
-                          Custom Aspect Ratio
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setShowCustomAspectPopup(false)}
-                          className="text-zinc-400 hover:text-white text-xs p-0.5 cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-
-                      {/* Width & Height numeric inputs */}
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 space-y-1">
-                          <label className="text-[9px] text-zinc-400 font-mono block">WIDTH (X)</label>
-                          <input
-                            type="number"
-                            min={1}
-                            max={64}
-                            value={customWidth}
-                            onChange={(e) => setCustomWidth(Math.max(1, parseInt(e.target.value) || 1))}
-                            className="w-full px-2 py-1 text-center font-mono font-bold text-xs bg-black/60 border border-white/20 rounded-lg text-white focus:outline-none focus:border-cyan-400"
-                          />
-                        </div>
-                        <span className="text-zinc-500 font-bold mt-4">:</span>
-                        <div className="flex-1 space-y-1">
-                          <label className="text-[9px] text-zinc-400 font-mono block">HEIGHT (Y)</label>
-                          <input
-                            type="number"
-                            min={1}
-                            max={64}
-                            value={customHeight}
-                            onChange={(e) => setCustomHeight(Math.max(1, parseInt(e.target.value) || 1))}
-                            className="w-full px-2 py-1 text-center font-mono font-bold text-xs bg-black/60 border border-white/20 rounded-lg text-white focus:outline-none focus:border-cyan-400"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Quick Ratio Presets */}
-                      <div className="space-y-1 pt-1 border-t border-white/10">
-                        <span className="text-[9px] text-zinc-500 font-mono uppercase">Quick Presets</span>
-                        <div className="grid grid-cols-3 gap-1">
-                          {[
-                            { w: 21, h: 9, label: '21:9' },
-                            { w: 3, h: 2, label: '3:2' },
-                            { w: 2, h: 3, label: '2:3' },
-                            { w: 4, h: 3, label: '4:3' },
-                            { w: 3, h: 4, label: '3:4' },
-                            { w: 9, h: 16, label: '9:16' },
-                          ].map((p) => (
-                            <button
-                              key={p.label}
-                              type="button"
-                              onClick={() => {
-                                setCustomWidth(p.w);
-                                setCustomHeight(p.h);
-                              }}
-                              className={`px-1.5 py-1 text-[10px] font-mono rounded-lg border transition cursor-pointer ${
-                                customWidth === p.w && customHeight === p.h
-                                  ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold'
-                                  : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:text-white'
-                              }`}
-                            >
-                              {p.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
+                    {/* Custom Button with Toggle Popover */}
+                    <div className="relative inline-block">
                       <button
                         type="button"
-                        onClick={() => setShowCustomAspectPopup(false)}
-                        className="w-full py-1.5 rounded-xl bg-white text-black text-xs font-bold hover:bg-zinc-200 transition cursor-pointer flex items-center justify-center gap-1 shadow-md"
+                        onClick={() => {
+                          setAspectRatio('custom');
+                          setShowCustomAspectPopup((prev) => !prev);
+                        }}
+                        className={`px-2 py-0.5 rounded-md font-semibold transition cursor-pointer text-[11px] flex items-center gap-1 ${
+                          aspectRatio === 'custom'
+                            ? 'bg-white text-black font-bold shadow-sm'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
                       >
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        <span>Apply {customWidth}:{customHeight}</span>
+                        <span>{aspectRatio === 'custom' && (customWidth !== 4 || customHeight !== 3) ? `${customWidth}:${customHeight}` : 'Custom'}</span>
                       </button>
+
+                      {/* Pop-up dropdown right beneath the Custom button */}
+                      {showCustomAspectPopup && (
+                        <div 
+                          className="absolute top-full left-0 mt-2 z-50 w-60 p-3 rounded-2xl bg-[#090a12]/98 border border-white/20 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.95)] space-y-2.5 animate-in fade-in zoom-in-95 duration-150 text-white"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                            <span className="text-[11px] font-bold text-white font-mono uppercase tracking-wider">
+                              Custom Aspect Ratio
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowCustomAspectPopup(false)}
+                              className="text-zinc-400 hover:text-white text-xs p-0.5 cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          {/* Width & Height numeric inputs */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 space-y-1">
+                              <label className="text-[9px] text-zinc-400 font-mono block">WIDTH (X)</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={64}
+                                value={customWidth}
+                                onChange={(e) => setCustomWidth(Math.max(1, parseInt(e.target.value) || 1))}
+                                className="w-full px-2 py-1 text-center font-mono font-bold text-xs bg-black/60 border border-white/20 rounded-lg text-white focus:outline-none focus:border-cyan-400"
+                              />
+                            </div>
+                            <span className="text-zinc-500 font-bold mt-4">:</span>
+                            <div className="flex-1 space-y-1">
+                              <label className="text-[9px] text-zinc-400 font-mono block">HEIGHT (Y)</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={64}
+                                value={customHeight}
+                                onChange={(e) => setCustomHeight(Math.max(1, parseInt(e.target.value) || 1))}
+                                className="w-full px-2 py-1 text-center font-mono font-bold text-xs bg-black/60 border border-white/20 rounded-lg text-white focus:outline-none focus:border-cyan-400"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Quick Ratio Presets */}
+                          <div className="space-y-1 pt-1 border-t border-white/10">
+                            <span className="text-[9px] text-zinc-500 font-mono uppercase">Quick Presets</span>
+                            <div className="grid grid-cols-3 gap-1">
+                              {[
+                                { w: 21, h: 9, label: '21:9' },
+                                { w: 3, h: 2, label: '3:2' },
+                                { w: 2, h: 3, label: '2:3' },
+                                { w: 4, h: 3, label: '4:3' },
+                                { w: 3, h: 4, label: '3:4' },
+                                { w: 9, h: 16, label: '9:16' },
+                              ].map((p) => (
+                                <button
+                                  key={p.label}
+                                  type="button"
+                                  onClick={() => {
+                                    setCustomWidth(p.w);
+                                    setCustomHeight(p.h);
+                                  }}
+                                  className={`px-1.5 py-1 text-[10px] font-mono rounded-lg border transition cursor-pointer ${
+                                    customWidth === p.w && customHeight === p.h
+                                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold'
+                                      : 'bg-white/[0.04] border-white/10 text-zinc-400 hover:text-white'
+                                  }`}
+                                >
+                                  {p.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomAspectPopup(false)}
+                            className="w-full py-1.5 rounded-xl bg-white text-black text-xs font-bold hover:bg-zinc-200 transition cursor-pointer flex items-center justify-center gap-1 shadow-md"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Apply {customWidth}:{customHeight}</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                      title="Add another photo or video"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>Add</span>
+                    </button>
+
+                    {/* 3D Flip Trigger Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsStudioFlipped(!isStudioFlipped)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-medium transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
+                        isStudioFlipped
+                          ? 'bg-white text-black border-white font-bold shadow-sm'
+                          : 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border-cyan-500/30 text-cyan-300 hover:text-white shadow-sm'
+                      }`}
+                      title={isStudioFlipped ? 'Close FX Studio & Return' : 'Open Pro FX & Text Studio'}
+                    >
+                      <Wand2 className={`w-3.5 h-3.5 ${isStudioFlipped ? 'text-black' : 'text-cyan-400'}`} />
+                      <span>{isStudioFlipped ? 'Close FX' : 'FX & Text Studio'}</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="w-full flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400/80 animate-pulse" />
+                    <span className="font-semibold text-zinc-300 tracking-wide">MEDIA CANVAS</span>
+                    <span className="text-zinc-600 hidden sm:inline">•</span>
+                    <span className="text-[11px] text-zinc-500 hidden sm:inline">Attach photos/videos to unlock FX Studio</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-medium text-white transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 shadow-sm"
+                    title="Upload photo from device"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Upload Media</span>
+                  </button>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-xs font-medium text-zinc-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer"
-                  title="Upload photo from device"
-                >
-                  <Upload className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>Upload</span>
-                </button>
-
-                {/* 3D Flip Trigger Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsStudioFlipped(!isStudioFlipped)}
-                  className={`px-2.5 py-1 rounded-xl border text-xs font-medium transition flex items-center gap-1.5 cursor-pointer ${
-                    isStudioFlipped
-                      ? 'bg-white text-black border-white font-bold shadow-sm'
-                      : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 hover:border-white/20 text-zinc-300 hover:text-white'
-                  }`}
-                >
-                  <Wand2 className={`w-3.5 h-3.5 ${isStudioFlipped ? 'text-black' : 'text-zinc-400'}`} />
-                  <span>{isStudioFlipped ? 'Close FX' : 'FX & Text Studio'}</span>
-                </button>
-              </div>
+              )}
             </div>
 
             <input
@@ -1202,15 +1322,124 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       </button>
                     </div>
 
-                    {/* Caption Textarea */}
+                    {/* Creative Publishing Format Selector */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                          <span>Format</span>
+                          <span className="text-zinc-600">/</span>
+                          <span className="text-cyan-400">Creative Mode</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-500">
+                          {charLimit.toLocaleString()} char limit
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                        {[
+                          { id: 'dispatch', label: 'Dispatch', icon: Sparkles },
+                          { id: 'blog', label: 'Blog / Article', icon: BookOpen },
+                          { id: 'poetry', label: 'Poetry & Verses', icon: Feather },
+                          { id: 'essay', label: 'Civic Essay', icon: FileText },
+                          { id: 'treaty', label: 'Treaty & Accord', icon: Scale },
+                        ].map((fmt) => {
+                          const Icon = fmt.icon;
+                          const isActive = postFormat === fmt.id;
+                          return (
+                            <button
+                              key={fmt.id}
+                              type="button"
+                              onClick={() => {
+                                setPostFormat(fmt.id as PulsePostFormat);
+                                if (fmt.id === 'poetry' && selectedFont === 'clash') {
+                                  setSelectedFont('serif');
+                                }
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-150 cursor-pointer border ${
+                                isActive
+                                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-200 border-cyan-500/40 shadow-sm shadow-cyan-500/10 font-bold'
+                                  : 'bg-white/[0.03] text-zinc-400 border-white/5 hover:text-white hover:bg-white/[0.07] hover:border-white/10'
+                              }`}
+                            >
+                              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyan-400' : 'text-zinc-500'}`} />
+                              <span>{fmt.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Optional / Recommended Title Input */}
+                    {(postFormat !== 'dispatch' || postTitle.length > 0) && (
+                      <div className="space-y-1 pt-1 animate-in fade-in duration-150">
+                        <input
+                          type="text"
+                          value={postTitle}
+                          onChange={(e) => setPostTitle(e.target.value)}
+                          placeholder={
+                            postFormat === 'poetry'
+                              ? 'Poem Title (e.g. In The Quiet of the Dawn)...'
+                              : postFormat === 'blog'
+                              ? 'Blog Title (e.g. Notes on the Emerging Digital Polis)...'
+                              : postFormat === 'essay'
+                              ? 'Civic Essay Title...'
+                              : postFormat === 'treaty'
+                              ? 'Resolution / Accord Title...'
+                              : 'Dispatch Headline (Optional)...'
+                          }
+                          className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-sm font-semibold text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400/60 transition"
+                        />
+                      </div>
+                    )}
+
+                    {/* Poetry Controls: Alignment toggle */}
+                    {postFormat === 'poetry' && (
+                      <div className="flex items-center justify-between px-2 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-[11px] font-mono text-zinc-300">
+                        <span className="flex items-center gap-1.5 text-purple-300 font-semibold">
+                          <Feather className="w-3.5 h-3.5 text-purple-400" />
+                          <span>Verse Stanza Typography</span>
+                        </span>
+                        <div className="flex items-center gap-1 bg-white/[0.05] p-0.5 rounded-lg border border-white/10">
+                          <button
+                            type="button"
+                            onClick={() => setPoetryAlign('left')}
+                            className={`p-1 rounded cursor-pointer ${poetryAlign === 'left' ? 'bg-cyan-500/30 text-cyan-300 font-bold' : 'text-zinc-400 hover:text-white'}`}
+                            title="Left Aligned Stanzas"
+                          >
+                            <AlignLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPoetryAlign('center')}
+                            className={`p-1 rounded cursor-pointer ${poetryAlign === 'center' ? 'bg-cyan-500/30 text-cyan-300 font-bold' : 'text-zinc-400 hover:text-white'}`}
+                            title="Center Aligned Stanzas"
+                          >
+                            <AlignCenter className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Content Textarea */}
                     <div className="space-y-2">
                       <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value.slice(0, charLimit))}
-                        placeholder="Write a caption or dispatch note..."
-                        rows={4}
-                        className="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-500 resize-none focus:outline-none leading-relaxed border-none p-0"
-                        style={{ fontFamily: OVERLAY_FONTS.find((f) => f.id === selectedFont)?.font || "'Clash Display', sans-serif" }}
+                        placeholder={
+                          postFormat === 'poetry'
+                            ? "Pen your stanzas, verses or rhythm here...\nPreserves line breaks and formatting.\n\nLike echoes in the marble halls,\nA silent truth begins to call."
+                            : postFormat === 'blog'
+                            ? "Write your story, analysis, essay or journal entry here..."
+                            : postFormat === 'essay'
+                            ? "Author your civic policy commentary, thesis, or op-ed..."
+                            : postFormat === 'treaty'
+                            ? "Preamble and operative clauses of your civic treaty or accord..."
+                            : "Write a caption or dispatch note..."
+                        }
+                        rows={postFormat === 'blog' || postFormat === 'essay' || postFormat === 'treaty' ? 10 : postFormat === 'poetry' ? 8 : 4}
+                        className={`w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-500 resize-none focus:outline-none leading-relaxed border-none p-0 ${
+                          postFormat === 'poetry' ? (poetryAlign === 'center' ? 'text-center italic font-serif' : 'italic font-serif') : ''
+                        }`}
+                        style={{ fontFamily: OVERLAY_FONTS.find((f) => f.id === selectedFont)?.font || (postFormat === 'poetry' ? "'Newsreader', Georgia, serif" : "'Clash Display', sans-serif") }}
                       />
 
                       {/* 10 Typography Styles */}
@@ -1294,31 +1523,31 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       </div>
                     </div>
 
-                    {/* Location Tag (World Map API) */}
+                    {/* Location Tag (Google Maps API / Instagram Geotag) */}
                     <div className="pt-2 border-t border-white/[0.06] space-y-2">
                       <div 
                         onClick={() => setShowLocationPicker(true)}
                         className="flex items-center justify-between text-xs text-zinc-300 hover:text-white cursor-pointer py-1.5 px-2 rounded-xl hover:bg-white/[0.04] transition border border-transparent hover:border-white/10"
                       >
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-rose-400" />
-                          <span className={location ? "text-cyan-300 font-bold" : "text-zinc-300"}>
-                            {location || 'Add World Location / Committee Node'}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+                          <span className={location ? "text-cyan-300 font-bold truncate" : "text-zinc-300 truncate"}>
+                            {location || 'Add Location'}
                           </span>
-                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                            World Map API
+                          <span className="hidden sm:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+                            Google Maps API
                           </span>
                         </div>
                         {location ? (
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setLocation(''); }}
-                            className="text-[10px] text-zinc-500 hover:text-rose-400 cursor-pointer font-mono"
+                            className="text-[10px] text-zinc-500 hover:text-rose-400 cursor-pointer font-sans shrink-0 ml-2"
                           >
-                            Clear
+                            Remove
                           </button>
                         ) : (
-                          <Globe2 className="w-3.5 h-3.5 text-zinc-500" />
+                          <Globe2 className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                         )}
                       </div>
                     </div>
@@ -1399,7 +1628,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       </div>
                     </div>
 
-                    {/* Verified Source & Political Citation (Mandatory for Policy & Institutional Trust) */}
+                    {/* Verified Sources & Institutional Citations System */}
                     <div className="pt-2 border-t border-white/[0.06] space-y-2">
                       <div 
                         onClick={() => setShowSourceFields(!showSourceFields)}
@@ -1408,13 +1637,15 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                         <div className="flex items-center gap-2">
                           <Landmark className="w-4 h-4 text-cyan-400" />
                           <span className="font-medium">
-                            {sourceName ? `Source: ${sourceName}` : 'Add Verified Source / Citation (Optional)'}
+                            {sources.filter(s => s.name.trim() || s.url.trim()).length > 0 
+                              ? `${sources.filter(s => s.name.trim() || s.url.trim()).length} Citation Source${sources.filter(s => s.name.trim() || s.url.trim()).length > 1 ? 's' : ''} Attached`
+                              : 'Add Verified Sources / Citations (Optional)'}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          {sourceName && (
+                          {sources.some(s => s.name.trim() || s.url.trim()) && (
                             <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[9px] font-mono">
-                              Verified
+                              {sources.filter(s => s.name.trim() || s.url.trim()).length} Verified
                             </span>
                           )}
                           <span className="text-[11px] text-zinc-500 font-mono">
@@ -1424,36 +1655,75 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       </div>
 
                       {showSourceFields && (
-                        <div className="p-3 rounded-2xl bg-black/60 border border-cyan-500/20 space-y-2 text-xs animate-in fade-in duration-150">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-zinc-400 flex items-center gap-1">
-                              <span>Source Publisher / Institution Name</span>
-                              <span className="text-cyan-400">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              value={sourceName}
-                              onChange={(e) => setSourceName(e.target.value)}
-                              placeholder="e.g. PRS Legislative Research, UN Library, Supreme Court of India"
-                              className="w-full px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-400/60 font-mono"
-                            />
+                        <div className="p-3 rounded-2xl bg-black/60 border border-cyan-500/20 space-y-3 text-xs animate-in fade-in duration-150">
+                          {/* List of Dynamic Sources */}
+                          <div className="space-y-3">
+                            {sources.map((src, idx) => (
+                              <div 
+                                key={src.id}
+                                className="p-3 rounded-xl bg-white/[0.02] border border-white/10 space-y-2 relative group"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-mono font-semibold text-cyan-400 flex items-center gap-1.5">
+                                    <span className="w-4 h-4 rounded-full bg-cyan-500/20 flex items-center justify-center text-[9px]">
+                                      {idx + 1}
+                                    </span>
+                                    <span>Citation Source #{idx + 1}</span>
+                                  </span>
+                                  {sources.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveSource(src.id)}
+                                      className="text-zinc-500 hover:text-rose-400 p-1 rounded-md transition cursor-pointer"
+                                      title="Remove this source"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-mono text-zinc-400 flex items-center gap-1">
+                                    <span>Source Publisher / Institution Name</span>
+                                    <span className="text-cyan-400">*</span>
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={src.name}
+                                    onChange={(e) => handleUpdateSource(src.id, 'name', e.target.value)}
+                                    placeholder="e.g. PRS Legislative Research, UN Library, Supreme Court of India"
+                                    className="w-full px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-400/60 font-mono"
+                                  />
+                                </div>
+
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-mono text-zinc-400">
+                                    Verification / Document Reference URL
+                                  </label>
+                                  <input
+                                    type="url"
+                                    value={src.url}
+                                    onChange={(e) => handleUpdateSource(src.id, 'url', e.target.value)}
+                                    placeholder="https://prsindia.org/... or https://sci.gov.in/..."
+                                    className="w-full px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-400/60 font-mono"
+                                  />
+                                </div>
+                              </div>
+                            ))}
                           </div>
 
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-mono text-zinc-400">
-                              Verification / Document Reference URL
-                            </label>
-                            <input
-                              type="url"
-                              value={sourceUrl}
-                              onChange={(e) => setSourceUrl(e.target.value)}
-                              placeholder="https://prsindia.org/... or https://sci.gov.in/..."
-                              className="w-full px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-400/60 font-mono"
-                            />
-                          </div>
+                          {/* + Add Another Source Citation Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleAddSource()}
+                            className="w-full py-2 px-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 hover:border-cyan-500/50 text-cyan-300 font-mono text-xs flex items-center justify-center gap-2 transition cursor-pointer group"
+                          >
+                            <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
+                            <span className="font-semibold">+ Add Another Source Citation</span>
+                          </button>
 
                           {/* Quick suggested institutional sources & news outlets */}
-                          <div className="pt-2 space-y-2">
+                          <div className="pt-2 space-y-2 border-t border-white/[0.06]">
                             <div>
                               <span className="text-[9px] font-mono text-zinc-500 uppercase block mb-1">
                                 National Newspapers (Page 30):
@@ -1469,10 +1739,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                                   <button
                                     key={s.name}
                                     type="button"
-                                    onClick={() => {
-                                      setSourceName(s.name);
-                                      setSourceUrl(s.url);
-                                    }}
+                                    onClick={() => handleQuickAddSource(s.name, s.url)}
                                     className="px-2 py-0.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-[10px] font-mono text-rose-300 hover:text-rose-200 transition cursor-pointer"
                                   >
                                     + {s.name}
@@ -1494,10 +1761,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                                   <button
                                     key={s.name}
                                     type="button"
-                                    onClick={() => {
-                                      setSourceName(s.name);
-                                      setSourceUrl(s.url);
-                                    }}
+                                    onClick={() => handleQuickAddSource(s.name, s.url)}
                                     className="px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-[10px] font-mono text-amber-300 hover:text-amber-200 transition cursor-pointer"
                                   >
                                     + {s.name}
@@ -1525,10 +1789,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                                   <button
                                     key={s.name}
                                     type="button"
-                                    onClick={() => {
-                                      setSourceName(s.name);
-                                      setSourceUrl(s.url);
-                                    }}
+                                    onClick={() => handleQuickAddSource(s.name, s.url)}
                                     className="px-2 py-0.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/25 text-[10px] font-mono text-purple-300 hover:text-purple-200 transition cursor-pointer"
                                   >
                                     + {s.name}
@@ -1556,10 +1817,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                                   <button
                                     key={s.name}
                                     type="button"
-                                    onClick={() => {
-                                      setSourceName(s.name);
-                                      setSourceUrl(s.url);
-                                    }}
+                                    onClick={() => handleQuickAddSource(s.name, s.url)}
                                     className="px-2 py-0.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/25 text-[10px] font-mono text-cyan-300 hover:text-cyan-200 transition cursor-pointer"
                                   >
                                     + {s.name}
@@ -2353,7 +2611,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
         mode="post"
       />
 
-      {/* ─── WORLD MAP LOCATION PICKER MODAL ─── */}
+      {/* ─── GOOGLE MAPS LOCATION PICKER MODAL ─── */}
       <WorldLocationPickerModal
         isOpen={showLocationPicker}
         onClose={() => setShowLocationPicker(false)}
@@ -2362,6 +2620,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
           setLocation(loc.name);
           setShowLocationPicker(false);
         }}
+        onRemoveLocation={() => setLocation('')}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 {
   "maintenanceMode": false,
-  "registrationsOpen": false,
+  "registrationsOpen": true,
   "chatMeshEnabled": true,
   "fluxReelsEnabled": true,
   "assemblyOsEnabled": true,

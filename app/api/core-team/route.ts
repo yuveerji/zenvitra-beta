@@ -20,7 +20,9 @@ function appendToLocalLedger(entry: Record<string, any>) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { fullName, email, phone, phoneNumber, city, locationTimezone, institution, department, portfolioLink, motivation, hoursPerWeek } = body;
+    const fullName = body.fullName || body.name;
+    const email = body.email;
+    const { phone, phoneNumber, city, locationTimezone, institution, department, portfolioLink, motivation, hoursPerWeek } = body;
 
     if (!email || !fullName) {
       return NextResponse.json(
@@ -74,56 +76,88 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
+    // 2. Prepare comprehensive detailed payload for Google Sheets
+    const detailedCoreData = {
+      // Clean, detailed Title Case headers matching Google Sheets
+      'Timestamp': new Date().toISOString(),
+      'Application ID': savedApplication?.id || `COR-${Date.now().toString(36).toUpperCase()}`,
+      'Full Legal Name': fullName,
+      'Desired ZEN Handle': body.handle ? (body.handle.startsWith('@') ? body.handle : `@${body.handle}`) : 'N/A',
+      'Primary Email': email,
+      'Phone [Whatsapp Active]': resolvedPhone,
+      'Phone Number': resolvedPhone,
+      'Telegram / Discord Handle': resolvedContactChannel,
+      'Location & Timezone': resolvedLocation,
+      'Role Applied For': department || body.roleAppliedFor || 'Core Team',
+      'Department / Wing': department || body.roleAppliedFor || 'CORE',
+      'Portfolio / Proof of Work URL': resolvedPortfolio,
+      'Uploaded Dossier Document': resolvedDossierDoc,
+      'Past Experience & Track Record': body.pastExperience || 'N/A',
+      'Technical / Diplomatic Dossier': body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
+      'Weekly Bandwidth': hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
+      'Statement of Purpose & Motivation': motivation || body.motivationStatement || 'N/A',
+      'Constitutional Accord Status': body.constitutionalAccordAccepted || 'RATIFIED',
+      'Application Status': 'PENDING',
+      'Reviewer': 'Genesis Executive Council',
+      'Review Notes': 'Verified by Secretariat gateway',
+      'IP Address': ip,
+      'Device / Browser': userAgent,
+
+      // Flexible camelCase and alias keys for existing sheets
+      fullName,
+      handle: body.handle || '',
+      email,
+      phone: resolvedPhone,
+      phoneNumber: resolvedPhone,
+      contactPhone: resolvedPhone,
+      contactChannel: resolvedContactChannel,
+      locationTimezone: resolvedLocation,
+      city: resolvedLocation,
+      roleApplied: department || body.roleAppliedFor || 'Core Team',
+      roleAppliedFor: department || body.roleAppliedFor || 'Core Team',
+      department: department || 'CORE',
+      portfolioUrl: resolvedPortfolio,
+      portfolioLink: resolvedPortfolio,
+      proofOfWorkUrl: resolvedPortfolio,
+      dossierUploadUrl: resolvedDossierDoc,
+      uploadedDocumentName: body.uploadedDocumentName || 'N/A',
+      pastExperience: body.pastExperience || 'N/A',
+      leadershipAccomplishments: body.pastExperience || 'N/A',
+      technicalOrDiplomaticDossier: body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
+      strategicVision: body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
+      weeklyBandwidth: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
+      hoursPerWeek: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
+      motivationStatement: motivation || body.motivationStatement || 'N/A',
+      motivation: motivation || body.motivationStatement || 'N/A',
+      whyLead: motivation || body.motivationStatement || 'N/A',
+      constitutionalAccordAccepted: body.constitutionalAccordAccepted || 'RATIFIED',
+      constitutionalAccord: body.constitutionalAccordAccepted || 'RATIFIED',
+      applicationStatus: 'PENDING',
+      status: 'PENDING',
+      applicationId: savedApplication?.id || `COR-${Date.now().toString(36).toUpperCase()}`,
+      ipAddress: ip,
+      deviceBrowserInfo: userAgent,
+      submittedAt: new Date().toISOString(),
+    };
+
     // 2. Dispatch to Google Sheets under 'Core Team Applications'
     try {
       await dispatchToGoogleSheets({
         tab: 'Core Team Applications',
-        data: {
-          // --- STAGE 1: Identity & Executive Clearance ---
-          fullName,
-          handle: body.handle ? (body.handle.startsWith('@') ? body.handle : `@${body.handle}`) : 'N/A',
-          email,
-          phoneNumber: resolvedPhone,
-          phone: resolvedPhone,
-          contactChannel: resolvedContactChannel,
-          locationTimezone: resolvedLocation,
-          city: resolvedLocation,
-
-          // --- Role & Department ---
-          roleApplied: department || body.roleAppliedFor || 'Core Team',
-          roleAppliedFor: department || body.roleAppliedFor || 'Core Team',
-          department: department || 'CORE',
-
-          // --- STAGE 2: Leadership Dossier & Track Record ---
-          portfolioUrl: resolvedPortfolio,
-          proofOfWorkUrl: resolvedPortfolio,
-          dossierUploadUrl: resolvedDossierDoc,
-          uploadedDocumentName: body.uploadedDocumentName || 'N/A',
-          pastExperience: body.pastExperience || 'N/A',
-          leadershipAccomplishments: body.pastExperience || 'N/A',
-          technicalOrDiplomaticDossier: body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
-          strategicVision: body.technicalOrDiplomaticDossier || body.dossier || 'N/A',
-
-          // --- STAGE 3: Bandwidth & Constitutional Accord ---
-          weeklyBandwidth: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
-          hoursPerWeek: hoursPerWeek || body.weeklyBandwidth || '25+ hrs (Core)',
-          motivationStatement: motivation || body.motivationStatement || 'N/A',
-          coverNote: motivation || body.motivationStatement || 'N/A',
-          constitutionalAccord: body.constitutionalAccordAccepted || 'RATIFIED',
-          constitutionalAccordAccepted: body.constitutionalAccordAccepted || 'RATIFIED',
-
-          // --- Review Status ---
-          applicationStatus: 'PENDING',
-          reviewerInfo: 'Genesis Executive Council',
-
-          // Telemetry
-          ipAddress: ip,
-          deviceBrowserInfo: userAgent,
-          submittedAt: new Date().toISOString(),
-        },
+        data: detailedCoreData,
       });
     } catch (sheetErr: any) {
-      console.warn('[SHEETS-DISPATCH-WARN]', sheetErr?.message);
+      console.warn('[SHEETS-DISPATCH-CORE-WARN]', sheetErr?.message);
+    }
+
+    // 3. Parallel fallback dispatch to '04 Team Applications'
+    try {
+      await dispatchToGoogleSheets({
+        tab: '04 Team Applications',
+        data: detailedCoreData,
+      });
+    } catch (sheetErr: any) {
+      console.warn('[SHEETS-DISPATCH-04-WARN]', sheetErr?.message);
     }
 
     return NextResponse.json({

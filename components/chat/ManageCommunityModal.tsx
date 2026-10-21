@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings,
@@ -40,19 +40,17 @@ export function ManageCommunityModal({
   onDeleteCommunity,
   onToast,
 }: ManageCommunityModalProps) {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'overview' | 'channels' | 'danger'>('overview');
 
   // Overview state
-  const [name, setName] = useState(community.name);
-  const [icon, setIcon] = useState(community.icon || '🏛️');
-  const [badge, setBadge] = useState(community.badge || 'COUNCIL');
-  const [description, setDescription] = useState(community.description || '');
+  const [name, setName] = useState(community?.name || '');
+  const [icon, setIcon] = useState(community?.icon || '🏛️');
+  const [badge, setBadge] = useState(community?.badge || 'COUNCIL');
+  const [description, setDescription] = useState(community?.description || '');
 
   // Categories and channels state
-  const [categories, setCategories] = useState<ChannelCategory[]>(community.categories || []);
-  const [channels, setChannels] = useState<ChatChannel[]>(community.channels || []);
+  const [categories, setCategories] = useState<ChannelCategory[]>(community?.categories || []);
+  const [channels, setChannels] = useState<ChatChannel[]>(community?.channels || []);
 
   // Quick Channel Edit / Add state
   const [newCatName, setNewCatName] = useState('');
@@ -60,6 +58,17 @@ export function ManageCommunityModal({
 
   // Channel edit modal / popover
   const [editingChannel, setEditingChannel] = useState<ChatChannel | null>(null);
+
+  useEffect(() => {
+    if (community) {
+      setName(community.name);
+      setIcon(community.icon || '🏛️');
+      setBadge(community.badge || 'COUNCIL');
+      setDescription(community.description || '');
+      setCategories(community.categories || []);
+      setChannels(community.channels || []);
+    }
+  }, [community, isOpen]);
 
   const handleSaveOverview = () => {
     if (!name.trim()) {
@@ -118,6 +127,8 @@ export function ManageCommunityModal({
     setEditingChannel(null);
     onToast('Channel deleted');
   };
+
+  if (!isOpen || !community) return null;
 
   return (
     <AnimatePresence>

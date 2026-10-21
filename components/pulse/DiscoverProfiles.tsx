@@ -532,7 +532,7 @@ export function DiscoverProfiles() {
               <Globe2 className="w-10 h-10 text-neutral-600 mx-auto animate-pulse" />
               <p className="font-display font-bold text-base text-white">No exact directory match</p>
               <p className="text-xs font-mono text-neutral-500">
-                Type any handle or user ID in the search box above to dynamically query and inspect their sovereign dossier.
+                Type any handle or user ID in the search box above to dynamically query and inspect their Student Profile / MUN CV.
               </p>
             </div>
           ) : (

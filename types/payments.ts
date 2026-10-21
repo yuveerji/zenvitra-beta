@@ -22,7 +22,8 @@ export type PaymentProduct =
   | 'PROFESSIONAL_ORG' 
   | 'DONATION' 
   | 'INVOICE' 
-  | 'CUSTOM';
+  | 'CUSTOM'
+  | (string & {});
 
 export type PaymentMethodType = 
   | 'CASHFREE'

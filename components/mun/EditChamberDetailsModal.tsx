@@ -220,7 +220,7 @@ export function EditChamberDetailsModal({ isOpen, onClose }: EditChamberDetailsM
                   type="text"
                   value={shortName}
                   onChange={(e) => setShortName(e.target.value)}
-                  placeholder="e.g. AIPPM, HCC, LOK_SABHA"
+                  placeholder="e.g. AIPPM, HCC, LOK SABHA"
                   className="w-full bg-black/60 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-white/40 font-mono"
                 />
               </div>

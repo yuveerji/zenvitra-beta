@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCashfreeWebhookSignature } from '@/lib/cashfreeServer';
 import { getServerPassportByUsername, saveServerPassport } from '@/lib/passportsStorage';
 import { WalletCredential } from '@/lib/passport';
+import { sheetSync } from '@/lib/googleSheets';
+import { prisma } from '@/lib/db';
+import { generateQrCodeToken } from '@/lib/ticketCrypto';
 
 export async function GET() {
   return NextResponse.json({ status: 'OK', message: 'Zenvitra Cashfree Webhook Active' }, { status: 200 });
@@ -65,6 +68,75 @@ export async function POST(req: NextRequest) {
         const cleanUsername = rawUsername.toLowerCase().replace(/^@/, '').trim();
 
         console.log(`[Cashfree Webhook] Payment Successful for Order ${orderId}, Amount: ${orderAmount}, User: ${cleanUsername}`);
+
+        // 1. Update CashfreePaymentOrder in Prisma Database
+        try {
+          await prisma.cashfreePaymentOrder.upsert({
+            where: { orderId },
+            update: {
+              orderStatus: 'PAID',
+              cfPaymentId: paymentData.cf_payment_id ? String(paymentData.cf_payment_id) : null,
+              paymentMethod: paymentData.payment_group || null,
+              bankReference: paymentData.bank_reference ? String(paymentData.bank_reference) : null,
+              paidAt: new Date(),
+              rawWebhookData: rawBody.substring(0, 3000),
+            },
+            create: {
+              orderId,
+              orderAmount: Number(orderAmount) || 0,
+              orderStatus: 'PAID',
+              customerId: customerDetails.customer_id || 'cust_webhook',
+              customerEmail: customerDetails.customer_email || 'delegate@zenvitra.xyz',
+              customerPhone: customerDetails.customer_phone || '9999999999',
+              customerName: customerDetails.customer_name || 'Delegate',
+              username: cleanUsername || null,
+              productId,
+              cfPaymentId: paymentData.cf_payment_id ? String(paymentData.cf_payment_id) : null,
+              paymentMethod: paymentData.payment_group || null,
+              paidAt: new Date(),
+              rawWebhookData: rawBody.substring(0, 3000),
+            }
+          });
+        } catch (dbErr) {
+          console.error('[Cashfree Webhook] Error updating CashfreePaymentOrder:', dbErr);
+        }
+
+        // 2. Issue Tamper-Proof HMAC Offline Gate Ticket in Database
+        try {
+          const ticketNumber = `ZVN-${orderId.slice(-6).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+          const eventId = orderData.order_tags?.eventId || productId || 'summit-2026';
+          const { qrCodeToken, securityHash } = generateQrCodeToken({
+            ticketNumber,
+            eventId,
+            attendeeEmail: customerDetails.customer_email || 'delegate@zenvitra.xyz',
+            isStudent: true,
+            tierName: productId,
+          });
+
+          await prisma.eventTicket.create({
+            data: {
+              ticketNumber,
+              qrCodeToken,
+              eventId,
+              eventTitle: productId === 'DIPLOMACY_MUN' ? 'ZENVITRA Diplomacy MUN 2026' : `ZENVITRA ${productId}`,
+              attendeeName: customerDetails.customer_name || 'Distinguished Delegate',
+              attendeeEmail: customerDetails.customer_email || 'delegate@zenvitra.xyz',
+              attendeeHandle: cleanUsername ? `@${cleanUsername}` : null,
+              attendeePhone: customerDetails.customer_phone || null,
+              tierName: productId,
+              isStudent: true,
+              price: Number(orderAmount) || 0,
+              currency: 'INR',
+              paymentId: paymentData.cf_payment_id ? String(paymentData.cf_payment_id) : orderId,
+              orderId,
+              status: 'VALID',
+              securityHash,
+            }
+          });
+          console.log(`[Cashfree Webhook] Minted HMAC-SHA256 Ticket ${ticketNumber} for Order ${orderId}`);
+        } catch (ticketErr) {
+          console.warn('[Cashfree Webhook] Could not auto-mint EventTicket in DB:', ticketErr);
+        }
 
         // Provision pass/credential to user's sovereign passport wallet on server
         if (cleanUsername) {
@@ -140,6 +212,35 @@ export async function POST(req: NextRequest) {
           } catch (storageErr) {
             console.error('[Cashfree Webhook] Error updating passport wallet:', storageErr);
           }
+
+          // Dispatch payment record to 18 Payments tab in Google Sheets
+          try {
+            sheetSync.dispatchRaw({
+              tab: '18 Payments',
+              data: {
+                Payment_ID: `PAY-${Date.now()}`,
+                Person_ID: cleanUsername ? `PER-${cleanUsername}` : '',
+                Event_ID: orderData?.order_tags?.eventId || '',
+                Registration_ID: orderData?.order_tags?.planId || orderData?.order_tags?.productId || '',
+                Order_ID: orderId,
+                Gateway: 'Cashfree',
+                Gateway_Transaction_Ref: paymentData?.cf_payment_id || '',
+                Gross_Amount_INR: paymentData?.payment_amount || orderData?.order_amount || 0,
+                Tax_Amount_INR: 0,
+                Platform_Fee_INR: 0,
+                Net_Amount_INR: paymentData?.payment_amount || orderData?.order_amount || 0,
+                Currency: paymentData?.payment_currency || 'INR',
+                Payment_Status: 'Success',
+                Payment_Date: new Date().toISOString(),
+                Refund_Amount_INR: 0,
+                Refund_Status: 'Not_Applicable',
+                Invoice_ID: `INV-${orderId}`,
+                Reconciliation_Status: 'Matched',
+                Finance_Owner: 'System Auto',
+                Notes: `Auto-recorded from Cashfree Webhook for @${cleanUsername}`
+              }
+            }).catch(() => {});
+          } catch (_) {}
         }
         break;
       }
@@ -153,6 +254,18 @@ export async function POST(req: NextRequest) {
       case 'PAYMENT_USER_DROPPED_WEBHOOK': {
         const orderData = payload.data?.order || payload.data;
         console.log(`[Cashfree Webhook] Customer dropped off for Order ${orderData?.order_id}`);
+        break;
+      }
+
+      case 'PAYMENT_LINK_EVENT': {
+        const linkData = payload.data || {};
+        console.log(`[Cashfree Webhook] Payment Link Event: ${linkData.link_id}, Status: ${linkData.link_status}, Paid: ${linkData.link_amount_paid}`);
+        if (linkData.link_status === 'PAID') {
+          const notes = linkData.link_notes || {};
+          const eventId = notes.eventId;
+          const planName = notes.planName || 'Registration Pass';
+          console.log(`[Cashfree Webhook] Payment link ${linkData.link_id} fully paid for event ${eventId} (${planName})`);
+        }
         break;
       }
 

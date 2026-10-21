@@ -14,6 +14,7 @@ import {
   Instagram,
   Youtube,
   Twitter,
+  MessageCircle,
   Github,
   Mail,
   Building2,
@@ -90,7 +91,7 @@ export function Footer() {
                 <span>SOVEREIGN INTELLIGENCE WIRE // LIVE SYNC</span>
               </div>
               <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-display">
-                Subscribe to Diplomatic & Civic Dispatches
+                Subscribe to <span className="font-serif italic font-normal text-cyan-200">Diplomatic &amp; Civic Dispatches</span>
               </h3>
               <p className="text-xs sm:text-sm text-neutral-400 max-w-lg leading-relaxed">
                 Receive uncompromised international summit bulletins, student research papers, and public treasury transparency audits directly in your inbox.
@@ -195,6 +196,24 @@ export function Footer() {
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <a
+                  href="https://x.com/zenvitra_"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 hover:border-sky-500/40 text-neutral-300 hover:text-sky-400 transition cursor-pointer"
+                  title="X (Twitter) @zenvitra_"
+                >
+                  <Twitter className="w-4 h-4" />
+                </a>
+                <a
+                  href="https://chat.whatsapp.com/Cmn9ihpEbRs7kLO1G83Fez"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.1] border border-white/10 hover:border-emerald-500/40 text-neutral-300 hover:text-emerald-400 transition cursor-pointer"
+                  title="WhatsApp Official Community"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </a>
+                <a
                   href="https://instagram.com/zenvitrafoundation"
                   target="_blank"
                   rel="noreferrer"
@@ -246,13 +265,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/space" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-emerald-300 font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-                  <span>ZEN.SPACE Civic Hub</span>
+                <Link href="/space" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-amber-300 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24]" />
+                  <span>ZEN.SPACE (Coming Nov 25)</span>
                 </Link>
               </li>
               <li>
-                <Link href="/matrix" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-amber-300 font-semibold">
+                <Link href="/mun/matrix" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-amber-300 font-semibold">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
                   <span>PORTFOLIO MATRIX</span>
                 </Link>
@@ -273,6 +292,12 @@ export function Footer() {
                 <Link href="/docs" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group">
                   <span className="w-1 h-1 rounded-full bg-indigo-400 group-hover:scale-150 transition-transform" />
                   <span>ZEN.DOCS Drafting</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/press" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 group text-cyan-300 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
+                  <span>ZEN.PRESS Wire</span>
                 </Link>
               </li>
               <li>
@@ -304,20 +329,20 @@ export function Footer() {
             </p>
             <ul className="space-y-2.5 text-xs font-mono text-neutral-400">
               <li>
-                <Link href="/zen-diplomacy" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 font-bold text-cyan-300">
+                <Link href="/events" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 font-bold text-cyan-300">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
-                  <span>ZEN.DIPLOMACY MUN 2026</span>
+                  <span>MUN Summits & Conferences</span>
                 </Link>
               </li>
               <li>
-                <Link href="/matrix" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-amber-300 font-semibold">
+                <Link href="/mun/matrix" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-amber-300 font-semibold">
                   <span className="w-1 h-1 rounded-full bg-amber-400" />
-                  <span>Live 240-Seat Matrix</span>
+                  <span>Live Portfolio Matrix</span>
                 </Link>
               </li>
               <li>
-                <Link href="/forms/zen-diplomacy-2026" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-emerald-300">
-                  <span>Delegate Application &rarr;</span>
+                <Link href="/events" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-emerald-300">
+                  <span>Host MUN Event &rarr;</span>
                 </Link>
               </li>
               <li>
@@ -328,26 +353,6 @@ export function Footer() {
               <li>
                 <Link href="/committee" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
                   <span>Chamber Dais Liveboard</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/matrix?committee=aippm" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>AIPPM Parliamentary Dais</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/matrix?committee=emi" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>Education Ministry (EMI)</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/matrix?committee=ecosoc" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>ECOSOC Sovereign Council</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/matrix?committee=unsc" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>UN Security Council (UNSC)</span>
                 </Link>
               </li>
             </ul>
@@ -361,8 +366,14 @@ export function Footer() {
             </p>
             <ul className="space-y-2.5 text-xs font-mono text-neutral-400">
               <li>
-                <Link href="/donate/govt-schools" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>Govt Schools Direct Giving</span>
+                <Link href="/about" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-white font-semibold">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>About Zenvitra</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/events?action=list" className="hover:text-cyan-300 hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-cyan-400 font-semibold">
+                  <span>List Your Conference / Event</span>
                 </Link>
               </li>
               <li>
@@ -376,8 +387,14 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/join-core-team" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-amber-300">
-                  <Crown className="w-3 h-3 text-amber-400" />
+                <Link href="/team" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-amber-300 font-bold">
+                  <Crown className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Who&apos;s Core Team?</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/join-core-team" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-neutral-300">
+                  <Users className="w-3 h-3 text-cyan-400" />
                   <span>Join Core Team</span>
                 </Link>
               </li>
@@ -424,12 +441,22 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/privacy" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>Privacy Policy (DPDP)</span>
+                  <span>Privacy Policy (Adults 18+)</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy/minor" className="text-amber-300 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 font-medium">
+                  <span>Under-18 Privacy Policy</span>
                 </Link>
               </li>
               <li>
                 <Link href="/terms" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
-                  <span>Terms of Service</span>
+                  <span>Terms of Service (Adults 18+)</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms/minor" className="text-amber-300 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 font-medium">
+                  <span>Minor Terms of Service</span>
                 </Link>
               </li>
               <li>
@@ -460,7 +487,7 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="uppercase tracking-[0.25em] text-neutral-400 font-bold">
+            <span className="tracking-[0.25em] text-neutral-400 font-bold font-serif italic text-sm">
               BY YOUTH. FOR YOUTH.
             </span>
           </div>

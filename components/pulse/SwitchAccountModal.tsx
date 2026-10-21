@@ -13,6 +13,7 @@ import {
   Crown
 } from 'lucide-react';
 import { useAuth, recordSavedSession } from '@/context/AuthContext';
+import { deactivateFounderSession } from '@/lib/founderControl';
 
 interface SwitchAccountModalProps {
   isOpen: boolean;
@@ -38,11 +39,18 @@ export function SwitchAccountModal({
     try {
       const storedList = JSON.parse(localStorage.getItem('zenvitra_saved_sessions') || '[]');
       if (Array.isArray(storedList)) {
-        const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova'];
+        const fakeHandles = ['priya_med', 'rohand_aspirant', 'kavita_krishnan', 'bot_mesh_01', 'troll_anonymous', 'alexander_vance', 'elena_rostova', 'test', 'tester'];
         const cleaned = storedList.filter(
-          (a) => a && !fakeHandles.includes((a.username || '').replace(/^@/, '').toLowerCase())
+          (a) => a && !fakeHandles.includes((a.username || '').replace(/^@/, '').toLowerCase()) && a.id !== 'zen_test_pilot_node'
         );
         setSavedAccounts(cleaned);
+        if (cleaned.length !== storedList.length) {
+          if (cleaned.length === 0) {
+            localStorage.removeItem('zenvitra_saved_sessions');
+          } else {
+            localStorage.setItem('zenvitra_saved_sessions', JSON.stringify(cleaned));
+          }
+        }
       }
     } catch (_) {}
   }, [isOpen]);
@@ -61,7 +69,7 @@ export function SwitchAccountModal({
       initial,
       isActive: true,
       role: 'Active Session',
-      isFounder: cleanCurrentHandle === 'yuveer' || cleanCurrentHandle === 'founder',
+      isFounder: cleanCurrentHandle === 'yuveer' && (currentAvatar?.includes('founder') || false),
     },
     ...savedAccounts
       .filter((acc) => {
@@ -79,7 +87,7 @@ export function SwitchAccountModal({
           initial: (accName || 'U')[0]?.toUpperCase() || 'U',
           isActive: false,
           role: acc.role || 'Saved Identity',
-          isFounder: acc.isFounder || accHandle === 'yuveer' || accHandle === 'founder',
+          isFounder: Boolean(acc.isFounder && (accHandle === 'yuveer' || accHandle === 'founder')),
         };
       }),
   ];
@@ -92,6 +100,16 @@ export function SwitchAccountModal({
         (a) => a.id === accId || (a.username || '').replace(/^@/, '').toLowerCase() === cleanTarget
       );
       if (target) {
+        const isTargetFounder = Boolean(
+          target.isFounder &&
+          (target.username?.toLowerCase() === 'yuveer' || target.username?.toLowerCase() === '@yuveer') &&
+          ((target as any).email === 'founder@zenvitra.xyz' || (target as any).email === 'founder@zenvitra.org' || target.id === 'zen_founder_root')
+        );
+
+        if (!isTargetFounder) {
+          deactivateFounderSession();
+        }
+
         localStorage.setItem('zenvitra_session_user', JSON.stringify(target));
         recordSavedSession(target);
         window.location.reload();

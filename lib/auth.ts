@@ -49,9 +49,33 @@ const providers: Provider[] = [
           return {
             id: 'zen_founder_root',
             name: 'Yuveer Chhatwani',
-            email: 'founder@zenvitra.org',
+            email: 'founder@zenvitra.xyz',
             username: 'yuveer',
             role: 'FOUNDER',
+          };
+        }
+        return null;
+      }
+
+      // Check Co-Founder (Aarush Vijayivargiya)
+      const isCoFounder =
+        clean === 'aarush@zenvitra.xyz' ||
+        clean === 'aarush@zenvitra.com' ||
+        clean === 'aarush@zenvitra.org' ||
+        clean === 'aarush' ||
+        clean === 'khushi@zenvitra.xyz' ||
+        clean === 'khushi@zenvitra.com' ||
+        clean === 'khushi';
+
+      if (isCoFounder) {
+        if (password && (isFounderPassword || cleanPwUpper.includes('AARUSH') || cleanPwUpper.includes('COFOUNDER') || cleanPw === '5747')) {
+          const isAarush = clean.includes('aarush');
+          return {
+            id: isAarush ? 'zen_cofounder_aarush' : 'zen_cofounder_khushi',
+            name: isAarush ? 'Aarush Vijayivargiya' : 'Khushi R B',
+            email: isAarush ? 'aarush@zenvitra.xyz' : 'khushi@zenvitra.xyz',
+            username: isAarush ? 'aarush' : 'khushi',
+            role: 'CO_FOUNDER',
           };
         }
         return null;
@@ -63,8 +87,8 @@ const providers: Provider[] = [
         clean === 'tester' ||
         clean === 'testuser' ||
         clean === 'demo' ||
-        clean === 'test@zenvitra.org' ||
-        clean === 'test@zenvitra.xyz';
+        clean === 'test@zenvitra.xyz' ||
+        clean === 'test@zenvitra.org';
 
       if (isTestUser) {
         const isAllowedTestPassword =
@@ -77,7 +101,7 @@ const providers: Provider[] = [
           return {
             id: 'zen_test_delegate',
             name: 'Test Delegate',
-            email: 'test@zenvitra.org',
+            email: 'test@zenvitra.xyz',
             username: 'test',
             role: 'DELEGATE',
           };
@@ -96,6 +120,8 @@ const providers: Provider[] = [
               { email: clean },
               { username: clean },
               { handle: clean },
+              { handle: `@${clean}` },
+              { username: `@${clean}` },
             ],
           },
         });
@@ -175,8 +201,54 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.username = (user as any).username || user.email?.split('@')[0];
         token.role = (user as any).role || 'DELEGATE';
+        // Default profile picture of ZENVITRA, NOT Google or GitHub account photo
+        token.picture = '/assets/default-avatar.svg';
+
+        // Check if user is newly created or existing in database
+        try {
+          const email = user.email?.toLowerCase().trim();
+          if (email) {
+            const { db } = await import('@/lib/db');
+            const existing = await db.user.findFirst({
+              where: { email },
+            });
+
+            const RESERVED_HANDLES = ['yuveer', 'founder', 'aarush', 'admin', 'root', 'zenvitra', 'support', 'system', 'moderator', 'chair', 'khushi'];
+            let cleanHandle = (user.name || email.split('@')[0] || 'delegate')
+              .toLowerCase()
+              .replace(/[^a-z0-9_]/g, '');
+
+            // External accounts must NEVER claim reserved founder/system handles
+            if (RESERVED_HANDLES.includes(cleanHandle) && email !== 'founder@zenvitra.xyz' && email !== 'founder@zenvitra.org') {
+              cleanHandle = `${cleanHandle}_${Math.floor(1000 + Math.random() * 9000)}`;
+            }
+
+            token.username = existing?.username || cleanHandle;
+
+            if (!existing) {
+              await db.user.create({
+                data: {
+                  email,
+                  name: user.name || cleanHandle,
+                  username: cleanHandle,
+                  handle: cleanHandle,
+                  role: 'DELEGATE',
+                  roleBadge: 'DELEGATE',
+                  verified: true,
+                },
+              });
+
+              token.isNewUser = true;
+              token.needsOnboarding = true;
+            } else {
+              token.isNewUser = false;
+              token.needsOnboarding = false;
+            }
+          }
+        } catch (dbErr) {
+          console.warn('[NEXTAUTH-OAUTH-DB-SYNC-WARN]', dbErr);
+        }
       }
       return token;
     },
@@ -185,6 +257,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.username = token.username as string;
         session.user.role = token.role as string;
+        // Default profile picture of ZENVITRA, NOT Google or GitHub account photo
+        session.user.image = '/assets/default-avatar.svg';
+        (session.user as any).isNewUser = Boolean(token.isNewUser);
+        (session.user as any).needsOnboarding = Boolean(token.needsOnboarding);
       }
       return session;
     },

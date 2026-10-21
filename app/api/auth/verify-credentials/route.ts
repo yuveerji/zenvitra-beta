@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
+import { sheetSync } from '@/lib/googleSheets';
 
 export const runtime = 'nodejs';
 
@@ -22,8 +23,8 @@ export async function POST(req: Request) {
 
     // 1. Strict Founder Check
     const isFounder =
-      clean === 'founder@zenvitra.org' ||
       clean === 'founder@zenvitra.xyz' ||
+      clean === 'founder@zenvitra.org' ||
       clean === 'founder@zenvitra.com' ||
       clean === 'founder' ||
       clean === 'yuveer' ||
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
           id: 'zen_founder_root',
           username: 'yuveer',
           name: 'Yuveer Chhatwani',
-          email: 'founder@zenvitra.org',
+          email: 'founder@zenvitra.xyz',
           role: 'FOUNDER',
         },
       });
@@ -70,8 +71,8 @@ export async function POST(req: Request) {
       clean === 'tester' ||
       clean === 'testuser' ||
       clean === 'demo' ||
-      clean === 'test@zenvitra.org' ||
-      clean === 'test@zenvitra.xyz';
+      clean === 'test@zenvitra.xyz' ||
+      clean === 'test@zenvitra.org';
 
     if (isTestUser) {
       // Official Test Node Closure Date: 19th November 2026
@@ -105,7 +106,7 @@ export async function POST(req: Request) {
           id: 'zen_test_delegate',
           username: 'test',
           name: 'Test Delegate',
-          email: 'test@zenvitra.org',
+          email: 'test@zenvitra.xyz',
           role: 'DELEGATE',
         },
       });
@@ -119,6 +120,8 @@ export async function POST(req: Request) {
             { email: clean },
             { username: clean },
             { handle: clean },
+            { handle: `@${clean}` },
+            { username: `@${clean}` },
           ],
         },
       });
@@ -132,15 +135,32 @@ export async function POST(req: Request) {
           );
         }
 
+        const responseUser = {
+          id: dbUser.id,
+          username: dbUser.username || dbUser.handle || clean.split('@')[0],
+          name: dbUser.name || dbUser.username || clean.split('@')[0],
+          email: dbUser.email,
+          role: dbUser.role || 'USER',
+        };
+
+        // Dispatch login metadata to Google Sheets 03_LOGIN_ACTIVITY / Login Data Core
+        try {
+          const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+          const userAgent = req.headers.get('user-agent') || 'Browser Client';
+          sheetSync.login({
+            userId: responseUser.id,
+            fullName: responseUser.name,
+            email: responseUser.email,
+            authProvider: 'CREDENTIALS',
+            ipAddress: ip,
+            deviceBrowserInfo: userAgent,
+            loginStatus: 'SUCCESS',
+          }).catch(() => {});
+        } catch (_) {}
+
         return NextResponse.json({
           success: true,
-          user: {
-            id: dbUser.id,
-            username: dbUser.username || dbUser.handle || clean.split('@')[0],
-            name: dbUser.name || dbUser.username || clean.split('@')[0],
-            email: dbUser.email,
-            role: dbUser.role || 'USER',
-          },
+          user: responseUser,
         });
       }
     } catch (dbErr) {

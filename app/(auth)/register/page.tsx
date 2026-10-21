@@ -33,7 +33,9 @@ import {
   Compass,
   Zap,
   Radio,
-  CheckCircle2
+  CheckCircle2,
+  Calendar,
+  Shield
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { LegalGateModal } from '@/components/auth/LegalGateModal';
@@ -61,10 +63,10 @@ const REGISTER_TRACKS: SovereignTrack[] = [
   {
     id: 'delegate',
     title: 'Diplomatic Delegate',
-    badge: 'CHAMBER SOVEREIGN',
+    badge: 'VERIFIED DELEGATE',
     icon: Users,
     tagline: 'Lead multilateral summits, draft binding resolutions, execute cryptographic roll-call votes, and earn verified MUN accolades.',
-    requirements: ['Verified debate & caucus access', 'Dais floor voting clearance', 'Sovereign MUN Dossier', 'Encrypted Chit Mesh Access'],
+    requirements: ['Verified debate & caucus access', 'Dais floor voting clearance', 'Official MUN Profile / CV', 'Encrypted Chit Mesh Access'],
     capabilities: ['Roll-Call Voting', 'Dais Clearance', 'Encrypted Chits', 'Verified Accolades'],
     color: 'from-amber-500/20 via-orange-500/10 to-transparent border-amber-500/30',
     glowColor: 'rgba(245, 158, 11, 0.25)',
@@ -114,6 +116,10 @@ export default function RegisterPage() {
   const [delegationPreference, setDelegationPreference] = useState('India');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [age, setAge] = useState('');
+  const [parentName, setParentName] = useState('');
+  const [parentContact, setParentContact] = useState('');
+  const [minorConfirmed, setMinorConfirmed] = useState(false);
 
   // Sovereign Guest Node State
   const [customGuestHandle, setCustomGuestHandle] = useState('');
@@ -131,9 +137,8 @@ export default function RegisterPage() {
     setGuestLoading(true);
     setGuestError(null);
     try {
-      await continueAsGuest(cleanHandle || undefined);
       const redirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
-      const target = redirect && redirect.startsWith('/') ? redirect : '/pulse';
+      const target = redirect && redirect.startsWith('/') ? redirect : '/onboarding';
       router.push(target);
       router.refresh();
     } catch (err: any) {
@@ -222,6 +227,10 @@ export default function RegisterPage() {
       setErrorMessage('Please complete all sovereign identity fields.');
       return;
     }
+    if (!age || isNaN(Number(age)) || Number(age) < 10 || Number(age) > 120) {
+      setErrorMessage('Please declare a valid age between 10 and 120 years.');
+      return;
+    }
     if (password.length < 8) {
       setErrorMessage('Master Passphrase must be at least 8 characters long.');
       return;
@@ -238,7 +247,11 @@ export default function RegisterPage() {
   const handleFinalMintSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreedTerms) {
-      setErrorMessage('You must review and accept the Sovereign Constitutional Accord.');
+      setErrorMessage('You must review and accept the Terms of Service and Privacy Policy.');
+      return;
+    }
+    if (Number(age) < 18 && !minorConfirmed) {
+      setErrorMessage('Under-18 users must review and acknowledge the minor consent declaration.');
       return;
     }
 
@@ -275,9 +288,14 @@ export default function RegisterPage() {
       recordSuccessfulAuth(cleanHandle);
       try {
         localStorage.setItem('zenvitra_user_role', track);
+        localStorage.removeItem('zenvitra_onboarding_state_v1');
+        localStorage.setItem('zenvitra_auto_tour_trigger', 'true');
       } catch (_) {}
 
-      router.push('/pulse');
+      // Automatically toggle Explore ZENVITRA Tour upon registration
+      const redirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null;
+      const target = redirect && redirect.startsWith('/') && redirect !== '/dashboard' ? redirect : '/onboarding';
+      router.push(target);
       router.refresh();
 
     } catch (err: any) {
@@ -318,20 +336,20 @@ export default function RegisterPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-80" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400" />
               </span>
-              <span className="tracking-wider uppercase font-semibold text-neutral-200">IDENTITY FORGE V-1.0</span>
+              <span className="tracking-wider uppercase font-semibold text-neutral-200">IDENTITY FORGE V1</span>
               <span className="text-neutral-600">|</span>
               <span className="text-neutral-400">ZERO TRACKING GUARANTEE</span>
             </div>
 
             <div className="space-y-3">
               <h1 className="font-sans font-black text-4xl sm:text-5xl text-white tracking-tight leading-[1.1]">
-                Mint Your Sovereign<br />
+                Create Your Official<br />
                 <span className="text-neutral-400 font-light italic font-serif">
                   Diplomatic Identity.
                 </span>
               </h1>
               <p className="text-sm sm:text-base text-neutral-400 max-w-lg font-light leading-relaxed">
-                Step into the sovereign ecosystem. Real accounts start with strictly <strong className="text-white font-semibold">0 fake numbers</strong> and earn authentic verified accolades across Model UNs, press wires, and civic assemblies.
+                Step into the official youth conference ecosystem. Real accounts start with strictly <strong className="text-white font-semibold">0 fake numbers</strong> and earn authentic verified accolades across Model UNs, press wires, and civic assemblies.
               </p>
             </div>
 
@@ -341,7 +359,7 @@ export default function RegisterPage() {
                 <span className="text-[9px] uppercase tracking-wider text-neutral-400 block font-semibold">IDENTITY NODE</span>
                 <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  <span className="truncate">GEN-1 ENCLAVE</span>
+                  <span className="truncate">VERIFIED ACCESS</span>
                 </div>
               </div>
               <div className="space-y-1 border-l border-white/10 pl-2.5">
@@ -383,7 +401,7 @@ export default function RegisterPage() {
 
               <div className="space-y-1.5 pt-1">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 font-bold block">
-                  CLEARANCE PRIVILEGES &amp; ACCORDS:
+                  MEMBERSHIP PRIVILEGES &amp; CAPABILITIES:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {activeTrackObj.requirements.map((req, idx) => (
@@ -424,7 +442,7 @@ export default function RegisterPage() {
                   <span className="text-neutral-400 uppercase tracking-wider font-semibold">
                     {step === 1 && 'CHOOSE PROTOCOL DOMAIN'}
                     {step === 2 && 'ENTER DIPLOMATIC COORDINATES'}
-                    {step === 3 && 'MINT 10-DIGIT SOVEREIGN KEY'}
+                    {step === 3 && 'CREATE 10-DIGIT SECURITY PIN'}
                   </span>
                   <span className="text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full">
                     STEP {step}/3
@@ -591,7 +609,26 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono font-semibold text-neutral-300 flex items-center justify-between">
+                        <span>AGE (YEARS) <span className="text-amber-400">*</span></span>
+                      </label>
+                      <div className="relative group">
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
+                        <input
+                          type="number"
+                          min="10"
+                          max="120"
+                          value={age}
+                          onChange={(e) => setAge(e.target.value)}
+                          placeholder="e.g. 17"
+                          required
+                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-1.5">
                       <label className="text-xs font-mono font-semibold text-neutral-300">INSTITUTION / NODE</label>
                       <div className="relative group">
@@ -620,6 +657,41 @@ export default function RegisterPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Under-18 Safeguards & Parent Routing Box */}
+                  {age && Number(age) < 18 && (
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-rose-500/5 to-transparent border border-amber-500/30 space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-mono text-amber-300 font-bold uppercase">
+                        <Shield className="w-4 h-4 text-amber-400" />
+                        <span>Under-18 Child Safeguards Active (DPDP Act, 2023)</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-300 font-mono leading-relaxed">
+                        In compliance with India&apos;s DPDP Rules 2025, accounts under 18 receive zero targeted advertising, zero behavioural tracking, and protected contact privacy. Please provide your parent or lawful guardian&apos;s coordinates for verifiable consent routing.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono text-neutral-400 uppercase">Parent / Guardian Full Name</label>
+                          <input
+                            type="text"
+                            value={parentName}
+                            onChange={(e) => setParentName(e.target.value)}
+                            placeholder="e.g. Rajesh Lin"
+                            className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-400/70"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono text-neutral-400 uppercase">Parent Email or Mobile</label>
+                          <input
+                            type="text"
+                            value={parentContact}
+                            onChange={(e) => setParentContact(e.target.value)}
+                            placeholder="parent@domain.com or +91..."
+                            className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-400/70"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-mono font-semibold text-neutral-300 flex items-center justify-between">
@@ -715,7 +787,7 @@ export default function RegisterPage() {
                       <span className="text-white font-bold">@{handle}</span>
                     </div>
                     <div className="flex justify-between text-neutral-400">
-                      <span>SOVEREIGN ARCHETYPE:</span>
+                      <span>DELEGATE PROFILE:</span>
                       <span className="text-cyan-300 font-bold">{activeTrackObj.title}</span>
                     </div>
                     <div className="flex justify-between text-neutral-400">
@@ -725,7 +797,7 @@ export default function RegisterPage() {
                   </div>
 
                   {/* Legal Gate Checkbox */}
-                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-2">
+                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
                     <label className="flex items-start gap-2.5 cursor-pointer text-xs select-none">
                       <input
                         type="checkbox"
@@ -734,24 +806,61 @@ export default function RegisterPage() {
                         className="mt-0.5 w-4 h-4 rounded border-white/20 bg-black text-cyan-400 focus:ring-0 cursor-pointer"
                       />
                       <span className="text-neutral-300 text-[11px] leading-snug">
-                        I confirm this identity and accept the{' '}
-                        <button
-                          type="button"
-                          onClick={() => setActiveModal('PRIVACY')}
-                          className="text-white font-semibold underline hover:text-cyan-300"
-                        >
-                          Privacy Charter
-                        </button>{' '}
-                        and{' '}
-                        <button
-                          type="button"
-                          onClick={() => setActiveModal('TOS')}
-                          className="text-white font-semibold underline hover:text-cyan-300"
-                        >
-                          Constitutional Terms of Service
-                        </button>.
+                        {Boolean(age) && Number(age) < 18 ? (
+                          <>
+                            I confirm this identity, agree to ZENVITRA&apos;s{' '}
+                            <button
+                              type="button"
+                              onClick={() => setActiveModal('TOS')}
+                              className="text-amber-300 font-semibold underline hover:text-white"
+                            >
+                              Minor Terms of Service &amp; Parental Consent Accord
+                            </button>{' '}
+                            and acknowledge its{' '}
+                            <button
+                              type="button"
+                              onClick={() => setActiveModal('PRIVACY')}
+                              className="text-amber-300 font-semibold underline hover:text-white"
+                            >
+                              Under-18 User Protection &amp; Parental Consent Policy
+                            </button>.
+                          </>
+                        ) : (
+                          <>
+                            I confirm this identity, agree to ZENVITRA&apos;s{' '}
+                            <button
+                              type="button"
+                              onClick={() => setActiveModal('TOS')}
+                              className="text-white font-semibold underline hover:text-cyan-300"
+                            >
+                              Terms of Service
+                            </button>{' '}
+                            and acknowledge its{' '}
+                            <button
+                              type="button"
+                              onClick={() => setActiveModal('PRIVACY')}
+                              className="text-white font-semibold underline hover:text-cyan-300"
+                            >
+                              Privacy Policy
+                            </button>.
+                          </>
+                        )}
                       </span>
                     </label>
+
+                    {age && Number(age) < 18 && (
+                      <label className="flex items-start gap-2.5 cursor-pointer text-xs select-none pt-2.5 border-t border-white/10">
+                        <input
+                          type="checkbox"
+                          checked={minorConfirmed}
+                          onChange={(e) => setMinorConfirmed(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded border-amber-400/40 bg-black text-amber-400 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="text-amber-200/90 text-[11px] leading-snug font-mono">
+                          I confirm that I am under 18 and have provided accurate information. I understand that parental or guardian consent may be required before certain information is processed or features are enabled.
+                        </span>
+                      </label>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3 pt-2">
@@ -765,17 +874,17 @@ export default function RegisterPage() {
                     </button>
                     <button
                       type="submit"
-                      disabled={loading || !agreedTerms}
+                      disabled={loading || !agreedTerms || (Boolean(age) && Number(age) < 18 && !minorConfirmed)}
                       className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(52,211,153,0.3)] hover:shadow-[0_0_35px_rgba(52,211,153,0.5)] active:scale-[0.98] disabled:opacity-50"
                     >
                       {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin text-black" />
-                          <span>Minting Sovereign Key...</span>
+                          <span>Setting up account...</span>
                         </>
                       ) : (
                         <>
-                          <span>Mint Sovereign Identity</span>
+                          <span>Complete Registration</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
@@ -793,7 +902,7 @@ export default function RegisterPage() {
                         <Sparkles className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-white font-display">Continue as Sovereign Guest Node</h4>
+                        <h4 className="text-xs font-bold text-white font-display">Explore as Guest</h4>
                         <p className="text-[10px] text-neutral-400 font-mono">Explore platform immediately without full registration</p>
                       </div>
                     </div>
@@ -907,7 +1016,7 @@ export default function RegisterPage() {
               {/* Footer Switcher */}
               <div className="pt-4 border-t border-white/10 text-center space-y-3">
                 <p className="text-xs text-neutral-400 font-mono">
-                  Already hold a sovereign key?{' '}
+                  Already have an account?{' '}
                   <Link href="/login" className="text-white font-bold hover:underline">
                     Authenticate ZEN.ID &rarr;
                   </Link>
@@ -937,6 +1046,7 @@ export default function RegisterPage() {
       <LegalGateModal
         isOpen={Boolean(activeModal)}
         type={activeModal || 'PRIVACY'}
+        isMinor={Boolean(age) && Number(age) < 18}
         onComplete={activeModal === 'PRIVACY' ? handlePrivacyCompleted : handleToSCompleted}
       />
     </div>

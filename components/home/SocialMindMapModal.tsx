@@ -100,7 +100,7 @@ export const MAIN_EXTERNAL_PLATFORMS: ExternalPlatformNode[] = [
     handle: '@zenvitra_',
     category: 'REAL-TIME POLICY WIRE',
     icon: Twitter,
-    url: 'https://x.com/zenvitrafoundation',
+    url: 'https://x.com/zenvitra_',
     badgeColor: 'bg-sky-500/10 text-sky-300 border-sky-500/30',
     iconColor: 'text-sky-400',
     iconBg: 'bg-sky-500/10 border-sky-500/20',
@@ -153,9 +153,9 @@ export const SECONDARY_CHANNELS = [
   },
   {
     name: 'Press Office Email',
-    handle: 'press@zenvitra.org',
+    handle: 'press@zenvitra.xyz',
     icon: Mail,
-    url: 'mailto:press@zenvitra.org',
+    url: 'mailto:press@zenvitra.xyz',
     badge: 'PRESS WIRE',
     badgeColor: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
     iconColor: 'text-cyan-400',
@@ -164,9 +164,9 @@ export const SECONDARY_CHANNELS = [
   },
   {
     name: 'Civic Research Desk',
-    handle: 'research@zenvitra.org',
+    handle: 'research@zenvitra.xyz',
     icon: Globe2,
-    url: 'mailto:research@zenvitra.org',
+    url: 'mailto:research@zenvitra.xyz',
     badge: 'ACADEMIC',
     badgeColor: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
@@ -209,7 +209,7 @@ export function SocialMindMapModal({ isOpen, onClose }: SocialMindMapModalProps)
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 lg:p-8">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-6 lg:p-8">
         
         {/* Backdrop Overlay */}
         <motion.div
@@ -226,7 +226,7 @@ export function SocialMindMapModal({ isOpen, onClose }: SocialMindMapModalProps)
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 20 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-6xl max-h-[92vh] rounded-3xl bg-[#090a0f] border border-white/15 p-6 sm:p-10 lg:p-12 shadow-2xl z-10 flex flex-col justify-between overflow-y-auto text-left font-sans"
+          className="relative w-full max-w-6xl max-h-[94vh] rounded-2xl sm:rounded-3xl bg-[#090a0f] border border-white/15 p-4 sm:p-8 lg:p-12 shadow-2xl z-10 flex flex-col justify-between overflow-y-auto text-left font-sans"
         >
           {/* Top Bar Header */}
           <div className="flex items-center justify-between gap-4 relative z-10 pb-6 border-b border-white/10">

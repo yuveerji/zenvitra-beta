@@ -177,7 +177,7 @@ export function ZenPassUserPassesModal({ isOpen, onClose, onSelectPass }: ZenPas
                     {activePasses.map((pass) => (
                       <div
                         key={pass.id}
-                        className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/[0.06] via-purple-500/[0.04] to-black border border-white/15 hover:border-amber-400/60 shadow-lg hover:shadow-[0_0_30px_rgba(245,158,11,0.2)] transition flex flex-col gap-4 group"
+                        className="p-5 rounded-2xl bg-[#090a12] border border-white/10 hover:border-white/25 transition flex flex-col gap-4 group"
                       >
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 cursor-pointer"
                           onClick={() => {
@@ -187,7 +187,7 @@ export function ZenPassUserPassesModal({ isOpen, onClose, onSelectPass }: ZenPas
                         >
                           <div className="space-y-2 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold">
+                              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white border border-white/10 text-[10px] font-mono font-bold">
                                 {pass.tierName}
                               </span>
                               {getStatusBadge(pass)}
@@ -196,13 +196,13 @@ export function ZenPassUserPassesModal({ isOpen, onClose, onSelectPass }: ZenPas
                               </span>
                             </div>
 
-                            <h3 className="font-display font-bold text-base sm:text-lg text-white group-hover:text-amber-300 transition">
+                            <h3 className="font-display font-bold text-base sm:text-lg text-white group-hover:text-neutral-200 transition">
                               {pass.eventTitle}
                             </h3>
 
                             {pass.allocatedPortfolio && (
-                              <div className="flex items-center gap-1.5 text-xs font-mono text-amber-200">
-                                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                              <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-300">
+                                <Crown className="w-3.5 h-3.5 text-white" />
                                 <span>{pass.allocatedPortfolio}</span>
                               </div>
                             )}
@@ -223,7 +223,7 @@ export function ZenPassUserPassesModal({ isOpen, onClose, onSelectPass }: ZenPas
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 self-end sm:self-center font-display font-bold text-xs text-amber-300 group-hover:translate-x-1 transition shrink-0">
+                          <div className="flex items-center gap-2 self-end sm:self-center font-display font-bold text-xs text-white group-hover:translate-x-1 transition shrink-0">
                             <span>View Pass &amp; QR</span>
                             <ArrowRight className="w-4 h-4" />
                           </div>

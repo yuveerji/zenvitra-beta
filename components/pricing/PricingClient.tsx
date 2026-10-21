@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Check, 
   Sparkles, 
@@ -45,7 +46,10 @@ import { Navbar } from '@/components/layout/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
 import { useAccountCapabilities } from '@/hooks/useAccountCapabilities';
+import { setProfessionalAccountEnabled } from '@/lib/accountCapabilities';
 import { Footer } from '@/components/layout/Footer';
+import { ZenCheckoutModal } from '@/components/payments/ZenCheckoutModal';
+import { allotUserSubscription, getActiveUserSubscription, SubscriptionPlanId } from '@/lib/subscriptionTiers';
 
 type AudienceType = 'people' | 'professional' | 'events' | 'organizer';
 type BillingCycle = 'monthly' | 'annual';
@@ -73,13 +77,15 @@ interface Plan {
 }
 
 export function PricingClient() {
+  const router = useRouter();
   const [audience, setAudience] = useState<AudienceType>('people');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [viewMode, setViewMode] = useState<'launch' | 'all'>('launch');
   const [currency, setCurrency] = useState<Currency>('INR');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  const [selectedPlanForModal, setSelectedPlanForModal] = useState<Plan | null>(null);
+  const [checkoutPlan, setCheckoutPlan] = useState<Plan | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [activeUserSub, setActiveUserSub] = useState<any>(null);
   const { 
     isProfessionalEnabled, 
     isEventEnabled, 
@@ -90,10 +96,17 @@ export function PricingClient() {
   } = useAccountCapabilities();
 
   const { profile } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isPrivilegedTester = useMemo(() => {
+    if (!mounted) return false;
     const userIdentifier = profile?.username || profile?.email || '';
     return isFounder(userIdentifier, profile?.role) || isAdmin(userIdentifier, profile?.role);
-  }, [profile]);
+  }, [profile, mounted]);
 
   /* ── TAXATION & AGE / STUDENT VERIFICATION STATE ── */
   const [userAge, setUserAge] = useState<number>(17);
@@ -118,6 +131,24 @@ export function PricingClient() {
       }
     } catch {}
   }, []);
+
+  // Sync active subscription state
+  useEffect(() => {
+    const checkSub = () => {
+      const username = profile?.username || profile?.email || '';
+      if (username) {
+        const sub = getActiveUserSubscription(username);
+        setActiveUserSub(sub);
+      }
+    };
+    checkSub();
+    window.addEventListener('zenvitra_subscription_allotted', checkSub);
+    window.addEventListener('storage', checkSub);
+    return () => {
+      window.removeEventListener('zenvitra_subscription_allotted', checkSub);
+      window.removeEventListener('storage', checkSub);
+    };
+  }, [profile]);
 
   // Safety: reset audience if current audience is not accessible for the user's account tier
   React.useEffect(() => {
@@ -203,17 +234,19 @@ export function PricingClient() {
       accentColor: 'border-purple-500 text-purple-400 shadow-[0_0_30px_rgba(168,85,247,0.25)]',
       features: [
         'Everything in ZEN+',
-        'ZENVITRA PRO Identity: Full Portfolio, Projects, Skills & Certificates',
-        'Verified Pro Identity Badge & Custom Portfolio Showcase',
+        '🎙️ ZEN.STAGE Live Podiums & Floor Broadcasting Access',
+        '📹 ZEN.CALL & ZEN.MEET HD Multi-Party Video Conferencing & Chamber Audio',
+        'ZENVITRA PRO Identity: Full Portfolio, Projects, Skills & Verified Scholar Badge',
         'Experience & Achievements verified timeline',
-        'Pro Writing & Press: High/unlimited publishing & advanced draft system',
+        'Pro Writing & Sovereign Press: High/unlimited publishing & draft studio',
         'Article Analytics & Reading Engagement telemetry',
         'ZEN Analytics Suite: Profile visits, audience trends & best-performing content',
         'ZEN AI Monthly Allowance: Polish writing, structure articles & generate captions',
+        'Unlimited Category Subscriptions across Press, News & Pulse feeds',
         'Priority Event Access: Early registration windows (strictly zero unfair judging bias)',
         '🎖️ Verifiable Digital Certificates (ZEN.CERTIFY) & Plenary Archive Records',
         '📊 In-Depth Delegate Career Dossiers & Historical Committee Telemetry',
-        '⚡ Priority Delegate Matrix Allocation Notification Windows'
+        '⚡ In MUNs Priority Matrix Allocation Notification Windows'
       ],
       spotlightNote: 'The subscription most serious youth, writers, debaters, and emerging professionals choose.',
       ctaText: 'Upgrade to ZEN PRO'
@@ -234,10 +267,13 @@ export function PricingClient() {
       features: [
         'Everything in ZEN PRO',
         'Elite Identity: Maximum profile customization & executive layouts',
+        'Host Public Multi-Room Stages & Plenary Audio Relays',
+        'HD Conference Recordings & Export Connectors in ZEN.MEET',
         'Advanced Portfolio Presentation & Enhanced Featured Sections',
         'Elite Creator & Writer: Maximum publishing tools & distribution power',
         'Advanced Content Management & Higher ZEN AI monthly allowance',
         'Elite SPARK: Advanced creator telemetry & highest bitrate streaming',
+        'Zero Platform Surcharges on Summit Ticket Bookings',
         'VIP Early Access: Test beta products, new ZEN tools & experimental features'
       ],
       ctaText: 'Join ZEN ELITE'
@@ -452,9 +488,12 @@ export function PricingClient() {
       accentColor: 'border-blue-500/50 text-blue-400',
       features: [
         'Host Multiple Active Simultaneous Events without per-event fees',
+        '🏛️ Profile Showcase Tab: Featured Summits & Hackathons on your public profile',
+        '🔗 Direct Embedded Registration Redirects & Custom Ticket checkout links',
         'Unified Centralized Organizer Dashboard & Recurring Attendee CRM',
         'Full Event Management Tools & Team Access',
-        'Cross-Event Attendee Analytics & Re-engagement Campaigns'
+        'Cross-Event Attendee Analytics & Re-engagement Campaigns',
+        'Direct Cashfree Gateway Integration for Attendee Ticket Processing'
       ],
       ctaText: 'Get Organizer Pro'
     },
@@ -803,13 +842,11 @@ export function PricingClient() {
             </div>
           )}
 
-          {/* Audience Category Selector (Role-Gated Visibility) */}
+          {/* Audience Category Selector */}
           <div className={`grid gap-2 p-1.5 bg-[#080911]/90 backdrop-blur-2xl rounded-2xl border border-white/10 max-w-4xl mx-auto shadow-2xl ${
             isEventEnabled
               ? 'grid-cols-2 lg:grid-cols-4'
-              : isProfessionalEnabled
-              ? 'grid-cols-1 sm:grid-cols-2 max-w-xl'
-              : 'grid-cols-1 max-w-md'
+              : 'grid-cols-2 max-w-xl'
           }`}>
             {/* 1. People (Individuals) - Visible to everyone */}
             <button
@@ -825,21 +862,19 @@ export function PricingClient() {
               <span className="truncate">People (Individuals)</span>
             </button>
 
-            {/* 2. Professional (Orgs) - Visible to Professional Accounts & Eventers */}
-            {(isProfessionalEnabled || isEventEnabled) && (
-              <button
-                type="button"
-                onClick={() => setAudience('professional')}
-                className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
-                  audience === 'professional'
-                    ? 'bg-purple-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.45)]'
-                    : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                <Briefcase className="w-4 h-4 shrink-0" />
-                <span className="truncate">Professional (Orgs)</span>
-              </button>
-            )}
+            {/* 2. Professional (Orgs) - Accessible to everyone */}
+            <button
+              type="button"
+              onClick={() => setAudience('professional')}
+              className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all flex items-center justify-center gap-2 cursor-pointer w-full text-center ${
+                audience === 'professional'
+                  ? 'bg-purple-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.45)]'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <Briefcase className="w-4 h-4 shrink-0" />
+              <span className="truncate">Professional (Orgs)</span>
+            </button>
 
             {/* 3. ZEN.EVENTS - Visible only to Eventers / Organizers */}
             {isEventEnabled && (
@@ -975,52 +1010,7 @@ export function PricingClient() {
         </div>
 
         {/* ── SECTION 3: CONDITIONAL GATED OR PLAN CARDS GRID ── */}
-        {audience === 'professional' && !isProfessionalEnabled ? (
-          /* Gated Card for Professional Pricing */
-          <div className="max-w-2xl mx-auto p-8 rounded-3xl bg-[#080910] border border-purple-500/30 text-center space-y-6 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
-            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-300 mx-auto">
-              <Briefcase className="w-7 h-7" />
-            </div>
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono">
-                <span>🔒 PROFESSIONAL ACCREDITATION REQUIRED</span>
-              </div>
-              <h3 className="text-2xl font-display font-bold text-white">
-                Professional Organization Pricing Restricted
-              </h3>
-              <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
-                Institutional memberships and the multi-role <span className="text-white font-semibold">ZENVITRA Publication System</span> are reserved for verified organizations, startups, NGOs, and educational institutions.
-              </p>
-            </div>
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-              {isPrivilegedTester ? (
-                <button
-                  type="button"
-                  onClick={enableProfessionalAccount}
-                  className="px-6 py-3 rounded-2xl bg-purple-500 hover:bg-purple-400 text-white font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(168,85,247,0.4)]"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>⚡ Founder/Admin Override: Unlock Org View</span>
-                </button>
-              ) : (
-                <a
-                  href="mailto:secretariat@zenvitra.xyz?subject=Professional%20Accreditation%20Application"
-                  className="px-6 py-3 rounded-2xl bg-purple-500 hover:bg-purple-400 text-white font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(168,85,247,0.4)]"
-                >
-                  <span>✉️ Apply for Organization Accreditation</span>
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() => setAudience('people')}
-                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition cursor-pointer"
-              >
-                Return to Individual Plans
-              </button>
-            </div>
-          </div>
-        ) : (audience === 'events' || audience === 'organizer') && !isEventEnabled ? (
+        {(audience === 'events' || audience === 'organizer') && !isEventEnabled ? (
           /* Gated Card for Event Pricing */
           <div className="max-w-2xl mx-auto p-8 rounded-3xl bg-[#080910] border border-rose-500/30 text-center space-y-6 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-rose-500/10 blur-[80px] rounded-full pointer-events-none" />
@@ -1154,28 +1144,50 @@ export function PricingClient() {
 
                 {/* Card Bottom CTA */}
                 <div className="pt-6 mt-6 border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (plan.isCustom || plan.id.includes('enterprise') || plan.ctaText.toLowerCase().includes('contact') || formatPrice(plan).toLowerCase() === 'custom') {
-                        window.location.href = `mailto:help@zenvitra.xyz?subject=${encodeURIComponent(`Inquiry for ${plan.name} Plan`)}`;
-                        return;
-                      }
-                      setSelectedPlanForModal(plan);
-                    }}
-                    className={`w-full py-3 rounded-2xl font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                      plan.isFlagship
-                        ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-[0_0_25px_rgba(168,85,247,0.4)]'
-                        : plan.priceINR === 0
-                        ? 'bg-white hover:bg-zinc-200 text-black shadow'
-                        : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
-                    }`}
-                  >
-                    <span>{plan.ctaText}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  {activeUserSub?.planId === plan.id ? (
+                    <div className="w-full py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-mono text-xs font-bold flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>CURRENT ACTIVE PLAN</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (plan.isCustom || plan.id.includes('enterprise') || plan.ctaText.toLowerCase().includes('contact') || formatPrice(plan).toLowerCase() === 'custom') {
+                          window.location.href = `mailto:help@zenvitra.xyz?subject=${encodeURIComponent(`Inquiry for ${plan.name} Plan`)}`;
+                          return;
+                        }
+                        if (plan.id === 'pro-starter') {
+                          setProfessionalAccountEnabled(true);
+                          enableProfessionalAccount();
+                          const cleanUser = profile?.username || profile?.email || 'citizen';
+                          allotUserSubscription(cleanUser, {
+                            planId: 'pro-starter',
+                            planName: 'PROFESSIONAL STARTER',
+                            amountPaid: 0,
+                            currency: 'INR',
+                            paymentMethod: 'SYSTEM_ACTIVATION',
+                            expiresAt: 'LIFETIME'
+                          });
+                          router.push('/pricing/checkout?plan=pro-starter&activated=true');
+                          return;
+                        }
+                        router.push(`/pricing/checkout?plan=${plan.id}&cycle=${billingCycle}&currency=${currency}`);
+                      }}
+                      className={`w-full py-3 rounded-2xl font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                        plan.isFlagship
+                          ? 'bg-purple-500 hover:bg-purple-400 text-white shadow-[0_0_25px_rgba(168,85,247,0.4)]'
+                          : plan.priceINR === 0
+                          ? 'bg-white hover:bg-zinc-200 text-black shadow'
+                          : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+                      }`}
+                    >
+                      <span>{plan.id === 'pro-starter' ? 'Toggle to Professional & Begin Starter' : plan.ctaText}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   <p className="text-[10px] font-mono text-neutral-500 text-center mt-2">
-                    {plan.priceINR === 0 ? 'No credit card needed' : 'Instant activation • Cancel anytime'}
+                    {activeUserSub?.planId === plan.id ? 'Verified via Cashfree PG' : (plan.priceINR === 0 ? 'No credit card needed' : 'Instant activation • Cancel anytime')}
                   </p>
                 </div>
               </div>
@@ -1440,363 +1452,27 @@ export function PricingClient() {
         </div>
       </main>
 
-      {/* ── CHECKOUT / SUBSCRIPTION SIMULATOR MODAL ── */}
-      {selectedPlanForModal && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 animate-in fade-in duration-200"
-          onClick={() => setSelectedPlanForModal(null)}
-        >
-          <div 
-            className="w-full max-w-lg bg-[#090b12] border border-white/20 rounded-3xl p-6 space-y-6 shadow-2xl text-left"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
-                  CONFIRM SELECTION
-                </span>
-                <h3 className="text-lg font-display font-bold text-white">
-                  {selectedPlanForModal.name}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedPlanForModal(null)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* AGE & STUDENT VERIFICATION SELECTOR */}
-            {selectedPlanForModal.priceINR > 0 && !selectedPlanForModal.isCustom && (
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-cyan-400 font-bold uppercase tracking-wider">
-                    Tax &amp; GST Verification Status
-                  </span>
-                  <span className="text-[10px] font-mono text-neutral-400">
-                    Indian Statutory GST Rules
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
-                  {/* Tier 1: School Student / Age <= 18 (0% GST) */}
-                  <div
-                    onClick={() => {
-                      setUserAge(17);
-                      setIsCollegeStudent(false);
-                    }}
-                    className={`p-2.5 rounded-xl border cursor-pointer transition flex flex-col justify-between space-y-1.5 ${
-                      userAge <= 18
-                        ? 'bg-emerald-500/10 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                        : 'bg-black/40 border-white/10 text-neutral-400 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold flex items-center gap-1">
-                        <span>🎓 Age ≤ 18</span>
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                        0% GST
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-neutral-400 leading-snug">
-                      School student / minor: 100% GST Exempt.
-                    </p>
-                  </div>
-
-                  {/* Tier 2: Age 19 to 21 or College Student (5% GST) */}
-                  <div
-                    onClick={() => {
-                      if (userAge <= 18 || userAge > 21) setUserAge(20);
-                      setIsCollegeStudent(true);
-                    }}
-                    className={`p-2.5 rounded-xl border cursor-pointer transition flex flex-col justify-between space-y-1.5 ${
-                      ((userAge >= 19 && userAge <= 21) || (userAge > 18 && isCollegeStudent))
-                        ? 'bg-cyan-500/10 border-cyan-400 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                        : 'bg-black/40 border-white/10 text-neutral-400 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold flex items-center gap-1">
-                        <span>🏛️ Ages 19–21 / College</span>
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">
-                        5% GST
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-neutral-400 leading-snug">
-                      Aged 19–21 or enrolled college student above 18.
-                    </p>
-                  </div>
-
-                  {/* Tier 3: Adult Citizen > 21 Non-Student (12% GST) */}
-                  <div
-                    onClick={() => {
-                      if (userAge <= 21) setUserAge(24);
-                      setIsCollegeStudent(false);
-                    }}
-                    className={`p-2.5 rounded-xl border cursor-pointer transition flex flex-col justify-between space-y-1.5 ${
-                      userAge > 21 && !isCollegeStudent
-                        ? 'bg-purple-500/10 border-purple-400 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
-                        : 'bg-black/40 border-white/10 text-neutral-400 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold flex items-center gap-1">
-                        <span>💼 Adult (&gt; 21)</span>
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold">
-                        12% GST
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-neutral-400 leading-snug">
-                      Standard statutory GST for working adults above 21.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Age Stepper & College Student Checkbox */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] font-mono text-neutral-400 border-t border-white/5">
-                  <label htmlFor="age-input" className="flex items-center gap-1.5">
-                    <span>Declared Age:</span>
-                    <input
-                      id="age-input"
-                      type="number"
-                      min={10}
-                      max={99}
-                      value={userAge}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 18;
-                        setUserAge(val);
-                      }}
-                      className="w-12 px-2 py-0.5 rounded bg-black border border-white/20 text-white font-mono text-center focus:outline-none focus:border-cyan-400"
-                    />
-                    <span>years old</span>
-                  </label>
-
-                  <label className="flex items-center gap-1.5 text-neutral-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isCollegeStudent}
-                      onChange={(e) => setIsCollegeStudent(e.target.checked)}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    <span className="text-[10px]">Active College / University Student (Unlocks 5% GST)</span>
-                  </label>
-                </div>
-
-                {/* Student ID Upload / Verification Status */}
-                {isCollegeStudent && (
-                  <div className="pt-2 border-t border-white/5">
-                    {studentIdFile ? (
-                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
-                        <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-mono text-emerald-300 font-bold">Student ID Verified ✓</p>
-                          <p className="text-[10px] font-mono text-neutral-400 truncate">{studentIdFile.name} ({studentIdFile.size})</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setStudentIdFile(null);
-                            try { localStorage.removeItem('zenvitra_student_verification'); } catch {}
-                          }}
-                          className="text-[9px] font-mono text-neutral-500 hover:text-red-400 transition cursor-pointer px-1.5 py-0.5 rounded border border-white/10 hover:border-red-400/30"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <input
-                          ref={studentFileInputRef}
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png,.webp"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              if (file.size > 5 * 1024 * 1024) {
-                                setStudentIdError('File size exceeds 5MB limit.');
-                                return;
-                              }
-                              setStudentIdError(null);
-                              setIsCollegeStudent(true);
-
-                              try {
-                                const formData = new FormData();
-                                formData.append('file', file);
-
-                                const res = await fetch('/api/verification/upload-student-id', {
-                                  method: 'POST',
-                                  body: formData,
-                                });
-
-                                const data = await res.json();
-                                if (!data.success) {
-                                  throw new Error(data.error || 'Upload failed');
-                                }
-
-                                const filePayload = {
-                                  name: data.fileName || file.name,
-                                  size: data.fileSize || `${(file.size / 1024).toFixed(1)} KB`,
-                                };
-                                setStudentIdFile(filePayload);
-                                setStudentIdError(null);
-
-                                localStorage.setItem('zenvitra_student_verification', JSON.stringify({
-                                  verified: true,
-                                  status: 'VERIFIED',
-                                  fileName: filePayload.name,
-                                  fileSize: filePayload.size,
-                                  fileUrl: data.fileUrl,
-                                  uploadedAt: new Date().toISOString()
-                                }));
-                              } catch (err: any) {
-                                console.error('Student ID upload failed:', err);
-                                setStudentIdError(err.message || 'Failed to upload student verification file');
-                              }
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => studentFileInputRef.current?.click()}
-                          className="w-full p-3 rounded-xl border-2 border-dashed border-cyan-500/30 hover:border-cyan-400/50 bg-cyan-950/10 hover:bg-cyan-950/20 transition cursor-pointer flex flex-col items-center gap-1.5 group"
-                        >
-                          <UploadCloud className="w-5 h-5 text-cyan-400/60 group-hover:text-cyan-300 transition" />
-                          <span className="text-[11px] font-mono text-neutral-400 group-hover:text-neutral-300 transition">
-                            Upload School / College ID to avail student concession
-                          </span>
-                          <span className="text-[9px] font-mono text-neutral-500">
-                            PDF, JPG, PNG — Max 5MB
-                          </span>
-                        </button>
-                        {studentIdError && (
-                          <p className="text-[10px] font-mono text-red-400">{studentIdError}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TOTAL ITEMIZED BREAKDOWN */}
-            {(() => {
-              const { baseAmount, transactionTax, gstAmount, totalPayable, isGstExempt, gstRate, gstLabel } = calculatePlanTaxes(selectedPlanForModal);
-              const currSymbol = currency === 'INR' ? '₹' : '$';
-
-              return (
-                <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-3 font-mono">
-                  <div className="space-y-1.5 text-xs text-neutral-400 pb-2 border-b border-white/10">
-                    <div className="flex items-center justify-between">
-                      <span>Base Plan ({selectedPlanForModal.name})</span>
-                      <span className="text-white font-semibold">
-                        {baseAmount === 0 ? '₹0.00' : `${currSymbol}${baseAmount.toFixed(2)}`}
-                      </span>
-                    </div>
-
-                    {baseAmount > 0 && (
-                      <>
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-neutral-400 flex items-center gap-1">
-                            <span>Platform Surcharge:</span>
-                            <span className="text-neutral-500 text-[10px]">(Flat {currency === 'INR' ? '₹9' : '$0.15'} · ₹5 with Pass · ₹0 Elite)</span>
-                          </span>
-                          <span className="text-amber-300 font-semibold">
-                            +{currSymbol}{transactionTax.toFixed(2)}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-neutral-400 flex items-center gap-1">
-                            <span>Goods &amp; Services Tax (GST):</span>
-                            <span className="text-[10px] text-neutral-500">
-                              ({gstLabel})
-                            </span>
-                          </span>
-                          <span className={`font-semibold ${
-                            isGstExempt 
-                              ? 'text-emerald-400' 
-                              : gstRate === 0.05 
-                              ? 'text-cyan-300' 
-                              : 'text-purple-300'
-                          }`}>
-                            {isGstExempt ? '₹0.00 (Exempt)' : `+${currSymbol}${gstAmount.toFixed(2)}`}
-                          </span>
-                        </div>
-                      </>
-                    )}
-
-                    {billingCycle === 'annual' && selectedPlanForModal.priceAnnualINR && (
-                      <div className="text-[11px] text-emerald-400 flex items-center justify-between pt-1">
-                        <span className="flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          <span>Annual Billing Privilege:</span>
-                        </span>
-                        <span>Saved ~20%</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Final Payable Total */}
-                  <div className="flex items-baseline justify-between pt-1">
-                    <div>
-                      <span className="text-xs text-neutral-400 block">Final Total Payable</span>
-                      <span className="text-[10px] text-neutral-500">
-                        {baseAmount === 0 ? '100% Free Forever' : `All taxes & protocol levies included`}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-2xl sm:text-3xl font-display font-black text-cyan-300">
-                        {baseAmount === 0 ? '₹0.00' : `${currSymbol}${totalPayable.toFixed(2)}`}
-                      </span>
-                      <span className="text-[10px] text-neutral-500 block">
-                        {getPriceSuffix(selectedPlanForModal)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div className="space-y-2">
-              <span className="text-[11px] font-mono text-neutral-400 uppercase">Included in this plan:</span>
-              <ul className="space-y-1.5 text-xs text-neutral-300">
-                {selectedPlanForModal.features.slice(0, 4).map((f, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="pt-2 border-t border-white/10 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setSelectedPlanForModal(null)}
-                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-mono transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedPlanForModal(null);
-                  setIsSuccessModalOpen(true);
-                }}
-                className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Confirm &amp; Activate Plan</span>
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* ── REAL CASHFREE CHECKOUT MODAL ── */}
+      {checkoutPlan && (
+        <ZenCheckoutModal
+          isOpen={Boolean(checkoutPlan)}
+          onClose={() => setCheckoutPlan(null)}
+          product={checkoutPlan.id}
+          title={checkoutPlan.name}
+          baseAmount={
+            currency === 'INR'
+              ? (billingCycle === 'annual' && checkoutPlan.priceAnnualINR ? checkoutPlan.priceAnnualINR : checkoutPlan.priceINR)
+              : (billingCycle === 'annual' && checkoutPlan.priceAnnualUSD ? checkoutPlan.priceAnnualUSD : checkoutPlan.priceUSD)
+          }
+          currency={currency}
+          merchantName="ZENVITRA Operating Entity (Cashfree PG)"
+          onSuccess={() => {
+            setCheckoutPlan(null);
+            setIsSuccessModalOpen(true);
+          }}
+        />
       )}
 
       {/* ── CONFIRMATION SUCCESS MODAL ── */}
@@ -1813,18 +1489,28 @@ export function PricingClient() {
               <Sparkles className="w-7 h-7 animate-pulse" />
             </div>
             <h3 className="text-xl font-display font-bold text-white">
-              Ecosystem Plan Registered!
+              Subscription Successfully Activated!
             </h3>
             <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-              Your tier preference has been recorded. In the active beta preview, all ecosystem features across identity, writing, chat, and summits are fully accessible.
+              Your Cashfree payment has been verified. All ecosystem perks, executive features, and stage broadcasting associated with this plan are now unlocked on your account.
             </p>
-            <button
-              type="button"
-              onClick={() => setIsSuccessModalOpen(false)}
-              className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono text-xs font-bold transition cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.4)]"
-            >
-              Continue Exploring ZENVITRA
-            </button>
+            <div className="pt-2 flex flex-col gap-2">
+              <Link
+                href="/plan"
+                onClick={() => setIsSuccessModalOpen(false)}
+                className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+              >
+                <span>View My Active Entitlements (/plan)</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setIsSuccessModalOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs transition cursor-pointer"
+              >
+                Continue Exploring ZENVITRA
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -33,25 +33,6 @@ export function HostChamberModal({ isOpen, onClose }: HostChamberModalProps) {
 
   const handleCategorySelect = (cat: ChamberCategory) => {
     setCategory(cat);
-    if (cat === 'MUN_COMMITTEE') {
-      setTitle('UN Human Rights Council (UNHRC) — Universal Digital Rights');
-      setAgenda('Protection of Sovereign Data Privacy, Free Speech & Youth Political Participation');
-    } else if (cat === 'LOK_SABHA') {
-      setTitle('Lok Sabha (House of the People) — Youth Parliamentary Session');
-      setAgenda('National Digital Sovereignty, AI Ethics & Youth Entrepreneurship Promotion Bill');
-    } else if (cat === 'OPEN_MIC') {
-      setTitle('Geneva Midnight Youth Open Mic & Poetry Slam');
-      setAgenda('Acoustic sets, spoken word poetry, and live storytelling from youth delegations');
-    } else if (cat === 'PITCH_STAGE') {
-      setTitle('Global Climate & DeepTech Sovereign Pitch Arena');
-      setAgenda('Lightning 3-minute founder demos and real-time investor jury venture balloting');
-    } else if (cat === 'GENERAL_VOTING') {
-      setTitle('Youth Assembly Direct Referendum & Governance Polls');
-      setAgenda('Community-wide consensus voting on youth resolution amendments and proposals');
-    } else {
-      setTitle('Universal Multidisciplinary Youth Assembly & Round Table');
-      setAgenda('Cross-sector student discourse, creative policy frameworks, and open collaboration');
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

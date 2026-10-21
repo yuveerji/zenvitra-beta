@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Ticket,
@@ -16,12 +16,14 @@ import {
   ArrowRight,
   Plus,
   Minus,
-  GraduationCap
+  GraduationCap,
+  CreditCard
 } from 'lucide-react';
 import { useZenPass } from '@/context/ZenPassContext';
 import { useAuth } from '@/context/AuthContext';
 import { ZenPassTier } from '@/types/zenpass';
 import { ZenEvent } from '@/types/events';
+import { ZenCheckoutModal } from '@/components/payments/ZenCheckoutModal';
 
 interface ZenPassBookingModalProps {
   isOpen: boolean;
@@ -32,60 +34,39 @@ interface ZenPassBookingModalProps {
 
 export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPassBookingModalProps) {
   const { bookPass } = useZenPass();
+  const [showCashfreeModal, setShowCashfreeModal] = useState(false);
 
-  const DEFAULT_TIERS: ZenPassTier[] = [
-    {
-      id: 'tier_early',
-      name: 'Early Bird Delegate Pass',
-      type: 'early_bird',
-      price: event.ticketPrice ? Math.floor(event.ticketPrice * 0.8) : 799,
-      currency: 'INR',
-      description: 'Full conference floor entry, voting rights, and official digital credentials.',
-      perks: ['Floor debate access', 'Official Delegate Kit', 'Verified Certificate'],
-      availableCount: 14,
-      maxCapacity: 50,
-      badgeText: '🔥 14 TICKETS LEFT',
-      isPopular: true
-    },
-    {
-      id: 'tier_vip',
-      name: 'VIP Executive All-Access Pass',
-      type: 'vip_all_access',
-      price: event.ticketPrice ? Math.floor(event.ticketPrice * 1.5) : 1799,
-      currency: 'INR',
-      description: 'Priority speaker dais seating, VIP delegate lounge, gala dinner & crisis room access.',
-      perks: ['VIP Lounge & Dinner', 'Front Row Dais seating', 'Crisis room fast-track', 'Priority Speaking slot'],
-      availableCount: 8,
-      maxCapacity: 25,
-      badgeText: '👑 VIP ALL-ACCESS'
-    },
-    {
-      id: 'tier_student',
-      name: 'Verified Student / Youth Pass',
-      type: 'student_discount',
-      price: event.ticketPrice ? Math.floor(event.ticketPrice * 0.5) : 499,
-      currency: 'INR',
-      description: 'Special subsidized delegate rate for verified school and university students.',
-      perks: ['Full plenary floor access', 'Student mentor pairing', 'Digital Dossier'],
-      availableCount: 35,
-      maxCapacity: 100,
-      badgeText: '🎓 50% STUDENT RATE'
-    },
-    {
-      id: 'tier_delegation',
-      name: 'Head of Delegation Group Pass',
-      type: 'group_delegation',
-      price: event.ticketPrice ? Math.floor(event.ticketPrice * 2.2) : 2499,
-      currency: 'INR',
-      description: 'Bundle pass for institution delegations (3 delegates included).',
-      perks: ['3 Allotted country seats', 'Dedicated liaison officer', 'Institutional award tally'],
-      availableCount: 6,
-      maxCapacity: 15,
-      badgeText: '👥 3 DELEGATES BUNDLE'
-    }
-  ];
+  const fallbackTier: ZenPassTier = {
+    id: `tier_general_${event.id}`,
+    name: 'General Admission / Delegate Pass',
+    type: 'early_bird',
+    price: event.ticketPrice || 0,
+    currency: 'INR',
+    description: event.description || 'Full conference floor entry, voting rights, and official digital credentials.',
+    perks: ['Floor debate access', 'Official Delegate Kit', 'Verified Certificate'],
+    availableCount: event.capacity || 50,
+    maxCapacity: event.capacity || 50,
+    badgeText: event.ticketPrice && event.ticketPrice > 0 ? `₹${event.ticketPrice}` : 'FREE PASS',
+    isPopular: true
+  };
 
-  const [selectedTier, setSelectedTier] = useState<ZenPassTier>(DEFAULT_TIERS[0]);
+  const effectiveTiers: ZenPassTier[] = (event.plans && event.plans.length > 0)
+    ? event.plans.map((p, idx) => ({
+        id: p.id,
+        name: p.name,
+        type: (idx === 0 ? 'early_bird' : idx === 1 ? 'vip_all_access' : 'student_discount') as any,
+        price: p.price,
+        currency: 'INR',
+        description: p.description || 'Full conference floor entry, voting rights, and official digital credentials.',
+        perks: p.perks || ['Floor debate access', 'Official Delegate Kit', 'Verified Certificate'],
+        availableCount: p.capacity || 50,
+        maxCapacity: p.capacity || 50,
+        badgeText: p.badge || (p.price > 0 ? `₹${p.price}` : 'FREE PASS'),
+        isPopular: p.isPopular,
+      }))
+    : [fallbackTier];
+
+  const [selectedTier, setSelectedTier] = useState<ZenPassTier>(effectiveTiers[0]);
   const [quantity, setQuantity] = useState<number>(1);
   const [portfolioPreference, setPortfolioPreference] = useState<string>('Delegate of France');
   const [customPortfolio, setCustomPortfolio] = useState<string>('');
@@ -96,13 +77,22 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
   const [isStudentIdChecked, setIsStudentIdChecked] = useState<boolean>(true);
   const [attendeeAge, setAttendeeAge] = useState<number>(17);
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
+  const [hasLocalPulsePass, setHasLocalPulsePass] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && localStorage.getItem('zenvitra_pulse_pass') === 'active') {
+        setHasLocalPulsePass(true);
+      }
+    } catch {}
+  }, []);
 
   const { user, profile } = useAuth();
 
   if (!isOpen) return null;
 
   const isPulseElite = (profile as any)?.isElite || profile?.role === 'admin' || (profile as any)?.membershipTier === 'elite';
-  const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || (typeof window !== 'undefined' && localStorage.getItem('zenvitra_pulse_pass') === 'active'));
+  const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || hasLocalPulsePass);
 
   const finalPortfolio = portfolioPreference === 'CUSTOM'
     ? (customPortfolio.trim() || 'General Delegate')
@@ -111,29 +101,17 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
   const totalBasePrice = selectedTier.price * quantity;
   
   // Platform Fee formula:
-  // - Standard: ₹9 flat
-  // - Pulse Pass: ₹5 flat
+  // - Standard: ₹29 flat
+  // - Pulse Pass: ₹15 flat
   // - Pulse Elite: ₹0 (Waived)
   // GST rules:
-  // - Age <= 18: 0% GST (Exempt)
-  // - Age 19 to 21 OR College Student (> 18): 5% GST (Concessional)
-  // - Age > 21 Non-College Adult: 12% GST (Statutory)
-  let gstRate = 0.12;
-  let gstLabel = '12% Statutory GST';
-  let isGstExempt = false;
+  // - Student Age <= 18: 0% GST (Exempt)
+  // - Student Age > 18: 6% GST
+  const isGstExempt = attendeeAge <= 18;
+  const gstRate = isGstExempt ? 0 : 0.06;
+  const gstLabel = isGstExempt ? '0% Student Exemption (Age ≤ 18)' : '6% Student GST (Age > 18)';
 
-  if (attendeeAge <= 18) {
-    gstRate = 0;
-    gstLabel = '0% Student Exemption (Age ≤ 18)';
-    isGstExempt = true;
-  } else if ((attendeeAge >= 19 && attendeeAge <= 21) || isCollegeStudent) {
-    gstRate = 0.05;
-    gstLabel = isCollegeStudent && attendeeAge > 21 
-      ? '5% College Student Concession' 
-      : '5% Concessional GST (Ages 19-21 / College)';
-  }
-
-  const platformFee = totalBasePrice > 0 ? (isPulseElite ? 0 : isPulsePass ? 5 : 9) : 0;
+  const platformFee = totalBasePrice > 0 ? (isPulseElite ? 0 : isPulsePass ? 15 : 29) : 0;
   const gstAmount = totalBasePrice > 0 ? Math.round((totalBasePrice * gstRate) * 100) / 100 : 0;
   const finalPayable = Math.round((totalBasePrice + platformFee + gstAmount) * 100) / 100;
 
@@ -157,8 +135,27 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
       attendeeEmail: attendeeEmail.trim() || undefined,
       attendeePhone: attendeePhone.trim() || undefined,
       collegeOrSchool: collegeOrSchool.trim() || undefined,
-      chamberRoomId: 'unsc-2026'
+      chamberRoomId: event.id || 'unsc-chamber'
     });
+
+    // Persist ticket in strong Prisma database with cryptographic seal
+    try {
+      fetch('/api/events/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: event.id,
+          eventTitle: event.title,
+          attendeeName: attendeeName.trim() || 'Attendee',
+          attendeeEmail: attendeeEmail.trim() || '',
+          attendeePhone: attendeePhone.trim() || '',
+          tierName: selectedTier.name,
+          isStudent: selectedTier.type === 'student_discount' || isGstExempt || selectedTier.name.toLowerCase().includes('student'),
+          price: finalPayable,
+          currency: 'INR',
+        })
+      }).catch((err) => console.warn('[DB-TICKET-CREATE-WARN]', err));
+    } catch (_) {}
 
     // Stream booking directly to Google Sheets Event Registrations ledger
     try {
@@ -192,7 +189,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto select-none">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 overflow-y-auto select-none">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -205,18 +202,18 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl max-h-[92vh] bg-[#090a0f] border border-amber-500/30 rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 text-white"
+          className="relative w-full max-w-2xl max-h-[94vh] bg-[#090a0f] border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 text-white"
         >
           {/* Header */}
           <div className="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-purple-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
                 <Ticket className="w-5 h-5" />
               </div>
               <div>
                 <h2 className="font-display font-bold text-lg text-white flex items-center gap-2">
                   <span>ZenPass District Booking</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white font-bold">
                     Official Pass
                   </span>
                 </h2>
@@ -244,7 +241,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {DEFAULT_TIERS.map((tier) => {
+                {effectiveTiers.map((tier) => {
                   const isSelected = selectedTier.id === tier.id;
                   return (
                     <div
@@ -252,13 +249,13 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                       onClick={() => setSelectedTier(tier)}
                       className={`p-4 rounded-2xl border transition-all cursor-pointer relative flex flex-col justify-between space-y-3 ${
                         isSelected
-                          ? 'bg-amber-500/10 border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.2)]'
+                          ? 'bg-white/5 border-white shadow-sm'
                           : 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
                       }`}
                     >
                       {tier.badgeText && (
                         <span className={`absolute top-3 right-3 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                          tier.isPopular ? 'bg-amber-400 text-black' : 'bg-white/10 text-neutral-300'
+                          tier.isPopular ? 'bg-white text-black' : 'bg-white/10 text-neutral-300'
                         }`}>
                           {tier.badgeText}
                         </span>
@@ -272,11 +269,11 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                        <span className="font-mono font-bold text-base text-amber-300">
+                        <span className="font-mono font-bold text-base text-white">
                           ₹{tier.price}
                         </span>
                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                          isSelected ? 'bg-amber-400 border-amber-400 text-black' : 'border-white/20'
+                          isSelected ? 'bg-white border-white text-black' : 'border-white/20'
                         }`}>
                           {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
@@ -289,7 +286,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
 
             {/* 2. ALLOCATED PORTFOLIO / DELEGATION PREFERENCE */}
             <div className="space-y-3 p-4 rounded-2xl bg-black/40 border border-white/10">
-              <label className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Crown className="w-3.5 h-3.5" />
                 <span>2. Delegation Portfolio / Role Preference</span>
               </label>
@@ -324,7 +321,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                       value={customPortfolio}
                       onChange={(e) => setCustomPortfolio(e.target.value)}
                       placeholder="e.g. Minister of Finance, Lead Defense..."
-                      className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 font-mono"
+                      className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-white/40 font-mono"
                     />
                   </div>
                 )}
@@ -450,31 +447,25 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                 <span>₹{totalBasePrice.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between text-neutral-400">
-                <span>Platform Fee {isPulseElite ? '(Pulse Elite: ₹0)' : isPulsePass ? '(Pulse Pass: ₹5)' : '(Flat ₹9)'}</span>
-                <span className="text-amber-300 font-semibold">{platformFee === 0 ? '₹0.00 (Waived)' : `+₹${platformFee.toFixed(2)}`}</span>
+                <span>Platform Fee {isPulseElite ? '(Pulse Elite: ₹0)' : isPulsePass ? '(Pulse Pass: ₹15)' : '(Flat ₹29)'}</span>
+                <span className="text-white font-semibold">{platformFee === 0 ? '₹0.00 (Waived)' : `+₹${platformFee.toFixed(2)}`}</span>
               </div>
               <div className="flex items-center justify-between text-neutral-400">
                 <span>
                   Goods &amp; Services Tax (GST) ({gstLabel})
                 </span>
-                <span className={`font-semibold ${
-                  isGstExempt 
-                    ? 'text-emerald-400' 
-                    : gstRate === 0.05 
-                    ? 'text-cyan-300' 
-                    : 'text-purple-300'
-                }`}>
+                <span className="font-semibold text-white">
                   {isGstExempt ? '₹0.00 (Exempt)' : `+₹${gstAmount.toFixed(2)}`}
                 </span>
               </div>
               <div className="pt-2 border-t border-white/10 flex items-center justify-between text-sm font-bold text-white">
                 <span>Total Payable</span>
-                <span className="text-amber-300 font-mono text-base">₹{finalPayable.toFixed(2)}</span>
+                <span className="text-white font-mono text-base font-bold">₹{finalPayable.toFixed(2)}</span>
               </div>
             </div>
 
             {/* Footer Submit */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-end gap-3">
+            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
@@ -482,17 +473,47 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
               >
                 Cancel
               </button>
+
+              {finalPayable > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowCashfreeModal(true)}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-mono font-semibold text-xs transition cursor-pointer flex items-center gap-2"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Pay ₹{finalPayable.toFixed(2)} via Cashfree</span>
+                </button>
+              )}
+
               <button
                 type="submit"
-                className="px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white font-display font-bold text-xs shadow-lg hover:scale-105 transition cursor-pointer flex items-center gap-2"
+                className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-sans font-bold text-xs shadow-sm transition cursor-pointer flex items-center gap-2"
               >
-                <Sparkles className="w-4 h-4 text-amber-200" />
-                <span>Confirm &amp; Generate Holographic ZenPass</span>
+                <Sparkles className="w-4 h-4 fill-black text-black" />
+                <span>Confirm &amp; Generate ZenPass</span>
               </button>
             </div>
           </form>
         </motion.div>
       </div>
+
+      {/* Cashfree PG Direct Modal */}
+      {showCashfreeModal && (
+        <ZenCheckoutModal
+          isOpen={showCashfreeModal}
+          onClose={() => setShowCashfreeModal(false)}
+          product="ZEN.EVENTS"
+          title={`${event.title} - ${selectedTier.name}`}
+          baseAmount={finalPayable}
+          currency="INR"
+          merchantName="ZENVITRA Operating Entity"
+          onSuccess={() => {
+            setShowCashfreeModal(false);
+            const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+            handleBooking(fakeEvent);
+          }}
+        />
+      )}
     </AnimatePresence>
   );
 }

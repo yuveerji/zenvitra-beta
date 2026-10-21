@@ -117,10 +117,10 @@ export default function ImpactPage() {
               </p>
               <div className="flex justify-center gap-4 pt-2">
                 <Link
-                  href="/invest-donate"
+                  href="/events?action=list"
                   className="px-6 py-3 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition btn-glow"
                 >
-                  Contribute to Grant Pool
+                  List Civic Summit or Conference
                 </Link>
               </div>
             </div>

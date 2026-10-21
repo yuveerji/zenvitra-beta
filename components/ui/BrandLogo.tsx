@@ -15,10 +15,10 @@ export function BrandLogo({
   href = '/' 
 }: BrandLogoProps) {
   const iconSizeClasses = {
-    sm: 'w-[26px] h-[26px] rounded-lg',
-    md: 'w-[32px] h-[32px] rounded-xl',
-    lg: 'w-[40px] h-[40px] rounded-2xl',
-    xl: 'w-[52px] h-[52px] rounded-2xl',
+    sm: 'w-[34px] h-[34px] rounded-lg',
+    md: 'w-[44px] h-[44px] rounded-xl',
+    lg: 'w-[58px] h-[58px] rounded-2xl',
+    xl: 'w-[76px] h-[76px] rounded-2xl',
   };
 
   const textSizes = {
@@ -35,9 +35,9 @@ export function BrandLogo({
     >
       <div className={`relative ${iconSizeClasses[size]} flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shrink-0`}>
         <img
-          src="/assets/logo.png"
+          src="/assets/logo-new.png"
           alt="Zenvitra Official Logo"
-          className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)] transition-transform duration-300"
+          className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_8px_rgba(255,255,255,0.25)] transition-transform duration-300 brand-logo-img"
         />
       </div>
 

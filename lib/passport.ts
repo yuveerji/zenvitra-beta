@@ -5,6 +5,8 @@
  * Adheres strictly to NO-SEED.md: Never generates artificial fake users or records.
  */
 
+import { sheetSync } from './googleSheets';
+
 export type VerificationLevel = 0 | 1 | 2 | 3;
 
 export interface VerificationInfo {
@@ -35,9 +37,13 @@ export interface MunRecord {
   committee: string;
   portfolio: string;
   award?: string; // e.g. 'Best Delegate', 'High Commendation', 'Special Mention'
-  role: 'Delegate' | 'Executive Board' | 'Secretariat' | 'Observer';
+  role: 'Delegate' | 'Executive Board' | 'Secretariat' | 'Observer' | 'Head Delegate' | 'Press';
   isOrganiserVerified: boolean;
   verifiedBy?: string;
+  countryFlag?: string;
+  format?: 'In-Person' | 'Online' | 'Hybrid';
+  certificateUrl?: string;
+  notes?: string;
 }
 
 export interface SpeakingRecord {
@@ -115,7 +121,47 @@ export interface PassportPrivacySettings {
   showPublicEvents: boolean;
   showPublicTimeline: boolean;
   showPublicEducation: boolean;
+  showPublicCv?: boolean;
   // Private fields (Phone, Email, Student Docs) are ALWAYS private by system design.
+}
+
+export type CvVisibilityMode = 'PUBLIC' | 'UNLISTED' | 'PRIVATE';
+
+export interface CvSharingSettings {
+  visibility: CvVisibilityMode; // 'PUBLIC' (anyone) | 'UNLISTED' (direct link only) | 'PRIVATE' (owner only)
+  allowPublicShare: boolean; // Can non-owners see and use the Share button?
+  allowPublicExport: boolean; // Can non-owners download / export PDF / MD / TXT / JSON?
+  allowIndexing?: boolean; // Can search engines & directory search list this CV?
+  hideUnverifiedRecords?: boolean; // Show only organiser-verified records to third-party visitors
+}
+
+export function getCvSharingSettings(passport: Partial<ZenPassport> | null | undefined): CvSharingSettings {
+  if (!passport) {
+    return {
+      visibility: 'PUBLIC',
+      allowPublicShare: true,
+      allowPublicExport: true,
+      allowIndexing: true,
+      hideUnverifiedRecords: false,
+    };
+  }
+  if (passport.cvSharing) {
+    return {
+      visibility: passport.cvSharing.visibility || (passport.isCvPublic === false ? 'PRIVATE' : 'PUBLIC'),
+      allowPublicShare: passport.cvSharing.allowPublicShare !== false,
+      allowPublicExport: passport.cvSharing.allowPublicExport !== false,
+      allowIndexing: passport.cvSharing.allowIndexing !== false,
+      hideUnverifiedRecords: Boolean(passport.cvSharing.hideUnverifiedRecords),
+    };
+  }
+  const isPublic = passport.isCvPublic !== false;
+  return {
+    visibility: isPublic ? 'PUBLIC' : 'PRIVATE',
+    allowPublicShare: isPublic,
+    allowPublicExport: isPublic,
+    allowIndexing: isPublic,
+    hideUnverifiedRecords: false,
+  };
 }
 
 export interface ZenPassport {
@@ -124,6 +170,10 @@ export interface ZenPassport {
   username: string;
   fullName: string;
   avatarUrl?: string;
+  country?: string;
+  countryFlag?: string;
+  bio?: string;
+  headline?: string;
   memberSince: number;
   statusLabel: string;
   verification: VerificationInfo;
@@ -137,6 +187,8 @@ export interface ZenPassport {
   timeline: JourneyMilestone[];
   badges: PassportActivityBadge[];
   privacy: PassportPrivacySettings;
+  isCvPublic?: boolean; // When false, Model UN CV (/cv/[username]) is private & confidential
+  cvSharing?: CvSharingSettings; // Granular sovereign sharing & export governance
   createdAt: string;
   updatedAt: string;
 }
@@ -278,7 +330,7 @@ export function createDefaultPassport(user: {
 
   const badges: PassportActivityBadge[] = STANDARD_ACTIVITY_BADGES.map((b) => ({
     ...b,
-    isUnlocked: isFounder ? true : (isTestPilot && (b.id === 'debater' || b.id === 'diplomat' || b.id === 'researcher') ? true : false),
+    isUnlocked: isFounder ? true : (isTestPilot && (b.id === 'debater' || b.id === 'diplomat' || b.id === 'researcher' || b.id === 'speaker' || b.id === 'leader') ? true : false),
     unlockedAt: (isFounder || isTestPilot) ? now : undefined
   }));
 
@@ -311,7 +363,7 @@ export function createDefaultPassport(user: {
       isPhoneVerified: isFounder || isTestPilot,
       isStudentVerified: verificationLevel >= 2,
       isZenvitraVerified: verificationLevel >= 3,
-      zenvitraRoles: isFounder ? ['FOUNDER', 'SECRETARIAT', 'DELEGATE', 'PRESS'] : (isTestPilot ? ['DELEGATE', 'TEST_PILOT', 'CHAMBER_EVALUATOR'] : [user.role?.toUpperCase() || 'DELEGATE']),
+      zenvitraRoles: isFounder ? ['FOUNDER', 'SECRETARIAT', 'DELEGATE', 'PRESS'] : (isTestPilot ? ['DELEGATE', 'TEST_PILOT', 'CHAMBER_EVALUATOR', 'PRESS'] : [user.role?.toUpperCase() || 'DELEGATE']),
       verifiedAt: now,
       verifiedBy: 'ZENVITRA PROTOCOL'
     },
@@ -330,6 +382,26 @@ export function createDefaultPassport(user: {
         role: 'Delegate',
         isOrganiserVerified: true,
         award: 'High Commendation'
+      },
+      {
+        id: 'mun-test-rec-2',
+        conferenceName: 'International Geneva Summit 2026',
+        date: 'August 12 & 13, 2026',
+        committee: 'UNHRC',
+        portfolio: 'Delegate of France',
+        role: 'Delegate',
+        isOrganiserVerified: true,
+        award: 'Best Delegate'
+      },
+      {
+        id: 'mun-test-rec-3',
+        conferenceName: 'Apex Youth Diplomatic Plenary',
+        date: 'July 5 & 6, 2026',
+        committee: 'DISEC',
+        portfolio: 'Committee Co-Chair',
+        role: 'Executive Board',
+        isOrganiserVerified: true,
+        award: 'Distinguished Dais Appointment'
       }
     ] : [],
     speakingRecords: isTestPilot ? [
@@ -340,9 +412,26 @@ export function createDefaultPassport(user: {
         date: 'September 2026',
         category: 'Keynote',
         isVerified: true
+      },
+      {
+        id: 'spk-test-2',
+        title: 'Youth Consensus in Bilateral Policy Frameworks',
+        event: 'All-India Inter-University Summit',
+        date: 'June 2026',
+        category: 'Debate',
+        isVerified: true
       }
     ] : [],
-    pressRecords: [],
+    pressRecords: isTestPilot ? [
+      {
+        id: 'prs-test-1',
+        title: 'The Architecture of Sovereign Consensus: Notes from Plenary Hall',
+        publication: 'Zenvitra Sovereign Wire',
+        publishedAt: '2026-10-01',
+        url: '/press',
+        isApproved: true
+      }
+    ] : [],
     achievements: isTestPilot ? [
       {
         id: 'ach-test-1',
@@ -378,6 +467,18 @@ export function createDefaultPassport(user: {
           Portfolio: 'Delegate of Germany',
           Status: 'ALLOCATED & RATIFIED'
         }
+      },
+      {
+        id: 'cred-test-press-2026',
+        title: 'Accredited International Press Wire Pass',
+        type: 'EVENT_PASS',
+        issuedBy: 'ZENVITRA Press Bureau',
+        issuedAt: now,
+        isVerified: true,
+        metadata: {
+          Bureau: 'International Youth Correspondent Corps',
+          Clearance: 'UNRESTRICTED PRESS WIRE'
+        }
       }
     ] : [],
     timeline: initialTimeline,
@@ -387,8 +488,10 @@ export function createDefaultPassport(user: {
       showPublicAchievements: true,
       showPublicEvents: true,
       showPublicTimeline: true,
-      showPublicEducation: true
+      showPublicEducation: true,
+      showPublicCv: true
     },
+    isCvPublic: true,
     createdAt: now,
     updatedAt: now
   };
@@ -437,26 +540,72 @@ export function getPassportById(passportId: string): ZenPassport | null {
 /**
  * Retrieves existing passport or creates a deterministic default and persists it
  */
-export function getOrCreateDefaultPassport(username: string, fullName?: string): ZenPassport {
+export function getOrCreateDefaultPassport(username: string, fullName?: string, avatarUrl?: string): ZenPassport {
   const clean = username.toLowerCase().replace(/^@/, '').trim();
+
   const existing = getStoredPassport(clean);
   if (existing) {
+    let mutated = false;
+    if (avatarUrl && avatarUrl !== '/assets/default-avatar.svg' && existing.avatarUrl !== avatarUrl) {
+      existing.avatarUrl = avatarUrl;
+      mutated = true;
+    }
     if (clean === 'test' && (existing.fullName !== 'Test Node' || existing.statusLabel !== 'Test Node')) {
       existing.fullName = 'Test Node';
       existing.statusLabel = 'Test Node';
+      mutated = true;
+    }
+    if (mutated) {
       savePassport(existing);
     }
     return existing;
   }
 
+  // Look for avatar in session user or local storage if not provided
+  let effectiveAvatar = (avatarUrl && avatarUrl !== '/assets/default-avatar.svg') ? avatarUrl : undefined;
+  if (!effectiveAvatar && typeof window !== 'undefined') {
+    try {
+      const stored = JSON.parse(localStorage.getItem('zenvitra_session_user') || '{}');
+      if ((stored.username || '').toLowerCase() === clean && (stored.avatar_url || stored.avatar) && stored.avatar_url !== '/assets/default-avatar.svg') {
+        effectiveAvatar = stored.avatar_url || stored.avatar;
+      }
+    } catch (_) {}
+    if (!effectiveAvatar) {
+      try {
+        const pulse = JSON.parse(localStorage.getItem('zenvitra_pulse_my_profile_v1') || '{}');
+        if ((pulse.username || '').toLowerCase() === clean && pulse.avatar && pulse.avatar !== '/assets/default-avatar.svg') {
+          effectiveAvatar = pulse.avatar;
+        }
+      } catch (_) {}
+    }
+  }
+
   const defaultName = clean === 'test' ? 'Test Node' : (fullName || (clean === 'yuveer' ? 'Yuveer Chhatwani' : clean));
   const created = createDefaultPassport({
-    id: `zen_user_${clean}`,
+    id: clean === 'test' ? 'zen_test_pilot_node' : `zen_user_${clean}`,
     username: clean,
     fullName: defaultName,
-    role: clean === 'yuveer' ? 'FOUNDER' : 'DELEGATE',
+    avatarUrl: effectiveAvatar,
+    role: clean === 'yuveer' ? 'FOUNDER' : (clean === 'test' ? 'DELEGATE' : 'DELEGATE'),
     isVerified: true
   });
+
+  if (clean === 'yuveer' || clean === 'founder') {
+    created.contributions = [
+      {
+        id: 'onboarding_reward_genesis_yuveer',
+        title: 'Account Creation Grant — Founder Tier',
+        initiative: 'Earned 500 Passport Points as User #1 (Users #1–25).',
+        type: 'Open Source Tooling',
+        date: '2026-10-18',
+        isVerified: true,
+        pointsEarned: 500
+      }
+    ];
+    (created as any).userNumber = 1;
+    (created as any).onboardingTier = 'Founder Tier';
+    (created as any).onboardingClaimed = true;
+  }
 
   savePassport(created);
   return created;
@@ -470,6 +619,17 @@ export function savePassport(passport: ZenPassport): void {
   try {
     const clean = passport.username.toLowerCase().replace(/^@/, '').trim();
     localStorage.setItem(`zenvitra_passport_${clean}`, JSON.stringify(passport));
+    
+    // Defer event dispatch to avoid triggering synchronous setState in listening components (e.g. Navbar) during another component's render phase
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(() => {
+        window.dispatchEvent(new CustomEvent('zenvitra_passport_updated', { detail: { passport } }));
+      });
+    } else {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('zenvitra_passport_updated', { detail: { passport } }));
+      }, 0);
+    }
 
     // Asynchronously sync to server storage (non-blocking)
     fetch('/api/passport', {
@@ -479,6 +639,25 @@ export function savePassport(passport: ZenPassport): void {
     }).catch(() => {
       // Offline or network error; local copy preserved
     });
+
+    // Asynchronously sync to Google Sheets Register 46 Passport Ledger
+    sheetSync.passport({
+      Passport_ID: passport.passportId,
+      Person_ID: passport.userId || `zen_user_${clean}`,
+      Username: clean,
+      Full_Name: passport.fullName,
+      Role: (passport.verification?.zenvitraRoles && passport.verification.zenvitraRoles[0]) || (passport as any).role || 'DELEGATE',
+      Verification_Level: passport.verification?.level !== undefined ? `Level ${passport.verification.level}` : 'Level 0',
+      Total_Points: (passport as any).points ?? (passport.contributions || []).reduce((acc: number, c: any) => acc + (c.pointsEarned || 0), 0),
+      Staked_Points: (passport as any).stakedPoints ?? 0,
+      User_Number: (passport as any).userNumber ?? '',
+      Onboarding_Tier: (passport as any).onboardingTier ?? '',
+      Onboarding_Claimed: (passport as any).onboardingClaimed ? 'Yes' : 'No',
+      Contributed_Count: (passport.contributions || []).length,
+      QR_Token: (passport as any).qrCodeData || passport.passportId,
+      Last_Synced_At: new Date().toISOString(),
+      Notes: 'Synced via savePassport'
+    }).catch(() => {});
   } catch (_) {}
 }
 
@@ -569,5 +748,99 @@ export function calculateZenPoints(passport: ZenPassport): number {
   if (passport.verification.level >= 3) total += 75;
 
   return total;
+}
+
+export interface DiplomaticRankDetails {
+  tier: number; // 1 to 6
+  title: string;
+  badge: string;
+  description: string;
+  nextMilestone: string;
+  progressPercent: number; // 0 to 100
+}
+
+export function calculateDiplomaticRank(records: MunRecord[] = []): DiplomaticRankDetails {
+  const count = records.length;
+  const awardsCount = records.filter(r => Boolean(r.award)).length;
+  const chairCount = records.filter(r => r.role === 'Executive Board' || r.role === 'Secretariat').length;
+
+  if (count === 0) {
+    return {
+      tier: 1,
+      title: 'Novice Delegate',
+      badge: '🌱 Novice',
+      description: 'Starting your multilateral diplomacy journey.',
+      nextMilestone: 'Add your first conference to advance to Active Diplomat',
+      progressPercent: 0
+    };
+  }
+  if (count === 1 && awardsCount === 0) {
+    return {
+      tier: 1,
+      title: 'Novice Delegate',
+      badge: '🌱 Novice',
+      description: 'First summit registered in sovereign ledger.',
+      nextMilestone: 'Participate in 1 more conference to reach Active Diplomat',
+      progressPercent: 50
+    };
+  }
+  if (count < 4 && awardsCount === 0 && chairCount === 0) {
+    return {
+      tier: 2,
+      title: 'Active Diplomat',
+      badge: '🛡️ Active Diplomat',
+      description: 'Actively participating in committee debates and draft resolutions.',
+      nextMilestone: 'Earn 1 award or attend 5 summits to reach Distinguished Delegate',
+      progressPercent: Math.min(90, Math.round((count / 5) * 100))
+    };
+  }
+  if (chairCount > 0 && awardsCount >= 2) {
+    if (count >= 8 || chairCount >= 2) {
+      return {
+        tier: 6,
+        title: 'Sovereign Ambassador',
+        badge: '👑 Sovereign Ambassador',
+        description: 'Elite multilateral diplomat with dais leadership and multiple commendations.',
+        nextMilestone: 'Highest diplomatic rank achieved',
+        progressPercent: 100
+      };
+    }
+    return {
+      tier: 5,
+      title: 'Secretariat Envoy',
+      badge: '🌐 Secretariat Envoy',
+      description: 'Proven executive dais experience and multilateral excellence.',
+      nextMilestone: 'Achieve 8+ total summits to reach Sovereign Ambassador',
+      progressPercent: 85
+    };
+  }
+  if (chairCount > 0) {
+    return {
+      tier: 4,
+      title: 'Dais Executive & Chair',
+      badge: '🏛️ Dais Executive',
+      description: 'Presided over committee chambers and procedural gavel rulings.',
+      nextMilestone: 'Secure 2 awards to reach Secretariat Envoy',
+      progressPercent: 75
+    };
+  }
+  if (awardsCount >= 1 || count >= 5) {
+    return {
+      tier: 3,
+      title: 'Distinguished Delegate',
+      badge: '⚖️ Distinguished Delegate',
+      description: 'Recognized for outstanding speeches, draft resolutions, and multilateral diplomacy.',
+      nextMilestone: 'Chair a committee or serve on Dais to reach Dais Executive',
+      progressPercent: Math.min(95, 60 + (awardsCount * 15))
+    };
+  }
+  return {
+    tier: 2,
+    title: 'Active Diplomat',
+    badge: '🛡️ Active Diplomat',
+    description: 'Actively participating in committee debates.',
+    nextMilestone: 'Win an award to reach Distinguished Delegate',
+    progressPercent: 50
+  };
 }
 

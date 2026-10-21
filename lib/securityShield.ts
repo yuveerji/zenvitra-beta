@@ -331,7 +331,7 @@ export function getSecurityProfile(userId: string): UserSecurityProfile {
 
 function createDefaultSecurityProfile(userId: string): UserSecurityProfile {
   const cleanId = normalizeUserId(userId);
-  const isFounder = cleanId === 'founder' || cleanId === 'founder@zenvitra.org' || cleanId === 'yuveer';
+  const isFounder = cleanId === 'founder' || cleanId === 'founder@zenvitra.xyz' || cleanId === 'founder@zenvitra.org' || cleanId === 'yuveer';
   const currentSid = getClientSessionId();
   const env = detectClientEnvironment();
   const now = new Date().toISOString();
@@ -416,7 +416,7 @@ export function logSecurityEvent(
  */
 export function checkAccountLockout(userId: string): { isLocked: boolean; remainingSeconds: number } {
   const cleanId = normalizeUserId(userId);
-  if (cleanId === 'yuveer' || cleanId === 'founder' || cleanId === 'founder@zenvitra.org') {
+  if (cleanId === 'yuveer' || cleanId === 'founder' || cleanId === 'founder@zenvitra.xyz' || cleanId === 'founder@zenvitra.org') {
     return { isLocked: false, remainingSeconds: 0 };
   }
 
@@ -445,7 +445,7 @@ export function checkAccountLockout(userId: string): { isLocked: boolean; remain
  */
 export function recordFailedAttempt(userId: string, ipAddress: string = '127.0.0.1'): { isLocked: boolean; attemptsLeft: number } {
   const cleanId = normalizeUserId(userId);
-  if (cleanId === 'yuveer' || cleanId === 'founder' || cleanId === 'founder@zenvitra.org') {
+  if (cleanId === 'yuveer' || cleanId === 'founder' || cleanId === 'founder@zenvitra.xyz' || cleanId === 'founder@zenvitra.org') {
     return { isLocked: false, attemptsLeft: 99 };
   }
 

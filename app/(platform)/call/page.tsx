@@ -1,12 +1,25 @@
 'use client';
 
 import React, { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { ZenCommsComingSoon } from '@/components/comms/ZenCommsComingSoon';
 import { ZenCallLobby } from '@/components/call/ZenCallLobby';
+
+function ZenCallContent() {
+  const searchParams = useSearchParams();
+  const isDevPreview = searchParams.get('preview') === 'lobby' || searchParams.get('dev') === 'true';
+
+  if (isDevPreview) {
+    return <ZenCallLobby />;
+  }
+
+  return <ZenCommsComingSoon appType="call" />;
+}
 
 export default function ZenCallLobbyPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-slate-400">Loading ZEN.CALL Lobby...</div>}>
-      <ZenCallLobby />
+    <Suspense fallback={<ZenCommsComingSoon appType="call" />}>
+      <ZenCallContent />
     </Suspense>
   );
 }

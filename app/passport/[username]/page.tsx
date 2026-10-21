@@ -146,6 +146,14 @@ export default function PublicPassportPage() {
 
           {/* Quick Actions */}
           <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={`/cv/${passport.username}`}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-sans font-bold text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-sm"
+            >
+              <Award className="w-4 h-4 text-amber-400" />
+              <span>Model UN CV</span>
+            </Link>
+
             <button
               type="button"
               onClick={() => setQrModalOpen(true)}

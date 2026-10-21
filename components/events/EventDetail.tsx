@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   ArrowLeft, 
   Calendar, 
@@ -27,13 +28,16 @@ import {
   AlertTriangle,
   X,
   RefreshCw,
-  CheckCircle2
+  CheckCircle2,
+  ExternalLink
 } from 'lucide-react';
 import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { useMun } from '@/context/MunContext';
 import { useZenPass } from '@/context/ZenPassContext';
 import { ZenPassBookingModal } from './ZenPassBookingModal';
 import { ZenPassHolographicTicket } from './ZenPassHolographicTicket';
+import { RecruitmentOpenBanner } from './RecruitmentOpenBanner';
+import { EventTeamShowcase } from './EventTeamShowcase';
 
 export function EventDetail() {
   const router = useRouter();
@@ -185,6 +189,14 @@ export function EventDetail() {
             </button>
           )}
 
+          <Link
+            href={`/events/${event.id}`}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/[0.04] border border-white/10 text-xs font-mono text-neutral-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
+          >
+            <span>Public Event Page</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+
           <button
             onClick={handleShare}
             className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-white/[0.04] border border-white/10 text-xs font-mono text-neutral-300 hover:text-cyan-300 hover:bg-cyan-500/10 transition cursor-pointer"
@@ -319,6 +331,13 @@ export function EventDetail() {
         </div>
       </div>
 
+      {/* Universal Staff Recruitment Banner */}
+      <RecruitmentOpenBanner
+        eventId={event.id}
+        eventTitle={event.title}
+        isOrganizer={isOrganizer}
+      />
+
       {/* Main Grid: Left Details & Right Holographic Pass */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -369,6 +388,12 @@ export function EventDetail() {
               <span>Verified Host</span>
             </div>
           </div>
+
+          {/* Team & Leadership Directory Showcase */}
+          <EventTeamShowcase
+            eventId={event.id}
+            eventTitle={event.title}
+          />
 
           {/* Delegate Swarm */}
           <div className="rounded-3xl p-6 sm:p-8 card-luxury border border-white/10 space-y-4">

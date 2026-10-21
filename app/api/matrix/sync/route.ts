@@ -43,7 +43,7 @@ function writeLocalPortfolios(portfolios: MatrixPortfolioItem[]): void {
   }
 }
 
-const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwMJVccvxnhbk13ppFVu44gpA9cZ95nR1oojq-c4P1r6YWK45hKp0f3Tydk4RJO6v0Q/exec';
+const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
 
 /**
  * GET: Reads portfolios from Google Sheets (or fallback to local persistent ledger)

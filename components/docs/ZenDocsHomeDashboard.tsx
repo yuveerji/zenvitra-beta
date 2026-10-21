@@ -27,6 +27,7 @@ import {
   RotateCcw,
   Check,
   Download,
+  Menu,
 } from 'lucide-react';
 import { ZenDocument, ZenDocType, DocStatus } from '@/types/docs';
 import { DOC_TEMPLATES, INITIAL_WORKSPACES, DocTemplateDefinition } from '@/lib/docsData';
@@ -147,17 +148,39 @@ export function ZenDocsHomeDashboard({
         <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 blur-[130px] pointer-events-none rounded-full" />
 
         <div className="flex flex-wrap items-center justify-between gap-4 relative z-10">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] uppercase font-bold tracking-wider">
-              <FileText className="w-3.5 h-3.5 text-cyan-400" />
-              <span>ZEN.DOCS &bull; INTELLIGENT DOCUMENT WORKSPACE</span>
+          <div className="flex items-start sm:items-center gap-3.5">
+            {/* Inline Platform Drawer Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('zenvitra-toggle-platform-sidebar'));
+              }}
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-200 border backdrop-blur-2xl shadow-md shrink-0 bg-[#0c101a] hover:bg-zinc-800 text-zinc-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105 active:scale-95"
+              title="Toggle Platform Navigation Menu"
+              aria-label="Toggle Platform Navigation Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Logo */}
+            <Link href="/pulse" className="flex items-center gap-2.5 group shrink-0">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-black border border-white/10 flex items-center justify-center p-2 shadow-sm group-hover:scale-105 transition shrink-0">
+                <img src="/assets/logo-new.png" alt="Zenvitra" className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] brand-logo-img" />
+              </div>
+            </Link>
+
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] uppercase font-bold tracking-wider">
+                <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                <span>ZEN.DOCS &bull; INTELLIGENT DOCUMENT WORKSPACE</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-black font-display text-white tracking-tight">
+                WRITE. COLLABORATE. ORGANIZE. PUBLISH.
+              </h1>
+              <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl font-sans leading-relaxed">
+                The productivity backbone of ZENVITRA connecting research papers, parliamentary bills, UN resolutions, press articles, and team workspaces.
+              </p>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black font-display text-white tracking-tight">
-              WRITE. COLLABORATE. ORGANIZE. PUBLISH.
-            </h1>
-            <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl font-sans leading-relaxed">
-              The productivity backbone of ZENVITRA connecting research papers, parliamentary bills, UN resolutions, press articles, and team workspaces.
-            </p>
           </div>
 
           {/* Workspace Switcher & Open Editor CTA */}

@@ -15,13 +15,14 @@ import {
   Trash2,
   AlertCircle,
   MoreHorizontal,
-  X
+  X,
+  CreditCard
 } from 'lucide-react';
 import { ZenEvent, EventAttendee } from '@/types/events';
 import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { useZenPass } from '@/context/ZenPassContext';
 import { ZenPassBookingModal } from './ZenPassBookingModal';
-import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
+import { EventPlansPaymentLinksModal } from '@/components/payments/EventPlansPaymentLinksModal';
 
 interface EventCardProps {
   event: ZenEvent;
@@ -29,11 +30,12 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onOpenModal }: EventCardProps) {
-  const { getUserRsvpStatus, setActiveEventId, setActiveView, deleteEvent, cancelEvent, currentUserId } = useZenEvents();
+  const { getUserRsvpStatus, setActiveEventId, setActiveView, deleteEvent, cancelEvent, updateEvent, currentUserId } = useZenEvents();
   const { getPassesForEvent, setActivePassForModal } = useZenPass();
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showPlansModal, setShowPlansModal] = useState(false);
   const [showManageMenu, setShowManageMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -50,18 +52,8 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
     });
   };
 
-  const isOurMun = 
-    event.id === 'zen-diplomacy-mun-2026' || 
-    (event as any).isOfficialZenDiplomacy || 
-    (event.title && event.title.toLowerCase().includes('zen.diplomacy')) || 
-    (event.title && event.title.toLowerCase().includes('diplomacy mun'));
-
   const handlePassButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isOurMun) {
-      window.location.href = '/zen-diplomacy';
-      return;
-    }
     if (myPass) {
       setActivePassForModal(myPass);
     } else {
@@ -70,10 +62,6 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
   };
 
   const openDetail = () => {
-    if (isOurMun) {
-      window.location.href = '/zen-diplomacy';
-      return;
-    }
     if (onOpenModal) {
       onOpenModal(event);
     } else {
@@ -121,9 +109,7 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
 
         {/* Cover Image Container */}
         <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-neutral-900 z-[1]">
-          {event.id === 'zen-diplomacy-mun-2026' || (event as any).isOfficialZenDiplomacy ? (
-            <ZenDiplomacyCover variant="compact" interactive={false} className="h-full w-full" />
-          ) : event.coverImage ? (
+          {event.coverImage ? (
             <img
               src={event.coverImage}
               alt={event.title}
@@ -177,9 +163,21 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
 
                 {showManageMenu && (
                   <div
-                    className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-neutral-950 border border-white/15 shadow-2xl z-20 overflow-hidden"
+                    className="absolute right-0 top-full mt-1 w-52 rounded-xl bg-neutral-950 border border-white/15 shadow-2xl z-20 overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                   >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowManageMenu(false);
+                        setShowPlansModal(true);
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-xs font-mono text-cyan-300 hover:bg-cyan-500/10 transition flex items-center gap-2 cursor-pointer border-b border-white/5"
+                    >
+                      <CreditCard className="w-3.5 h-3.5 text-cyan-400" />
+                      Plans &amp; Payment Links
+                    </button>
                     <button
                       type="button"
                       onClick={(e) => {
@@ -312,6 +310,27 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
           isOpen={showBookingModal}
           onClose={() => setShowBookingModal(false)}
           event={event}
+        />
+      )}
+
+      {/* Plans & Cashfree Payment Links Modal */}
+      {showPlansModal && (
+        <EventPlansPaymentLinksModal
+          isOpen={showPlansModal}
+          onClose={() => setShowPlansModal(false)}
+          eventId={event.id}
+          eventTitle={event.title}
+          initialPlans={event.plans}
+          initialPaymentLinks={event.paymentLinks}
+          onSavePlans={(plans) => {
+            updateEvent(event.id, { plans });
+          }}
+          onSavePaymentLink={(link) => {
+            const existing = event.paymentLinks || [];
+            updateEvent(event.id, {
+              paymentLinks: [link, ...existing.filter((l) => l.linkId !== link.linkId)],
+            });
+          }}
         />
       )}
 

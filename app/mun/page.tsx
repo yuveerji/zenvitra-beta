@@ -42,11 +42,12 @@ import {
   Share2,
   MessageSquare,
   Lock,
-  Plus
+  Plus,
+  Play,
+  LifeBuoy
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
-import { ZENMUN_2026_MASTER } from '@/lib/conferenceData';
 import { useAuth } from '@/context/AuthContext';
 import { useMun } from '@/context/MunContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
@@ -54,6 +55,9 @@ import { MunSelectorBar } from '@/components/mun/MunSelectorBar';
 import { MunNotStartedView } from '@/components/mun/MunNotStartedView';
 import { ChamberDayHistoryModal } from '@/components/mun/ChamberDayHistoryModal';
 import { CommitteeSummaryPaperModal } from '@/components/mun/CommitteeSummaryPaperModal';
+import { ActiveEmergencyBroadcastBanner } from '@/components/mun/ActiveEmergencyBroadcastBanner';
+import QuickSessionCreatorStudio from '@/components/mun/QuickSessionCreatorStudio';
+import { MunSecDaisSupportDesk } from '@/components/mun/support/MunSecDaisSupportDesk';
 
 type MunModuleTab = 
   | 'ALL'
@@ -67,7 +71,8 @@ type MunModuleTab =
   | 'SCORE'
   | 'CERTIFY'
   | 'PORTFOLIO'
-  | 'ANALYTICS';
+  | 'ANALYTICS'
+  | 'SUPPORT';
 
 export default function ZenMunPortalPage() {
   const { user, profile } = useAuth();
@@ -83,6 +88,11 @@ export default function ZenMunPortalPage() {
 
   const [showDayHistoryModal, setShowDayHistoryModal] = useState(false);
   const [showSummaryPaperModal, setShowSummaryPaperModal] = useState(false);
+  const [showQuickStudio, setShowQuickStudio] = useState(false);
+
+  if (showQuickStudio) {
+    return <QuickSessionCreatorStudio onBack={() => setShowQuickStudio(false)} returnPath="/mun" />;
+  }
 
   const isExecutive = Boolean(
     isFounder(user) || 
@@ -127,6 +137,8 @@ export default function ZenMunPortalPage() {
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-12 text-left">
+        {/* Real-time Emergency Protocol Broadcast Banner */}
+        <ActiveEmergencyBroadcastBanner allowDismiss={false} />
         
         {/* If Selected Conference has not started yet */}
         {activeConference?.status === 'NOT_STARTED' && (
@@ -141,19 +153,30 @@ export default function ZenMunPortalPage() {
           <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-500/10 blur-[130px] pointer-events-none rounded-full" />
           
           <div className="space-y-3 relative z-10">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] uppercase font-bold tracking-wider">
-                <Crown className="w-3.5 h-3.5 text-cyan-400" />
-                <span>ZEN.MUN OPERATING SYSTEM &bull; 14 INTEGRATED MODULES</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] uppercase font-bold tracking-wider">
+                  <Crown className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>ZEN.MUN OPERATING SYSTEM &bull; 14 INTEGRATED MODULES</span>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>LIVE SOVEREIGN MESH</span>
+                </span>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>LIVE SOVEREIGN MESH</span>
-              </span>
+
+              <Link
+                href="/mun/chits"
+                className="px-3 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-bold flex items-center gap-1.5 transition"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <span>ZEN.CHITS DISPATCH</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-display text-white tracking-tight leading-tight">
-              THE COMPLETE OPERATING SYSTEM FOR MODEL UNITED NATIONS &amp; PARLIAMENTARY SIMULATIONS
+              THE COMPLETE OPERATING SYSTEM FOR <span className="font-serif italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-200 to-purple-300 normal-case">Model United Nations</span> &amp; PARLIAMENTARY SIMULATIONS
             </h1>
             
             <p className="text-sm sm:text-base text-neutral-300 max-w-4xl leading-relaxed font-sans">
@@ -191,8 +214,32 @@ export default function ZenMunPortalPage() {
             </div>
           </div>
 
-          {/* 3 Primary Action Doorways */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 relative z-10">
+          {/* 4 Primary Action Doorways */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2 relative z-10">
+            <button
+              type="button"
+              onClick={() => setShowQuickStudio(true)}
+              className="p-5 rounded-2xl bg-gradient-to-b from-amber-500/15 via-[#0e121e] to-[#090c16] hover:border-amber-400/60 border border-amber-500/30 text-left space-y-2.5 transition group cursor-pointer shadow-[0_0_30px_rgba(245,158,11,0.12)] active:scale-[0.98]"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-amber-400 text-black font-extrabold">
+                  <Play className="w-5 h-5 text-black fill-black" />
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+                  QUICK DAIS SETUP
+                </span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition flex items-center gap-1.5">
+                  <span>Start Committee Session</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+                </h3>
+                <p className="text-xs text-neutral-400 mt-1 font-sans leading-relaxed">
+                  Set up a committee in seconds: name, topic, chairs, quick bundles (P5, G20, AIPPM) &amp; launch live Dais.
+                </p>
+              </div>
+            </button>
+
             <Link
               href="/committee"
               className="p-5 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-left space-y-2.5 transition group cursor-pointer shadow-[0_0_30px_rgba(6,182,212,0.15)]"
@@ -241,18 +288,18 @@ export default function ZenMunPortalPage() {
 
             <Link
               href="/committee"
-              className="p-5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-left space-y-2.5 transition group cursor-pointer"
+              className="p-5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-left space-y-2.5 transition group cursor-pointer"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-amber-500 text-black font-bold">
+                <div className="p-2.5 rounded-xl bg-emerald-500 text-black font-bold">
                   <Scale className="w-5 h-5 text-black" />
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
                   CHAMBER &amp; LEGISLATE
                 </span>
               </div>
               <div>
-                <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition flex items-center gap-1.5">
+                <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition flex items-center gap-1.5">
                   <span>Legislative Drafting Studio</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
                 </h3>
@@ -287,7 +334,8 @@ export default function ZenMunPortalPage() {
               { id: 'SCORE', label: '8. Score & Rubric 📊', icon: TrendingUp },
               { id: 'CERTIFY', label: '9. Certify 📜', icon: QrCode },
               { id: 'PORTFOLIO', label: '10. Portfolio 👤', icon: Briefcase },
-              { id: 'ANALYTICS', label: '11. Analytics 📈', icon: SlidersHorizontal }
+              { id: 'ANALYTICS', label: '11. Analytics 📈', icon: SlidersHorizontal },
+              { id: 'SUPPORT', label: '12. Sec & Dais Support 🎧', icon: LifeBuoy }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeModule === tab.id;
@@ -801,6 +849,16 @@ export default function ZenMunPortalPage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ─── MODULE: SECRETARIAT & DAIS SUPPORT DESK 🎧 ─── */}
+        {(activeModule === 'ALL' || activeModule === 'SUPPORT') && (
+          <div className="space-y-4">
+            <MunSecDaisSupportDesk
+              conferenceId={activeConference?.id}
+              conferenceTitle={activeConference?.name}
+            />
           </div>
         )}
 

@@ -52,6 +52,21 @@ function getBaselinePassports(): ZenPassport[] {
     }
   ];
 
+  yuveer.contributions = [
+    {
+      id: 'onboarding_reward_genesis_yuveer',
+      title: 'Account Creation Grant — Founder Tier',
+      initiative: 'Earned 500 Passport Points as User #1 (Users #1–25).',
+      type: 'Open Source Tooling',
+      date: '2026-10-18',
+      isVerified: true,
+      pointsEarned: 500
+    }
+  ];
+  (yuveer as any).userNumber = 1;
+  (yuveer as any).onboardingTier = 'Founder Tier';
+  (yuveer as any).onboardingClaimed = true;
+
   const testNode = createDefaultPassport({
     id: 'zen_test_pilot_node',
     username: 'test',

@@ -75,7 +75,9 @@ import {
   activateFounderSession,
   isFounderSessionActive,
   setCustomFounderKey,
-  isFounder
+  isFounder,
+  isFounderOrCoFounder,
+  isCurrentSessionFounderOrCoFounder
 } from '@/lib/founderControl';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useAuth } from '@/context/AuthContext';
@@ -112,9 +114,11 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
     }
   };
 
-  // Strict Founder Verification Check
+  // Strict Founder & Co-Founder Verification Check (Founders and Co-Founders using their own ID)
   const effectiveUser = (currentUserUsername || user?.email?.split('@')[0] || profile?.username || '').toLowerCase().trim().replace(/^@/, '');
-  const isFounderClearance = isFounder(effectiveUser, (profile?.role as any) || (profile as any)?.badge);
+  const isFounderClearance = 
+    isFounderOrCoFounder(effectiveUser, (profile?.role as any) || (profile as any)?.badge, profile?.id || user?.id) ||
+    isCurrentSessionFounderOrCoFounder();
 
   /* Modal Passkey Unlock State */
   const [modalUnlockKey, setModalUnlockKey] = useState('');
@@ -179,7 +183,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
       } catch (_) {}
     }
     return [
-      { text: 'ZENVITRA SUPREME SOVEREIGN COMMAND CLI v1.0.0', type: 'info' },
+      { text: 'ZENVITRA SUPREME SOVEREIGN COMMAND CLI V1', type: 'info' },
       { text: 'Authenticated Level 0 Root Operator: @yuveer (100% Access)', type: 'success' },
       { text: 'Type "help" for a full list of executive master commands.', type: 'info' },
     ];
@@ -360,7 +364,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
         { text: '  faucet <user> <amount>       - Mint and inject Civic Points', type: 'info' },
         { text: '  promote <user> <role>        - Elevate role (FOUNDER, ADMIN, MODERATOR, DELEGATE)', type: 'info' },
         { text: '  badge <user> <GOLD|BLUE|NONE> - Grant verified badge to node', type: 'info' },
-        { text: '  freeze                       - Protocol Omega: emergency lockdown', type: 'info' },
+        { text: '  freeze                       - System Maintenance: emergency lockdown', type: 'info' },
         { text: '  resume                       - Resume standard live operations', type: 'info' },
         { text: '  crisis_flash <headline>      - Broadcast emergency crisis to assemblies', type: 'info' },
         { text: '  export_json                  - Download complete database snapshot JSON', type: 'info' },
@@ -405,7 +409,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
         ...prev,
         { text: '🚨 [EMERGENCY] NETWORK FREEZE ACTIVATED: Maintenance ON, Registrations OFF', type: 'warn' },
       ]);
-      showToast('🚨 Protocol Omega Activated');
+      showToast('🚨 System Maintenance Activated');
     } else if (root === 'resume') {
       saveProtocolControls({ maintenanceMode: false, registrationsOpen: true });
       setProtocols(getProtocolControls());
@@ -1369,7 +1373,7 @@ export function FounderOmniModal({ isOpen, onClose, onOpenAdminMenu }: FounderOm
                   { key: 'assemblyOsEnabled', label: 'Assembly OS & Live Voting', desc: 'Enable parliamentary caucus engine' },
                   { key: 'escrowMandateActive', label: 'Constitutional 10% Profit Endowment', desc: 'Disburse 10% profits every 6 months with video proof' },
                   { key: 'zeroSurveillanceActive', label: 'Zero Surveillance Enforcement', desc: 'Block tracking scripts & ads' },
-                  { key: 'maintenanceMode', label: 'Protocol Omega (Citadel Lockout)', desc: 'Put entire platform into read-only' },
+                  { key: 'maintenanceMode', label: 'System Maintenance (Citadel Lockout)', desc: 'Put entire platform into read-only' },
                 ].map((item) => {
                   const k = item.key as keyof ProtocolControls;
                   const isOn = protocols[k];

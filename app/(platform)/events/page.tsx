@@ -18,10 +18,20 @@ import { EventManagementDashboard } from '@/components/events/dashboard/EventMan
 import { useAccountCapabilities } from '@/hooks/useAccountCapabilities';
 import { EventAccessGate } from '@/components/events/EventAccessGate';
 import { useAuth } from '@/context/AuthContext';
+import { isFounder, isAdmin } from '@/lib/founderControl';
 
 function EventsViewSwitcher() {
   const { activeView, setActiveView } = useZenEvents();
   const searchParams = useSearchParams();
+  const { isEventEnabled, isProfessionalEnabled } = useAccountCapabilities();
+  const { profile } = useAuth();
+
+  const isPrivilegedTester = React.useMemo(() => {
+    const userIdentifier = profile?.username || profile?.email || '';
+    return isFounder(userIdentifier, profile?.role) || isAdmin(userIdentifier, profile?.role);
+  }, [profile]);
+
+  const hasOrganizerClearance = isEventEnabled || isProfessionalEnabled || isPrivilegedTester;
 
   useEffect(() => {
     if (searchParams.get('view') === 'dashboard') {
@@ -32,13 +42,23 @@ function EventsViewSwitcher() {
   return (
     <>
       {activeView === 'dashboard' ? (
-        <EventManagementDashboard />
+        hasOrganizerClearance ? (
+          <EventManagementDashboard />
+        ) : (
+          <EventAccessGate onUnlock={() => setActiveView('dashboard')} onReturnToFeed={() => setActiveView('list')} />
+        )
       ) : activeView === 'detail' ? (
         <EventDetail />
       ) : (
         <EventsFeed />
       )}
-      {activeView === 'create' && <CreateEventModal />}
+      {activeView === 'create' && (
+        hasOrganizerClearance ? (
+          <CreateEventModal />
+        ) : (
+          <EventAccessGate onUnlock={() => setActiveView('create')} onReturnToFeed={() => setActiveView('list')} />
+        )
+      )}
     </>
   );
 }
@@ -153,16 +173,9 @@ function EventsContent() {
     );
   }
 
-  // If authenticated and came from /mun, allow delegate browsing of events
-  const allowAccess = isEventEnabled || isProfessionalEnabled || fromMun;
-
   return (
     <div className="w-full min-h-[calc(100vh-5.5rem)]">
-      {!allowAccess ? (
-        <EventAccessGate />
-      ) : (
-        <EventsViewSwitcher />
-      )}
+      <EventsViewSwitcher />
     </div>
   );
 }

@@ -71,7 +71,7 @@ export function ZenIdentityCardModal({
     events: 9,
   };
 
-  const isFounder = user.username.toLowerCase().includes('yuveer') || user.role?.includes('FOUNDER');
+  const isFounder = user.username.toLowerCase().trim().replace(/^@/, '') === 'yuveer' || user.role?.toUpperCase() === 'FOUNDER';
 
   return (
     <AnimatePresence>

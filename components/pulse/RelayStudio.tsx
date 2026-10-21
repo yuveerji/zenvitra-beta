@@ -521,7 +521,7 @@ export function RelayStudio({ onExit }: { onExit?: () => void }) {
             <span className="font-mono text-xs text-zinc-400 font-bold uppercase tracking-wider">
               Studio Creative Controls
             </span>
-            <span className="text-[10px] font-mono text-cyan-300">Zenvitra Engine v2.4</span>
+            <span className="text-[10px] font-mono text-cyan-300">Zenvitra Engine V1</span>
           </div>
 
           {/* Text Input */}
@@ -679,7 +679,7 @@ export function RelayStudio({ onExit }: { onExit?: () => void }) {
                 type="text"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
-                placeholder="https://zenvitra.org/events/..."
+                placeholder="https://zenvitra.xyz/events/..."
                 className="bg-black/60 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 font-mono"
               />
               <input

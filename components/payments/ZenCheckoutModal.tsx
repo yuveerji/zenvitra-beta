@@ -30,6 +30,7 @@ import { computeTax, LS_ZEN_TXNS } from '@/lib/paymentsData';
 import { useAuth } from '@/context/AuthContext';
 import { PaymentTransaction, PaymentReceipt, PaymentMethodType, PaymentProduct } from '@/types/payments';
 import { WalletCredential, getOrCreateDefaultPassport, savePassport } from '@/lib/passport';
+import { allotUserSubscription, normalizePlanId } from '@/lib/subscriptionTiers';
 
 // Module-level singleton loader for Cashfree.js v3
 let cashfreeSdkPromise: Promise<any> | null = null;
@@ -86,6 +87,7 @@ export function ZenCheckoutModal({
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
   const [studentIdFile, setStudentIdFile] = useState<{ name: string; size: string } | null>(null);
   const [studentIdError, setStudentIdError] = useState<string | null>(null);
+  const [isUploadingStudentId, setIsUploadingStudentId] = useState(false);
 
   // Payment method selection - Cashfree PG is premier
   const [selectedMethod, setSelectedMethod] = useState<'CASHFREE' | 'UPI_QR' | 'UPI_ID' | 'CREDIT_CARD'>('CASHFREE');
@@ -114,9 +116,19 @@ export function ZenCheckoutModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [hasLocalPulsePass, setHasLocalPulsePass] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && localStorage.getItem('zenvitra_pulse_pass') === 'active') {
+        setHasLocalPulsePass(true);
+      }
+    } catch {}
+  }, []);
+
   const { user, profile } = useAuth();
   const isPulseElite = (profile as any)?.isElite || profile?.role === 'admin' || (profile as any)?.membershipTier === 'elite';
-  const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || (typeof window !== 'undefined' && localStorage.getItem('zenvitra_pulse_pass') === 'active'));
+  const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || hasLocalPulsePass);
   const userTier = isPulseElite ? 'elite' : isPulsePass ? 'pass' : 'standard';
 
   // Prepopulate payer fields from active session
@@ -185,11 +197,17 @@ export function ZenCheckoutModal({
       });
   }, [isOpen, tax.totalPayable, upiPayPayload]);
 
-  if (!isOpen) return null;
+  // Cleanup polling on unmount or modal close
+  useEffect(() => {
+    return () => {
+      if (upiPollRef.current) {
+        clearInterval(upiPollRef.current);
+        upiPollRef.current = null;
+      }
+    };
+  }, []);
 
   // Handle student ID upload with real server endpoint
-  const [isUploadingStudentId, setIsUploadingStudentId] = useState(false);
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -424,6 +442,22 @@ export function ZenCheckoutModal({
           // Automatically mint and hook credential into passport wallet
           awardPassportCredential(newTxn);
 
+          // Automatically allot subscription upon Cashfree verification
+          const detectedPlanId = normalizePlanId(verifyData.planId || (product as string));
+          if (detectedPlanId && detectedPlanId !== 'zen-free') {
+            const targetUsername = profile?.username || user?.username || (user?.email ? user.email.split('@')[0] : 'citizen');
+            allotUserSubscription(targetUsername, {
+              planId: detectedPlanId,
+              planName: title,
+              orderId: data.orderId,
+              paymentId: verifyData.paymentId || `CF-${data.orderId}`,
+              amountPaid: tax.totalPayable,
+              currency,
+              paymentMethod: verifyData.paymentMethod || 'CASHFREE',
+              expiresAt: 'LIFETIME'
+            });
+          }
+
           setCompletedTxn(newTxn);
           setStep('SUCCESS');
           if (onSuccess) onSuccess(newTxn);
@@ -535,6 +569,22 @@ export function ZenCheckoutModal({
             // Automatically mint and hook credential into passport wallet
             awardPassportCredential(newTxn);
 
+            // Automatically allot subscription upon Cashfree verification
+            const detectedPlanId = normalizePlanId(verifyData.planId || (product as string));
+            if (detectedPlanId && detectedPlanId !== 'zen-free') {
+              const targetUsername = profile?.username || user?.username || (user?.email ? user.email.split('@')[0] : 'citizen');
+              allotUserSubscription(targetUsername, {
+                planId: detectedPlanId,
+                planName: title,
+                orderId: data.orderId,
+                paymentId: verifyData.paymentId || `CF-${data.orderId}`,
+                amountPaid: tax.totalPayable,
+                currency,
+                paymentMethod: verifyData.paymentMethod || 'CASHFREE',
+                expiresAt: 'LIFETIME'
+              });
+            }
+
             setCompletedTxn(newTxn);
             setStep('SUCCESS');
             if (onSuccess) onSuccess(newTxn);
@@ -554,16 +604,6 @@ export function ZenCheckoutModal({
       setIsSubmittingCashfree(false);
     }
   };
-
-  // Cleanup polling on unmount or modal close
-  useEffect(() => {
-    return () => {
-      if (upiPollRef.current) {
-        clearInterval(upiPollRef.current);
-        upiPollRef.current = null;
-      }
-    };
-  }, []);
 
   const handleInitiatePay = () => {
     if (isCollegeStudent && !studentIdFile) {
@@ -640,13 +680,15 @@ export function ZenCheckoutModal({
     if (typeof window !== 'undefined') window.print();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto font-sans">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto font-sans">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="relative w-full max-w-xl rounded-3xl bg-[#08090f] border border-cyan-500/30 p-4 sm:p-7 md:p-8 text-white space-y-4 sm:space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.95)] my-auto overflow-hidden"
+        className="relative w-full max-w-xl max-h-[94vh] rounded-2xl sm:rounded-3xl bg-[#08090f] border border-cyan-500/30 p-3.5 sm:p-7 md:p-8 text-white space-y-4 sm:space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.95)] my-auto overflow-y-auto overflow-x-hidden"
       >
         {/* Glow ambient */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
