@@ -37,6 +37,7 @@ import {
 import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
 import ZenHostLiveDais from '@/components/host/ZenHostLiveDais';
 import CustomEventBuilderModal from '@/components/host/CustomEventBuilderModal';
+import InstantSessionModal from '@/components/host/InstantSessionModal';
 import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 import {
   HOST_FORMAT_PRESETS,
@@ -170,16 +171,24 @@ function HostDashboardInner() {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               type="button"
-              onClick={() => handleLaunchInstantSession('open_mic')}
-              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(245,158,11,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
+              onClick={() => setIsInstantModalOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(6,182,212,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
             >
-              <Mic className="w-4 h-4 text-black" />
-              <span>Instant Open Mic</span>
+              <Zap className="w-4 h-4 fill-current" />
+              <span>Launch Instant Stage</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLaunchInstantSession('open_mic')}
+              className="px-4 py-2.5 rounded-2xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-amber-300 text-xs font-black font-space uppercase tracking-wider transition shadow-[0_0_20px_rgba(245,158,11,0.25)] flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
+            >
+              <Mic className="w-4 h-4 text-amber-400" />
+              <span>Open Mic</span>
             </button>
             <button
               type="button"
               onClick={() => router.push('/committee')}
-              className="px-4 py-2.5 rounded-2xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-amber-300 text-xs font-black font-space uppercase tracking-wider transition shadow-[0_0_20px_rgba(245,158,11,0.25)] flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
+              className="px-4 py-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-neutral-300 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
             >
               <Gavel className="w-4 h-4 text-amber-400" />
               <span>Committee Chambers</span>
@@ -187,7 +196,7 @@ function HostDashboardInner() {
             <button
               type="button"
               onClick={() => setIsCustomModalOpen(true)}
-              className="px-4 py-2.5 rounded-2xl bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-400/40 text-cyan-300 text-xs font-black font-space uppercase tracking-wider transition shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-95 flex items-center gap-2 cursor-pointer backdrop-blur-md"
+              className="px-4 py-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-neutral-300 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
             >
               <Sliders className="w-4 h-4 text-cyan-400" />
               <span>Custom Studio</span>
@@ -295,14 +304,24 @@ function HostDashboardInner() {
                   <p className="text-xs text-neutral-400 font-outfit line-clamp-1">{activePreset.description}</p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleLaunchInstantSession(selectedFormat)}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(6,182,212,0.4)] active:scale-95 shrink-0 flex items-center gap-2 cursor-pointer"
-                >
-                  <Play className="w-4 h-4 fill-current" />
-                  <span>Launch Dais Now &rarr;</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsInstantModalOpen(true)}
+                    className="px-4 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 text-neutral-200 hover:text-white font-bold font-space text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer active:scale-95 shadow-sm"
+                  >
+                    <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Customize Rules...</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLaunchInstantSession(selectedFormat)}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(6,182,212,0.4)] active:scale-95 shrink-0 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>Launch Dais Now &rarr;</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -621,6 +640,23 @@ function HostDashboardInner() {
           </Link>
         </section>
       </div>
+
+      {/* ── SPECTACULAR INSTANT SESSION MODAL (NEW EXECUTIVE LAUNCHER) ── */}
+      <InstantSessionModal
+        isOpen={isInstantModalOpen}
+        onClose={() => setIsInstantModalOpen(false)}
+        onLaunch={({ format, title, customConfig }) => {
+          setActiveCustomConfig(customConfig);
+          setIsInstantModalOpen(false);
+          router.push(
+            `/host?dais=true&format=${format}&title=${encodeURIComponent(title)}`
+          );
+        }}
+        onOpenAdvancedStudio={() => {
+          setIsInstantModalOpen(false);
+          setIsCustomModalOpen(true);
+        }}
+      />
 
       {/* ── CUSTOM EVENT BUILDER WITH MODULAR TOGGLES ── */}
       <CustomEventBuilderModal
