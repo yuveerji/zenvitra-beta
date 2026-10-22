@@ -133,27 +133,7 @@ function CommitteePortalInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const isDaisMode =
-    searchParams?.get('control') === 'true' ||
-    searchParams?.get('dais') === 'true' ||
-    Boolean(searchParams?.get('chamber')) ||
-    Boolean(searchParams?.get('room'));
-
-  const isSetupMode =
-    searchParams?.get('create') === 'true' ||
-    searchParams?.get('new') === 'true' ||
-    searchParams?.get('setup') === 'true';
-
-  // 1. If Dais mode is triggered, render the Master Committee Dais directly
-  if (isDaisMode) {
-    return <ZenMunMasterDais initialView="chair" />;
-  }
-
-  if (isSetupMode) {
-    return <ZenMunMasterDais initialView="setup" />;
-  }
-
-  // 2. Hub State: Room join input & active session detector
+  // ── 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE TOP LEVEL (REACT RULES OF HOOKS) ──
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [activeStoredSession, setActiveStoredSession] = useState<{
     sessionCode: string;
@@ -193,6 +173,26 @@ function CommitteePortalInner() {
       // Ignore parse errors
     }
   }, []);
+
+  // ── 2. CONDITIONAL DAIS / SETUP RENDERING AFTER ALL HOOKS ──
+  const isDaisMode =
+    searchParams?.get('control') === 'true' ||
+    searchParams?.get('dais') === 'true' ||
+    Boolean(searchParams?.get('chamber')) ||
+    Boolean(searchParams?.get('room'));
+
+  const isSetupMode =
+    searchParams?.get('create') === 'true' ||
+    searchParams?.get('new') === 'true' ||
+    searchParams?.get('setup') === 'true';
+
+  if (isDaisMode) {
+    return <ZenMunMasterDais initialView="chair" />;
+  }
+
+  if (isSetupMode) {
+    return <ZenMunMasterDais initialView="setup" />;
+  }
 
   const handleJoinChamber = (e: React.FormEvent) => {
     e.preventDefault();

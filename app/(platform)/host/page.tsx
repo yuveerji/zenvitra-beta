@@ -50,15 +50,43 @@ function HostDashboardInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Custom Event Builder Modal State
+  // ── 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE TOP LEVEL (REACT RULES OF HOOKS) ──
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const [activeCustomConfig, setActiveCustomConfig] = useState<CustomHostEventConfig | undefined>(undefined);
+  const [selectedFormat, setSelectedFormat] = useState<HostSessionFormat>('open_mic');
+  const [sessionTitle, setSessionTitle] = useState('');
+  const [joinCodeInput, setJoinCodeInput] = useState('');
+  const [isInstantModalOpen, setIsInstantModalOpen] = useState(false);
+  const [storedSession, setStoredSession] = useState<{
+    code?: string;
+    title?: string;
+    type?: string;
+  } | null>(null);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const rawMun = localStorage.getItem('zenvitra_zenmun_live_session_v1');
+      if (rawMun) {
+        const parsed = JSON.parse(rawMun);
+        if (parsed?.sessionCode && parsed?.committeeName) {
+          setStoredSession({
+            code: parsed.sessionCode,
+            title: parsed.committeeName,
+            type: 'MUN Committee Chamber',
+          });
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  // ── 2. CONDITIONAL DAIS / SETUP RENDERING AFTER ALL HOOKS ──
   const formatParam = searchParams?.get('format') as HostSessionFormat | null;
   const roomParam = searchParams?.get('room') || searchParams?.get('chamber') || undefined;
   const titleParam = searchParams?.get('title') || undefined;
 
-  // If URL flags indicate dais/control or setup mode, load the Dais directly
   const isDaisMode =
     searchParams?.get('control') === 'true' ||
     searchParams?.get('dais') === 'true' ||
@@ -100,38 +128,6 @@ function HostDashboardInner() {
       />
     );
   }
-
-  // State for Instant Session Modal / Join Input
-  const [selectedFormat, setSelectedFormat] = useState<HostSessionFormat>('open_mic');
-  const [sessionTitle, setSessionTitle] = useState('');
-  const [joinCodeInput, setJoinCodeInput] = useState('');
-  const [isInstantModalOpen, setIsInstantModalOpen] = useState(false);
-
-  // Active Session Monitor state
-  const [storedSession, setStoredSession] = useState<{
-    code?: string;
-    title?: string;
-    type?: string;
-  } | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const rawMun = localStorage.getItem('zenvitra_zenmun_live_session_v1');
-      if (rawMun) {
-        const parsed = JSON.parse(rawMun);
-        if (parsed?.sessionCode && parsed?.committeeName) {
-          setStoredSession({
-            code: parsed.sessionCode,
-            title: parsed.committeeName,
-            type: 'MUN Committee Chamber',
-          });
-        }
-      }
-    } catch {
-      // Ignore
-    }
-  }, []);
 
   const handleLaunchInstantSession = (formatKey?: HostSessionFormat) => {
     const fmt = formatKey || selectedFormat;
