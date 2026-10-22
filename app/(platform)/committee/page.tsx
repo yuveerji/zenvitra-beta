@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
 import { CommitteeEmblemDisplay } from '@/components/mun/zenmun/ZenMunChairConsole';
+import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 
 export const dynamic = 'force-dynamic';
 
@@ -256,11 +257,9 @@ function CommitteePortalInner() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020409] text-white font-sans antialiased selection:bg-amber-500/20 selection:text-amber-200 relative overflow-hidden">
-      {/* ── THEATRICAL STAGE & DIPLOMATIC PRESIDIUM LIGHTING ── */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.035] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-      <div className="fixed -top-36 left-1/2 -translate-x-1/2 w-[900px] h-[500px] pointer-events-none opacity-25 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.3),rgba(6,182,212,0.1),transparent_70%)] blur-[100px]" />
-      <div className="fixed -bottom-40 right-0 w-[600px] h-[450px] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.25),transparent_70%)] blur-[100px]" />
+    <div className="min-h-screen bg-[#020307] text-white font-sans antialiased selection:bg-amber-500/20 selection:text-amber-200 relative overflow-hidden">
+      {/* ── STAGE AMBIENT THEATRICAL BACKGROUND ── */}
+      <StageAmbientBackground theme="mun" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
         {/* ── 1. HEADER & PRESIDIUM BANNER ── */}

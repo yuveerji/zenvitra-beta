@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useZenMun, ZenMunProvider } from '@/context/ZenMunContext';
 import { Sparkles, Mic, Clock, QrCode, Lock } from 'lucide-react';
 import { HOST_FORMAT_PRESETS, HostSessionFormat } from '@/types/zenHost';
+import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,10 +36,8 @@ function PublicStageDisplayInner() {
 
   return (
     <div className="min-h-screen bg-[#020307] text-white flex flex-col justify-between p-8 sm:p-14 select-none relative overflow-hidden font-sans">
-      {/* Ambient Laser Halos & Tech Grid (Theatrical Stage Illumination) */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:5rem_5rem]" />
-      <div className="fixed -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] pointer-events-none opacity-25 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.35),rgba(6,182,212,0.1),transparent_70%)] blur-[100px]" />
-      <div className="fixed -bottom-40 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.3),transparent_70%)] blur-[100px]" />
+      {/* ── THEATRICAL STAGE AMBIENT BACKGROUND ── */}
+      <StageAmbientBackground theme="display" />
 
       {/* Top Banner */}
       <header className="flex items-center justify-between border-b border-white/[0.08] pb-6 relative z-10 backdrop-blur-md">

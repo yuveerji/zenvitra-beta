@@ -37,6 +37,7 @@ import {
 import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
 import ZenHostLiveDais from '@/components/host/ZenHostLiveDais';
 import CustomEventBuilderModal from '@/components/host/CustomEventBuilderModal';
+import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 import {
   HOST_FORMAT_PRESETS,
   HostSessionFormat,
@@ -150,11 +151,9 @@ function HostDashboardInner() {
   const activePreset = HOST_FORMAT_PRESETS[selectedFormat] || HOST_FORMAT_PRESETS.general;
 
   return (
-    <div className="min-h-screen bg-[#03050a] text-white font-sans antialiased selection:bg-cyan-500/25 selection:text-cyan-200 relative overflow-hidden">
-      {/* ── THEATRICAL STAGE & LASER ILLUMINATION ── */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.035] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-      <div className="fixed -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[550px] pointer-events-none opacity-30 bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.35),rgba(20,184,166,0.12),transparent_70%)] blur-[100px]" />
-      <div className="fixed bottom-0 right-0 w-[650px] h-[450px] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.25),transparent_70%)] blur-[100px]" />
+    <div className="min-h-screen bg-[#020307] text-white font-sans antialiased selection:bg-cyan-500/25 selection:text-cyan-200 relative overflow-hidden">
+      {/* ── STAGE AMBIENT THEATRICAL BACKGROUND ── */}
+      <StageAmbientBackground theme="host" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
         {/* ── 1. HEADER BANNER ── */}

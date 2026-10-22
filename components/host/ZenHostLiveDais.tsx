@@ -50,6 +50,7 @@ import {
 } from '@/types/zenHost';
 import CustomEventBuilderModal from '@/components/host/CustomEventBuilderModal';
 import DaisSettingsModal, { DaisLiveSettings } from '@/components/host/DaisSettingsModal';
+import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 
 interface ZenHostLiveDaisProps {
   sessionCode?: string;
@@ -450,10 +451,9 @@ export default function ZenHostLiveDais({
   const isWarning = remainingSeconds <= 30 && remainingSeconds > 0;
 
   return (
-    <div className="min-h-screen bg-[#020409] text-neutral-100 font-sans select-none flex flex-col justify-between overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-200 relative">
-      {/* ── AMBIENT STAGE LIGHTING & TECH GRID (GAVELLING-GRADE ILLUMINATION) ── */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-      <div className="fixed -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[400px] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.35),transparent_70%)] blur-[90px]" />
+    <div className="min-h-screen bg-[#020307] text-neutral-100 font-sans select-none flex flex-col justify-between overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-200 relative">
+      {/* ── STAGE AMBIENT THEATRICAL BACKGROUND ── */}
+      <StageAmbientBackground theme="dais" />
 
       {/* ── 1. SOVEREIGN DAIS COMMAND HEADER ─────────────────────────────────── */}
       <header className="border-b border-white/[0.08] bg-[#040711]/90 backdrop-blur-xl px-4 sm:px-6 py-3 sticky top-0 z-40 flex items-center justify-between gap-4">
