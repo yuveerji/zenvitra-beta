@@ -104,6 +104,105 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
   'lebanon': 'lb',
   'jordan': 'jo',
   'yemen': 'ye',
+
+  // Indian States & Territories (Flagged with Indian Tricolor)
+  'uttar pradesh': 'in',
+  'maharashtra': 'in',
+  'bihar': 'in',
+  'west bengal': 'in',
+  'madhya pradesh': 'in',
+  'tamil nadu': 'in',
+  'rajasthan': 'in',
+  'gujarat': 'in',
+  'karnataka': 'in',
+  'andhra pradesh': 'in',
+  'odisha': 'in',
+  'kerala': 'in',
+  'telangana': 'in',
+  'punjab': 'in',
+  'assam': 'in',
+  'haryana': 'in',
+  'delhi': 'in',
+  'jammu & kashmir': 'in',
+  'jammu and kashmir': 'in',
+  'j&k': 'in',
+  'ladakh': 'in',
+  'goa': 'in',
+  'uttarakhand': 'in',
+  'himachal pradesh': 'in',
+  'jharkhand': 'in',
+  'chhattisgarh': 'in',
+
+  // Indian Political Parties & Coalitions
+  'bjp': 'in',
+  'bharatiya janata party': 'in',
+  'inc': 'in',
+  'congress': 'in',
+  'indian national congress': 'in',
+  'aap': 'in',
+  'aam aadmi party': 'in',
+  'sp': 'in',
+  'samajwadi party': 'in',
+  'tmc': 'in',
+  'aitc': 'in',
+  'trinamool': 'in',
+  'trinamool congress': 'in',
+  'dmk': 'in',
+  'dravida munnetra kazhagam': 'in',
+  'tdp': 'in',
+  'telugu desam party': 'in',
+  'jdu': 'in',
+  'jd(u)': 'in',
+  'janata dal united': 'in',
+  'shiv sena': 'in',
+  'shiv sena (ubt)': 'in',
+  'shiv sena (shinde)': 'in',
+  'ncp': 'in',
+  'ncp (sp)': 'in',
+  'rjd': 'in',
+  'rashtriya janata dal': 'in',
+  'ysrcp': 'in',
+  'bjd': 'in',
+  'cpi': 'in',
+  'cpim': 'in',
+  'cpi(m)': 'in',
+  'jmm': 'in',
+  'ljp': 'in',
+  'jana sena': 'in',
+  'nda': 'in',
+  'nda bloc': 'in',
+  'india bloc': 'in',
+  'i.n.d.i.a': 'in',
+
+  // Indian Ministries & Executive Organs
+  'pmo': 'in',
+  "prime minister's office": 'in',
+  'mha': 'in',
+  'ministry of home affairs': 'in',
+  'mea': 'in',
+  'ministry of external affairs': 'in',
+  'mod': 'in',
+  'ministry of defence': 'in',
+  'mof': 'in',
+  'ministry of finance': 'in',
+  'nsa': 'in',
+  'national security advisor': 'in',
+  'meity': 'in',
+  'law commission': 'in',
+  'niti aayog': 'in',
+
+  // South Asian & Regional Partners
+  'sri lanka': 'lk',
+  'nepal': 'np',
+  'bhutan': 'bt',
+  'maldives': 'mv',
+  'afghanistan': 'af',
+  'myanmar': 'mm',
+  'kazakhstan': 'kz',
+  'kyrgyzstan': 'kg',
+  'tajikistan': 'tj',
+  'uzbekistan': 'uz',
+  'belarus': 'by',
 };
 
 function resolveCountryCode(name: string): string {
@@ -149,6 +248,9 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
   const [pasteList, setPasteList] = useState('');
   const [delegations, setDelegations] = useState<ZenDelegate[]>(session.roster || []);
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+  const [blocTab, setBlocTab] = useState<'all' | 'indian' | 'international'>(
+    session.isIndianCommittee ? 'indian' : 'all'
+  );
 
   // Committee Autocomplete Filter
   const filteredPresets = PRESET_COMMITTEES.filter(
@@ -162,7 +264,11 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
     setCommitteeName(p.name);
     setAcronym(p.acronym);
     setEmblem(p.emblem);
-    setIsIndian(Boolean(p.isIndian));
+    const ind = Boolean(p.isIndian);
+    setIsIndian(ind);
+    if (ind) {
+      setBlocTab('indian');
+    }
     setAutocompleteOpen(false);
   };
 
@@ -426,7 +532,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
 
                 {/* Floating Autocomplete Dropdown */}
                 {autocompleteOpen && filteredPresets.length > 0 && (
-                  <div className="absolute top-18 left-0 right-0 z-30 bg-white rounded-2xl shadow-xl border border-[#ded8cb] overflow-hidden max-h-56 overflow-y-auto">
+                  <div className="absolute top-18 left-0 right-0 z-30 bg-white rounded-2xl shadow-xl border border-[#ded8cb] overflow-hidden max-h-64 overflow-y-auto">
                     {filteredPresets.map((p) => (
                       <button
                         key={p.name}
@@ -434,11 +540,23 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                         onClick={() => handleSelectPreset(p)}
                         className="w-full px-4 py-2.5 text-left hover:bg-[#f5f2eb] flex items-center justify-between border-b border-[#ede7dc] last:border-none cursor-pointer transition text-[#1f2937]"
                       >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-lg">{p.emblem}</span>
-                          <div>
-                            <div className="text-xs font-bold text-[#1f2937]">{p.name}</div>
-                            <div className="text-[10px] text-[#8c7860] font-mono">{p.acronym}</div>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="text-lg shrink-0">{p.emblem}</span>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-[#1f2937] truncate">{p.name}</div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] text-[#8c7860] font-mono font-bold">{p.acronym}</span>
+                              {p.isIndian && (
+                                <span className="text-[9px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded">
+                                  🇮🇳 Parliamentary
+                                </span>
+                              )}
+                              {p.category && !p.isIndian && (
+                                <span className="text-[9px] font-bold text-neutral-600 bg-neutral-100 border border-neutral-300 px-1 py-0.2 rounded">
+                                  {p.category}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <span className="text-[10px] font-mono text-[#8c7860] bg-[#ede8df] px-2 py-0.5 rounded border border-[#ded8cb]">
@@ -555,20 +673,65 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
               </div>
             </div>
 
-            {/* Quick-Add Bloc Bundles (Exactly matching screenshot: P5, G7, BRICS+, G20, EU, NATO, ASEAN, UNSC 2026, AU, OPEC, Arab League) */}
-            <div className="flex flex-wrap gap-2 pt-1">
-              {QUICK_BLOC_BUNDLES.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => handleAddBundle(b)}
-                  className="px-3 py-1.5 rounded-full bg-[#f4f1ea] hover:bg-[#eae5dc] border border-[#e4ded4] text-xs font-semibold text-[#2f3832] flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs"
-                >
-                  <span className="text-sm">{b.icon}</span>
-                  <span className="font-bold">{b.name}</span>
-                  <span className="text-[10px] text-[#6b7280] font-mono">+{b.count}</span>
-                </button>
-              ))}
+            {/* Quick-Add Bloc Bundles with Indian / International Filter Tabs */}
+            <div className="space-y-2 pt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">
+                  QUICK-ADD BLOCS
+                </span>
+                <div className="flex items-center gap-1 bg-[#ede8df] p-0.5 rounded-lg border border-[#ded8cb] self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setBlocTab('all')}
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition cursor-pointer ${
+                      blocTab === 'all'
+                        ? 'bg-white text-[#1f2937] shadow-2xs'
+                        : 'text-[#64748b] hover:text-[#1f2937]'
+                    }`}
+                  >
+                    All ({QUICK_BLOC_BUNDLES.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBlocTab('indian')}
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                      blocTab === 'indian'
+                        ? 'bg-white text-[#1f2937] shadow-2xs'
+                        : 'text-[#64748b] hover:text-[#1f2937]'
+                    }`}
+                  >
+                    <span>🇮🇳</span>
+                    <span>Indian &amp; Regional</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBlocTab('international')}
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                      blocTab === 'international'
+                        ? 'bg-white text-[#1f2937] shadow-2xs'
+                        : 'text-[#64748b] hover:text-[#1f2937]'
+                    }`}
+                  >
+                    <span>🌐</span>
+                    <span>International</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {QUICK_BLOC_BUNDLES.filter((b) => blocTab === 'all' || b.category === blocTab).map((b) => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => handleAddBundle(b)}
+                    className="px-3 py-1.5 rounded-full bg-[#f4f1ea] hover:bg-[#eae5dc] border border-[#e4ded4] text-xs font-semibold text-[#2f3832] flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs"
+                  >
+                    <span className="text-sm">{b.icon}</span>
+                    <span className="font-bold">{b.name}</span>
+                    <span className="text-[10px] text-[#6b7280] font-mono">+{b.count}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Paste a List Container */}
