@@ -32,8 +32,6 @@ import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
 import { CommitteeEmblemDisplay } from '@/components/mun/zenmun/ZenMunChairConsole';
 import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 
-export const dynamic = 'force-dynamic';
-
 interface CommitteePreset {
   id: string;
   name: string;

@@ -88,9 +88,13 @@ export default function DirectEventShowcasePage() {
     );
   }, [eventSlug, events, getEventById]);
 
-  // If user handle matches instead of an event, forward to user space
+  // If user handle matches instead of an event, forward to user space or system routes
   useEffect(() => {
     if (!matchedConference && !matchedEvent && eventSlug) {
+      if (['committee', 'host', 'pulse', 'docs', 'legislate', 'chat', 'call', 'stage'].includes(eventSlug)) {
+        router.replace(`/${eventSlug}`);
+        return;
+      }
       const knownUsers = ['yuveer', 'test', 'admin'];
       if (knownUsers.includes(eventSlug)) {
         router.replace(`/space/${eventSlug}`);

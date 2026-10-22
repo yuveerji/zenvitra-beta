@@ -44,8 +44,6 @@ import {
   CustomHostEventConfig,
 } from '@/types/zenHost';
 
-export const dynamic = 'force-dynamic';
-
 function HostDashboardInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -178,13 +176,14 @@ function HostDashboardInner() {
               <Mic className="w-4 h-4 text-black" />
               <span>Instant Open Mic</span>
             </button>
-            <Link
-              href="/committee"
-              className="px-4 py-2.5 rounded-2xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-amber-300 text-xs font-black font-space uppercase tracking-wider transition shadow-[0_0_20px_rgba(245,158,11,0.25)] flex items-center gap-2 backdrop-blur-md"
+            <button
+              type="button"
+              onClick={() => router.push('/committee')}
+              className="px-4 py-2.5 rounded-2xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 text-amber-300 text-xs font-black font-space uppercase tracking-wider transition shadow-[0_0_20px_rgba(245,158,11,0.25)] flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
             >
               <Gavel className="w-4 h-4 text-amber-400" />
               <span>Committee Chambers</span>
-            </Link>
+            </button>
             <button
               type="button"
               onClick={() => setIsCustomModalOpen(true)}
@@ -365,13 +364,22 @@ function HostDashboardInner() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <Link
-                href="/committee"
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(245,158,11,0.35)] active:scale-95 flex items-center gap-2"
+            <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-20">
+              <button
+                type="button"
+                onClick={() => router.push('/committee?dais=true')}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(245,158,11,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
+                <Gavel className="w-4 h-4 text-black" />
                 <span>Enter Committee Suite &rarr;</span>
-              </Link>
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push('/committee')}
+                className="px-4 py-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-neutral-300 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md active:scale-95"
+              >
+                <span>Chamber Directory &rarr;</span>
+              </button>
             </div>
           </div>
 
@@ -388,12 +396,13 @@ function HostDashboardInner() {
                   Zero Hour debates, Calling Attention motions, Division Bell votes, and Legislative Bills.
                 </p>
               </div>
-              <Link
-                href="/committee?chamber=lok_sabha&dais=true"
-                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-amber-500 hover:text-black text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10"
+              <button
+                type="button"
+                onClick={() => router.push('/committee?chamber=lok_sabha&dais=true')}
+                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-amber-500 hover:text-black text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10 cursor-pointer active:scale-98"
               >
                 <span>Launch Lok Sabha &rarr;</span>
-              </Link>
+              </button>
             </div>
 
             {/* Chamber Card 2: UNSC */}
@@ -408,12 +417,13 @@ function HostDashboardInner() {
                   15 member states, P5 permanent veto powers, and Chapter VII legally binding directives.
                 </p>
               </div>
-              <Link
-                href="/committee?chamber=unsc&dais=true"
-                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-red-500 hover:text-white text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10"
+              <button
+                type="button"
+                onClick={() => router.push('/committee?chamber=unsc&dais=true')}
+                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-red-500 hover:text-white text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10 cursor-pointer active:scale-98"
               >
                 <span>Launch UNSC &rarr;</span>
-              </Link>
+              </button>
             </div>
 
             {/* Chamber Card 3: UNGA DISEC */}
@@ -428,12 +438,13 @@ function HostDashboardInner() {
                   Universal plenary debate, working papers, draft resolutions, and substantive roll-call voting.
                 </p>
               </div>
-              <Link
-                href="/committee?chamber=unga_disec&dais=true"
-                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-cyan-500 hover:text-black text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10"
+              <button
+                type="button"
+                onClick={() => router.push('/committee?chamber=unga_disec&dais=true')}
+                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-cyan-500 hover:text-black text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10 cursor-pointer active:scale-98"
               >
                 <span>Launch UNGA &rarr;</span>
-              </Link>
+              </button>
             </div>
           </div>
         </section>
