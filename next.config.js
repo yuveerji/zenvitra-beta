@@ -18,16 +18,6 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/committee',
-        destination: '/host',
-        permanent: false,
-      },
-      {
-        source: '/committee/create',
-        destination: '/host/create',
-        permanent: false,
-      },
-      {
         source: '/signup',
         destination: '/register',
         permanent: true,
