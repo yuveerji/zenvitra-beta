@@ -27,6 +27,7 @@ import {
   ExternalLink,
   ChevronRight,
   Flag,
+  Compass,
 } from 'lucide-react';
 import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
 import { CommitteeEmblemDisplay } from '@/components/mun/zenmun/ZenMunChairConsole';
@@ -372,6 +373,16 @@ function CommitteePortalInner() {
 
           {/* Presidium Primary Action Gateway */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => router.push('/committee/create?explore=true')}
+              className="px-4 py-3 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer backdrop-blur-md active:scale-95"
+              title="First-Timer Diplomatic Suite Tour"
+            >
+              <Compass className="w-4 h-4 text-amber-400" />
+              <span>Explore Tour</span>
+            </button>
+
             <button
               type="button"
               onClick={() => router.push('/committee/create')}

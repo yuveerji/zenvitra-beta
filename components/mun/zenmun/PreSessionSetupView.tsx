@@ -281,6 +281,10 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
 
   // Sync chamber from URL params on mount
   useEffect(() => {
+    if (searchParams?.get('explore') === 'true') {
+      setExploreStep(1);
+      setExploreTourOpen(true);
+    }
     const chamberParam = searchParams?.get('chamber');
     if (!chamberParam) return;
     const clean = chamberParam.toLowerCase().trim();
@@ -557,6 +561,10 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
         ? session.sessionCode
         : generateSessionCode();
 
+    const hasSeenTutorial =
+      typeof window !== 'undefined' &&
+      Boolean(localStorage.getItem('zenvitra_has_seen_dais_tutorial_v1'));
+
     const updated = {
       ...session,
       sessionCode: cleanCode,
@@ -564,7 +572,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
       sessionState: 'in-session' as const,
       tutorial: {
         ...session.tutorial,
-        welcomeModalOpen: false,
+        welcomeModalOpen: !hasSeenTutorial,
         isActive: false,
       },
       committeeName: (committeeName.trim() || 'United Nations Committee').replace(/_/g, ' '),

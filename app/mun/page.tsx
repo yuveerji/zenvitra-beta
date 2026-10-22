@@ -88,11 +88,6 @@ export default function ZenMunPortalPage() {
 
   const [showDayHistoryModal, setShowDayHistoryModal] = useState(false);
   const [showSummaryPaperModal, setShowSummaryPaperModal] = useState(false);
-  const [showQuickStudio, setShowQuickStudio] = useState(false);
-
-  if (showQuickStudio) {
-    return <QuickSessionCreatorStudio onBack={() => setShowQuickStudio(false)} returnPath="/mun" />;
-  }
 
   const isExecutive = Boolean(
     isFounder(user?.username || user?.email, user?.role) || 
@@ -216,9 +211,8 @@ export default function ZenMunPortalPage() {
 
           {/* 4 Primary Action Doorways */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2 relative z-10">
-            <button
-              type="button"
-              onClick={() => setShowQuickStudio(true)}
+            <Link
+              href="/committee/create"
               className="p-5 rounded-2xl bg-gradient-to-b from-amber-500/15 via-[#0e121e] to-[#090c16] hover:border-amber-400/60 border border-amber-500/30 text-left space-y-2.5 transition group cursor-pointer shadow-[0_0_30px_rgba(245,158,11,0.12)] active:scale-[0.98]"
             >
               <div className="flex items-center justify-between">
@@ -238,7 +232,7 @@ export default function ZenMunPortalPage() {
                   Set up a committee in seconds: name, topic, chairs, quick bundles (P5, G20, AIPPM) &amp; launch live Dais.
                 </p>
               </div>
-            </button>
+            </Link>
 
             <Link
               href="/committee"

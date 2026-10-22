@@ -197,6 +197,16 @@ export function ZenMunChairConsole() {
     startTutorial,
   ]);
 
+  // First-time Dais visit check -> automatically welcome chair with "Have you used Zenvitra Dais before?"
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem('zenvitra_has_seen_dais_tutorial_v1');
+      if (!seen && !session.tutorial.isCompleted) {
+        startTutorial();
+      }
+    } catch {}
+  }, [startTutorial, session.tutorial.isCompleted]);
+
   const activeDelegate: ZenDelegate | undefined = session.roster.find(
     (d) => d.id === session.currentSpeakerId
   ) || session.roster[0];
@@ -688,11 +698,11 @@ export function ZenMunChairConsole() {
           <button
             type="button"
             onClick={startTutorial}
-            className="px-3 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/50 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-xs"
-            title="Dais Protocol Guide & Keyboard Shortcuts [?]"
+            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-emerald-500/15 hover:from-amber-500/25 hover:to-emerald-500/25 text-amber-200 border border-amber-500/30 text-xs font-bold flex items-center gap-2 cursor-pointer transition shadow-xs active:scale-95"
+            title="Dais Protocol Guide & Interactive Tour [?]"
           >
-            <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Protocol Guide</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline">Dais Tour &amp; Guide</span>
           </button>
         </div>
       </header>

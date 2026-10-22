@@ -133,6 +133,9 @@ export function TutorialEngine() {
           <button
             type="button"
             onClick={() => {
+              try {
+                localStorage.setItem('zenvitra_has_seen_dais_tutorial_v1', 'true');
+              } catch {}
               setSession((prev) => ({
                 ...prev,
                 sessionState: 'in-session',
@@ -155,7 +158,7 @@ export function TutorialEngine() {
               </div>
 
               <h2 className="text-2xl sm:text-3xl font-black font-serif text-[#1f2421] tracking-tight leading-tight">
-                Have You Used Zenvitra Before?
+                Have you used Zenvitra Dais before?
               </h2>
 
               <p className="text-xs sm:text-sm text-[#57534e] leading-relaxed font-normal">
@@ -180,6 +183,9 @@ export function TutorialEngine() {
                 <button
                   type="button"
                   onClick={() => {
+                    try {
+                      localStorage.setItem('zenvitra_has_seen_dais_tutorial_v1', 'true');
+                    } catch {}
                     setSession((prev) => ({
                       ...prev,
                       sessionState: 'in-session',
@@ -346,7 +352,12 @@ export function TutorialEngine() {
             </div>
             <button
               type="button"
-              onClick={endTutorial}
+              onClick={() => {
+                try {
+                  localStorage.setItem('zenvitra_has_seen_dais_tutorial_v1', 'true');
+                } catch {}
+                endTutorial();
+              }}
               className="text-xs font-bold text-[#8c7860] hover:text-[#1f2421] transition cursor-pointer"
             >
               End tutorial
@@ -383,7 +394,16 @@ export function TutorialEngine() {
 
             <button
               type="button"
-              onClick={isFinal ? endTutorial : nextTutorialStep}
+              onClick={() => {
+                if (isFinal) {
+                  try {
+                    localStorage.setItem('zenvitra_has_seen_dais_tutorial_v1', 'true');
+                  } catch {}
+                  endTutorial();
+                } else {
+                  nextTutorialStep();
+                }
+              }}
               className="px-5 py-2 rounded-xl bg-[#1b3d29] hover:bg-[#142d1f] text-white font-bold text-xs transition cursor-pointer shadow-xs active:scale-95"
             >
               {currentStep === 4 ? 'Skip' : isFinal ? 'Finish' : 'Next'}

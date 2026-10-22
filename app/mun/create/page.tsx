@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
-import QuickSessionCreatorStudio from '@/components/mun/QuickSessionCreatorStudio';
+import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
+
+export const dynamic = 'force-dynamic';
 
 export default function MunCreateSessionPage() {
-  return <QuickSessionCreatorStudio returnPath="/mun" />;
+  return <ZenMunMasterDais initialView="setup" />;
 }
