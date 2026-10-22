@@ -27,6 +27,7 @@ import {
   Award
 } from 'lucide-react';
 import { computeTax, LS_ZEN_TXNS } from '@/lib/paymentsData';
+import { isFounder, isAdmin } from '@/lib/founderControl';
 import { useAuth } from '@/context/AuthContext';
 import { PaymentTransaction, PaymentReceipt, PaymentMethodType, PaymentProduct } from '@/types/payments';
 import { WalletCredential, getOrCreateDefaultPassport, savePassport } from '@/lib/passport';
@@ -127,6 +128,7 @@ export function ZenCheckoutModal({
   }, []);
 
   const { user, profile } = useAuth();
+  const isFounderOrAdmin = Boolean(isFounder(profile?.username || profile?.email || (user as any)?.username || user?.email, profile?.role) || isAdmin(profile?.username || profile?.email || (user as any)?.username || user?.email, profile?.role));
   const isPulseElite = (profile as any)?.isElite || profile?.role === 'admin' || (profile as any)?.membershipTier === 'elite';
   const isPulsePass = !isPulseElite && ((profile as any)?.hasPulsePass || (profile as any)?.membershipTier === 'pass' || hasLocalPulsePass);
   const userTier = isPulseElite ? 'elite' : isPulsePass ? 'pass' : 'standard';
@@ -939,19 +941,21 @@ export function ZenCheckoutModal({
                     </div>
                   </div>
 
-                  {/* Sandbox helper badge */}
-                  <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/25 space-y-1.5 text-[10px] font-mono text-neutral-300">
-                    <div className="flex items-center justify-between text-cyan-300 font-bold">
-                      <span className="flex items-center gap-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Cashfree Sandbox Environment</span>
-                      </span>
-                      <span className="text-[9px] bg-black/60 px-1.5 py-0.5 rounded text-neutral-400 border border-white/10">Simulated Payments</span>
+                  {/* Sandbox helper badge (Founders & Admins internal diagnostics only) */}
+                  {isFounderOrAdmin && (
+                    <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/25 space-y-1.5 text-[10px] font-mono text-neutral-300">
+                      <div className="flex items-center justify-between text-cyan-300 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Cashfree Sandbox Environment (Founder / Admin Only)</span>
+                        </span>
+                        <span className="text-[9px] bg-black/60 px-1.5 py-0.5 rounded text-neutral-400 border border-white/10">Internal Diagnostic</span>
+                      </div>
+                      <p className="text-neutral-400 leading-relaxed">
+                        Accepts test UPI (<span className="text-cyan-200">testsuccess@gocash</span>) or test cards (<span className="text-cyan-200">4706 1312 1121 2123</span> &bull; OTP: <span className="text-cyan-200">111000</span>).
+                      </p>
                     </div>
-                    <p className="text-neutral-400 leading-relaxed">
-                      Accepts test UPI (<span className="text-cyan-200">testsuccess@gocash</span>) or test cards (<span className="text-cyan-200">4706 1312 1121 2123</span> &bull; OTP: <span className="text-cyan-200">111000</span>).
-                    </p>
-                  </div>
+                  )}
 
                   {cashfreeNotice && (
                     <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono">

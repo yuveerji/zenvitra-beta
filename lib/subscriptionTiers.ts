@@ -1,3 +1,4 @@
+import { pushLiveNotification } from './notificationStorage';
 // lib/subscriptionTiers.ts
 // Single source of truth for ZENVITRA Subscription Plans, Features, and Entitlement Checks
 
@@ -399,4 +400,108 @@ export function getTrialDetails(username?: string | null): {
     expiresAt: sub.expiresAt,
     isActive: daysRemaining > 0,
   };
+}
+
+export const LOCAL_STORAGE_PROMO_CARD_VERIFIED = 'zenvitra_promo_card_verified_v1';
+export const LOCAL_STORAGE_TRIAL_NOTIFIED = 'zenvitra_trial_expiry_notified_v1';
+
+/**
+ * Activates 1-Month Free Trial of ZEN PRO with verified card authorization.
+ */
+export function activatePromotionalProTrialWithCard(
+  username: string,
+  cardInfo: { cardLast4: string; cardBrand: string; expiry: string }
+): SubscriptionRecord {
+  const clean = normalizeUsername(username);
+  const now = new Date();
+  const expires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days / 1 month
+
+  if (typeof window !== 'undefined') {
+    try {
+      const rawCards = localStorage.getItem(LOCAL_STORAGE_PROMO_CARD_VERIFIED);
+      const cards = rawCards ? JSON.parse(rawCards) : {};
+      cards[clean] = {
+        cardLast4: cardInfo.cardLast4,
+        cardBrand: cardInfo.cardBrand,
+        verifiedAt: now.toISOString(),
+      };
+      localStorage.setItem(LOCAL_STORAGE_PROMO_CARD_VERIFIED, JSON.stringify(cards));
+
+      const rawClaimed = localStorage.getItem(LOCAL_STORAGE_PROMO_TRIAL_CLAIMED);
+      const claimed = rawClaimed ? JSON.parse(rawClaimed) : {};
+      claimed[clean] = now.toISOString();
+      localStorage.setItem(LOCAL_STORAGE_PROMO_TRIAL_CLAIMED, JSON.stringify(claimed));
+    } catch {}
+  }
+
+  // Push immediate welcome notification
+  if (typeof window !== 'undefined') {
+    try {
+      pushLiveNotification({
+        id: `trial_started_${clean}_${Date.now()}`,
+        title: '🌟 ZEN PRO 1-Month Trial Active',
+        message: 'Your 30-day promotional trial of ZEN PRO is live! Full Executive Dais suite, stage broadcasting, and verifiable certificates are unlocked. We will notify you before your trial concludes.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'general',
+        priority: 'NORMAL',
+        link: '/pricing'
+      });
+    } catch {}
+  }
+
+  return allotUserSubscription(clean, {
+    planId: 'zen-pro',
+    planName: 'ZEN PRO (1-Month Launch Special Trial)',
+    amountPaid: 0,
+    currency: 'INR',
+    paymentMethod: 'PROMOTIONAL_LAUNCH_TRIAL',
+    expiresAt: expires.toISOString(),
+    isTrial: true,
+  });
+}
+
+/**
+ * Checks if user trial is nearing completion (e.g. within 3 days or 1 day) and dispatches a notification alert.
+ */
+export function checkTrialExpiryNotification(username?: string | null): void {
+  if (typeof window === 'undefined') return;
+  const clean = normalizeUsername(username);
+  if (!clean) return;
+
+  const trial = getTrialDetails(clean);
+  if (!trial.isTrial || !trial.isActive) return;
+
+  try {
+    const rawNotified = localStorage.getItem(LOCAL_STORAGE_TRIAL_NOTIFIED);
+    const notified = rawNotified ? JSON.parse(rawNotified) : {};
+
+    // Alert if <= 3 days remaining and not yet notified for this milestone
+    if (trial.daysRemaining <= 3 && !notified[`${clean}_3d`]) {
+      notified[`${clean}_3d`] = new Date().toISOString();
+      localStorage.setItem(LOCAL_STORAGE_TRIAL_NOTIFIED, JSON.stringify(notified));
+
+      pushLiveNotification({
+        id: `trial_expiring_3d_${clean}_${Date.now()}`,
+        title: '⚠️ ZEN PRO Trial Ending Soon',
+        message: `Your ZEN PRO 1-month trial has ${trial.daysRemaining} day${trial.daysRemaining === 1 ? '' : 's'} remaining. Head to /pricing to maintain uninterrupted Dais & diplomatic privileges.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'security',
+        priority: 'URGENT',
+        link: '/pricing'
+      });
+    } else if (trial.daysRemaining <= 1 && !notified[`${clean}_1d`]) {
+      notified[`${clean}_1d`] = new Date().toISOString();
+      localStorage.setItem(LOCAL_STORAGE_TRIAL_NOTIFIED, JSON.stringify(notified));
+
+      pushLiveNotification({
+        id: `trial_expiring_1d_${clean}_${Date.now()}`,
+        title: '🚨 Final Day of ZEN PRO Trial',
+        message: 'Your 1-month ZEN PRO trial concludes within 24 hours. Keep your unlimited chamber capacity and official UN resolution exporter active at /pricing.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'security',
+        priority: 'URGENT',
+        link: '/pricing'
+      });
+    }
+  } catch {}
 }

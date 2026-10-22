@@ -12,7 +12,7 @@ import {
 } from '@/lib/securityShield';
 import { sheetSync } from '@/lib/googleSheets';
 import { deactivateFounderSession } from '@/lib/founderControl';
-import { ensurePromotionalTrial } from '@/lib/subscriptionTiers';
+import { checkTrialExpiryNotification } from '@/lib/subscriptionTiers';
 
 interface AuthContextType {
   user: any | null;
@@ -392,9 +392,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               localStorage.setItem('zenvitra_session_user', JSON.stringify(parsedProf));
             }
 
-            // Ensure 1-Month Free Trial of ZEN PRO under the launch promotion
+            // Dispatch pro-active notification if trial is nearing completion
             if (parsedProf.username && !parsedProf.isGuest) {
-              ensurePromotionalTrial(parsedProf.username);
+              checkTrialExpiryNotification(parsedProf.username);
             }
 
             setUser((prevUser: any) => {
@@ -1030,8 +1030,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('zenvitra_session_user', JSON.stringify(newProf));
       localStorage.setItem('zenvitra_user_role', role);
 
-      // Auto-activate 1-Month Free Trial of ZEN PRO under the 3-month launch special
-      ensurePromotionalTrial(cleanHandle);
 
       recordSavedSession(newProf);
       setUser({ id: newProf.id, email: cleanEmail });

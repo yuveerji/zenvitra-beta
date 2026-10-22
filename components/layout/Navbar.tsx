@@ -59,7 +59,6 @@ import {
   isFounderOrCoFounder,
   isCurrentSessionFounderOrCoFounder 
 } from '@/lib/founderControl';
-import { getTrialDetails } from '@/lib/subscriptionTiers';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface NavbarProps {
@@ -347,9 +346,6 @@ export function Navbar({
   const userHandle = profile?.username || localUserSession?.username || 'member';
   const initial = (displayName ? displayName.charAt(0).toUpperCase() : '') || 'Z';
 
-  const trialDetails = useMemo(() => {
-    return getTrialDetails(userHandle);
-  }, [userHandle]);
 
   const effectiveDisplayAvatar = useMemo(() => {
     const rawAvatar = profile?.avatar_url || localUserSession?.avatar;
@@ -557,11 +553,7 @@ export function Navbar({
                         <div className="p-2.5 border-b border-white/10 mb-1.5 bg-white/[0.04] rounded-xl space-y-1">
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-xs font-bold text-white truncate">{displayName}</p>
-                            {trialDetails.isTrial && trialDetails.isActive && (
-                              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30 shrink-0">
-                                PRO TRIAL ({trialDetails.daysRemaining}D)
-                              </span>
-                            )}
+
                           </div>
                           <p className="text-[10px] font-mono text-neutral-400 capitalize">
                             @{userHandle} • {(profile?.role || localUserSession?.role || 'member').replace('_', ' ')}

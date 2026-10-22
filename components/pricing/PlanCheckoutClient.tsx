@@ -41,6 +41,7 @@ import {
   isPromotionalCampaignActive 
 } from '@/lib/subscriptionTiers';
 import { ZenCheckoutModal } from '@/components/payments/ZenCheckoutModal';
+import { ZenTrialCardModal } from '@/components/pricing/ZenTrialCardModal';
 import {
   Plan,
   AudienceType,
@@ -79,6 +80,7 @@ export function PlanCheckoutClient() {
 
   // Modals & Action States
   const [isCashfreeModalOpen, setIsCashfreeModalOpen] = useState<boolean>(false);
+  const [isTrialCardModalOpen, setIsTrialCardModalOpen] = useState<boolean>(false);
   const [isPlanSelectorOpen, setIsPlanSelectorOpen] = useState<boolean>(false);
   const [activationSuccess, setActivationSuccess] = useState<{
     isOpen: boolean;
@@ -257,14 +259,7 @@ export function PlanCheckoutClient() {
   };
 
   const handleActivateProTrial = () => {
-    const cleanUser = profile?.username || profile?.email || 'citizen';
-    activatePromotionalProTrial(cleanUser);
-    setActivationSuccess({
-      isOpen: true,
-      title: 'ZEN PRO 1-Month Free Trial Activated!',
-      description: 'Your 30-day promotional launch trial for ZEN PRO is live! Full Executive Dais suite, stage broadcasting, and verifiable certificates are now unlocked.',
-      isProStarter: false
-    });
+    setIsTrialCardModalOpen(true);
   };
 
   return (
@@ -837,7 +832,7 @@ export function PlanCheckoutClient() {
                           <span>3-Month Launch Special Eligible</span>
                         </div>
                         <p className="text-xs text-neutral-300">
-                          Activate your 30-day trial right now for ₹0. No credit card required.
+                          Activate your 30-day trial right now for ₹0. Valid card required for authorization verification.
                         </p>
                         <button
                           type="button"
@@ -845,7 +840,7 @@ export function PlanCheckoutClient() {
                           className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs uppercase tracking-wider transition shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Sparkles className="w-3.5 h-3.5 fill-black" />
-                          <span>Claim 1-Month Free Trial (₹0)</span>
+                          <span>Verify Card & Claim 1-Month Trial (₹0)</span>
                         </button>
                         <div className="relative flex items-center py-1">
                           <div className="flex-grow border-t border-white/10" />
@@ -905,6 +900,23 @@ export function PlanCheckoutClient() {
 
       {/* Embedded Global Footer */}
       <Footer />
+
+      {/* ── CARD VERIFICATION MODAL FOR 1-MONTH PRO TRIAL ── */}
+      <ZenTrialCardModal
+        isOpen={isTrialCardModalOpen}
+        onClose={() => setIsTrialCardModalOpen(false)}
+        username={profile?.username || profile?.email || ''}
+        userEmail={profile?.email}
+        userRole={profile?.role}
+        onSuccess={() => {
+          setActivationSuccess({
+            isOpen: true,
+            title: 'ZEN PRO 1-Month Free Trial Activated!',
+            description: 'Your 30-day promotional launch trial for ZEN PRO is live! Full Executive Dais suite, stage broadcasting, and verifiable certificates are now unlocked.',
+            isProStarter: false
+          });
+        }}
+      />
 
       {/* ── CASHFREE CHECKOUT MODAL INTEGRATION ── */}
       {isCashfreeModalOpen && (

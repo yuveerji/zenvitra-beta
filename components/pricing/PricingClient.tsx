@@ -45,6 +45,7 @@ import {
 import { Navbar } from '@/components/layout/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
+import { ZenTrialCardModal } from '@/components/pricing/ZenTrialCardModal';
 import { useAccountCapabilities } from '@/hooks/useAccountCapabilities';
 import { setProfessionalAccountEnabled } from '@/lib/accountCapabilities';
 import { Footer } from '@/components/layout/Footer';
@@ -106,6 +107,7 @@ export function PricingClient() {
   const { profile } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [trialClaimSuccess, setTrialClaimSuccess] = useState(false);
+  const [isTrialCardModalOpen, setIsTrialCardModalOpen] = useState(false);
 
   const trialDetails = useMemo(() => {
     return getTrialDetails(profile?.username || profile?.email);
@@ -117,9 +119,7 @@ export function PricingClient() {
       router.push('/login?redirect=/pricing&promo=1month');
       return;
     }
-    const rec = activatePromotionalProTrial(userIdentifier);
-    setActiveUserSub(rec);
-    setTrialClaimSuccess(true);
+    setIsTrialCardModalOpen(true);
   };
 
   useEffect(() => {
@@ -788,7 +788,7 @@ export function PricingClient() {
               1-Month ZEN PRO Free Trial on Every Registration
             </h2>
             <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl leading-relaxed">
-              Register anytime during our initial 3-month launch window and instantly receive 30 days of ZEN PRO completely free. Zero credit card needed. Full Executive Dais suite, stage broadcasting, and verifiable certificates unlocked.
+              Register anytime during our initial 3-month launch window and instantly receive 30 days of ZEN PRO completely free. Card required for verification (₹0.00 charged today). Full Executive Dais suite, stage broadcasting, and verifiable certificates unlocked.
             </p>
           </div>
 
@@ -1280,7 +1280,7 @@ export function PricingClient() {
                       : activeUserSub?.planId === plan.id
                       ? 'Verified via Cashfree PG'
                       : plan.id === 'zen-pro' && isPromotionalCampaignActive() && !trialDetails.isTrial
-                      ? '🎁 30-Day Launch Trial • No Card Required'
+                      ? '🎁 30-Day Launch Trial • Card Verification (₹0 Today)'
                       : plan.priceINR === 0
                       ? 'No credit card needed'
                       : 'Instant activation • Cancel anytime'}

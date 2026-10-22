@@ -13,6 +13,7 @@ import {
   isPromotionalCampaignActive 
 } from '@/lib/subscriptionTiers';
 import { isFounder, isAdmin } from '@/lib/founderControl';
+import { ZenTrialCardModal } from '@/components/pricing/ZenTrialCardModal';
 
 interface ZenProFeatureGateProps {
   feature: FeatureKey;
@@ -60,6 +61,7 @@ export function ZenProFeatureGate({
   const { user, profile } = useAuth();
   const [isActivatingTrial, setIsActivatingTrial] = useState(false);
   const [trialSuccess, setTrialSuccess] = useState(false);
+  const [isGateCardModalOpen, setIsGateCardModalOpen] = useState(false);
 
   const isFOrA = Boolean(
     isFounder(profile?.username || profile?.email, profile?.role) ||
@@ -134,7 +136,7 @@ export function ZenProFeatureGate({
               1-Month Free Trial Available
             </span>
             <span className="text-[11px] text-neutral-300 block">
-              Get full access to all ZEN PRO features for 30 days. No credit card required.
+              Get full access to all ZEN PRO features for 30 days. Card verification required (₹0.00 charged today).
             </span>
           </div>
           {profile ? (
@@ -156,6 +158,20 @@ export function ZenProFeatureGate({
           )}
         </div>
       )}
+
+      <ZenTrialCardModal
+        isOpen={isGateCardModalOpen}
+        onClose={() => setIsGateCardModalOpen(false)}
+        username={profile?.username || profile?.email || ''}
+        userEmail={profile?.email}
+        userRole={profile?.role}
+        onSuccess={() => {
+          setTrialSuccess(true);
+          setTimeout(() => {
+            window.location.reload();
+          }, 600);
+        }}
+      />
 
       {/* Pricing Button */}
       <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
@@ -181,6 +197,7 @@ export function ZenProLockModal({
 }) {
   const { profile } = useAuth();
   const [isActivating, setIsActivating] = useState(false);
+  const [isLockCardModalOpen, setIsLockCardModalOpen] = useState(false);
   const entitlement = FEATURE_ENTITLEMENTS[feature];
   const trial = getTrialDetails(profile?.username || profile?.email);
 
@@ -189,11 +206,7 @@ export function ZenProLockModal({
   const handleActivate = () => {
     const username = profile?.username || profile?.email;
     if (!username) return;
-    setIsActivating(true);
-    activatePromotionalProTrial(username);
-    setTimeout(() => {
-      window.location.reload();
-    }, 600);
+    setIsLockCardModalOpen(true);
   };
 
   return (
@@ -231,7 +244,7 @@ export function ZenProLockModal({
               <span>Launch Campaign Active</span>
             </div>
             <p className="text-xs text-neutral-200">
-              You are eligible for a <strong>1-Month Free Trial of ZEN PRO</strong>. Instant activation with zero charge.
+              You are eligible for a <strong>1-Month Free Trial of ZEN PRO</strong>. Card verification required (₹0.00 charged today).
             </p>
             {profile ? (
               <button
@@ -252,6 +265,19 @@ export function ZenProLockModal({
             )}
           </div>
         )}
+
+        <ZenTrialCardModal
+          isOpen={isLockCardModalOpen}
+          onClose={() => setIsLockCardModalOpen(false)}
+          username={profile?.username || profile?.email || ''}
+          userEmail={profile?.email}
+          userRole={profile?.role}
+          onSuccess={() => {
+            setTimeout(() => {
+              window.location.reload();
+            }, 600);
+          }}
+        />
 
         <div className="pt-2 flex items-center justify-center gap-2">
           <Link
