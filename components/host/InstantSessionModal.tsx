@@ -49,6 +49,7 @@ const FORMAT_ICONS: Record<string, React.ElementType> = {
   Radio: Radio,
   Mic: Mic,
   Zap: Zap,
+  Clock: Clock,
   GraduationCap: GraduationCap,
   Users: Users,
   Trophy: Trophy,
@@ -278,7 +279,7 @@ export default function InstantSessionModal({
                 [
                   'open_mic',
                   'lightning_talks',
-                  'workshop',
+                  'custom_timer',
                   'panel',
                   'competition',
                   'general',

@@ -43,7 +43,7 @@ export default function CustomEventBuilderModal({
   if (!isOpen) return null;
 
   // Quick Preset Templates
-  const applyPreset = (type: 'open_mic' | 'pitch' | 'assembly' | 'workshop') => {
+  const applyPreset = (type: 'open_mic' | 'pitch' | 'assembly' | 'custom_timer') => {
     if (type === 'open_mic') {
       setConfig({
         ...config,
@@ -112,25 +112,25 @@ export default function CustomEventBuilderModal({
         enableApplauseMeter: false,
         enableScoringRubric: false,
       });
-    } else if (type === 'workshop') {
+    } else if (type === 'custom_timer') {
       setConfig({
         ...config,
-        eventName: 'Hands-on Sprint & Masterclass',
-        badge: 'ACADEMY',
-        tagline: 'Interactive sprint timers, attendee questions & resource drops',
-        speakerTimerSeconds: 600,
+        eventName: 'Custom Stage Timer & Countdown',
+        badge: 'STAGE TIMER',
+        tagline: 'Simple standalone timer and stopwatch without participant queues',
+        speakerTimerSeconds: 300,
         enableSpeakerTimer: true,
         enableMasterTimer: true,
-        masterTimerMinutes: 90,
-        strictCutoff: false,
+        masterTimerMinutes: 60,
+        strictCutoff: true,
         enableAudioChimes: true,
-        enableQueue: true,
-        allowSelfQueue: true,
+        enableQueue: false,
+        allowSelfQueue: false,
         enableOnDeckCallout: false,
-        enableRapidPolls: true,
+        enableRapidPolls: false,
         enableStageBroadcasts: true,
-        enableApplauseMeter: true,
-        enableAudienceQnA: true,
+        enableApplauseMeter: false,
+        enableAudienceQnA: false,
         enableScoringRubric: false,
       });
     }
@@ -222,11 +222,11 @@ export default function CustomEventBuilderModal({
             </button>
             <button
               type="button"
-              onClick={() => applyPreset('workshop')}
+              onClick={() => applyPreset('custom_timer')}
               className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-emerald-500/20 hover:border-emerald-400/40 border border-white/10 text-xs font-bold text-neutral-300 hover:text-emerald-300 transition flex items-center gap-1.5"
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Interactive Workshop</span>
+              <Clock className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Normal Stage Timer</span>
             </button>
           </div>
         </div>

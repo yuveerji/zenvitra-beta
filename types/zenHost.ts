@@ -2,7 +2,7 @@ export type HostSessionFormat =
   | 'general'
   | 'open_mic'
   | 'lightning_talks'
-  | 'workshop'
+  | 'custom_timer'
   | 'panel'
   | 'competition'
   | 'parliamentary'
@@ -251,13 +251,13 @@ export const HOST_FORMAT_PRESETS: Record<
     defaultTimer: 180,
     color: 'orange',
   },
-  workshop: {
-    name: 'Workshop & Masterclass',
-    badge: 'ACADEMY',
-    icon: 'GraduationCap',
-    tagline: 'Structured modules, learning sprints, exercise timers & resource vault',
-    description: 'Designed for intensive skill training, breakout sprints, student lectures, and certification labs.',
-    defaultTimer: 600,
+  custom_timer: {
+    name: 'Normal Stage Timer & Stopwatch',
+    badge: 'TIMER',
+    icon: 'Clock',
+    tagline: 'Simple countdown or stopwatch without queues or complex rules',
+    description: 'Clean countdown clock or count-up stopwatch for presentations, drills, meetings, and individual speeches.',
+    defaultTimer: 300,
     color: 'emerald',
   },
   panel: {

@@ -163,7 +163,7 @@ function HostDashboardInner() {
               ZEN.HOST <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300">&amp; DAIS</span>
             </h1>
             <p className="text-sm sm:text-base text-neutral-400 max-w-2xl leading-relaxed font-outfit">
-              Universal live-session infrastructure, event command rooms, and diplomatic presidiums. Built for Model UN, debates, open mics, workshops, storylines, and competitions.
+              Universal live-session infrastructure, event command rooms, and stage chronometers. Built for Open Mics, Lightning Talks, Competitions, Panel Debates, Pomodoro Sprints, and Custom Timers.
             </p>
           </div>
 
@@ -177,6 +177,20 @@ function HostDashboardInner() {
               <Zap className="w-4 h-4 fill-current" />
               <span>Launch Instant Stage</span>
             </button>
+            <Link
+              href="/host/timer"
+              className="px-4 py-2.5 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-black font-space uppercase tracking-wider transition shadow-[0_0_15px_rgba(6,182,212,0.2)] flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
+            >
+              <Clock className="w-4 h-4 text-cyan-400" />
+              <span>Stage Timer</span>
+            </Link>
+            <Link
+              href="/host/timer?mode=pomodoro"
+              className="px-4 py-2.5 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/30 text-rose-300 text-xs font-black font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
+            >
+              <span>🍅</span>
+              <span>Pomodoro</span>
+            </Link>
             <button
               type="button"
               onClick={() => handleLaunchInstantSession('open_mic')}
@@ -185,22 +199,13 @@ function HostDashboardInner() {
               <Mic className="w-4 h-4 text-amber-400" />
               <span>Open Mic</span>
             </button>
-            <button
-              type="button"
-              onClick={() => router.push('/committee')}
+            <Link
+              href="/committee"
               className="px-4 py-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-neutral-300 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
             >
               <Gavel className="w-4 h-4 text-amber-400" />
-              <span>Committee Chambers</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsCustomModalOpen(true)}
-              className="px-4 py-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-neutral-300 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
-            >
-              <Sliders className="w-4 h-4 text-cyan-400" />
-              <span>Custom Studio</span>
-            </button>
+              <span>ZEN.COMMITTEE</span>
+            </Link>
             <Link
               href="/host/display"
               className="px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] text-neutral-200 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md"
@@ -365,106 +370,136 @@ function HostDashboardInner() {
           </div>
         </section>
 
-        {/* ── 4. ZEN.COMMITTEE MUN PRESIDIUM SHOWCASE ── */}
-        <section className="p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-amber-950/40 via-[#070b16] to-[#03050a] border border-amber-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl space-y-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[500px] h-[350px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+        {/* ── 4. STAGE TIMERS & POMODORO FOCUS SUITE ── */}
+        <section className="p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#060a14] via-[#080d1a] to-[#04060c] border border-cyan-500/25 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl space-y-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-white/[0.08] pb-6 relative z-10">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
-                <Gavel className="w-3.5 h-3.5 text-amber-400" />
-                <span>SPECIALIZED DIPLOMATIC PRESIDIUM</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span>CHRONOMETERS &bull; AUDITORIUM STAGE TIMERS</span>
               </div>
               <h2 className="text-2xl sm:text-4xl font-black font-space text-white tracking-tight uppercase">
-                ZEN.COMMITTEE &bull; MUN Chambers
+                Stage Timers <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-rose-400">&amp; Pomodoro Hub</span>
               </h2>
               <p className="text-xs sm:text-sm text-neutral-400 max-w-2xl font-outfit leading-relaxed">
-                Dedicated parliamentary simulations with formal Rules of Procedure, General Speakers&apos; Lists, Right to Reply, Moderated Caucuses, Working Papers, and Substantive Voting.
+                Minimalist, distraction-free stage clocks. Purpose-built for deep work Pomodoro sprints, auditorium keynote countdowns, pitch alarms, and stopwatches.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-20">
-              <button
-                type="button"
-                onClick={() => router.push('/committee?dais=true')}
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(245,158,11,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
+              <Link
+                href="/host/timer"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(6,182,212,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
-                <Gavel className="w-4 h-4 text-black" />
-                <span>Enter Committee Suite &rarr;</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push('/committee')}
-                className="px-4 py-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-neutral-300 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md active:scale-95"
+                <Clock className="w-4 h-4 text-black" />
+                <span>Open Stage Timer &rarr;</span>
+              </Link>
+              <Link
+                href="/host/timer?mode=pomodoro"
+                className="px-5 py-3 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 cursor-pointer backdrop-blur-md active:scale-95"
               >
-                <span>Chamber Directory &rarr;</span>
-              </button>
+                <span>🍅 Pomodoro Mode</span>
+              </Link>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
-            {/* Chamber Card 1: Lok Sabha */}
-            <div className="p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-amber-400/50 transition flex flex-col justify-between space-y-4">
-              <div className="space-y-2">
+            {/* Card 1: Pomodoro Focus */}
+            <div className="p-6 rounded-2xl bg-black/40 border border-rose-500/20 hover:border-rose-400/50 transition flex flex-col justify-between space-y-4 group">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-amber-400 font-bold uppercase">INDIAN PARLIAMENT</span>
-                  <span className="text-[10px] font-mono text-neutral-400">90s GSL</span>
+                  <span className="text-[10px] font-mono text-rose-400 font-bold uppercase tracking-wider">
+                    DEEP WORK SPRINT
+                  </span>
+                  <span className="text-xs">🍅</span>
                 </div>
-                <h4 className="text-base font-black font-space text-white">Lok Sabha (House of the People)</h4>
-                <p className="text-xs text-neutral-400 font-outfit line-clamp-2">
-                  Zero Hour debates, Calling Attention motions, Division Bell votes, and Legislative Bills.
+                <h4 className="text-lg font-black font-space text-white group-hover:text-rose-300 transition">
+                  Pomodoro Timer
+                </h4>
+                <p className="text-xs text-neutral-400 font-outfit leading-relaxed">
+                  25-minute focus sprints paired with 5-minute restorative breaks. Automatic round progression, meditative bowl sounds, and session cycle counting.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => router.push('/committee?chamber=lok_sabha&dais=true')}
-                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-amber-500 hover:text-black text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10 cursor-pointer active:scale-98"
+              <Link
+                href="/host/timer?mode=pomodoro"
+                className="w-full py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500 hover:text-black text-rose-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-rose-500/30 cursor-pointer"
               >
-                <span>Launch Lok Sabha &rarr;</span>
-              </button>
+                <span>Launch Pomodoro (25/5) &rarr;</span>
+              </Link>
             </div>
 
-            {/* Chamber Card 2: UNSC */}
-            <div className="p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-red-400/50 transition flex flex-col justify-between space-y-4">
-              <div className="space-y-2">
+            {/* Card 2: Normal Stage Countdown */}
+            <div className="p-6 rounded-2xl bg-black/40 border border-cyan-500/20 hover:border-cyan-400/50 transition flex flex-col justify-between space-y-4 group">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-red-400 font-bold uppercase">CRISIS &amp; SECURITY</span>
-                  <span className="text-[10px] font-mono text-neutral-400">120s GSL</span>
+                  <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider">
+                    COUNTDOWN CLOCK
+                  </span>
+                  <span className="text-xs">⏱️</span>
                 </div>
-                <h4 className="text-base font-black font-space text-white">UN Security Council (UNSC)</h4>
-                <p className="text-xs text-neutral-400 font-outfit line-clamp-2">
-                  15 member states, P5 permanent veto powers, and Chapter VII legally binding directives.
+                <h4 className="text-lg font-black font-space text-white group-hover:text-cyan-300 transition">
+                  Normal Countdown Timer
+                </h4>
+                <p className="text-xs text-neutral-400 font-outfit leading-relaxed">
+                  Set any duration in seconds or minutes. 1m, 3m, 5m, 10m, 15m presets, +1m/+5m quick adjusters, giant digits, and amber warning pulses.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => router.push('/committee?chamber=unsc&dais=true')}
-                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-red-500 hover:text-white text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10 cursor-pointer active:scale-98"
+              <Link
+                href="/host/timer?mode=countdown"
+                className="w-full py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500 hover:text-black text-cyan-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-cyan-500/30 cursor-pointer"
               >
-                <span>Launch UNSC &rarr;</span>
-              </button>
+                <span>Launch Countdown &rarr;</span>
+              </Link>
             </div>
 
-            {/* Chamber Card 3: UNGA DISEC */}
-            <div className="p-5 rounded-2xl bg-black/40 border border-white/10 hover:border-cyan-400/50 transition flex flex-col justify-between space-y-4">
-              <div className="space-y-2">
+            {/* Card 3: Stopwatch & Laps */}
+            <div className="p-6 rounded-2xl bg-black/40 border border-emerald-500/20 hover:border-emerald-400/50 transition flex flex-col justify-between space-y-4 group">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">GENERAL ASSEMBLY</span>
-                  <span className="text-[10px] font-mono text-neutral-400">90s GSL</span>
+                  <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
+                    CHRONOMETER
+                  </span>
+                  <span className="text-xs">🏃</span>
                 </div>
-                <h4 className="text-base font-black font-space text-white">UNGA (DISEC - First Committee)</h4>
-                <p className="text-xs text-neutral-400 font-outfit line-clamp-2">
-                  Universal plenary debate, working papers, draft resolutions, and substantive roll-call voting.
+                <h4 className="text-lg font-black font-space text-white group-hover:text-emerald-300 transition">
+                  Stopwatch &amp; Lap Splits
+                </h4>
+                <p className="text-xs text-neutral-400 font-outfit leading-relaxed">
+                  Count-up timer from 00:00 with split lap recordings. Ideal for impromptu speeches, timing athletic drills, or tracking open deliberations.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => router.push('/committee?chamber=unga_disec&dais=true')}
-                className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-cyan-500 hover:text-black text-neutral-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-white/10 cursor-pointer active:scale-98"
+              <Link
+                href="/host/timer?mode=stopwatch"
+                className="w-full py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 hover:text-black text-emerald-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-emerald-500/30 cursor-pointer"
               >
-                <span>Launch UNGA &rarr;</span>
-              </button>
+                <span>Launch Stopwatch &rarr;</span>
+              </Link>
             </div>
+          </div>
+
+          {/* ── COMPACT DIPLOMATIC PRESIDIUM BRIDGE BANNER ── */}
+          <div className="p-5 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+                <Gavel className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-black font-space text-amber-300 uppercase tracking-wide">
+                  Looking for Diplomatic Model UN &amp; Parliamentary Chambers?
+                </div>
+                <div className="text-[11px] text-neutral-400 font-outfit">
+                  General Speakers&apos; List, Caucuses, Right of Reply, P5 Veto Roll-Call, and Resolution Drafting are hosted at ZEN.COMMITTEE.
+                </div>
+              </div>
+            </div>
+            <Link
+              href="/committee"
+              className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 hover:text-white font-mono text-xs font-bold uppercase tracking-wider transition shrink-0 flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Explore Committee Suite &rarr;</span>
+            </Link>
           </div>
         </section>
 

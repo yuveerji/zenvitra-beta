@@ -671,8 +671,8 @@ export default function ZenHostLiveDais({
                     <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-amber-400 uppercase">
                       {format === 'open_mic'
                         ? 'CURRENT PERFORMER ON MIC'
-                        : format === 'workshop'
-                        ? 'PRESENTER / ACTIVE SPRINT'
+                        : format === 'custom_timer'
+                        ? 'STAGE SPEAKER / TIMER RUN'
                         : format === 'competition'
                         ? 'ACTIVE COMPETITOR PITCH'
                         : 'ACTIVE STAGE FLOOR'}
