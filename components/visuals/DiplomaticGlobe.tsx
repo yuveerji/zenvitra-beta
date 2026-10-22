@@ -72,10 +72,10 @@ const NODES: DiplomaticNode[] = [
     lat: 40.7128,
     lng: -74.0060,
     mapX: 248,
-    mapY: 398,
+    mapY: 415,
     status: 'COLD STANDBY',
     ping: '45ms',
-    region: 'North America Wire',
+    region: 'United States, North America',
     role: 'Assembly Redundancy Mirror'
   },
   {
