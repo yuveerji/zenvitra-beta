@@ -255,13 +255,13 @@ function CommitteePortalInner() {
   const isDaisMode =
     searchParams?.get('control') === 'true' ||
     searchParams?.get('dais') === 'true' ||
-    Boolean(searchParams?.get('chamber')) ||
     Boolean(searchParams?.get('room'));
 
   const isSetupMode =
     searchParams?.get('create') === 'true' ||
     searchParams?.get('new') === 'true' ||
-    searchParams?.get('setup') === 'true';
+    searchParams?.get('setup') === 'true' ||
+    (Boolean(searchParams?.get('chamber')) && !isDaisMode);
 
   if (isDaisMode) {
     return <ZenMunMasterDais initialView="chair" />;
@@ -293,12 +293,12 @@ function CommitteePortalInner() {
           isIndianCommittee: preset.isIndian,
           speakingTimeSeconds: preset.speakingTimeSeconds,
           remainingSeconds: preset.speakingTimeSeconds,
-          sessionState: 'in-session',
+          sessionState: 'setup',
         };
         localStorage.setItem('zenvitra_zenmun_live_session_v1', JSON.stringify(updated));
       } catch {}
     }
-    router.push(`/committee?dais=true&chamber=${preset.id}`);
+    router.push(`/committee/create?chamber=${preset.id}`);
   };
 
   const handleCreateCustomChamber = (e: React.FormEvent) => {
@@ -319,13 +319,13 @@ function CommitteePortalInner() {
           isIndianCommittee: customIsIndian,
           speakingTimeSeconds: timeSec,
           remainingSeconds: timeSec,
-          sessionState: 'in-session',
+          sessionState: 'setup',
         };
         localStorage.setItem('zenvitra_zenmun_live_session_v1', JSON.stringify(updated));
       } catch {}
     }
     setIsCustomCreatorOpen(false);
-    router.push(`/committee?dais=true&chamber=custom`);
+    router.push(`/committee/create?chamber=custom`);
   };
 
   const filteredPresets = COMMITTEE_PRESETS.filter((p) => {
@@ -626,7 +626,11 @@ function CommitteePortalInner() {
             {filteredPresets.map((preset) => (
               <div
                 key={preset.id}
-                className="p-6 rounded-3xl bg-[#0b1120] border border-white/10 hover:border-amber-400/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-5 group"
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  handleLaunchPreset(preset);
+                }}
+                className="p-6 rounded-3xl bg-[#0b1120] border border-white/10 hover:border-amber-400/50 hover:shadow-xl hover:bg-[#0e1628] transition-all duration-300 flex flex-col justify-between space-y-5 group cursor-pointer"
               >
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-2">
@@ -644,7 +648,7 @@ function CommitteePortalInner() {
                   </div>
 
                   <div className="flex items-center gap-3.5">
-                    <div className="w-13 h-13 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shrink-0 p-1">
+                    <div className="w-13 h-13 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shrink-0 p-1 group-hover:scale-105 transition">
                       <CommitteeEmblemDisplay
                         emblem={preset.emblem}
                         acronym={preset.acronym}
@@ -680,15 +684,15 @@ function CommitteePortalInner() {
                   <button
                     type="button"
                     onClick={() => handleLaunchPreset(preset)}
-                    className="flex-1 py-2.5 rounded-xl bg-[#1b3d29] hover:bg-[#142d1f] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-emerald-500/30"
+                    className="flex-1 py-2.5 rounded-xl bg-[#1b3d29] hover:bg-[#142d1f] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-emerald-500/30 active:scale-98"
                   >
                     <Gavel className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Launch Dais</span>
+                    <span>Configure &amp; Launch</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => router.push(`/committee/create`)}
-                    className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-xs font-bold transition cursor-pointer border border-white/10"
+                    onClick={() => handleLaunchPreset(preset)}
+                    className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-xs font-bold transition cursor-pointer border border-white/10 active:scale-98"
                     title="Customize Chamber in Setup Studio"
                   >
                     <Sliders className="w-3.5 h-3.5" />

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="ukGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#192a20" />
+      <stop offset="100%" stop-color="#07100b" />
+    </linearGradient>
+    <linearGradient id="goldUkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5d061" />
+      <stop offset="100%" stop-color="#b48811" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#ukGrad)" stroke="url(#goldUkGrad)" stroke-width="2.5" />
+  <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldUkGrad)" stroke-width="0.8" stroke-dasharray="2,2" />
+  <!-- Portcullis (Parliament Symbol) -->
+  <path d="M38 32 L62 32 L62 58 L38 58 Z" fill="none" stroke="#f5d061" stroke-width="2.5" />
+  <line x1="44" y1="32" x2="44" y2="62" stroke="#f5d061" stroke-width="2" />
+  <line x1="50" y1="32" x2="50" y2="64" stroke="#f5d061" stroke-width="2" />
+  <line x1="56" y1="32" x2="56" y2="62" stroke="#f5d061" stroke-width="2" />
+  <line x1="36" y1="40" x2="64" y2="40" stroke="#f5d061" stroke-width="2" />
+  <line x1="36" y1="48" x2="64" y2="48" stroke="#f5d061" stroke-width="2" />
+  <line x1="36" y1="56" x2="64" y2="56" stroke="#f5d061" stroke-width="2" />
+  <!-- Crown on Top -->
+  <polygon points="50,23 54,27 60,24 58,30 42,30 40,24 46,27" fill="#f5d061" />
+  <!-- Text -->
+  <path id="ukTextTop" d="M 18 50 A 32 32 0 0 1 82 50" fill="none" />
+  <text font-size="5" font-family="Cinzel, serif" font-weight="bold" fill="#f5d061" letter-spacing="1">
+    <textPath href="#ukTextTop" startOffset="50%" text-anchor="middle">
+      HOUSE OF COMMONS
+    </textPath>
+  </text>
+  <path id="ukTextBottom" d="M 82 50 A 32 32 0 0 1 18 50" fill="none" />
+  <text font-size="5" font-family="Cinzel, serif" font-weight="bold" fill="#f5d061" letter-spacing="1.2">
+    <textPath href="#ukTextBottom" startOffset="50%" text-anchor="middle">
+      UK PARLIAMENT
+    </textPath>
+  </text>
+</svg>

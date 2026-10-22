@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="senateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f1b2b" />
+      <stop offset="100%" stop-color="#050a12" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5d061" />
+      <stop offset="100%" stop-color="#d4af37" />
+    </linearGradient>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#senateGrad)" stroke="url(#goldGrad)" stroke-width="2.5" />
+  <circle cx="50" cy="50" r="44" fill="none" stroke="url(#goldGrad)" stroke-width="0.8" stroke-dasharray="2,2" />
+  
+  <!-- Outer Gold Stars Ring -->
+  <g fill="#f5d061" opacity="0.95">
+    <!-- 13 stars for original colonies -->
+    <polygon points="50,9 51.5,12 55,12 52,14.5 53.5,18 50,15.5 46.5,18 48,14.5 45,12 48.5,12" transform="scale(0.85) translate(8.8, 4)" />
+    <circle cx="32" cy="15" r="1.5" />
+    <circle cx="68" cy="15" r="1.5" />
+    <circle cx="18" cy="28" r="1.5" />
+    <circle cx="82" cy="28" r="1.5" />
+    <circle cx="12" cy="45" r="1.5" />
+    <circle cx="88" cy="45" r="1.5" />
+    <circle cx="14" cy="62" r="1.5" />
+    <circle cx="86" cy="62" r="1.5" />
+    <circle cx="22" cy="77" r="1.5" />
+    <circle cx="78" cy="77" r="1.5" />
+    <circle cx="36" cy="88" r="1.5" />
+    <circle cx="64" cy="88" r="1.5" />
+    <circle cx="50" cy="91" r="1.5" />
+  </g>
+
+  <!-- Central Shield -->
+  <path d="M50 24 L64 30 L64 50 C64 62 50 72 50 72 C50 72 36 62 36 50 L36 30 Z" fill="#0b1726" stroke="#f5d061" stroke-width="1.8" />
+  <!-- Shield Stripes -->
+  <path d="M42 42 L42 56 C44 59 47 62 50 64 C53 62 56 59 58 56 L58 42 Z" fill="#b91c1c" />
+  <rect x="45" y="42" width="3" height="19" fill="#ffffff" />
+  <rect x="52" y="42" width="3" height="19" fill="#ffffff" />
+  <!-- Shield Chief (Blue) -->
+  <path d="M36.5 30.5 L63.5 30.5 L63.5 42 L36.5 42 Z" fill="#1d4ed8" />
+  <!-- Eagle Crest / Fasces Silhouette -->
+  <polygon points="50,33 52,37 56,37 53,39 54,43 50,40.5 46,43 47,39 44,37 48,37" fill="#f5d061" />
+  
+  <!-- Curved Text Banner -->
+  <path id="textPathTop" d="M 22 50 A 28 28 0 0 1 78 50" fill="none" />
+  <text font-size="5.5" font-family="Cinzel, serif, Times" font-weight="bold" fill="#f5d061" letter-spacing="1.2">
+    <textPath href="#textPathTop" startOffset="50%" text-anchor="middle">
+      UNITED STATES
+    </textPath>
+  </text>
+  <path id="textPathBottom" d="M 78 50 A 28 28 0 0 1 22 50" fill="none" />
+  <text font-size="5.5" font-family="Cinzel, serif, Times" font-weight="bold" fill="#f5d061" letter-spacing="1.5">
+    <textPath href="#textPathBottom" startOffset="50%" text-anchor="middle">
+      SENATE
+    </textPath>
+  </text>
+</svg>
