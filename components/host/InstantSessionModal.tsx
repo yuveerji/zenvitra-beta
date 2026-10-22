@@ -483,6 +483,29 @@ export default function InstantSessionModal({
             </div>
           </div>
 
+          {/* ── BRIDGE TO ZEN.COMMITTEE / MUN CHAMBERS ── */}
+          <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+                <Landmark className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-black font-space text-amber-300 uppercase tracking-wide">
+                  Looking for Diplomatic Model UN Chambers?
+                </div>
+                <div className="text-[11px] text-neutral-400 font-outfit">
+                  GSL, Moderated Caucuses, country matrices, and resolution voting are powered by ZEN.COMMITTEE.
+                </div>
+              </div>
+            </div>
+            <a
+              href="/committee/create"
+              className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 hover:text-white text-xs font-mono font-bold uppercase tracking-wider transition shrink-0 flex items-center gap-1.5"
+            >
+              <span>Launch Committee &rarr;</span>
+            </a>
+          </div>
+
           {/* ── 5. ACTION LAUNCH BAR ── */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-white/[0.08]">
             {onOpenAdvancedStudio ? (

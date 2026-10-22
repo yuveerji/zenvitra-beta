@@ -280,26 +280,26 @@ function CommitteePortalInner() {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               type="button"
-              onClick={() => router.push('/committee?dais=true')}
+              onClick={() => router.push('/committee/create')}
               className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(245,158,11,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
             >
-              <Gavel className="w-4 h-4 text-black" />
-              <span>Launch Dais (Chair)</span>
+              <Sparkles className="w-4 h-4 text-black" />
+              <span>Open Setup Studio</span>
             </button>
             <button
               type="button"
-              onClick={() => setIsCustomCreatorOpen(true)}
+              onClick={() => router.push('/committee?dais=true')}
               className="px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] text-neutral-200 hover:text-white text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 cursor-pointer backdrop-blur-md"
             >
-              <Sliders className="w-4 h-4 text-amber-400" />
-              <span>Custom Chamber</span>
+              <Gavel className="w-4 h-4 text-amber-400" />
+              <span>Launch Dais</span>
             </button>
             <Link
-              href="/host/display?format=mun"
+              href="/host"
               className="px-4 py-2.5 rounded-2xl bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-400/40 text-cyan-300 text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.2)]"
             >
-              <Tv className="w-4 h-4 text-cyan-400" />
-              <span>Stage Screen</span>
+              <span>⚡</span>
+              <span>Go to ZEN.HOST</span>
             </Link>
           </div>
         </header>
