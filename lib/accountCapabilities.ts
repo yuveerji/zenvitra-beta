@@ -1,5 +1,6 @@
 import { isFounder as checkIsFounder, isAdmin as checkIsAdmin } from './founderControl';
 import { UserProfile } from '@/types/auth';
+import { getActiveUserSubscription } from './subscriptionTiers';
 
 const STORAGE_KEY_PRO = 'zenvitra_professional_account_enabled';
 const STORAGE_KEY_EVENT = 'zenvitra_event_account_enabled';
@@ -8,6 +9,25 @@ export function checkIsProfessionalAccountEnabled(profile?: UserProfile | null):
   // Founder ALWAYS has universal access unconditionally
   const userIdentifier = profile?.username || profile?.email || '';
   if (checkIsFounder(userIdentifier, profile?.role)) return true;
+
+  // Check verified subscription record or active 1-month promotional trial
+  const activeSub = getActiveUserSubscription(userIdentifier);
+  if (activeSub && activeSub.status === 'ACTIVE') {
+    const proPlans = [
+      'zen-pro',
+      'zen-elite',
+      'pro-starter',
+      'pro-standard',
+      'pro-plus',
+      'pro-enterprise',
+      'org-pro',
+      'org-elite',
+      'org-enterprise',
+      'event-pro',
+      'event-elite',
+    ];
+    if (proPlans.includes(activeSub.planId)) return true;
+  }
 
   if (typeof window !== 'undefined') {
     const override = localStorage.getItem(STORAGE_KEY_PRO);
@@ -49,6 +69,21 @@ export function checkIsEventAccountEnabled(profile?: UserProfile | null): boolea
   // Founder ALWAYS has universal access unconditionally
   const eventUserIdentifier = profile?.username || profile?.email || '';
   if (checkIsFounder(eventUserIdentifier, profile?.role)) return true;
+
+  // Check verified subscription record or active event plan
+  const activeSub = getActiveUserSubscription(eventUserIdentifier);
+  if (activeSub && activeSub.status === 'ACTIVE') {
+    const eventPlans = [
+      'event-starter',
+      'event-basic',
+      'event-pro',
+      'event-elite',
+      'org-pro',
+      'org-elite',
+      'org-enterprise',
+    ];
+    if (eventPlans.includes(activeSub.planId)) return true;
+  }
 
   if (typeof window !== 'undefined') {
     const override = localStorage.getItem(STORAGE_KEY_EVENT);

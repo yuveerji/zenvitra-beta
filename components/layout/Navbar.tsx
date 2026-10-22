@@ -59,6 +59,7 @@ import {
   isFounderOrCoFounder,
   isCurrentSessionFounderOrCoFounder 
 } from '@/lib/founderControl';
+import { getTrialDetails } from '@/lib/subscriptionTiers';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface NavbarProps {
@@ -346,6 +347,10 @@ export function Navbar({
   const userHandle = profile?.username || localUserSession?.username || 'member';
   const initial = (displayName ? displayName.charAt(0).toUpperCase() : '') || 'Z';
 
+  const trialDetails = useMemo(() => {
+    return getTrialDetails(userHandle);
+  }, [userHandle]);
+
   const effectiveDisplayAvatar = useMemo(() => {
     const rawAvatar = profile?.avatar_url || localUserSession?.avatar;
     if (rawAvatar && rawAvatar !== '/assets/default-avatar.svg' && !rawAvatar.includes('default-avatar')) {
@@ -549,8 +554,15 @@ export function Navbar({
                         style={{ backgroundColor: '#07080d' }}
                         className="absolute right-0 top-11 w-64 rounded-2xl border border-white/15 bg-[#07080d] shadow-[0_25px_80px_rgba(0,0,0,0.98),0_0_40px_rgba(0,0,0,0.95)] p-2 z-[100] text-left"
                       >
-                        <div className="p-2.5 border-b border-white/10 mb-1.5 bg-white/[0.04] rounded-xl">
-                          <p className="text-xs font-bold text-white truncate">{displayName}</p>
+                        <div className="p-2.5 border-b border-white/10 mb-1.5 bg-white/[0.04] rounded-xl space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs font-bold text-white truncate">{displayName}</p>
+                            {trialDetails.isTrial && trialDetails.isActive && (
+                              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30 shrink-0">
+                                PRO TRIAL ({trialDetails.daysRemaining}D)
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[10px] font-mono text-neutral-400 capitalize">
                             @{userHandle} • {(profile?.role || localUserSession?.role || 'member').replace('_', ' ')}
                           </p>

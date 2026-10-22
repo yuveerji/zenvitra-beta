@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X, Trophy, FileText, Download, Users, Mic, Clock, ChevronRight, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { useZenMun } from '@/context/ZenMunContext';
 import { ZenDelegate } from '@/types/zenMun';
+import { ZenProFeatureGate } from '@/components/pricing/ZenProFeatureGate';
 
 export function ScoreboardModal() {
   const {
@@ -112,6 +113,7 @@ export function ScoreboardModal() {
         </div>
 
         {/* ── 2. SUB-BADGES & VIEW SWITCHER ── */}
+        <ZenProFeatureGate feature="EXECUTIVE_BOARD_SCORING">
         <div className="px-6 py-4 bg-[#0a0f1d] border-b border-white/10 space-y-4">
           
           {/* Top Stat Pills Row */}
@@ -407,6 +409,7 @@ export function ScoreboardModal() {
             </div>
           )}
         </div>
+        </ZenProFeatureGate>
       </div>
     </div>
   );

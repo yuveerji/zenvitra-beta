@@ -34,7 +34,12 @@ import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { useAccountCapabilities } from '@/hooks/useAccountCapabilities';
 import { setProfessionalAccountEnabled } from '@/lib/accountCapabilities';
-import { allotUserSubscription, getActiveUserSubscription } from '@/lib/subscriptionTiers';
+import { 
+  allotUserSubscription, 
+  getActiveUserSubscription, 
+  activatePromotionalProTrial, 
+  isPromotionalCampaignActive 
+} from '@/lib/subscriptionTiers';
 import { ZenCheckoutModal } from '@/components/payments/ZenCheckoutModal';
 import {
   Plan,
@@ -247,6 +252,17 @@ export function PlanCheckoutClient() {
       isOpen: true,
       title: `${currentPlan.name} Activated!`,
       description: `Your ${currentPlan.name} tier is now active forever on your profile.`,
+      isProStarter: false
+    });
+  };
+
+  const handleActivateProTrial = () => {
+    const cleanUser = profile?.username || profile?.email || 'citizen';
+    activatePromotionalProTrial(cleanUser);
+    setActivationSuccess({
+      isOpen: true,
+      title: 'ZEN PRO 1-Month Free Trial Activated!',
+      description: 'Your 30-day promotional launch trial for ZEN PRO is live! Full Executive Dais suite, stage broadcasting, and verifiable certificates are now unlocked.',
       isProStarter: false
     });
   };
@@ -812,16 +828,43 @@ export function PlanCheckoutClient() {
                     <span>Activate {currentPlan.name} Now</span>
                   </button>
                 ) : (
-                  /* Paid Plan via Cashfree PG */
-                  <button
-                    type="button"
-                    onClick={() => setIsCashfreeModalOpen(true)}
-                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:to-purple-500 text-black font-display font-black text-sm uppercase tracking-wider transition-all duration-300 shadow-[0_0_35px_rgba(6,182,212,0.45)] hover:shadow-[0_0_45px_rgba(6,182,212,0.65)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5"
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    <span>Pay with Cashfree PG &bull; {currSymbol}{taxes.totalPayable.toFixed(2)}</span>
-                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                  </button>
+                  /* Paid Plan via Cashfree PG with Launch Promotional Option */
+                  <div className="space-y-3">
+                    {currentPlan.id === 'zen-pro' && isPromotionalCampaignActive() && (
+                      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-2">
+                        <div className="flex items-center justify-center gap-1.5 text-amber-300 font-mono text-xs font-bold uppercase">
+                          <Sparkles className="w-4 h-4 text-amber-400" />
+                          <span>3-Month Launch Special Eligible</span>
+                        </div>
+                        <p className="text-xs text-neutral-300">
+                          Activate your 30-day trial right now for ₹0. No credit card required.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleActivateProTrial}
+                          className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs uppercase tracking-wider transition shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 fill-black" />
+                          <span>Claim 1-Month Free Trial (₹0)</span>
+                        </button>
+                        <div className="relative flex items-center py-1">
+                          <div className="flex-grow border-t border-white/10" />
+                          <span className="flex-shrink mx-3 text-[10px] font-mono text-neutral-500 uppercase">Or Subscribe</span>
+                          <div className="flex-grow border-t border-white/10" />
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsCashfreeModalOpen(true)}
+                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:to-purple-500 text-black font-display font-black text-sm uppercase tracking-wider transition-all duration-300 shadow-[0_0_35px_rgba(6,182,212,0.45)] hover:shadow-[0_0_45px_rgba(6,182,212,0.65)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Pay with Cashfree PG &bull; {currSymbol}{taxes.totalPayable.toFixed(2)}</span>
+                      <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                    </button>
+                  </div>
                 )}
               </div>
 

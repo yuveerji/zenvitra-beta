@@ -22,6 +22,10 @@ import {
 } from 'lucide-react';
 import { PRESET_COMMITTEES, QUICK_BLOC_BUNDLES, ZenDelegate, PresetCommitteeDef } from '@/types/zenMun';
 import { useZenMun, generateSessionCode } from '@/context/ZenMunContext';
+import { useAuth } from '@/context/AuthContext';
+import { isFounder, isAdmin } from '@/lib/founderControl';
+import { checkFeatureAccess } from '@/lib/subscriptionTiers';
+import { ZenProLockModal } from '@/components/pricing/ZenProFeatureGate';
 
 // Comprehensive ISO 3166-1 alpha-2 mapping for accurate FlagCDN resolution
 const COUNTRY_CODE_MAP: Record<string, string> = {
@@ -276,6 +280,17 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
     return !localStorage.getItem('zenvitra_committee_first_timer_dismissed');
   });
   const [demoToastMessage, setDemoToastMessage] = useState<string | null>(null);
+  const [showProLockModal, setShowProLockModal] = useState(false);
+
+  const { user, profile } = useAuth();
+  const isFOrA = Boolean(
+    isFounder(profile?.username || profile?.email, profile?.role) ||
+    isAdmin(profile?.username || profile?.email, profile?.role) ||
+    profile?.role === 'founder' ||
+    profile?.role === 'admin'
+  );
+
+  const hasProAccess = checkFeatureAccess('UNLIMITED_CHAMBER_ROSTER', profile || user, isFOrA).hasAccess;
 
   const autocompleteRef = useRef<HTMLDivElement>(null);
 
@@ -456,6 +471,11 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
     if (!clean) return;
     if (delegations.some((d) => d.name.toLowerCase() === clean.toLowerCase())) return;
 
+    if (delegations.length >= 15 && !hasProAccess) {
+      setShowProLockModal(true);
+      return;
+    }
+
     const id = `del_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const code = customCode || resolveCountryCode(clean);
     const isP5Country = ['us', 'gb', 'fr', 'ru', 'cn'].includes(code);
@@ -473,6 +493,11 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
   };
 
   const handleAddBundle = (bundle: typeof QUICK_BLOC_BUNDLES[0]) => {
+    if (delegations.length + bundle.countries.length > 15 && !hasProAccess) {
+      setShowProLockModal(true);
+      return;
+    }
+
     const existing = new Set(delegations.map((d) => d.name.toLowerCase()));
     const toAdd: ZenDelegate[] = [];
     bundle.countries.forEach((c) => {
@@ -493,6 +518,10 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
 
   const handleAutoMatchAndAdd = () => {
     if (!pasteList.trim()) return;
+    if (delegations.length >= 15 && !hasProAccess) {
+      setShowProLockModal(true);
+      return;
+    }
     const lines = pasteList
       .split(/[\n,;]+/)
       .map((s) => s.trim())
@@ -1065,9 +1094,25 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
         <div className="lg:col-span-5 bg-white rounded-[26px] p-6 sm:p-8 border border-[#ded8cb] shadow-[0_4px_24px_rgba(0,0,0,0.03)] flex flex-col min-h-[580px]">
           {/* Header */}
           <div className="flex items-center justify-between pb-2">
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-black text-[#57534e]">{delegations.length}</span>
               <span className="text-xl font-bold text-[#1f2421]">delegations</span>
+              {!hasProAccess ? (
+                <button
+                  type="button"
+                  onClick={() => setShowProLockModal(true)}
+                  className="text-[10px] font-mono text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2 py-0.5 rounded-full cursor-pointer flex items-center gap-1 transition"
+                  title="Free accounts can host up to 15 delegations. Unlock unlimited with ZEN PRO (or 1-Month Free Trial)"
+                >
+                  <Lock className="w-2.5 h-2.5 text-amber-700" />
+                  <span>Max 15 (Free) • Unlock Unlimited</span>
+                </button>
+              ) : (
+                <span className="text-[10px] font-mono text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-emerald-700" />
+                  <span>PRO Unlimited</span>
+                </span>
+              )}
             </div>
             {delegations.length > 0 && (
               <button
@@ -1354,6 +1399,12 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
           </div>
         </div>
       )}
+      {/* Zen Pro Unlimited Chamber Roster Lock Modal */}
+      <ZenProLockModal
+        isOpen={showProLockModal}
+        onClose={() => setShowProLockModal(false)}
+        feature="UNLIMITED_CHAMBER_ROSTER"
+      />
     </div>
   );
 }

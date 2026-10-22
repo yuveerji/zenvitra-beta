@@ -49,7 +49,15 @@ import { useAccountCapabilities } from '@/hooks/useAccountCapabilities';
 import { setProfessionalAccountEnabled } from '@/lib/accountCapabilities';
 import { Footer } from '@/components/layout/Footer';
 import { ZenCheckoutModal } from '@/components/payments/ZenCheckoutModal';
-import { allotUserSubscription, getActiveUserSubscription, SubscriptionPlanId } from '@/lib/subscriptionTiers';
+import { 
+  allotUserSubscription, 
+  getActiveUserSubscription, 
+  SubscriptionPlanId,
+  isPromotionalCampaignActive,
+  getTrialDetails,
+  activatePromotionalProTrial,
+  PROMO_TRIAL_CAMPAIGN
+} from '@/lib/subscriptionTiers';
 
 type AudienceType = 'people' | 'professional' | 'events' | 'organizer';
 type BillingCycle = 'monthly' | 'annual';
@@ -97,6 +105,22 @@ export function PricingClient() {
 
   const { profile } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const [trialClaimSuccess, setTrialClaimSuccess] = useState(false);
+
+  const trialDetails = useMemo(() => {
+    return getTrialDetails(profile?.username || profile?.email);
+  }, [profile, activeUserSub]);
+
+  const handleClaimTrial = () => {
+    const userIdentifier = profile?.username || profile?.email;
+    if (!userIdentifier) {
+      router.push('/login?redirect=/pricing&promo=1month');
+      return;
+    }
+    const rec = activatePromotionalProTrial(userIdentifier);
+    setActiveUserSub(rec);
+    setTrialClaimSuccess(true);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -233,7 +257,11 @@ export function PricingClient() {
       badge: 'MOST POPULAR • FLAGSHIP',
       accentColor: 'border-purple-500 text-purple-400 shadow-[0_0_30px_rgba(168,85,247,0.25)]',
       features: [
-        'Everything in ZEN+',
+        'Everything in ZEN FREE & ZEN+',
+        '🎁 1-Month Free Trial on Registration (3-Month Launch Special)',
+        '🏛️ Executive Dais Suite: Build & host unlimited chambers with 60+ global councils',
+        '📊 Executive Board Scoring Matrix & Private Delegate Evaluation Rubrics',
+        '⚡ Official UN-Style Resolution & Bill Exporter (Watermark-Free PDF)',
         '🎙️ ZEN.STAGE Live Podiums & Floor Broadcasting Access',
         '📹 ZEN.CALL & ZEN.MEET HD Multi-Party Video Conferencing & Chamber Audio',
         'ZENVITRA PRO Identity: Full Portfolio, Projects, Skills & Verified Scholar Badge',
@@ -749,6 +777,51 @@ export function PricingClient() {
           </div>
         </div>
 
+        {/* ── 3-MONTH LAUNCH CAMPAIGN: 1-MONTH FREE TRIAL ── */}
+        <div className="max-w-4xl mx-auto p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-purple-950/60 via-[#120f24] to-amber-950/40 border-2 border-amber-400/50 shadow-[0_15px_50px_rgba(245,158,11,0.25)] flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden backdrop-blur-md">
+          <div className="space-y-1.5 text-center md:text-left relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 font-mono text-[10px] uppercase font-bold tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>3-MONTH LAUNCH CAMPAIGN &bull; LIMITED-TIME SPECIAL</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black font-serif text-white tracking-tight">
+              1-Month ZEN PRO Free Trial on Every Registration
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl leading-relaxed">
+              Register anytime during our initial 3-month launch window and instantly receive 30 days of ZEN PRO completely free. Zero credit card needed. Full Executive Dais suite, stage broadcasting, and verifiable certificates unlocked.
+            </p>
+          </div>
+
+          <div className="shrink-0 relative z-10 flex flex-col sm:flex-row items-center gap-3">
+            {trialDetails.isTrial && trialDetails.isActive ? (
+              <div className="px-5 py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Trial Active ({trialDetails.daysRemaining} Days Left)</span>
+              </div>
+            ) : trialClaimSuccess ? (
+              <div className="px-5 py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold flex items-center gap-2 animate-fade-in">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>1-Month Trial Activated!</span>
+              </div>
+            ) : profile ? (
+              <button
+                type="button"
+                onClick={handleClaimTrial}
+                className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-400/25 active:scale-95 cursor-pointer"
+              >
+                Activate 1-Month Free Trial &rarr;
+              </button>
+            ) : (
+              <Link
+                href="/login?redirect=/pricing&promo=1month"
+                className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-400/25 active:scale-95 text-center"
+              >
+                Register &amp; Claim 1-Month Free Trial &rarr;
+              </Link>
+            )}
+          </div>
+        </div>
+
         {/* ── SECTION 2: INTERACTIVE CONTROLS BAR ── */}
         <div className="space-y-4">
           {/* Universal Founder Subscription Banner */}
@@ -1144,7 +1217,12 @@ export function PricingClient() {
 
                 {/* Card Bottom CTA */}
                 <div className="pt-6 mt-6 border-t border-white/10">
-                  {activeUserSub?.planId === plan.id ? (
+                  {plan.id === 'zen-pro' && trialDetails.isTrial && trialDetails.isActive ? (
+                    <div className="w-full py-3 rounded-2xl bg-purple-500/20 border border-purple-500/50 text-purple-300 font-mono text-xs font-bold flex items-center justify-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-400" />
+                      <span>ACTIVE TRIAL ({trialDetails.daysRemaining}D LEFT)</span>
+                    </div>
+                  ) : activeUserSub?.planId === plan.id ? (
                     <div className="w-full py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-mono text-xs font-bold flex items-center justify-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       <span>CURRENT ACTIVE PLAN</span>
@@ -1153,6 +1231,10 @@ export function PricingClient() {
                     <button
                       type="button"
                       onClick={() => {
+                        if (plan.id === 'zen-pro' && isPromotionalCampaignActive() && !trialDetails.isTrial) {
+                          handleClaimTrial();
+                          return;
+                        }
                         if (plan.isCustom || plan.id.includes('enterprise') || plan.ctaText.toLowerCase().includes('contact') || formatPrice(plan).toLowerCase() === 'custom') {
                           window.location.href = `mailto:help@zenvitra.xyz?subject=${encodeURIComponent(`Inquiry for ${plan.name} Plan`)}`;
                           return;
@@ -1182,12 +1264,26 @@ export function PricingClient() {
                           : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
                       }`}
                     >
-                      <span>{plan.id === 'pro-starter' ? 'Toggle to Professional & Begin Starter' : plan.ctaText}</span>
+                      <span>
+                        {plan.id === 'pro-starter'
+                          ? 'Toggle to Professional & Begin Starter'
+                          : plan.id === 'zen-pro' && isPromotionalCampaignActive() && !trialDetails.isTrial
+                          ? 'Claim 1-Month Free Trial'
+                          : plan.ctaText}
+                      </span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
                   <p className="text-[10px] font-mono text-neutral-500 text-center mt-2">
-                    {activeUserSub?.planId === plan.id ? 'Verified via Cashfree PG' : (plan.priceINR === 0 ? 'No credit card needed' : 'Instant activation • Cancel anytime')}
+                    {plan.id === 'zen-pro' && trialDetails.isTrial && trialDetails.isActive
+                      ? 'All Pro features active • Zero cost'
+                      : activeUserSub?.planId === plan.id
+                      ? 'Verified via Cashfree PG'
+                      : plan.id === 'zen-pro' && isPromotionalCampaignActive() && !trialDetails.isTrial
+                      ? '🎁 30-Day Launch Trial • No Card Required'
+                      : plan.priceINR === 0
+                      ? 'No credit card needed'
+                      : 'Instant activation • Cancel anytime'}
                   </p>
                 </div>
               </div>

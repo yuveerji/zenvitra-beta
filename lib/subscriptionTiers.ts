@@ -30,6 +30,7 @@ export interface SubscriptionRecord {
   paymentMethod: string;
   activatedAt: string;
   expiresAt: string; // ISO date or 'LIFETIME'
+  isTrial?: boolean;
 }
 
 export type FeatureKey =
@@ -44,7 +45,10 @@ export type FeatureKey =
   | 'PRIORITY_PLENARY_QUEUE'        // Priority Speaker queueing & floor interventions in summits
   | 'CUSTOM_REGISTRATION_EMBED'     // Embed external / custom payment pass checkout widgets
   | 'UNLIMITED_CATEGORY_SUBSCRIPTIONS' // Unlimited subscriptions across Press, News & Pulse feeds
-  | 'MULTI_COUNCIL_EXECUTIVE_BOARD'; // Executive board scoring & multi-room dais relays
+  | 'MULTI_COUNCIL_EXECUTIVE_BOARD' // Executive board scoring & multi-room dais relays
+  | 'EXECUTIVE_BOARD_SCORING'       // Private rubric scoring, diplomacy metrics, and podium rankings
+  | 'RESOLUTION_EXPORT_OFFICIAL'    // Official UN-format PDF export without watermarks
+  | 'UNLIMITED_CHAMBER_ROSTER';     // Host committees with >15 delegates
 
 export const FEATURE_ENTITLEMENTS: Record<FeatureKey, {
   name: string;
@@ -124,9 +128,46 @@ export const FEATURE_ENTITLEMENTS: Record<FeatureKey, {
     minimumTierLabel: 'EVENT PRO // MUN PRO',
     allowedPlans: ['event-pro', 'event-elite', 'org-elite', 'org-enterprise'],
   },
+  EXECUTIVE_BOARD_SCORING: {
+    name: 'Executive Board Scoring & Performance Matrix',
+    description: 'Private delegate evaluation rubrics, diplomacy rating matrices, manual adjustment ledger, and live award rankings.',
+    minimumTierLabel: 'ZEN PRO',
+    allowedPlans: ['zen-pro', 'zen-elite', 'pro-plus', 'pro-enterprise', 'event-pro', 'event-elite', 'org-pro', 'org-elite', 'org-enterprise'],
+  },
+  RESOLUTION_EXPORT_OFFICIAL: {
+    name: 'Official UN-Style Resolution & Bill Exporter',
+    description: 'Export unmoderated caucus working papers, draft resolutions, and national bills in pristine print-ready UN/Westminster treaty format without watermarks.',
+    minimumTierLabel: 'ZEN PRO',
+    allowedPlans: ['zen-pro', 'zen-elite', 'pro-standard', 'pro-plus', 'pro-enterprise', 'event-pro', 'event-elite', 'org-pro', 'org-elite', 'org-enterprise'],
+  },
+  UNLIMITED_CHAMBER_ROSTER: {
+    name: 'Unlimited Delegations & World Chambers',
+    description: 'Build and operate full-scale chambers with over 15 delegations (P5 + G20 + EU + 193 UN sovereign states) and custom bloc presets.',
+    minimumTierLabel: 'ZEN PRO',
+    allowedPlans: ['zen-pro', 'zen-elite', 'pro-plus', 'pro-enterprise', 'event-pro', 'event-elite', 'org-pro', 'org-elite', 'org-enterprise'],
+  },
 };
 
+/**
+ * 3-MONTH LAUNCH PROMOTION:
+ * Any user who registers in the next 3 months (Oct 2026 - Jan 2027) gets 1-Month Free Trial of ZEN PRO.
+ */
+export const PROMO_TRIAL_CAMPAIGN = {
+  name: '3-Month Launch Special: 1-Month ZEN PRO Free Trial',
+  durationDays: 30,
+  startsAt: '2026-10-01T00:00:00Z',
+  endsAt: '2027-01-31T23:59:59Z', // Valid for next 3 months
+};
+
+export function isPromotionalCampaignActive(): boolean {
+  const now = Date.now();
+  const start = new Date(PROMO_TRIAL_CAMPAIGN.startsAt).getTime();
+  const end = new Date(PROMO_TRIAL_CAMPAIGN.endsAt).getTime();
+  return now >= start && now <= end;
+}
+
 export const LOCAL_STORAGE_USER_SUBSCRIPTIONS = 'zenvitra_user_active_subscriptions_v1';
+export const LOCAL_STORAGE_PROMO_TRIAL_CLAIMED = 'zenvitra_promo_trial_claimed_v1';
 
 /**
  * Normalizes user identifier
@@ -271,4 +312,91 @@ export function checkFeatureAccess(
   }
 
   return { hasAccess: false, activePlan: activePlanId, requiredTierLabel };
+}
+
+/**
+ * Activates 1-Month Free Trial of ZEN PRO for a registered user under the launch campaign.
+ */
+export function activatePromotionalProTrial(username: string): SubscriptionRecord {
+  const clean = normalizeUsername(username);
+  const now = new Date();
+  const expires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days / 1 month
+
+  if (typeof window !== 'undefined') {
+    try {
+      const rawClaimed = localStorage.getItem(LOCAL_STORAGE_PROMO_TRIAL_CLAIMED);
+      const claimed = rawClaimed ? JSON.parse(rawClaimed) : {};
+      claimed[clean] = now.toISOString();
+      localStorage.setItem(LOCAL_STORAGE_PROMO_TRIAL_CLAIMED, JSON.stringify(claimed));
+    } catch {}
+  }
+
+  return allotUserSubscription(clean, {
+    planId: 'zen-pro',
+    planName: 'ZEN PRO (1-Month Launch Special Trial)',
+    amountPaid: 0,
+    currency: 'INR',
+    paymentMethod: 'PROMOTIONAL_LAUNCH_TRIAL',
+    expiresAt: expires.toISOString(),
+    isTrial: true,
+  });
+}
+
+/**
+ * Checks and auto-provisions the 1-Month Free Trial for eligible users registered in the 3-month window.
+ */
+export function ensurePromotionalTrial(username?: string | null): SubscriptionRecord | null {
+  if (typeof window === 'undefined') return null;
+  const clean = normalizeUsername(username);
+  if (!clean) return null;
+
+  // If user already has an active subscription, return it
+  const existing = getActiveUserSubscription(clean);
+  if (existing) return existing;
+
+  // Check if promotional campaign is active
+  if (!isPromotionalCampaignActive()) return null;
+
+  // Check if they already claimed and expired the trial
+  try {
+    const rawClaimed = localStorage.getItem(LOCAL_STORAGE_PROMO_TRIAL_CLAIMED);
+    const claimed = rawClaimed ? JSON.parse(rawClaimed) : {};
+    if (claimed[clean]) {
+      // Trial was already claimed previously
+      return null;
+    }
+  } catch {}
+
+  // Auto-activate the 1-month trial for new registration
+  return activatePromotionalProTrial(clean);
+}
+
+/**
+ * Returns trial telemetry details (days remaining, active status)
+ */
+export function getTrialDetails(username?: string | null): {
+  isTrial: boolean;
+  daysRemaining: number;
+  expiresAt: string | null;
+  isActive: boolean;
+} {
+  const clean = normalizeUsername(username);
+  if (!clean) {
+    return { isTrial: false, daysRemaining: 0, expiresAt: null, isActive: false };
+  }
+  const sub = getActiveUserSubscription(clean);
+  if (!sub || !sub.isTrial) {
+    return { isTrial: false, daysRemaining: 0, expiresAt: null, isActive: false };
+  }
+
+  const expTime = new Date(sub.expiresAt).getTime();
+  const diffMs = expTime - Date.now();
+  const daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+
+  return {
+    isTrial: true,
+    daysRemaining,
+    expiresAt: sub.expiresAt,
+    isActive: daysRemaining > 0,
+  };
 }
