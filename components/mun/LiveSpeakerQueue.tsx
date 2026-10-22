@@ -256,7 +256,7 @@ export function LiveSpeakerQueue() {
           />
         </div>
 
-        {/* ── PARLIAMENTARY YIELDS TOOLBAR (GAVELLING STYLE) ── */}
+        {/* ── PARLIAMENTARY YIELDS TOOLBAR (ZENVITRA STYLE) ── */}
         <div className="pt-2 border-t border-white/[0.06] space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono font-semibold text-neutral-400 uppercase tracking-wider">

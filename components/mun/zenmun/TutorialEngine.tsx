@@ -114,15 +114,20 @@ export function TutorialEngine() {
   };
 
   // ─────────────────────────────────────────────────────────────
-  // 1. WELCOME & PROTOCOL COMMAND MODAL (Sovereign Diplomatic Nexus)
+  // 1. WELCOME & PROTOCOL COMMAND MODAL (Zenvitra Mascot Welcome)
   // ─────────────────────────────────────────────────────────────
   if (welcomeModalOpen) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
-        <div className="w-full max-w-lg bg-[#080d1a] rounded-3xl border border-white/15 shadow-[0_0_80px_rgba(0,0,0,0.95)] p-7 space-y-6 text-white relative overflow-hidden">
-          {/* Subtle Ambient Radial Glow */}
-          <div className="absolute -top-24 -left-24 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed inset-0 z-[9999] bg-[#14261b]/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
+        <div className="w-full max-w-2xl bg-white rounded-[32px] border border-[#ded8cb] shadow-[0_20px_70px_rgba(0,0,0,0.35)] p-6 sm:p-8 text-[#1f2937] relative overflow-visible">
+          {/* Zenny the Diplomatic Envoy Mascot perched on top */}
+          <div className="absolute -top-16 left-8 sm:left-12 pointer-events-none z-20">
+            <img
+              src="/assets/mascot_gavin_welcome.png"
+              alt="Zenny the Diplomatic Envoy"
+              className="w-28 h-28 object-contain drop-shadow-xl"
+            />
+          </div>
 
           {/* Dismiss button */}
           <button
@@ -134,88 +139,30 @@ export function TutorialEngine() {
                 tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
               }));
             }}
-            className="absolute top-4 right-4 p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer z-10"
-            title="Close Protocol Modal"
+            className="absolute top-5 right-5 p-1.5 rounded-full text-[#9ca3af] hover:text-[#1f2937] hover:bg-black/5 transition cursor-pointer z-10"
+            title="Skip tutorial"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
 
-          {/* Sovereign Emblem & Title */}
-          <div className="text-center space-y-3 relative z-10">
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-cyan-500/20 via-white/5 to-amber-500/20 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_35px_rgba(6,182,212,0.25)] relative group">
-              <Shield className="w-10 h-10 text-cyan-300 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]" />
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400/20 border border-amber-400/60 flex items-center justify-center">
-                <Gavel className="w-3 h-3 text-amber-300" />
+          {/* 2-Column Welcome Suite matching Zenvitra Dais Standard */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-7 sm:gap-8 items-center pt-2">
+            {/* Left Column: Greeting & Actions */}
+            <div className="md:col-span-7 space-y-4">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1b3d29]/10 text-[#1b3d29] text-[10px] font-mono font-bold tracking-wider uppercase">
+                <Gavel className="w-3 h-3" />
+                <span>Zenvitra Dais Protocol</span>
               </div>
-            </div>
 
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-[10px] font-mono font-black uppercase tracking-widest text-cyan-300 mb-2">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                <span>ZENVITRA DAIS NEXUS</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
-                COMMITTEE COMMAND SUITE
+              <h2 className="text-2xl sm:text-3xl font-black font-serif text-[#1f2421] tracking-tight leading-tight">
+                Have You Used Zenvitra Before?
               </h2>
-              <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed mt-1">
-                The high-performance diplomatic operating system for Model UN, summit presidiums, and parliamentary debate.
+
+              <p className="text-xs sm:text-sm text-[#57534e] leading-relaxed font-normal">
+                Zenny has a short interactive tour ready. He lights up each quarter of the chamber, letting you test gavel controls, speaker queues, and motions as you go. Prefer to watch first? The dais guide runs a full committee session, from roll call to the final vote.
               </p>
-            </div>
-          </div>
 
-          {/* Mode Tabs: Interactive Tour vs Keyboard Shortcuts */}
-          <div className="flex rounded-xl bg-black/50 p-1 border border-white/10">
-            <button
-              type="button"
-              onClick={() => setActiveTab('tour')}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                activeTab === 'tour'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Interactive Protocol Tour</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('hotkeys')}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                activeTab === 'hotkeys'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              <Keyboard className="w-3.5 h-3.5" />
-              <span>Hotkeys &amp; Rules</span>
-            </button>
-          </div>
-
-          {/* Content Pane */}
-          {activeTab === 'tour' ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Dual Caucus Clocks</span>
-                  </div>
-                  <p className="text-[11px] text-neutral-400 leading-normal">
-                    Track total moderated caucus time and individual speaking slots simultaneously.
-                  </p>
-                </div>
-                <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-1">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <Mic className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Live Yields &amp; RTR</span>
-                  </div>
-                  <p className="text-[11px] text-neutral-400 leading-normal">
-                    Yield to Chair, questions, or delegations with a separate Right of Reply buffer.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <div className="pt-2 space-y-2.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -225,11 +172,11 @@ export function TutorialEngine() {
                       tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: true, currentStep: 1 },
                     }));
                   }}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/25 cursor-pointer active:scale-95 flex items-center gap-1.5"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-[#1b3d29] hover:bg-[#142d1f] text-white font-bold text-sm tracking-tight transition shadow-md shadow-[#1b3d29]/25 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
                 >
-                  <span>LAUNCH PROTOCOL TOUR</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Show me around</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -239,59 +186,45 @@ export function TutorialEngine() {
                       tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
                     }));
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 border border-white/10"
+                  className="w-full py-2.5 px-6 rounded-2xl bg-[#ede8df] hover:bg-[#ded7cb] text-[#3f3b35] font-bold text-xs tracking-tight transition cursor-pointer active:scale-98 text-center"
                 >
-                  ENTER LIVE DAIS
+                  Skip tutorial
                 </button>
               </div>
             </div>
-          ) : (
-            /* Hotkeys & Protocol Cheatsheet */
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-1 text-xs">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <span className="text-neutral-300 font-medium">Start / Pause Timer</span>
-                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">Space</kbd>
+
+            {/* Right Column: Chair Video Guide Card */}
+            <div className="md:col-span-5 bg-[#fbfaf8] border border-[#ded8cb] rounded-2xl p-3 shadow-2xs space-y-2">
+              <div className="space-y-0.5 px-1">
+                <div className="text-[10px] font-mono font-bold text-[#8c7860] uppercase tracking-wider flex items-center gap-1">
+                  <span>🏛️</span>
+                  <span>Zenvitra Dais Guide</span>
                 </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <span className="text-neutral-300 font-medium">Next Speaker in Queue</span>
-                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">N</kbd>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <span className="text-neutral-300 font-medium">Reset Clock to Full Time</span>
-                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">R</kbd>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <span className="text-neutral-300 font-medium">Raise Motion / Caucus</span>
-                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">M</kbd>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <span className="text-neutral-300 font-medium">Roll Call &amp; Attendance</span>
-                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">C</kbd>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <span className="text-neutral-300 font-medium">Yield Active Speaker Floor</span>
-                  <kbd className="px-2 py-0.5 rounded bg-black/60 border border-white/20 font-mono text-[11px] text-cyan-300">Y</kbd>
+                <div className="text-xs font-bold text-[#1f2937]">
+                  Your First Committee, Start to Finish
                 </div>
               </div>
 
-              <div className="pt-2 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSession((prev) => ({
-                      ...prev,
-                      sessionState: 'in-session',
-                      tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
-                    }));
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-98 shadow-md shadow-emerald-500/20"
-                >
-                  START SESSION
-                </button>
+              {/* Video Preview Thumbnail */}
+              <div className="relative rounded-xl overflow-hidden aspect-video bg-black/10 border border-[#ded8cb] group cursor-pointer shadow-inner">
+                <img
+                  src="/assets/chair_guide_video_thumb.png"
+                  alt="Zenvitra Dais Guide Video Preview"
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                {/* Play Button Overlay */}
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#1b3d29] border-2 border-white/60 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                    <div className="w-0 h-0 border-y-6 border-y-transparent border-l-10 border-l-white ml-1" />
+                  </div>
+                </div>
               </div>
+
+              <p className="text-[10px] text-[#78716c] px-1 font-medium leading-tight">
+                Watch how a dais operates on Zenvitra from roll-call quorum to division bell voting in under 3 minutes.
+              </p>
             </div>
-          )}
+          </div>
         </div>
       </div>
     );
@@ -301,26 +234,52 @@ export function TutorialEngine() {
   if (!isActive) return null;
 
   // ─────────────────────────────────────────────────────────────
-  // 2. ACTIVE INTERACTIVE TOUR HUD (Cyber-Sovereign Target Spotlight)
+  // 2. ACTIVE INTERACTIVE TOUR HUD (Zenvitra Spotlight Tour)
   // ─────────────────────────────────────────────────────────────
+  // Parse bullet points for current step
+  const getBulletPoints = () => {
+    if (currentStep === 2) {
+      return [
+        'Speakers, timers, motions, voting, chat and documents, all on one screen.',
+        'Built to run the whole session, from the first gavel to the last.',
+        'Click anywhere or press Next to keep going.',
+      ];
+    }
+    if (currentStep === 4) {
+      return [
+        'Type a country in the bar below and press Enter.',
+        'Or click a delegation in the sidebar.',
+        'The tour moves on once 3 are on the list.',
+      ];
+    }
+    // General sentence splitter into bullets
+    const sentences = currentStepData.text
+      .split(/(?<=[.?!])\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return sentences.length > 0 ? sentences : [currentStepData.text];
+  };
+
+  const bullets = getBulletPoints();
+
   return (
     <div className="fixed inset-0 pointer-events-none z-[9990] select-none">
-      {/* Dynamic Keyframes */}
+      {/* Dynamic Keyframes for Spotlight Halo */}
       <style>{`
-        @keyframes sovereignHaloPulse {
+        @keyframes zenSpotlightHalo {
           0%, 100% {
-            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.9), 0 0 25px rgba(6, 182, 212, 0.45);
+            box-shadow: 0 0 0 2px rgba(27, 61, 41, 0.9), 0 0 20px rgba(212, 175, 55, 0.5);
           }
           50% {
-            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.95), 0 0 40px rgba(251, 191, 36, 0.6);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.95), 0 0 30px rgba(212, 175, 55, 0.8);
           }
         }
-        .animate-sovereign-halo {
-          animation: sovereignHaloPulse 1.8s ease-in-out infinite;
+        .animate-zen-halo {
+          animation: zenSpotlightHalo 1.8s ease-in-out infinite;
         }
       `}</style>
 
-      {/* Full-screen Darkened Backdrop SVG with transparent holes cut out for targets */}
+      {/* Full-screen Darkened Forest Green Backdrop SVG with transparent holes cut out for targets */}
       <svg className="fixed inset-0 w-full h-full pointer-events-none z-[80]" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <mask id="zen-spotlight-mask">
@@ -344,12 +303,12 @@ export function TutorialEngine() {
           y="0"
           width="100%"
           height="100%"
-          fill="rgba(3, 4, 7, 0.65)"
+          fill="rgba(19, 38, 27, 0.72)"
           mask="url(#zen-spotlight-mask)"
         />
       </svg>
 
-      {/* Flashing Laser Rings around target elements */}
+      {/* Flashing Gold/Forest Rings around target elements */}
       {targetRects.map((t) => (
         <div
           key={`flash-ring-${t.id}`}
@@ -359,95 +318,75 @@ export function TutorialEngine() {
             width: t.width + 12,
             height: t.height + 12,
           }}
-          className="fixed pointer-events-none z-[85] rounded-2xl animate-sovereign-halo"
-        >
-          <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-80" />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-400 shadow-[0_0_10px_#06b6d4]" />
-          </span>
-        </div>
+          className="fixed pointer-events-none z-[85] rounded-2xl animate-zen-halo"
+        />
       ))}
 
-      {/* Top Floating Step Controller */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-auto z-[90]">
-        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#080d1a]/95 backdrop-blur-md shadow-2xl border border-white/15 text-xs font-bold text-white">
-          <button
-            type="button"
-            disabled={currentStep === 1}
-            onClick={prevTutorialStep}
-            className={`flex items-center gap-1 cursor-pointer transition ${
-              currentStep === 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-cyan-300'
-            }`}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Prev</span>
-          </button>
-
-          <span className="font-mono text-cyan-300 px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-[11px]">
-            STEP {currentStep} / {TUTORIAL_STEPS_CONTENT.length}
-          </span>
-
-          <button
-            type="button"
-            onClick={isFinal ? endTutorial : nextTutorialStep}
-            className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 cursor-pointer font-black"
-          >
-            <span>{isFinal ? 'Finish Guide' : 'Next'}</span>
-            {!isFinal && <ArrowRight className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Top-Right Dismiss Button */}
-      <div className="absolute top-4 right-6 pointer-events-auto z-[90]">
-        <button
-          type="button"
-          onClick={endTutorial}
-          className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition shadow-md border border-white/15 flex items-center gap-1.5"
-        >
-          <X className="w-3.5 h-3.5" />
-          <span>Exit Guide</span>
-        </button>
-      </div>
-
-      {/* Sovereign Floating Command HUD Card (Bottom Right) */}
-      <div className="absolute bottom-6 right-6 max-w-sm w-full pointer-events-auto z-[90] animate-fade-in">
-        <div className="p-5 rounded-3xl bg-[#080d1a]/95 backdrop-blur-xl border border-cyan-500/30 shadow-[0_0_50px_rgba(0,0,0,0.9)] space-y-3.5 text-white relative overflow-hidden">
-          {/* Subtle ambient corner gradient */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
-
-          {/* Card Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
-                <Command className="w-3 h-3 text-cyan-300" />
-              </div>
-              <span className="text-xs font-black uppercase tracking-wider text-cyan-300 truncate max-w-[200px]">
-                {currentStepData.title}
-              </span>
-            </div>
-            <span className="text-[10px] font-mono text-neutral-400">
-              {currentStep}/{TUTORIAL_STEPS_CONTENT.length}
-            </span>
+      {/* Floating Zenvitra Step Card with Zenny Mascot */}
+      <div className="fixed top-24 right-8 sm:right-16 max-w-md w-full pointer-events-auto z-[95] animate-in fade-in slide-in-from-top-4">
+        <div className="bg-white rounded-[26px] border border-[#ded8cb] shadow-[0_20px_60px_rgba(0,0,0,0.35)] p-6 space-y-4 text-[#1f2937] relative overflow-visible">
+          {/* Zenny Pointer Mascot perched on top of card */}
+          <div className="absolute -top-14 left-8 pointer-events-none z-20">
+            <img
+              src="/assets/mascot_gavin_pointer.png"
+              alt="Zenny Dais Guide"
+              className="w-20 h-20 object-contain drop-shadow-md"
+            />
           </div>
 
-          {/* Formatted Guide Copy */}
-          <p className="text-xs text-neutral-300 leading-relaxed font-medium">
-            {renderFormattedSpeech(currentStepData.text, currentStepData.highlightWords)}
-          </p>
+          {/* Top Bar: Step Counter & End Tutorial */}
+          <div className="flex items-center justify-between border-b border-[#f0ece1] pb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-extrabold text-[#1b3d29] tracking-wider uppercase bg-[#1b3d29]/10 px-2 py-0.5 rounded-md">
+                ZENVITRA DAIS
+              </span>
+              <span className="text-xs font-mono font-bold text-[#8c7860]">
+                {currentStep}/{TUTORIAL_STEPS_CONTENT.length}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={endTutorial}
+              className="text-xs font-bold text-[#8c7860] hover:text-[#1f2421] transition cursor-pointer"
+            >
+              End tutorial
+            </button>
+          </div>
+
+          {/* Title */}
+          <h3 className="text-xl font-black font-serif text-[#1f2421] tracking-tight">
+            {currentStepData.title}
+          </h3>
+
+          {/* Bullet List */}
+          <ul className="space-y-2.5 text-xs text-[#57534e] leading-relaxed font-normal">
+            {bullets.map((b, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <span className="text-amber-500 font-bold shrink-0 mt-0.5">&bull;</span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
 
           {/* Bottom Card Controls */}
-          <div className="flex items-center justify-between pt-1 text-[11px]">
-            <span className="text-[10px] text-neutral-400 font-mono">
-              Press <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-white">Enter</kbd> to advance
-            </span>
+          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-[#f0ece1]">
+            <button
+              type="button"
+              disabled={currentStep === 1}
+              onClick={prevTutorialStep}
+              className={`px-4 py-2 rounded-xl bg-[#ede8df] text-[#3f3b35] font-bold text-xs transition ${
+                currentStep === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#ded7cb] cursor-pointer'
+              }`}
+            >
+              Back
+            </button>
+
             <button
               type="button"
               onClick={isFinal ? endTutorial : nextTutorialStep}
-              className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-black uppercase text-[10px] tracking-wider transition cursor-pointer flex items-center gap-1 active:scale-95"
+              className="px-5 py-2 rounded-xl bg-[#1b3d29] hover:bg-[#142d1f] text-white font-bold text-xs transition cursor-pointer shadow-xs active:scale-95"
             >
-              <span>{isFinal ? 'Done' : 'Next Step'}</span>
-              <ArrowRight className="w-3 h-3" />
+              {currentStep === 4 ? 'Skip' : isFinal ? 'Finish' : 'Next'}
             </button>
           </div>
         </div>

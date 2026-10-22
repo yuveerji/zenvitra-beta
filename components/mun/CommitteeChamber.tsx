@@ -246,7 +246,7 @@ export function CommitteeChamber() {
     setTimeout(() => setGavelActive(false), 2400);
   };
 
-  // Keyboard Shortcuts for Committee Chamber (Gavelling standard)
+  // Keyboard Shortcuts for Committee Chamber (Zenvitra standard)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -559,7 +559,7 @@ export function CommitteeChamber() {
                 )}
               </button>
 
-              {/* Projector View / Stage Mode Button (Gavelling Style) */}
+              {/* Projector View / Stage Mode Button (Zenvitra Style) */}
               <button
                 type="button"
                 onClick={() => setShowFullscreenView(true)}

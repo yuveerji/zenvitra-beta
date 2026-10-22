@@ -470,7 +470,7 @@ function CommitteePortalInner() {
             </button>
           </div>
 
-          {/* Gateway 2: Gavelling Setup Studio */}
+          {/* Gateway 2: Zenvitra Dais Setup Studio */}
           <div className="p-6 rounded-3xl bg-[#0b1120] border border-[#ede3cf]/20 flex flex-col justify-between space-y-4 hover:border-emerald-500/50 transition shadow-lg group">
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-300 flex items-center justify-center border border-amber-500/30 shadow-xs">
@@ -483,7 +483,7 @@ function CommitteePortalInner() {
                 <h3 className="text-lg font-black font-serif text-white mt-0.5">Setup Studio &amp; Matrices</h3>
               </div>
               <p className="text-xs text-neutral-400 leading-relaxed">
-                Gavelling-standard setup: P5, G20, EU, NDA, I.N.D.I.A., Union Cabinet &amp; Indian States quick bundles.
+                Zenvitra-standard setup: P5, G20, EU, NDA, I.N.D.I.A., Union Cabinet &amp; Indian States quick bundles.
               </p>
             </div>
             <button

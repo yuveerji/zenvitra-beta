@@ -952,7 +952,7 @@ export default function ModelUnCvPage() {
               ))}
             </div>
           ) : (
-            /* Masterpiece Empty State (Outshining Gavelling's boring box) */
+            /* Masterpiece Empty State (Outshining conventional boring boxes) */
             <div className="relative rounded-3xl bg-[#080a13]/90 border border-white/10 shadow-2xl p-10 sm:p-16 text-center space-y-6 overflow-hidden glass-specular hologram-shine">
               <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-3xl bg-gradient-to-br from-amber-500/20 via-cyan-500/10 to-transparent border border-amber-500/30 flex items-center justify-center text-4xl sm:text-5xl shadow-2xl shadow-amber-500/10">
                 ⚖️

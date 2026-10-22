@@ -589,7 +589,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
 
   return (
     <div className="min-h-screen bg-[#ede8df] text-[#2d2822] font-sans antialiased flex flex-col select-none">
-      {/* Top Navbar matching Gavelling Header */}
+      {/* Top Navbar matching Zenvitra Dais Header */}
       <header className="w-full bg-[#ede8df] border-b border-[#ded7ca]/70 px-4 sm:px-8 py-3.5 flex items-center justify-between z-30">
         <div className="flex items-center gap-4 sm:gap-6">
           {/* Logo Brand */}
@@ -599,10 +599,10 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
             </div>
             <div className="flex flex-col">
               <span className="font-serif font-black text-sm tracking-tight text-[#2d2822] leading-none">
-                GAVELLING
+                ZENVITRA
               </span>
               <span className="text-[9px] font-bold text-[#8c7860] uppercase tracking-wider leading-none mt-0.5">
-                The #1 MUN Ecosystem
+                Dais &amp; Committee Ecosystem
               </span>
             </div>
           </div>
@@ -790,7 +790,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                   className="w-full px-4 py-3 rounded-xl bg-white border border-[#ded8cb] focus:border-[#1b3d29] focus:ring-1 focus:ring-[#1b3d29] text-sm font-semibold text-[#1f2937] placeholder:text-[#9ca3af] outline-none transition"
                 />
 
-                {/* Floating Autocomplete Dropdown matching Gavelling UX */}
+                {/* Floating Autocomplete Dropdown matching Zenvitra UX */}
                 {autocompleteOpen && filteredPresets.length > 0 && (
                   <div className="absolute top-[calc(100%+6px)] left-0 right-0 z-40 bg-white rounded-2xl shadow-2xl border border-[#ded8cb] overflow-hidden divide-y divide-[#ede7dc] max-h-72 overflow-y-auto">
                     {filteredPresets.map((p, idx) => {
