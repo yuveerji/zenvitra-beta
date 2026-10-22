@@ -167,7 +167,7 @@ export function PortfolioMatrixView({ onSelectPortfolio, standalone = false, ini
     const cleanEmail = (profile?.email || user?.email || '').toLowerCase();
 
     if (cleanUsername === 'yuveer' || cleanEmail === 'founder@zenvitra.xyz' || cleanEmail === 'founder@zenvitra.org') return true;
-    if (isFounder(user) || isAdmin(user)) return true;
+    if (isFounder(user?.username || user?.email, user?.role) || isAdmin(user?.username || user?.email, user?.role)) return true;
     if ((profile as any)?.isFounder) return true;
     if (
       profile?.role === 'admin' ||

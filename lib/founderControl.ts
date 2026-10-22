@@ -210,9 +210,27 @@ export function getFounderDirective(): FounderDirective {
   }
 }
 
-export function isYuveer(usernameOrEmail?: string | null): boolean {
+export function extractSafeIdentity(val: any): { identifier: string; role?: string; id?: string } {
+  if (!val) return { identifier: '' };
+  if (typeof val === 'string') return { identifier: val };
+  if (typeof val === 'object') {
+    const identifier = val.username || val.email || val.handle || val.name || '';
+    const role = val.role || '';
+    const id = val.id || '';
+    return {
+      identifier: typeof identifier === 'string' ? identifier : String(identifier || ''),
+      role: typeof role === 'string' ? role : String(role || ''),
+      id: typeof id === 'string' ? id : String(id || ''),
+    };
+  }
+  return { identifier: String(val) };
+}
+
+export function isYuveer(usernameOrEmail?: string | null | any): boolean {
   if (!usernameOrEmail) return false;
-  const clean = usernameOrEmail.toLowerCase().trim().replace(/^@/, '');
+  const { identifier } = extractSafeIdentity(usernameOrEmail);
+  if (!identifier) return false;
+  const clean = identifier.toLowerCase().trim().replace(/^@/, '');
   // Strict identity matching for Founder (Yuveer Chhatwani)
   return (
     clean === 'yuveer' ||
@@ -228,9 +246,11 @@ export function isYuveer(usernameOrEmail?: string | null): boolean {
   );
 }
 
-export function isAarush(usernameOrEmail?: string | null): boolean {
+export function isAarush(usernameOrEmail?: string | null | any): boolean {
   if (!usernameOrEmail) return false;
-  const clean = usernameOrEmail.toLowerCase().trim().replace(/^@/, '');
+  const { identifier } = extractSafeIdentity(usernameOrEmail);
+  if (!identifier) return false;
+  const clean = identifier.toLowerCase().trim().replace(/^@/, '');
   return (
     clean === 'aarush' ||
     clean === 'aarush@zenvitra.xyz' ||
@@ -652,10 +672,14 @@ export function setCustomFounderKey(newKey: string): void {
   addAuditLog(`Founder updated Personal Sovereign Master Key`, 'PROTOCOL');
 }
 
-export function isCoFounder(usernameOrEmail?: string | null, role?: string | null): boolean {
-  if (!usernameOrEmail && !role) return false;
-  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
-  const r = (role || '').toUpperCase().trim();
+export function isCoFounder(usernameOrEmail?: string | null | any, role?: string | null): boolean {
+  const extracted = extractSafeIdentity(usernameOrEmail);
+  const effectiveRole = role || extracted.role;
+  const effectiveIdentifier = extracted.identifier;
+
+  if (!effectiveIdentifier && !effectiveRole) return false;
+  const clean = effectiveIdentifier.toLowerCase().trim().replace(/^@/, '');
+  const r = (effectiveRole || '').toUpperCase().trim();
   if (r === 'CO_FOUNDER' || r === 'COFOUNDER') return true;
   return (
     isAarush(clean) ||
@@ -670,12 +694,16 @@ export function isCoFounder(usernameOrEmail?: string | null, role?: string | nul
   );
 }
 
-export function isFounder(usernameOrEmail?: string | null, role?: string | null): boolean {
-  const r = (role || '').toUpperCase().trim();
+export function isFounder(usernameOrEmail?: string | null | any, role?: string | null): boolean {
+  const extracted = extractSafeIdentity(usernameOrEmail);
+  const effectiveRole = role || extracted.role;
+  const effectiveIdentifier = extracted.identifier;
+
+  const r = (effectiveRole || '').toUpperCase().trim();
   if (r === 'FOUNDER') return true;
   // If a specific username or email is checked, it MUST match the strict Founder identity
-  if (usernameOrEmail) {
-    return isYuveer(usernameOrEmail);
+  if (effectiveIdentifier) {
+    return isYuveer(effectiveIdentifier);
   }
   // If no username/email was passed, check the verified active founder session
   if (typeof window !== 'undefined') {
@@ -685,20 +713,25 @@ export function isFounder(usernameOrEmail?: string | null, role?: string | null)
 }
 
 export function isFounderOrCoFounder(
-  usernameOrEmail?: string | null,
+  usernameOrEmail?: string | null | any,
   role?: string | null,
   id?: string | null
 ): boolean {
-  if (!usernameOrEmail && !role && !id) {
+  const extracted = extractSafeIdentity(usernameOrEmail);
+  const effectiveRole = role || extracted.role;
+  const effectiveIdentifier = extracted.identifier;
+  const effectiveId = id || extracted.id;
+
+  if (!effectiveIdentifier && !effectiveRole && !effectiveId) {
     if (typeof window !== 'undefined') {
       return isFounderSessionActive();
     }
     return false;
   }
 
-  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
-  const r = (role || '').toUpperCase().trim();
-  const cleanId = (id || '').toLowerCase().trim();
+  const clean = effectiveIdentifier.toLowerCase().trim().replace(/^@/, '');
+  const r = (effectiveRole || '').toUpperCase().trim();
+  const cleanId = (effectiveId || '').toLowerCase().trim();
 
   // 1. Role check
   if (r === 'FOUNDER' || r === 'CO_FOUNDER' || r === 'COFOUNDER') {
@@ -706,12 +739,12 @@ export function isFounderOrCoFounder(
   }
 
   // 2. Founder identity check
-  if (isFounder(clean, r) || isFounder(cleanId, r)) {
+  if (isFounder(clean, r) || (cleanId && isFounder(cleanId, r))) {
     return true;
   }
 
   // 3. Co-Founder identity check
-  if (isCoFounder(clean, r) || isCoFounder(cleanId, r)) {
+  if (isCoFounder(clean, r) || (cleanId && isCoFounder(cleanId, r))) {
     return true;
   }
 
@@ -774,11 +807,15 @@ export const PRIVILEGED_CLEARANCE_ROLES = [
   'CORE_TEAM',
 ];
 
-export function isAdmin(usernameOrEmail?: string | null, role?: string | null): boolean {
-  if (isFounder(usernameOrEmail, role)) return true;
-  if (isCoFounder(usernameOrEmail, role)) return true;
-  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
-  const r = (role || '').toUpperCase().trim();
+export function isAdmin(usernameOrEmail?: string | null | any, role?: string | null): boolean {
+  const extracted = extractSafeIdentity(usernameOrEmail);
+  const effectiveRole = role || extracted.role;
+  const effectiveIdentifier = extracted.identifier;
+
+  if (isFounder(effectiveIdentifier, effectiveRole)) return true;
+  if (isCoFounder(effectiveIdentifier, effectiveRole)) return true;
+  const clean = effectiveIdentifier.toLowerCase().trim().replace(/^@/, '');
+  const r = (effectiveRole || '').toUpperCase().trim();
   return (
     PRIVILEGED_CLEARANCE_ROLES.includes(r) ||
     clean === 'admin'
@@ -791,24 +828,29 @@ export function isAdmin(usernameOrEmail?: string | null, role?: string | null): 
  * Normal user accounts (delegate, student, guest, creator, journalist, professional, etc.) strictly evaluate to false.
  */
 export function isPrivilegedAccount(
-  usernameOrEmail?: string | null,
+  usernameOrEmail?: string | null | any,
   role?: string | null,
   id?: string | null
 ): boolean {
-  if (!usernameOrEmail && !role && !id) return false;
+  const extracted = extractSafeIdentity(usernameOrEmail);
+  const effectiveRole = role || extracted.role;
+  const effectiveIdentifier = extracted.identifier;
+  const effectiveId = id || extracted.id;
 
-  const clean = (usernameOrEmail || '').toLowerCase().trim().replace(/^@/, '');
-  const r = (role || '').toUpperCase().trim();
-  const cleanId = (id || '').toLowerCase().trim();
+  if (!effectiveIdentifier && !effectiveRole && !effectiveId) return false;
+
+  const clean = effectiveIdentifier.toLowerCase().trim().replace(/^@/, '');
+  const r = (effectiveRole || '').toUpperCase().trim();
+  const cleanId = (effectiveId || '').toLowerCase().trim();
 
   // 1. Founder Identity (Yuveer)
-  if (isFounder(clean, r) || isFounder(cleanId, r)) return true;
+  if (isFounder(clean, r) || (cleanId && isFounder(cleanId, r))) return true;
 
   // 2. Co-Founder Identities (Aarush, Khushi)
-  if (isCoFounder(clean, r) || isCoFounder(cleanId, r)) return true;
+  if (isCoFounder(clean, r) || (cleanId && isCoFounder(cleanId, r))) return true;
 
   // 3. Admin / Core Team designations
-  if (isAdmin(clean, r) || isAdmin(cleanId, r)) return true;
+  if (isAdmin(clean, r) || (cleanId && isAdmin(cleanId, r))) return true;
 
   return false;
 }

@@ -95,8 +95,8 @@ export default function ZenMunPortalPage() {
   }
 
   const isExecutive = Boolean(
-    isFounder(user) || 
-    isAdmin(user) || 
+    isFounder(user?.username || user?.email, user?.role) || 
+    isAdmin(user?.username || user?.email, user?.role) || 
     user?.role === 'ADMIN' || 
     user?.role === 'SECRETARIAT_CHAIR'
   );

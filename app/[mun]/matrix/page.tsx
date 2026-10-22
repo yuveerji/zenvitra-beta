@@ -328,8 +328,8 @@ export default function DynamicMunMatrixPage() {
       cleanUsername === 'yuveer' ||
       cleanEmail === 'founder@zenvitra.xyz' ||
       cleanEmail === 'founder@zenvitra.org' ||
-      isFounder(user) ||
-      isAdmin(user) ||
+      isFounder(user?.username || user?.email, user?.role) ||
+      isAdmin(user?.username || user?.email, user?.role) ||
       (profile?.role as string) === 'organizer' ||
       profile?.role === 'admin' ||
       (profile?.role as string) === 'secretariat'
