@@ -27,6 +27,7 @@ import {
   Trophy,
   Sliders,
   Settings,
+  Lock,
   Radio,
   BookOpen,
   GraduationCap,
@@ -37,6 +38,7 @@ import {
   Edit2,
   Maximize2,
   Send,
+  Gavel,
 } from 'lucide-react';
 import {
   HostSessionFormat,
@@ -156,9 +158,11 @@ export default function ZenHostLiveDais({
 
   // Copied link toast state
   const [hasCopiedLink, setHasCopiedLink] = useState(false);
+  // Gavel shockwave animation state
+  const [isGavelStriking, setIsGavelStriking] = useState(false);
 
   // ── Web Audio API Synthetic Chimes ──────────────────────────────────
-  const playSoundEffect = useCallback((type: 'ding' | 'buzzer' | 'applause') => {
+  const playSoundEffect = useCallback((type: 'ding' | 'buzzer' | 'applause' | 'gavel') => {
     if (!daisSettings.enableSounds || !soundEnabled || typeof window === 'undefined') return;
     if (type === 'ding' && !daisSettings.enableWarningBell) return;
     if (type === 'buzzer' && !daisSettings.enableBuzzer) return;
@@ -212,6 +216,21 @@ export default function ZenHostLiveDais({
         filter.connect(gain);
         gain.connect(ctx.destination);
         noise.start();
+      } else if (type === 'gavel') {
+        // Synthesize resonant double wooden gavel strike
+        [0, 0.12].forEach((delay) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220, ctx.currentTime + delay);
+          osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + delay + 0.09);
+          gain.gain.setValueAtTime(0.55, ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.18);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 0.18);
+        });
       }
     } catch {
       // AudioContext unavailable or blocked by autoplay policy
@@ -253,6 +272,12 @@ export default function ZenHostLiveDais({
   }, [isTimerRunning, playSoundEffect, daisSettings.enableTimer, daisSettings.strictCutoff]);
 
   // ── Keyboard Shortcuts ──────────────────────────────────────────────
+  const handleGavelStrike = useCallback(() => {
+    playSoundEffect('gavel');
+    setIsGavelStriking(true);
+    setTimeout(() => setIsGavelStriking(false), 800);
+  }, [playSoundEffect]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -267,6 +292,9 @@ export default function ZenHostLiveDais({
       } else if (e.key === 'n' || e.key === 'N') {
         e.preventDefault();
         handleNextPerformer();
+      } else if (e.key === 'g' || e.key === 'G') {
+        e.preventDefault();
+        handleGavelStrike();
       } else if (e.key === 'd' || e.key === 'D') {
         e.preventDefault();
         playSoundEffect('ding');
@@ -281,7 +309,7 @@ export default function ZenHostLiveDais({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [queue, activeQueueItem]);
+  }, [queue, activeQueueItem, handleGavelStrike, playSoundEffect]);
 
   // ── Queue Operations ────────────────────────────────────────────────
   const handleAddPerformer = (e: React.FormEvent) => {
@@ -407,7 +435,8 @@ export default function ZenHostLiveDais({
 
   const handleOpenAuditoriumDisplay = () => {
     if (typeof window === 'undefined') return;
-    window.open(`/host/display?room=${sessionCode}&format=${format}`, '_blank');
+    const votingParam = daisSettings.enableVoting ? 'allowed' : 'off';
+    window.open(`/host/display?room=${sessionCode}&format=${format}&voting=${votingParam}`, '_blank');
   };
 
   // Formatting utilities
@@ -421,14 +450,18 @@ export default function ZenHostLiveDais({
   const isWarning = remainingSeconds <= 30 && remainingSeconds > 0;
 
   return (
-    <div className="min-h-screen bg-[#020408] text-neutral-100 font-sans select-none flex flex-col justify-between overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-200">
+    <div className="min-h-screen bg-[#020409] text-neutral-100 font-sans select-none flex flex-col justify-between overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-200 relative">
+      {/* ── AMBIENT STAGE LIGHTING & TECH GRID (GAVELLING-GRADE ILLUMINATION) ── */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+      <div className="fixed -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[400px] pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.35),transparent_70%)] blur-[90px]" />
+
       {/* ── 1. SOVEREIGN DAIS COMMAND HEADER ─────────────────────────────────── */}
-      <header className="border-b border-white/10 bg-[#060913]/90 backdrop-blur-md px-4 sm:px-6 py-3 sticky top-0 z-40 flex items-center justify-between gap-4">
+      <header className="border-b border-white/[0.08] bg-[#040711]/90 backdrop-blur-xl px-4 sm:px-6 py-3 sticky top-0 z-40 flex items-center justify-between gap-4">
         {/* Left: Brand & Format Selector */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-            <span className="text-[10px] font-mono font-black uppercase tracking-widest text-emerald-400">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-400">
               {isTimerRunning ? 'ON AIR' : 'STAGE READY'}
             </span>
           </div>
@@ -445,13 +478,13 @@ export default function ZenHostLiveDais({
                 onBlur={() => setIsEditingTitle(false)}
                 onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
                 autoFocus
-                className="bg-black/60 border border-white/30 rounded-lg px-2.5 py-1 text-sm font-bold text-white focus:outline-none focus:border-amber-400"
+                className="bg-black/70 border border-amber-400/50 rounded-lg px-2.5 py-1 text-sm font-bold font-space text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
               />
             ) : (
               <button
                 type="button"
                 onClick={() => setIsEditingTitle(true)}
-                className="flex items-center gap-1.5 text-sm sm:text-base font-black text-white hover:text-amber-300 transition group text-left"
+                className="flex items-center gap-1.5 text-sm sm:text-base font-black font-space text-white hover:text-amber-300 transition group text-left tracking-tight"
               >
                 <span>{title}</span>
                 <Edit2 className="w-3.5 h-3.5 text-neutral-500 group-hover:text-amber-400 opacity-60 transition" />
@@ -459,14 +492,14 @@ export default function ZenHostLiveDais({
             )}
 
             {/* Format Badge */}
-            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-black uppercase tracking-wider">
+            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
               {formatPreset.badge}
             </span>
           </div>
         </div>
 
         {/* Center: Format Selector Quick Dropdown */}
-        <div className="hidden lg:flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl p-1">
+        <div className="hidden lg:flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-xl p-1 backdrop-blur-md">
           {(Object.keys(HOST_FORMAT_PRESETS) as HostSessionFormat[])
             .filter((fmt) => fmt !== 'mun') // MUN has its own specialized chair dais
             .map((fmtKey) => {
@@ -481,9 +514,9 @@ export default function ZenHostLiveDais({
                     setSpeakerDuration(preset.defaultTimer);
                     setRemainingSeconds(preset.defaultTimer);
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-bold font-space transition flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]'
                       : 'text-neutral-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -499,11 +532,11 @@ export default function ZenHostLiveDais({
           <button
             type="button"
             onClick={handleCopyJoinLink}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-mono font-bold text-amber-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-mono font-bold text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
             title="Click to copy join link for attendees"
           >
             <Share2 className="w-3.5 h-3.5 text-amber-400" />
-            <span>{sessionCode}</span>
+            <span className="tracking-widest">{sessionCode}</span>
             {hasCopiedLink && (
               <span className="text-[10px] text-emerald-400 font-bold ml-1 animate-pulse">COPIED!</span>
             )}
@@ -515,19 +548,19 @@ export default function ZenHostLiveDais({
             onClick={() => setSoundEnabled((prev) => !prev)}
             className={`p-2 rounded-xl border transition ${
               soundEnabled
-                ? 'bg-white/[0.05] border-white/15 text-neutral-300 hover:text-white'
+                ? 'bg-white/[0.05] border-white/15 text-neutral-300 hover:text-white hover:border-amber-400/40'
                 : 'bg-red-950/40 border-red-500/40 text-red-400'
             }`}
             title={soundEnabled ? 'Sound FX Enabled' : 'Sound FX Muted'}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
           {/* Projector / Stage Display */}
           <button
             type="button"
             onClick={handleOpenAuditoriumDisplay}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-950/50 border border-cyan-500/40 hover:bg-cyan-900/60 transition text-xs font-bold text-cyan-300"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 hover:bg-cyan-900/50 transition text-xs font-bold font-space text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
             title="Launch Fullscreen Projector / Public Stage Feed"
           >
             <Tv className="w-3.5 h-3.5" />
@@ -538,7 +571,7 @@ export default function ZenHostLiveDais({
           <button
             type="button"
             onClick={() => setIsSettingsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-bold text-amber-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-bold font-space text-amber-300"
             title="Configure Live Stage Features & Toggles"
           >
             <Settings className="w-3.5 h-3.5" />
@@ -549,7 +582,7 @@ export default function ZenHostLiveDais({
           <button
             type="button"
             onClick={() => setIsCustomConfigModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] transition text-xs font-bold text-cyan-300"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] transition text-xs font-bold font-space text-cyan-300"
             title="Configure Modular Event Toggles"
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -573,10 +606,10 @@ export default function ZenHostLiveDais({
 
       {/* ── 2. ACTIVE BROADCAST ANNOUNCEMENT BANNER ──────────────────────────── */}
       {isBroadcastBannerActive && announcementText && (
-        <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-black px-4 py-2 font-black text-xs uppercase tracking-wider flex items-center justify-between shadow-lg relative z-30">
+        <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-black px-4 py-2 font-black font-space text-xs uppercase tracking-wider flex items-center justify-between shadow-xl relative z-30">
           <div className="flex items-center gap-2">
             <Bell className="w-4 h-4 animate-bounce" />
-            <span>STAGE ANNOUNCEMENT:</span>
+            <span className="font-mono">STAGE ANNOUNCEMENT:</span>
             <span className="font-normal normal-case text-sm text-neutral-900 font-sans font-semibold">
               {announcementText}
             </span>
@@ -600,10 +633,15 @@ export default function ZenHostLiveDais({
           } flex flex-col space-y-6`}
         >
           {/* Active Performer / Speaker Spotlight Card */}
-          <div className="relative rounded-3xl bg-[#070b16] border border-white/10 shadow-2xl p-6 sm:p-8 overflow-hidden">
-            {/* Ambient Spotlight Glow */}
+          <div className="relative rounded-3xl bg-[#050814]/90 border border-white/[0.08] shadow-[0_15px_50px_rgba(0,0,0,0.7)] p-6 sm:p-8 overflow-hidden backdrop-blur-2xl">
+            {/* Gavel Strike Shockwave Animation */}
+            {isGavelStriking && (
+              <div className="absolute inset-0 bg-amber-500/15 animate-ping pointer-events-none rounded-3xl z-20" />
+            )}
+
+            {/* Ambient Dynamic Spotlight Glow */}
             <div
-              className={`absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none transition duration-700 opacity-20 ${
+              className={`absolute top-0 right-0 w-[450px] h-[450px] rounded-full blur-[100px] pointer-events-none transition duration-700 opacity-25 ${
                 isOvertime
                   ? 'bg-red-500'
                   : isWarning
@@ -612,32 +650,50 @@ export default function ZenHostLiveDais({
               }`}
             />
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-6 relative z-10">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6 relative z-10">
               <div className="flex items-center gap-4">
+                {/* Active Speaker Avatar with Live Frequency Pulsing Ring */}
                 <div
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg border transition ${
+                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center font-black text-xl shadow-2xl border transition-all duration-300 relative ${
                     isTimerRunning
-                      ? 'bg-amber-500 text-black border-amber-300 ring-4 ring-amber-500/20 shadow-amber-500/30'
-                      : 'bg-white/10 text-white border-white/20'
+                      ? 'bg-gradient-to-br from-amber-500 to-amber-400 text-black border-amber-300 ring-4 ring-amber-400/30 shadow-[0_0_35px_rgba(245,158,11,0.5)] scale-105'
+                      : 'bg-white/[0.06] text-white border-white/20'
                   }`}
                 >
-                  <Mic className="w-7 h-7" />
+                  <Mic className="w-7 h-7 sm:w-8 sm:h-8" />
+                  {isTimerRunning && (
+                    <span className="absolute -inset-1 rounded-2xl border border-amber-400/40 animate-ping pointer-events-none" />
+                  )}
                 </div>
+
                 <div>
-                  <div className="text-[10px] font-mono font-bold tracking-widest text-amber-400 uppercase">
-                    {format === 'open_mic'
-                      ? 'CURRENT PERFORMER ON MIC'
-                      : format === 'workshop'
-                      ? 'PRESENTER / ACTIVE SPRINT'
-                      : format === 'competition'
-                      ? 'ACTIVE COMPETITOR PITCH'
-                      : 'ACTIVE STAGE FLOOR'}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-amber-400 uppercase">
+                      {format === 'open_mic'
+                        ? 'CURRENT PERFORMER ON MIC'
+                        : format === 'workshop'
+                        ? 'PRESENTER / ACTIVE SPRINT'
+                        : format === 'competition'
+                        ? 'ACTIVE COMPETITOR PITCH'
+                        : 'ACTIVE STAGE FLOOR'}
+                    </span>
+                    {/* Live Audio Spectrum Bars */}
+                    {isTimerRunning && (
+                      <div className="flex items-end gap-1 h-3.5 px-1">
+                        <span className="w-0.5 bg-amber-400 rounded-full animate-[pulse_0.6s_ease-in-out_infinite] h-2" />
+                        <span className="w-0.5 bg-amber-400 rounded-full animate-[pulse_0.4s_ease-in-out_infinite] h-3.5" />
+                        <span className="w-0.5 bg-amber-300 rounded-full animate-[pulse_0.8s_ease-in-out_infinite] h-3" />
+                        <span className="w-0.5 bg-amber-400 rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-2.5" />
+                        <span className="w-0.5 bg-amber-400 rounded-full animate-[pulse_0.7s_ease-in-out_infinite] h-1.5" />
+                      </div>
+                    )}
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+
+                  <h2 className="text-2xl sm:text-4xl font-black font-space text-white tracking-tight">
                     {activeQueueItem?.participantName || 'Stage Floor Open'}
                   </h2>
                   {activeQueueItem?.titleOrAct && (
-                    <p className="text-sm text-neutral-400 italic">
+                    <p className="text-sm text-neutral-400 italic font-outfit mt-0.5">
                       &ldquo;{activeQueueItem.titleOrAct}&rdquo;
                     </p>
                   )}
@@ -646,9 +702,9 @@ export default function ZenHostLiveDais({
 
               {/* Total Session Clock */}
               {daisSettings.showSessionClock && (
-                <div className="px-3.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-right">
-                  <div className="text-[9px] uppercase font-mono text-neutral-400">SESSION TIME</div>
-                  <div className="text-xs font-mono font-bold text-neutral-200">
+                <div className="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-right backdrop-blur-md">
+                  <div className="text-[9px] uppercase font-mono font-bold tracking-widest text-neutral-400">SESSION TIME</div>
+                  <div className="text-sm font-mono font-bold text-neutral-200 tabular-nums">
                     {formatTimeMinutesSeconds(sessionTotalSeconds)}
                   </div>
                 </div>
@@ -659,43 +715,43 @@ export default function ZenHostLiveDais({
             {daisSettings.enableTimer ? (
               <div className="py-8 sm:py-12 flex flex-col items-center justify-center relative z-10">
                 <div
-                  className={`font-mono font-black tracking-tighter text-6xl sm:text-8xl md:text-9xl transition-all duration-300 select-none ${
+                  className={`font-mono tabular-nums font-black tracking-tighter text-6xl sm:text-8xl md:text-9xl transition-all duration-300 select-none ${
                     isOvertime
-                      ? 'text-red-500 animate-pulse drop-shadow-[0_0_40px_rgba(239,68,68,0.5)]'
+                      ? 'text-red-500 animate-pulse drop-shadow-[0_0_50px_rgba(239,68,68,0.7)]'
                       : isWarning
-                      ? 'text-amber-400 drop-shadow-[0_0_35px_rgba(251,191,36,0.4)]'
-                      : 'text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]'
+                      ? 'text-amber-400 drop-shadow-[0_0_45px_rgba(251,191,36,0.6)]'
+                      : 'text-white drop-shadow-[0_0_35px_rgba(255,255,255,0.25)]'
                   }`}
                 >
                   {isOvertime ? `+${formatTimeMinutesSeconds(overtimeSeconds)}` : formatTimeMinutesSeconds(remainingSeconds)}
                 </div>
 
                 {/* Overtime or Warning Status Alert */}
-                <div className="h-6 mt-2">
+                <div className="h-7 mt-3">
                   {isOvertime ? (
-                    <span className="px-3 py-1 rounded-full bg-red-950/80 border border-red-500/50 text-red-300 text-xs font-mono font-bold uppercase tracking-widest animate-pulse">
+                    <span className="px-3.5 py-1 rounded-full bg-red-950/80 border border-red-500/50 text-red-300 text-xs font-mono font-bold uppercase tracking-[0.2em] animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.4)]">
                       &bull; TIME EXCEEDED / OVERTIME &bull;
                     </span>
                   ) : isWarning ? (
-                    <span className="px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 text-xs font-mono font-bold uppercase tracking-widest">
+                    <span className="px-3.5 py-1 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 text-xs font-mono font-bold uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(245,158,11,0.3)]">
                       &bull; 30 SECONDS REMAINING &bull;
                     </span>
                   ) : (
-                    <span className="text-xs text-neutral-400 font-mono">
+                    <span className="text-xs text-neutral-400 font-mono tabular-nums">
                       Slot Limit: {formatTimeMinutesSeconds(speakerDuration)}
                     </span>
                   )}
                 </div>
 
                 {/* Visual Progress Bar */}
-                <div className="w-full max-w-xl h-2.5 bg-white/10 rounded-full mt-6 overflow-hidden">
+                <div className="w-full max-w-xl h-2.5 bg-white/10 rounded-full mt-6 overflow-hidden p-0.5 border border-white/[0.05]">
                   <div
-                    className={`h-full transition-all duration-300 ${
+                    className={`h-full transition-all duration-300 rounded-full ${
                       isOvertime
-                        ? 'bg-red-500 w-full'
+                        ? 'bg-red-500 w-full shadow-[0_0_15px_rgba(239,68,68,0.7)]'
                         : isWarning
-                        ? 'bg-gradient-to-r from-amber-500 to-red-400'
-                        : 'bg-gradient-to-r from-cyan-400 to-amber-400'
+                        ? 'bg-gradient-to-r from-amber-500 to-red-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
+                        : 'bg-gradient-to-r from-cyan-400 to-amber-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
                     }`}
                     style={{
                       width: isOvertime
@@ -707,7 +763,7 @@ export default function ZenHostLiveDais({
               </div>
             ) : (
               <div className="py-12 flex flex-col items-center justify-center relative z-10 space-y-2">
-                <div className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
+                <div className="text-3xl sm:text-5xl font-black font-space text-white tracking-tight uppercase">
                   OPEN FLOOR STAGE
                 </div>
                 <div className="text-xs text-neutral-400 font-mono">
@@ -717,17 +773,17 @@ export default function ZenHostLiveDais({
             )}
 
             {/* Direct Stage Control Bar */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-white/10 relative z-10">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-6 border-t border-white/[0.08] relative z-10">
               {/* Play / Pause Toggle */}
               {daisSettings.enableTimer && (
                 <>
                   <button
                     type="button"
                     onClick={() => setIsTimerRunning((prev) => !prev)}
-                    className={`px-8 py-3.5 rounded-2xl font-black text-sm uppercase tracking-wider transition shadow-xl active:scale-95 flex items-center gap-2 cursor-pointer ${
+                    className={`px-8 py-3.5 rounded-2xl font-black font-space text-sm uppercase tracking-wider transition shadow-2xl active:scale-95 flex items-center gap-2 cursor-pointer ${
                       isTimerRunning
-                        ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/25 ring-2 ring-amber-300'
-                        : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black shadow-emerald-500/25'
+                        ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_30px_rgba(245,158,11,0.4)] ring-2 ring-amber-300'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black shadow-[0_0_30px_rgba(52,211,153,0.35)]'
                     }`}
                   >
                     {isTimerRunning ? (
@@ -747,7 +803,7 @@ export default function ZenHostLiveDais({
                   <button
                     type="button"
                     onClick={handleResetTimer}
-                    className="p-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-neutral-300 hover:text-white transition active:scale-95"
+                    className="p-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-neutral-300 hover:text-white transition active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                     title="Reset Timer (R)"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -757,7 +813,7 @@ export default function ZenHostLiveDais({
                   <button
                     type="button"
                     onClick={handleAddThirtySeconds}
-                    className="px-4 py-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-xs font-mono font-bold text-neutral-200 hover:text-white transition active:scale-95"
+                    className="px-4 py-3.5 rounded-2xl bg-white/[0.05] border border-white/15 hover:bg-white/[0.1] text-xs font-mono font-bold text-neutral-200 hover:text-white transition active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                     title="Add 30 Seconds"
                   >
                     +30s
@@ -769,21 +825,32 @@ export default function ZenHostLiveDais({
               <button
                 type="button"
                 onClick={handleNextPerformer}
-                className="px-6 py-3.5 rounded-2xl bg-white/[0.08] border border-white/20 hover:bg-white/[0.15] text-white font-black text-xs uppercase tracking-wider transition active:scale-95 flex items-center gap-2"
+                className="px-6 py-3.5 rounded-2xl bg-white/[0.08] border border-white/20 hover:bg-white/[0.15] text-white font-black font-space text-xs uppercase tracking-wider transition active:scale-95 flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.08)] cursor-pointer"
                 title="Next Performer / Finish Slot (N)"
               >
                 <span>Next (N)</span>
                 <SkipForward className="w-4 h-4" />
               </button>
 
+              {/* Gavel Call to Order Strike Button */}
+              <button
+                type="button"
+                onClick={handleGavelStrike}
+                className="px-4 py-3 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_15px_rgba(245,158,11,0.2)] active:scale-95 flex items-center gap-2 cursor-pointer"
+                title="Strike Gavel / Call Stage to Order (G)"
+              >
+                <Gavel className={`w-4 h-4 text-amber-400 transition-transform duration-200 ${isGavelStriking ? '-rotate-45 scale-125' : ''}`} />
+                <span>Gavel (G)</span>
+              </button>
+
               {/* Sound FX Triggers */}
               {daisSettings.enableSounds && (
-                <div className="flex items-center gap-1.5 ml-2 border-l border-white/10 pl-3">
+                <div className="flex items-center gap-1.5 ml-1 border-l border-white/10 pl-3">
                   {daisSettings.enableWarningBell && (
                     <button
                       type="button"
                       onClick={() => playSoundEffect('ding')}
-                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-amber-500/20 hover:border-amber-400/40 text-amber-300 text-xs font-bold transition flex items-center gap-1.5"
+                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-amber-500/20 hover:border-amber-400/40 text-amber-300 text-xs font-bold font-space transition flex items-center gap-1.5"
                       title="Trigger Warning Bell (D)"
                     >
                       <Bell className="w-3.5 h-3.5" />
@@ -794,7 +861,7 @@ export default function ZenHostLiveDais({
                     <button
                       type="button"
                       onClick={() => playSoundEffect('buzzer')}
-                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-red-500/20 hover:border-red-400/40 text-red-300 text-xs font-bold transition flex items-center gap-1.5"
+                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-red-500/20 hover:border-red-400/40 text-red-300 text-xs font-bold font-space transition flex items-center gap-1.5"
                       title="Trigger Stage Buzzer (B)"
                     >
                       <AlertCircle className="w-3.5 h-3.5" />
@@ -805,7 +872,7 @@ export default function ZenHostLiveDais({
                     <button
                       type="button"
                       onClick={triggerCheer}
-                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-emerald-500/20 hover:border-emerald-400/40 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5"
+                      className="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-emerald-500/20 hover:border-emerald-400/40 text-emerald-300 text-xs font-bold font-space transition flex items-center gap-1.5"
                       title="Trigger Crowd Cheer & Claps (A)"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
@@ -819,17 +886,20 @@ export default function ZenHostLiveDais({
 
           {/* On Deck Preview Banner */}
           {daisSettings.showOnDeck && queue.length > 0 && (
-            <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 flex items-center justify-between gap-4">
+            <div className="rounded-2xl bg-[#050814]/80 border border-amber-500/30 p-4 flex items-center justify-between gap-4 backdrop-blur-md shadow-[0_5px_20px_rgba(245,158,11,0.1)]">
               <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-black uppercase tracking-wider">
-                  NEXT UP ON DECK
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-[0.2em]">
+                    NEXT UP ON DECK
+                  </span>
+                </div>
                 <div>
-                  <div className="font-bold text-white text-sm">
+                  <div className="font-black font-space text-white text-sm">
                     {queue[0].participantName}
                   </div>
                   {queue[0].titleOrAct && (
-                    <div className="text-xs text-neutral-400">
+                    <div className="text-xs text-neutral-400 font-outfit">
                       &ldquo;{queue[0].titleOrAct}&rdquo;
                     </div>
                   )}
@@ -838,7 +908,7 @@ export default function ZenHostLiveDais({
               <button
                 type="button"
                 onClick={handleNextPerformer}
-                className="px-4 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-bold transition"
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold font-space text-xs transition shadow-md shadow-amber-500/20 active:scale-95 cursor-pointer"
               >
                 Call to Stage &rarr;
               </button>
@@ -846,157 +916,184 @@ export default function ZenHostLiveDais({
           )}
 
           {/* Host Fast Tool Tabs (Interactive / Competition Rubric / Broadcast / Notes) */}
-          {(daisSettings.enableVoting || daisSettings.enableScoring || daisSettings.enableHostNotes || daisSettings.enableApplauseMeter) && (
-            <div className="rounded-3xl bg-[#070b16] border border-white/10 p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2">
-                  {daisSettings.enableVoting && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('interactive')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                        activeTab === 'interactive'
-                          ? 'bg-amber-500 text-black shadow'
-                          : 'text-neutral-400 hover:text-white'
-                      }`}
-                    >
-                      <BarChart2 className="w-3.5 h-3.5" />
-                      <span>Rapid Polls &amp; Alerts</span>
-                    </button>
+          <div className="rounded-3xl bg-[#070b16] border border-white/10 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('interactive')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    activeTab === 'interactive'
+                      ? 'bg-amber-500 text-black shadow'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  <BarChart2 className="w-3.5 h-3.5" />
+                  <span>Polls &amp; Alerts</span>
+                  {!daisSettings.enableVoting && (
+                    <span className="px-1.5 py-0.5 rounded bg-red-500/20 border border-red-500/40 text-red-300 text-[9px] font-mono font-bold flex items-center gap-0.5">
+                      <Lock className="w-2.5 h-2.5" />
+                      Off
+                    </span>
                   )}
+                </button>
 
-                  {daisSettings.enableScoring && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('scoring')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                        activeTab === 'scoring'
-                          ? 'bg-amber-500 text-black shadow'
-                          : 'text-neutral-400 hover:text-white'
-                      }`}
-                    >
-                      <Trophy className="w-3.5 h-3.5" />
-                      <span>Judge Rubric</span>
-                    </button>
-                  )}
+                {daisSettings.enableScoring && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('scoring')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      activeTab === 'scoring'
+                        ? 'bg-amber-500 text-black shadow'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <Trophy className="w-3.5 h-3.5" />
+                    <span>Judge Rubric</span>
+                  </button>
+                )}
 
-                  {daisSettings.enableHostNotes && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('notes')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                        activeTab === 'notes'
-                          ? 'bg-amber-500 text-black shadow'
-                          : 'text-neutral-400 hover:text-white'
-                      }`}
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>Host Stage Notes</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Applause Meter Indicator */}
-                {daisSettings.enableApplauseMeter && (
-                  <div className="hidden sm:flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-neutral-400">ENERGY METER</span>
-                    <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-amber-400 to-red-500 transition-all duration-300"
-                        style={{ width: `${applauseMeter}%` }}
-                      />
-                    </div>
-                  </div>
+                {daisSettings.enableHostNotes && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('notes')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                      activeTab === 'notes'
+                        ? 'bg-amber-500 text-black shadow'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Host Stage Notes</span>
+                  </button>
                 )}
               </div>
 
-              {/* Tab: Interactive Polls & Alerts */}
-              {activeTab === 'interactive' && daisSettings.enableVoting && (
-                <div className="space-y-4">
-                  {/* Instant Lower-Third Broadcast Alert */}
-                  {daisSettings.enableStageBroadcast && (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={announcementText}
-                        onChange={(e) => setAnnouncementText(e.target.value)}
-                        placeholder="Type an announcement to broadcast across stage displays & attendee phones..."
-                        className="flex-1 bg-black/50 border border-white/15 rounded-xl px-4 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
-                      />
+              {/* Applause Meter Indicator */}
+              {daisSettings.enableApplauseMeter && (
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-neutral-400">ENERGY METER</span>
+                  <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-400 to-red-500 transition-all duration-300"
+                      style={{ width: `${applauseMeter}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Tab: Interactive Polls & Alerts */}
+            {activeTab === 'interactive' && (
+              <div className="space-y-4">
+                {/* Instant Lower-Third Broadcast Alert */}
+                {daisSettings.enableStageBroadcast && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={announcementText}
+                      onChange={(e) => setAnnouncementText(e.target.value)}
+                      placeholder="Type an announcement to broadcast across stage displays & attendee phones..."
+                      className="flex-1 bg-black/50 border border-white/15 rounded-xl px-4 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (announcementText.trim()) {
+                          setIsBroadcastBannerActive(true);
+                        }
+                      }}
+                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0"
+                    >
+                      Broadcast Alert
+                    </button>
+                  </div>
+                )}
+
+                {/* Voting State: Allowed vs Not Allowed */}
+                {!daisSettings.enableVoting ? (
+                  <div className="p-5 rounded-2xl bg-red-950/20 border border-red-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+                        <Lock className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-black uppercase text-red-400 tracking-wider">
+                            Voting is Not Allowed
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-red-500/20 text-red-300 border border-red-500/40 uppercase">
+                            FULLY DISABLED
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed">
+                          Audience voting, motions, and rapid polls are strictly turned off for this session. Participants cannot cast votes.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDaisSettings((prev) => ({ ...prev, enableVoting: true }))}
+                      className="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-400/40 text-red-300 text-xs font-bold transition whitespace-nowrap cursor-pointer"
+                    >
+                      Unlock &amp; Allow Voting
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Instant Rapid Poll Launcher */}
+                    <div className="pt-2 flex items-center justify-between">
+                      <div className="text-xs text-neutral-400">
+                        Want instant audience feedback? Launch a 2-option voting pulse.
+                      </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (announcementText.trim()) {
-                            setIsBroadcastBannerActive(true);
-                          }
-                        }}
-                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0"
+                        onClick={() => setIsCreatePollOpen((prev) => !prev)}
+                        className="px-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/15 text-white hover:border-amber-400/50 text-xs font-bold transition flex items-center gap-1.5"
                       >
-                        Broadcast Alert
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Create Rapid Poll</span>
                       </button>
                     </div>
-                  )}
-                      if (announcementText.trim()) {
-                        setIsBroadcastBannerActive(true);
-                      }
-                    }}
-                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs uppercase tracking-wider transition shrink-0"
-                  >
-                    Broadcast Alert
-                  </button>
-                </div>
 
-                {/* Instant Rapid Poll Launcher */}
-                <div className="pt-2 flex items-center justify-between">
-                  <div className="text-xs text-neutral-400">
-                    Want instant audience feedback? Launch a 2-option voting pulse.
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsCreatePollOpen((prev) => !prev)}
-                    className="px-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/15 text-white hover:border-amber-400/50 text-xs font-bold transition flex items-center gap-1.5"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Create Rapid Poll</span>
-                  </button>
-                </div>
-
-                {/* Active Polls List */}
-                {polls.map((poll) => (
-                  <div key={poll.id} className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs font-bold text-white">{poll.question}</div>
-                      <span className="text-[10px] font-mono text-emerald-400">OPEN ({poll.totalVotes} votes)</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {poll.options.map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => {
-                            setPolls((prev) =>
-                              prev.map((p) =>
-                                p.id === poll.id
-                                  ? {
-                                      ...p,
-                                      totalVotes: p.totalVotes + 1,
-                                      options: p.options.map((o) =>
-                                        o.id === opt.id ? { ...o, voteCount: o.voteCount + 1 } : o
-                                      ),
-                                    }
-                                  : p
-                              )
-                            );
-                          }}
-                          className="p-2.5 rounded-xl bg-black/40 border border-white/10 hover:border-cyan-400/50 text-left transition flex items-center justify-between"
-                        >
-                          <span className="text-xs text-neutral-200">{opt.text}</span>
-                          <span className="text-xs font-mono font-bold text-cyan-300">{opt.voteCount}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                    {/* Active Polls List */}
+                    {polls.map((poll) => (
+                      <div key={poll.id} className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-bold text-white">{poll.question}</div>
+                          <span className="text-[10px] font-mono text-emerald-400">OPEN ({poll.totalVotes} votes)</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {poll.options.map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => {
+                                setPolls((prev) =>
+                                  prev.map((p) =>
+                                    p.id === poll.id
+                                      ? {
+                                          ...p,
+                                          totalVotes: p.totalVotes + 1,
+                                          options: p.options.map((o) =>
+                                            o.id === opt.id ? { ...o, voteCount: o.voteCount + 1 } : o
+                                          ),
+                                        }
+                                      : p
+                                  )
+                                );
+                              }}
+                              className="p-2.5 rounded-xl bg-black/40 border border-white/10 hover:border-cyan-400/50 text-left transition flex items-center justify-between"
+                            >
+                              <span className="text-xs text-neutral-200">{opt.text}</span>
+                              <span className="text-xs font-mono font-bold text-cyan-300">{opt.voteCount}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
 
                 {isCreatePollOpen && (
                   <div className="p-4 rounded-2xl bg-black/60 border border-amber-500/30 space-y-3">
@@ -1114,13 +1211,13 @@ export default function ZenHostLiveDais({
 
         {/* ── RIGHT COLUMN: STAGE QUEUE & LINEUP (4 Cols) ── */}
         {daisSettings.showQueue && (
-          <aside className="lg:col-span-4 rounded-3xl bg-[#070b16] border border-white/10 shadow-2xl p-6 flex flex-col space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <aside className="lg:col-span-4 rounded-3xl bg-[#050814]/90 border border-white/[0.08] shadow-[0_15px_50px_rgba(0,0,0,0.6)] p-6 flex flex-col space-y-6 backdrop-blur-xl">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
               <div>
-                <div className="text-[10px] font-mono font-bold tracking-widest text-amber-400 uppercase">
+                <div className="text-[10px] font-mono font-bold tracking-[0.2em] text-amber-400 uppercase">
                   {format === 'open_mic' ? 'PERFORMER LINEUP' : 'STAGE QUEUE'}
                 </div>
-                <h3 className="text-lg font-black text-white">
+                <h3 className="text-lg font-black font-space text-white">
                   Queue ({queue.length})
                 </h3>
               </div>
@@ -1128,7 +1225,7 @@ export default function ZenHostLiveDais({
               <button
                 type="button"
                 onClick={() => setIsAddPerformerOpen((prev) => !prev)}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95"
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Performer</span>
@@ -1137,8 +1234,8 @@ export default function ZenHostLiveDais({
 
             {/* Quick Inline Add Form */}
             {isAddPerformerOpen && (
-              <form onSubmit={handleAddPerformer} className="p-4 rounded-2xl bg-black/60 border border-amber-500/30 space-y-3">
-                <div className="text-xs font-bold text-amber-300">
+              <form onSubmit={handleAddPerformer} className="p-4 rounded-2xl bg-black/70 border border-amber-500/30 space-y-3 shadow-lg">
+                <div className="text-xs font-bold font-space text-amber-300">
                   Add Act to {formatPreset.name}
                 </div>
                 <input
@@ -1147,14 +1244,14 @@ export default function ZenHostLiveDais({
                   onChange={(e) => setNewPerformerName(e.target.value)}
                   placeholder="Performer / Speaker name..."
                   required
-                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 font-outfit"
                 />
                 <input
                   type="text"
                   value={newPerformerAct}
                   onChange={(e) => setNewPerformerAct(e.target.value)}
                   placeholder="Act / Piece title (e.g. Acoustic Set, Standup)..."
-                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-white/[0.05] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 font-outfit"
                 />
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-neutral-400 font-mono">Slot (mins):</span>
@@ -1164,11 +1261,11 @@ export default function ZenHostLiveDais({
                     max="60"
                     value={newPerformerMinutes}
                     onChange={(e) => setNewPerformerMinutes(e.target.value)}
-                    className="w-16 bg-white/[0.05] border border-white/15 rounded-xl px-2 py-1 text-xs text-white text-center font-mono"
+                    className="w-16 bg-white/[0.05] border border-white/15 rounded-xl px-2 py-1 text-xs text-white text-center font-mono font-bold"
                   />
                   <button
                     type="submit"
-                    className="flex-1 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs transition"
+                    className="flex-1 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold font-space text-xs transition cursor-pointer"
                   >
                     Push to Lineup
                   </button>
@@ -1181,13 +1278,13 @@ export default function ZenHostLiveDais({
               {queue.length === 0 ? (
                 <div className="py-12 px-4 rounded-2xl border border-dashed border-white/10 text-center space-y-3">
                   <Users className="w-8 h-8 text-neutral-600 mx-auto" />
-                  <div className="text-xs text-neutral-400 leading-relaxed">
+                  <div className="text-xs text-neutral-400 leading-relaxed font-outfit">
                     Lineup is currently empty.
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsAddPerformerOpen(true)}
-                    className="text-xs font-bold text-amber-400 hover:text-amber-300 underline"
+                    className="text-xs font-bold font-space text-amber-400 hover:text-amber-300 underline cursor-pointer"
                   >
                     + Add First Performer
                   </button>
@@ -1196,19 +1293,19 @@ export default function ZenHostLiveDais({
                 queue.map((item, idx) => (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition flex items-center justify-between gap-3 group"
+                    className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.08] hover:border-amber-400/40 hover:bg-white/[0.04] transition-all flex items-center justify-between gap-3 group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 font-mono text-[10px] flex items-center justify-center text-neutral-400 shrink-0">
+                      <span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 font-mono text-[10px] flex items-center justify-center text-amber-400 font-bold shrink-0">
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-white truncate">
+                        <div className="text-xs font-bold font-space text-white truncate">
                           {item.participantName}
                         </div>
-                        <div className="text-[10px] text-neutral-400 truncate flex items-center gap-1.5">
-                          {item.titleOrAct && <span>{item.titleOrAct} &bull;</span>}
-                          <span>{formatTimeMinutesSeconds(item.slotDurationSeconds)}</span>
+                        <div className="text-[10px] text-neutral-400 truncate flex items-center gap-1.5 font-mono">
+                          {item.titleOrAct && <span className="font-outfit text-neutral-300">{item.titleOrAct} &bull;</span>}
+                          <span className="tabular-nums">{formatTimeMinutesSeconds(item.slotDurationSeconds)}</span>
                         </div>
                       </div>
                     </div>
@@ -1218,7 +1315,7 @@ export default function ZenHostLiveDais({
                       <button
                         type="button"
                         onClick={() => handlePutOnStage(item)}
-                        className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 text-[10px] font-bold transition"
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black text-[10px] font-bold font-space transition cursor-pointer border border-amber-500/30"
                         title="Put on Stage Now"
                       >
                         Stage

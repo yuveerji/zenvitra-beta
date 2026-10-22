@@ -14,6 +14,7 @@ import {
   Trophy,
   BookOpen,
   RotateCcw,
+  Lock,
 } from 'lucide-react';
 
 export interface DaisLiveSettings {
@@ -72,18 +73,18 @@ export default function DaisSettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
-      <div className="w-full max-w-2xl my-8 rounded-3xl bg-[#080d1a] border border-white/15 p-6 sm:p-8 space-y-6 text-white shadow-2xl relative">
+      <div className="w-full max-w-2xl my-8 rounded-3xl bg-[#060a14]/95 border border-white/[0.12] p-6 sm:p-8 space-y-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative backdrop-blur-2xl">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-white/10 pb-5">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono font-bold tracking-widest uppercase">
+        <div className="flex items-start justify-between border-b border-white/[0.08] pb-5">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(6,182,212,0.2)]">
               <Settings className="w-3.5 h-3.5 text-cyan-400" />
               <span>DAIS SETTINGS &bull; MODULAR FEATURE TOGGLES</span>
             </div>
-            <h2 className="text-2xl font-black text-white tracking-tight uppercase">
+            <h2 className="text-2xl font-black font-space text-white tracking-tight uppercase">
               Configure Live Stage Features
             </h2>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-neutral-400 font-outfit">
               Turn any feature, panel, or tool on or off in real-time during your session.
             </p>
           </div>
@@ -91,7 +92,7 @@ export default function DaisSettingsModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -163,16 +164,61 @@ export default function DaisSettingsModal({
 
           {/* Section 2: Voting & Audience Polls */}
           <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-cyan-300 uppercase tracking-wider">
-              <Vote className="w-4 h-4" />
-              <span>Voting, Ballots &amp; Polls</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold text-cyan-300 uppercase tracking-wider">
+                <Vote className="w-4 h-4" />
+                <span>Voting, Ballots &amp; Polls</span>
+              </div>
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border flex items-center gap-1.5 ${
+                  settings.enableVoting
+                    ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300'
+                    : 'bg-red-950/80 border-red-500/50 text-red-300 animate-pulse'
+                }`}
+              >
+                {settings.enableVoting ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>Voting Allowed</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3 h-3 text-red-400" />
+                    <span>Voting Not Allowed (Fully Off)</span>
+                  </>
+                )}
+              </span>
             </div>
 
+            {/* Voting Status Banner */}
+            {!settings.enableVoting && (
+              <div className="p-3 rounded-xl bg-red-950/30 border border-red-500/30 flex items-start gap-2.5 text-xs text-neutral-300">
+                <Lock className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div className="leading-relaxed text-[11px]">
+                  <strong className="text-red-300 font-bold">Voting is fully disabled for this session:</strong>{' '}
+                  Audience members and attendees cannot cast votes on polls or motions. The voting booth is locked.
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <label className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:border-white/20 transition">
+              <label
+                className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${
+                  settings.enableVoting
+                    ? 'bg-black/40 border-white/10 hover:border-white/20'
+                    : 'bg-red-950/20 border-red-500/30 hover:border-red-500/50'
+                }`}
+              >
                 <div>
-                  <div className="text-xs font-bold text-white">Enable Rapid Live Polls</div>
-                  <div className="text-[10px] text-neutral-400">Allow 2-option audience voting</div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    {!settings.enableVoting && <Lock className="w-3 h-3 text-red-400" />}
+                    <span>Allow Audience Voting</span>
+                  </div>
+                  <div className="text-[10px] text-neutral-400">
+                    {settings.enableVoting
+                      ? 'Participants can vote on active polls'
+                      : 'Voting is not allowed / blocked'}
+                  </div>
                 </div>
                 <input
                   type="checkbox"
@@ -182,16 +228,23 @@ export default function DaisSettingsModal({
                 />
               </label>
 
-              <label className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:border-white/20 transition">
+              <label
+                className={`flex items-center justify-between p-3 rounded-xl border transition ${
+                  settings.enableVoting
+                    ? 'bg-black/40 border-white/10 hover:border-white/20 cursor-pointer'
+                    : 'bg-black/20 border-white/5 opacity-40 cursor-not-allowed'
+                }`}
+              >
                 <div>
                   <div className="text-xs font-bold text-white">Show Live Vote Counts</div>
                   <div className="text-[10px] text-neutral-400">Real-time tally on stage display</div>
                 </div>
                 <input
                   type="checkbox"
-                  checked={settings.showLiveVoteCount}
+                  disabled={!settings.enableVoting}
+                  checked={settings.enableVoting && settings.showLiveVoteCount}
                   onChange={() => handleToggle('showLiveVoteCount')}
-                  className="w-5 h-5 accent-cyan-400 cursor-pointer"
+                  className="w-5 h-5 accent-cyan-400 cursor-pointer disabled:cursor-not-allowed"
                 />
               </label>
             </div>

@@ -17,6 +17,7 @@ import {
   Mic,
   Landmark,
   Radio,
+  Lock,
 } from 'lucide-react';
 import { CustomHostEventConfig, DEFAULT_CUSTOM_EVENT_CONFIG } from '@/types/zenHost';
 
@@ -164,18 +165,18 @@ export default function CustomEventBuilderModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
-      <div className="w-full max-w-3xl my-8 rounded-3xl bg-[#080d1a] border border-white/15 p-6 sm:p-8 space-y-6 text-white shadow-2xl relative">
+      <div className="w-full max-w-3xl my-8 rounded-3xl bg-[#060a14]/95 border border-white/[0.12] p-6 sm:p-8 space-y-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative backdrop-blur-2xl">
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-white/10 pb-5">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono font-bold tracking-widest uppercase">
+        <div className="flex items-start justify-between border-b border-white/[0.08] pb-5">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(6,182,212,0.2)]">
               <Sliders className="w-3.5 h-3.5 text-cyan-400" />
               <span>CUSTOM EVENT STUDIO &bull; MODULAR BUILDER</span>
             </div>
-            <h2 className="text-2xl font-black text-white tracking-tight uppercase">
+            <h2 className="text-2xl font-black font-space text-white tracking-tight uppercase">
               Configure Custom Live Dais
             </h2>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-neutral-400 font-outfit">
               Customize modular stage tools, countdown rules, lineup queue, audience polls, and scoring rubrics.
             </p>
           </div>
@@ -183,7 +184,7 @@ export default function CustomEventBuilderModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -420,10 +421,23 @@ export default function CustomEventBuilderModal({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
+              <div
+                className={`p-3 rounded-xl border flex items-center justify-between transition ${
+                  config.enableRapidPolls
+                    ? 'bg-black/40 border-white/10'
+                    : 'bg-red-950/20 border-red-500/30'
+                }`}
+              >
                 <div>
-                  <div className="text-xs font-bold text-white">Rapid Live Polls</div>
-                  <div className="text-[10px] text-neutral-400">Launch 2-option live voting pulses</div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    {!config.enableRapidPolls && <Lock className="w-3.5 h-3.5 text-red-400" />}
+                    <span>Allow Audience Voting &amp; Polls</span>
+                  </div>
+                  <div className="text-[10px] text-neutral-400">
+                    {config.enableRapidPolls
+                      ? '● Voting allowed on active pulses'
+                      : '🔒 Voting is not allowed / fully disabled'}
+                  </div>
                 </div>
                 <input
                   type="checkbox"
