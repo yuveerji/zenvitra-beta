@@ -110,6 +110,17 @@ export interface ZenEvent {
   formId?: string; // Linked custom form if created
   paymentTiming?: 'ACCEPT_NOW' | 'ACCEPT_AFTER';
   paymentGoLiveDate?: string; // ISO date when ticketing starts
+  paymentCollectionMethod?: 'ONLINE_CASHFREE' | 'AT_VENUE' | 'APPROVAL_FIRST' | 'APPROVAL_THEN_PAY';
+  tagline?: string;
+  startTime?: string;
+  endTime?: string;
+  timezone?: string;
+  isMultiDay?: boolean;
+  intakeFields?: Array<{ id: string; label: string; type: string; required: boolean; enabled: boolean }>;
+  schedule?: Array<{ id: string; time: string; title: string; day?: string; location?: string }>;
+  secretariatContact?: { name?: string; email?: string; phone?: string; role?: string };
+  dressCode?: string;
+  perks?: string[];
   cancellationReason?: string;
   cancelledAt?: string;
   refundStatus?: 'none' | 'processing' | 'completed';
