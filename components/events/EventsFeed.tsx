@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Calendar, 
   Plus, 
   Search, 
-  Sparkles, 
   Radio, 
   Users, 
   Compass, 
@@ -28,7 +27,10 @@ import {
   CreditCard,
   SlidersHorizontal,
   ExternalLink,
-  ArrowUpRight
+  ArrowUpRight,
+  Loader2,
+  Crosshair,
+  Landmark
 } from 'lucide-react';
 import { useZenEvents, KNOWN_CITIES } from '@/context/ZenEventsPlatformContext';
 import { useZenPass } from '@/context/ZenPassContext';
@@ -44,6 +46,7 @@ import { ZenPassUserPassesModal } from './ZenPassUserPassesModal';
 import { RevenueFeeSimulatorModal } from '@/components/pulse/RevenueFeeSimulatorModal';
 import { EventsFaqSection } from './EventsFaqSection';
 import { useAuth } from '@/context/AuthContext';
+import { WorldLocationPickerModal, WorldLocation } from '@/components/common/WorldLocationPickerModal';
 
 const NAV_CATEGORIES = [
   { id: 'ALL', label: 'For you' },
@@ -92,6 +95,125 @@ export function EventsFeed() {
   const [showRevenueSimulatorModal, setShowRevenueSimulatorModal] = useState(false);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
 
+  // Google Maps Places Live Search State
+  const [gmapsQuery, setGmapsQuery] = useState('');
+  const [gmapsResults, setGmapsResults] = useState<WorldLocation[]>([]);
+  const [isSearchingGmaps, setIsSearchingGmaps] = useState(false);
+  const [isWorldPickerOpen, setIsWorldPickerOpen] = useState(false);
+  const [isGpsLocating, setIsGpsLocating] = useState(false);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setShowCityDropdown(false);
+      }
+    }
+    if (showCityDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCityDropdown]);
+
+  // Debounced Google Maps Places API search
+  useEffect(() => {
+    if (!gmapsQuery.trim()) {
+      setGmapsResults([]);
+      setIsSearchingGmaps(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingGmaps(true);
+      try {
+        const res = await fetch(`/api/places?query=${encodeURIComponent(gmapsQuery)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setGmapsResults(data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to search Google Maps Places:', err);
+      } finally {
+        setIsSearchingGmaps(false);
+      }
+    }, 280);
+
+    return () => clearTimeout(timer);
+  }, [gmapsQuery]);
+
+  const handleSelectPlace = (place: WorldLocation) => {
+    const cityName = place.city || place.name;
+    setSelectedCity(cityName);
+    if (place.lat && place.lng) {
+      setUserLocation({
+        latitude: place.lat,
+        longitude: place.lng,
+        city: cityName,
+        address: place.address || place.name
+      });
+    }
+    setShowCityDropdown(false);
+    setGmapsQuery('');
+  };
+
+  const handleDetectGps = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      requestCurrentLocation();
+      setShowCityDropdown(false);
+      return;
+    }
+
+    setIsGpsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(`/api/places?lat=${latitude}&lng=${longitude}`);
+          if (res.ok) {
+            const places: WorldLocation[] = await res.json();
+            if (places && places.length > 0) {
+              const best = places[0];
+              const cityName = best.city || best.name;
+              setSelectedCity(cityName);
+              setUserLocation({
+                latitude,
+                longitude,
+                city: cityName,
+                address: best.address || best.name
+              });
+              setIsGpsLocating(false);
+              setShowCityDropdown(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('Reverse geocode error:', e);
+        }
+        await requestCurrentLocation();
+        setIsGpsLocating(false);
+        setShowCityDropdown(false);
+      },
+      () => {
+        setIsGpsLocating(false);
+        requestCurrentLocation();
+        setShowCityDropdown(false);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleResetToAll = () => {
+    setSelectedCity('ALL');
+    setUserLocation(null);
+    setShowCityDropdown(false);
+    setGmapsQuery('');
+  };
+
   // Horizontal scroll refs for rails
   const summitsRailRef = useRef<HTMLDivElement>(null);
   const munRailRef = useRef<HTMLDivElement>(null);
@@ -122,9 +244,11 @@ export function EventsFeed() {
   const munAssembliesRail = events.filter((e) => e.category === 'MUN' || e.category === 'PARLIAMENT' || e.category === 'POLICY');
   const virtualChambersRail = events.filter((e) => e.type === 'virtual' || e.type === 'hybrid');
 
-  const currentCityName = selectedCity === 'ALL' 
-    ? 'All Metro Locations' 
-    : (KNOWN_CITIES.find(c => c.value === selectedCity)?.name || selectedCity);
+  const currentCityName = userLocation?.city 
+    ? userLocation.city
+    : selectedCity === 'ALL' 
+      ? 'All Locations' 
+      : (KNOWN_CITIES.find(c => c.value === selectedCity)?.name || selectedCity);
 
   return (
     <div className="max-w-7xl mx-auto font-sans pb-20 space-y-10 text-white">
@@ -138,74 +262,194 @@ export function EventsFeed() {
       <header className="space-y-4 pt-1">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
           
-          {/* Left Brand & Location Selector */}
+          {/* Left Brand Mark & Google Maps Location Selector */}
           <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center text-black font-black text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)]">
-                <Sparkles className="w-4 h-4 fill-black" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center p-1.5 shadow-[0_0_20px_rgba(6,182,212,0.25)] relative group shrink-0">
+                <img
+                  src="/assets/logo-new.png"
+                  alt="Zenvitra Official Logo"
+                  className="w-full h-full object-contain mix-blend-screen filter drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] transition-transform duration-300 brand-logo-img group-hover:scale-105"
+                />
               </div>
-              <span className="font-display font-black text-lg tracking-tight uppercase text-white">
-                ZENVITRA CONVENING
-              </span>
+              <div className="flex flex-col">
+                <span className="font-display font-black text-lg tracking-tight uppercase text-white leading-tight">
+                  ZENVITRA CONVENING
+                </span>
+                <span className="text-[10px] font-mono text-cyan-400 font-semibold tracking-widest uppercase">
+                  Diplomatic &amp; Executive Summits
+                </span>
+              </div>
             </div>
 
-            {/* Location Selector Pill */}
-            <div className="relative">
+            {/* Google Maps Location Selector Pill */}
+            <div className="relative" ref={cityDropdownRef}>
               <button
                 type="button"
                 onClick={() => setShowCityDropdown(!showCityDropdown)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-mono transition cursor-pointer group"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-cyan-500/20 hover:border-cyan-400/40 text-xs font-mono transition cursor-pointer group shadow-sm"
               >
-                <MapPin className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <MapPin className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform shrink-0" />
                 <span className="font-bold text-white max-w-[160px] truncate">{currentCityName}</span>
-                <span className="text-[10px] text-neutral-400">&bull; Change</span>
+                <span className="text-[10px] text-cyan-400/80 font-semibold tracking-wide flex items-center gap-1">
+                  &bull; {selectedCity === 'ALL' && !userLocation ? 'Search' : 'Change'}
+                </span>
               </button>
 
-              {/* City Selector Dropdown */}
+              {/* Google Maps Places Autocomplete Dropdown */}
               {showCityDropdown && (
-                <div className="absolute left-0 top-full mt-2 w-64 rounded-2xl bg-[#0a0e17] border border-cyan-500/30 shadow-2xl z-50 p-2 space-y-1">
-                  <div className="px-3 py-1.5 text-[10px] font-mono text-neutral-400 uppercase tracking-widest border-b border-white/10 flex items-center justify-between">
-                    <span>Select Metro City</span>
+                <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-[#090d16]/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 p-3 space-y-2.5 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Header */}
+                  <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-300 font-bold">
+                        Google Maps Location Hub
+                      </span>
+                    </div>
                     <button
                       type="button"
                       onClick={() => setShowCityDropdown(false)}
-                      className="text-neutral-400 hover:text-white"
+                      className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
+                  {/* Live Google Maps Search Input */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cyan-400" />
+                    <input
+                      type="text"
+                      value={gmapsQuery}
+                      onChange={(e) => setGmapsQuery(e.target.value)}
+                      placeholder="Search city, district, venue via Google Maps..."
+                      autoFocus
+                      className="w-full pl-9 pr-8 py-2 rounded-xl bg-white/[0.06] border border-white/15 focus:border-cyan-400 text-xs text-white placeholder:text-neutral-500 focus:outline-none transition"
+                    />
+                    {isSearchingGmaps ? (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                    ) : gmapsQuery ? (
+                      <button
+                        type="button"
+                        onClick={() => setGmapsQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    ) : null}
+                  </div>
+
+                  {/* Quick Action: Use GPS via Google Maps */}
                   <button
                     type="button"
-                    onClick={() => {
-                      requestCurrentLocation();
-                      setShowCityDropdown(false);
-                    }}
-                    className="w-full p-2 rounded-xl text-left text-xs font-mono text-cyan-300 hover:bg-cyan-500/10 flex items-center gap-2 transition cursor-pointer"
+                    onClick={handleDetectGps}
+                    disabled={isGpsLocating}
+                    className="w-full p-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-left text-xs font-mono text-cyan-300 flex items-center justify-between transition cursor-pointer group"
                   >
-                    <Navigation className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>{isLocating ? 'Detecting GPS...' : 'Use My Current Location'}</span>
+                    <div className="flex items-center gap-2.5">
+                      <Crosshair className={`w-4 h-4 text-cyan-400 group-hover:rotate-45 transition-transform ${isGpsLocating ? 'animate-spin' : ''}`} />
+                      <div>
+                        <div className="font-bold">
+                          {isGpsLocating ? 'Detecting Google Maps Coordinates...' : 'Auto-Detect Current GPS Location'}
+                        </div>
+                        <div className="text-[10px] text-cyan-400/70">
+                          Reverse-geocodes exact neighborhood &amp; city
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-cyan-400 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                   </button>
 
-                  <div className="max-h-52 overflow-y-auto space-y-0.5 pt-1">
-                    {KNOWN_CITIES.map((c) => (
-                      <button
-                        key={c.value}
-                        type="button"
-                        onClick={() => {
-                          setSelectedCity(c.value);
-                          setShowCityDropdown(false);
-                        }}
-                        className={`w-full px-3 py-1.5 rounded-xl text-left text-xs font-mono transition flex items-center justify-between cursor-pointer ${
-                          selectedCity === c.value
-                            ? 'bg-cyan-500/20 text-cyan-300 font-bold'
-                            : 'text-neutral-300 hover:bg-white/5 hover:text-white'
-                        }`}
-                      >
-                        <span>{c.name}</span>
-                        {selectedCity === c.value && <Check className="w-3.5 h-3.5 text-cyan-400" />}
-                      </button>
-                    ))}
+                  {/* Live Google Maps Suggestions */}
+                  {gmapsResults.length > 0 && (
+                    <div className="space-y-1 pt-1 max-h-56 overflow-y-auto">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-cyan-400/80 px-2 font-semibold">
+                        Google Places Results ({gmapsResults.length})
+                      </div>
+                      {gmapsResults.map((place, idx) => (
+                        <button
+                          key={place.placeId || `${place.name}-${idx}`}
+                          type="button"
+                          onClick={() => handleSelectPlace(place)}
+                          className="w-full p-2 rounded-xl text-left hover:bg-white/10 transition flex items-start gap-2.5 cursor-pointer group"
+                        >
+                          <MapPin className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-bold text-white group-hover:text-cyan-300 truncate transition-colors">
+                              {place.name}
+                            </div>
+                            <div className="text-[11px] text-neutral-400 truncate">
+                              {place.address || [place.city, place.country].filter(Boolean).join(', ')}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Interactive World Map & Diplomatic Hubs Picker */}
+                  <div className="pt-1 border-t border-white/10 space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCityDropdown(false);
+                        setIsWorldPickerOpen(true);
+                      }}
+                      className="w-full px-3 py-2 rounded-xl text-left text-xs font-mono text-neutral-300 hover:text-white hover:bg-white/5 flex items-center justify-between transition cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Globe2 className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>Interactive Global Hubs &amp; Map Modal</span>
+                      </div>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500" />
+                    </button>
+
+                    {/* Reset to All Worldwide */}
+                    <button
+                      type="button"
+                      onClick={handleResetToAll}
+                      className="w-full px-3 py-1.5 rounded-xl text-left text-xs font-mono text-neutral-400 hover:text-white hover:bg-white/5 flex items-center justify-between transition cursor-pointer"
+                    >
+                      <span>Show All Global Convenings</span>
+                      {selectedCity === 'ALL' && !userLocation && (
+                        <Check className="w-3.5 h-3.5 text-cyan-400" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Popular Metro Hubs Quick Bar */}
+                  <div className="pt-2 border-t border-white/10">
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 px-1 mb-1.5">
+                      Popular Hubs
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {KNOWN_CITIES.slice(1, 8).map((city) => (
+                        <button
+                          key={city.value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCity(city.value);
+                            if (city.lat && city.lng) {
+                              setUserLocation({
+                                latitude: city.lat,
+                                longitude: city.lng,
+                                city: city.name,
+                                address: city.name
+                              });
+                            }
+                            setShowCityDropdown(false);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition cursor-pointer ${
+                            selectedCity.toLowerCase() === city.value.toLowerCase()
+                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
+                              : 'bg-white/5 text-neutral-300 hover:bg-white/10 hover:text-white border border-white/5'
+                          }`}
+                        >
+                          {city.name.split('&')[0].trim()}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -336,7 +580,7 @@ export function EventsFeed() {
               />
             ) : (
               <div className="w-full h-full bg-[#0a0d18] flex items-center justify-center p-6 text-center relative z-10">
-                <Sparkles className="w-16 h-16 text-cyan-400/30" />
+                <Globe2 className="w-16 h-16 text-cyan-400/30" />
               </div>
             )}
 
@@ -457,7 +701,7 @@ export function EventsFeed() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-black flex items-center justify-center p-4 text-center">
-                      <Sparkles className="w-8 h-8 text-cyan-400/40" />
+                      <Landmark className="w-8 h-8 text-cyan-400/40" />
                     </div>
                   )}
 
@@ -551,7 +795,7 @@ export function EventsFeed() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-neutral-900 to-black flex items-center justify-center p-4 text-center">
-                      <Sparkles className="w-8 h-8 text-purple-400/40" />
+                      <Radio className="w-8 h-8 text-purple-400/40" />
                     </div>
                   )}
 
@@ -782,6 +1026,32 @@ export function EventsFeed() {
       <RevenueFeeSimulatorModal
         isOpen={showRevenueSimulatorModal}
         onClose={() => setShowRevenueSimulatorModal(false)}
+      />
+
+      {/* Interactive World Location Picker Modal via Google Maps */}
+      <WorldLocationPickerModal
+        isOpen={isWorldPickerOpen}
+        onClose={() => setIsWorldPickerOpen(false)}
+        initialLocation={userLocation?.city || (selectedCity !== 'ALL' ? selectedCity : undefined)}
+        title="Select Assembly Location via Google Maps"
+        onSelectLocation={(loc) => {
+          const cityName = loc.city || loc.name;
+          setSelectedCity(cityName);
+          if (loc.lat && loc.lng) {
+            setUserLocation({
+              latitude: loc.lat,
+              longitude: loc.lng,
+              city: cityName,
+              address: loc.address || loc.name
+            });
+          }
+          setIsWorldPickerOpen(false);
+        }}
+        onRemoveLocation={() => {
+          setSelectedCity('ALL');
+          setUserLocation(null);
+          setIsWorldPickerOpen(false);
+        }}
       />
     </div>
   );
