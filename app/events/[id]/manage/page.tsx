@@ -30,7 +30,7 @@ function EventHostCommandCenterContent() {
           <div className="space-y-1">
             <h2 className="text-xl font-bold text-white">Organizer Authentication Required</h2>
             <p className="text-xs text-neutral-400">
-              You must be signed in to access the District Host Command Center for this event.
+              You must be signed in to access the Summit Host Command Center for this event.
             </p>
           </div>
 
@@ -120,7 +120,7 @@ export default function EventHostManagePage() {
       <Navbar />
       <main className="flex-1 w-full">
         <ZenPassProvider>
-          <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center text-xs font-mono text-neutral-400">Loading District Command Center...</div>}>
+          <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center text-xs font-mono text-neutral-400">Loading Host Command Center...</div>}>
             <EventHostCommandCenterContent />
           </Suspense>
         </ZenPassProvider>

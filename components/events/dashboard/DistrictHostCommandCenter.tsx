@@ -337,7 +337,7 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/40 text-cyan-300">
-                DISTRICT HOST COMMAND CENTER
+                SUMMIT HOST COMMAND CENTER
               </span>
 
               {/* Status pill */}

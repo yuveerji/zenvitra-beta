@@ -27,7 +27,9 @@ import {
   HelpCircle,
   Percent
 } from 'lucide-react';
-import { ZenEvent, EventCategory, EventStatus, RegistrationPlan } from '@/types/events';
+import { Globe2, Radio, Video } from 'lucide-react';
+import { ZenEvent, EventCategory, EventStatus, EventType, RegistrationPlan } from '@/types/events';
+import { WorldLocationPickerModal, WorldLocation } from '@/components/common/WorldLocationPickerModal';
 import { getPublicForms } from '@/lib/formsStorage';
 import { ZenForm } from '@/types/forms';
 
@@ -71,6 +73,9 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   const [description, setDescription] = useState(event.description || '');
   const [category, setCategory] = useState<EventCategory>(event.category || 'MUN');
   const [status, setStatus] = useState<EventStatus>(event.status || 'upcoming');
+  const [type, setType] = useState<EventType>(event.type || 'physical');
+  const [meetingUrl, setMeetingUrl] = useState(event.meetingUrl || '');
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
   const [date, setDate] = useState(event.date ? event.date.split('T')[0] : '');
   const [endDate, setEndDate] = useState(event.endDate ? event.endDate.split('T')[0] : '');
   const [time, setTime] = useState(event.time || '');
@@ -93,7 +98,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   );
   const [paymentGoLiveDate, setPaymentGoLiveDate] = useState<string>(event.paymentGoLiveDate || '');
 
-  // Tiers with District-style Card Offers State
+  // Tiers with Exclusive Card Offers State
   const [localTiers, setLocalTiers] = useState<LocalTier[]>(() => {
     if (event.plans && event.plans.length > 0) {
       return event.plans.map((p, idx) => ({
@@ -215,7 +220,12 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       } : undefined
     }));
 
+    const isVirtual = type === 'virtual';
+    const finalLocation = isVirtual ? (meetingUrl.trim() || 'Virtual Online Assembly Chamber') : location.trim();
+    const finalCity = isVirtual ? 'Online' : city.trim();
+
     const updates: Partial<ZenEvent> = {
+      type,
       title: title.trim(),
       description: description.trim(),
       category,
@@ -268,7 +278,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-neutral-400">
-                100% configurable: Update core logistics, intake forms, payment go-live, and District card offers.
+                100% configurable: Update core logistics, intake forms, payment go-live, and card and bank offers.
               </p>
             </div>
             <button
@@ -649,7 +659,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                   <div className="space-y-1">
                     <p className="font-bold text-cyan-300">Ticketing &amp; Phased Go-Live Timing</p>
                     <p className="text-[11px] text-neutral-400 leading-relaxed">
-                      Configure when pass bookings go live. District-style apps allow you to run exclusive pre-sales (e.g. RuPay or bank card offers) before general admission sale begins.
+                      Configure when pass bookings go live. Exclusive apps allow you to run exclusive pre-sales (e.g. RuPay or bank card offers) before general admission sale begins.
                     </p>
                   </div>
                 </div>
@@ -719,7 +729,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
               </div>
             )}
 
-            {/* ── TAB 4: PASS TIERS & DISTRICT CARD OFFERS ── */}
+            {/* ── TAB 4: PASS TIERS & card and bank offers ── */}
             {activeTab === 'tiers' && (
               <div className="space-y-4 animate-fade-in font-sans">
                 <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-xs text-neutral-300 space-y-2">
@@ -893,7 +903,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                         )}
                       </div>
 
-                      {/* District Exclusive Card Offer Box */}
+                      {/* Exclusive Card Offer Box */}
                       <div className="p-3 rounded-xl bg-purple-950/20 border border-purple-500/30 space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="flex items-center gap-2 cursor-pointer">
@@ -1027,6 +1037,17 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
               </div>
             </div>
           </form>
+          <WorldLocationPickerModal
+            isOpen={isLocationPickerOpen}
+            onClose={() => setIsLocationPickerOpen(false)}
+            title="Select Physical Convening Venue (Google Maps API)"
+            initialLocation={location}
+            onSelectLocation={(loc) => {
+              setLocation(loc.name + (loc.address ? `, ${loc.address}` : ''));
+              if (loc.city) setCity(loc.city);
+              setIsLocationPickerOpen(false);
+            }}
+          />
         </motion.div>
       </div>
     </AnimatePresence>

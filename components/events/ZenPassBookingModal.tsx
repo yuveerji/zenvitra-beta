@@ -100,7 +100,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
     ? (customPortfolio.trim() || 'General Delegate')
     : portfolioPreference;
 
-  // Check if active tier has a District-style exclusive offer
+  // Check if active tier has an exclusive bank/card offer
   const activeOffer = (event.plans || []).find((p) => p.id === selectedTier.id)?.exclusiveOffer;
   const isOfferAvailable = Boolean(activeOffer && activeOffer.enabled);
 
@@ -224,7 +224,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
               </div>
               <div>
                 <h2 className="font-display font-bold text-lg text-white flex items-center gap-2">
-                  <span>ZenPass District Booking</span>
+                  <span>Official ZenPass Reservation</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white font-bold">
                     Official Pass
                   </span>
@@ -260,7 +260,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                 )}
               </div>
 
-              {/* District-Style Exclusive Bank & Card Offer Switcher */}
+              {/* Exclusive Bank & Card Offer Switcher */}
               {isOfferAvailable && activeOffer && (
                 <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/30 to-black border border-cyan-500/30 space-y-2">
                   <div className="flex items-center justify-between">

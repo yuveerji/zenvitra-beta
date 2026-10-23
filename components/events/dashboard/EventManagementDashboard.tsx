@@ -47,7 +47,7 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
 
   const organizerEvents = getOrganizerEvents();
 
-  // Active Managing Event for District Host Command Center
+  // Active Managing Event for Host Command Center
   const [activeManagingEvent, setActiveManagingEvent] = useState<ZenEvent | null>(() => {
     if (defaultEventId) {
       return organizerEvents.find((e) => e.id === defaultEventId) || null;
@@ -291,7 +291,7 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
         </div>
       </div>
 
-      {/* View Mode Switcher: All Hosted Summits vs Dedicated District Host Command Center */}
+      {/* View Mode Switcher: All Hosted Summits vs Dedicated Host Command Center */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-[#0c0f1b] border border-white/10 shadow-lg">
         <div className="flex items-center gap-2 flex-wrap">
           <button
@@ -319,7 +319,7 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>District Host Command Center</span>
+              <span>Host Command Center</span>
             </button>
           )}
         </div>
@@ -500,7 +500,7 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
                 {/* Action Buttons Hub */}
                 <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/5 flex-wrap">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* District Host Command Center */}
+                    {/* Host Command Center */}
                     <button
                       type="button"
                       onClick={() => setActiveManagingEvent(ev)}

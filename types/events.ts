@@ -46,7 +46,7 @@ export interface RegistrationPlan {
   paymentLinkId?: string;
   paymentLinkUrl?: string;
 
-  // District-style Exclusive Bank & Card Offer / Phased Sales
+  // Exclusive Bank & Card Offer / Phased Sales
   salePhase?: 'NOW' | 'SCHEDULED';
   saleStartDate?: string; // ISO date string when general sale unlocks
   exclusiveOffer?: {
@@ -84,6 +84,7 @@ export interface ZenEvent {
   type: EventType;
   location: string;
   city?: string;
+  meetingUrl?: string;
   latitude?: number;
   longitude?: number;
   distanceKm?: number;

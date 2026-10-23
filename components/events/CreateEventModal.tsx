@@ -4,44 +4,61 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   X, 
+  Sparkles, 
   Calendar, 
   MapPin, 
   Clock, 
-  Image as ImageIcon, 
   Tag, 
-  Sparkles, 
-  Layers, 
-  Users,
-  Check,
-  Upload,
-  Lock,
-  Ticket,
-  Plus,
-  Trash2,
+  DollarSign, 
+  Users, 
+  Check, 
+  Upload, 
+  Lock, 
+  Ticket, 
+  Plus, 
+  Trash2, 
   AlertCircle,
-  CreditCard,
   FileText,
-  FilePlus,
-  ChevronRight,
-  ArrowRight,
-  CalendarCheck,
-  CheckCircle2,
-  ShieldCheck,
+  CreditCard,
   Zap,
-  Globe
+  FilePlus,
+  Layers,
+  Search,
+  Globe2,
+  Sliders,
+  Maximize2,
+  Radio,
+  Image as ImageIcon,
+  CheckCircle2,
+  Video
 } from 'lucide-react';
-import { useZenEvents, KNOWN_CITIES } from '@/context/ZenEventsPlatformContext';
 import { useAuth } from '@/context/AuthContext';
+import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { useZenPass } from '@/context/ZenPassContext';
 import { EventCategory, EventType } from '@/types/events';
 import { getPublicForms } from '@/lib/formsStorage';
 import { ZenForm } from '@/types/forms';
+import { WorldLocationPickerModal, WorldLocation } from '@/components/common/WorldLocationPickerModal';
 
 const COVER_PRESETS = [
   'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80',
   'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1200&q=80',
+];
+
+const KNOWN_CITIES = [
+  { name: 'New Delhi & NCR', value: 'New Delhi', lat: 28.6139, lng: 77.2090 },
+  { name: 'Gurugram', value: 'Gurugram', lat: 28.4595, lng: 77.0266 },
+  { name: 'Mumbai', value: 'Mumbai', lat: 19.0760, lng: 72.8777 },
+  { name: 'Bengaluru', value: 'Bengaluru', lat: 12.9716, lng: 77.5946 },
+  { name: 'Pune', value: 'Pune', lat: 18.5204, lng: 73.8567 },
+  { name: 'Hyderabad', value: 'Hyderabad', lat: 17.3850, lng: 78.4867 },
+  { name: 'Kolkata', value: 'Kolkata', lat: 22.5726, lng: 88.3639 },
+  { name: 'Chennai', value: 'Chennai', lat: 13.0827, lng: 80.2707 },
+  { name: 'Geneva', value: 'Geneva', lat: 46.2044, lng: 6.1432 },
+  { name: 'London', value: 'London', lat: 51.5074, lng: -0.1278 },
+  { name: 'New York', value: 'New York', lat: 40.7128, lng: -74.0060 },
 ];
 
 export function CreateEventModal() {
@@ -63,22 +80,38 @@ export function CreateEventModal() {
   const [description, setDescription] = useState('');
   const [coverImage, setCoverImage] = useState(COVER_PRESETS[0]);
   const [customCover, setCustomCover] = useState('');
-  const [type, setType] = useState<EventType>('hybrid');
+  const [type, setType] = useState<EventType>('physical');
   const [category, setCategory] = useState<EventCategory>('SUMMIT');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState('New Delhi');
+  const [meetingUrl, setMeetingUrl] = useState('');
+  const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat?: number; lng?: number }>({});
   
+  // Google Places API Location Search
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+  const [placesQuery, setPlacesQuery] = useState('');
+  const [placesSuggestions, setPlacesSuggestions] = useState<any[]>([]);
+  const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
+  const [showPlacesDropdown, setShowPlacesDropdown] = useState(false);
+
+  // Cover Artwork "Set the Artwork" Modal State
+  const [isArtworkModalOpen, setIsArtworkModalOpen] = useState(false);
+  const [pendingArtwork, setPendingArtwork] = useState<string>('');
+  const [artworkPosition, setArtworkPosition] = useState<'top' | 'center' | 'bottom'>('center');
+  const [artworkFit, setArtworkFit] = useState<'cover' | 'contain'>('cover');
+  const [artworkZoom, setArtworkZoom] = useState<number>(100);
+
   // ── Pricing & Ticketing Modes ──
   type PricingMode = 'FREE' | 'NORMAL' | 'TIERED';
   const [pricingMode, setPricingMode] = useState<PricingMode>('FREE');
-  const [ticketPrice, setTicketPrice] = useState<number | undefined>(undefined);
-  const [capacity, setCapacity] = useState<number | undefined>(undefined);
+  const [ticketPrice, setTicketPrice] = useState<number | string>(499);
+  const [capacity, setCapacity] = useState<number | string>('150');
   const [tagInput, setTagInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ── 1. REGISTRATION FORM TIMING (CREATE NOW OR AFTER) ──
+  // ── REGISTRATION FORM TIMING (CREATE NOW OR AFTER) ──
   type FormTimingOption = 'CREATE_NOW_SCRATCH' | 'CREATE_NOW_TEMPLATE' | 'LINK_EXISTING' | 'CREATE_AFTER';
   const [formTiming, setFormTiming] = useState<FormTimingOption>('CREATE_AFTER');
   const [selectedExistingFormId, setSelectedExistingFormId] = useState<string>('');
@@ -92,14 +125,36 @@ export function CreateEventModal() {
         setSelectedExistingFormId(forms[0].id);
       }
     } catch {}
-  }, []);
+  }, [selectedExistingFormId]);
 
-  // ── 2. PAYMENTS TIMING (ACCEPT PAYMENTS NOW OR AFTER / PHASED SALES) ──
-  type PaymentTimingOption = 'ACCEPT_NOW' | 'ACCEPT_AFTER';
-  const [paymentTiming, setPaymentTiming] = useState<PaymentTimingOption>('ACCEPT_NOW');
-  const [paymentGoLiveDate, setPaymentGoLiveDate] = useState('');
+  // Google Places API Search Debounce
+  useEffect(() => {
+    if (!placesQuery.trim() || placesQuery.length < 2) {
+      setPlacesSuggestions([]);
+      setShowPlacesDropdown(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        setIsSearchingPlaces(true);
+        const res = await fetch(`/api/places?query=${encodeURIComponent(placesQuery.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.places)) {
+            setPlacesSuggestions(data.places.slice(0, 6));
+            setShowPlacesDropdown(true);
+          }
+        }
+      } catch (err) {
+        console.warn('Google Places API search error', err);
+      } finally {
+        setIsSearchingPlaces(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [placesQuery]);
 
-  // ── 3. TIER DEFINITION WITH DISTRICT-STYLE CARD OFFERS ──
+  // ── TIER DEFINITION WITH EXCLUSIVE BANK & CARD OFFERS ──
   interface EventCustomTier {
     id: string;
     name: string;
@@ -164,35 +219,73 @@ export function CreateEventModal() {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // File Upload Handler that opens the "Set the Artwork" modal
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        setToastMessage('File size must be under 10MB.');
+      if (file.size > 12 * 1024 * 1024) {
+        setToastMessage('File size must be under 12MB.');
         return;
       }
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
           const resultUrl = event.target.result as string;
-          setCustomCover(resultUrl);
-          setCoverImage(resultUrl);
+          setPendingArtwork(resultUrl);
+          setIsArtworkModalOpen(true);
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleApplyArtwork = () => {
+    if (pendingArtwork) {
+      setCustomCover(pendingArtwork);
+      setCoverImage(pendingArtwork);
+    }
+    setIsArtworkModalOpen(false);
+  };
+
+  const handleSelectPlaceSuggestion = (place: any) => {
+    const placeName = place.name || place.address || '';
+    setLocation(placeName);
+    setPlacesQuery(placeName);
+    if (place.city) {
+      setCity(place.city);
+    }
+    if (place.lat && place.lng) {
+      setSelectedCoordinates({ lat: place.lat, lng: place.lng });
+    }
+    setShowPlacesDropdown(false);
+  };
+
+  const isVirtual = type === 'virtual';
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !date.trim() || !location.trim()) return;
 
+    if (!title.trim() || !date.trim()) {
+      setToastMessage('Convening Title and Date are required.');
+      return;
+    }
+
+    const finalLocation = isVirtual
+      ? (meetingUrl.trim() || 'Virtual Online Assembly Chamber')
+      : location.trim();
+
+    if (!isVirtual && !finalLocation) {
+      setToastMessage('Venue / Location is required for physical and hybrid events.');
+      return;
+    }
+
+    const finalCity = isVirtual ? 'Online' : (city || 'New Delhi');
     const tags = tagInput.split(',').map((t) => t.trim()).filter(Boolean);
     const finalCover = customCover.trim() || coverImage;
 
-    const matchedCity = KNOWN_CITIES.find(c => c.value.toLowerCase() === city.toLowerCase());
-    const lat = matchedCity?.lat || (city === 'New Delhi' ? 28.6139 : undefined);
-    const lng = matchedCity?.lng || (city === 'New Delhi' ? 77.2090 : undefined);
+    const matchedCity = KNOWN_CITIES.find(c => c.value.toLowerCase() === finalCity.toLowerCase());
+    const lat = selectedCoordinates.lat || matchedCity?.lat || (finalCity === 'New Delhi' ? 28.6139 : undefined);
+    const lng = selectedCoordinates.lng || matchedCity?.lng || (finalCity === 'New Delhi' ? 77.2090 : undefined);
 
     let finalPlans = [];
     let effectivePrice = 0;
@@ -201,29 +294,30 @@ export function CreateEventModal() {
       finalPlans = [
         {
           id: `plan_free_${Date.now()}`,
-          name: 'Complimentary Pass',
+          name: 'Complimentary Delegate Access',
           price: 0,
           currency: 'INR',
-          description: 'Free attendee registration pass.',
-          perks: ['Event Admission', 'Digital Pass'],
+          description: 'Full diplomatic floor access and participation credential.',
+          perks: ['Floor debate access', 'Official Delegate Kit', 'Verified Certificate'],
           status: 'active' as const,
+          badge: 'FREE ENTRY',
+          salePhase: 'NOW' as const,
         },
       ];
       effectivePrice = 0;
     } else if (pricingMode === 'NORMAL') {
-      effectivePrice = ticketPrice || 0;
+      effectivePrice = Math.max(0, Number(ticketPrice));
       finalPlans = [
         {
           id: `plan_std_${Date.now()}`,
-          name: 'Standard Registration Pass',
+          name: 'General Admission / Delegate Pass',
           price: effectivePrice,
           currency: 'INR',
           description: 'Official admission pass with verified attendance credentials.',
           perks: ['Event Admission', 'Digital Pass', 'Networking Access'],
           status: 'active' as const,
-          badge: 'POPULAR',
-          salePhase: paymentTiming === 'ACCEPT_NOW' ? ('NOW' as const) : ('SCHEDULED' as const),
-          saleStartDate: paymentGoLiveDate || undefined,
+          badge: 'STANDARD',
+          salePhase: 'NOW' as const,
         },
       ];
     } else {
@@ -262,9 +356,10 @@ export function CreateEventModal() {
       type,
       category,
       date,
-      time: time.trim() || '18:00 UTC',
-      location: location.trim(),
-      city: city.trim() || 'New Delhi',
+      time: time.trim() || '10:00 - 18:00 IST',
+      location: finalLocation,
+      city: finalCity,
+      meetingUrl: isVirtual && meetingUrl ? meetingUrl.trim() : undefined,
       latitude: lat,
       longitude: lng,
       ticketPrice: effectivePrice,
@@ -273,8 +368,7 @@ export function CreateEventModal() {
       tags,
       formTiming: formTiming === 'CREATE_AFTER' ? 'CREATE_AFTER' : 'CREATE_NOW',
       formId: formTiming === 'LINK_EXISTING' ? selectedExistingFormId : undefined,
-      paymentTiming,
-      paymentGoLiveDate: paymentTiming === 'ACCEPT_AFTER' ? paymentGoLiveDate : undefined
+      paymentTiming: 'ACCEPT_NOW'
     });
 
     // Also sync to backend conference listings database
@@ -285,8 +379,8 @@ export function CreateEventModal() {
         title: title.trim(),
         category,
         format: type,
-        venue: location.trim(),
-        city: city.trim() || 'New Delhi',
+        venue: finalLocation,
+        city: finalCity,
         startDate: date,
         endDate: date,
         organizerName: profile?.display_name || 'Event Organizer',
@@ -297,7 +391,7 @@ export function CreateEventModal() {
         tierPlans: finalPlans,
         userId: profile?.id || null,
         formTiming,
-        paymentTiming
+        paymentTiming: 'ACCEPT_NOW'
       }),
     }).catch(() => {});
 
@@ -306,17 +400,20 @@ export function CreateEventModal() {
       router.push(`/forms/edit/new?originEventId=${createdId}&eventTitle=${encodeURIComponent(title.trim())}`);
     } else if (formTiming === 'CREATE_NOW_TEMPLATE') {
       router.push(`/forms?originEventId=${createdId}&eventTitle=${encodeURIComponent(title.trim())}`);
+    } else {
+      setActiveView('list');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl p-2 sm:p-6 flex flex-col justify-start sm:justify-center items-center font-sans">
-      <div className="relative w-full max-w-2xl my-auto max-h-[94vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-white/15 bg-gradient-to-b from-[#0e121c] to-[#06080e] p-4 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.9)] space-y-6">
-        {/* On-screen notification popup */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-3xl rounded-3xl bg-[#080b11] border border-cyan-500/20 shadow-2xl p-5 sm:p-7 space-y-6 my-6 max-h-[90vh] overflow-y-auto font-sans">
+        
+        {/* Toast Warning */}
         {toastMessage && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-            <div className="w-full max-w-sm rounded-2xl border border-cyan-500/30 bg-[#0d121f] p-6 shadow-[0_0_50px_rgba(6,182,212,0.25)] text-center space-y-4 animate-in fade-in zoom-in-95 duration-150">
-              <div className="mx-auto w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+            <div className="relative w-full max-w-sm rounded-2xl bg-neutral-900 border border-amber-500/40 p-5 space-y-4 shadow-2xl">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300">
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div className="space-y-1.5">
@@ -335,6 +432,185 @@ export function CreateEventModal() {
               >
                 Got it
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── SET THE ARTWORK MODAL ── */}
+        {isArtworkModalOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+            <div className="relative w-full max-w-2xl rounded-3xl bg-[#0a0e17] border border-cyan-500/40 p-5 sm:p-7 space-y-5 shadow-[0_0_50px_rgba(0,242,254,0.15)] font-sans">
+              
+              <div className="flex items-start justify-between border-b border-white/10 pb-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+                      <ImageIcon className="w-4 h-4" />
+                    </span>
+                    <h3 className="text-base font-bold text-white font-display">Set &amp; Frame Cover Artwork</h3>
+                  </div>
+                  <p className="text-xs text-neutral-400">
+                    Preview and adjust how your summit artwork displays on delegate cards and event passes.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsArtworkModalOpen(false)}
+                  className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 16:9 Live Widescreen Canvas Preview */}
+              <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden border border-white/20 bg-black shadow-2xl flex items-center justify-center group">
+                {/* Ambient Blurred Background if Contain */}
+                {artworkFit === 'contain' && pendingArtwork && (
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center filter blur-xl opacity-40 scale-110"
+                    style={{ backgroundImage: `url(${pendingArtwork})` }}
+                  />
+                )}
+
+                {/* Actual Image with position and scale */}
+                {pendingArtwork && (
+                  <img
+                    src={pendingArtwork}
+                    alt="Event Artwork Preview"
+                    className="w-full h-full relative z-10 transition-all duration-200"
+                    style={{
+                      objectFit: artworkFit,
+                      objectPosition: artworkPosition,
+                      transform: `scale(${artworkZoom / 100})`,
+                    }}
+                  />
+                )}
+
+                {/* Live Summit Overlay Preview */}
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/85 via-black/20 to-transparent p-4 sm:p-6 flex flex-col justify-between pointer-events-none">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/30 backdrop-blur-md border border-cyan-400/40 text-cyan-200 text-[10px] font-mono font-bold uppercase tracking-wider">
+                      {category}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white text-[10px] font-mono">
+                      {type.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold">
+                      ZENVITRA OFFICIAL CONVENING
+                    </p>
+                    <h4 className="text-base sm:text-xl font-display font-extrabold text-white tracking-tight drop-shadow-md truncate">
+                      {title.trim() || 'Convening Title Preview'}
+                    </h4>
+                    <p className="text-xs text-neutral-300 font-mono">
+                      {date || 'Date Pending'} &bull; {isVirtual ? 'Virtual Online' : (location || city || 'Venue')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Artwork Adjustment Controls */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3 text-xs font-mono">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Focal Alignment */}
+                  <div className="space-y-1">
+                    <span className="text-[11px] text-neutral-400 block font-semibold">Focal Alignment:</span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {(['top', 'center', 'bottom'] as const).map((pos) => (
+                        <button
+                          key={pos}
+                          type="button"
+                          onClick={() => setArtworkPosition(pos)}
+                          className={`py-1.5 px-2 rounded-xl text-center capitalize transition cursor-pointer text-[10px] ${
+                            artworkPosition === pos
+                              ? 'bg-cyan-500 text-black font-bold shadow'
+                              : 'bg-white/5 text-neutral-300 hover:bg-white/10'
+                          }`}
+                        >
+                          {pos}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Framing Fit Mode */}
+                  <div className="space-y-1">
+                    <span className="text-[11px] text-neutral-400 block font-semibold">Framing Mode:</span>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setArtworkFit('cover')}
+                        className={`py-1.5 px-2 rounded-xl text-center transition cursor-pointer text-[10px] ${
+                          artworkFit === 'cover'
+                            ? 'bg-cyan-500 text-black font-bold shadow'
+                            : 'bg-white/5 text-neutral-300 hover:bg-white/10'
+                        }`}
+                      >
+                        Fill Widescreen (Cover)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setArtworkFit('contain')}
+                        className={`py-1.5 px-2 rounded-xl text-center transition cursor-pointer text-[10px] ${
+                          artworkFit === 'contain'
+                            ? 'bg-cyan-500 text-black font-bold shadow'
+                            : 'bg-white/5 text-neutral-300 hover:bg-white/10'
+                        }`}
+                      >
+                        Full Image (Contain)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Zoom / Scale Slider */}
+                <div className="space-y-1 pt-1 border-t border-white/10">
+                  <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                    <span>Artwork Scale / Zoom:</span>
+                    <span className="text-white font-bold">{artworkZoom}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="100"
+                    max="140"
+                    value={artworkZoom}
+                    onChange={(e) => setArtworkZoom(Number(e.target.value))}
+                    className="w-full accent-cyan-400 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-xs font-mono transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <Upload className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Choose Another Image</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsArtworkModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-mono transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyArtwork}
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-black font-mono font-bold text-xs transition shadow-lg shadow-cyan-500/20 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Apply &amp; Set Artwork</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -387,7 +663,7 @@ export function CreateEventModal() {
                 className="w-full px-4 py-3 rounded-2xl bg-neutral-900 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
               >
                 <option value="physical">Physical In-Person Venue</option>
-                <option value="virtual">Virtual Online Assembly</option>
+                <option value="virtual">Virtual Online Assembly (Remote)</option>
                 <option value="hybrid">Hybrid (Physical &amp; Virtual)</option>
               </select>
             </div>
@@ -411,8 +687,8 @@ export function CreateEventModal() {
             </div>
           </div>
 
-          {/* Date, Time & City */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Date & Time */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-mono font-semibold text-neutral-300">DATE *</label>
               <input
@@ -425,7 +701,7 @@ export function CreateEventModal() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">TIME (UTC)</label>
+              <label className="block text-xs font-mono font-semibold text-neutral-300">TIME WINDOW</label>
               <input
                 type="text"
                 value={time}
@@ -434,40 +710,132 @@ export function CreateEventModal() {
                 className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
               />
             </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">METRO CITY</label>
-              <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-2xl bg-neutral-900 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
-              >
-                <option value="New Delhi">New Delhi &amp; NCR</option>
-                <option value="Gurugram">Gurugram</option>
-                <option value="Mumbai">Mumbai</option>
-                <option value="Bengaluru">Bengaluru</option>
-                <option value="Pune">Pune</option>
-                <option value="Geneva">Geneva</option>
-                <option value="London">London</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Location / Venue */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-mono font-semibold text-neutral-300">VENUE / MEETING LINK *</label>
-            <input
-              type="text"
-              required
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. India International Centre, Lodhi Estate / Diplomatic Chamber Room"
-              className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
-            />
           </div>
 
           {/* ══════════════════════════════════════════════════════════════
-              FEATURE 1: REGISTRATION INTAKE FORM (NOW OR AFTER)
+              LOCATION SECTION: ONLINE VS PHYSICAL WITH GMAPS API
+              ══════════════════════════════════════════════════════════════ */}
+          {isVirtual ? (
+            /* ONLINE EVENT: NO PHYSICAL VENUE REQUIRED */
+            <div className="p-4 sm:p-5 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-3 animate-fade-in">
+              <div className="flex items-center gap-2.5 text-cyan-300 font-mono text-xs font-bold">
+                <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
+                <span>VIRTUAL ONLINE CONVENING &bull; NO PHYSICAL LOCATION NEEDED</span>
+              </div>
+              <p className="text-[11px] text-neutral-300 font-sans leading-relaxed">
+                Delegates will join this convening remotely from anywhere in the world through the digital chamber.
+              </p>
+              <div className="space-y-1.5 pt-1">
+                <label className="block text-xs font-mono font-semibold text-cyan-200">
+                  ONLINE MEETING / STREAM LINK (OPTIONAL)
+                </label>
+                <div className="relative">
+                  <Video className="w-4 h-4 absolute left-3.5 top-3 text-cyan-400" />
+                  <input
+                    type="url"
+                    value={meetingUrl}
+                    onChange={(e) => setMeetingUrl(e.target.value)}
+                    placeholder="https://meet.google.com/xyz or Zoom / live link (optional)"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400">
+                  If left empty, delegates will automatically convene in the embedded Zenvitra Digital Chamber.
+                </span>
+              </div>
+            </div>
+          ) : (
+            /* PHYSICAL OR HYBRID: GOOGLE MAPS API POWERED LOCATION */
+            <div className="space-y-4 animate-fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono font-semibold text-neutral-300">
+                      VENUE / LOCATION (GOOGLE MAPS API) *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsLocationPickerOpen(true)}
+                      className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition cursor-pointer"
+                    >
+                      <Globe2 className="w-3 h-3" />
+                      <span>Map &amp; GPS Search</span>
+                    </button>
+                  </div>
+
+                  {/* Autocomplete Input with Google Places API */}
+                  <div className="relative">
+                    <div className="relative">
+                      <MapPin className="w-4 h-4 absolute left-3.5 top-3.5 text-cyan-400" />
+                      <input
+                        type="text"
+                        required={!isVirtual}
+                        value={location}
+                        onChange={(e) => {
+                          setLocation(e.target.value);
+                          setPlacesQuery(e.target.value);
+                        }}
+                        onFocus={() => {
+                          if (placesSuggestions.length > 0) setShowPlacesDropdown(true);
+                        }}
+                        placeholder="Search venue or address (e.g. India International Centre, Vigyan Bhawan)..."
+                        className="w-full pl-10 pr-24 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
+                      />
+                      {isSearchingPlaces && (
+                        <div className="absolute right-3.5 top-3.5 text-cyan-400 text-[10px] font-mono animate-pulse">
+                          Searching...
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Google Places Live Suggestions Dropdown */}
+                    {showPlacesDropdown && placesSuggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1.5 z-40 rounded-2xl bg-[#0d121f] border border-cyan-500/30 shadow-2xl p-1.5 space-y-1 max-h-60 overflow-y-auto">
+                        <div className="px-3 py-1 text-[9px] font-mono text-neutral-400 uppercase tracking-widest border-b border-white/5 flex items-center justify-between">
+                          <span>Google Maps Places Results</span>
+                          <span className="text-cyan-400">Live API</span>
+                        </div>
+                        {placesSuggestions.map((place, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => handleSelectPlaceSuggestion(place)}
+                            className="p-2.5 rounded-xl hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20 text-xs cursor-pointer transition flex items-start gap-2.5"
+                          >
+                            <MapPin className="w-3.5 h-3.5 text-cyan-400 mt-0.5 shrink-0" />
+                            <div className="space-y-0.5 min-w-0">
+                              <p className="font-bold text-white truncate">{place.name}</p>
+                              {place.address && (
+                                <p className="text-[10px] text-neutral-400 truncate">{place.address}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Metro City / Region */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-mono font-semibold text-neutral-300">METRO CITY</label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl bg-neutral-900 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
+                  >
+                    {KNOWN_CITIES.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════
+              REGISTRATION INTAKE FORM (NOW OR AFTER)
               ══════════════════════════════════════════════════════════════ */}
           <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#121829] to-[#0a0d16] border border-amber-500/30 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -523,13 +891,13 @@ export function CreateEventModal() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-white flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
                     <span>Create Using a Template</span>
                   </span>
                   {formTiming === 'CREATE_NOW_TEMPLATE' && <Check className="w-3.5 h-3.5 text-amber-400" />}
                 </div>
                 <p className="text-[11px] text-neutral-300">
-                  Pick from verified templates (MUN, Summit RSVP, Secretariat, Feedback) with 1-click clone.
+                  Pre-populates with standard 1-line agendas, committee choices, and portfolio preferences.
                 </p>
               </div>
 
@@ -544,17 +912,17 @@ export function CreateEventModal() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-white flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <FileText className="w-3.5 h-3.5 text-amber-400" />
                     <span>Link an Existing Form</span>
                   </span>
                   {formTiming === 'LINK_EXISTING' && <Check className="w-3.5 h-3.5 text-amber-400" />}
                 </div>
                 <p className="text-[11px] text-neutral-300">
-                  Attach an already authored ZenForm from your studio ledger.
+                  Attach an already drafted form or custom application from your workspace.
                 </p>
               </div>
 
-              {/* Option D: Make Form After Launch */}
+              {/* Option D: Create Form Later */}
               <div
                 onClick={() => setFormTiming('CREATE_AFTER')}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 relative ${
@@ -571,123 +939,35 @@ export function CreateEventModal() {
                   {formTiming === 'CREATE_AFTER' && <Check className="w-3.5 h-3.5 text-amber-400" />}
                 </div>
                 <p className="text-[11px] text-neutral-300">
-                  Publish your event page first; attach or customize your registration form anytime later.
+                  Launch the convening now and create or attach the intake form anytime later.
                 </p>
               </div>
             </div>
 
-            {/* If Link Existing is selected, show dropdown */}
+            {/* Dropdown for Existing Form */}
             {formTiming === 'LINK_EXISTING' && (
-              <div className="space-y-1.5 pt-1 border-t border-white/10 animate-fade-in">
-                <label className="text-[11px] font-mono text-neutral-400 block">Select Active Form to Link:</label>
-                {existingForms.length > 0 ? (
-                  <select
-                    value={selectedExistingFormId}
-                    onChange={(e) => setSelectedExistingFormId(e.target.value)}
-                    className="w-full bg-black/60 border border-amber-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none cursor-pointer font-mono"
-                  >
-                    {existingForms.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.title} ({f.fields?.length || 0} fields)
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <p className="text-xs text-amber-300">
-                    No custom forms created yet. A fresh intake form will be initialized.
-                  </p>
-                )}
+              <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 animate-fade-in">
+                <label className="text-xs font-mono font-bold text-amber-300 block">
+                  Select Form from Workspace:
+                </label>
+                <select
+                  value={selectedExistingFormId}
+                  onChange={(e) => setSelectedExistingFormId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                >
+                  {existingForms.map((form) => (
+                    <option key={form.id} value={form.id}>
+                      {form.title} ({form.fields?.length || 0} fields)
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
           </div>
 
           {/* ══════════════════════════════════════════════════════════════
-              FEATURE 2: PAYMENTS TIMING & TICKET SALES SCHEDULE
+              TICKET PASS STRUCTURE & BANK OFFERS
               ══════════════════════════════════════════════════════════════ */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#121829] to-[#0a0d16] border border-cyan-500/30 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
-                  <CreditCard className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                    Payment Collection Timing
-                  </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    Take payments now or schedule general sale at a future date (like District).
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-bold shrink-0 self-start sm:self-auto">
-                CASHFREE PG INTEGRATED
-              </span>
-            </div>
-
-            {/* Accept Payments Now vs After */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div
-                onClick={() => setPaymentTiming('ACCEPT_NOW')}
-                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
-                  paymentTiming === 'ACCEPT_NOW'
-                    ? 'bg-cyan-500/10 border-cyan-400 text-white shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400'
-                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Accept Payments Now</span>
-                  </span>
-                  {paymentTiming === 'ACCEPT_NOW' && <Check className="w-3.5 h-3.5 text-cyan-400" />}
-                </div>
-                <p className="text-[11px] text-neutral-300">
-                  Delegates can book and purchase passes via UPI and Cards immediately upon launch.
-                </p>
-              </div>
-
-              <div
-                onClick={() => setPaymentTiming('ACCEPT_AFTER')}
-                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
-                  paymentTiming === 'ACCEPT_AFTER'
-                    ? 'bg-cyan-500/10 border-cyan-400 text-white shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400'
-                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
-                    <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Take Payments Later / Scheduled Sale</span>
-                  </span>
-                  {paymentTiming === 'ACCEPT_AFTER' && <Check className="w-3.5 h-3.5 text-cyan-400" />}
-                </div>
-                <p className="text-[11px] text-neutral-300">
-                  Tickets show as &ldquo;Coming Soon&rdquo; until your scheduled general sale date goes live.
-                </p>
-              </div>
-            </div>
-
-            {/* If Scheduled Date */}
-            {paymentTiming === 'ACCEPT_AFTER' && (
-              <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 animate-fade-in">
-                <label className="text-xs font-mono font-bold text-cyan-300 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>General Ticket Sale Go-Live Date:</span>
-                </label>
-                <input
-                  type="date"
-                  value={paymentGoLiveDate}
-                  onChange={(e) => setPaymentGoLiveDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
-                />
-                <p className="text-[10px] font-mono text-neutral-400">
-                  Delegates can bookmark or pre-register interest; payments unlock automatically on this date.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Pricing Mode Selection (Free vs Flat vs Tiered) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-mono font-semibold text-neutral-300 uppercase tracking-wider">
@@ -735,9 +1015,11 @@ export function CreateEventModal() {
                       badge: 'RUPAY SALE',
                       exclusiveOfferEnabled: true,
                       cardType: 'RUPAY',
+                      discountMode: 'FLAT',
                       offerTitle: 'RUPAY CARD OFFER • BUY TICKETS NOW',
                       discountFlat: 150,
-                      badgeText: 'RUPAY EXCLUSIVE'
+                      discountPercent: 0,
+                      badgeText: 'RUPAY SALE'
                     });
                     handleAddEventTier({
                       name: 'General Admission',
@@ -765,23 +1047,20 @@ export function CreateEventModal() {
                   <span className="absolute left-4 top-3 text-neutral-400 font-mono text-sm">₹</span>
                   <input
                     type="number"
-                    min="1"
-                    value={ticketPrice || ''}
-                    onChange={(e) => setTicketPrice(e.target.value ? Number(e.target.value) : 0)}
-                    placeholder="Ticket price in INR"
-                    className="w-full pl-8 pr-4 py-3 rounded-2xl bg-white/[0.04] border border-amber-500/30 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-amber-400/50 font-mono"
+                    min="0"
+                    value={ticketPrice}
+                    onChange={(e) => setTicketPrice(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
                   />
                 </div>
               </div>
             )}
 
-            {/* ══════════════════════════════════════════════════════════════
-                FEATURE 3: DISTRICT-STYLE BANK OFFERS & MULTI-TIER SALES
-                ══════════════════════════════════════════════════════════════ */}
+            {/* Configured Tiers List & Bank Offers */}
             {pricingMode === 'TIERED' && (
-              <div className="space-y-3 pt-1">
+              <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-purple-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-xs font-mono font-bold text-white flex items-center gap-1.5">
                     <Ticket className="w-3.5 h-3.5 text-purple-400" />
                     <span>Configured Pass Tiers &amp; Offers ({eventTiers.length})</span>
                   </span>
@@ -795,9 +1074,9 @@ export function CreateEventModal() {
                   </button>
                 </div>
 
-                {/* Preset District-Style Quick Add Pills */}
+                {/* Preset 1-Click Starter Examples */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-mono text-purple-300 font-semibold">1-Click Starter Examples (Fully Configurable):</span>
+                  <span className="text-[10px] font-mono text-purple-300 font-semibold">1-Click Presets:</span>
                   {[
                     { 
                       name: 'RuPay Early Access Pass', 
@@ -851,52 +1130,53 @@ export function CreateEventModal() {
                             type="text"
                             value={tier.name}
                             onChange={(e) => handleUpdateEventTier(tier.id, 'name', e.target.value)}
-                            placeholder="Tier name (e.g. RuPay Early Bird / General Admission)"
-                            className="w-full px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/15 text-white placeholder-neutral-500 text-xs font-semibold focus:outline-none focus:border-purple-400"
+                            placeholder="Pass Name (e.g. RuPay Early Bird / Executive)"
+                            className="w-full bg-neutral-900 border border-white/15 rounded-lg px-2.5 py-1.5 text-white font-bold text-xs"
                           />
                         </div>
                         <div className="w-28 relative">
-                          <span className="absolute left-2.5 top-1.5 text-amber-400 font-mono text-xs">₹</span>
+                          <span className="absolute left-2.5 top-1.5 text-neutral-400 font-mono text-xs">₹</span>
                           <input
                             type="number"
                             min={0}
                             value={tier.price}
                             onChange={(e) => handleUpdateEventTier(tier.id, 'price', Number(e.target.value))}
-                            placeholder="Price"
-                            className="w-full pl-6 pr-2 py-1.5 rounded-lg bg-white/[0.04] border border-amber-500/30 text-amber-300 text-xs font-mono font-bold focus:outline-none focus:border-amber-400 text-right"
+                            className="w-full pl-6 pr-2 py-1.5 bg-neutral-900 border border-white/15 rounded-lg text-amber-300 font-bold text-xs font-mono"
                           />
                         </div>
                         {eventTiers.length > 1 && (
                           <button
                             type="button"
                             onClick={() => handleRemoveEventTier(tier.id)}
-                            className="p-1.5 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
-                            title="Delete tier"
+                            className="p-1.5 text-neutral-500 hover:text-rose-400 transition"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-[11px]">
-                        <input
-                          type="text"
-                          value={tier.badge || ''}
-                          onChange={(e) => handleUpdateEventTier(tier.id, 'badge', e.target.value)}
-                          placeholder="Badge (e.g. 🔥 RUPAY SALE)"
-                          className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/10 text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-purple-400 font-mono"
-                        />
-                        <input
-                          type="number"
-                          min={1}
-                          value={tier.capacity || ''}
-                          onChange={(e) => handleUpdateEventTier(tier.id, 'capacity', Number(e.target.value))}
-                          placeholder="Capacity (e.g. 50)"
-                          className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/10 text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-purple-400 font-mono"
-                        />
+                      <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                        <div>
+                          <input
+                            type="text"
+                            value={tier.badge || ''}
+                            onChange={(e) => handleUpdateEventTier(tier.id, 'badge', e.target.value)}
+                            placeholder="Badge (e.g. RUPAY SALE / LIMITED)"
+                            className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            value={tier.capacity || ''}
+                            onChange={(e) => handleUpdateEventTier(tier.id, 'capacity', Number(e.target.value))}
+                            placeholder="Tier Capacity"
+                            className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white"
+                          />
+                        </div>
                       </div>
 
-                      {/* District-Style Bank Card Offer Toggle */}
+                      {/* Exclusive Bank Card Offer Toggle */}
                       <div className="p-2.5 rounded-lg bg-purple-950/20 border border-purple-500/20 space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="flex items-center gap-2 cursor-pointer">
@@ -908,7 +1188,7 @@ export function CreateEventModal() {
                             />
                             <span className="text-[11px] font-mono text-purple-300 font-bold flex items-center gap-1">
                               <Sparkles className="w-3 h-3 text-purple-400" />
-                              <span>District Card Offer (&ldquo;RUPAY SALE&rdquo; / Discount)</span>
+                              <span>Exclusive Card Offer (&ldquo;RUPAY SALE&rdquo; / Discount)</span>
                             </span>
                           </label>
                           <span className="text-[9px] font-mono text-neutral-400">
@@ -1006,31 +1286,47 @@ export function CreateEventModal() {
                 <button
                   type="button"
                   onClick={() => handleAddEventTier()}
-                  className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 hover:text-white text-xs font-mono flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  className="w-full py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/25 text-purple-200 text-xs font-mono font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <Plus className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Add Another Tier</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Another Pass Tier</span>
                 </button>
               </div>
             )}
           </div>
 
+          {/* Seating Capacity */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-mono font-semibold text-neutral-300">TOTAL ASSEMBLY CAPACITY</label>
+            <input
+              type="number"
+              min="1"
+              value={capacity}
+              onChange={(e) => setCapacity(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+            />
+          </div>
+
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-mono font-semibold text-neutral-300">SYNOPSIS &amp; ONE-LINE MANDATE</label>
+            <label className="block text-xs font-mono font-semibold text-neutral-300">MANDATE &amp; PROTOCOL</label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Provide a clean, focused description of your summit, rules of procedure, and convening objective..."
-              className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 resize-none focus:outline-none focus:border-cyan-500/50 leading-relaxed"
+              placeholder="Provide context, committee agendas, rules of procedure, and dress code..."
+              className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50 resize-none font-sans"
             />
           </div>
 
-          {/* Cover Image Preset Picker */}
-          <div className="space-y-2">
+          {/* ══════════════════════════════════════════════════════════════
+              COVER ARTWORK WITH "SET THE ARTWORK" MODAL
+              ══════════════════════════════════════════════════════════════ */}
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">COVER ARTWORK</label>
+              <label className="block text-xs font-mono font-semibold text-neutral-300">
+                COVER ARTWORK BANNER (16:9)
+              </label>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -1063,15 +1359,61 @@ export function CreateEventModal() {
               ))}
             </div>
 
+            {/* Custom Artwork Preview & Re-Adjust Trigger */}
             <div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white text-xs font-mono transition cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Upload className="w-4 h-4 text-cyan-400" />
-                <span>{customCover ? 'Custom Image Attached (Click to Change)' : 'Upload Custom Image from Device'}</span>
-              </button>
+              {customCover ? (
+                <div className="p-3 rounded-xl bg-cyan-950/20 border border-cyan-500/30 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-16 h-10 rounded-lg overflow-hidden border border-white/20 shrink-0 bg-black">
+                      <img
+                        src={customCover}
+                        alt="Current Cover"
+                        className="w-full h-full"
+                        style={{ objectFit: artworkFit, objectPosition: artworkPosition }}
+                      />
+                    </div>
+                    <div className="space-y-0.5 min-w-0">
+                      <p className="text-xs font-bold text-white flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Custom Artwork Set</span>
+                      </p>
+                      <p className="text-[10px] font-mono text-neutral-400 truncate">
+                        Position: {artworkPosition} &bull; Mode: {artworkFit}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPendingArtwork(customCover);
+                        setIsArtworkModalOpen(true);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono transition cursor-pointer flex items-center gap-1"
+                    >
+                      <Sliders className="w-3 h-3" />
+                      <span>Adjust Artwork</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 text-[10px] font-mono transition cursor-pointer"
+                    >
+                      Change
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white text-xs font-mono transition cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Upload className="w-4 h-4 text-cyan-400" />
+                  <span>Upload Custom Image from Device</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -1106,6 +1448,24 @@ export function CreateEventModal() {
             </button>
           </div>
         </form>
+
+        {/* Google Maps API World Location Picker Modal */}
+        <WorldLocationPickerModal
+          isOpen={isLocationPickerOpen}
+          onClose={() => setIsLocationPickerOpen(false)}
+          title="Select Physical Convening Venue (Google Maps API)"
+          initialLocation={location}
+          onSelectLocation={(loc: WorldLocation) => {
+            const locName = loc.name + (loc.address ? `, ${loc.address}` : '');
+            setLocation(locName);
+            setPlacesQuery(loc.name);
+            if (loc.city) setCity(loc.city);
+            if (loc.lat && loc.lng) {
+              setSelectedCoordinates({ lat: loc.lat, lng: loc.lng });
+            }
+            setIsLocationPickerOpen(false);
+          }}
+        />
       </div>
     </div>
   );
