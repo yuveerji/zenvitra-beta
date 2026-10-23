@@ -112,8 +112,10 @@ export function CreateEventModal() {
     saleStartDate?: string;
     exclusiveOfferEnabled: boolean;
     cardType: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
+    discountMode?: 'FLAT' | 'PERCENT';
     offerTitle: string;
     discountFlat: number;
+    discountPercent?: number;
     badgeText: string;
   }
 
@@ -125,8 +127,10 @@ export function CreateEventModal() {
     badge?: string;
     exclusiveOfferEnabled?: boolean;
     cardType?: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
+    discountMode?: 'FLAT' | 'PERCENT';
     offerTitle?: string;
     discountFlat?: number;
+    discountPercent?: number;
     badgeText?: string;
   }) => {
     const newTier: EventCustomTier = {
@@ -141,8 +145,10 @@ export function CreateEventModal() {
       saleStartDate: '',
       exclusiveOfferEnabled: template?.exclusiveOfferEnabled ?? false,
       cardType: template?.cardType || 'RUPAY',
+      discountMode: template?.discountMode || 'FLAT',
       offerTitle: template?.offerTitle || 'RUPAY CARD OFFER • BUY TICKETS NOW',
       discountFlat: template?.discountFlat ?? 150,
+      discountPercent: template?.discountPercent ?? 20,
       badgeText: template?.badgeText || 'RUPAY SALE'
     };
     setEventTiers((prev) => [...prev, newTier]);
@@ -241,7 +247,8 @@ export function CreateEventModal() {
           enabled: true,
           cardType: t.cardType,
           title: t.offerTitle,
-          discountFlat: t.discountFlat,
+          discountFlat: t.discountMode === 'PERCENT' ? undefined : t.discountFlat,
+          discountPercent: t.discountMode === 'PERCENT' ? t.discountPercent : undefined,
           badgeText: t.badgeText
         } : undefined
       }));
@@ -790,7 +797,7 @@ export function CreateEventModal() {
 
                 {/* Preset District-Style Quick Add Pills */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-mono text-neutral-500">District quick add:</span>
+                  <span className="text-[10px] font-mono text-purple-300 font-semibold">1-Click Starter Examples (Fully Configurable):</span>
                   {[
                     { 
                       name: 'RuPay Early Access Pass', 
@@ -798,8 +805,10 @@ export function CreateEventModal() {
                       badge: 'RUPAY SALE',
                       exclusiveOfferEnabled: true,
                       cardType: 'RUPAY' as const,
+                      discountMode: 'FLAT' as const,
                       offerTitle: 'RUPAY CARD OFFER • BUY TICKETS NOW',
                       discountFlat: 150,
+                      discountPercent: 0,
                       badgeText: 'RUPAY SALE'
                     },
                     { 
@@ -808,8 +817,10 @@ export function CreateEventModal() {
                       badge: 'VISA EXCLUSIVE',
                       exclusiveOfferEnabled: true,
                       cardType: 'VISA' as const,
+                      discountMode: 'FLAT' as const,
                       offerTitle: 'VISA CARD OFFER • PRIORITY ENTRY',
                       discountFlat: 100,
+                      discountPercent: 0,
                       badgeText: 'VISA SALE'
                     },
                     { name: 'General Admission', price: 799, badge: 'GENERAL SALE' },
@@ -906,42 +917,85 @@ export function CreateEventModal() {
                         </div>
 
                         {tier.exclusiveOfferEnabled && (
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-purple-500/20 text-[10px] font-mono">
-                            <div>
-                              <span className="text-neutral-400 block mb-0.5">Card Scheme:</span>
-                              <select
-                                value={tier.cardType}
-                                onChange={(e) => handleUpdateEventTier(tier.id, 'cardType', e.target.value)}
-                                className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white cursor-pointer"
-                              >
-                                <option value="RUPAY">RuPay Exclusive</option>
-                                <option value="VISA">Visa Exclusive</option>
-                                <option value="MASTERCARD">Mastercard</option>
-                                <option value="STUDENT">Student Discount</option>
-                              </select>
+                          <div className="space-y-2 pt-1 border-t border-purple-500/20 text-[10px] font-mono">
+                            <div className="flex items-center justify-between text-neutral-300">
+                              <span className="font-semibold text-purple-200">Discount Mode:</span>
+                              <div className="flex items-center gap-1 bg-black/50 p-0.5 rounded-lg border border-white/10">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventTier(tier.id, 'discountMode', 'FLAT')}
+                                  className={`px-2 py-0.5 rounded text-[9px] font-bold transition cursor-pointer ${
+                                    tier.discountMode !== 'PERCENT'
+                                      ? 'bg-purple-500 text-white shadow'
+                                      : 'text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  Flat ₹
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventTier(tier.id, 'discountMode', 'PERCENT')}
+                                  className={`px-2 py-0.5 rounded text-[9px] font-bold transition cursor-pointer ${
+                                    tier.discountMode === 'PERCENT'
+                                      ? 'bg-purple-500 text-white shadow'
+                                      : 'text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  % Off
+                                </button>
+                              </div>
                             </div>
 
-                            <div>
-                              <span className="text-neutral-400 block mb-0.5">Offer Title:</span>
-                              <input
-                                type="text"
-                                value={tier.offerTitle}
-                                onChange={(e) => handleUpdateEventTier(tier.id, 'offerTitle', e.target.value)}
-                                placeholder="RUPAY CARD OFFER"
-                                className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white"
-                              />
-                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">Card Scheme / Bank:</span>
+                                <select
+                                  value={tier.cardType}
+                                  onChange={(e) => handleUpdateEventTier(tier.id, 'cardType', e.target.value)}
+                                  className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white cursor-pointer"
+                                >
+                                  <option value="RUPAY">RuPay Card</option>
+                                  <option value="VISA">Visa Card</option>
+                                  <option value="MASTERCARD">Mastercard</option>
+                                  <option value="STUDENT">Student Card</option>
+                                  <option value="EARLY_ACCESS">Early Access</option>
+                                </select>
+                              </div>
 
-                            <div>
-                              <span className="text-neutral-400 block mb-0.5">Discount Amount (₹):</span>
-                              <input
-                                type="number"
-                                min={1}
-                                value={tier.discountFlat}
-                                onChange={(e) => handleUpdateEventTier(tier.id, 'discountFlat', Number(e.target.value))}
-                                className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-amber-300 font-bold"
-                              />
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">Offer Title (Customizable):</span>
+                                <input
+                                  type="text"
+                                  value={tier.offerTitle}
+                                  onChange={(e) => handleUpdateEventTier(tier.id, 'offerTitle', e.target.value)}
+                                  placeholder="RUPAY CARD OFFER"
+                                  className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white"
+                                />
+                              </div>
+
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">
+                                  {tier.discountMode === 'PERCENT' ? 'Discount Percentage (%):' : 'Discount Amount (₹):'}
+                                </span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={tier.discountMode === 'PERCENT' ? 100 : tier.price}
+                                  value={tier.discountMode === 'PERCENT' ? (tier.discountPercent ?? 20) : tier.discountFlat}
+                                  onChange={(e) =>
+                                    handleUpdateEventTier(
+                                      tier.id,
+                                      tier.discountMode === 'PERCENT' ? 'discountPercent' : 'discountFlat',
+                                      Number(e.target.value) || 0
+                                    )
+                                  }
+                                  className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-amber-300 font-bold"
+                                />
+                              </div>
                             </div>
+                            <p className="text-[9px] text-neutral-400">
+                              💡 Example template: All card brands, discount amounts, and titles are 100% configurable.
+                            </p>
                           </div>
                         )}
                       </div>

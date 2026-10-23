@@ -24,7 +24,8 @@ import {
   Check,
   Layers,
   Settings,
-  HelpCircle
+  HelpCircle,
+  Percent
 } from 'lucide-react';
 import { ZenEvent, EventCategory, EventStatus, RegistrationPlan } from '@/types/events';
 import { getPublicForms } from '@/lib/formsStorage';
@@ -49,8 +50,10 @@ interface LocalTier {
   saleStartDate?: string;
   exclusiveOfferEnabled: boolean;
   cardType: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
+  discountMode: 'FLAT' | 'PERCENT';
   offerTitle: string;
   discountFlat: number;
+  discountPercent: number;
   badgeText: string;
 }
 
@@ -103,25 +106,29 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         saleStartDate: p.saleStartDate || '',
         exclusiveOfferEnabled: Boolean(p.exclusiveOffer?.enabled),
         cardType: p.exclusiveOffer?.cardType || 'RUPAY',
-        offerTitle: p.exclusiveOffer?.title || 'RUPAY CARD OFFER • ₹150 OFF',
+        discountMode: (p.exclusiveOffer?.discountPercent && !p.exclusiveOffer?.discountFlat) ? 'PERCENT' : 'FLAT',
+        offerTitle: p.exclusiveOffer?.title || '',
         discountFlat: p.exclusiveOffer?.discountFlat ?? 150,
-        badgeText: p.exclusiveOffer?.badgeText || 'RUPAY SALE'
+        discountPercent: p.exclusiveOffer?.discountPercent ?? 20,
+        badgeText: p.exclusiveOffer?.badgeText || (p.exclusiveOffer?.cardType ? `${p.exclusiveOffer.cardType} SALE` : 'OFFER')
       }));
     }
     return [
       {
         id: `tier_general_${event.id}`,
         name: 'General Admission / Delegate Pass',
-        price: event.ticketPrice || 499,
-        badge: 'RUPAY SALE',
+        price: event.ticketPrice || 0,
+        badge: 'GENERAL ENTRY',
         description: 'Full conference floor entry, voting rights, and verified credentials.',
         salePhase: 'NOW',
         saleStartDate: '',
-        exclusiveOfferEnabled: true,
+        exclusiveOfferEnabled: false,
         cardType: 'RUPAY',
-        offerTitle: 'RUPAY CARD OFFER • BUY TICKETS NOW',
+        discountMode: 'FLAT',
+        offerTitle: '',
         discountFlat: 150,
-        badgeText: 'RUPAY SALE'
+        discountPercent: 20,
+        badgeText: ''
       }
     ];
   });
@@ -145,23 +152,27 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
     badge?: string;
     exclusiveOfferEnabled?: boolean;
     cardType?: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
+    discountMode?: 'FLAT' | 'PERCENT';
     offerTitle?: string;
     discountFlat?: number;
+    discountPercent?: number;
     badgeText?: string;
   }) => {
     const newTier: LocalTier = {
       id: `tier_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      name: template?.name || 'Delegate Pass Tier',
+      name: template?.name || 'Custom Delegate Pass',
       price: template?.price ?? 499,
-      badge: template?.badge || 'POPULAR',
+      badge: template?.badge || 'PASS',
       description: 'Official committee floor access and accredited certificate.',
       salePhase: 'NOW',
       saleStartDate: '',
       exclusiveOfferEnabled: template?.exclusiveOfferEnabled ?? false,
       cardType: template?.cardType || 'RUPAY',
-      offerTitle: template?.offerTitle || 'RUPAY CARD OFFER • BUY TICKETS NOW',
+      discountMode: template?.discountMode || 'FLAT',
+      offerTitle: template?.offerTitle || '',
       discountFlat: template?.discountFlat ?? 150,
-      badgeText: template?.badgeText || 'RUPAY SALE'
+      discountPercent: template?.discountPercent ?? 20,
+      badgeText: template?.badgeText || ''
     };
     setLocalTiers((prev) => [...prev, newTier]);
   };
@@ -190,16 +201,17 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
       perks: ['Floor debate access', 'Official Delegate Kit', 'Verified Certificate'],
       capacity: capacity ? Math.max(1, capacity) : 100,
       badge: t.badge || (t.price > 0 ? `₹${t.price}` : 'FREE PASS'),
-      isPopular: t.badge === 'POPULAR' || t.badge === 'RUPAY SALE',
+      isPopular: t.badge?.toLowerCase().includes('popular') || t.badge?.toLowerCase().includes('sale'),
       status: 'active' as const,
       salePhase: t.salePhase,
       saleStartDate: t.saleStartDate || undefined,
       exclusiveOffer: t.exclusiveOfferEnabled ? {
         enabled: true,
         cardType: t.cardType,
-        title: t.offerTitle,
-        discountFlat: Number(t.discountFlat) || 0,
-        badgeText: t.badgeText
+        title: t.offerTitle || `${t.cardType} DISCOUNT OFFER`,
+        discountFlat: t.discountMode === 'FLAT' ? (Number(t.discountFlat) || 0) : undefined,
+        discountPercent: t.discountMode === 'PERCENT' ? (Number(t.discountPercent) || 0) : undefined,
+        badgeText: t.badgeText || `${t.cardType} SALE`
       } : undefined
     }));
 
@@ -325,7 +337,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Tiers &amp; RuPay Offers</span>
+              <span>Tiers &amp; Bank Offers</span>
               <span className="px-1.5 py-0.2 rounded bg-purple-500/20 text-[9px] text-purple-300">
                 {localTiers.length}
               </span>
@@ -637,7 +649,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                   <div className="space-y-1">
                     <p className="font-bold text-cyan-300">Ticketing &amp; Phased Go-Live Timing</p>
                     <p className="text-[11px] text-neutral-400 leading-relaxed">
-                      Configure when pass bookings go live. District-style apps allow you to run exclusive pre-sales (e.g. RuPay card offers) before general admission sale begins.
+                      Configure when pass bookings go live. District-style apps allow you to run exclusive pre-sales (e.g. RuPay or bank card offers) before general admission sale begins.
                     </p>
                   </div>
                 </div>
@@ -710,67 +722,83 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
             {/* ── TAB 4: PASS TIERS & DISTRICT CARD OFFERS ── */}
             {activeTab === 'tiers' && (
               <div className="space-y-4 animate-fade-in font-sans">
-                <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-xs text-neutral-300 flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2.5">
-                    <Sparkles className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <p className="font-bold text-purple-300">District-Style Bank &amp; Card Presale Offers</p>
-                      <p className="text-[11px] text-neutral-400 leading-relaxed">
-                        Customize each pass tier, offer exclusive RuPay / Visa discounts, and configure scheduled early bird access.
-                      </p>
+                <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-xs text-neutral-300 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2.5">
+                      <Sparkles className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5">
+                        <p className="font-bold text-purple-300">Pass Tiers &amp; Bank Card Offers</p>
+                        <p className="text-[11px] text-neutral-400 leading-relaxed">
+                          Customize each pass tier, offer exclusive RuPay / Visa / Bank card discounts, and configure scheduled early bird sales.
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Preset Quick Add Buttons */}
-                  <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                  {/* Preset 1-Click Starter Examples */}
+                  <div className="pt-2 border-t border-purple-500/20 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-mono text-purple-300/80 mr-1 font-semibold">
+                      1-Click Starter Examples (Fully Configurable):
+                    </span>
                     <button
                       type="button"
                       onClick={() =>
                         handleAddTier({
-                          name: 'RuPay Exclusive Early Bird',
+                          name: 'RuPay Early Access Pass',
                           price: 499,
                           badge: 'RUPAY SALE',
                           exclusiveOfferEnabled: true,
                           cardType: 'RUPAY',
+                          discountMode: 'FLAT',
                           offerTitle: 'RUPAY CARD OFFER • BUY TICKETS NOW',
                           discountFlat: 150,
+                          discountPercent: 0,
                           badgeText: 'RUPAY SALE'
                         })
                       }
                       className="px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/40 text-[10px] font-mono transition cursor-pointer"
                     >
-                      + RuPay Presale Tier (₹499)
+                      + Example: RuPay Offer
                     </button>
                     <button
                       type="button"
                       onClick={() =>
                         handleAddTier({
-                          name: 'Visa Priority Pass',
+                          name: 'Visa Special Presale',
                           price: 699,
                           badge: 'VISA EXCLUSIVE',
                           exclusiveOfferEnabled: true,
                           cardType: 'VISA',
+                          discountMode: 'FLAT',
                           offerTitle: 'VISA CARD OFFER • PRIORITY ENTRY',
                           discountFlat: 100,
+                          discountPercent: 0,
                           badgeText: 'VISA SALE'
                         })
                       }
                       className="px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/40 text-[10px] font-mono transition cursor-pointer"
                     >
-                      + Visa Tier (₹699)
+                      + Example: Visa Offer
                     </button>
                     <button
                       type="button"
                       onClick={() =>
                         handleAddTier({
-                          name: 'Standard Delegate Pass',
-                          price: 999,
-                          badge: 'POPULAR'
+                          name: 'Custom Delegate Tier',
+                          price: 0,
+                          badge: 'PASS',
+                          exclusiveOfferEnabled: false,
+                          cardType: 'RUPAY',
+                          discountMode: 'FLAT',
+                          discountFlat: 0,
+                          discountPercent: 0,
+                          offerTitle: '',
+                          badgeText: ''
                         })
                       }
                       className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-neutral-200 border border-white/20 text-[10px] font-mono transition cursor-pointer"
                     >
-                      + Standard Tier
+                      + Blank Custom Tier
                     </button>
                   </div>
                 </div>
@@ -811,7 +839,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                             value={tier.name}
                             onChange={(e) => handleUpdateTier(tier.id, 'name', e.target.value)}
                             className="w-full bg-[#111422] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-400"
-                            placeholder="e.g. RuPay Early Bird"
+                            placeholder="e.g. Early Bird Pass"
                           />
                         </div>
 
@@ -833,7 +861,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                             value={tier.badge || ''}
                             onChange={(e) => handleUpdateTier(tier.id, 'badge', e.target.value)}
                             className="w-full bg-[#111422] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-400"
-                            placeholder="e.g. RUPAY SALE"
+                            placeholder="e.g. POPULAR / EARLY BIRD"
                           />
                         </div>
                       </div>
@@ -877,7 +905,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                             />
                             <span className="text-[11px] font-mono text-purple-300 font-bold flex items-center gap-1">
                               <Sparkles className="w-3 h-3 text-purple-400" />
-                              <span>District Card Offer (&ldquo;RUPAY SALE&rdquo; / Discount)</span>
+                              <span>Bank / Card Offer Discount</span>
                             </span>
                           </label>
                           <span className="text-[9px] font-mono text-neutral-400">
@@ -886,43 +914,86 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
                         </div>
 
                         {tier.exclusiveOfferEnabled && (
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-purple-500/20 text-[10px] font-mono">
-                            <div>
-                              <span className="text-neutral-400 block mb-0.5">Card Scheme:</span>
-                              <select
-                                value={tier.cardType}
-                                onChange={(e) => handleUpdateTier(tier.id, 'cardType', e.target.value)}
-                                className="w-full bg-[#111422] border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-400 text-xs"
-                              >
-                                <option value="RUPAY">RuPay (RUPAY SALE)</option>
-                                <option value="VISA">Visa (VISA EXCLUSIVE)</option>
-                                <option value="MASTERCARD">Mastercard</option>
-                                <option value="STUDENT">Student Card Discount</option>
-                                <option value="EARLY_ACCESS">Early Access Pass</option>
-                              </select>
+                          <div className="space-y-2 pt-2 border-t border-purple-500/20 text-[10px] font-mono">
+                            <div className="flex items-center justify-between text-neutral-300">
+                              <span className="font-semibold text-purple-200">Discount Mode:</span>
+                              <div className="flex items-center gap-1 bg-black/50 p-0.5 rounded-lg border border-white/10">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateTier(tier.id, 'discountMode', 'FLAT')}
+                                  className={`px-2 py-0.5 rounded text-[9px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                                    tier.discountMode === 'FLAT'
+                                      ? 'bg-purple-500 text-white shadow'
+                                      : 'text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  <span>Flat ₹ Deduction</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateTier(tier.id, 'discountMode', 'PERCENT')}
+                                  className={`px-2 py-0.5 rounded text-[9px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                                    tier.discountMode === 'PERCENT'
+                                      ? 'bg-purple-500 text-white shadow'
+                                      : 'text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  <span>% Percentage Off</span>
+                                </button>
+                              </div>
                             </div>
 
-                            <div>
-                              <span className="text-neutral-400 block mb-0.5">Offer Title:</span>
-                              <input
-                                type="text"
-                                value={tier.offerTitle}
-                                onChange={(e) => handleUpdateTier(tier.id, 'offerTitle', e.target.value)}
-                                placeholder="RUPAY CARD OFFER • ₹150 OFF"
-                                className="w-full bg-[#111422] border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-400 text-xs"
-                              />
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">Card Scheme / Bank:</span>
+                                <select
+                                  value={tier.cardType}
+                                  onChange={(e) => handleUpdateTier(tier.id, 'cardType', e.target.value)}
+                                  className="w-full bg-[#111422] border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-400 text-xs"
+                                >
+                                  <option value="RUPAY">RuPay Card</option>
+                                  <option value="VISA">Visa Card</option>
+                                  <option value="MASTERCARD">Mastercard</option>
+                                  <option value="STUDENT">Student ID Card</option>
+                                  <option value="EARLY_ACCESS">Early Access Pass</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">Offer Title (Customizable):</span>
+                                <input
+                                  type="text"
+                                  value={tier.offerTitle}
+                                  onChange={(e) => handleUpdateTier(tier.id, 'offerTitle', e.target.value)}
+                                  placeholder="e.g. RUPAY SALE • BUY TICKETS NOW"
+                                  className="w-full bg-[#111422] border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-400 text-xs"
+                                />
+                              </div>
+
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">
+                                  {tier.discountMode === 'FLAT' ? 'Flat Deduction (₹ INR):' : 'Discount Percentage (%):'}
+                                </span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={tier.discountMode === 'PERCENT' ? 100 : tier.price}
+                                  value={tier.discountMode === 'FLAT' ? tier.discountFlat : tier.discountPercent}
+                                  onChange={(e) =>
+                                    handleUpdateTier(
+                                      tier.id,
+                                      tier.discountMode === 'FLAT' ? 'discountFlat' : 'discountPercent',
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  className="w-full bg-[#111422] border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-400 text-xs"
+                                />
+                              </div>
                             </div>
 
-                            <div>
-                              <span className="text-neutral-400 block mb-0.5">Flat Discount (₹ INR):</span>
-                              <input
-                                type="number"
-                                min="0"
-                                value={tier.discountFlat}
-                                onChange={(e) => handleUpdateTier(tier.id, 'discountFlat', parseFloat(e.target.value) || 0)}
-                                className="w-full bg-[#111422] border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-400 text-xs"
-                              />
-                            </div>
+                            <p className="text-[9px] text-neutral-400">
+                              💡 Example template: Organizers can change the card scheme, set any flat or percentage discount, and write custom offer titles.
+                            </p>
                           </div>
                         )}
                       </div>
