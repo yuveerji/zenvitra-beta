@@ -29,6 +29,16 @@ export interface EventAttendee {
   isStudent?: boolean;
   price?: number;
   checkedInAt?: string;
+
+  // Delegate Intake Dossier Fields
+  committeePreference?: string;
+  portfolioPreference?: string;
+  experienceLevel?: string;
+  institution?: string;
+  dietaryPreference?: string;
+  emergencyContact?: string;
+  idProofUrl?: string;
+  customResponses?: Record<string, string>;
 }
 
 export interface RegistrationPlan {

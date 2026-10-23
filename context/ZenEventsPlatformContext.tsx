@@ -64,10 +64,11 @@ interface ZenEventsContextType {
   deleteEvent: (id: string, reason?: string) => void;
   cancelEvent: (id: string, reason?: string, autoRefund?: boolean) => { refundedCount: number; totalRefundAmount: number };
 
-  /* rsvp */
+  /* rsvp & booking */
   rsvpEvent: (eventId: string, status: RsvpStatus) => void;
   cancelRsvp: (eventId: string) => void;
   getUserRsvpStatus: (eventId: string) => RsvpStatus | null;
+  recordAttendeeBooking: (eventId: string, attendeeData: Partial<EventAttendee> & { name: string }) => void;
 
   /* filters */
   activeFilter: EventFilter;
@@ -612,6 +613,42 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
     }));
   }, [allEvents, currentUserId, currentUserName, currentUserUsername, saveEvents]);
 
+  const recordAttendeeBooking = useCallback((eventId: string, attendeeData: Partial<EventAttendee> & { name: string }) => {
+    saveEvents(allEvents.map((e) => {
+      if (e.id !== eventId) return e;
+      const targetUserId = attendeeData.userId || currentUserId || `usr_${Date.now()}`;
+      const existing = e.attendees.findIndex((a) => a.userId === targetUserId || (attendeeData.email && a.email === attendeeData.email));
+      
+      const newAttendee: EventAttendee = {
+        userId: targetUserId,
+        name: attendeeData.name,
+        username: attendeeData.username || currentUserUsername || 'delegate',
+        email: attendeeData.email || '',
+        phone: attendeeData.phone || '',
+        status: (attendeeData.status as RsvpStatus) || 'going',
+        rsvpAt: attendeeData.rsvpAt || new Date().toISOString(),
+        ticketId: attendeeData.ticketId,
+        ticketType: attendeeData.ticketType || 'Standard Pass',
+        isStudent: attendeeData.isStudent,
+        price: attendeeData.price,
+        checkedInAt: attendeeData.checkedInAt,
+        committeePreference: attendeeData.committeePreference,
+        portfolioPreference: attendeeData.portfolioPreference,
+        experienceLevel: attendeeData.experienceLevel,
+        institution: attendeeData.institution,
+        dietaryPreference: attendeeData.dietaryPreference,
+        emergencyContact: attendeeData.emergencyContact,
+        customResponses: attendeeData.customResponses,
+      };
+
+      const attendees = existing >= 0
+        ? e.attendees.map((a, i) => i === existing ? { ...a, ...newAttendee } : a)
+        : [...e.attendees, newAttendee];
+
+      return { ...e, attendees };
+    }));
+  }, [allEvents, currentUserId, currentUserUsername, saveEvents]);
+
   const cancelRsvp = useCallback((eventId: string) => {
     saveEvents(allEvents.map((e) => {
       if (e.id !== eventId) return e;
@@ -763,7 +800,7 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
     <ZenEventsContext.Provider value={{
       events: allEvents, filteredEvents, getEventById,
       createEvent, updateEvent, deleteEvent, cancelEvent,
-      rsvpEvent, cancelRsvp, getUserRsvpStatus,
+      rsvpEvent, cancelRsvp, getUserRsvpStatus, recordAttendeeBooking,
       getOrganizerEvents, updateEventStatus, updateEventCapacity,
       checkInAttendee, transferEventOwnership, addEventTeamMember,
       updateEventTeamRole, removeEventTeamMember,
@@ -794,6 +831,7 @@ export function useZenEvents() {
       rsvpEvent: () => {},
       cancelRsvp: () => {},
       getUserRsvpStatus: () => null,
+      recordAttendeeBooking: () => {},
       getOrganizerEvents: () => [],
       updateEventStatus: () => {},
       updateEventCapacity: () => {},

@@ -20,6 +20,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { useZenPass } from '@/context/ZenPassContext';
+import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { useAuth } from '@/context/AuthContext';
 import { ZenPassTier } from '@/types/zenpass';
 import { ZenEvent } from '@/types/events';
@@ -34,6 +35,7 @@ interface ZenPassBookingModalProps {
 
 export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPassBookingModalProps) {
   const { bookPass } = useZenPass();
+  const { recordAttendeeBooking } = useZenEvents();
   const [showCashfreeModal, setShowCashfreeModal] = useState(false);
   const [waitlistJoined, setWaitlistJoined] = useState(false);
   const isComingSoonMode = Boolean(event.isComingSoon || event.status === 'coming_soon');
@@ -132,7 +134,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault();
 
-    bookPass({
+    const generatedPass = bookPass({
       eventId: event.id,
       eventTitle: event.title,
       eventCategory: event.category,
@@ -150,6 +152,25 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
       attendeePhone: attendeePhone.trim() || undefined,
       collegeOrSchool: collegeOrSchool.trim() || undefined,
       chamberRoomId: event.id || 'unsc-chamber'
+    });
+
+    // Record complete delegate intake dossier into event attendee registry
+    recordAttendeeBooking(event.id, {
+      userId: user?.id || `usr_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+      name: attendeeName.trim() || user?.name || 'Delegate Envoy',
+      username: (user as any)?.username || (user?.email ? user.email.split('@')[0] : 'delegate'),
+      email: attendeeEmail.trim() || user?.email || '',
+      phone: attendeePhone.trim() || '',
+      ticketId: generatedPass.ticketNumber,
+      ticketType: selectedTier.name,
+      isStudent: selectedTier.type === 'student_discount' || isGstExempt,
+      price: finalPayable,
+      status: 'going',
+      portfolioPreference: finalPortfolio,
+      committeePreference: event.title,
+      institution: collegeOrSchool.trim() || 'Independent Delegation',
+      experienceLevel: attendeeAge <= 17 ? 'Junior High Delegation' : 'Collegiate / Executive Envoy',
+      dietaryPreference: 'Standard Dietary (General Catering)',
     });
 
     // Persist ticket in strong Prisma database with cryptographic seal

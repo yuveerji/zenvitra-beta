@@ -38,7 +38,14 @@ import {
   Layers,
   Share2,
   Briefcase,
-  LifeBuoy
+  LifeBuoy,
+  Table,
+  LayoutList,
+  Utensils,
+  Crown,
+  BookOpen,
+  Phone,
+  Building2
 } from 'lucide-react';
 import { ZenEvent, EventAttendee } from '@/types/events';
 import { RevenueFeeSimulatorModal } from '@/components/pulse/RevenueFeeSimulatorModal';
@@ -90,6 +97,9 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
   // Search & Filter for Attendees
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'checked_in' | 'going' | 'student' | 'general'>('all');
+  const [rosterViewMode, setRosterViewMode] = useState<'dossier' | 'cards'>('dossier');
+  const [dietaryFilter, setDietaryFilter] = useState<string>('all');
+  const [committeeFilter, setCommitteeFilter] = useState<string>('all');
 
   // Google Sheets Sync State
   const [isSyncingSheets, setIsSyncingSheets] = useState(false);
@@ -164,6 +174,43 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
   const platformProcessingFee = Math.round(grossVolume * 0.054);
   const estimatedNetPayout = grossVolume - civicEscrowReserve - platformProcessingFee;
 
+  // Dietary Breakdown Statistics for Catering & Logistics
+  const dietaryStats = useMemo(() => {
+    let veg = 0;
+    let jain = 0;
+    let vegan = 0;
+    let nonVeg = 0;
+    let general = 0;
+
+    attendees.forEach((att) => {
+      const diet = (att.dietaryPreference || '').toLowerCase();
+      if (diet.includes('jain')) {
+        jain++;
+      } else if (diet.includes('vegan')) {
+        vegan++;
+      } else if (diet.includes('non') || diet.includes('meat') || diet.includes('poultry')) {
+        nonVeg++;
+      } else if (diet.includes('veg')) {
+        veg++;
+      } else {
+        general++;
+      }
+    });
+
+    return { veg, jain, vegan, nonVeg, general, total: attendees.length };
+  }, [attendees]);
+
+  // Distinct Committees for filtering
+  const distinctCommittees = useMemo(() => {
+    const set = new Set<string>();
+    attendees.forEach((att) => {
+      if (att.committeePreference?.trim()) {
+        set.add(att.committeePreference.trim());
+      }
+    });
+    return Array.from(set);
+  }, [attendees]);
+
   // Filtered Attendees list
   const filteredAttendees = useMemo(() => {
     return attendees.filter((att) => {
@@ -172,47 +219,103 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
       if (statusFilter === 'student' && !(att.isStudent || att.ticketType?.toLowerCase().includes('stud'))) return false;
       if (statusFilter === 'general' && (att.isStudent || att.ticketType?.toLowerCase().includes('stud'))) return false;
 
+      // Dietary filter
+      if (dietaryFilter !== 'all') {
+        const diet = (att.dietaryPreference || '').toLowerCase();
+        if (dietaryFilter === 'jain' && !diet.includes('jain')) return false;
+        if (dietaryFilter === 'vegan' && !diet.includes('vegan')) return false;
+        if (dietaryFilter === 'veg' && (!diet.includes('veg') || diet.includes('non'))) return false;
+        if (dietaryFilter === 'non_veg' && !(diet.includes('non') || diet.includes('meat') || diet.includes('poultry'))) return false;
+      }
+
+      // Committee filter
+      if (committeeFilter !== 'all') {
+        if ((att.committeePreference || '').trim() !== committeeFilter) return false;
+      }
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = att.name.toLowerCase().includes(q);
         const matchesHandle = att.username.toLowerCase().includes(q);
         const matchesEmail = att.email?.toLowerCase().includes(q) || false;
+        const matchesPhone = att.phone?.toLowerCase().includes(q) || false;
         const matchesTicket = att.ticketId?.toLowerCase().includes(q) || false;
-        return matchesName || matchesHandle || matchesEmail || matchesTicket;
+        const matchesInstitution = att.institution?.toLowerCase().includes(q) || false;
+        const matchesPortfolio = att.portfolioPreference?.toLowerCase().includes(q) || false;
+        const matchesCommittee = att.committeePreference?.toLowerCase().includes(q) || false;
+        const matchesDiet = att.dietaryPreference?.toLowerCase().includes(q) || false;
+        const matchesExp = att.experienceLevel?.toLowerCase().includes(q) || false;
+
+        return (
+          matchesName ||
+          matchesHandle ||
+          matchesEmail ||
+          matchesPhone ||
+          matchesTicket ||
+          matchesInstitution ||
+          matchesPortfolio ||
+          matchesCommittee ||
+          matchesDiet ||
+          matchesExp
+        );
       }
       return true;
     });
-  }, [attendees, statusFilter, searchQuery]);
+  }, [attendees, statusFilter, dietaryFilter, committeeFilter, searchQuery]);
 
-  // Export Attendees as CSV
+  // Export Attendees as CSV with full intake form dossier
   const handleExportCsv = () => {
-    const headers = ['User ID', 'Name', 'Username', 'Email', 'Phone', 'Tier', 'Is Student', 'Price', 'Status', 'Ticket ID', 'RSVP Timestamp', 'Checked-In Timestamp'];
+    const headers = [
+      'Ticket Number',
+      'Delegate Full Name',
+      'Username / Handle',
+      'Email Address',
+      'Contact Phone',
+      'Educational Institution / School',
+      'Committee Preference',
+      'Assigned Portfolio / Role',
+      'Diplomatic Experience Level',
+      'Dietary Preference / Restrictions',
+      'Emergency Contact',
+      'Pass Tier',
+      'Fee Paid (INR)',
+      'GST Exemption Status',
+      'Gate Admission Status',
+      'Admission Timestamp',
+      'Registration Timestamp'
+    ];
+
     const rows = attendees.map((a) => [
-      a.userId,
-      `"${a.name.replace(/"/g, '""')}"`,
-      `"@${a.username}"`,
-      a.email || '',
-      a.phone || '',
-      a.ticketType || 'Standard Delegate',
-      a.isStudent ? 'YES (0% GST)' : 'NO (6% GST)',
+      `"${a.ticketId || 'N/A'}"`,
+      `"${(a.name || '').replace(/"/g, '""')}"`,
+      `"@${(a.username || '').replace(/"/g, '""')}"`,
+      `"${(a.email || '').replace(/"/g, '""')}"`,
+      `"${(a.phone || '').replace(/"/g, '""')}"`,
+      `"${(a.institution || 'Independent Delegation').replace(/"/g, '""')}"`,
+      `"${(a.committeePreference || event.title).replace(/"/g, '""')}"`,
+      `"${(a.portfolioPreference || 'General Delegate').replace(/"/g, '""')}"`,
+      `"${(a.experienceLevel || 'Standard Delegate').replace(/"/g, '""')}"`,
+      `"${(a.dietaryPreference || 'Standard Catering').replace(/"/g, '""')}"`,
+      `"${(a.emergencyContact || 'N/A').replace(/"/g, '""')}"`,
+      `"${(a.ticketType || (a.isStudent ? 'Student Pass' : 'General Pass')).replace(/"/g, '""')}"`,
       a.price || event.ticketPrice || 0,
-      a.status,
-      a.ticketId || 'N/A',
-      a.rsvpAt || '',
-      a.checkedInAt || ''
+      a.isStudent ? 'Student Exemption (0% GST)' : 'Standard (6% GST)',
+      a.status === 'checked_in' ? 'ADMITTED' : 'REGISTERED',
+      a.checkedInAt ? `"${a.checkedInAt}"` : 'N/A',
+      a.rsvpAt ? `"${a.rsvpAt}"` : 'N/A'
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_delegates.csv`);
+    link.setAttribute('download', `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_delegate_dossier.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Sync Attendees Roster to Google Sheets
+  // Sync Attendees Roster & Intake Dossier to Google Sheets
   const handleSyncToGoogleSheets = async () => {
     setIsSyncingSheets(true);
     setSheetsSyncFeedback(null);
@@ -232,13 +335,22 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
             totalAttendees: attendees.length,
             checkedInCount,
             attendeeRoster: attendees.map((a) => ({
+              ticketId: a.ticketId || '',
               participantName: a.name,
+              participantUsername: `@${a.username}`,
               participantEmail: a.email || `${a.username}@zenvitra.xyz`,
               contactNumber: a.phone || '',
+              institution: a.institution || 'Independent Delegation',
+              committeePreference: a.committeePreference || event.title,
+              allocatedPortfolio: a.portfolioPreference || 'General Delegate',
+              experienceLevel: a.experienceLevel || 'Standard Delegate',
+              dietaryRestrictions: a.dietaryPreference || 'Standard Catering',
+              emergencyContact: a.emergencyContact || 'N/A',
               ticketPassType: a.ticketType || (a.isStudent ? 'Student Pass (0% GST)' : 'General Pass'),
-              attendanceMarked: a.status === 'checked_in' ? 'PRESENT' : 'REGISTERED',
+              feePaidInr: a.price || event.ticketPrice || 0,
+              attendanceMarked: a.status === 'checked_in' ? 'PRESENT / ADMITTED' : 'REGISTERED',
               checkedInAt: a.checkedInAt || '',
-              ticketId: a.ticketId || '',
+              registrationDate: a.rsvpAt || '',
             })),
           },
         }),
@@ -249,7 +361,7 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
       if (data.success) {
         setSheetsSyncFeedback({
           success: true,
-          message: `Roster successfully pushed to Google Sheet (Tab: Event Registrations)`,
+          message: `Delegate intake dossier (${attendees.length} records) pushed to Google Sheet`,
           syncedCount: attendees.length,
           timestamp: new Date().toLocaleTimeString(),
         });
@@ -263,7 +375,7 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
     } catch (err: any) {
       setSheetsSyncFeedback({
         success: false,
-        message: 'Could not connect to Google Sheets webhook endpoint.',
+        message: err.message || 'Network error syncing with Google Sheets. Local backup preserved.',
         timestamp: new Date().toLocaleTimeString(),
       });
     } finally {
@@ -649,25 +761,117 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
       {/* ── TAB 1: PEOPLE JOINING (ATTENDEE & DELEGATE LEDGER) ── */}
       {activeTab === 'roster' && (
         <div className="space-y-4">
+          {/* Sub-view Navigation & Catering Telemetry Bar */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#0a0d18] border border-white/10">
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-xl border border-white/10">
+              <button
+                type="button"
+                onClick={() => setRosterViewMode('dossier')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer ${
+                  rosterViewMode === 'dossier'
+                    ? 'bg-cyan-500 text-neutral-950 shadow-md shadow-cyan-500/20'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Table className="w-3.5 h-3.5" />
+                <span>Intake Dossier Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRosterViewMode('cards')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer ${
+                  rosterViewMode === 'cards'
+                    ? 'bg-cyan-500 text-neutral-950 shadow-md shadow-cyan-500/20'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <LayoutList className="w-3.5 h-3.5" />
+                <span>Gate Check-In Cards</span>
+              </button>
+            </div>
+
+            {/* Catering & Dietary Distribution Overview */}
+            <div className="flex items-center gap-2 flex-wrap text-[11px] font-mono">
+              <span className="text-neutral-400 flex items-center gap-1">
+                <Utensils className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-semibold text-neutral-300">Catering Headcount:</span>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                Veg: <strong className="text-white">{dietaryStats.veg}</strong>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/30">
+                Jain: <strong className="text-white">{dietaryStats.jain}</strong>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-300 border border-green-500/30">
+                Vegan: <strong className="text-white">{dietaryStats.vegan}</strong>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/30">
+                Non-Veg: <strong className="text-white">{dietaryStats.nonVeg}</strong>
+              </span>
+              {dietaryStats.general > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10">
+                  Standard: <strong className="text-white">{dietaryStats.general}</strong>
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Sync Feedback Toast */}
+          <AnimatePresence>
+            {sheetsSyncFeedback && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs font-mono ${
+                  sheetsSyncFeedback.success
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {sheetsSyncFeedback.success ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                  )}
+                  <span>{sheetsSyncFeedback.message}</span>
+                  {sheetsSyncFeedback.timestamp && (
+                    <span className="text-[10px] text-neutral-400">({sheetsSyncFeedback.timestamp})</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSheetsSyncFeedback(null)}
+                  className="p-1 hover:bg-white/10 rounded transition text-neutral-400 hover:text-white"
+                >
+                  &times;
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Controls Bar: Search, Filters, Export */}
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-            <div className="relative w-full sm:w-80">
+          <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+            <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search attendee by name, handle, email..."
+                placeholder="Search delegate by name, handle, email, committee, portfolio..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-[#101322] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
+            <div className="flex items-center gap-2 justify-between lg:justify-end flex-wrap">
+              {/* Status Filter */}
               <div className="flex items-center bg-[#101322] border border-white/10 rounded-xl p-1 gap-1 text-xs">
                 <button
                   type="button"
                   onClick={() => setStatusFilter('all')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition ${
+                  className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                     statusFilter === 'all' ? 'bg-cyan-500 text-neutral-950 font-bold' : 'text-neutral-400 hover:text-white'
                   }`}
                 >
@@ -676,7 +880,7 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
                 <button
                   type="button"
                   onClick={() => setStatusFilter('checked_in')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition ${
+                  className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                     statusFilter === 'checked_in' ? 'bg-emerald-500 text-neutral-950 font-bold' : 'text-neutral-400 hover:text-white'
                   }`}
                 >
@@ -685,7 +889,7 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
                 <button
                   type="button"
                   onClick={() => setStatusFilter('student')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition ${
+                  className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                     statusFilter === 'student' ? 'bg-cyan-500 text-neutral-950 font-bold' : 'text-neutral-400 hover:text-white'
                   }`}
                 >
@@ -694,7 +898,7 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
                 <button
                   type="button"
                   onClick={() => setStatusFilter('general')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition ${
+                  className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                     statusFilter === 'general' ? 'bg-purple-500 text-white font-bold' : 'text-neutral-400 hover:text-white'
                   }`}
                 >
@@ -702,12 +906,44 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
                 </button>
               </div>
 
+              {/* Dietary Filter Dropdown */}
+              <select
+                value={dietaryFilter}
+                onChange={(e) => setDietaryFilter(e.target.value)}
+                className="bg-[#101322] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-neutral-300 focus:outline-none focus:border-cyan-500/50 cursor-pointer"
+                title="Filter by Dietary Requirement"
+              >
+                <option value="all">All Diets</option>
+                <option value="veg">Vegetarian</option>
+                <option value="jain">Jain</option>
+                <option value="vegan">Vegan</option>
+                <option value="non_veg">Non-Vegetarian</option>
+              </select>
+
+              {/* Committee Filter Dropdown (if multiple committees exist) */}
+              {distinctCommittees.length > 1 && (
+                <select
+                  value={committeeFilter}
+                  onChange={(e) => setCommitteeFilter(e.target.value)}
+                  className="bg-[#101322] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-neutral-300 focus:outline-none focus:border-cyan-500/50 cursor-pointer max-w-[150px] truncate"
+                  title="Filter by Committee Preference"
+                >
+                  <option value="all">All Committees</option>
+                  {distinctCommittees.map((comm) => (
+                    <option key={comm} value={comm}>
+                      {comm}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* 1-Click Export Actions */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleExportCsv}
-                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-                  title="Export Delegate Ledger as CSV"
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                  title="Export Complete Delegate Intake Dossier as CSV"
                 >
                   <Download className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Export CSV</span>
@@ -717,122 +953,332 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
                   type="button"
                   onClick={handleSyncToGoogleSheets}
                   disabled={isSyncingSheets}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-                  title="Push Roster to Google Sheet"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50"
+                  title="1-Click Push Complete Dossier to Google Sheet"
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{isSyncingSheets ? 'Syncing...' : 'Push to Sheets'}</span>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Attendee Roster Table */}
-          <div className="rounded-3xl border border-white/10 overflow-hidden bg-[#0a0d18] shadow-xl">
-            <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between text-xs font-mono text-neutral-400">
-              <span className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-cyan-400" />
-                <span>Showing {filteredAttendees.length} Registered Delegates</span>
-              </span>
-              <span className="text-emerald-400 font-semibold">
-                HMAC-SHA256 Cryptographic Verification Active
-              </span>
-            </div>
+          {/* ── DOSSIER TABLE VIEW ── */}
+          {rosterViewMode === 'dossier' ? (
+            <div className="rounded-3xl border border-white/10 overflow-hidden bg-[#0a0d18] shadow-2xl">
+              <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between text-xs font-mono text-neutral-400 flex-wrap gap-2">
+                <span className="flex items-center gap-2">
+                  <Table className="w-4 h-4 text-cyan-400" />
+                  <span className="font-bold text-white">Organizer Intake Dossier</span>
+                  <span className="text-neutral-500">&bull; Showing {filteredAttendees.length} of {attendees.length} Delegates</span>
+                </span>
+                <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  HMAC-SHA256 Intake Data Verified
+                </span>
+              </div>
 
-            <div className="divide-y divide-white/5 max-h-[520px] overflow-y-auto custom-scrollbar">
-              {filteredAttendees.length === 0 ? (
-                <div className="p-12 text-center space-y-3">
-                  <Users className="w-10 h-10 text-neutral-600 mx-auto" />
-                  <h4 className="text-base font-bold text-white">No delegates found</h4>
-                  <p className="text-xs text-neutral-400 max-w-sm mx-auto">
-                    {searchQuery
-                      ? 'No registrations match your search query.'
-                      : 'Share your event link to start receiving delegate registrations.'}
-                  </p>
-                </div>
-              ) : (
-                filteredAttendees.map((attendee) => {
-                  const isCheckedIn = attendee.status === 'checked_in';
-                  const isStudent = attendee.isStudent || attendee.ticketType?.toLowerCase().includes('stud');
+              <div className="overflow-x-auto max-h-[640px] overflow-y-auto custom-scrollbar">
+                {filteredAttendees.length === 0 ? (
+                  <div className="p-16 text-center space-y-3">
+                    <Table className="w-10 h-10 text-neutral-600 mx-auto" />
+                    <h4 className="text-base font-bold text-white">No delegate records found</h4>
+                    <p className="text-xs text-neutral-400 max-w-sm mx-auto">
+                      {searchQuery || dietaryFilter !== 'all' || committeeFilter !== 'all'
+                        ? 'No delegate dossier entries match your search or filter criteria.'
+                        : 'Share your event link to start receiving delegate registrations and intake responses.'}
+                    </p>
+                  </div>
+                ) : (
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="sticky top-0 bg-[#0d1120] text-neutral-400 uppercase font-mono text-[11px] border-b border-white/10 z-10 shadow-sm">
+                      <tr>
+                        <th className="py-3 px-4 font-semibold">Delegate Identity</th>
+                        <th className="py-3 px-4 font-semibold">Committee Preference</th>
+                        <th className="py-3 px-4 font-semibold">Assigned Portfolio / Role</th>
+                        <th className="py-3 px-4 font-semibold">Experience Level</th>
+                        <th className="py-3 px-4 font-semibold">Institution / School</th>
+                        <th className="py-3 px-4 font-semibold">Dietary Restrictions</th>
+                        <th className="py-3 px-4 font-semibold">Pass Tier &amp; Fee</th>
+                        <th className="py-3 px-4 font-semibold text-right">Gate Status &amp; Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {filteredAttendees.map((attendee) => {
+                        const isCheckedIn = attendee.status === 'checked_in';
+                        const isStudent = attendee.isStudent || attendee.ticketType?.toLowerCase().includes('stud');
+                        const diet = (attendee.dietaryPreference || '').toLowerCase();
 
-                  return (
-                    <div
-                      key={attendee.userId}
-                      className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition"
-                    >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div
-                          className={`w-11 h-11 rounded-2xl flex items-center justify-center font-mono font-bold text-sm flex-shrink-0 border ${
-                            isCheckedIn
-                              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                              : 'bg-white/5 border-white/10 text-neutral-300'
-                          }`}
-                        >
-                          {attendee.name.charAt(0).toUpperCase()}
-                        </div>
+                        // Dietary badge styling
+                        let dietaryBadgeClass = 'bg-white/5 text-neutral-300 border-white/10';
+                        let dietaryLabel = attendee.dietaryPreference || 'Standard Catering';
+                        if (diet.includes('jain')) {
+                          dietaryBadgeClass = 'bg-teal-500/15 text-teal-300 border-teal-500/30 font-semibold';
+                          dietaryLabel = 'Jain Catering';
+                        } else if (diet.includes('vegan')) {
+                          dietaryBadgeClass = 'bg-green-500/15 text-green-300 border-green-500/30 font-semibold';
+                          dietaryLabel = 'Vegan';
+                        } else if (diet.includes('non') || diet.includes('meat') || diet.includes('chicken')) {
+                          dietaryBadgeClass = 'bg-rose-500/15 text-rose-300 border-rose-500/30 font-semibold';
+                          dietaryLabel = 'Non-Vegetarian';
+                        } else if (diet.includes('veg')) {
+                          dietaryBadgeClass = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 font-semibold';
+                          dietaryLabel = 'Vegetarian';
+                        }
 
-                        <div className="min-w-0 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold text-white truncate">{attendee.name}</span>
-                            <span className="text-xs font-mono text-neutral-400">@{attendee.username}</span>
-
-                            {/* Student vs Normal badge */}
-                            {isStudent ? (
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 flex items-center gap-1">
-                                <GraduationCap className="w-3 h-3" />
-                                Student (0% GST)
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300">
-                                General (6% GST)
-                              </span>
-                            )}
-
-                            {/* Cryptographic Security Seal */}
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1">
-                              <ShieldCheck className="w-3 h-3" />
-                              Authentic Seal
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-3 text-xs font-mono text-neutral-500 flex-wrap">
-                            {attendee.email && <span>{attendee.email}</span>}
-                            {attendee.ticketId && <span>Ref: {attendee.ticketId}</span>}
-                            <span>RSVP: {new Date(attendee.rsvpAt).toLocaleDateString()}</span>
-                            {attendee.checkedInAt && (
-                              <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                Admitted at {new Date(attendee.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right Action: Admitted or Manual Check-in */}
-                      <div className="flex items-center gap-2.5 flex-shrink-0 self-end sm:self-center">
-                        {isCheckedIn ? (
-                          <span className="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold flex items-center gap-1.5">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                            <span>Admitted</span>
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => onCheckInAttendee && onCheckInAttendee(attendee.userId)}
-                            className="px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+                        return (
+                          <tr
+                            key={attendee.userId}
+                            className="hover:bg-white/[0.02] transition-colors group"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Check In</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+                            {/* Delegate Identity */}
+                            <td className="py-3.5 px-4 min-w-[200px]">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-9 h-9 rounded-xl flex items-center justify-center font-mono font-bold text-xs flex-shrink-0 border ${
+                                    isCheckedIn
+                                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                                      : 'bg-white/5 border-white/10 text-neutral-300'
+                                  }`}
+                                >
+                                  {attendee.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
+                                    {attendee.name}
+                                  </div>
+                                  <div className="text-[11px] font-mono text-neutral-400">
+                                    @{attendee.username}
+                                  </div>
+                                  {attendee.email && (
+                                    <div className="text-[10px] text-neutral-500 truncate max-w-[160px]">
+                                      {attendee.email}
+                                    </div>
+                                  )}
+                                  {attendee.phone && (
+                                    <div className="text-[10px] text-neutral-400 flex items-center gap-1 font-mono">
+                                      <Phone className="w-2.5 h-2.5 text-neutral-500" />
+                                      {attendee.phone}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Committee Preference */}
+                            <td className="py-3.5 px-4 min-w-[180px]">
+                              <div className="flex items-center gap-1.5 font-medium text-white">
+                                <Crown className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                                <span className="truncate">
+                                  {attendee.committeePreference || event.title}
+                                </span>
+                              </div>
+                              {attendee.customResponses && Object.keys(attendee.customResponses).length > 0 && (
+                                <div className="text-[10px] text-neutral-500 mt-0.5">
+                                  {Object.entries(attendee.customResponses)[0][1]}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Assigned Portfolio / Role */}
+                            <td className="py-3.5 px-4 min-w-[170px]">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold">
+                                <Briefcase className="w-3 h-3 text-purple-400" />
+                                <span className="truncate">
+                                  {attendee.portfolioPreference || 'General Delegate'}
+                                </span>
+                              </span>
+                            </td>
+
+                            {/* Experience Level */}
+                            <td className="py-3.5 px-4 min-w-[150px]">
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-mono">
+                                <BookOpen className="w-3 h-3 text-amber-400" />
+                                <span className="truncate">
+                                  {attendee.experienceLevel || 'Collegiate / Executive'}
+                                </span>
+                              </span>
+                            </td>
+
+                            {/* Institution / School */}
+                            <td className="py-3.5 px-4 min-w-[160px]">
+                              <div className="flex items-center gap-1.5 text-neutral-300 font-medium">
+                                <Building className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
+                                <span className="truncate">
+                                  {attendee.institution || 'Independent Delegation'}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Dietary Restrictions */}
+                            <td className="py-3.5 px-4 min-w-[150px]">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] border ${dietaryBadgeClass}`}
+                              >
+                                <Utensils className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{dietaryLabel}</span>
+                              </span>
+                            </td>
+
+                            {/* Pass Tier & Fee */}
+                            <td className="py-3.5 px-4 min-w-[140px]">
+                              <div className="font-semibold text-white">
+                                {attendee.ticketType || (isStudent ? 'Student Pass' : 'General Pass')}
+                              </div>
+                              <div className="text-[11px] font-mono text-emerald-400 font-bold">
+                                ₹{(attendee.price || event.ticketPrice || 0).toLocaleString('en-IN')}
+                              </div>
+                              <div className="text-[10px] font-mono text-neutral-500">
+                                {isStudent ? '0% GST Exempt' : '6% GST Applied'}
+                              </div>
+                            </td>
+
+                            {/* Gate Status & Action */}
+                            <td className="py-3.5 px-4 min-w-[150px] text-right">
+                              <div className="flex flex-col items-end gap-1.5">
+                                {isCheckedIn ? (
+                                  <span className="px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold flex items-center gap-1.5">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                    <span>Admitted</span>
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => onCheckInAttendee && onCheckInAttendee(attendee.userId)}
+                                    className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>Check In</span>
+                                  </button>
+                                )}
+                                {attendee.ticketId && (
+                                  <span className="text-[10px] font-mono text-neutral-500">
+                                    #{attendee.ticketId}
+                                  </span>
+                                )}
+                                {attendee.checkedInAt && (
+                                  <span className="text-[10px] font-mono text-emerald-400/80">
+                                    {new Date(attendee.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* ── CARDS VIEW (GATE ADMITTANCE) ── */
+            <div className="rounded-3xl border border-white/10 overflow-hidden bg-[#0a0d18] shadow-xl">
+              <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between text-xs font-mono text-neutral-400">
+                <span className="flex items-center gap-2">
+                  <LayoutList className="w-4 h-4 text-cyan-400" />
+                  <span>Showing {filteredAttendees.length} Registered Delegates</span>
+                </span>
+                <span className="text-emerald-400 font-semibold">
+                  HMAC-SHA256 Cryptographic Verification Active
+                </span>
+              </div>
+
+              <div className="divide-y divide-white/5 max-h-[520px] overflow-y-auto custom-scrollbar">
+                {filteredAttendees.length === 0 ? (
+                  <div className="p-12 text-center space-y-3">
+                    <Users className="w-10 h-10 text-neutral-600 mx-auto" />
+                    <h4 className="text-base font-bold text-white">No delegates found</h4>
+                    <p className="text-xs text-neutral-400 max-w-sm mx-auto">
+                      {searchQuery
+                        ? 'No registrations match your search query.'
+                        : 'Share your event link to start receiving delegate registrations.'}
+                    </p>
+                  </div>
+                ) : (
+                  filteredAttendees.map((attendee) => {
+                    const isCheckedIn = attendee.status === 'checked_in';
+                    const isStudent = attendee.isStudent || attendee.ticketType?.toLowerCase().includes('stud');
+
+                    return (
+                      <div
+                        key={attendee.userId}
+                        className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/[0.02] transition"
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div
+                            className={`w-11 h-11 rounded-2xl flex items-center justify-center font-mono font-bold text-sm flex-shrink-0 border ${
+                              isCheckedIn
+                                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                                : 'bg-white/5 border-white/10 text-neutral-300'
+                            }`}
+                          >
+                            {attendee.name.charAt(0).toUpperCase()}
+                          </div>
+
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-bold text-white truncate">{attendee.name}</span>
+                              <span className="text-xs font-mono text-neutral-400">@{attendee.username}</span>
+
+                              {/* Student vs Normal badge */}
+                              {isStudent ? (
+                                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 flex items-center gap-1">
+                                  <GraduationCap className="w-3 h-3" />
+                                  Student (0% GST)
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300">
+                                  General (6% GST)
+                                </span>
+                              )}
+
+                              {/* Cryptographic Security Seal */}
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1">
+                                <ShieldCheck className="w-3 h-3" />
+                                Authentic Seal
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3 text-xs font-mono text-neutral-500 flex-wrap">
+                              {attendee.email && <span>{attendee.email}</span>}
+                              {attendee.ticketId && <span>Ref: {attendee.ticketId}</span>}
+                              <span>RSVP: {new Date(attendee.rsvpAt).toLocaleDateString()}</span>
+                              {attendee.checkedInAt && (
+                                <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  Admitted at {new Date(attendee.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Action: Admitted or Manual Check-in */}
+                        <div className="flex items-center gap-2.5 flex-shrink-0 self-end sm:self-center">
+                          {isCheckedIn ? (
+                            <span className="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold flex items-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                              <span>Admitted</span>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onCheckInAttendee && onCheckInAttendee(attendee.userId)}
+                              className="px-4 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Check In</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
