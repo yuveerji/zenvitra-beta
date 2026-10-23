@@ -19,6 +19,25 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ---
 
+## 🛡️ STRICT DATABASE PRESERVATION LAW: ZERO DATA LOSS ON WEBSITE UPDATES
+
+1. **NEVER WIPE OR RESET DATABASE**: Under NO circumstance may any build, deployment, migration, script, or website update wipe, drop, or delete data already on the website.
+2. **NO DESTRUCTIVE COMMANDS**: Never run `prisma db push --force-reset`, `prisma migrate reset`, `DROP TABLE`, `TRUNCATE`, or `deleteMany()` in scripts/seeds.
+3. **ADDITIVE SCHEMA MIGRATIONS**: All schema changes must be strictly additive (optional fields `?` or safe `@default(...)`). Existing columns and tables must never be silently dropped.
+4. **PERSIST ALL EXISTING CONTENT**: Pre-existing conferences, events, pass bookings, custom registration forms, user submissions, and user accounts must remain 100% intact across every update.
+5. **READ SKILL**: Refer to `.agent/skills/preserve-database-data/SKILL.md` for complete operating protocol.
+
+---
+
+## 🛡️ STRICT FEATURE PRESERVATION LAW: NEVER DELETE EXISTING WEBSITE STUFF
+
+1. **NON-DESTRUCTIVE UPDATES ONLY**: When updating, polishing, redesigning, or adding new features to the website, NEVER delete, strip, wipe, or drop existing features, UI sections, widgets, timers, modals, routes, or interactive controls unless the user explicitly requested to remove that specific item.
+2. **ADDITIVE EVOLUTION**: Always build additively on top of existing functionality. Preserve 100% feature parity during all UI upgrades, refactors, and styling passes.
+3. **DIFF VERIFICATION**: Check `git diff` before committing to ensure no buttons, components, tabs, or handlers were silently removed or regressed.
+4. **READ SKILL**: Refer to `.agent/skills/preserve-existing-features/SKILL.md` for complete operating protocol.
+
+---
+
 ## Cashfree Payments — Integration Skills
 
 You are helping a developer integrate Cashfree Payments.
