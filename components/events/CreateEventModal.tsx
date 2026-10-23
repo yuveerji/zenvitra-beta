@@ -110,7 +110,6 @@ export function CreateEventModal() {
   const [tagline, setTagline] = useState('');
   const [type, setType] = useState<EventType>('physical');
   const [category, setCategory] = useState<EventCategory>('SUMMIT');
-  const [isMultiDay, setIsMultiDay] = useState(false);
   const [date, setDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [startTime, setStartTime] = useState('09:30');
@@ -121,6 +120,13 @@ export function CreateEventModal() {
   const [meetingUrl, setMeetingUrl] = useState('');
   const [capacity, setCapacity] = useState<number | string>('150');
   const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat?: number; lng?: number }>({});
+
+  const handleStartDateChange = (val: string) => {
+    setDate(val);
+    if (!endDate || endDate < val) {
+      setEndDate(val);
+    }
+  };
   
   // Google Places API Location Search
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
@@ -177,6 +183,11 @@ export function CreateEventModal() {
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
   // ── Tab 4: Agenda, Protocols & Secretariat State ──
+  type ItineraryTiming = 'NOW' | 'AFTER';
+  const [itineraryTiming, setItineraryTiming] = useState<ItineraryTiming>('NOW');
+  const [rawItineraryText, setRawItineraryText] = useState('');
+  const [itineraryViewMode, setItineraryViewMode] = useState<'PASTE' | 'CARDS'>('PASTE');
+
   const [scheduleItems, setScheduleItems] = useState<ScheduleSession[]>([
     { id: 'sess_1', day: 'Day 1', time: '09:00 - 10:30', title: 'Registration & Dais Accreditation', location: 'Main Entrance & Secretariat Desk' },
     { id: 'sess_2', day: 'Day 1', time: '10:30 - 12:00', title: 'Opening Plenary & Ambassadorial Keynote', location: 'Plenary Grand Hall' },
@@ -296,12 +307,53 @@ export function CreateEventModal() {
       ...prev,
       {
         id: `sess_${Date.now()}`,
-        day: isMultiDay ? `Day ${Math.min(prev.length + 1, 3)}` : 'Day 1',
+        day: date && endDate && endDate > date ? `Day ${Math.min(prev.length + 1, 3)}` : 'Day 1',
         time: '14:00 - 15:30',
         title: 'New Committee Session',
         location: type === 'virtual' ? 'Virtual Chamber' : 'Committee Hall'
       }
     ]);
+  };
+
+  const handleParsePastedItinerary = () => {
+    if (!rawItineraryText.trim()) {
+      setToastMessage('Please paste your itinerary text first before converting.');
+      return;
+    }
+    const lines = rawItineraryText.split('\n').map((l) => l.trim()).filter(Boolean);
+    const parsedSessions: ScheduleSession[] = [];
+    let currentDay = 'Day 1';
+
+    lines.forEach((line, idx) => {
+      if (/^day\s*\d+/i.test(line)) {
+        currentDay = line.split(/[:\-–]/)[0].trim();
+        return;
+      }
+      const timeMatch = line.match(/^(\d{1,2}:\d{2}(?:\s*(?:am|pm|ist))?(?:\s*[-–to]\s*\d{1,2}:\d{2}(?:\s*(?:am|pm|ist))?)?)(?:\s*[:\-–]\s*|\s+)(.*)$/i);
+      if (timeMatch) {
+        parsedSessions.push({
+          id: `sess_p_${Date.now()}_${idx}`,
+          day: currentDay,
+          time: timeMatch[1].trim(),
+          title: timeMatch[2].trim() || 'Session',
+          location: type === 'virtual' ? 'Virtual Chamber' : 'Main Hall'
+        });
+      } else {
+        parsedSessions.push({
+          id: `sess_p_${Date.now()}_${idx}`,
+          day: currentDay,
+          time: `Session ${parsedSessions.length + 1}`,
+          title: line,
+          location: type === 'virtual' ? 'Virtual Chamber' : 'Main Hall'
+        });
+      }
+    });
+
+    if (parsedSessions.length > 0) {
+      setScheduleItems(parsedSessions);
+      setItineraryViewMode('CARDS');
+      setToastMessage(`Converted ${parsedSessions.length} sessions from your pasted itinerary!`);
+    }
   };
 
   const handleRemoveScheduleSession = (id: string) => {
@@ -443,7 +495,7 @@ export function CreateEventModal() {
       type,
       category,
       date,
-      endDate: isMultiDay && endDate ? endDate : date,
+      endDate: endDate || date,
       time: timeWindow,
       location: finalLocation,
       city: finalCity,
@@ -462,10 +514,12 @@ export function CreateEventModal() {
       startTime,
       endTime,
       timezone,
-      isMultiDay,
+      isMultiDay: Boolean(date && endDate && endDate > date),
+      itineraryTiming,
+      itineraryText: rawItineraryText.trim() || undefined,
       dressCode,
       perks: selectedPerks,
-      schedule: scheduleItems,
+      schedule: itineraryTiming === 'NOW' ? scheduleItems : undefined,
       secretariatContact: {
         name: secretaryGeneral.trim() || profile?.display_name || undefined,
         email: secretariatEmail.trim() || profile?.email || undefined,
@@ -486,7 +540,10 @@ export function CreateEventModal() {
         venue: finalLocation,
         city: finalCity,
         startDate: date,
-        endDate: isMultiDay && endDate ? endDate : date,
+        endDate: endDate || date,
+        itineraryTiming,
+        itineraryText: rawItineraryText.trim() || undefined,
+        schedule: itineraryTiming === 'NOW' ? scheduleItems : undefined,
         organizerName: profile?.display_name || 'Event Organizer',
         organizerEmail: profile?.email || 'organizer@zenvitra.xyz',
         organizerPhone: secretariatPhone.trim() || undefined,
@@ -919,54 +976,52 @@ export function CreateEventModal() {
                 </div>
               </div>
 
-              {/* Date, Multi-Day Switch & Time Range */}
+              {/* Convening Dates: Start Date & End Date */}
               <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-cyan-400" />
                     <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                      Date &amp; Conference Duration
+                      CONVENING DATES &amp; TIMELINE
                     </span>
                   </div>
-                  <label className="flex items-center gap-2 text-xs font-mono text-neutral-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isMultiDay}
-                      onChange={(e) => setIsMultiDay(e.target.checked)}
-                      className="accent-cyan-400 cursor-pointer"
-                    />
-                    <span>Multi-Day Assembly (e.g. 2 or 3 Days)</span>
-                  </label>
+                  {date && (
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-bold">
+                      {!endDate || date === endDate ? '1-Day Convening' : `${Math.max(1, Math.round((new Date(endDate).getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)) + 1)} Days Assembly`}
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-mono text-neutral-400">
-                      {isMultiDay ? 'START DATE *' : 'CONVENING DATE *'}
+                    <label className="block text-[11px] font-mono text-neutral-300 font-semibold">
+                      START DATE *
                     </label>
                     <input
                       type="date"
                       required
                       value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      onChange={(e) => handleStartDateChange(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
                     />
                   </div>
 
-                  {isMultiDay && (
-                    <div className="space-y-1 animate-fade-in">
-                      <label className="block text-[11px] font-mono text-neutral-400">
-                        CONCLUDING DATE *
-                      </label>
-                      <input
-                        type="date"
-                        required={isMultiDay}
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
-                      />
-                    </div>
-                  )}
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-mono text-neutral-300 font-semibold">
+                      END DATE *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      min={date || undefined}
+                      value={endDate || date}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+                    />
+                    <p className="text-[10px] font-mono text-neutral-500">
+                      Auto-synced with Start Date for single-day events; choose later date for multi-day summits.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Time Window & Timezone */}
@@ -1891,83 +1946,215 @@ export function CreateEventModal() {
               ════════════════════════════════════════════════════════════════ */}
           {activeTab === 'AGENDA' && (
             <div className="space-y-5 animate-fade-in">
-              {/* Multi-Day Schedule Timeline */}
-              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-emerald-400" />
-                      <span>Convening Schedule &amp; Session Timeline</span>
-                    </h3>
-                    <p className="text-[11px] text-neutral-400">
-                      Define committee debate sessions, keynote speeches, unmoderated caucuses, and gala dinners.
+              {/* Itinerary & Schedule Strategy: Paste Now or Add After */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#0c1815] to-[#080d16] border border-emerald-500/30 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                        Convening Itinerary &amp; Schedule Strategy
+                      </h3>
+                      <p className="text-[11px] text-neutral-400">
+                        Choose whether to paste your itinerary right now or configure it after launching.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shrink-0 self-start sm:self-auto">
+                    {itineraryTiming === 'NOW' ? 'PASTE / CONFIGURE NOW' : 'ADD AFTER LAUNCH'}
+                  </span>
+                </div>
+
+                {/* 2 Choices: Right Now vs After */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    onClick={() => setItineraryTiming('NOW')}
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 relative ${
+                      itineraryTiming === 'NOW'
+                        ? 'bg-emerald-500/10 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-400'
+                        : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Paste Itinerary Right Now</span>
+                      </span>
+                      {itineraryTiming === 'NOW' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                    </div>
+                    <p className="text-[11px] text-neutral-300">
+                      Paste your raw schedule from Docs/WhatsApp or build structured timeline cards immediately.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleAddScheduleSession}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-200 text-xs font-mono font-semibold transition cursor-pointer"
+
+                  <div
+                    onClick={() => setItineraryTiming('AFTER')}
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 relative ${
+                      itineraryTiming === 'AFTER'
+                        ? 'bg-emerald-500/10 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-400'
+                        : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                    }`}
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Session</span>
-                  </button>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Add Itinerary After Launch</span>
+                      </span>
+                      {itineraryTiming === 'AFTER' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                    </div>
+                    <p className="text-[11px] text-neutral-300">
+                      Launch your convening now; paste or fine-tune your final session itinerary later from your dashboard.
+                    </p>
+                  </div>
                 </div>
 
-                {/* Session Timeline Items */}
-                <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
-                  {scheduleItems.map((sess, idx) => (
-                    <div
-                      key={sess.id}
-                      className="p-3 rounded-xl bg-neutral-900 border border-white/10 space-y-2 text-xs"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-bold">
-                          Session #{idx + 1}
-                        </span>
-                        <input
-                          type="text"
-                          value={sess.day}
-                          onChange={(e) => handleUpdateScheduleSession(sess.id, 'day', e.target.value)}
-                          placeholder="Day 1"
-                          className="w-24 bg-black/50 border border-white/15 rounded-lg px-2 py-1 text-[11px] font-mono text-white text-center"
+                {/* When ITINERARY_NOW is selected: Paste Text & Interactive Cards */}
+                {itineraryTiming === 'NOW' && (
+                  <div className="pt-2 space-y-3 animate-fade-in border-t border-white/10">
+                    {/* Sub-tab view switch */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-1 bg-black/50 p-1 rounded-xl border border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => setItineraryViewMode('PASTE')}
+                          className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                            itineraryViewMode === 'PASTE'
+                              ? 'bg-emerald-500 text-black shadow'
+                              : 'text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          <FileText className="w-3 h-3" />
+                          <span>Paste Raw Itinerary</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setItineraryViewMode('CARDS')}
+                          className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                            itineraryViewMode === 'CARDS'
+                              ? 'bg-emerald-500 text-black shadow'
+                              : 'text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          <Clock className="w-3 h-3" />
+                          <span>Session Cards ({scheduleItems.length})</span>
+                        </button>
+                      </div>
+
+                      {itineraryViewMode === 'PASTE' ? (
+                        <button
+                          type="button"
+                          onClick={handleParsePastedItinerary}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+                        >
+                          <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Convert to Session Cards</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleAddScheduleSession}
+                          className="px-3 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-semibold transition cursor-pointer flex items-center gap-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Session</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Mode A: Paste Raw Itinerary Text */}
+                    {itineraryViewMode === 'PASTE' ? (
+                      <div className="space-y-2">
+                        <textarea
+                          rows={6}
+                          value={rawItineraryText}
+                          onChange={(e) => setRawItineraryText(e.target.value)}
+                          placeholder={`Paste your convening itinerary here directly...\n\nExample:\nDay 1:\n09:00 - 10:30 Registration & Dais Accreditation\n10:30 - 12:00 Opening Plenary & Keynote Address\n13:00 - 15:30 Committee Session I: Setting the Agenda\n16:00 - 18:00 Moderated Caucus & Working Papers\n\nDay 2:\n10:00 - 13:00 Draft Resolution Debate & Voting\n14:00 - 16:30 Closing Ceremony & Best Delegate Awards`}
+                          className="w-full px-4 py-3 rounded-2xl bg-black/60 border border-white/15 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/50 font-mono leading-relaxed"
                         />
-                        <input
-                          type="text"
-                          value={sess.time}
-                          onChange={(e) => handleUpdateScheduleSession(sess.id, 'time', e.target.value)}
-                          placeholder="10:00 - 11:30"
-                          className="w-32 bg-black/50 border border-white/15 rounded-lg px-2 py-1 text-[11px] font-mono text-cyan-300 text-center font-bold"
-                        />
-                        {scheduleItems.length > 1 && (
+                        <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                          <span>💡 Paste directly from Google Docs, WhatsApp, or PDF text.</span>
                           <button
                             type="button"
-                            onClick={() => handleRemoveScheduleSession(sess.id)}
-                            className="p-1 text-neutral-500 hover:text-rose-400 transition cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
+                            onClick={() => {
+                              setRawItineraryText(
+`Day 1:
+09:00 - 10:30 Registration & Dais Accreditation
+10:30 - 12:00 Opening Plenary & Keynote Address
+13:00 - 15:30 Committee Session I: Procedural Motions & Setting Agenda
+16:00 - 18:00 Moderated Caucus & Working Papers
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          value={sess.title}
-                          onChange={(e) => handleUpdateScheduleSession(sess.id, 'title', e.target.value)}
-                          placeholder="Session Title (e.g. Committee Session I: Setting Agenda)"
-                          className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white font-medium"
-                        />
-                        <input
-                          type="text"
-                          value={sess.location}
-                          onChange={(e) => handleUpdateScheduleSession(sess.id, 'location', e.target.value)}
-                          placeholder="Room / Chamber / Hall"
-                          className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-neutral-300 font-mono"
-                        />
+Day 2:
+10:00 - 13:00 Draft Resolution Debate & Voting
+14:00 - 16:30 Closing Ceremony & Best Delegate Awards`
+                              );
+                            }}
+                            className="text-emerald-400 hover:text-emerald-300 underline cursor-pointer"
+                          >
+                            Load Sample Itinerary
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ) : (
+                      /* Mode B: Structured Session Cards */
+                      <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
+                        {scheduleItems.map((sess, idx) => (
+                          <div
+                            key={sess.id}
+                            className="p-3 rounded-xl bg-neutral-900 border border-white/10 space-y-2 text-xs"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-bold">
+                                Session #{idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={sess.day}
+                                onChange={(e) => handleUpdateScheduleSession(sess.id, 'day', e.target.value)}
+                                placeholder="Day 1"
+                                className="w-24 bg-black/50 border border-white/15 rounded-lg px-2 py-1 text-[11px] font-mono text-white text-center"
+                              />
+                              <input
+                                type="text"
+                                value={sess.time}
+                                onChange={(e) => handleUpdateScheduleSession(sess.id, 'time', e.target.value)}
+                                placeholder="10:00 - 11:30"
+                                className="w-32 bg-black/50 border border-white/15 rounded-lg px-2 py-1 text-[11px] font-mono text-cyan-300 text-center font-bold"
+                              />
+                              {scheduleItems.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveScheduleSession(sess.id)}
+                                  className="p-1 text-neutral-500 hover:text-rose-400 transition cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={sess.title}
+                                onChange={(e) => handleUpdateScheduleSession(sess.id, 'title', e.target.value)}
+                                placeholder="Session Title (e.g. Committee Session I)"
+                                className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white font-medium"
+                              />
+                              <input
+                                type="text"
+                                value={sess.location}
+                                onChange={(e) => handleUpdateScheduleSession(sess.id, 'location', e.target.value)}
+                                placeholder="Room / Chamber / Hall"
+                                className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-neutral-300 font-mono"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Secretariat Leadership & Organizing Committee */}

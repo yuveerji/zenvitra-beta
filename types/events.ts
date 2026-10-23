@@ -118,6 +118,8 @@ export interface ZenEvent {
   isMultiDay?: boolean;
   intakeFields?: Array<{ id: string; label: string; type: string; required: boolean; enabled: boolean }>;
   schedule?: Array<{ id: string; time: string; title: string; day?: string; location?: string }>;
+  itineraryTiming?: 'NOW' | 'AFTER';
+  itineraryText?: string;
   secretariatContact?: { name?: string; email?: string; phone?: string; role?: string };
   dressCode?: string;
   perks?: string[];
