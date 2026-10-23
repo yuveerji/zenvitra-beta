@@ -35,6 +35,8 @@ interface ZenPassBookingModalProps {
 export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPassBookingModalProps) {
   const { bookPass } = useZenPass();
   const [showCashfreeModal, setShowCashfreeModal] = useState(false);
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
+  const isComingSoonMode = Boolean(event.isComingSoon || event.status === 'coming_soon');
 
   const fallbackTier: ZenPassTier = {
     id: `tier_general_${event.id}`,
@@ -246,6 +248,28 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
 
           <form onSubmit={handleBooking} className="p-5 sm:p-7 space-y-6 overflow-y-auto max-h-[75vh]">
             
+            {/* Coming Soon & Announcement Waitlist Banner */}
+            {isComingSoonMode && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-orange-950/20 to-black border border-amber-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-amber-400" />
+                    <span className="font-bold text-xs text-amber-300 uppercase tracking-wide">
+                      COMING SOON • PRIORITY PREVIEW &amp; WAITLIST
+                    </span>
+                  </div>
+                  {event.comingSoonReleaseDate && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 font-bold">
+                      Opens {new Date(event.comingSoonReleaseDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-neutral-300">
+                  {event.comingSoonAnnouncement || 'Passes are not open for purchase yet. Preview the phased pass tiers and join the priority waitlist to be notified first!'}
+                </p>
+              </div>
+            )}
+
             {/* 1. SELECT TICKET TIER */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -302,6 +326,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {effectiveTiers.map((tier) => {
                   const isSelected = selectedTier.id === tier.id;
+                  const matchingPlan = (event.plans || []).find((p) => p.id === tier.id);
                   return (
                     <div
                       key={tier.id}
@@ -312,19 +337,47 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                           : 'bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
                       }`}
                     >
-                      {tier.badgeText && (
-                        <span className={`absolute top-3 right-3 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                          tier.isPopular ? 'bg-white text-black' : 'bg-white/10 text-neutral-300'
-                        }`}>
-                          {tier.badgeText}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5 absolute top-3 right-3 flex-wrap justify-end">
+                        {matchingPlan?.releaseTrigger === 'AFTER_PREVIOUS_TIER' && (
+                          <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                            Auto-Chain
+                          </span>
+                        )}
+                        {tier.badgeText && (
+                          <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                            tier.isPopular ? 'bg-white text-black' : 'bg-white/10 text-neutral-300'
+                          }`}>
+                            {tier.badgeText}
+                          </span>
+                        )}
+                      </div>
 
                       <div>
-                        <h4 className="font-display font-bold text-sm text-white">{tier.name}</h4>
+                        <h4 className="font-display font-bold text-sm text-white pr-16">{tier.name}</h4>
                         <p className="text-[11px] text-neutral-400 font-sans mt-0.5 line-clamp-2">
                           {tier.description}
                         </p>
+
+                        {/* Phased Tier Info Badges */}
+                        {(matchingPlan?.capacity || matchingPlan?.releaseTrigger || matchingPlan?.saleStartDate) && (
+                          <div className="pt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                            {matchingPlan.capacity && (
+                              <span className="px-1.5 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/10">
+                                Quota: {matchingPlan.capacity} seats
+                              </span>
+                            )}
+                            {matchingPlan.releaseTrigger === 'AFTER_PREVIOUS_TIER' && (
+                              <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                Unlocks after Prior Tier
+                              </span>
+                            )}
+                            {matchingPlan.saleStartDate && (
+                              <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                                Opens {new Date(matchingPlan.saleStartDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-white/5">
@@ -536,27 +589,50 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
                 onClick={onClose}
                 className="px-4 py-2.5 rounded-xl bg-white/5 text-neutral-400 hover:text-white text-xs transition"
               >
-                Cancel
+                Close
               </button>
 
-              {finalPayable > 0 && (
+              {isComingSoonMode ? (
                 <button
                   type="button"
-                  onClick={() => setShowCashfreeModal(true)}
-                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-mono font-semibold text-xs transition cursor-pointer flex items-center gap-2"
+                  onClick={() => {
+                    setWaitlistJoined(true);
+                    setTimeout(() => {
+                      onClose();
+                    }, 1800);
+                  }}
+                  disabled={waitlistJoined}
+                  className={`px-6 py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                    waitlistJoined 
+                      ? 'bg-emerald-500 text-black' 
+                      : 'bg-gradient-to-r from-amber-400 to-orange-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-105'
+                  }`}
                 >
-                  <CreditCard className="w-4 h-4" />
-                  <span>Pay ₹{finalPayable.toFixed(2)} via Cashfree</span>
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>{waitlistJoined ? '✓ Joined Priority Waitlist!' : 'Join Priority Waitlist / Notify Me'}</span>
                 </button>
-              )}
+              ) : (
+                <>
+                  {finalPayable > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowCashfreeModal(true)}
+                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-mono font-semibold text-xs transition cursor-pointer flex items-center gap-2"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Pay ₹{finalPayable.toFixed(2)} via Cashfree</span>
+                    </button>
+                  )}
 
-              <button
-                type="submit"
-                className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-sans font-bold text-xs shadow-sm transition cursor-pointer flex items-center gap-2"
-              >
-                <Sparkles className="w-4 h-4 fill-black text-black" />
-                <span>Confirm &amp; Generate ZenPass</span>
-              </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-sans font-bold text-xs shadow-sm transition cursor-pointer flex items-center gap-2"
+                  >
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>Confirm &amp; Generate ZenPass</span>
+                  </button>
+                </>
+              )}
             </div>
           </form>
         </motion.div>

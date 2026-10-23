@@ -595,6 +595,12 @@ export function EventsFeed() {
               <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-xs font-mono uppercase">
                 {featuredEvent.type}
               </span>
+              {(featuredEvent.isComingSoon || featuredEvent.status === 'coming_soon') && (
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/30 backdrop-blur-md border border-amber-400 text-amber-300 text-xs font-mono font-bold shadow-lg">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  COMING SOON
+                </span>
+              )}
               {featuredEvent.status === 'live' && (
                 <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/30 backdrop-blur-md border border-rose-500 text-rose-300 text-xs font-mono font-bold animate-pulse">
                   <Radio className="w-3.5 h-3.5" />
@@ -621,10 +627,23 @@ export function EventsFeed() {
                     e.stopPropagation();
                     setBookingEvent(featuredEvent);
                   }}
-                  className="px-5 py-2.5 rounded-full bg-white hover:bg-neutral-200 text-black font-sans font-bold text-xs transition shadow-xl cursor-pointer flex items-center gap-1.5 active:scale-95"
+                  className={`px-5 py-2.5 rounded-full font-sans font-bold text-xs transition shadow-xl cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                    featuredEvent.isComingSoon || featuredEvent.status === 'coming_soon'
+                      ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-black hover:scale-105'
+                      : 'bg-white hover:bg-neutral-200 text-black'
+                  }`}
                 >
-                  <Ticket className="w-4 h-4" />
-                  <span>Book Official Pass</span>
+                  {featuredEvent.isComingSoon || featuredEvent.status === 'coming_soon' ? (
+                    <>
+                      <Clock className="w-4 h-4 text-black" />
+                      <span>Join Priority Waitlist</span>
+                    </>
+                  ) : (
+                    <>
+                      <Ticket className="w-4 h-4" />
+                      <span>Book Official Pass</span>
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"

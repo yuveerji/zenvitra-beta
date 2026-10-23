@@ -121,6 +121,11 @@ export function CreateEventModal() {
   const [capacity, setCapacity] = useState<number | string>('150');
   const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat?: number; lng?: number }>({});
 
+  // Coming Soon & Phased Sales Launch State
+  const [isComingSoon, setIsComingSoon] = useState(false);
+  const [comingSoonAnnouncement, setComingSoonAnnouncement] = useState('');
+  const [comingSoonReleaseDate, setComingSoonReleaseDate] = useState('');
+
   const handleStartDateChange = (val: string) => {
     setDate(val);
     if (!endDate || endDate < val) {
@@ -150,8 +155,11 @@ export function CreateEventModal() {
     perks: string;
     capacity?: number;
     badge?: string;
-    salePhase: 'NOW' | 'SCHEDULED';
+    salePhase: 'NOW' | 'SCHEDULED' | 'COMING_SOON';
     saleStartDate?: string;
+    saleEndDate?: string;
+    releaseTrigger: 'IMMEDIATE' | 'SCHEDULED_DATE' | 'AFTER_PREVIOUS_TIER' | 'COMING_SOON';
+    previousTierId?: string;
     exclusiveOfferEnabled: boolean;
     cardType: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
     discountMode?: 'FLAT' | 'PERCENT';
@@ -264,6 +272,10 @@ export function CreateEventModal() {
     name: string; 
     price: number; 
     badge?: string;
+    capacity?: number;
+    saleStartDate?: string;
+    saleEndDate?: string;
+    releaseTrigger?: 'IMMEDIATE' | 'SCHEDULED_DATE' | 'AFTER_PREVIOUS_TIER' | 'COMING_SOON';
     exclusiveOfferEnabled?: boolean;
     cardType?: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
     discountMode?: 'FLAT' | 'PERCENT';
@@ -278,10 +290,12 @@ export function CreateEventModal() {
       price: template?.price ?? 599,
       description: 'Official event admission pass.',
       perks: 'Event Admission, Digital Certificate',
-      capacity: 50,
+      capacity: template?.capacity ?? 50,
       badge: template?.badge,
-      salePhase: 'NOW',
-      saleStartDate: '',
+      salePhase: template?.releaseTrigger === 'COMING_SOON' ? 'COMING_SOON' : template?.saleStartDate ? 'SCHEDULED' : 'NOW',
+      saleStartDate: template?.saleStartDate || '',
+      saleEndDate: template?.saleEndDate || '',
+      releaseTrigger: template?.releaseTrigger || (eventTiers.length === 0 ? 'IMMEDIATE' : 'AFTER_PREVIOUS_TIER'),
       exclusiveOfferEnabled: template?.exclusiveOfferEnabled ?? false,
       cardType: template?.cardType || 'RUPAY',
       discountMode: template?.discountMode || 'FLAT',
@@ -291,6 +305,74 @@ export function CreateEventModal() {
       badgeText: template?.badgeText || 'RUPAY SALE'
     };
     setEventTiers((prev) => [...prev, newTier]);
+  };
+
+  const handleGeneratePhasedRollout = () => {
+    const phasedTiers: EventCustomTier[] = [
+      {
+        id: `tier_earlybird_${Date.now()}`,
+        name: 'Early Bird Delegate Pass',
+        price: 399,
+        description: 'First release priority seating, early delegate kit access, official pass credentials.',
+        perks: 'Priority Floor Access, Official Delegate Kit, Verified Certificate',
+        capacity: 50,
+        badge: 'EARLY BIRD (50 SEATS)',
+        salePhase: 'NOW',
+        saleStartDate: '',
+        saleEndDate: '',
+        releaseTrigger: 'IMMEDIATE',
+        exclusiveOfferEnabled: true,
+        cardType: 'RUPAY',
+        discountMode: 'FLAT',
+        offerTitle: 'RUPAY EARLY ACCESS • ₹100 OFF',
+        discountFlat: 100,
+        discountPercent: 0,
+        badgeText: 'RUPAY SALE'
+      },
+      {
+        id: `tier_phase1_${Date.now() + 1}`,
+        name: 'Phase 1 • General Admission',
+        price: 699,
+        description: 'General conference floor admission, voting credentials, full committee simulation.',
+        perks: 'Full Committee Entry, Diplomatic Portfolio, Digital Credential',
+        capacity: 150,
+        badge: 'GENERAL SALE',
+        salePhase: 'NOW',
+        saleStartDate: '',
+        saleEndDate: '',
+        releaseTrigger: 'AFTER_PREVIOUS_TIER',
+        exclusiveOfferEnabled: false,
+        cardType: 'VISA',
+        discountMode: 'FLAT',
+        offerTitle: '',
+        discountFlat: 0,
+        discountPercent: 0,
+        badgeText: ''
+      },
+      {
+        id: `tier_phase2_${Date.now() + 2}`,
+        name: 'Phase 2 • VIP Ambassador All-Access',
+        price: 1199,
+        description: 'Exclusive executive lounge, keynote priority row, gala reception and secretariat dinner.',
+        perks: 'VIP Ambassador Lounge, Front Row Keynote, Dinner with Dais, Gold Foil Certificate',
+        capacity: 35,
+        badge: '👑 VIP ALL-ACCESS',
+        salePhase: 'NOW',
+        saleStartDate: '',
+        saleEndDate: '',
+        releaseTrigger: 'AFTER_PREVIOUS_TIER',
+        exclusiveOfferEnabled: false,
+        cardType: 'VISA',
+        discountMode: 'FLAT',
+        offerTitle: '',
+        discountFlat: 0,
+        discountPercent: 0,
+        badgeText: ''
+      }
+    ];
+    setEventTiers(phasedTiers);
+    setPricingMode('TIERED');
+    setToastMessage('⚡ Generated 3-Phase Phased Rollout (Early Bird ➔ General Admission ➔ VIP Envoy)!');
   };
 
   const handleRemoveEventTier = (id: string) => {
@@ -463,17 +545,20 @@ export function CreateEventModal() {
         status: 'active' as const
       }];
     } else if (pricingMode === 'TIERED') {
-      finalPlans = eventTiers.map((t) => ({
+      finalPlans = eventTiers.map((t, idx) => ({
         id: t.id,
         name: t.name,
         price: Number(t.price),
         description: t.description,
         perks: t.perks.split(',').map((p) => p.trim()).filter(Boolean),
-        capacity: t.capacity,
+        capacity: t.capacity ? Number(t.capacity) : undefined,
         badge: t.badge,
-        status: 'active' as const,
-        salePhase: t.salePhase,
-        saleStartDate: t.saleStartDate,
+        status: (isComingSoon || t.releaseTrigger === 'COMING_SOON' ? 'coming_soon' : 'active') as 'active' | 'coming_soon',
+        salePhase: isComingSoon ? 'COMING_SOON' : t.salePhase,
+        saleStartDate: t.saleStartDate || undefined,
+        saleEndDate: t.saleEndDate || undefined,
+        releaseTrigger: t.releaseTrigger,
+        tierIndex: idx,
         exclusiveOffer: t.exclusiveOfferEnabled ? {
           enabled: true,
           cardType: t.cardType,
@@ -506,6 +591,9 @@ export function CreateEventModal() {
       plans: finalPlans,
       capacity: capacity ? Number(capacity) : undefined,
       tags,
+      isComingSoon,
+      comingSoonAnnouncement: isComingSoon ? comingSoonAnnouncement.trim() || undefined : undefined,
+      comingSoonReleaseDate: isComingSoon ? comingSoonReleaseDate || undefined : undefined,
       formTiming: formTiming === 'CREATE_AFTER' ? 'CREATE_AFTER' : 'CREATE_NOW',
       formId: formTiming === 'LINK_EXISTING' ? selectedExistingFormId : undefined,
       paymentTiming: paymentCollectionMethod === 'APPROVAL_FIRST' ? 'ACCEPT_AFTER' : 'ACCEPT_NOW',
@@ -1062,6 +1150,89 @@ export function CreateEventModal() {
                 </div>
               </div>
 
+              {/* Event Launch & Visibility Status: Live Now vs Coming Soon (Teaser / Priority Waitlist) */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/30 via-black to-[#0d131f] border border-amber-500/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                      CONVENING LAUNCH &amp; REGISTRATION STATUS
+                    </span>
+                  </div>
+                  <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                    isComingSoon 
+                      ? 'bg-amber-500/20 border-amber-400/50 text-amber-300' 
+                      : 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                  }`}>
+                    {isComingSoon ? '⏳ COMING SOON / TEASER' : '🚀 LIVE NOW'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsComingSoon(false)}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                      !isComingSoon
+                        ? 'bg-emerald-500/15 border-emerald-500/40 text-white shadow-sm'
+                        : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Live Immediately</span>
+                    </div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">Tickets &amp; registrations open as soon as published.</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsComingSoon(true)}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                      isComingSoon
+                        ? 'bg-amber-500/15 border-amber-500/40 text-white shadow-sm'
+                        : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Coming Soon Mode</span>
+                    </div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">Teaser preview, pass countdown &amp; priority waitlist.</div>
+                  </button>
+                </div>
+
+                {isComingSoon && (
+                  <div className="space-y-3 pt-2 border-t border-amber-500/20 animate-fade-in text-xs font-mono">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] text-amber-200 block mb-1">
+                          Passes Launch Date &amp; Time (Countdown):
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={comingSoonReleaseDate}
+                          onChange={(e) => setComingSoonReleaseDate(e.target.value)}
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-amber-200 block mb-1">
+                          Announcement / Teaser Headline:
+                        </label>
+                        <input
+                          type="text"
+                          value={comingSoonAnnouncement}
+                          onChange={(e) => setComingSoonAnnouncement(e.target.value)}
+                          placeholder="e.g. Early Bird Drop Soon • Join Priority Waitlist"
+                          className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Location: Online vs Google Maps API Venue */}
               {isVirtual ? (
                 <div className="p-4 sm:p-5 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-3 animate-fade-in">
@@ -1386,13 +1557,23 @@ export function CreateEventModal() {
                   </div>
                 )}
 
-                {/* Tiered Passes with RuPay / Visa Bank Offers */}
+                {/* Tiered Passes with RuPay / Visa Bank Offers & Phased Rollout */}
                 {pricingMode === 'TIERED' && (
                   <div className="space-y-3 pt-1 animate-fade-in">
+                    {/* Notice if Event is Coming Soon */}
+                    {isComingSoon && (
+                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between text-xs font-mono text-amber-300">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-amber-400" />
+                          <span>Event in Coming Soon Mode • Tiers will preview as upcoming with Priority Waitlist.</span>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono font-bold text-white flex items-center gap-1.5">
                         <Ticket className="w-3.5 h-3.5 text-purple-400" />
-                        <span>Configured Pass Tiers &amp; Card Schemes ({eventTiers.length})</span>
+                        <span>Configured Pass Tiers &amp; Phased Rollout ({eventTiers.length})</span>
                       </span>
                       <button
                         type="button"
@@ -1404,6 +1585,19 @@ export function CreateEventModal() {
                       </button>
                     </div>
 
+                    {/* 1-Click 3-Phase Rollout Generator */}
+                    <button
+                      type="button"
+                      onClick={handleGeneratePhasedRollout}
+                      className="w-full p-2.5 rounded-xl bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-black border border-cyan-500/30 text-cyan-300 hover:text-cyan-200 text-xs font-mono font-bold transition flex items-center justify-between cursor-pointer group shadow-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                        <span>⚡ 1-Click: Generate 3-Phase Rollout (Early Bird ➔ General Sale ➔ VIP Envoy)</span>
+                      </div>
+                      <span className="text-[10px] text-cyan-400/80 underline group-hover:text-cyan-300">Auto-Chain Tiers</span>
+                    </button>
+
                     {/* Presets */}
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-[10px] font-mono text-purple-300 font-semibold">1-Click Presets:</span>
@@ -1411,7 +1605,9 @@ export function CreateEventModal() {
                         { 
                           name: 'RuPay Early Access Pass', 
                           price: 499, 
+                          capacity: 50,
                           badge: 'RUPAY SALE',
+                          releaseTrigger: 'IMMEDIATE' as const,
                           exclusiveOfferEnabled: true,
                           cardType: 'RUPAY' as const,
                           discountMode: 'FLAT' as const,
@@ -1421,20 +1617,33 @@ export function CreateEventModal() {
                           badgeText: 'RUPAY SALE'
                         },
                         { 
-                          name: 'Visa Special Presale', 
-                          price: 699, 
-                          badge: 'VISA EXCLUSIVE',
-                          exclusiveOfferEnabled: true,
-                          cardType: 'VISA' as const,
-                          discountMode: 'FLAT' as const,
-                          offerTitle: 'VISA CARD OFFER • PRIORITY ENTRY',
-                          discountFlat: 100,
-                          discountPercent: 0,
-                          badgeText: 'VISA SALE'
+                          name: 'Early Bird Pass', 
+                          price: 399, 
+                          capacity: 40,
+                          badge: 'EARLY BIRD',
+                          releaseTrigger: 'IMMEDIATE' as const,
                         },
-                        { name: 'General Admission', price: 799, badge: 'GENERAL SALE' },
-                        { name: 'VIP Ambassador All-Access', price: 1499, badge: '👑 VIP' },
-                        { name: 'Student Delegate Pass', price: 349, badge: '🎓 STUDENT' },
+                        { 
+                          name: 'General Admission', 
+                          price: 799, 
+                          capacity: 150,
+                          badge: 'GENERAL SALE',
+                          releaseTrigger: 'AFTER_PREVIOUS_TIER' as const,
+                        },
+                        { 
+                          name: 'VIP Ambassador All-Access', 
+                          price: 1499, 
+                          capacity: 30,
+                          badge: '👑 VIP',
+                          releaseTrigger: 'AFTER_PREVIOUS_TIER' as const,
+                        },
+                        { 
+                          name: 'Student Delegate Pass', 
+                          price: 349, 
+                          capacity: 60,
+                          badge: '🎓 STUDENT',
+                          releaseTrigger: 'IMMEDIATE' as const,
+                        },
                       ].map((preset) => (
                         <button
                           key={preset.name}
@@ -1448,23 +1657,30 @@ export function CreateEventModal() {
                     </div>
 
                     {/* Tier Cards List */}
-                    <div className="space-y-3 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
-                      {eventTiers.map((tier) => (
+                    <div className="space-y-3.5 max-h-[440px] overflow-y-auto pr-1 scrollbar-thin">
+                      {eventTiers.map((tier, idx) => (
                         <div
                           key={tier.id}
-                          className="p-4 rounded-2xl bg-black/75 border border-white/15 space-y-3 text-xs shadow-md"
+                          className="p-4 rounded-2xl bg-black/85 border border-white/15 space-y-3 text-xs shadow-md relative"
                         >
+                          {/* Top Tier Header with Index & Title */}
                           <div className="flex items-center justify-between gap-3">
-                            <div className="flex-1">
-                              <label className="text-[10px] font-mono text-neutral-400 block mb-0.5">Tier Title</label>
-                              <input
-                                type="text"
-                                value={tier.name}
-                                onChange={(e) => handleUpdateEventTier(tier.id, 'name', e.target.value)}
-                                placeholder="e.g. RuPay Early Bird / Executive Pass"
-                                className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-1.5 text-white font-bold text-xs"
-                              />
+                            <div className="flex items-center gap-2 flex-1">
+                              <span className="w-6 h-6 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center font-mono font-bold text-purple-300 text-xs shrink-0">
+                                {idx + 1}
+                              </span>
+                              <div className="flex-1">
+                                <label className="text-[10px] font-mono text-neutral-400 block mb-0.5">Tier Title</label>
+                                <input
+                                  type="text"
+                                  value={tier.name}
+                                  onChange={(e) => handleUpdateEventTier(tier.id, 'name', e.target.value)}
+                                  placeholder="e.g. Early Bird Pass / General Admission"
+                                  className="w-full bg-neutral-900 border border-white/15 rounded-xl px-3 py-1.5 text-white font-bold text-xs"
+                                />
+                              </div>
                             </div>
+
                             <div className="w-28 relative">
                               <label className="text-[10px] font-mono text-neutral-400 block mb-0.5">Price (₹)</label>
                               <div className="relative">
@@ -1478,6 +1694,7 @@ export function CreateEventModal() {
                                 />
                               </div>
                             </div>
+
                             {eventTiers.length > 1 && (
                               <button
                                 type="button"
@@ -1490,6 +1707,7 @@ export function CreateEventModal() {
                             )}
                           </div>
 
+                          {/* Badge & Seat Quota ("capacity of early bird") */}
                           <div className="grid grid-cols-2 gap-3 text-[11px] font-mono">
                             <div>
                               <span className="text-[10px] text-neutral-400 block mb-0.5">Badge / Ribbon (Optional):</span>
@@ -1497,19 +1715,107 @@ export function CreateEventModal() {
                                 type="text"
                                 value={tier.badge || ''}
                                 onChange={(e) => handleUpdateEventTier(tier.id, 'badge', e.target.value)}
-                                placeholder="e.g. RUPAY SALE / LIMITED"
+                                placeholder="e.g. EARLY BIRD (50 SEATS)"
                                 className="w-full bg-neutral-900 border border-white/15 rounded-lg px-2.5 py-1 text-white"
                               />
                             </div>
                             <div>
-                              <span className="text-[10px] text-neutral-400 block mb-0.5">Seat Quota for this Tier:</span>
+                              <span className="text-[10px] text-neutral-400 block mb-0.5">Seat Quota / Capacity (e.g. 50):</span>
                               <input
                                 type="number"
                                 value={tier.capacity || ''}
                                 onChange={(e) => handleUpdateEventTier(tier.id, 'capacity', Number(e.target.value))}
                                 placeholder="e.g. 50"
-                                className="w-full bg-neutral-900 border border-white/15 rounded-lg px-2.5 py-1 text-white"
+                                className="w-full bg-neutral-900 border border-white/15 rounded-lg px-2.5 py-1 text-white font-bold"
                               />
+                            </div>
+                          </div>
+
+                          {/* Phased Release Window & Dynamic Chaining Trigger ("when to when & when other tiers start") */}
+                          <div className="p-3 rounded-xl bg-cyan-950/25 border border-cyan-500/25 space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-mono text-cyan-300 font-bold flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                                <span>Phased Release Window &amp; Chaining Trigger</span>
+                              </span>
+                              <span className="text-[10px] font-mono text-cyan-400/90 font-bold">
+                                {tier.releaseTrigger === 'IMMEDIATE' 
+                                  ? 'Live from Launch'
+                                  : tier.releaseTrigger === 'AFTER_PREVIOUS_TIER' 
+                                  ? 'Auto-Unlocks after Prior Tier'
+                                  : tier.releaseTrigger === 'SCHEDULED_DATE'
+                                  ? 'Scheduled Date'
+                                  : 'Coming Soon'}
+                              </span>
+                            </div>
+
+                            {/* Release Trigger Selector */}
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-neutral-400 block">
+                                When does this tier unlock for booking?
+                              </label>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px] font-mono">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventTier(tier.id, 'releaseTrigger', 'IMMEDIATE')}
+                                  className={`px-2.5 py-1.5 rounded-lg border text-left transition cursor-pointer ${
+                                    tier.releaseTrigger === 'IMMEDIATE'
+                                      ? 'bg-cyan-500/25 border-cyan-400 text-cyan-200 font-bold'
+                                      : 'bg-black/40 border-white/10 text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  <div className="font-bold">1. Available Immediately</div>
+                                  <div className="text-[9px] text-neutral-400">Opens as soon as event publishes</div>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventTier(tier.id, 'releaseTrigger', 'AFTER_PREVIOUS_TIER')}
+                                  className={`px-2.5 py-1.5 rounded-lg border text-left transition cursor-pointer ${
+                                    tier.releaseTrigger === 'AFTER_PREVIOUS_TIER'
+                                      ? 'bg-purple-500/25 border-purple-400 text-purple-200 font-bold'
+                                      : 'bg-black/40 border-white/10 text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  <div className="font-bold">2. After Prior Tier Sells Out</div>
+                                  <div className="text-[9px] text-neutral-400">Unlocks when Early Bird fills quota</div>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateEventTier(tier.id, 'releaseTrigger', 'SCHEDULED_DATE')}
+                                  className={`px-2.5 py-1.5 rounded-lg border text-left transition cursor-pointer ${
+                                    tier.releaseTrigger === 'SCHEDULED_DATE'
+                                      ? 'bg-amber-500/25 border-amber-400 text-amber-200 font-bold'
+                                      : 'bg-black/40 border-white/10 text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  <div className="font-bold">3. Specific Date &amp; Time</div>
+                                  <div className="text-[9px] text-neutral-400">Opens strictly on scheduled date</div>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Date Range: When to When */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-[10px] font-mono">
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">Sale Start Date &amp; Time (When it opens):</span>
+                                <input
+                                  type="datetime-local"
+                                  value={tier.saleStartDate || ''}
+                                  onChange={(e) => handleUpdateEventTier(tier.id, 'saleStartDate', e.target.value)}
+                                  className="w-full bg-neutral-900 border border-white/15 rounded-lg px-2.5 py-1 text-white"
+                                />
+                              </div>
+                              <div>
+                                <span className="text-neutral-400 block mb-0.5">Sale End Date &amp; Time (When it closes):</span>
+                                <input
+                                  type="datetime-local"
+                                  value={tier.saleEndDate || ''}
+                                  onChange={(e) => handleUpdateEventTier(tier.id, 'saleEndDate', e.target.value)}
+                                  className="w-full bg-neutral-900 border border-white/15 rounded-lg px-2.5 py-1 text-white"
+                                />
+                              </div>
                             </div>
                           </div>
 
@@ -1524,7 +1830,7 @@ export function CreateEventModal() {
                                   className="accent-purple-400 cursor-pointer"
                                 />
                                 <span className="text-xs font-mono text-purple-300 font-bold flex items-center gap-1.5">
-                                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                                  <CreditCard className="w-3.5 h-3.5 text-purple-400" />
                                   <span>Exclusive Card Scheme Offer (&ldquo;RUPAY SALE&rdquo; / Discount)</span>
                                 </span>
                               </label>

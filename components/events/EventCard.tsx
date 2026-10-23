@@ -139,6 +139,12 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
                 CANCELLED
               </span>
             )}
+            {(event.isComingSoon || event.status === 'coming_soon') && (
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 text-amber-300 text-[10px] font-mono font-bold shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                <Clock className="w-2.5 h-2.5 text-amber-400" />
+                COMING SOON
+              </span>
+            )}
             {event.status === 'live' && (
               <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-mono font-bold animate-pulse">
                 <Radio className="w-2.5 h-2.5" />
@@ -271,6 +277,15 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
                   className="flex-1 py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-2 bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:bg-rose-500/25 transition cursor-pointer"
                 >
                   <span>{myPass ? '🚫 Cancelled (View Refunded Pass)' : '🚫 Convening Cancelled'}</span>
+                </button>
+              ) : (event.isComingSoon || event.status === 'coming_soon') ? (
+                <button
+                  type="button"
+                  onClick={handlePassButtonClick}
+                  className="flex-1 py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 hover:scale-105"
+                >
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span>Coming Soon • Join Waitlist</span>
                 </button>
               ) : (
                 <button

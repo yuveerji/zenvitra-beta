@@ -118,8 +118,9 @@ const LS_ZENPASSES = 'zenvitra_user_zenpasses_v2';
 
 /* ─────────── helpers ─────────── */
 
-function computeStatus(dateStr: string, endDateStr?: string, currentStatus?: EventStatus): EventStatus {
+function computeStatus(dateStr: string, endDateStr?: string, currentStatus?: EventStatus, isComingSoon?: boolean): EventStatus {
   if (currentStatus === 'cancelled') return 'cancelled';
+  if (isComingSoon || currentStatus === 'coming_soon') return 'coming_soon';
   const now = new Date();
   const start = new Date(dateStr);
   const end = endDateStr ? new Date(endDateStr) : new Date(start.getTime() + 3 * 60 * 60 * 1000); // default 3h
@@ -243,8 +244,8 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
   }, []);
 
   const saveEvents = useCallback((next: ZenEvent[]) => {
-    // Recompute status on save (preserving cancelled status)
-    const withStatus = next.map((e) => ({ ...e, status: computeStatus(e.date, e.endDate, e.status) }));
+    // Recompute status on save (preserving cancelled and coming_soon status)
+    const withStatus = next.map((e) => ({ ...e, status: computeStatus(e.date, e.endDate, e.status, e.isComingSoon) }));
     setAllEvents(withStatus);
     try { 
       localStorage.setItem(LS_EVENTS, JSON.stringify(withStatus)); 
@@ -317,7 +318,7 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
 
   const filteredEvents = useMemo(() => {
     let result = allEvents.map((e) => {
-      const status = computeStatus(e.date, e.endDate);
+      const status = computeStatus(e.date, e.endDate, e.status, e.isComingSoon);
       let distanceKm: number | undefined;
 
       if (userLocation && typeof e.latitude === 'number' && typeof e.longitude === 'number') {
@@ -378,7 +379,7 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
     // Standard sort if not already sorted by proximity in 'nearby'
     if (activeFilter !== 'nearby' || !userLocation) {
       result = result.sort((a, b) => {
-        const order: Record<EventStatus, number> = { live: 0, upcoming: 1, past: 2, cancelled: 3 };
+        const order: Record<EventStatus, number> = { live: 0, upcoming: 1, coming_soon: 2, past: 3, cancelled: 4 };
         if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
         return new Date(a.date).getTime() - new Date(b.date).getTime();
       });
@@ -402,7 +403,7 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
       organizerId: currentUserId,
       organizerName: currentUserName,
       organizerUsername: currentUserUsername,
-      status: computeStatus(data.date, data.endDate),
+      status: computeStatus(data.date, data.endDate, undefined, (data as any).isComingSoon),
       createdAt: new Date().toISOString(),
     };
     saveEvents([event, ...allEvents]);

@@ -1,6 +1,6 @@
 export type EventType = 'physical' | 'virtual' | 'hybrid';
 export type EventCategory = 'SUMMIT' | 'WORKSHOP' | 'KEYNOTE' | 'MEETUP' | 'HACKATHON' | 'MUN' | 'DEBATE' | 'PARLIAMENT' | 'POLICY' | 'OTHER';
-export type EventStatus = 'upcoming' | 'live' | 'past' | 'cancelled';
+export type EventStatus = 'upcoming' | 'live' | 'past' | 'cancelled' | 'coming_soon';
 export type RsvpStatus = 'going' | 'interested' | 'declined' | 'checked_in';
 export type EventView = 'list' | 'detail' | 'create' | 'dashboard';
 export type EventFilter = 'all' | 'upcoming' | 'past' | 'my-events' | 'nearby' | 'cancelled';
@@ -42,13 +42,17 @@ export interface RegistrationPlan {
   bookedCount?: number;
   badge?: string;
   isPopular?: boolean;
-  status: 'active' | 'sold_out' | 'paused';
+  status: 'active' | 'sold_out' | 'paused' | 'coming_soon';
   paymentLinkId?: string;
   paymentLinkUrl?: string;
 
   // Exclusive Bank & Card Offer / Phased Sales
-  salePhase?: 'NOW' | 'SCHEDULED';
+  salePhase?: 'NOW' | 'SCHEDULED' | 'COMING_SOON';
   saleStartDate?: string; // ISO date string when general sale unlocks
+  saleEndDate?: string;   // ISO date string when this tier closes
+  releaseTrigger?: 'IMMEDIATE' | 'SCHEDULED_DATE' | 'AFTER_PREVIOUS_TIER' | 'COMING_SOON';
+  previousTierId?: string;
+  tierIndex?: number;
   exclusiveOffer?: {
     enabled: boolean;
     cardType?: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
@@ -111,6 +115,11 @@ export interface ZenEvent {
   paymentTiming?: 'ACCEPT_NOW' | 'ACCEPT_AFTER';
   paymentGoLiveDate?: string; // ISO date when ticketing starts
   paymentCollectionMethod?: 'ONLINE_CASHFREE' | 'AT_VENUE' | 'APPROVAL_FIRST' | 'APPROVAL_THEN_PAY';
+  
+  // Coming Soon & Phased Sales
+  isComingSoon?: boolean;
+  comingSoonAnnouncement?: string;
+  comingSoonReleaseDate?: string;
   tagline?: string;
   startTime?: string;
   endTime?: string;

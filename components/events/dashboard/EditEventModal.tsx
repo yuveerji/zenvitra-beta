@@ -48,7 +48,7 @@ interface LocalTier {
   price: number;
   badge?: string;
   description?: string;
-  salePhase: 'NOW' | 'SCHEDULED';
+  salePhase: 'NOW' | 'SCHEDULED' | 'COMING_SOON';
   saleStartDate?: string;
   exclusiveOfferEnabled: boolean;
   cardType: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
