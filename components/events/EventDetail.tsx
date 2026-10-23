@@ -29,7 +29,8 @@ import {
   X,
   RefreshCw,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  FileText
 } from 'lucide-react';
 import { useZenEvents } from '@/context/ZenEventsPlatformContext';
 import { useMun } from '@/context/MunContext';
@@ -538,8 +539,30 @@ export function EventDetail() {
                   );
                 }
 
+                const hasRupayOffer = (event.plans || []).some(
+                  (p) => p.exclusiveOffer?.enabled && p.exclusiveOffer?.cardType === 'RUPAY'
+                );
+                const minPrice = (event.plans && event.plans.length > 0)
+                  ? Math.min(...event.plans.map((p) => p.price))
+                  : (event.ticketPrice || 499);
+
                 return (
                   <div className="space-y-2.5">
+                    {/* Phased Sales Notice if scheduled */}
+                    {event.paymentTiming === 'ACCEPT_AFTER' && (
+                      <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/30 font-mono text-[11px] text-blue-300 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+                          <span>General Sale Opens:</span>
+                        </div>
+                        <span className="font-bold text-white">
+                          {event.paymentGoLiveDate 
+                            ? new Date(event.paymentGoLiveDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                            : 'Coming Soon'}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Primary ZenPass Booking CTA */}
                     <button
                       type="button"
@@ -547,8 +570,24 @@ export function EventDetail() {
                       className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_30px_rgba(245,158,11,0.3)] hover:scale-105 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Ticket className="w-4 h-4 fill-current text-amber-200" />
-                      <span>Book Official ZenPass (Tiers from ₹499)</span>
+                      <span>
+                        {hasRupayOffer 
+                          ? `Book Official ZenPass (RUPAY SALE • From ₹${minPrice})`
+                          : `Book Official ZenPass (Tiers from ₹${minPrice})`}
+                      </span>
                     </button>
+
+                    {/* Linked Form Direct CTA */}
+                    {event.formId && (
+                      <Link
+                        href={`/forms/${event.formId}`}
+                        className="w-full py-3 rounded-2xl bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-300 font-display font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                      >
+                        <FileText className="w-4 h-4 text-amber-400" />
+                        <span>Fill Registration Intake Form</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
 
                     <button
                       onClick={() => (isGoing ? cancelRsvp(event.id) : rsvpEvent(event.id, 'going'))}
