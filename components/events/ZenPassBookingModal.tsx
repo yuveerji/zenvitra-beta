@@ -78,6 +78,8 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
   const [attendeeAge, setAttendeeAge] = useState<number>(17);
   const [isCollegeStudent, setIsCollegeStudent] = useState<boolean>(false);
   const [hasLocalPulsePass, setHasLocalPulsePass] = useState(false);
+  const [isRupayCardApplied, setIsRupayCardApplied] = useState(false);
+  const [selectedOfferCard, setSelectedOfferCard] = useState<'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS' | 'NONE'>('NONE');
 
   useEffect(() => {
     try {
@@ -98,7 +100,17 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
     ? (customPortfolio.trim() || 'General Delegate')
     : portfolioPreference;
 
-  const totalBasePrice = selectedTier.price * quantity;
+  // Check if active tier has a District-style exclusive offer
+  const activeOffer = (event.plans || []).find((p) => p.id === selectedTier.id)?.exclusiveOffer;
+  const isOfferAvailable = Boolean(activeOffer && activeOffer.enabled);
+
+  const offerDiscountPerPass = isOfferAvailable && selectedOfferCard === (activeOffer?.cardType || 'RUPAY')
+    ? (activeOffer?.discountFlat || (activeOffer?.discountPercent ? Math.round((selectedTier.price * activeOffer.discountPercent) / 100) : 0))
+    : 0;
+
+  const totalDiscount = offerDiscountPerPass * quantity;
+  const rawBase = selectedTier.price * quantity;
+  const totalBasePrice = Math.max(0, rawBase - totalDiscount);
   
   // Platform Fee formula:
   // - Standard: ₹29 flat
@@ -236,9 +248,56 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
             
             {/* 1. SELECT TICKET TIER */}
             <div className="space-y-3">
-              <label className="text-xs font-mono font-bold text-neutral-300 uppercase tracking-wider block">
-                1. Select Pass Tier
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-mono font-bold text-neutral-300 uppercase tracking-wider block">
+                  1. Select Pass Tier
+                </label>
+                {activeOffer && activeOffer.enabled && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-bold flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-cyan-400" />
+                    <span>{activeOffer.badgeText || 'SPECIAL BANK SALE LIVE'}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* District-Style Exclusive Bank & Card Offer Switcher */}
+              {isOfferAvailable && activeOffer && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/30 to-black border border-cyan-500/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-cyan-400" />
+                      <span className="font-bold text-xs text-white uppercase tracking-wide">
+                        {activeOffer.title || 'RUPAY CARD OFFER • BUY TICKETS NOW'}
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-cyan-400 text-black font-extrabold uppercase">
+                      Live Offer
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-neutral-300">
+                    Pay using an eligible card to unlock instant ₹{activeOffer.discountFlat || 'special'} discount on each pass before general sale.
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOfferCard(selectedOfferCard === (activeOffer.cardType || 'RUPAY') ? 'NONE' : (activeOffer.cardType || 'RUPAY'))}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        selectedOfferCard === (activeOffer.cardType || 'RUPAY')
+                          ? 'bg-gradient-to-r from-cyan-400 to-emerald-400 text-black shadow-md'
+                          : 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
+                      }`}
+                    >
+                      <Check className="w-3 h-3" />
+                      <span>{selectedOfferCard === (activeOffer.cardType || 'RUPAY') ? '✓ Card Offer Applied' : `Apply ${activeOffer.cardType || 'RuPay'} Offer (-₹${activeOffer.discountFlat || 150})`}</span>
+                    </button>
+                    {selectedOfferCard === (activeOffer.cardType || 'RUPAY') && (
+                      <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                        Saved ₹{totalDiscount} on {quantity} pass{quantity > 1 ? 'es' : ''}!
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {effectiveTiers.map((tier) => {
@@ -444,8 +503,14 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
             <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2 text-xs font-mono">
               <div className="flex items-center justify-between text-neutral-400">
                 <span>{selectedTier.name} x {quantity}</span>
-                <span>₹{totalBasePrice.toFixed(2)}</span>
+                <span>₹{rawBase.toFixed(2)}</span>
               </div>
+              {totalDiscount > 0 && (
+                <div className="flex items-center justify-between text-emerald-400 font-bold">
+                  <span>Card Offer Discount ({activeOffer?.title || 'RuPay Offer'})</span>
+                  <span>-₹{totalDiscount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between text-neutral-400">
                 <span>Platform Fee {isPulseElite ? '(Pulse Elite: ₹0)' : isPulsePass ? '(Pulse Pass: ₹15)' : '(Flat ₹29)'}</span>
                 <span className="text-white font-semibold">{platformFee === 0 ? '₹0.00 (Waived)' : `+₹${platformFee.toFixed(2)}`}</span>

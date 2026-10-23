@@ -45,6 +45,18 @@ export interface RegistrationPlan {
   status: 'active' | 'sold_out' | 'paused';
   paymentLinkId?: string;
   paymentLinkUrl?: string;
+
+  // District-style Exclusive Bank & Card Offer / Phased Sales
+  salePhase?: 'NOW' | 'SCHEDULED';
+  saleStartDate?: string; // ISO date string when general sale unlocks
+  exclusiveOffer?: {
+    enabled: boolean;
+    cardType?: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
+    title: string; // e.g. "RUPAY SALE • ₹150 OFF"
+    discountPercent?: number; // e.g. 20%
+    discountFlat?: number; // e.g. 150
+    badgeText?: string; // e.g. "RUPAY EXCLUSIVE"
+  };
 }
 
 export interface CashfreePaymentLinkRecord {
@@ -91,6 +103,12 @@ export interface ZenEvent {
   paymentLinks?: CashfreePaymentLinkRecord[];
   tags: string[];
   createdAt: string;
+
+  // Configurable Form Timing & Payments Timing
+  formTiming?: 'CREATE_NOW' | 'CREATE_AFTER';
+  formId?: string; // Linked custom form if created
+  paymentTiming?: 'ACCEPT_NOW' | 'ACCEPT_AFTER';
+  paymentGoLiveDate?: string; // ISO date when ticketing starts
   cancellationReason?: string;
   cancelledAt?: string;
   refundStatus?: 'none' | 'processing' | 'completed';

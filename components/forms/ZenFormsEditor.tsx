@@ -464,7 +464,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
           subtitle: 'National Parliamentary Council',
           badge: 'HISTORIC & POLICY COUNCIL',
           badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-          agenda: 'Deliberation upon Comprehensive Constitutional, Electoral, Governance and Socio-Economic Reforms in India...',
+          agenda: 'National Constitutional & Electoral Governance Reforms',
           format: 'Moderated Parliamentary Debate & Legislative Bill Tabling',
           tags: ['Lok Sabha ROP', 'Crisis Inflections', 'Domestic Policy']
         },
@@ -475,7 +475,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
           subtitle: 'Special Ministerial Assembly',
           badge: 'MINISTERIAL OVERSIGHT',
           badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
-          agenda: 'Deliberation upon the Renewal and Reform of the National Education Policy 2020 towards a proposed National Education Policy 2026...',
+          agenda: 'National Education Policy & Examination Integrity Framework',
           format: 'Sovereign Ministerial Council & Direct Policy Blueprints',
           tags: ['NEP 2026 Roadmap', 'Examination Integrity', 'Priority Allotment']
         },
@@ -486,7 +486,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
           subtitle: 'Principal UN Organ for Sustainable Development & Economic Cooperation',
           badge: 'MULTILATERAL DEVELOPMENT PLENARY',
           badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
-          agenda: 'Deliberation upon Building an Equitable and Sustainable Global Development Framework...',
+          agenda: 'Multilateral Financing for Sustainable Development Goals',
           format: 'UN Rules of Procedure (ROP) & Draft Resolution Tabling',
           tags: ['SDGs Financing', 'Global South Cooperation', 'Equitable Development']
         },
@@ -497,7 +497,7 @@ export default function ZenFormsEditor({ formId }: ZenFormsEditorProps) {
           subtitle: 'Flagship Crisis & Security Body',
           badge: 'CRISIS & SECURITY COUNCIL',
           badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-          agenda: 'Global Peace, Security Architecture & Crisis Deliberation',
+          agenda: 'Global Peace & Multilateral Security Architecture',
           format: 'Continuous Crisis Procedure (CCP) & Presidential Directives',
           tags: ['P5 Veto Dynamics', 'Binding Directives', 'High Experience Tier']
         }

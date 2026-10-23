@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   X, 
   Calendar, 
@@ -17,12 +18,24 @@ import {
   Ticket,
   Plus,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  CreditCard,
+  FileText,
+  FilePlus,
+  ChevronRight,
+  ArrowRight,
+  CalendarCheck,
+  CheckCircle2,
+  ShieldCheck,
+  Zap,
+  Globe
 } from 'lucide-react';
 import { useZenEvents, KNOWN_CITIES } from '@/context/ZenEventsPlatformContext';
 import { useAuth } from '@/context/AuthContext';
 import { useZenPass } from '@/context/ZenPassContext';
 import { EventCategory, EventType } from '@/types/events';
+import { getPublicForms } from '@/lib/formsStorage';
+import { ZenForm } from '@/types/forms';
 
 const COVER_PRESETS = [
   'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
@@ -32,6 +45,7 @@ const COVER_PRESETS = [
 ];
 
 export function CreateEventModal() {
+  const router = useRouter();
   const { profile } = useAuth();
   const { createEvent, setActiveView, events, currentUserUsername, currentUserId } = useZenEvents();
   const { setShowPassWalletModal } = useZenPass();
@@ -55,6 +69,8 @@ export function CreateEventModal() {
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [city, setCity] = useState('');
+  
+  // ── Pricing & Ticketing Modes ──
   type PricingMode = 'FREE' | 'NORMAL' | 'TIERED';
   const [pricingMode, setPricingMode] = useState<PricingMode>('FREE');
   const [ticketPrice, setTicketPrice] = useState<number | undefined>(undefined);
@@ -62,6 +78,28 @@ export function CreateEventModal() {
   const [tagInput, setTagInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── 1. REGISTRATION FORM TIMING (CREATE NOW OR AFTER) ──
+  type FormTimingOption = 'CREATE_NOW_SCRATCH' | 'CREATE_NOW_TEMPLATE' | 'LINK_EXISTING' | 'CREATE_AFTER';
+  const [formTiming, setFormTiming] = useState<FormTimingOption>('CREATE_AFTER');
+  const [selectedExistingFormId, setSelectedExistingFormId] = useState<string>('');
+  const [existingForms, setExistingForms] = useState<ZenForm[]>([]);
+
+  useEffect(() => {
+    try {
+      const forms = getPublicForms();
+      setExistingForms(forms);
+      if (forms.length > 0 && !selectedExistingFormId) {
+        setSelectedExistingFormId(forms[0].id);
+      }
+    } catch {}
+  }, []);
+
+  // ── 2. PAYMENTS TIMING (ACCEPT PAYMENTS NOW OR AFTER / PHASED SALES) ──
+  type PaymentTimingOption = 'ACCEPT_NOW' | 'ACCEPT_AFTER';
+  const [paymentTiming, setPaymentTiming] = useState<PaymentTimingOption>('ACCEPT_NOW');
+  const [paymentGoLiveDate, setPaymentGoLiveDate] = useState('');
+
+  // ── 3. TIER DEFINITION WITH DISTRICT-STYLE CARD OFFERS ──
   interface EventCustomTier {
     id: string;
     name: string;
@@ -70,11 +108,27 @@ export function CreateEventModal() {
     perks: string;
     capacity?: number;
     badge?: string;
+    salePhase: 'NOW' | 'SCHEDULED';
+    saleStartDate?: string;
+    exclusiveOfferEnabled: boolean;
+    cardType: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
+    offerTitle: string;
+    discountFlat: number;
+    badgeText: string;
   }
 
   const [eventTiers, setEventTiers] = useState<EventCustomTier[]>([]);
 
-  const handleAddEventTier = (template?: { name: string; price: number; badge?: string }) => {
+  const handleAddEventTier = (template?: { 
+    name: string; 
+    price: number; 
+    badge?: string;
+    exclusiveOfferEnabled?: boolean;
+    cardType?: 'RUPAY' | 'VISA' | 'MASTERCARD' | 'STUDENT' | 'EARLY_ACCESS';
+    offerTitle?: string;
+    discountFlat?: number;
+    badgeText?: string;
+  }) => {
     const newTier: EventCustomTier = {
       id: `tier_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
       name: template?.name || 'New Attendee Pass',
@@ -83,6 +137,13 @@ export function CreateEventModal() {
       perks: 'Event Admission, Digital Certificate',
       capacity: 50,
       badge: template?.badge,
+      salePhase: 'NOW',
+      saleStartDate: '',
+      exclusiveOfferEnabled: template?.exclusiveOfferEnabled ?? false,
+      cardType: template?.cardType || 'RUPAY',
+      offerTitle: template?.offerTitle || 'RUPAY CARD OFFER • BUY TICKETS NOW',
+      discountFlat: template?.discountFlat ?? 150,
+      badgeText: template?.badgeText || 'RUPAY SALE'
     };
     setEventTiers((prev) => [...prev, newTier]);
   };
@@ -155,6 +216,8 @@ export function CreateEventModal() {
           perks: ['Event Admission', 'Digital Pass', 'Networking Access'],
           status: 'active' as const,
           badge: 'POPULAR',
+          salePhase: paymentTiming === 'ACCEPT_NOW' ? ('NOW' as const) : ('SCHEDULED' as const),
+          saleStartDate: paymentGoLiveDate || undefined,
         },
       ];
     } else {
@@ -172,11 +235,20 @@ export function CreateEventModal() {
         bookedCount: 0,
         badge: t.badge?.trim() || undefined,
         status: 'active' as const,
+        salePhase: t.salePhase,
+        saleStartDate: t.saleStartDate || undefined,
+        exclusiveOffer: t.exclusiveOfferEnabled ? {
+          enabled: true,
+          cardType: t.cardType,
+          title: t.offerTitle,
+          discountFlat: t.discountFlat,
+          badgeText: t.badgeText
+        } : undefined
       }));
       effectivePrice = eventTiers[0] ? Math.max(0, Number(eventTiers[0].price)) : 0;
     }
 
-    createEvent({
+    const createdId = createEvent({
       title: title.trim(),
       description: description.trim(),
       coverImage: finalCover,
@@ -192,6 +264,10 @@ export function CreateEventModal() {
       plans: finalPlans,
       capacity: capacity ? Number(capacity) : undefined,
       tags,
+      formTiming: formTiming === 'CREATE_AFTER' ? 'CREATE_AFTER' : 'CREATE_NOW',
+      formId: formTiming === 'LINK_EXISTING' ? selectedExistingFormId : undefined,
+      paymentTiming,
+      paymentGoLiveDate: paymentTiming === 'ACCEPT_AFTER' ? paymentGoLiveDate : undefined
     });
 
     // Also sync to backend conference listings database
@@ -213,13 +289,22 @@ export function CreateEventModal() {
         ticketPrice: effectivePrice,
         tierPlans: finalPlans,
         userId: profile?.id || null,
+        formTiming,
+        paymentTiming
       }),
     }).catch(() => {});
+
+    // If organizer chose to create form right now, redirect directly to form builder
+    if (formTiming === 'CREATE_NOW_SCRATCH') {
+      router.push(`/forms/edit/new?originEventId=${createdId}&eventTitle=${encodeURIComponent(title.trim())}`);
+    } else if (formTiming === 'CREATE_NOW_TEMPLATE') {
+      router.push(`/forms?originEventId=${createdId}&eventTitle=${encodeURIComponent(title.trim())}`);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-2xl p-2 sm:p-6 flex flex-col justify-start sm:justify-center items-center font-sans">
-      <div className="relative w-full max-w-2xl my-auto max-h-[94vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-white/15 bg-gradient-to-b from-[#0e121c] to-[#06080e] p-4 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.9)] space-y-5">
+      <div className="relative w-full max-w-2xl my-auto max-h-[94vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-white/15 bg-gradient-to-b from-[#0e121c] to-[#06080e] p-4 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.9)] space-y-6">
         {/* On-screen notification popup */}
         {toastMessage && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
@@ -249,28 +334,29 @@ export function CreateEventModal() {
 
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-violet-500 p-0.5 shadow-md">
-              <div className="w-full h-full rounded-[14px] bg-[#06080c] flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-cyan-400" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-black font-black text-xs shadow-md">
+                <Sparkles className="w-4 h-4" />
               </div>
+              <h2 className="text-lg sm:text-xl font-bold font-display tracking-tight text-white">
+                Launch New Convening &bull; Event Studio
+              </h2>
             </div>
-            <div>
-              <h2 className="font-display font-bold text-lg text-white">Convene a Sovereign Event</h2>
-              <p className="text-xs font-mono text-neutral-400">Launch a summit, workshop, or youth forum assembly.</p>
-            </div>
+            <p className="text-xs text-neutral-400 font-sans">
+              Deploy your conference, summit, or delegation assembly with complete ticketing, bank sales, and form intake control.
+            </p>
           </div>
-
           <button
+            type="button"
             onClick={() => setActiveView('list')}
-            className="p-2 rounded-2xl bg-white/[0.04] border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+            className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div className="space-y-1.5">
             <label className="block text-xs font-mono font-semibold text-neutral-300">CONVENING TITLE *</label>
@@ -279,7 +365,7 @@ export function CreateEventModal() {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Zenvitra Global Diplomacy Summit 2026"
+              placeholder="e.g. Geneva Global Summit 2026 / National Lok Sabha Simulation"
               className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
             />
           </div>
@@ -287,15 +373,15 @@ export function CreateEventModal() {
           {/* Type & Category */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">CONVENING TYPE</label>
+              <label className="block text-xs font-mono font-semibold text-neutral-300">FORMAT TYPE</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as EventType)}
-                className="w-full px-4 py-3 rounded-2xl bg-[#080a10] border border-white/10 text-sm text-white focus:outline-none focus:border-cyan-500/50"
+                className="w-full px-4 py-3 rounded-2xl bg-neutral-900 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
               >
-                <option value="hybrid">Hybrid Matrix (Physical + Virtual)</option>
-                <option value="physical">In-Person Physical Summit</option>
-                <option value="virtual">Virtual Mesh Stream</option>
+                <option value="physical">Physical In-Person Venue</option>
+                <option value="virtual">Virtual Online Assembly</option>
+                <option value="hybrid">Hybrid (Physical &amp; Virtual)</option>
               </select>
             </div>
 
@@ -304,47 +390,22 @@ export function CreateEventModal() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as EventCategory)}
-                className="w-full px-4 py-3 rounded-2xl bg-[#080a10] border border-white/10 text-sm text-white focus:outline-none focus:border-cyan-500/50"
+                className="w-full px-4 py-3 rounded-2xl bg-neutral-900 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
               >
-                <option value="SUMMIT">SUMMIT (MUNs, G20, UN)</option>
-                <option value="WORKSHOP">WORKSHOP</option>
-                <option value="KEYNOTE">KEYNOTE</option>
-                <option value="MEETUP">MEETUP (Open Mics &amp; Slams)</option>
-                <option value="HACKATHON">HACKATHON</option>
+                <option value="SUMMIT">Diplomatic Summit</option>
+                <option value="MUN">Model United Nations (MUN)</option>
+                <option value="PARLIAMENT">Parliamentary / Youth Sabha</option>
+                <option value="POLICY">Policy Roundtable</option>
+                <option value="WORKSHOP">Academy &amp; Workshop</option>
+                <option value="KEYNOTE">Keynote &amp; Plenary</option>
+                <option value="HACKATHON">Civic Hackathon</option>
+                <option value="OTHER">Other Assembly</option>
               </select>
             </div>
           </div>
 
-          {/* City & Ticket Price */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">CITY / METROPOLE *</label>
-              <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-[#080a10] border border-white/10 text-sm text-white focus:outline-none focus:border-cyan-500/50"
-              >
-                {KNOWN_CITIES.filter(c => c.value !== 'ALL').map((c) => (
-                  <option key={c.value} value={c.value}>{c.name}</option>
-                ))}
-                <option value="Other">Other / Custom Global</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">ZENPASS BASE PRICE (₹)</label>
-              <input
-                type="number"
-                value={ticketPrice || ''}
-                onChange={(e) => setTicketPrice(e.target.value ? Number(e.target.value) : 0)}
-                placeholder="e.g. 499 (0 for Free)"
-                className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
-              />
-            </div>
-          </div>
-
-          {/* Date & Time */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Date, Time & City */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-mono font-semibold text-neutral-300">DATE *</label>
               <input
@@ -352,54 +413,278 @@ export function CreateEventModal() {
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-[#080a10] border border-white/10 text-sm text-white focus:outline-none focus:border-cyan-500/50"
+                className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">TIME SCHEDULE</label>
+              <label className="block text-xs font-mono font-semibold text-neutral-300">TIME (UTC)</label>
               <input
                 type="text"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                placeholder="e.g. 18:00 - 21:00 UTC"
-                className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
+                placeholder="e.g. 10:00 - 18:00 IST"
+                className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-mono font-semibold text-neutral-300">METRO CITY</label>
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-2xl bg-neutral-900 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
+              >
+                <option value="New Delhi">New Delhi &amp; NCR</option>
+                <option value="Gurugram">Gurugram</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Pune">Pune</option>
+                <option value="Geneva">Geneva</option>
+                <option value="London">London</option>
+              </select>
             </div>
           </div>
 
-          {/* Location, Capacity & Registration Fee */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1.5 sm:col-span-1">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">LOCATION / VENUE *</label>
-              <input
-                type="text"
-                required
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. India Habitat Centre, Lodhi Road"
-                className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
-              />
-            </div>
-
-            <div className="space-y-1.5 sm:col-span-1">
-              <label className="block text-xs font-mono font-semibold text-neutral-300">CAPACITY QUOTA</label>
-              <input
-                type="number"
-                value={capacity || ''}
-                onChange={(e) => setCapacity(e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="Unlimited if blank"
-                className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
-              />
-            </div>
-
+          {/* Location / Venue */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-mono font-semibold text-neutral-300">VENUE / MEETING LINK *</label>
+            <input
+              type="text"
+              required
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g. India International Centre, Lodhi Estate / Diplomatic Chamber Room"
+              className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
+            />
           </div>
 
-          {/* Registration Mode: Free vs Normal Fee vs Tiered Passes */}
-          <div className="space-y-3 p-4 rounded-2xl bg-white/[0.02] border border-white/10">
+          {/* ══════════════════════════════════════════════════════════════
+              FEATURE 1: REGISTRATION INTAKE FORM (NOW OR AFTER)
+              ══════════════════════════════════════════════════════════════ */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#121829] to-[#0a0d16] border border-amber-500/30 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                    Registration &amp; Delegate Intake Form
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">
+                    Choose whether to configure your form now or complete it after launching your event.
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold shrink-0 self-start sm:self-auto">
+                ZEN.FORMS STUDIO
+              </span>
+            </div>
+
+            {/* 4 Choices */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* Option A: Create Form Now (Blank / Scratch) */}
+              <div
+                onClick={() => setFormTiming('CREATE_NOW_SCRATCH')}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 relative ${
+                  formTiming === 'CREATE_NOW_SCRATCH'
+                    ? 'bg-amber-500/10 border-amber-400 text-white shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400'
+                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                    <FilePlus className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Create Now From Scratch</span>
+                  </span>
+                  {formTiming === 'CREATE_NOW_SCRATCH' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                </div>
+                <p className="text-[11px] text-neutral-300">
+                  Opens a fresh, customizable blank form canvas immediately upon launching.
+                </p>
+              </div>
+
+              {/* Option B: Create Now Using Template */}
+              <div
+                onClick={() => setFormTiming('CREATE_NOW_TEMPLATE')}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 relative ${
+                  formTiming === 'CREATE_NOW_TEMPLATE'
+                    ? 'bg-amber-500/10 border-amber-400 text-white shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400'
+                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Create Using a Template</span>
+                  </span>
+                  {formTiming === 'CREATE_NOW_TEMPLATE' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                </div>
+                <p className="text-[11px] text-neutral-300">
+                  Pick from verified templates (MUN, Summit RSVP, Secretariat, Feedback) with 1-click clone.
+                </p>
+              </div>
+
+              {/* Option C: Link Existing Form */}
+              <div
+                onClick={() => setFormTiming('LINK_EXISTING')}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 relative ${
+                  formTiming === 'LINK_EXISTING'
+                    ? 'bg-amber-500/10 border-amber-400 text-white shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400'
+                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Link an Existing Form</span>
+                  </span>
+                  {formTiming === 'LINK_EXISTING' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                </div>
+                <p className="text-[11px] text-neutral-300">
+                  Attach an already authored ZenForm from your studio ledger.
+                </p>
+              </div>
+
+              {/* Option D: Make Form After Launch */}
+              <div
+                onClick={() => setFormTiming('CREATE_AFTER')}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 relative ${
+                  formTiming === 'CREATE_AFTER'
+                    ? 'bg-amber-500/10 border-amber-400 text-white shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-400'
+                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Make Form After Launch</span>
+                  </span>
+                  {formTiming === 'CREATE_AFTER' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                </div>
+                <p className="text-[11px] text-neutral-300">
+                  Publish your event page first; attach or customize your registration form anytime later.
+                </p>
+              </div>
+            </div>
+
+            {/* If Link Existing is selected, show dropdown */}
+            {formTiming === 'LINK_EXISTING' && (
+              <div className="space-y-1.5 pt-1 border-t border-white/10 animate-fade-in">
+                <label className="text-[11px] font-mono text-neutral-400 block">Select Active Form to Link:</label>
+                {existingForms.length > 0 ? (
+                  <select
+                    value={selectedExistingFormId}
+                    onChange={(e) => setSelectedExistingFormId(e.target.value)}
+                    className="w-full bg-black/60 border border-amber-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none cursor-pointer font-mono"
+                  >
+                    {existingForms.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.title} ({f.fields?.length || 0} fields)
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-xs text-amber-300">
+                    No custom forms created yet. A fresh intake form will be initialized.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ══════════════════════════════════════════════════════════════
+              FEATURE 2: PAYMENTS TIMING & TICKET SALES SCHEDULE
+              ══════════════════════════════════════════════════════════════ */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#121829] to-[#0a0d16] border border-cyan-500/30 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
+                  <CreditCard className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                    Payment Collection Timing
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">
+                    Take payments now or schedule general sale at a future date (like District).
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-bold shrink-0 self-start sm:self-auto">
+                CASHFREE PG INTEGRATED
+              </span>
+            </div>
+
+            {/* Accept Payments Now vs After */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div
+                onClick={() => setPaymentTiming('ACCEPT_NOW')}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
+                  paymentTiming === 'ACCEPT_NOW'
+                    ? 'bg-cyan-500/10 border-cyan-400 text-white shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400'
+                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Accept Payments Now</span>
+                  </span>
+                  {paymentTiming === 'ACCEPT_NOW' && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                </div>
+                <p className="text-[11px] text-neutral-300">
+                  Delegates can book and purchase passes via UPI and Cards immediately upon launch.
+                </p>
+              </div>
+
+              <div
+                onClick={() => setPaymentTiming('ACCEPT_AFTER')}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-1.5 ${
+                  paymentTiming === 'ACCEPT_AFTER'
+                    ? 'bg-cyan-500/10 border-cyan-400 text-white shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400'
+                    : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:border-white/20'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
+                    <CalendarCheck className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Take Payments Later / Scheduled Sale</span>
+                  </span>
+                  {paymentTiming === 'ACCEPT_AFTER' && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                </div>
+                <p className="text-[11px] text-neutral-300">
+                  Tickets show as &ldquo;Coming Soon&rdquo; until your scheduled general sale date goes live.
+                </p>
+              </div>
+            </div>
+
+            {/* If Scheduled Date */}
+            {paymentTiming === 'ACCEPT_AFTER' && (
+              <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 animate-fade-in">
+                <label className="text-xs font-mono font-bold text-cyan-300 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>General Ticket Sale Go-Live Date:</span>
+                </label>
+                <input
+                  type="date"
+                  value={paymentGoLiveDate}
+                  onChange={(e) => setPaymentGoLiveDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                />
+                <p className="text-[10px] font-mono text-neutral-400">
+                  Delegates can bookmark or pre-register interest; payments unlock automatically on this date.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Pricing Mode Selection (Free vs Flat vs Tiered) */}
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-mono font-semibold text-neutral-300 uppercase tracking-wider">
-                Registration &amp; Ticket Passes
+                Ticket Pass Structure &amp; Bank Offers
               </label>
               <span className="text-[10px] font-mono text-cyan-400">Cashfree PG Enabled</span>
             </div>
@@ -411,7 +696,7 @@ export function CreateEventModal() {
                 onClick={() => setPricingMode('FREE')}
                 className={`py-2 px-2 rounded-xl text-xs font-semibold font-mono transition cursor-pointer flex items-center justify-center gap-1 ${
                   pricingMode === 'FREE'
-                    ? 'bg-white text-black shadow-sm'
+                    ? 'bg-white text-black shadow-sm font-bold'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -424,7 +709,7 @@ export function CreateEventModal() {
                 onClick={() => setPricingMode('NORMAL')}
                 className={`py-2 px-2 rounded-xl text-xs font-semibold font-mono transition cursor-pointer flex items-center justify-center gap-1 ${
                   pricingMode === 'NORMAL'
-                    ? 'bg-white text-black shadow-sm'
+                    ? 'bg-white text-black shadow-sm font-bold'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -434,15 +719,34 @@ export function CreateEventModal() {
 
               <button
                 type="button"
-                onClick={() => setPricingMode('TIERED')}
+                onClick={() => {
+                  setPricingMode('TIERED');
+                  if (eventTiers.length === 0) {
+                    handleAddEventTier({
+                      name: 'RuPay Early Access Pass',
+                      price: 499,
+                      badge: 'RUPAY SALE',
+                      exclusiveOfferEnabled: true,
+                      cardType: 'RUPAY',
+                      offerTitle: 'RUPAY CARD OFFER • BUY TICKETS NOW',
+                      discountFlat: 150,
+                      badgeText: 'RUPAY EXCLUSIVE'
+                    });
+                    handleAddEventTier({
+                      name: 'General Admission',
+                      price: 649,
+                      badge: 'GENERAL SALE'
+                    });
+                  }
+                }}
                 className={`py-2 px-2 rounded-xl text-xs font-semibold font-mono transition cursor-pointer flex items-center justify-center gap-1 ${
                   pricingMode === 'TIERED'
-                    ? 'bg-white text-black shadow-sm'
+                    ? 'bg-white text-black shadow-sm font-bold'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
                 {pricingMode === 'TIERED' && <Check className="w-3 h-3 text-black stroke-[3]" />}
-                <span>Add Tiers ({eventTiers.length})</span>
+                <span>Tiers &amp; Bank Offers ({eventTiers.length})</span>
               </button>
             </div>
 
@@ -464,13 +768,15 @@ export function CreateEventModal() {
               </div>
             )}
 
-            {/* Multi-Tier Plans */}
+            {/* ══════════════════════════════════════════════════════════════
+                FEATURE 3: DISTRICT-STYLE BANK OFFERS & MULTI-TIER SALES
+                ══════════════════════════════════════════════════════════════ */}
             {pricingMode === 'TIERED' && (
               <div className="space-y-3 pt-1">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-mono text-purple-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                     <Ticket className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Custom Event Tiers ({eventTiers.length})</span>
+                    <span>Configured Pass Tiers &amp; Offers ({eventTiers.length})</span>
                   </span>
                   <button
                     type="button"
@@ -482,12 +788,31 @@ export function CreateEventModal() {
                   </button>
                 </div>
 
-                {/* Preset Pills */}
+                {/* Preset District-Style Quick Add Pills */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-mono text-neutral-500">Quick add:</span>
+                  <span className="text-[10px] font-mono text-neutral-500">District quick add:</span>
                   {[
-                    { name: 'Early Bird Pass', price: 399, badge: '🔥 EARLY BIRD' },
-                    { name: 'General Admission', price: 699, badge: 'POPULAR' },
+                    { 
+                      name: 'RuPay Early Access Pass', 
+                      price: 499, 
+                      badge: 'RUPAY SALE',
+                      exclusiveOfferEnabled: true,
+                      cardType: 'RUPAY' as const,
+                      offerTitle: 'RUPAY CARD OFFER • BUY TICKETS NOW',
+                      discountFlat: 150,
+                      badgeText: 'RUPAY SALE'
+                    },
+                    { 
+                      name: 'Visa Special Presale', 
+                      price: 699, 
+                      badge: 'VISA EXCLUSIVE',
+                      exclusiveOfferEnabled: true,
+                      cardType: 'VISA' as const,
+                      offerTitle: 'VISA CARD OFFER • PRIORITY ENTRY',
+                      discountFlat: 100,
+                      badgeText: 'VISA SALE'
+                    },
+                    { name: 'General Admission', price: 799, badge: 'GENERAL SALE' },
                     { name: 'VIP All-Access', price: 1499, badge: '👑 VIP' },
                     { name: 'Student Pass', price: 299, badge: '🎓 STUDENT' },
                   ].map((preset) => (
@@ -503,11 +828,11 @@ export function CreateEventModal() {
                 </div>
 
                 {/* Tier Cards List */}
-                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1 scrollbar-thin">
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
                   {eventTiers.map((tier) => (
                     <div
                       key={tier.id}
-                      className="p-3 rounded-xl bg-black/60 border border-white/10 space-y-2 text-xs"
+                      className="p-3.5 rounded-xl bg-black/70 border border-white/15 space-y-2.5 text-xs shadow-md"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1">
@@ -515,7 +840,7 @@ export function CreateEventModal() {
                             type="text"
                             value={tier.name}
                             onChange={(e) => handleUpdateEventTier(tier.id, 'name', e.target.value)}
-                            placeholder="Tier name (e.g. VIP All-Access)"
+                            placeholder="Tier name (e.g. RuPay Early Bird / General Admission)"
                             className="w-full px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/15 text-white placeholder-neutral-500 text-xs font-semibold focus:outline-none focus:border-purple-400"
                           />
                         </div>
@@ -547,8 +872,8 @@ export function CreateEventModal() {
                           type="text"
                           value={tier.badge || ''}
                           onChange={(e) => handleUpdateEventTier(tier.id, 'badge', e.target.value)}
-                          placeholder="Badge (e.g. 🔥 EARLY BIRD)"
-                          className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/10 text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-purple-400"
+                          placeholder="Badge (e.g. 🔥 RUPAY SALE)"
+                          className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/10 text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-purple-400 font-mono"
                         />
                         <input
                           type="number"
@@ -559,6 +884,67 @@ export function CreateEventModal() {
                           className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/10 text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-purple-400 font-mono"
                         />
                       </div>
+
+                      {/* District-Style Bank Card Offer Toggle */}
+                      <div className="p-2.5 rounded-lg bg-purple-950/20 border border-purple-500/20 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={tier.exclusiveOfferEnabled}
+                              onChange={(e) => handleUpdateEventTier(tier.id, 'exclusiveOfferEnabled', e.target.checked)}
+                              className="accent-purple-400 cursor-pointer"
+                            />
+                            <span className="text-[11px] font-mono text-purple-300 font-bold flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-purple-400" />
+                              <span>District Card Offer (&ldquo;RUPAY SALE&rdquo; / Discount)</span>
+                            </span>
+                          </label>
+                          <span className="text-[9px] font-mono text-neutral-400">
+                            {tier.exclusiveOfferEnabled ? 'Active' : 'Off'}
+                          </span>
+                        </div>
+
+                        {tier.exclusiveOfferEnabled && (
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-purple-500/20 text-[10px] font-mono">
+                            <div>
+                              <span className="text-neutral-400 block mb-0.5">Card Scheme:</span>
+                              <select
+                                value={tier.cardType}
+                                onChange={(e) => handleUpdateEventTier(tier.id, 'cardType', e.target.value)}
+                                className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white cursor-pointer"
+                              >
+                                <option value="RUPAY">RuPay Exclusive</option>
+                                <option value="VISA">Visa Exclusive</option>
+                                <option value="MASTERCARD">Mastercard</option>
+                                <option value="STUDENT">Student Discount</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <span className="text-neutral-400 block mb-0.5">Offer Title:</span>
+                              <input
+                                type="text"
+                                value={tier.offerTitle}
+                                onChange={(e) => handleUpdateEventTier(tier.id, 'offerTitle', e.target.value)}
+                                placeholder="RUPAY CARD OFFER"
+                                className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-white"
+                              />
+                            </div>
+
+                            <div>
+                              <span className="text-neutral-400 block mb-0.5">Discount Amount (₹):</span>
+                              <input
+                                type="number"
+                                min={1}
+                                value={tier.discountFlat}
+                                onChange={(e) => handleUpdateEventTier(tier.id, 'discountFlat', Number(e.target.value))}
+                                className="w-full bg-neutral-900 border border-white/15 rounded px-2 py-1 text-amber-300 font-bold"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -566,7 +952,7 @@ export function CreateEventModal() {
                 <button
                   type="button"
                   onClick={() => handleAddEventTier()}
-                  className="w-full py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 hover:text-white text-xs font-mono flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 hover:text-white text-xs font-mono flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 text-purple-400" />
                   <span>Add Another Tier</span>
@@ -577,12 +963,12 @@ export function CreateEventModal() {
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-mono font-semibold text-neutral-300">SYNOPSIS & AGENDA</label>
+            <label className="block text-xs font-mono font-semibold text-neutral-300">SYNOPSIS &amp; ONE-LINE MANDATE</label>
             <textarea
-              rows={4}
+              rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Outline the assembly objective, key delegates, resolution voting procedures..."
+              placeholder="Provide a clean, focused description of your summit, rules of procedure, and convening objective..."
               className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-neutral-600 resize-none focus:outline-none focus:border-cyan-500/50 leading-relaxed"
             />
           </div>
@@ -659,9 +1045,9 @@ export function CreateEventModal() {
 
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-[0_0_30px_rgba(255,255,255,0.25)] cursor-pointer flex items-center gap-2"
+              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-300 hover:from-cyan-300 hover:to-amber-200 text-black font-display font-black text-xs uppercase tracking-wider transition shadow-[0_0_30px_rgba(6,182,212,0.35)] cursor-pointer flex items-center gap-2 active:scale-98"
             >
-              <Sparkles className="w-4 h-4 fill-current" />
+              <Sparkles className="w-4 h-4 fill-black" />
               <span>Launch Convening</span>
             </button>
           </div>
