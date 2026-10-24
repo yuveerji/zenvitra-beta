@@ -12,3 +12,7 @@ Thumbs.db
 *.tsbuildinfo
 data/
 public/uploads/
+*.pem
+*.key
+github_deploy_key*
+
