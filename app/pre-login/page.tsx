@@ -20,6 +20,7 @@ import { sheetSync } from '@/lib/googleSheets';
 import { recordSavedSession } from '@/context/AuthContext';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
 import { PreLaunchPerks } from '@/components/auth/PreLaunchPerks';
+import { activateFounderSession, isFounderOrCoFounder } from '@/lib/founderControl';
 
 export default function PreLoginPage() {
   const [email, setEmail] = useState('');
@@ -119,6 +120,15 @@ export default function PreLoginPage() {
           localStorage.setItem('zenvitra_session_user', JSON.stringify(userSession));
           localStorage.setItem('zenvitra_applicant_email', cleanEmail);
           recordSavedSession(userSession);
+
+          // Activate Founder sovereign mode if Founder or Co-Founder
+          const effectiveRole = (verifyData.role || '').toUpperCase();
+          if (isFounderOrCoFounder(cleanEmail, effectiveRole, userSession.id)) {
+            activateFounderSession('YUVEER-FOUNDER-2026');
+            document.cookie = 'from_portal_flash=true; path=/; max-age=2592000; SameSite=Lax';
+            document.cookie = 'zenvitra_launch_preview=true; path=/; max-age=2592000; SameSite=Lax';
+          }
+
           window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
         }
 

@@ -68,8 +68,16 @@ const providers: Provider[] = [
         clean === 'khushi';
 
       if (isCoFounder) {
-        if (password && (isFounderPassword || cleanPwUpper.includes('AARUSH') || cleanPwUpper.includes('COFOUNDER') || cleanPw === '5747')) {
-          const isAarush = clean.includes('aarush');
+        const isAarush = clean.includes('aarush');
+        const isKhushi = clean.includes('khushi');
+        const isCoFounderMatch =
+          isFounderPassword ||
+          cleanPw === '5747' ||
+          cleanPwUpper.includes('COFOUNDER') ||
+          (isAarush && (cleanPwUpper.includes('AARUSH') || cleanPwUpper === 'AARUSH-COFOUNDER-2026' || cleanPwUpper === 'COFOUNDER-AARUSH')) ||
+          (isKhushi && (cleanPwUpper.includes('KHUSHI') || cleanPwUpper === 'KHUSHI-COFOUNDER-2026' || cleanPwUpper === 'COFOUNDER-KHUSHI'));
+
+        if (password && isCoFounderMatch) {
           return {
             id: isAarush ? 'zen_cofounder_aarush' : 'zen_cofounder_khushi',
             name: isAarush ? 'Aarush Vijayivargiya' : 'Khushi R B',

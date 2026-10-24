@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { SignJWT } from 'jose';
 import { db } from '@/lib/db';
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'zenvitra_sovereign_secret_key_development_32_bytes_min';
+const encodedJwtKey = new TextEncoder().encode(JWT_SECRET);
 
 export const dynamic = 'force-dynamic';
 
@@ -24,22 +28,90 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check founder credentials
-    const isFounderEmail =
+    // Check Founder & Co-Founder Sovereign Credentials
+    const cleanPw = password.trim();
+    const cleanPwUpper = cleanPw.toUpperCase();
+
+    // 1. Founder: Yuveer Chhatwani
+    const isYuveerFounder =
       email === 'founder@zenvitra.xyz' ||
       email === 'founder@zenvitra.org' ||
       email === 'founder@zenvitra.com' ||
+      email === 'yuveer@zenvitra.xyz' ||
+      email === 'yuveer@zenvitra.org' ||
+      email === 'yuveer@zenvitra.com' ||
+      email === 'yuveer' ||
       email === (process.env.FOUNDER_EMAIL?.toLowerCase() || '');
 
+    const isYuveerPasswordMatch =
+      cleanPw === 'Yuveer@5747R' ||
+      cleanPw === '5747' ||
+      cleanPw === '574729' ||
+      cleanPw === '7788' ||
+      cleanPwUpper === 'YUV-ROOT-MASTER-777' ||
+      cleanPwUpper === 'YUVEER-FOUNDER-2026' ||
+      cleanPwUpper === 'YUV-SOVEREIGN-KEY' ||
+      cleanPwUpper === 'ROOT-YUVEER' ||
+      cleanPwUpper === 'ZEN-FOUNDER-PASSKEY-999' ||
+      cleanPwUpper === 'ZNV@2026!FOUNDER#99' ||
+      cleanPwUpper === 'ZENVITRA#FOUNDER!2026' ||
+      cleanPwUpper === 'FOUNDER' ||
+      cleanPw === (process.env.ADMIN_MASTER_PIN || '5747');
+
+    // 2. Co-Founder: Aarush Vijayivargiya
+    const isAarushCoFounder =
+      email === 'aarush@zenvitra.xyz' ||
+      email === 'aarush@zenvitra.com' ||
+      email === 'aarush@zenvitra.org' ||
+      email === 'aarush';
+
+    const isAarushPasswordMatch =
+      isYuveerPasswordMatch ||
+      cleanPwUpper.includes('AARUSH') ||
+      cleanPwUpper.includes('COFOUNDER') ||
+      cleanPw === '5747' ||
+      cleanPwUpper === 'AARUSH-COFOUNDER-2026' ||
+      cleanPwUpper === 'COFOUNDER-AARUSH';
+
+    // 3. Co-Founder: Khushi R B
+    const isKhushiCoFounder =
+      email === 'khushi@zenvitra.xyz' ||
+      email === 'khushi@zenvitra.com' ||
+      email === 'khushi@zenvitra.org' ||
+      email === 'khushi';
+
+    const isKhushiPasswordMatch =
+      isYuveerPasswordMatch ||
+      cleanPwUpper.includes('KHUSHI') ||
+      cleanPwUpper.includes('COFOUNDER') ||
+      cleanPw === '5747' ||
+      cleanPwUpper === 'KHUSHI-COFOUNDER-2026' ||
+      cleanPwUpper === 'COFOUNDER-KHUSHI';
+
+    const isFounderEmail = isYuveerFounder || isAarushCoFounder || isKhushiCoFounder;
     const isFounderPassword =
-      password === 'Yuveer@5747R' ||
-      password === '5747' ||
-      password === '574729' ||
-      password === (process.env.ADMIN_MASTER_PIN || '5747');
+      (isYuveerFounder && isYuveerPasswordMatch) ||
+      (isAarushCoFounder && isAarushPasswordMatch) ||
+      (isKhushiCoFounder && isKhushiPasswordMatch);
 
     let isApproved = false;
     let clearanceRole = 'Core Delegate';
     let statusText = 'PENDING_REVIEW';
+
+    // Founder & Co-Founders bypass queue automatically with immediate sovereign clearance
+    if (isYuveerFounder && isYuveerPasswordMatch) {
+      isApproved = true;
+      statusText = 'APPROVED';
+      clearanceRole = 'Founder & Chief Architect';
+    } else if (isAarushCoFounder && isAarushPasswordMatch) {
+      isApproved = true;
+      statusText = 'APPROVED';
+      clearanceRole = 'Co-Founder & Chief Product Officer';
+    } else if (isKhushiCoFounder && isKhushiPasswordMatch) {
+      isApproved = true;
+      statusText = 'APPROVED';
+      clearanceRole = 'Co-Founder & Chief Operating Officer';
+    }
 
     // 1. Check local / SQLite Application model first
     try {
@@ -120,7 +192,10 @@ export async function POST(req: NextRequest) {
       let roleBadge = 'GOLD';
       const roleUpper = clearanceRole.toUpperCase();
 
-      if (roleUpper.includes('COFOUNDER') || roleUpper.includes('CO-FOUNDER') || roleUpper.includes('EXECUTIVE')) {
+      if (isYuveerFounder || roleUpper.includes('FOUNDER &') || roleUpper === 'FOUNDER') {
+        platformRole = 'FOUNDER';
+        roleBadge = 'GOLD';
+      } else if (isAarushCoFounder || isKhushiCoFounder || roleUpper.includes('COFOUNDER') || roleUpper.includes('CO-FOUNDER') || roleUpper.includes('EXECUTIVE')) {
         platformRole = 'CO_FOUNDER';
         roleBadge = 'GOLD';
       } else if (roleUpper.includes('SECRETARIAT') || roleUpper.includes('SEC TEAM')) {
@@ -244,6 +319,30 @@ export async function POST(req: NextRequest) {
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 30,
       });
+
+      // Generate cryptographically signed Edge JWT session token for instant server middleware unlock
+      try {
+        const edgeSessionJwt = await new SignJWT({
+          userId: targetUser?.id || (isYuveerFounder ? 'zen_founder_root' : isAarushCoFounder ? 'zen_cofounder_aarush' : 'zen_cofounder_khushi'),
+          email,
+          username: targetUser?.username || (isYuveerFounder ? 'yuveer' : isAarushCoFounder ? 'aarush' : 'khushi'),
+          role: platformRole,
+        })
+          .setProtectedHeader({ alg: 'HS256' })
+          .setIssuedAt()
+          .setExpirationTime('30d')
+          .sign(encodedJwtKey);
+
+        response.cookies.set('zenvitra_session_token', edgeSessionJwt, {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 30,
+        });
+      } catch (jwtErr) {
+        console.warn('[VERIFY-JWT-SIGN-WARN]', jwtErr);
+      }
 
       return response;
     }

@@ -211,9 +211,15 @@ export async function middleware(request: NextRequest) {
     );
 
     const userRole = sessionCheck.payload?.role;
-    const isFounderOrAdmin = Boolean(sessionCheck.valid && userRole && (
-      FOUNDER_CLEARANCE_ROLES.includes(userRole) || ADMIN_CORE_CLEARANCE_ROLES.includes(userRole)
-    ));
+    const clearanceRoleCookie = request.cookies.get('zenvitra_clearance_role')?.value;
+    const isFounderOrAdmin = Boolean(
+      (sessionCheck.valid && userRole && (
+        FOUNDER_CLEARANCE_ROLES.includes(userRole) || ADMIN_CORE_CLEARANCE_ROLES.includes(userRole)
+      )) ||
+      (clearanceRoleCookie && (
+        FOUNDER_CLEARANCE_ROLES.includes(clearanceRoleCookie) || ADMIN_CORE_CLEARANCE_ROLES.includes(clearanceRoleCookie)
+      ))
+    );
     const hasPortalFlashBypass = Boolean(
       request.cookies.get('from_portal_flash')?.value === 'true' ||
       request.cookies.get('zenvitra_launch_preview')?.value === 'true' ||
