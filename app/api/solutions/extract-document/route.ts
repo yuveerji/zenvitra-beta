@@ -38,11 +38,42 @@ export async function POST(req: NextRequest) {
         console.warn('Mammoth HTML conversion note:', err);
       }
     } else if (extension === 'pdf') {
-      // Use pdf-parse for PDF text extraction
+      // Polyfill browser DOM classes needed by pdfjs in Node.js runtime
+      if (typeof (global as any).DOMMatrix === 'undefined') {
+        (global as any).DOMMatrix = class DOMMatrix {
+          a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+          constructor(init?: any) {
+            if (Array.isArray(init) && init.length >= 6) {
+              this.a = init[0]; this.b = init[1]; this.c = init[2];
+              this.d = init[3]; this.e = init[4]; this.f = init[5];
+            }
+          }
+        };
+      }
+      if (typeof (global as any).ImageData === 'undefined') {
+        (global as any).ImageData = class ImageData {};
+      }
+      if (typeof (global as any).Path2D === 'undefined') {
+        (global as any).Path2D = class Path2D {};
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require('pdf-parse');
-      const pdfData = await pdfParse(buffer);
-      extractedText = pdfData.text || '';
+      const pdfParseModule = require('pdf-parse');
+      const uint8 = new Uint8Array(buffer);
+
+      if (pdfParseModule.PDFParse) {
+        // pdf-parse v2+ Class API
+        const parser = new pdfParseModule.PDFParse(uint8);
+        const pdfData = await parser.getText();
+        extractedText = pdfData?.text || (typeof pdfData === 'string' ? pdfData : '');
+      } else if (typeof pdfParseModule === 'function') {
+        // pdf-parse v1 Legacy Function API
+        const pdfData = await pdfParseModule(buffer);
+        extractedText = pdfData.text || '';
+      } else if (typeof pdfParseModule.default === 'function') {
+        const pdfData = await pdfParseModule.default(buffer);
+        extractedText = pdfData.text || '';
+      }
     } else if (extension === 'txt' || extension === 'md') {
       extractedText = buffer.toString('utf-8');
     } else {
