@@ -15,6 +15,7 @@ export interface CoreTeamMember {
   department: TeamDepartment;
   handle?: string;
   avatarUrl?: string;
+  avatarPosition?: string;
   bio: string;
   focusAreas: string[];
   socialLinks?: {
@@ -56,6 +57,7 @@ export const INITIAL_CORE_TEAM: CoreTeamMember[] = [
     category: 'cofounder',
     department: 'Executive',
     avatarUrl: '/assets/co-founder.jpeg',
+    avatarPosition: 'top',
     bio: 'Co-Founder of ZENVITRA steering institutional diplomacy, global alliances, cross-border chapter expansion, and sovereign operational ecosystems.',
     focusAreas: ['Global Operations', 'Institutional Diplomacy', 'Strategic Expansion', 'Executive Governance'],
     socialLinks: {
@@ -71,6 +73,7 @@ export const INITIAL_CORE_TEAM: CoreTeamMember[] = [
     department: 'Executive',
     handle: 'aarush',
     avatarUrl: '/assets/co-founder2.jpeg',
+    avatarPosition: 'top',
     bio: 'Co-Founder of ZENVITRA pioneering product innovation, sovereign platform strategy, cross-disciplinary deliberative frameworks, and ecosystem growth.',
     focusAreas: ['Product Strategy', 'Platform Innovation', 'Civic Ecosystems', 'Executive Leadership'],
     socialLinks: {

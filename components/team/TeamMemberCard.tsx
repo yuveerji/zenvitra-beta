@@ -261,7 +261,8 @@ export function TeamMemberCard({ member, isHero = false, className = '' }: TeamM
                 alt={member.name}
                 fill
                 sizes="56px"
-                className="object-cover"
+                className="object-cover object-top"
+                style={{ objectPosition: member.avatarPosition || (isCofounder ? 'top' : 'center') }}
                 onError={() => setImgError(true)}
               />
             ) : (
