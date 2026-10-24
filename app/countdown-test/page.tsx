@@ -336,21 +336,7 @@ export default function CountdownTestPage() {
         </div>
       </main>
 
-      {/* Floating Audio Control Pill */}
-      <button
-        type="button"
-        onClick={portalAudio.toggleSound}
-        className="fixed bottom-6 left-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-black/85 border border-amber-400/40 text-white font-mono text-xs backdrop-blur-md shadow-[0_0_20px_rgba(251,191,36,0.25)] hover:border-amber-300 transition-all cursor-pointer group"
-      >
-        {portalAudio.isMuted ? (
-          <VolumeX className="w-4 h-4 text-neutral-400 group-hover:text-white" />
-        ) : (
-          <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
-        )}
-        <span className="tracking-wider">
-          SOUND: <span className={portalAudio.isMuted ? 'text-neutral-400' : 'text-amber-300 font-bold'}>{portalAudio.isMuted ? 'OFF' : 'ARMED'}</span>
-        </span>
-      </button>
+
 
       {/* Interactive Local Debug Bar (Bottom-Right) */}
       <aside className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">

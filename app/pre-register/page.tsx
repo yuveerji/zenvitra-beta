@@ -510,15 +510,7 @@ export default function PreRegisterPage() {
         </Link>
 
         <div className="flex items-center gap-3">
-          {/* Status Check Quick Access */}
-          <button
-            onClick={() => setIsStatusModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-amber-500/[0.08] hover:bg-amber-500/[0.16] border border-amber-500/30 text-xs font-mono text-amber-300 transition cursor-pointer"
-            title="Check Existing Clearance Status"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Check Clearance</span>
-          </button>
+
 
           <Link
             href="/pre-login"
