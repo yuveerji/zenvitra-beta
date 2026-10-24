@@ -35,7 +35,9 @@ import {
   Check,
   Upload,
   Edit3,
-  Lock
+  Lock,
+  Bookmark,
+  Clock
 } from 'lucide-react';
 import { 
   SolutionDocument, 
@@ -214,6 +216,20 @@ export function SolutionsDraftingStudio({
   const [saveStatus, setSaveStatus] = useState<string>('Ready');
   const [copiedNotification, setCopiedNotification] = useState(false);
 
+  // Draft Restore / Save Prompt Modals
+  const [showLoadDraftModal, setShowLoadDraftModal] = useState(false);
+  const [savedDraftData, setSavedDraftData] = useState<{
+    title?: string;
+    docCode?: string;
+    docType?: DocumentType;
+    category?: SolutionCategory;
+    committee?: string;
+    leadSponsors?: string;
+    rawContent?: string;
+    updatedAt?: string;
+  } | null>(null);
+  const [showSavePromptModal, setShowSavePromptModal] = useState(false);
+
   // Modals inside Studio
   const [isChartModalOpen, setIsChartModalOpen] = useState(false);
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
@@ -336,9 +352,72 @@ export function SolutionsDraftingStudio({
     }
   };
 
+  // Load Previous Draft Handlers
+  const handleLoadPreviousDraft = () => {
+    if (!savedDraftData) return;
+    setDraftTitle(savedDraftData.title || 'Untitled Proposal');
+    setDocCode(savedDraftData.docCode || 'BILL-2026-001');
+    setDocType(savedDraftData.docType || 'LEGISLATIVE_BILL');
+    setCategory(savedDraftData.category || 'EDUCATION');
+    setCommittee(savedDraftData.committee || 'Parliament of India / Public Policy & Solutions Council');
+    setLeadSponsors(savedDraftData.leadSponsors || 'Delegation of Youth Parliament, National Civic Council');
+    setRawContent(savedDraftData.rawContent || '');
+    setSaveStatus('Draft restored');
+    setShowLoadDraftModal(false);
+  };
+
+  const handleStartFromScratch = () => {
+    setDraftTitle('Untitled Legislative Proposal');
+    setDocType('LEGISLATIVE_BILL');
+    setCategory('EDUCATION');
+    generateCode('LEGISLATIVE_BILL');
+    setRawContent('');
+    setSaveStatus('Clean Canvas');
+    setShowLoadDraftModal(false);
+  };
+
+  // Close & Save Handlers
+  const handleAttemptClose = () => {
+    if (rawContent && rawContent.trim().length > 0) {
+      setShowSavePromptModal(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmSaveAndExit = () => {
+    try {
+      localStorage.setItem('zenvitra_solutions_studio_draft', JSON.stringify({
+        title: draftTitle,
+        docCode,
+        docType,
+        category,
+        committee,
+        leadSponsors,
+        rawContent,
+        updatedAt: new Date().toISOString()
+      }));
+    } catch {}
+    setShowSavePromptModal(false);
+    onClose();
+  };
+
+  const handleDiscardAndExit = () => {
+    try {
+      localStorage.removeItem('zenvitra_solutions_studio_draft');
+    } catch {}
+    setRawContent('');
+    setShowSavePromptModal(false);
+    onClose();
+  };
+
   // Initialize draft
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setShowLoadDraftModal(false);
+      setShowSavePromptModal(false);
+      return;
+    }
 
     if (initialDraftData) {
       if (initialDraftData.existingDoc) {
@@ -367,29 +446,48 @@ export function SolutionsDraftingStudio({
       return;
     }
 
-    // Try loading saved draft
-    const saved = localStorage.getItem('zenvitra_solutions_studio_draft');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setDraftTitle(parsed.title || 'Untitled Proposal');
-        setDocCode(parsed.docCode || 'BILL-2026-001');
-        setDocType(parsed.docType || 'LEGISLATIVE_BILL');
-        setCategory(parsed.category || 'EDUCATION');
-        setCommittee(parsed.committee || 'National Policy Enclave');
-        setLeadSponsors(parsed.leadSponsors || 'Civic Secretariat');
-        setRawContent(parsed.rawContent || '');
-        return;
-      } catch {}
-    }
-
-    // Default clean unseeded state
+    // Default: Open empty studio canvas
     setDraftTitle('Untitled Legislative Proposal');
     setDocType('LEGISLATIVE_BILL');
     setCategory('EDUCATION');
     generateCode('LEGISLATIVE_BILL');
     setRawContent('');
+
+    // Check if there is an existing saved draft in localStorage
+    try {
+      const saved = localStorage.getItem('zenvitra_solutions_studio_draft');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.rawContent && parsed.rawContent.trim().length > 0) {
+          setSavedDraftData(parsed);
+          setShowLoadDraftModal(true);
+        }
+      }
+    } catch {}
   }, [isOpen, initialDraftData]);
+
+  // Keyboard listener (Escape triggers save prompt or modal dismiss)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isChartModalOpen || isTableModalOpen || isDataChapterModalOpen || isSamplesModalOpen || isLeftoverReviewOpen || isZenDocsModalOpen) {
+          return;
+        }
+        if (showLoadDraftModal) {
+          setShowLoadDraftModal(false);
+          return;
+        }
+        if (showSavePromptModal) {
+          setShowSavePromptModal(false);
+          return;
+        }
+        handleAttemptClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, rawContent, isChartModalOpen, isTableModalOpen, isDataChapterModalOpen, isSamplesModalOpen, isLeftoverReviewOpen, isZenDocsModalOpen, showLoadDraftModal, showSavePromptModal]);
 
   // Generate Document Code based on type
   const generateCode = (type: DocumentType) => {
@@ -881,7 +979,7 @@ Zone 4 (Rural Enclaves): 68
           </button>
 
           <button
-            onClick={onClose}
+            onClick={handleAttemptClose}
             className="p-1.5 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
             title="Close Drafting Studio"
           >
@@ -1759,6 +1857,153 @@ Zone 4 (Rural Enclaves): 68
           category
         }}
       />
+
+      {/* ── LOAD PREVIOUS DRAFT MODAL ── */}
+      <AnimatePresence>
+        {showLoadDraftModal && savedDraftData && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 15 }}
+              className="relative w-full max-w-lg rounded-3xl bg-[#090b14] border border-cyan-500/35 p-6 sm:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.95)] space-y-6 text-white text-left"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                  <Clock className="w-6 h-6 text-cyan-400" />
+                </div>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
+                      Saved Draft Found
+                    </span>
+                    {savedDraftData.updatedAt && (
+                      <span className="text-[11px] font-mono text-neutral-400">
+                        {new Date(savedDraftData.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-display font-bold text-white tracking-tight">
+                    Load Previous Draft?
+                  </h3>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    You have an auto-saved draft from your previous session. You can restore your work or start fresh.
+                  </p>
+                </div>
+              </div>
+
+              {/* Preview Card */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-serif font-bold text-sm text-cyan-300 truncate">
+                    {savedDraftData.title || 'Untitled Proposal'}
+                  </div>
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-400 shrink-0">
+                    {savedDraftData.docCode || 'DRAFT'}
+                  </span>
+                </div>
+                {savedDraftData.rawContent && (
+                  <p className="text-xs text-neutral-400 font-serif line-clamp-3 leading-relaxed italic">
+                    &ldquo;{savedDraftData.rawContent.trim().slice(0, 220)}&hellip;&rdquo;
+                  </p>
+                )}
+                <div className="flex items-center gap-3 pt-1 text-[11px] font-mono text-neutral-500">
+                  <span>{savedDraftData.rawContent?.trim().split(/\s+/).filter(Boolean).length || 0} words</span>
+                  <span>•</span>
+                  <span className="capitalize">{savedDraftData.docType?.replace(/_/g, ' ').toLowerCase() || 'Bill'}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={handleLoadPreviousDraft}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:opacity-95 text-black font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-[0_0_25px_rgba(6,182,212,0.35)] active:scale-98"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Load Previous Draft</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleStartFromScratch}
+                  className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/25 text-neutral-200 hover:text-white font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer active:scale-98"
+                >
+                  <span>Start from Scratch &rarr;</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── SAVE DRAFT BEFORE EXIT MODAL ── */}
+      <AnimatePresence>
+        {showSavePromptModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 15 }}
+              className="relative w-full max-w-md rounded-3xl bg-[#090b14] border border-amber-500/35 p-6 sm:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.95)] space-y-5 text-white text-left"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                  <Bookmark className="w-6 h-6 text-amber-400" />
+                </div>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <h3 className="text-lg sm:text-xl font-display font-bold text-white tracking-tight">
+                    Save Draft Before Exiting?
+                  </h3>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    You have active legislative content in the studio. Would you like to save this draft to resume editing later?
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5">
+                <div className="text-xs font-serif font-bold text-neutral-200 truncate">
+                  {draftTitle || 'Untitled Legislative Proposal'}
+                </div>
+                <div className="text-[11px] font-mono text-neutral-400 flex items-center gap-2">
+                  <span>{wordCount} words</span>
+                  <span>•</span>
+                  <span>{parsedResult?.clauses.length || 0} clauses parsed</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleConfirmSaveAndExit}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:opacity-95 text-black font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.3)] active:scale-98"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Draft &amp; Exit</span>
+                </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDiscardAndExit}
+                    className="w-full py-2.5 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-display font-bold text-[11px] uppercase tracking-wider transition cursor-pointer active:scale-98"
+                  >
+                    Discard Draft
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSavePromptModal(false)}
+                    className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-neutral-300 hover:text-white font-display font-bold text-[11px] uppercase tracking-wider transition cursor-pointer active:scale-98"
+                  >
+                    Keep Editing
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
