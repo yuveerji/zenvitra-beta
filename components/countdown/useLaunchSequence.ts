@@ -226,6 +226,7 @@ export function useLaunchSequence({
 
         try {
           sessionStorage.setItem('from_portal_flash', 'true');
+          document.cookie = 'from_portal_flash=true; path=/; max-age=60';
         } catch {}
 
         setTimeout(() => {
@@ -260,6 +261,7 @@ export function useLaunchSequence({
 
       try {
         sessionStorage.setItem('from_portal_flash', 'true');
+          document.cookie = 'from_portal_flash=true; path=/; max-age=60';
       } catch {}
 
       setTimeout(() => {

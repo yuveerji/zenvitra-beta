@@ -326,6 +326,7 @@ export default function HomeClient({ session }: HomeClientProps) {
       const fromFlash = sessionStorage.getItem('from_portal_flash');
       if (fromFlash === 'true') {
         sessionStorage.removeItem('from_portal_flash');
+        document.cookie = 'from_portal_flash=; path=/; max-age=0';
         setShowFlashDissolve(true);
         // Start fading from 1 to 0 over 800ms
         const timer = setTimeout(() => {

@@ -177,6 +177,55 @@ export async function middleware(request: NextRequest) {
     'core_team',
   ];
 
+  // ── PRE-LAUNCH STRICT LOCKDOWN PROTOCOL ──
+  // Target Launch Time: 2:00:00 PM IST on October 25, 2026.
+  // Before 2:00:00 PM IST, no page unlocks except /countdown and connected portals:
+  // - /countdown
+  // - /countdown-test
+  // - /pre-register
+  // - /pre-login
+  // - /join-core-team
+  // - /forms
+  // - /statusregister
+  // - /statussignin
+  // - /api/*
+  // All other pages strictly redirect to /countdown until official launch.
+  const LAUNCH_TIMESTAMP = new Date('2026-10-25T14:00:00+05:30').getTime();
+  const isPreLaunch = Date.now() < LAUNCH_TIMESTAMP;
+
+  if (isPreLaunch) {
+    const COUNTDOWN_WHITELIST_PREFIXES = [
+      '/countdown',
+      '/countdown-test',
+      '/pre-register',
+      '/pre-login',
+      '/join-core-team',
+      '/forms',
+      '/statusregister',
+      '/statussignin',
+      '/api',
+    ];
+
+    const isCountdownWhitelisted = COUNTDOWN_WHITELIST_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+
+    const userRole = sessionCheck.payload?.role;
+    const isFounderOrAdmin = Boolean(sessionCheck.valid && userRole && (
+      FOUNDER_CLEARANCE_ROLES.includes(userRole) || ADMIN_CORE_CLEARANCE_ROLES.includes(userRole)
+    ));
+    const hasPortalFlashBypass = Boolean(
+      request.cookies.get('from_portal_flash')?.value === 'true' ||
+      request.cookies.get('zenvitra_launch_preview')?.value === 'true' ||
+      request.nextUrl.searchParams.get('preview') === 'genesis_founder'
+    );
+
+    if (!isCountdownWhitelisted && !isFounderOrAdmin && !hasPortalFlashBypass) {
+      const countdownUrl = new URL('/countdown', request.url);
+      return NextResponse.redirect(countdownUrl, { status: 307 });
+    }
+  }
+
   const isFounderPath = pathname.startsWith('/zen-vault-root') || pathname.startsWith('/founder');
   const isAdminCorePath = (
     pathname.startsWith('/core-team-panel') ||
