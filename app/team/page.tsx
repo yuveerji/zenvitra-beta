@@ -69,10 +69,10 @@ export default function TeamPage() {
 
   // Filter core members by department & search query
   const filteredCore = useMemo(() => {
-    let list = coreMembers;
-    if (selectedDept !== 'All') {
-      list = list.filter((m) => m.department === selectedDept);
-    }
+    let list = selectedDept === 'All'
+      ? coreMembers
+      : allMembers.filter((m) => m.department === selectedDept);
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
@@ -84,10 +84,10 @@ export default function TeamPage() {
       );
     }
     return list;
-  }, [coreMembers, selectedDept, searchQuery]);
+  }, [allMembers, coreMembers, selectedDept, searchQuery]);
 
-  // Filter co-founders if Executive or All selected
-  const showCofounders = selectedDept === 'All' || selectedDept === 'Executive';
+  // Only show separate Tier 02 Co-Founders section when browsing "All Departments"
+  const showCofounders = selectedDept === 'All';
   const filteredCofounders = useMemo(() => {
     if (!showCofounders) return [];
     if (!searchQuery.trim()) return cofounders;
@@ -221,17 +221,19 @@ export default function TeamPage() {
           </section>
 
           {/* ── 2. TIER 1: THE FOUNDING ARCHITECT ── */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest font-bold">
-                <Crown className="w-4 h-4 text-amber-400" />
-                <span>Tier 01 // Founding Council &bull; Master Authority</span>
+          {selectedDept === 'All' && founder && (
+            <section className="space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest font-bold">
+                  <Crown className="w-4 h-4 text-amber-400" />
+                  <span>Tier 01 // Founding Council &bull; Master Authority</span>
+                </div>
+                <span className="text-xs font-mono text-zinc-500 hidden sm:inline">Constitutional Architecture</span>
               </div>
-              <span className="text-xs font-mono text-zinc-500 hidden sm:inline">Constitutional Architecture</span>
-            </div>
 
-            {founder && <TeamMemberCard member={founder} isHero={true} />}
-          </section>
+              <TeamMemberCard member={founder} isHero={true} />
+            </section>
+          )}
 
           {/* ── 3. TIER 2: CO-FOUNDERS & EXECUTIVE COUNCIL ── */}
           {showCofounders && filteredCofounders.length > 0 && (
@@ -261,10 +263,16 @@ export default function TeamPage() {
                 <div>
                   <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 uppercase tracking-widest font-bold">
                     <Terminal className="w-4 h-4 text-cyan-400" />
-                    <span>Tier 03 // Core Team Leads &amp; Working Groups</span>
+                    <span>
+                      {selectedDept === 'All'
+                        ? 'Tier 03 // Core Team Leads & Working Groups'
+                        : `${departments.find((d) => d.id === selectedDept)?.label || selectedDept} Leadership Roster`}
+                    </span>
                   </div>
                   <p className="text-xs text-zinc-400 mt-1">
-                    Specialized leads directing engineering, simulation diplomacy, investigative media, and community stewardship
+                    {selectedDept === 'All'
+                      ? 'Specialized leads directing engineering, simulation diplomacy, investigative media, and community stewardship'
+                      : `Portfolios and appointed leadership for ${departments.find((d) => d.id === selectedDept)?.label || selectedDept}`}
                   </p>
                 </div>
 
