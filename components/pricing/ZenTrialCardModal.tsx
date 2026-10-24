@@ -13,7 +13,10 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { isFounder, isAdmin } from '@/lib/founderControl';
-import { activatePromotionalProTrialWithCard } from '@/lib/subscriptionTiers';
+import { 
+  activatePromotionalProTrialWithCard, 
+  activatePromotionalProTrial 
+} from '@/lib/subscriptionTiers';
 
 export interface ZenTrialCardModalProps {
   isOpen: boolean;
@@ -40,12 +43,44 @@ export function ZenTrialCardModal({
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [authSuccess, setAuthSuccess] = useState(false);
 
+  const effectiveUsername = username || userEmail || 'citizen';
+
   const isFounderOrAdmin = Boolean(
-    isFounder(username || userEmail, userRole) ||
-    isAdmin(username || userEmail, userRole)
+    isFounder(effectiveUsername, userRole) ||
+    isAdmin(effectiveUsername, userRole)
   );
 
   if (!isOpen) return null;
+
+  const handleAutoFillTestCard = () => {
+    setCardNumber('4706 1312 1121 2123');
+    setCardExpiry('12/28');
+    setCardCvv('111');
+    setCardHolder(effectiveUsername ? `${effectiveUsername.toUpperCase()} (TRIAL HOLDER)` : 'DELEGATE PRO');
+    setError(null);
+  };
+
+  const handleInstantTrialActivate = () => {
+    setError(null);
+    setIsAuthorizing(true);
+    setTimeout(() => {
+      try {
+        activatePromotionalProTrial(effectiveUsername);
+        try {
+          window.dispatchEvent(new Event('zenvitra_subscription_allotted'));
+        } catch {}
+        setIsAuthorizing(false);
+        setAuthSuccess(true);
+        setTimeout(() => {
+          if (onSuccess) onSuccess();
+          onClose();
+        }, 1000);
+      } catch (err: any) {
+        setIsAuthorizing(false);
+        setError(err?.message || 'Failed to activate promotional trial.');
+      }
+    }, 400);
+  };
 
   const handleAuthorizeCard = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,11 +112,15 @@ export function ZenTrialCardModal({
     // Simulate standard zero-charge / reversible ₹1 authorization verification
     setTimeout(() => {
       try {
-        activatePromotionalProTrialWithCard(username, {
+        activatePromotionalProTrialWithCard(effectiveUsername, {
           cardLast4: cleanNum.slice(-4),
           cardBrand: cleanNum.startsWith('4') ? 'Visa' : cleanNum.startsWith('5') ? 'Mastercard' : cleanNum.startsWith('6') ? 'RuPay' : 'Card',
           expiry: cardExpiry
         });
+
+        try {
+          window.dispatchEvent(new Event('zenvitra_subscription_allotted'));
+        } catch {}
 
         setIsAuthorizing(false);
         setAuthSuccess(true);
@@ -99,7 +138,7 @@ export function ZenTrialCardModal({
 
   return (
     <div className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
-      <div className="max-w-md w-full bg-[#090c15] rounded-[28px] border border-amber-500/30 p-6 sm:p-7 shadow-2xl relative text-white animate-in zoom-in-95 space-y-5">
+      <div className="max-w-md w-full max-h-[90vh] overflow-y-auto bg-[#090c15] rounded-[28px] border border-amber-500/30 p-6 sm:p-7 pb-24 sm:pb-7 shadow-2xl relative text-white animate-in zoom-in-95 space-y-5">
         
         {/* Close Button */}
         <button
@@ -155,9 +194,18 @@ export function ZenTrialCardModal({
         ) : (
           <form onSubmit={handleAuthorizeCard} className="space-y-3.5">
             <div>
-              <label className="text-neutral-400 block text-[11px] font-mono mb-1">
-                Card Number
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-neutral-400 block text-[11px] font-mono">
+                  Card Number
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoFillTestCard}
+                  className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+                >
+                  ⚡ Auto-fill Demo Card
+                </button>
+              </div>
               <div className="relative">
                 <input
                   type="text"
@@ -247,6 +295,23 @@ export function ZenTrialCardModal({
             >
               <ShieldCheck className="w-4 h-4 text-black" />
               <span>{isAuthorizing ? 'Verifying Card Security...' : 'Verify Card & Start 1-Month Free Trial'}</span>
+            </button>
+
+            {/* Instant 1-Click Fast Track Option */}
+            <div className="relative flex items-center py-1">
+              <div className="flex-grow border-t border-white/10" />
+              <span className="flex-shrink mx-3 text-[10px] font-mono text-neutral-400 uppercase">Or Fast Track</span>
+              <div className="flex-grow border-t border-white/10" />
+            </div>
+
+            <button
+              type="button"
+              disabled={isAuthorizing}
+              onClick={handleInstantTrialActivate}
+              className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>⚡ Instant 1-Click Activation (Skip Card)</span>
             </button>
           </form>
         )}

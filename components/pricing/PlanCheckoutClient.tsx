@@ -905,7 +905,7 @@ export function PlanCheckoutClient() {
       <ZenTrialCardModal
         isOpen={isTrialCardModalOpen}
         onClose={() => setIsTrialCardModalOpen(false)}
-        username={profile?.username || profile?.email || ''}
+        username={profile?.username || profile?.email || 'citizen'}
         userEmail={profile?.email}
         userRole={profile?.role}
         onSuccess={() => {

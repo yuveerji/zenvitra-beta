@@ -110,15 +110,10 @@ export function PricingClient() {
   const [isTrialCardModalOpen, setIsTrialCardModalOpen] = useState(false);
 
   const trialDetails = useMemo(() => {
-    return getTrialDetails(profile?.username || profile?.email);
-  }, [profile, activeUserSub]);
+    return getTrialDetails(profile?.username || profile?.email || 'citizen');
+  }, [profile, activeUserSub, trialClaimSuccess]);
 
   const handleClaimTrial = () => {
-    const userIdentifier = profile?.username || profile?.email;
-    if (!userIdentifier) {
-      router.push('/login?redirect=/pricing&promo=1month');
-      return;
-    }
     setIsTrialCardModalOpen(true);
   };
 
@@ -803,21 +798,14 @@ export function PricingClient() {
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span>1-Month Trial Activated!</span>
               </div>
-            ) : profile ? (
+            ) : (
               <button
                 type="button"
                 onClick={handleClaimTrial}
-                className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-400/25 active:scale-95 cursor-pointer"
+                className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-space font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-400/25 active:scale-95 cursor-pointer"
               >
                 Activate 1-Month Free Trial &rarr;
               </button>
-            ) : (
-              <Link
-                href="/login?redirect=/pricing&promo=1month"
-                className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs uppercase tracking-wider transition shadow-lg shadow-amber-400/25 active:scale-95 text-center"
-              >
-                Register &amp; Claim 1-Month Free Trial &rarr;
-              </Link>
             )}
           </div>
         </div>
@@ -1610,6 +1598,23 @@ export function PricingClient() {
           </div>
         </div>
       )}
+
+      {/* ── CARD VERIFICATION MODAL FOR 1-MONTH PRO TRIAL ── */}
+      <ZenTrialCardModal
+        isOpen={isTrialCardModalOpen}
+        onClose={() => setIsTrialCardModalOpen(false)}
+        username={profile?.username || profile?.email || 'citizen'}
+        userEmail={profile?.email}
+        userRole={profile?.role}
+        onSuccess={() => {
+          setTrialClaimSuccess(true);
+          const userIdentifier = profile?.username || profile?.email || 'citizen';
+          setActiveUserSub(getActiveUserSubscription(userIdentifier));
+          try {
+            window.dispatchEvent(new Event('zenvitra_subscription_allotted'));
+          } catch {}
+        }}
+      />
 
       <Footer />
     </div>
