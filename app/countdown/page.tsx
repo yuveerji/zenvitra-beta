@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -35,7 +35,6 @@ import {
   ArrowUpRight,
   ShieldCheck
 } from 'lucide-react';
-import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 import { useSovereignAudio, SOUNDSCAPE_MODES, AmbientSoundscape } from '@/components/audio/useSovereignAudio';
 import { useLaunchSequence } from '@/components/countdown/useLaunchSequence';
 import { AudioSpectrumVisualizer } from '@/components/audio/AudioSpectrumVisualizer';
@@ -44,14 +43,16 @@ import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 
 export default function CountdownPage() {
   // Target Platform Ignition: October 25, 2026, 14:00:00 IST (UTC+05:30) (2:00:00 PM)
-  const targetDate = new Date('2026-10-25T14:00:00+05:30').getTime();
+  const targetDate = useMemo(() => new Date('2026-10-25T14:00:00+05:30').getTime(), []);
 
   // Time-synced launch sequence engine with Web Audio API sound design
   const {
     timeLeft,
     phase,
     isDimmed,
+    isExpanded,
     isVideoVisible,
+    isPortalBlooming,
     isWhiteFlashActive,
     videoRef,
     handleVideoTimeUpdate,
@@ -62,35 +63,50 @@ export default function CountdownPage() {
 
   const sovereignAudio = useSovereignAudio();
 
-  // Monolith card 3D tilt & mouse cursor effect
+  // Monolith card 3D tilt & mouse cursor effect with RAF throttling
   const cardRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [glow, setGlow] = useState({ x: 50, y: 50, opacity: 0 });
 
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleCardMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
 
-    const rotateX = ((y - centerY) / centerY) * -9;
-    const rotateY = ((x - centerX) / centerX) * 9;
+    rafRef.current = requestAnimationFrame(() => {
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
-    setRotate({ x: rotateX, y: rotateY });
-    setGlow({
-      x: (x / rect.width) * 100,
-      y: (y / rect.height) * 100,
-      opacity: 1,
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -9;
+      const rotateY = ((x - centerX) / centerX) * 9;
+
+      setRotate({ x: rotateX, y: rotateY });
+      setGlow({
+        x: (x / rect.width) * 100,
+        y: (y / rect.height) * 100,
+        opacity: 1,
+      });
+      rafRef.current = null;
     });
-  };
+  }, []);
 
-  const handleCardMouseLeave = () => {
+  const handleCardMouseLeave = useCallback(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     setRotate({ x: 0, y: 0 });
     setGlow((prev) => ({ ...prev, opacity: 0 }));
-  };
+  }, []);
 
   // Clearance verification state
   const [isClearanceModalOpen, setIsClearanceModalOpen] = useState(false);
@@ -244,40 +260,6 @@ export default function CountdownPage() {
         </div>
 
         <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-3">
-          {/* Sign In & Register Navigation */}
-          <Link
-            href="/pre-login"
-            className="hidden md:inline-flex items-center px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition"
-          >
-            Sign In
-          </Link>
-
-          <Link
-            href="/pre-register"
-            className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-full bg-amber-500/[0.1] hover:bg-amber-500/[0.2] border border-amber-500/30 text-xs font-mono text-amber-300 hover:text-amber-200 transition"
-          >
-            Pre-Register
-          </Link>
-
-          {/* Real-time Status Notification Bell */}
-          <button
-            onClick={() => setIsClearanceModalOpen(true)}
-            className="relative flex items-center justify-center p-2 rounded-full bg-amber-400/[0.08] hover:bg-amber-400/[0.18] border border-amber-400/30 text-amber-300 transition cursor-pointer group shadow-[0_0_15px_rgba(251,191,36,0.15)]"
-            title="Check Your Application Status"
-          >
-            <Bell className="w-4 h-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400" />
-          </button>
-
-          <button
-            onClick={() => setIsClearanceModalOpen(true)}
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-amber-500/[0.08] hover:bg-amber-500/[0.15] border border-amber-500/30 text-xs font-mono text-amber-300 transition cursor-pointer"
-          >
-            <KeyRound className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Check Clearance</span>
-          </button>
-
           {/* Sovereign Audio Spectrum Visualizer with dedicated mute control and multi-soundscape selector */}
           <AudioSpectrumVisualizer
             frequencyData={sovereignAudio.frequencyData}
@@ -288,12 +270,6 @@ export default function CountdownPage() {
           />
         </div>
       </header>
-
-      {/* Reusable Status Notification Modal */}
-      <StatusNotificationModal
-        isOpen={isClearanceModalOpen}
-        onClose={() => setIsClearanceModalOpen(false)}
-      />
 
       {/* Main Center Content */}
       <main className="relative z-10 max-w-4xl mx-auto px-3.5 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col items-center justify-center text-center space-y-8 sm:space-y-10">
@@ -320,8 +296,12 @@ export default function CountdownPage() {
         {/* Hero Monolith Interactive 3D Card with Mouse Cursor Effect & Time-Synced Video Portal Stack */}
         <div 
           id="monolith-section" 
-          className={`w-full max-w-[280px] xs:max-w-xs sm:max-w-sm mx-auto my-2 transition-all duration-700 ${
-            isDimmed ? 'scale-105 z-40 drop-shadow-[0_0_80px_rgba(251,191,36,0.35)]' : ''
+          className={`w-full max-w-[280px] xs:max-w-xs sm:max-w-sm mx-auto my-2 transition-all duration-1000 ease-out ${
+            isExpanded
+              ? 'scale-115 sm:scale-125 z-40 drop-shadow-[0_0_120px_rgba(251,191,36,0.65)]'
+              : isDimmed 
+              ? 'scale-105 z-40 drop-shadow-[0_0_80px_rgba(251,191,36,0.35)]' 
+              : ''
           }`}
         >
           <div
@@ -535,189 +515,9 @@ export default function CountdownPage() {
         </div>
 
         {/* ========================================================================= */}
-        {/* PRE-LAUNCH ROADMAP & OPERATIONAL DOSSIER: 19 OCT 2026 // 5:00 PM IST     */}
+        {/* THE ZENVITRA FOUNDING SEVEN: WHAT PERKS YOU WILL GET                      */}
         {/* ========================================================================= */}
         <section className="w-full max-w-4xl text-left space-y-8 animate-in fade-in duration-500">
-          
-          {/* Section Hero Banner */}
-          <div className="relative rounded-3xl bg-gradient-to-br from-[#0c0f18] via-[#07090e] to-[#040508] border border-amber-400/30 p-6 sm:p-10 overflow-hidden shadow-[0_20px_70px_rgba(251,191,36,0.12)]">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/10 pb-6">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 font-mono text-[10px] tracking-widest uppercase">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" />
-                  <span>EARLY ACCESS MILESTONE // PHASE 01</span>
-                </div>
-                <h2 
-                  className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase"
-                  style={{ fontFamily: 'Clash Display, sans-serif' }}
-                >
-                  ZENVITRA Pre-Launch: <span className="text-amber-300">19 Oct 2026 &bull; 5:00 PM IST</span>
-                </h2>
-                <p className="text-xs sm:text-sm text-neutral-300 font-sans max-w-2xl leading-relaxed">
-                  Before the global public launch on October 25, the platform unlocks exclusive sovereign access for verified preregistered delegates, ambassadors, and founding patrons. Be here before the beginning.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0">
-                <Link
-                  href="/pre-register"
-                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-mono text-xs font-bold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_30px_rgba(251,191,36,0.35)] flex items-center justify-center gap-2"
-                >
-                  <span>Pre-Register Now</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-
-                <Link
-                  href="/pre-login"
-                  className="px-6 py-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-neutral-300 hover:text-white font-mono text-xs uppercase tracking-wider transition text-center"
-                >
-                  Pre-Login Portal
-                </Link>
-              </div>
-            </div>
-
-            {/* Quick Metrics & Readiness Pill Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6">
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
-                <span className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest block">Event Date</span>
-                <span className="font-mono text-xs sm:text-sm text-white font-bold block">19 Oct 2026</span>
-                <span className="font-mono text-[10px] text-amber-300 block">5:00 PM IST Sharp</span>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
-                <span className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest block">Platform Access</span>
-                <span className="font-mono text-xs sm:text-sm text-cyan-300 font-bold block">Pre-Registered Only</span>
-                <span className="font-mono text-[10px] text-neutral-400 block">Restricted Staging</span>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
-                <span className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest block">Identity Status</span>
-                <span className="font-mono text-xs sm:text-sm text-emerald-300 font-bold block">Permanent Founding</span>
-                <span className="font-mono text-[10px] text-neutral-400 block">ZEN.PASSPORT Ratified</span>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/5 space-y-1">
-                <span className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest block">Event Fee Benefits</span>
-                <span className="font-mono text-xs sm:text-sm text-amber-300 font-bold block">Up to 100% Waiver</span>
-                <span className="font-mono text-[10px] text-neutral-400 block">Tier-1 First 25 Qualified</span>
-              </div>
-            </div>
-          </div>
-
-          {/* ========================================================================= */}
-          {/* WHAT STEPS SHOULD BE TAKEN BY YOU (STEP-BY-STEP PROTOCOL)                */}
-          {/* ========================================================================= */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center text-cyan-300 shrink-0">
-                <Clock className="w-4 h-4 text-cyan-400" />
-              </div>
-              <div>
-                <span className="font-mono text-[9px] tracking-widest text-cyan-400 uppercase block">OPERATIONAL BLUEPRINT</span>
-                <h3 
-                  className="text-lg sm:text-2xl font-bold text-white tracking-tight"
-                  style={{ fontFamily: 'Clash Display, sans-serif' }}
-                >
-                  What Steps Should Be Taken By You Before 19 Oct 5:00 PM
-                </h3>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* Step 1 */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#07090e] border border-white/10 hover:border-amber-400/40 transition space-y-3 group">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-400/15 text-amber-300 border border-amber-400/30">
-                    STEP 01
-                  </span>
-                  <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-widest">
-                    IMMEDIATE PRIORITY
-                  </span>
-                </div>
-                <h4 className="text-base font-bold text-white group-hover:text-amber-300 transition">
-                  Complete Preregistration on the Official Portal
-                </h4>
-                <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                  Navigate to <Link href="/pre-register" className="text-amber-400 underline font-medium">/pre-register</Link> and submit your sovereign application. Choose your preferred delegate track, specify your academic or diplomatic background, and secure your submission timestamp.
-                </p>
-                <div className="pt-2 flex items-center gap-2 text-[11px] font-mono text-amber-300/90">
-                  <Check className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Early timestamp locks highest perk tier (First 25 get 100% fee waiver)</span>
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#07090e] border border-white/10 hover:border-cyan-400/40 transition space-y-3 group">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-cyan-400/15 text-cyan-300 border border-cyan-400/30">
-                    STEP 02
-                  </span>
-                  <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-widest">
-                    IDENTITY RESERVATION
-                  </span>
-                </div>
-                <h4 className="text-base font-bold text-white group-hover:text-cyan-300 transition">
-                  Claim &amp; Guard Your Unique Username Handle
-                </h4>
-                <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                  Pre-login opens the gateway to lock your sovereign username across all ZENVITRA spaces—from live committee dockets to ZenPress author bylines. Claim your handle before it is unlocked to the general public on Oct 25.
-                </p>
-                <div className="pt-2 flex items-center gap-2 text-[11px] font-mono text-cyan-300/90">
-                  <Check className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Zero duplicate handle collisions across MUN matrices</span>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#07090e] border border-white/10 hover:border-emerald-400/40 transition space-y-3 group">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-400/15 text-emerald-300 border border-emerald-400/30">
-                    STEP 03
-                  </span>
-                  <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-widest">
-                    SYSTEM CLEARANCE
-                  </span>
-                </div>
-                <h4 className="text-base font-bold text-white group-hover:text-emerald-300 transition">
-                  Verify Application Status via the Clearance Bell
-                </h4>
-                <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                  Click the <strong>Status Notification Bell</strong> or <strong>Check Clearance</strong> button in the top bar of this page. Input your registered email to verify that your record is cryptographically indexed and ready for automatic staging.
-                </p>
-                <div className="pt-2 flex items-center gap-2 text-[11px] font-mono text-emerald-300/90">
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Generates your provisional holographic delegate passport</span>
-                </div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#07090e] border border-white/10 hover:border-purple-400/40 transition space-y-3 group">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-purple-400/15 text-purple-300 border border-purple-400/30">
-                    STEP 04
-                  </span>
-                  <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-widest">
-                    OCT 19 &bull; 5:00 PM IST
-                  </span>
-                </div>
-                <h4 className="text-base font-bold text-white group-hover:text-purple-300 transition">
-                  Log in Promptly at 5:00 PM for Early Platform Ignition
-                </h4>
-                <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                  At 5:00 PM IST sharp on 19 October, head to <Link href="/pre-login" className="text-purple-400 underline font-medium">/pre-login</Link>. Sign in with your registered credentials to enter the interactive tour, inspect your Founding Badge, and access the private Founding Member community polls.
-                </p>
-                <div className="pt-2 flex items-center gap-2 text-[11px] font-mono text-purple-300/90">
-                  <Check className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Immediate access to the 2-minute ZENVITRA Onboarding Tour</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ========================================================================= */}
-          {/* THE ZENVITRA FOUNDING SEVEN: WHAT PERKS YOU WILL GET                      */}
-          {/* ========================================================================= */}
           <div className="space-y-4 pt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-3">
@@ -780,7 +580,7 @@ export default function CountdownPage() {
                     <span>Priority Platform &amp; Username Pick</span>
                   </h4>
                   <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                    Get access starting 19 Oct 5:00 PM before the general public. Early account activation, first opportunity to claim your preferred username handle, and priority access to beta features.
+                    Early account activation, first opportunity to claim your preferred username handle across all chambers, and priority access to sovereign platform features.
                   </p>
                 </div>
                 <div className="pt-2 border-t border-white/5 text-[11px] font-mono text-cyan-300">
@@ -1100,6 +900,11 @@ export default function CountdownPage() {
           SOUND: <span className={portalAudio.isMuted ? 'text-neutral-400' : 'text-amber-300 font-bold'}>{portalAudio.isMuted ? 'OFF' : 'ARMED'}</span>
         </span>
       </button>
+
+            {/* Luminous Golden-White Portal Bloom (Smooth Radial Aura Expansion) */}
+      {isPortalBlooming && (
+        <div className="fixed inset-0 z-[9998] bg-[radial-gradient(circle_at_center,rgba(255,255,255,1)_0%,rgba(251,191,36,0.85)_40%,rgba(255,255,255,0.95)_100%)] pointer-events-none transition-opacity duration-1000 opacity-100 animate-in fade-in" />
+      )}
 
       {/* Full-Screen Pure White Flash Overlay on T-0s (2:00:00 PM) */}
       {isWhiteFlashActive && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 export function usePortalAudio() {
   const [isArmed, setIsArmed] = useState(false);
@@ -187,7 +187,7 @@ export function usePortalAudio() {
     rumbleNoiseRef.current = noiseSource;
   }, [getAudioContext, isMuted]);
 
-  // Phase 2 — Portal Rupture & Flash Audio (1:59:55 PM / T - 5s)
+  // Phase 2 — Portal Rupture & Flash Audio (1:59:50 PM / T - 10s for 10-second video)
   const playPortalFlashAudio = useCallback(() => {
     const ctx = getAudioContext();
     if (!ctx || !masterGainRef.current || isMuted) return;
@@ -198,18 +198,18 @@ export function usePortalAudio() {
 
     const now = ctx.currentTime;
 
-    // Crossfade: Ramp down rumble over 1.5s
+    // Crossfade: Ramp down rumble over 2s
     if (rumbleGainRef.current) {
       rumbleGainRef.current.gain.cancelScheduledValues(now);
       rumbleGainRef.current.gain.setValueAtTime(rumbleGainRef.current.gain.value, now);
-      rumbleGainRef.current.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+      rumbleGainRef.current.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
     }
 
-    // Flash Gain Node
+    // Flash Gain Node across 10-second video
     const flashGain = ctx.createGain();
     flashGain.gain.setValueAtTime(0.001, now);
-    flashGain.gain.exponentialRampToValueAtTime(0.9, now + 4.5);
-    flashGain.gain.linearRampToValueAtTime(1.0, now + 4.85);
+    flashGain.gain.exponentialRampToValueAtTime(0.85, now + 8.5);
+    flashGain.gain.linearRampToValueAtTime(1.0, now + 9.8);
     flashGain.connect(masterGainRef.current);
     flashGainRef.current = flashGain;
 
@@ -222,26 +222,26 @@ export function usePortalAudio() {
       return;
     }
 
-    // Fallback: Procedural Portal Rupture & Flash Synth (5-second riser)
+    // Fallback: Procedural Portal Rupture & Flash Synth (10-second riser)
     const riserOsc = ctx.createOscillator();
     riserOsc.type = 'sawtooth';
-    riserOsc.frequency.setValueAtTime(120, now);
-    riserOsc.frequency.exponentialRampToValueAtTime(2400, now + 4.85);
+    riserOsc.frequency.setValueAtTime(80, now);
+    riserOsc.frequency.exponentialRampToValueAtTime(2800, now + 9.8);
 
     const riserFilter = ctx.createBiquadFilter();
     riserFilter.type = 'bandpass';
-    riserFilter.frequency.setValueAtTime(200, now);
-    riserFilter.frequency.exponentialRampToValueAtTime(3200, now + 4.85);
+    riserFilter.frequency.setValueAtTime(160, now);
+    riserFilter.frequency.exponentialRampToValueAtTime(3600, now + 9.8);
     riserFilter.Q.setValueAtTime(3, now);
 
     riserOsc.connect(riserFilter);
     riserFilter.connect(flashGain);
     riserOsc.start(now);
-    riserOsc.stop(now + 5.2);
+    riserOsc.stop(now + 10.5);
     flashOscRef.current = riserOsc;
 
-    // White Noise Burst at climax (peaking at 4.85s)
-    const bufferSize = ctx.sampleRate * 2;
+    // White Noise Burst at climax (peaking at 9.2s - 9.9s)
+    const bufferSize = ctx.sampleRate * 4;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const noiseData = noiseBuffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
@@ -253,18 +253,18 @@ export function usePortalAudio() {
 
     const burstGain = ctx.createGain();
     burstGain.gain.setValueAtTime(0.0001, now);
-    burstGain.gain.setValueAtTime(0.0001, now + 4.0);
-    burstGain.gain.exponentialRampToValueAtTime(0.8, now + 4.85);
-    burstGain.gain.exponentialRampToValueAtTime(0.001, now + 5.2);
+    burstGain.gain.setValueAtTime(0.0001, now + 7.5);
+    burstGain.gain.exponentialRampToValueAtTime(0.9, now + 9.8);
+    burstGain.gain.exponentialRampToValueAtTime(0.001, now + 10.4);
 
     burstSource.connect(burstGain);
     burstGain.connect(masterGainRef.current);
-    burstSource.start(now + 3.5);
+    burstSource.start(now + 7.0);
     flashNoiseRef.current = burstSource;
   }, [getAudioContext, isMuted]);
 
   // Smooth fade out master audio
-  const stopAllAudio = useCallback((fadeMs = 400) => {
+  const stopAllAudio = useCallback((fadeMs = 600) => {
     const ctx = audioCtxRef.current;
     const master = masterGainRef.current;
     if (!ctx || !master) return;
@@ -301,7 +301,7 @@ export function usePortalAudio() {
     });
   }, [getAudioContext]);
 
-  return {
+  return useMemo(() => ({
     isArmed,
     isMuted,
     unlockAudio,
@@ -309,5 +309,13 @@ export function usePortalAudio() {
     startRumbleAudio,
     playPortalFlashAudio,
     stopAllAudio,
-  };
+  }), [
+    isArmed,
+    isMuted,
+    unlockAudio,
+    toggleSound,
+    startRumbleAudio,
+    playPortalFlashAudio,
+    stopAllAudio,
+  ]);
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound, useRouter } from 'next/navigation';
@@ -40,27 +40,28 @@ export default function CountdownTestPage() {
   }, []);
 
   // Compute a target time corresponding to 2:00:00 PM (14:00:00) today
-  const targetDate = React.useMemo(() => {
+  const targetDate = useMemo(() => {
     const d = new Date();
     d.setHours(14, 0, 0, 0);
-    // If 14:00 today has already passed, use next day 14:00 for the base clock
     if (d.getTime() < Date.now()) {
       d.setDate(d.getDate() + 1);
     }
     return d.getTime();
   }, []);
 
-  const handleLocalRedirect = () => {
+  const handleLocalRedirect = useCallback(() => {
     // Strictly stay on the current origin (http://localhost:3000/)
     window.location.href = window.location.origin + '/';
-  };
+  }, []);
 
   const {
     timeLeft,
     totalRemainingMs,
     phase,
     isDimmed,
+    isExpanded,
     isVideoVisible,
+    isPortalBlooming,
     isWhiteFlashActive,
     videoRef,
     handleVideoTimeUpdate,
@@ -73,35 +74,50 @@ export default function CountdownTestPage() {
     onRedirect: handleLocalRedirect,
   });
 
-  // Monolith card 3D tilt & mouse cursor effect
+  // Monolith card 3D tilt & mouse cursor effect with RAF throttling
   const cardRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [glow, setGlow] = useState({ x: 50, y: 50, opacity: 0 });
 
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleCardMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
 
-    const rotateX = ((y - centerY) / centerY) * -9;
-    const rotateY = ((x - centerX) / centerX) * 9;
+    rafRef.current = requestAnimationFrame(() => {
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
-    setRotate({ x: rotateX, y: rotateY });
-    setGlow({
-      x: (x / rect.width) * 100,
-      y: (y / rect.height) * 100,
-      opacity: 1,
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -9;
+      const rotateY = ((x - centerX) / centerX) * 9;
+
+      setRotate({ x: rotateX, y: rotateY });
+      setGlow({
+        x: (x / rect.width) * 100,
+        y: (y / rect.height) * 100,
+        opacity: 1,
+      });
+      rafRef.current = null;
     });
-  };
+  }, []);
 
-  const handleCardMouseLeave = () => {
+  const handleCardMouseLeave = useCallback(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     setRotate({ x: 0, y: 0 });
     setGlow((prev) => ({ ...prev, opacity: 0 }));
-  };
+  }, []);
 
   if (isAuthorizedHost === false) {
     return null;
@@ -163,11 +179,15 @@ export default function CountdownTestPage() {
           </p>
         </div>
 
-        {/* Hero Monolith Interactive 3D Card (#monolith-section) */}
+        {/* Hero Monolith Interactive 3D Card (#monolith-section) with Smooth Expansion */}
         <div 
           id="monolith-section" 
-          className={`w-full max-w-[280px] xs:max-w-xs sm:max-w-sm mx-auto my-2 transition-all duration-700 ${
-            isDimmed ? 'scale-105 z-40 drop-shadow-[0_0_80px_rgba(251,191,36,0.4)]' : ''
+          className={`w-full max-w-[280px] xs:max-w-xs sm:max-w-sm mx-auto my-2 transition-all duration-1000 ease-out ${
+            isExpanded
+              ? 'scale-115 sm:scale-125 z-40 drop-shadow-[0_0_120px_rgba(251,191,36,0.65)]'
+              : isDimmed 
+              ? 'scale-105 z-40 drop-shadow-[0_0_80px_rgba(251,191,36,0.35)]' 
+              : ''
           }`}
         >
           <div
@@ -214,7 +234,7 @@ export default function CountdownTestPage() {
                   preload="auto"
                   onTimeUpdate={handleVideoTimeUpdate}
                   style={{ objectPosition: 'center 65%' }}
-                  className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-150 z-10 ${
+                  className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-300 z-10 ${
                     isVideoVisible ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
@@ -263,7 +283,7 @@ export default function CountdownTestPage() {
                 </div>
 
                 <h3 className="font-mono font-bold text-xs sm:text-sm tracking-[0.22em] text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] flex items-center gap-2">
-                  <span>{phase === 'portal_video' ? 'PORTAL ACTIVE' : 'PORTAL OPENING SOON'}</span>
+                  <span>{phase === 'portal_video' ? 'PORTAL ACTIVE' : isExpanded ? 'PORTAL EXPANDING' : 'PORTAL OPENING SOON'}</span>
                   <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
                 </h3>
               </div>
@@ -352,14 +372,26 @@ export default function CountdownTestPage() {
 
             <button
               type="button"
-              onClick={() => jumpToRemainingMs(9000)}
+              onClick={() => jumpToRemainingMs(15000)}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-200 text-xs font-mono transition text-left cursor-pointer"
+            >
+              <span className="flex items-center gap-1.5">
+                <Maximize2 className="w-3.5 h-3.5 text-purple-400" />
+                <span>Jump to 1:59:45 PM (T-15s)</span>
+              </span>
+              <span className="text-[9px] text-purple-400/70 font-semibold">Frame Expansion</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => jumpToRemainingMs(10000)}
               className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-200 text-xs font-mono transition text-left cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
                 <FastForward className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Jump to 1:59:51 PM (T-9s)</span>
+                <span>Jump to 1:59:50 PM (T-10s)</span>
               </span>
-              <span className="text-[9px] text-cyan-400/70 font-semibold">Video &amp; Flash Riser</span>
+              <span className="text-[9px] text-cyan-400/70 font-semibold">10s Video &amp; Sound Riser</span>
             </button>
 
             <button
@@ -374,9 +406,14 @@ export default function CountdownTestPage() {
         </div>
       </aside>
 
+      {/* Luminous Golden-White Portal Bloom (Smooth Radial Aura Expansion) */}
+      {isPortalBlooming && (
+        <div className="fixed inset-0 z-[9998] bg-[radial-gradient(circle_at_center,rgba(255,255,255,1)_0%,rgba(251,191,36,0.85)_40%,rgba(255,255,255,0.95)_100%)] pointer-events-none transition-opacity duration-1000 opacity-100 animate-in fade-in" />
+      )}
+
       {/* Full-Screen Pure White Flash Overlay on T-0s (2:00:00 PM) */}
       {isWhiteFlashActive && (
-        <div className="fixed inset-0 z-[9999] bg-white pointer-events-none transition-opacity duration-150 opacity-100" />
+        <div className="fixed inset-0 z-[9999] bg-white pointer-events-none transition-opacity duration-700 opacity-100" />
       )}
     </div>
   );
