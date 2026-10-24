@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mammoth from 'mammoth';
+import { formatAndCleanRawText } from '@/lib/docEngine/parser';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -86,12 +87,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Clean up excessive whitespace, carriage returns, and control characters
-    const cleanText = extractedText
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
+    // Clean up excessive whitespace, carriage returns, and control characters via universal raw text formatter
+    const cleanText = formatAndCleanRawText(extractedText);
     const mimeMap: Record<string, string> = {
       pdf: 'application/pdf',
       docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

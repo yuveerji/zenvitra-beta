@@ -48,7 +48,7 @@ import {
   ValidationIssue,
   OriginalSourceDocument
 } from '@/types/solutions';
-import { parseDocument, DOCUMENT_TYPE_METADATA, analyzeDocumentWithLeftovers, DocumentAnalysisReport } from '@/lib/docEngine/parser';
+import { parseDocument, formatAndCleanRawText, DOCUMENT_TYPE_METADATA, analyzeDocumentWithLeftovers, DocumentAnalysisReport } from '@/lib/docEngine/parser';
 import { SAMPLE_DRAFTS } from '@/lib/docEngine/sampleDrafts';
 import { SolutionRichContent, parseRichDocumentText } from '@/components/solutions/SolutionRichContent';
 import { DocumentLeftoverReviewModal } from '@/components/solutions/DocumentLeftoverReviewModal';
@@ -320,8 +320,9 @@ export function SolutionsDraftingStudio({
   };
 
   const handleApplyReviewedDocument = (finalText: string) => {
-    setRawContent(finalText);
-    const parsed = parseDocument(finalText);
+    const formatted = formatAndCleanRawText(finalText);
+    setRawContent(formatted);
+    const parsed = parseDocument(formatted);
     if (parsed.title && (!draftTitle || draftTitle.includes('Private Coaching'))) {
       setDraftTitle(parsed.title);
     }
@@ -738,35 +739,40 @@ Zone 4 (Rural Enclaves): 68
   const handleMagicAutoFormat = () => {
     if (!rawContent.trim()) return;
 
-    let formatted = rawContent.replace(/\r\n/g, '\n');
+    // 1. Run universal statutory unflattening, entity cleaning, heading/preamble separation
+    let formatted = formatAndCleanRawText(rawContent);
 
-    // 1. Strip markdown header hashes from Chapters / Parts
+    // 2. Normalize Chapter / Part headers (e.g. "## CHAPTER I" or "## A. Proposals" -> "PART A — Proposals")
     formatted = formatted.replace(/^[#\s*]+(CHAPTER|PART)\s+([IVXLCDM\d]+)[\s—:-]*(.*)$/gim, (_, p1, p2, p3) => {
       const cleanTitle = p3 ? ` — ${p3.replace(/^[#\s*—:-]+/, '').trim()}` : '';
       return `\n${p1.toUpperCase()} ${p2.toUpperCase()}${cleanTitle}\n`;
     });
 
-    // 2. Strip markdown hashes from Schedules
-    formatted = formatted.replace(/^[#\s*]+(THE\s+[A-Z0-9IVXLCDM\w\s-]+SCHEDULE|SCHEDULE\s+[A-Z0-9IVXLCDM\w-]+)[\s—:-]*(.*)$/gim, (_, s1, s2) => {
-      const cleanTitle = s2 ? ` — ${s2.replace(/^[#\s*—:-]+/, '').trim()}` : '';
-      return `\n\n${s1.toUpperCase()}${cleanTitle}\n`;
+    formatted = formatted.replace(/^[#\s*]+([A-Z])\.\s+(.*)$/gm, (_, letter, title) => {
+      return `\nPART ${letter} — ${title.trim()}\n`;
     });
 
-    // 3. Strip markdown hashes from Section / Clause numbers (e.g. "### 56. Public-service standards" -> "56. Public-service standards. —")
+    // 3. Normalize Proposal / Clause / Section headers (e.g. "### Proposal 1 — Title" -> "1. Title —")
+    formatted = formatted.replace(/^[#\s*]+(?:PROPOSAL|CLAUSE|SECTION|ARTICLE|RULE)\s*(\d+)[\.\s—:-]+(.*)$/gim, (_, num, title) => {
+      const cleanTitle = title.replace(/^[#\s*—:-]+/, '').trim();
+      return `\n${num}. ${cleanTitle}${cleanTitle.includes('—') ? '' : ' —'}`;
+    });
+
+    // 4. Strip leftover hashes from Section / Clause numbers
     formatted = formatted.replace(/^[#\s*]+(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:-]+(.*)$/gim, (_, num, titleAndText) => {
       const cleanRest = titleAndText.replace(/^[#\s*—:-]+/, '').trim();
       return `\n${num}. ${cleanRest}`;
     });
 
-    // 4. Normalize Clause Numbering format: "1) Title" or "1: Title" -> "1. Title"
+    // 5. Normalize Clause Numbering format: "1) Title" or "1: Title" -> "1. Title"
     formatted = formatted.replace(/^(\d+)[\):]\s*(.*?)$/gim, (_, num, rest) => {
       return `${num}. ${rest.trim()}`;
     });
 
-    // 5. Ensure standard em-dash after clean clause titles if title is concise and not already followed by em-dash
+    // 6. Ensure standard em-dash after clean clause titles if title is concise and not already followed by em-dash
     formatted = formatted.replace(/^(\d+\.\s+[A-Za-z][A-Za-z0-9\s,]{2,55}\.)\s*(?!—)/gm, '$1 — ');
 
-    // 6. Ensure Enacting formula exists if Legislative Bill
+    // 7. Ensure Enacting formula exists if Legislative Bill
     if (docType === 'LEGISLATIVE_BILL' && !formatted.toLowerCase().includes('be it enacted')) {
       const lines = formatted.split('\n');
       const insertIdx = lines.findIndex(l => l.toUpperCase().includes('A BILL')) !== -1 
@@ -776,13 +782,34 @@ Zone 4 (Rural Enclaves): 68
       formatted = lines.join('\n');
     }
 
-    // 7. Clean up tables
+    // 8. Clean up tables
     formatted = formatted.replace(/^\|(.*?)\|\s*$/gim, (line) => {
       return line.trim();
     });
 
-    setRawContent(formatted.trim());
+    // 9. Standardize consecutive newlines
+    formatted = formatted.replace(/\n{3,}/g, '\n\n').trim();
+
+    setRawContent(formatted);
     setSaveStatus('✨ Magic Format applied: Standardized to Parliamentary Legislative Layout!');
+  };
+
+  const handleEditorPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    if (!pastedText) return;
+
+    // Check if the pasted text has collapsed inline headers, OCR tags, or flattened colon lists
+    const hasInlineHeaders = /[^\n]\s*#{1,6}\s+/.test(pastedText);
+    const hasOcrArtifacts = /&#x20;|\bimage\s+[A-Za-z0-9_-]+\s*\+\d+/i.test(pastedText);
+    const hasFlattenedLists = /:\s*[-*•—–]\s+/.test(pastedText) && /;\s*[-*•—–]\s+/.test(pastedText);
+    const hasCollapsedTable = /\s*-\s*\|\s*-\s*\|/.test(pastedText);
+
+    if (hasInlineHeaders || hasOcrArtifacts || hasFlattenedLists || hasCollapsedTable) {
+      e.preventDefault();
+      const cleaned = formatAndCleanRawText(pastedText);
+      insertAtCursor(cleaned);
+      setSaveStatus('✨ Auto-formatted pasted statutory text into clean legislative sections!');
+    }
   };
 
   // Load Sample Draft
@@ -1262,6 +1289,7 @@ Zone 4 (Rural Enclaves): 68
                 ref={editorRef}
                 value={rawContent}
                 onChange={(e) => setRawContent(e.target.value)}
+                onPaste={handleEditorPaste}
                 placeholder="Draft your legislative bill, multilateral resolution, data chapters, tables, and graphs here..."
                 className="w-full h-full min-h-[400px] bg-transparent text-neutral-200 font-mono text-xs sm:text-sm leading-relaxed focus:outline-none resize-none selection:bg-cyan-500/30"
                 spellCheck={false}

@@ -171,6 +171,77 @@ export function unflattenPastedTableLines(text: string): string {
 }
 
 /**
+ * Universal Raw Document Formatter & Unflattener
+ * Transforms collapsed walls of text, inlined markdown headers, PDF/OCR artifacts,
+ * and glued lists into beautifully spaced, statutory legislative layouts.
+ */
+export function formatAndCleanRawText(text: string): string {
+  if (!text) return '';
+
+  let out = text.replace(/\r\n/g, '\n');
+
+  // 1. Decode HTML entities (e.g. &#x20;, &#160;, &nbsp;, &amp;, &lt;, &gt;)
+  out = out
+    .replace(/&#x20;/gi, ' ')
+    .replace(/&#160;/gi, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&#x[0-9a-fA-F]+;/gi, ' ')
+    .replace(/&#\d+;/gi, ' ');
+
+  // 2. Strip OCR / PDF noise tags (e.g. "image MPA +1", "[image: ...]", "Page 1 of 12")
+  out = out
+    .replace(/\bimage\s+[A-Za-z0-9_-]+\s*\+\d+\b/gi, '')
+    .replace(/\[image:[^\]]+\]/gi, '')
+    .replace(/--\s*\d+\s*of\s*\d+\s*--/gi, '')
+    .replace(/\bPage\s+\d+\s+of\s+\d+\b/gi, '');
+
+  // 3. Clean broken/collapsed table markers like "- | - |"
+  out = out.replace(/\s*-\s*\|\s*-\s*\|\s*/g, '\n\n');
+
+  // 4. Ensure newlines before inline Markdown Headers (e.g. "enacted. ## A. Constitutional" -> "enacted.\n\n## A. Constitutional")
+  out = out.replace(/([^\n])\s*(#{1,6}\s+)/g, '$1\n\n$2');
+
+  // 5. Separate glued Chapter/Part headers: e.g. "## A. Constitutional amendment proposals The following is..."
+  out = out.replace(
+    /(#{1,6}\s+[A-Z]\.\s+[^\n]+?)\s+([A-Z][a-z]+(?:\s+[a-z]+){2,})/g,
+    '$1\n\n$2'
+  );
+
+  // 6. Separate Proposal / Clause / Section headers from glued body sentences:
+  // e.g. "### Proposal 1 — Reservation framework Conduct a clause-by-clause review..."
+  // -> "### Proposal 1 — Reservation framework\n\nConduct a clause-by-clause review..."
+  out = out.replace(
+    /(#{1,6}\s+(?:Proposal|Clause|Section|Article|Rule)\s+\d+(?:\s*[—–-]\s*[^\n]+?)?)\s+([A-Z][a-z]+(?:\s+[a-z]+){2,})/g,
+    '$1\n\n$2'
+  );
+
+  // 7. Separate Long Title / Preamble from following Narrative:
+  // e.g. "A Bill to ... and to provide for connected and incidental matters. This is the critical..."
+  out = out.replace(
+    /(A\s+Bill\s+to\s+[\s\S]+?(?:connected\s+and\s+incidental\s+matters|for\s+matters\s+connected\s+therewith)\.)\s+([A-Z])/i,
+    '$1\n\n$2'
+  );
+
+  // 8. Unflatten inline colon bullet lists:
+  // e.g. "The memorandum should identify: - new posts and administrative costs; - technology...; - proposed...; and - any expenditure..."
+  // Break after colon if followed by a bullet: ": - " -> ":\n- "
+  out = out.replace(/(:\s*)([-*•—–]\s+)/g, ':\n$2');
+  // Break between semicolon-separated bullet items: "; - " or "; and - " -> ";\n- "
+  out = out.replace(/;(?:\s+and)?\s*[-*•—–]\s+/gi, ';\n- ');
+
+  // 9. Unflatten multi-dash table columns or sequential provisions
+  out = unflattenPastedTableLines(out);
+
+  // 10. Normalize multiple newlines
+  out = out.replace(/\n{3,}/g, '\n\n').trim();
+
+  return out;
+}
+
+/**
  * Strips raw URLs, markdown link syntax, and source noise while preserving readable text
  */
 export function cleanDocumentText(text: string): string {
@@ -210,8 +281,8 @@ const WORD_OR_NUM_TO_ROMAN: Record<string, string> = {
  * Universal Document Parser & Structuring Engine (ZEN.DOCENGINE)
  */
 export function parseDocument(rawText: string, forcedType?: DocumentType): ParsedDocResult {
-  const unflattenedText = unflattenPastedTableLines(rawText);
-  const sanitizedText = cleanDocumentText(unflattenedText);
+  const formattedText = formatAndCleanRawText(rawText);
+  const sanitizedText = cleanDocumentText(formattedText);
   const cleanText = sanitizedText.replace(/\r\n/g, '\n').trim();
   const detection = detectDocumentType(cleanText);
   const docType = forcedType || detection.type;
@@ -262,7 +333,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
 
   const chapterRegex = /^(?:CHAPTER|PART)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i;
   const scheduleRegex = /^(?:THE\s+)?([A-Z0-9IVXLCDM\w\s-]+SCHEDULE|SCHEDULE\s+[A-Z0-9IVXLCDM\w-]+)[—:\s.-]*(.*)$/i;
-  const clauseRegex = /^(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:-]+(.*)$/i;
+  const clauseRegex = /^(?:CLAUSE|SECTION|ARTICLE|RULE|PROPOSAL)?\s*(\d+)[\.\s—:-]+(.*)$/i;
   const subClauseRegex = /^(\(\d+\)|\([a-zA-Z]\)|\([ivxlcdmIVXLCDM]+\)|\[\w+\]|\d+\.\d+|\([a-zA-Z\d]+\)\.|\d+\)|\b[a-zA-Z]\)|\b[a-zA-Z]\.)\s*(.*)$/;
   const enactingRegex = /^(?:BE\s+it\s+enacted|WHEREAS|AND\s+WHEREAS|HAVING\s+CONSIDERED|NOTING\s+WITH\s+SATISFACTION)/i;
 
@@ -388,11 +459,13 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       }
     }
 
-    // Check for Chapter / Part header (e.g. "# CHAPTER XII", "CHAPTER I — PRELIMINARY", "CHAPTER 1", "PART II")
-    const chapMatch = strippedLine.match(/^(?:CHAPTER|PART)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i);
+    // Check for Chapter / Part header (e.g. "# CHAPTER XII", "CHAPTER I — PRELIMINARY", "CHAPTER 1", "PART II", "A. Constitutional amendment proposals")
+    const chapMatch = strippedLine.match(/^(?:CHAPTER|PART)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i) ||
+                      strippedLine.match(/^([A-Z])\.\s+(.*)$/);
     if (chapMatch) {
       const rawNum = chapMatch[1].trim().toUpperCase();
-      const romanNum = WORD_OR_NUM_TO_ROMAN[rawNum] || (/^[IVXLCDM]+$/.test(rawNum) ? rawNum : rawNum);
+      const isSingleLetter = /^[A-Z]$/.test(rawNum);
+      const romanNum = isSingleLetter ? rawNum : (WORD_OR_NUM_TO_ROMAN[rawNum] || (/^[IVXLCDM]+$/.test(rawNum) ? rawNum : rawNum));
       
       let chapTitle = cleanDocumentText(chapMatch[2]?.trim() || '').replace(/^[—:.-]+/, '').trim();
       // If chapter title was on the next line (e.g. line 1: CHAPTER I, line 2: PRELIMINARY)
@@ -419,7 +492,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         activeSubClauses = [];
       }
 
-      currentChapterNumber = `Chapter ${romanNum}`;
+      currentChapterNumber = isSingleLetter ? `Part ${rawNum}` : `Chapter ${romanNum}`;
       currentChapterTitle = chapTitle;
       const isDataChapter = /data|metric|statistics|outlay|budget|empirical|analytical/i.test(currentChapterTitle);
       
@@ -590,8 +663,8 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
     // ─────────────────────────────────────────────────────────────────────────
     // NEW TOP-LEVEL CLAUSE / SECTION
     // ─────────────────────────────────────────────────────────────────────────
-    const clauseMatch = strippedLine.match(/^(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:–-]+(.*)$/i);
-    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE)\b|^\d+[\.\s—:–-]/i.test(strippedLine);
+    const clauseMatch = strippedLine.match(/^(?:CLAUSE|SECTION|ARTICLE|RULE|PROPOSAL)?\s*(\d+)[\.\s—:–-]+(.*)$/i);
+    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE|PROPOSAL)\b|^\d+[\.\s—:–-]/i.test(strippedLine);
 
     if (clauseMatch && isExplicitClause) {
       if (activeClause) {
@@ -687,7 +760,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       if (!preamble) {
         preamble = trimmedLine;
       } else {
-        preamble += ` ${trimmedLine}`;
+        preamble += `\n\n${trimmedLine}`;
       }
     }
   }
