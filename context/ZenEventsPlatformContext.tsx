@@ -153,8 +153,10 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
   const [selectedCity, setSelectedCity] = useState<string>('ALL');
   const [maxDistanceKm, setMaxDistanceKm] = useState<number | null>(null);
 
-  /* persistence with safe parse */
+  /* Server-First Rehydration: On application load, fetch /api/events/list and populate allEvents into state prior to reading localStorage */
   useEffect(() => {
+    let isMounted = true;
+
     try {
       // Purge legacy storage keys
       ['zenvitra_events_v1', 'zenvitra_events_v2', 'zenvitra_events_v3'].forEach(k => {
@@ -166,82 +168,116 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
         try { return JSON.parse(val); } catch (_) { return fallback; }
       };
 
-      const s = localStorage.getItem(LS_EVENTS);
-      const parsed = safeParse(s, []);
-      const realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id) : [];
-
-      setAllEvents(realEvents);
-      localStorage.setItem(LS_EVENTS, JSON.stringify(realEvents));
-
       const savedLoc = localStorage.getItem(LS_USER_LOCATION);
       if (savedLoc) {
         setUserLocation(safeParse(savedLoc, null));
       }
 
-      // Synchronize conference listings from database
+      const mapListingToEvent = (item: any): ZenEvent => {
+        let plans: RegistrationPlan[] = [];
+        try {
+          if (item.tierPlansJson) plans = JSON.parse(item.tierPlansJson);
+        } catch {}
+
+        const startDateStr = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        const endDateStr = item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : startDateStr;
+
+        return {
+          id: item.slug || item.id,
+          slug: item.slug,
+          title: item.title,
+          description: item.description || 'Sovereign diplomatic conference & committee session',
+          type: (item.format as EventType) || 'physical',
+          location: item.venue || 'Main Assembly Venue',
+          city: item.city || 'New Delhi',
+          date: startDateStr,
+          endDate: endDateStr,
+          time: '09:00 AM',
+          category: (item.category as EventCategory) || 'MUN',
+          ticketPrice: item.ticketPrice || (plans.length > 0 ? plans[0].price : 0),
+          plans,
+          coverImage: item.coverImage,
+          verified: Boolean(item.verified || item.status === 'VERIFIED'),
+          verificationStatus: item.status || 'VERIFIED',
+          attendees: [],
+          organizerId: item.userId || item.organizerEmail || 'organizer_host',
+          organizerName: item.organizerName || 'Conference Secretariat',
+          organizerUsername: item.organizerHandle || 'secretariat',
+          tags: ['conference', 'event', (item.category || 'mun').toLowerCase()],
+          status: computeStatus(startDateStr, endDateStr),
+          createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
+        };
+      };
+
+      const fallbackFromLocalStorage = () => {
+        try {
+          const s = localStorage.getItem(LS_EVENTS);
+          const parsed = safeParse(s, []);
+          const realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id) : [];
+          if (realEvents.length > 0) {
+            setAllEvents(realEvents);
+          }
+        } catch {}
+      };
+
+      // 1. Fetch server database events FIRST
       fetch('/api/events/list')
         .then((res) => res.json())
         .then((data) => {
+          if (!isMounted) return;
+
           if (data.success && Array.isArray(data.listings)) {
-            setAllEvents((prev) => {
-              const map = new Map<string, ZenEvent>();
-              prev.forEach((e) => map.set(e.slug || e.id, e));
+            // Transform server records into authoritative ZenEvent models
+            const serverEvents: ZenEvent[] = data.listings.map(mapListingToEvent);
 
-              let changed = false;
-              for (const item of data.listings) {
-                const key = item.slug || item.id;
-                if (!map.has(key)) {
-                  let plans: RegistrationPlan[] = [];
-                  try {
-                    if (item.tierPlansJson) plans = JSON.parse(item.tierPlansJson);
-                  } catch {}
+            // Read localStorage afterwards to preserve any offline-created drafts or local attendee bookings
+            let localEvents: ZenEvent[] = [];
+            try {
+              const s = localStorage.getItem(LS_EVENTS);
+              const parsed = safeParse(s, []);
+              localEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id) : [];
+            } catch {}
 
-                  const startDateStr = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-                  const endDateStr = item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : startDateStr;
-
-                  const syncedEvt: ZenEvent = {
-                    id: item.slug || item.id,
-                    slug: item.slug,
-                    title: item.title,
-                    description: item.description || 'Sovereign diplomatic conference & committee session',
-                    type: (item.format as EventType) || 'physical',
-                    location: item.venue || 'Main Assembly Venue',
-                    city: item.city || 'New Delhi',
-                    date: startDateStr,
-                    endDate: endDateStr,
-                    time: '09:00 AM',
-                    category: (item.category as EventCategory) || 'MUN',
-                    ticketPrice: item.ticketPrice || (plans.length > 0 ? plans[0].price : 0),
-                    plans,
-                    coverImage: item.coverImage,
-                    verified: true,
-                    verificationStatus: 'VERIFIED',
-                    attendees: [],
-                    organizerId: item.userId || item.organizerEmail || 'organizer_host',
-                    organizerName: item.organizerName || 'Conference Secretariat',
-                    organizerUsername: item.organizerHandle || 'secretariat',
-                    tags: ['conference', 'event', (item.category || 'mun').toLowerCase()],
-                    status: computeStatus(startDateStr, endDateStr),
-                    createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
-                  };
-                  map.set(key, syncedEvt);
-                  changed = true;
-                }
-              }
-
-              if (changed) {
-                const nextList = Array.from(map.values());
-                try {
-                  localStorage.setItem(LS_EVENTS, JSON.stringify(nextList));
-                } catch {}
-                return nextList;
-              }
-              return prev;
+            // Populate allEvents state from server-first map
+            const map = new Map<string, ZenEvent>();
+            serverEvents.forEach((evt) => {
+              map.set(evt.slug || evt.id, evt);
             });
+
+            // Reconcile local additions (e.g. attendee bookings made locally or unsynced offline events)
+            localEvents.forEach((localEvt) => {
+              const key = localEvt.slug || localEvt.id;
+              if (map.has(key)) {
+                const serverEvt = map.get(key)!;
+                if (Array.isArray(localEvt.attendees) && localEvt.attendees.length > 0) {
+                  serverEvt.attendees = localEvt.attendees;
+                }
+              } else {
+                // Keep local offline draft/unlisted event
+                map.set(key, localEvt);
+              }
+            });
+
+            const mergedList = Array.from(map.values());
+            setAllEvents(mergedList);
+
+            try {
+              localStorage.setItem(LS_EVENTS, JSON.stringify(mergedList));
+            } catch {}
+          } else {
+            fallbackFromLocalStorage();
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          if (!isMounted) return;
+          // Network failure or offline: fallback to localStorage
+          fallbackFromLocalStorage();
+        });
     } catch (_) {}
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const saveEvents = useCallback((next: ZenEvent[]) => {

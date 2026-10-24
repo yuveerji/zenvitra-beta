@@ -185,6 +185,13 @@ function HostDashboardInner() {
               <span>Stage Timer</span>
             </Link>
             <Link
+              href="/host/debate-timer"
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-black font-space uppercase tracking-wider transition shadow-[0_0_20px_rgba(245,158,11,0.25)] flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
+            >
+              <Gavel className="w-4 h-4 text-amber-400" />
+              <span>Debate Timer</span>
+            </Link>
+            <Link
               href="/host/timer?mode=pomodoro"
               className="px-4 py-2.5 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/30 text-rose-300 text-xs font-black font-space uppercase tracking-wider transition flex items-center gap-2 backdrop-blur-md cursor-pointer active:scale-95"
             >
@@ -390,11 +397,18 @@ function HostDashboardInner() {
 
             <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-20">
               <Link
-                href="/host/timer"
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(6,182,212,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
+                href="/host/debate-timer"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:brightness-110 text-black font-black font-space text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(245,158,11,0.35)] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
-                <Clock className="w-4 h-4 text-black" />
-                <span>Open Stage Timer &rarr;</span>
+                <Gavel className="w-4 h-4 text-black" />
+                <span>Debate Competition Timer &rarr;</span>
+              </Link>
+              <Link
+                href="/host/timer"
+                className="px-5 py-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-bold font-space uppercase tracking-wider transition flex items-center gap-2 cursor-pointer backdrop-blur-md active:scale-95"
+              >
+                <Clock className="w-4 h-4 text-cyan-400" />
+                <span>Stage Timer</span>
               </Link>
               <Link
                 href="/host/timer?mode=pomodoro"
@@ -405,8 +419,33 @@ function HostDashboardInner() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 relative z-10">
-            {/* Card 1: Pomodoro Focus */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative z-10">
+            {/* Card 1: Debate Competition Timer */}
+            <div className="p-6 rounded-2xl bg-black/40 border border-amber-500/30 hover:border-amber-400/60 transition flex flex-col justify-between space-y-4 group shadow-lg shadow-amber-500/5">
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-wider">
+                    DEBATE COMPETITION
+                  </span>
+                  <Gavel className="w-4 h-4 text-amber-400" />
+                </div>
+                <h4 className="text-lg font-black font-space text-white group-hover:text-amber-300 transition">
+                  Debate Competition Timer
+                </h4>
+                <p className="text-xs text-neutral-400 font-outfit leading-relaxed">
+                  Asian Parliamentary (3v3), British Parliamentary (BP), Oxford (2v2), Lincoln-Douglas, and Turncoat. 100% configurable in all modes with POI bells, grace buffer, and synthetic sound board.
+                </p>
+              </div>
+              <Link
+                href="/host/debate-timer"
+                className="w-full py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 hover:text-black text-amber-300 text-xs font-bold font-space transition flex items-center justify-center gap-1.5 border border-amber-500/30 cursor-pointer"
+              >
+                <Gavel className="w-3.5 h-3.5" />
+                <span>Launch Debate Timer &rarr;</span>
+              </Link>
+            </div>
+
+            {/* Card 2: Pomodoro Focus */}
             <div className="p-6 rounded-2xl bg-black/40 border border-rose-500/20 hover:border-rose-400/50 transition flex flex-col justify-between space-y-4 group">
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
@@ -430,7 +469,7 @@ function HostDashboardInner() {
               </Link>
             </div>
 
-            {/* Card 2: Normal Stage Countdown */}
+            {/* Card 3: Normal Stage Countdown */}
             <div className="p-6 rounded-2xl bg-black/40 border border-cyan-500/20 hover:border-cyan-400/50 transition flex flex-col justify-between space-y-4 group">
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
@@ -454,7 +493,7 @@ function HostDashboardInner() {
               </Link>
             </div>
 
-            {/* Card 3: Stopwatch & Laps */}
+            {/* Card 4: Stopwatch & Laps */}
             <div className="p-6 rounded-2xl bg-black/40 border border-emerald-500/20 hover:border-emerald-400/50 transition flex flex-col justify-between space-y-4 group">
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">

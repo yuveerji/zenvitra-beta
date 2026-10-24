@@ -24,6 +24,7 @@ import {
   Zap,
   Timer,
   ChevronRight,
+  Gavel,
 } from 'lucide-react';
 import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 
@@ -322,6 +323,13 @@ function PomodoroTimerInner() {
               <Timer className="w-3.5 h-3.5" />
               <span>Stopwatch</span>
             </button>
+            <Link
+              href="/host/debate-timer"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold font-space transition flex items-center gap-1.5 text-amber-300 hover:text-white hover:bg-amber-500/10 cursor-pointer"
+            >
+              <Gavel className="w-3.5 h-3.5 text-amber-400" />
+              <span>Debate Competition</span>
+            </Link>
           </div>
         </div>
 

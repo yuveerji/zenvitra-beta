@@ -45,7 +45,8 @@ import {
   Crown,
   BookOpen,
   Phone,
-  Building2
+  Building2,
+  Gavel
 } from 'lucide-react';
 import { ZenEvent, EventAttendee } from '@/types/events';
 import { RevenueFeeSimulatorModal } from '@/components/pulse/RevenueFeeSimulatorModal';
@@ -574,6 +575,16 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
               <Briefcase className="w-3.5 h-3.5 text-black" />
               <span>Recruit Staff</span>
             </button>
+
+            {/* Debate Competition Timer */}
+            <Link
+              href="/host/debate-timer"
+              className="px-3.5 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
+              title="Launch Debate Competition Stage Timer"
+            >
+              <Gavel className="w-3.5 h-3.5 text-amber-400" />
+              <span>Debate Timer</span>
+            </Link>
 
             {/* Attendee Support Desk */}
             <Link
