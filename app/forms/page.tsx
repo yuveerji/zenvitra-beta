@@ -33,6 +33,7 @@ import {
   Upload,
   UploadCloud,
   FileDown,
+  ChevronDown,
   RefreshCw
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
@@ -397,8 +398,7 @@ export default function ZenFormsHubPage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-neutral-300 font-sans tracking-wide flex items-center gap-2">
-              <span>Start a new form</span>
-              <span className="text-[10px] font-mono font-normal text-neutral-500">(Google Forms style templates with cover art)</span>
+              <span>Start with a template to make your work easy</span>
             </h2>
             <span className="text-xs font-mono text-neutral-500 hover:text-neutral-300 cursor-pointer">
               Template gallery
@@ -545,7 +545,7 @@ export default function ZenFormsHubPage() {
               {filteredForms.map((form) => (
                 <div
                   key={form.id}
-                  className="rounded-2xl bg-[#0d1017] border border-white/10 hover:border-white/20 transition-all duration-200 overflow-hidden shadow-xl flex flex-col justify-between group relative"
+                  className={`rounded-2xl bg-[#0d1017] border border-white/10 hover:border-white/20 transition-all duration-200 shadow-xl flex flex-col justify-between group relative ${activeMenuFormId === form.id ? 'z-40 overflow-visible' : 'overflow-hidden'}`}
                 >
                   {/* Visual Mini-Preview Header (Click to Open Editor) */}
                   <div
@@ -571,7 +571,7 @@ export default function ZenFormsHubPage() {
                   </div>
 
                   {/* Card Bottom Meta */}
-                  <div className="p-4 space-y-2">
+                  <div className="p-4 space-y-2 rounded-b-2xl bg-[#0d1017]">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         {(form.slug === 'zen-diplomacy-2026' || form.slug === 'zen-secretariat-2026') && (
@@ -618,7 +618,9 @@ export default function ZenFormsHubPage() {
 
                             <button
                               onClick={() => {
-                                const url = `${window.location.origin}/forms/${form.slug || form.id}`;
+                                const origin = typeof window !== 'undefined' ? window.location.origin : 'https://zenvitra.xyz';
+                                const baseUrl = origin.includes('localhost') ? 'https://zenvitra.xyz' : origin;
+                                const url = `${baseUrl}/forms/${form.slug || form.id}`;
                                 navigator.clipboard.writeText(url);
                                 setCopiedId(form.id);
                                 setTimeout(() => setCopiedId(null), 2000);
@@ -892,6 +894,35 @@ export default function ZenFormsHubPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Form Selector (Which forms template?) */}
+            {forms.length > 1 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-neutral-300 block font-bold flex items-center justify-between">
+                  <span>Which form template would you like to share?</span>
+                  <span className="text-[10px] text-amber-400 font-normal">{forms.length} forms available</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedTemplateForShare.id}
+                    onChange={(e) => {
+                      const found = forms.find(f => f.id === e.target.value);
+                      if (found) setSelectedTemplateForShare(found);
+                    }}
+                    className="w-full bg-[#141824] border border-white/15 focus:border-amber-400/80 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono outline-none transition cursor-pointer appearance-none pr-8"
+                  >
+                    {forms.map((f) => (
+                      <option key={f.id} value={f.id} className="bg-[#0e121c] text-white">
+                        {f.title} ({f.fields.length} questions • {f.category})
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-neutral-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Template Card Preview */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-white/[0.03] to-transparent border border-amber-500/30 space-y-2">
