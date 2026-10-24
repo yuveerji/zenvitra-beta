@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Search,
@@ -107,6 +108,11 @@ export function WorldLocationPickerModal({
   const [activeTab, setActiveTab] = useState<'search' | 'map' | 'diplomacy'>('search');
   const [customVenue, setCustomVenue] = useState('');
   const [mapPin, setMapPin] = useState<{ lat: number; lng: number } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -302,28 +308,36 @@ export function WorldLocationPickerModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+  const displayTitle = (title || 'Select Location')
+    .replace(/\s*\(Google Maps API\)/gi, '')
+    .replace(/\s*via Google Maps/gi, '')
+    .trim();
+
+  const modalContent = (
+    <div 
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-5 pt-20 sm:pt-16 pb-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div 
-        className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-[#0b0c12] border border-white/10 rounded-3xl shadow-2xl overflow-hidden text-white"
+        className="relative w-full max-w-3xl max-h-[85vh] flex flex-col bg-[#0b0c12] border border-white/10 rounded-3xl shadow-2xl overflow-hidden text-white my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08] bg-white/[0.02]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)]">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)] shrink-0">
               <Globe2 className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
-                {title}
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/25">
-                  Google Maps API
+                {displayTitle}
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/25 tracking-wide">
+                  Live Places
                 </span>
               </h2>
-              <p className="text-[11px] text-zinc-400">Search global venues, cities, or tag your GPS location like Instagram</p>
+              <p className="text-[11px] text-zinc-400">Search global venues, cities, or tag your GPS coordinates</p>
             </div>
           </div>
 
@@ -828,4 +842,6 @@ export function WorldLocationPickerModal({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }

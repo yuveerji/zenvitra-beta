@@ -2843,7 +2843,7 @@ Day 2:
         <WorldLocationPickerModal
           isOpen={isLocationPickerOpen}
           onClose={() => setIsLocationPickerOpen(false)}
-          title="Select Physical Convening Venue (Google Maps API)"
+          title="Select Convening Venue"
           initialLocation={location}
           onSelectLocation={(loc: WorldLocation) => {
             const locName = loc.name + (loc.address ? `, ${loc.address}` : '');

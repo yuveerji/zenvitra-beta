@@ -1056,7 +1056,7 @@ export function EventsFeed() {
         isOpen={isWorldPickerOpen}
         onClose={() => setIsWorldPickerOpen(false)}
         initialLocation={userLocation?.city || (selectedCity !== 'ALL' ? selectedCity : undefined)}
-        title="Select Assembly Location via Google Maps"
+        title="Select Event Location"
         onSelectLocation={(loc) => {
           const cityName = loc.city || loc.name;
           setSelectedCity(cityName);
