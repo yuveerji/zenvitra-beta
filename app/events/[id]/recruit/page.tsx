@@ -171,13 +171,20 @@ export default function EventRecruitmentPage() {
         
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between pb-6">
-          <Link
-            href={`/events/${eventId}`}
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.href = `/events/${eventId}`;
+              }
+            }}
             className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Event Overview</span>
-          </Link>
+            <span>Back</span>
+          </button>
 
           {isOrganizer && (
             <Link

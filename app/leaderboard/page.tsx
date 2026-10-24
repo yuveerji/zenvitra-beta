@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   LeaderboardCategory, 
   LeaderboardPeriod, 
@@ -30,10 +31,12 @@ import {
   Award, 
   CheckCircle2, 
   ArrowUpRight,
+  ArrowLeft,
   Info
 } from 'lucide-react';
 
 export default function LeaderboardPage() {
+  const router = useRouter();
   const [category, setCategory] = useState<LeaderboardCategory>('global');
   const [period, setPeriod] = useState<LeaderboardPeriod>('season');
   const [viewType, setViewType] = useState<'CITIZENS' | 'INSTITUTIONS' | 'TEAMS'>('CITIZENS');
@@ -101,7 +104,26 @@ export default function LeaderboardPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-gradient-to-b from-amber-600/10 via-cyan-600/5 to-transparent blur-3xl rounded-full" />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto space-y-8">
+      <div className="relative z-10 max-w-6xl mx-auto space-y-6 sm:space-y-8">
+        {/* Back Navigation Bar */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                window.history.back();
+              } else {
+                router.push('/');
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-sans font-semibold text-neutral-300 hover:text-white transition cursor-pointer group active:scale-95 shadow-sm"
+            title="Back to previous page"
+          >
+            <ArrowLeft className="w-4 h-4 text-neutral-400 group-hover:text-white group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back</span>
+          </button>
+        </div>
+
         {/* Top Hero Section */}
         <div className="p-6 sm:p-8 rounded-3xl bg-[#080a10]/80 backdrop-blur-xl border border-white/10 shadow-2xl space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

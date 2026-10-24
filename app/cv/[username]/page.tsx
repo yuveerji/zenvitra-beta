@@ -74,18 +74,12 @@ export default function ModelUnCvPage() {
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
 
-  // Intelligent Exit Handler: Works reliably even when history stack is 1 or after redirect
+  // Intelligent Back Handler: Redirects strictly to the previous page
   const handleExitCv = () => {
-    if (typeof window !== 'undefined' && window.history.length > 2) {
-      router.back();
-      // Safety fallback: if after 150ms the user is still on the CV page, navigate to /dashboard
-      setTimeout(() => {
-        if (typeof window !== 'undefined' && window.location.pathname.startsWith('/cv')) {
-          router.push('/dashboard');
-        }
-      }, 150);
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      window.history.back();
     } else {
-      router.push('/dashboard');
+      router.push('/');
     }
   };
 
@@ -269,17 +263,6 @@ export default function ModelUnCvPage() {
   if (!isOwner && sharingSettings.visibility === 'PRIVATE') {
     return (
       <div className="min-h-screen bg-[#030407] text-white pt-24 pb-28 px-4 flex flex-col items-center justify-center selection:bg-amber-500/30 relative">
-        {/* Fixed Close "✕" Button */}
-        <button
-          type="button"
-          onClick={handleExitCv}
-          aria-label="Close Model UN CV"
-          title="Close Model UN CV (Esc)"
-          className="fixed top-5 right-5 sm:top-6 sm:right-6 z-50 p-2.5 sm:p-3 rounded-2xl bg-[#080a13]/90 hover:bg-white/15 border border-white/15 hover:border-white/30 text-neutral-300 hover:text-white transition-all duration-200 cursor-pointer shadow-2xl backdrop-blur-xl group hover:scale-105 active:scale-95"
-        >
-          <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
-        </button>
-
         <div className="max-w-md w-full text-center space-y-6 p-8 rounded-3xl bg-[#080a13] border border-white/10 shadow-2xl relative overflow-hidden backdrop-blur-xl">
           <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 mx-auto flex items-center justify-center text-amber-400 shadow-inner">
             <Lock className="w-8 h-8" />
@@ -296,19 +279,20 @@ export default function ModelUnCvPage() {
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={handleExitCv}
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-semibold text-white transition cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Previous Page</span>
+            </button>
             <Link
               href="/mun"
               className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 hover:text-white transition"
             >
               Explore ZENVITRA MUN Chambers
             </Link>
-            <button
-              type="button"
-              onClick={handleExitCv}
-              className="text-xs text-neutral-500 hover:text-neutral-300 transition cursor-pointer"
-            >
-              Return to Platform Home
-            </button>
           </div>
         </div>
       </div>
@@ -317,17 +301,6 @@ export default function ModelUnCvPage() {
 
   return (
     <div className="min-h-screen bg-[#030407] text-white pt-24 pb-28 px-4 sm:px-6 lg:px-8 selection:bg-amber-500/30 selection:text-amber-200 relative">
-      {/* ── Fixed Floating "✕" Close Button (Top-Right Viewport) ── */}
-      <button
-        type="button"
-        onClick={handleExitCv}
-        aria-label="Close Model UN CV and return"
-        title="Close Model UN CV (Esc)"
-        className="fixed top-5 right-5 sm:top-6 sm:right-6 z-50 p-2.5 sm:p-3 rounded-2xl bg-[#080a13]/90 hover:bg-white/15 border border-white/15 hover:border-white/30 text-neutral-300 hover:text-white transition-all duration-200 cursor-pointer shadow-2xl backdrop-blur-xl group hover:scale-105 active:scale-95 glass-specular"
-      >
-        <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" />
-      </button>
-
       {/* Background Cinematic Atmosphere */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-b from-amber-500/12 via-cyan-500/8 to-transparent blur-3xl rounded-full animate-glow-drift" />
@@ -343,19 +316,11 @@ export default function ModelUnCvPage() {
             <button
               type="button"
               onClick={handleExitCv}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs font-sans font-semibold text-neutral-300 hover:text-white transition cursor-pointer group"
-              title="Close Model UN CV (Esc)"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/10 border border-white/10 text-xs font-sans font-semibold text-neutral-200 hover:text-white transition cursor-pointer group active:scale-95 shadow-sm"
+              title="Back to previous page"
             >
-              <X className="w-4 h-4 text-neutral-400 group-hover:text-white group-hover:rotate-90 transition-transform duration-200" />
-              <span>Close CV</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleExitCv}
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-neutral-400 hover:text-white transition cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Return</span>
+              <ArrowLeft className="w-4 h-4 text-neutral-400 group-hover:text-white group-hover:-translate-x-0.5 transition-transform" />
+              <span>Back</span>
             </button>
             <span className="text-neutral-600">•</span>
             <div className="flex items-center gap-2">

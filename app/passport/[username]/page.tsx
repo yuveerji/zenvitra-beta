@@ -102,11 +102,18 @@ export default function PublicPassportPage() {
         <div className="flex items-center justify-between">
           <button
             type="button"
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-2 text-xs font-sans font-semibold text-neutral-400 hover:text-white transition cursor-pointer"
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                window.history.back();
+              } else {
+                router.push('/');
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-sans font-semibold text-neutral-300 hover:text-white transition cursor-pointer group active:scale-95 shadow-sm"
+            title="Back to previous page"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Return</span>
+            <ArrowLeft className="w-4 h-4 text-neutral-400 group-hover:text-white group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back</span>
           </button>
 
           <div className="flex items-center gap-2">

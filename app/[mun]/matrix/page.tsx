@@ -407,13 +407,20 @@ export default function DynamicMunMatrixPage() {
         {/* Navigation & Event Route Indicator */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link
-              href="/events"
-              className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 hover:text-cyan-300 transition group p-2 rounded-xl bg-white/5 border border-white/10"
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = '/events';
+                }
+              }}
+              className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 hover:text-cyan-300 transition group p-2 rounded-xl bg-white/5 border border-white/10 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              <span>Back to MUN Summits</span>
-            </Link>
+              <span>Back</span>
+            </button>
 
             <span className="text-neutral-600 hidden sm:inline">&bull;</span>
 

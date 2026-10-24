@@ -197,13 +197,20 @@ export default function EventApplyPostPage() {
         
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between pb-6">
-          <Link
-            href={`/events/${eventId}/recruit`}
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.href = `/events/${eventId}/recruit`;
+              }
+            }}
             className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to All Open Positions</span>
-          </Link>
+            <span>Back</span>
+          </button>
 
           <span className="text-[11px] font-mono text-neutral-500">
             Staff Recruitment Portal

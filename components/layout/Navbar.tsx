@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { 
   ArrowUpRight, 
   ArrowRight,
+  ArrowLeft,
   Sparkles, 
   LogOut, 
   Radio, 
@@ -410,6 +411,25 @@ export function Navbar({
                 aria-label="Toggle Navigation Menu"
               >
                 <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            )}
+
+            {/* Sovereign Universal Back Button (Always redirects ONLY to previous page; hidden on landing root) */}
+            {pathname !== '/' && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.history.length > 1) {
+                    window.history.back();
+                  } else {
+                    window.location.href = '/';
+                  }
+                }}
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 border bg-[#080a10]/90 hover:bg-white/10 text-neutral-300 hover:text-white border-white/15 hover:border-white/30 hover:scale-105 active:scale-95 shrink-0 shadow-md group"
+                title="Back to previous page"
+                aria-label="Back to previous page"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5 group-hover:-translate-x-0.5 transition-transform" />
               </button>
             )}
 

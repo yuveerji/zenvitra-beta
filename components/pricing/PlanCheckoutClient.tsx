@@ -277,13 +277,21 @@ export function PlanCheckoutClient() {
         {/* Top Header & Breadcrumb Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-mono transition cursor-pointer"
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = '/pricing';
+                }
+              }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 text-xs font-mono transition cursor-pointer active:scale-95 shadow-sm group"
+              title="Back to previous page"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Pricing</span>
-            </Link>
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Back</span>
+            </button>
             <div className="h-4 w-px bg-white/15 hidden sm:block" />
             <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
               <span>Checkout</span>
