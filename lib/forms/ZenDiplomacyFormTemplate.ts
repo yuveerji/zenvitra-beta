@@ -348,11 +348,11 @@ export const ZEN_DIPLOMACY_2026_FORM_TEMPLATE: ZenForm = {
     },
     {
       id: 'step11_zenvitra_handle',
-      label: 'Zenvitra Sovereign Username (@handle)',
+      label: 'Zenvitra Sovereign Username (@handle) *',
       type: 'text',
       placeholder: '@yuveer or your username',
-      description: 'If you have an active Zenvitra profile, enter your handle to link certificates instantly.',
-      required: false
+      description: 'Your preferred sovereign handle to link certificates and badges instantly.',
+      required: true
     },
 
     /* ══════════════════════════════════════════════════════════════════
