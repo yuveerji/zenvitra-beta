@@ -232,10 +232,42 @@ export function formatAndCleanRawText(text: string): string {
   // Break between semicolon-separated bullet items: "; - " or "; and - " -> ";\n- "
   out = out.replace(/;(?:\s+and)?\s*[-*•—–]\s+/gi, ';\n- ');
 
-  // 9. Unflatten multi-dash table columns or sequential provisions
+  // 9. Clean broken/corrupted table pipes and artifacts from reference image
+  // Normalize double/multiple trailing pipes: "| Col 1 | Col 2 ||" -> "| Col 1 | Col 2 |"
+  out = out.replace(/^(\|.*?)\|{2,}\s*$/gm, '$1|');
+
+  // Strip stray corrupted bullet pipe lines like "• |", "- |"
+  out = out.replace(/^\s*[-*•—–]\s*\|\s*$/gm, '');
+
+  // If a table header "| Header 1 | Header 2 |" is followed directly by a data row without separator "|---|---|":
+  // Insert missing separator line
+  const linesArr = out.split('\n');
+  const fixedLines: string[] = [];
+  for (let j = 0; j < linesArr.length; j++) {
+    const curLine = linesArr[j].trim();
+    fixedLines.push(linesArr[j]);
+
+    if (curLine.startsWith('|') && curLine.endsWith('|') && curLine.split('|').length >= 3 && !curLine.includes('---')) {
+      let nextIdx = j + 1;
+      while (nextIdx < linesArr.length && !linesArr[nextIdx].trim()) {
+        nextIdx++;
+      }
+      if (nextIdx < linesArr.length) {
+        const nextLine = linesArr[nextIdx].trim().replace(/\|{2,}\s*$/, '|');
+        if (nextLine.startsWith('|') && nextLine.endsWith('|') && !nextLine.includes('---')) {
+          const colCount = Math.max(curLine.split('|').length - 2, 1);
+          const sep = '| ' + Array(colCount).fill('---').join(' | ') + ' |';
+          fixedLines.push(sep);
+        }
+      }
+    }
+  }
+  out = fixedLines.join('\n');
+
+  // 10. Unflatten multi-dash table columns or sequential provisions
   out = unflattenPastedTableLines(out);
 
-  // 10. Normalize multiple newlines
+  // 11. Normalize multiple newlines
   out = out.replace(/\n{3,}/g, '\n\n').trim();
 
   return out;
@@ -324,8 +356,12 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
   const schedules: DocumentSchedule[] = [];
   const validationIssues: ValidationIssue[] = [];
 
+  let currentPartNumber = '';
+  let currentPartTitle = '';
+  let currentPartId = '';
   let currentChapterNumber = 'General';
   let currentChapterTitle = 'General Provisions';
+  let currentChapterId = 'chap_general';
   let activeClause: DocumentClause | null = null;
   let activeSchedule: DocumentSchedule | null = null;
   let activeSubClauses: ClauseSubItem[] = [];
@@ -459,17 +495,21 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       }
     }
 
-    // Check for Chapter / Part header (e.g. "# CHAPTER XII", "CHAPTER I — PRELIMINARY", "CHAPTER 1", "PART II", "A. Constitutional amendment proposals")
-    const chapMatch = strippedLine.match(/^(?:CHAPTER|PART)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i) ||
+    // Check for Part header vs Chapter header (preserves distinction between macro Parts and Chapters)
+    const partMatch = strippedLine.match(/^(?:PART)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i) ||
                       strippedLine.match(/^([A-Z])\.\s+(.*)$/);
-    if (chapMatch) {
-      const rawNum = chapMatch[1].trim().toUpperCase();
+    const chapOnlyMatch = strippedLine.match(/^(?:CHAPTER)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i);
+
+    if (partMatch || chapOnlyMatch) {
+      const isPart = Boolean(partMatch);
+      const match = (partMatch || chapOnlyMatch)!;
+      const rawNum = match[1].trim().toUpperCase();
       const isSingleLetter = /^[A-Z]$/.test(rawNum);
       const romanNum = isSingleLetter ? rawNum : (WORD_OR_NUM_TO_ROMAN[rawNum] || (/^[IVXLCDM]+$/.test(rawNum) ? rawNum : rawNum));
-      
-      let chapTitle = cleanDocumentText(chapMatch[2]?.trim() || '').replace(/^[—:.-]+/, '').trim();
-      // If chapter title was on the next line (e.g. line 1: CHAPTER I, line 2: PRELIMINARY)
-      if (!chapTitle && i + 1 < lines.length) {
+
+      let headingTitle = cleanDocumentText(match[2]?.trim() || '').replace(/^[—:.-]+/, '').trim();
+      // If heading title was on the next line
+      if (!headingTitle && i + 1 < lines.length) {
         const nextLine = lines[i + 1].trim();
         const nextStripped = nextLine.replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
         if (
@@ -477,12 +517,12 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
           !/^(?:BE\s+it\s+enacted|WHEREAS|AND\s+WHEREAS)/i.test(nextStripped) &&
           nextLine.length < 90
         ) {
-          chapTitle = cleanDocumentText(nextStripped);
+          headingTitle = cleanDocumentText(nextStripped);
           i++; // advance past title line
         }
       }
-      if (!chapTitle) {
-        chapTitle = 'General Provisions';
+      if (!headingTitle) {
+        headingTitle = isPart ? 'General Part' : 'General Provisions';
       }
 
       if (activeClause) {
@@ -492,15 +532,31 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         activeSubClauses = [];
       }
 
-      currentChapterNumber = isSingleLetter ? `Part ${rawNum}` : `Chapter ${romanNum}`;
-      currentChapterTitle = chapTitle;
-      const isDataChapter = /data|metric|statistics|outlay|budget|empirical|analytical/i.test(currentChapterTitle);
-      
-      const chapId = `chap_${chapters.length + 1}`;
+      // Unique instance ID prevents collision even if two distinct parts/chapters share the same roman numeral
+      const uniqueUnitId = `${isPart ? 'part' : 'chap'}_${chapters.length + 1}_${Date.now()}`;
+      const unitNumber = isPart ? `Part ${romanNum}` : `Chapter ${romanNum}`;
+
+      if (isPart) {
+        currentPartNumber = unitNumber;
+        currentPartTitle = headingTitle;
+        currentPartId = uniqueUnitId;
+        currentChapterNumber = unitNumber;
+        currentChapterTitle = headingTitle;
+        currentChapterId = uniqueUnitId;
+      } else {
+        currentChapterNumber = unitNumber;
+        currentChapterTitle = headingTitle;
+        currentChapterId = uniqueUnitId;
+      }
+
+      const isDataChapter = /data|metric|statistics|outlay|budget|empirical|analytical/i.test(headingTitle);
       chapters.push({
-        id: chapId,
-        number: currentChapterNumber,
-        title: currentChapterTitle,
+        id: uniqueUnitId,
+        number: unitNumber,
+        title: headingTitle,
+        type: isPart ? 'PART' : 'CHAPTER',
+        partNumber: currentPartNumber || undefined,
+        partTitle: currentPartTitle || undefined,
         clauseIds: [],
         isDataChapter
       });
@@ -737,6 +793,10 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         title: clauseTitle || undefined,
         type: docType === 'DRAFT_RESOLUTION' ? 'OPERATIVE' : docType === 'TREATY_CHARTER' ? 'ARTICLE' : 'SECTION',
         text: cleanDocumentText(clauseText),
+        chapterId: currentChapterId || undefined,
+        partId: currentPartId || undefined,
+        partNumber: currentPartNumber || undefined,
+        partTitle: currentPartTitle || undefined,
         chapterNumber: currentChapterNumber || undefined,
         chapterTitle: currentChapterTitle || undefined,
         subClauses: []
@@ -892,7 +952,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
   });
 
   chapters.forEach(chap => {
-    chap.clauses = clauses.filter(c => c.chapterNumber === chap.number);
+    chap.clauses = clauses.filter(c => c.chapterId === chap.id || (chap.clauseIds && chap.clauseIds.includes(c.id!)) || (c.chapterNumber === chap.number && (!c.chapterTitle || c.chapterTitle === chap.title)));
   });
 
   const totalTables = (cleanText.match(/\|[\s-]+\|/g) || []).length;

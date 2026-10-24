@@ -188,39 +188,84 @@ export function parseRichDocumentText(text: string): ParsedBlock[] {
       continue;
     }
 
-    // 3. Detect Markdown Table (| Header 1 | Header 2 | ...)
-    if (trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.split('|').length >= 3) {
-      // Check if next line is table separator (|---|---|)
-      const nextLine = lines[i + 1]?.trim() || '';
-      if (nextLine.startsWith('|') && nextLine.includes('---')) {
+    // 3. Detect Markdown Table (| Header 1 | Header 2 | ... resilient to OCR/bullet corruption and missing separators)
+    const candidateHeader = trimmed.replace(/\|{2,}\s*$/, '|');
+    if (candidateHeader.startsWith('|') && candidateHeader.endsWith('|') && candidateHeader.split('|').length >= 3) {
+      // Scan ahead past any stray OCR artifacts (e.g. `• |`, `- |`, `•`) to check if this is followed by a separator or data rows
+      let lookaheadIdx = i + 1;
+      while (
+        lookaheadIdx < lines.length && 
+        (/^([•\-\*]\s*\|?|\s*)$/.test(lines[lookaheadIdx].trim()) || lines[lookaheadIdx].trim() === '• |' || lines[lookaheadIdx].trim() === '•')
+      ) {
+        lookaheadIdx++;
+      }
+
+      const nextValidLine = lines[lookaheadIdx]?.trim() || '';
+      const isExplicitSeparator = nextValidLine.startsWith('|') && nextValidLine.includes('---');
+      const isDirectDataRow = nextValidLine.startsWith('|') && nextValidLine.replace(/\|{2,}\s*$/, '|').endsWith('|') && nextValidLine.split('|').length >= 3;
+
+      if (isExplicitSeparator || isDirectDataRow) {
         flushTextBuffer();
-        
-        const headerCells = trimmed.split('|').slice(1, -1).map(c => c.trim());
-        const separatorCells = nextLine.split('|').slice(1, -1).map(c => c.trim());
-        
-        const alignments = separatorCells.map(s => {
-          if (s.startsWith(':') && s.endsWith(':')) return 'center' as const;
-          if (s.endsWith(':')) return 'right' as const;
-          return 'left' as const;
-        });
 
-        i += 2; // skip header and separator
-        const rows: string[][] = [];
+        const headerCells = candidateHeader.split('|').slice(1, -1).map(c => c.trim()).filter((_, idx, arr) => !(idx === arr.length - 1 && _ === ''));
+        const colCount = headerCells.length;
 
-        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
-          const rowCells = lines[i].trim().split('|').slice(1, -1).map(c => c.trim());
-          rows.push(rowCells);
-          i++;
+        let alignments: ('left' | 'center' | 'right')[] = [];
+        if (isExplicitSeparator) {
+          const sepCells = nextValidLine.split('|').slice(1, -1).map(c => c.trim());
+          alignments = sepCells.map(s => {
+            if (s.startsWith(':') && s.endsWith(':')) return 'center' as const;
+            if (s.endsWith(':')) return 'right' as const;
+            return 'left' as const;
+          });
+          i = lookaheadIdx + 1;
+        } else {
+          // Auto-synthesize default left alignments
+          alignments = headerCells.map(() => 'left' as const);
+          i = lookaheadIdx; // start reading data rows from lookaheadIdx
         }
 
-        blocks.push({
-          type: 'table',
-          headers: headerCells,
-          alignments,
-          rows,
-          raw: [trimmed, nextLine, ...rows.map(r => `| ${r.join(' | ')} |`)].join('\n')
-        });
-        continue;
+        const rows: string[][] = [];
+        while (i < lines.length) {
+          const rawRow = lines[i].trim();
+          // Skip stray OCR bullet artifacts like `• |` or `•`
+          if (/^([•\-\*]\s*\|?|\s*)$/.test(rawRow) || rawRow === '• |' || rawRow === '•') {
+            i++;
+            continue;
+          }
+
+          const cleanedRow = rawRow.replace(/\|{2,}\s*$/, '|');
+          if (cleanedRow.startsWith('|') && cleanedRow.endsWith('|') && cleanedRow.split('|').length >= 2) {
+            // Check if it's an accidental separator line mid-table
+            if (cleanedRow.includes('---')) {
+              i++;
+              continue;
+            }
+            let rowCells = cleanedRow.split('|').slice(1, -1).map(c => c.trim());
+            // Align column count to header
+            if (rowCells.length < colCount) {
+              while (rowCells.length < colCount) rowCells.push('');
+            } else if (rowCells.length > colCount && colCount > 0) {
+              rowCells = rowCells.slice(0, colCount);
+            }
+            rows.push(rowCells);
+            i++;
+          } else {
+            // End of table
+            break;
+          }
+        }
+
+        if (rows.length > 0) {
+          blocks.push({
+            type: 'table',
+            headers: headerCells,
+            alignments,
+            rows,
+            raw: [candidateHeader, ...rows.map(r => `| ${r.join(' | ')} |`)].join('\n')
+          });
+          continue;
+        }
       }
     }
 

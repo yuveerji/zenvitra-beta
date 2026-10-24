@@ -141,10 +141,13 @@ function reconstructRawTextFromDoc(doc: SolutionDocument): string {
   
   if (doc.chapters && doc.chapters.length > 0) {
     for (const chap of doc.chapters) {
-      out += `CHAPTER ${chap.number}: ${chap.title}\n\n`;
+      const heading = chap.type === 'PART' 
+        ? (chap.number.toUpperCase().startsWith('PART') ? `${chap.number}: ${chap.title}` : `PART ${chap.number}: ${chap.title}`)
+        : (chap.number.toUpperCase().startsWith('CHAPTER') ? `${chap.number}: ${chap.title}` : `CHAPTER ${chap.number}: ${chap.title}`);
+      out += `${heading}\n\n`;
       const chapClauses = chap.clauses && chap.clauses.length > 0
         ? chap.clauses
-        : (doc.clauses || []).filter(c => c.chapterNumber === chap.number || c.chapterTitle === chap.title);
+        : (doc.clauses || []).filter(c => (chap.clauseIds && chap.clauseIds.includes(c.id!)) || (c.chapterId && c.chapterId === chap.id) || (c.chapterNumber === chap.number && (!c.chapterTitle || c.chapterTitle === chap.title)));
       for (const clause of chapClauses) {
         out += `Clause ${clause.clauseNumber}. ${clause.title ? clause.title + ' — ' : ''}${clause.text}\n`;
         const subs = clause.subClauses || clause.subItems || [];
@@ -1354,18 +1357,32 @@ Zone 4 (Rural Enclaves): 68
                 {parsedResult?.chapters && parsedResult.chapters.length > 0 ? (
                   parsedResult.chapters.map((chap, cIdx) => {
                     const chapClauses = parsedResult.clauses.filter(
-                      cl => cl.chapterNumber === chap.number || (!cl.chapterNumber && cIdx === 0)
+                      cl => (chap.clauseIds && chap.clauseIds.includes(cl.id!)) ||
+                            (cl.chapterId && cl.chapterId === chap.id) ||
+                            (cl.chapterNumber === chap.number && (!cl.chapterTitle || cl.chapterTitle === chap.title)) ||
+                            (!cl.chapterNumber && !cl.chapterId && cIdx === 0)
                     );
+
+                    const isPartUnit = chap.type === 'PART' || (chap.number || '').toUpperCase().startsWith('PART');
 
                     return (
                       <div
                         key={`chap-prev-${chap.id || cIdx}`}
-                        className="p-5 sm:p-6 rounded-3xl bg-[#07090f] border border-amber-500/25 space-y-4 shadow-xl"
+                        className={`p-5 sm:p-6 rounded-3xl bg-[#07090f] border ${isPartUnit ? 'border-purple-500/30' : 'border-amber-500/25'} space-y-4 shadow-xl`}
                       >
-                        {/* Chapter Banner */}
-                        <div className="border-b border-amber-500/20 pb-3 flex items-center justify-between">
+                        {/* Chapter or Part Banner */}
+                        <div className={`border-b ${isPartUnit ? 'border-purple-500/20' : 'border-amber-500/20'} pb-3 flex items-center justify-between`}>
                           <div className="flex items-center gap-2.5">
-                            <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider">
+                            {chap.partNumber && !isPartUnit && (
+                              <span className="text-[11px] font-mono text-purple-400 uppercase font-bold tracking-wider">
+                                {chap.partNumber} &rsaquo;
+                              </span>
+                            )}
+                            <span className={`px-2.5 py-0.5 rounded-lg border font-mono text-xs font-bold uppercase tracking-wider ${
+                              isPartUnit 
+                                ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' 
+                                : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                            }`}>
                               {chap.number}
                             </span>
                             <h3 className="font-serif font-black text-base sm:text-lg text-white uppercase tracking-wider">

@@ -1582,20 +1582,28 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                 <Layers className="w-3.5 h-3.5 text-amber-400" />
                 <span>Chapters ({doc.chapters.length}):</span>
               </span>
-              {doc.chapters.map((chap, cIdx) => (
-                <button
-                  key={chap.id || `toc-${cIdx}`}
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById(`chapter-${(chap.number || '').replace(/\s+/g, '-').toLowerCase()}`);
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/40 text-neutral-300 hover:text-amber-300 transition text-[11px] whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span className="text-amber-400 font-bold">{chap.number}</span>
-                  <span className="text-neutral-400 max-w-[150px] truncate">{chap.title}</span>
-                </button>
-              ))}
+              {doc.chapters.map((chap, cIdx) => {
+                const isPart = chap.type === 'PART' || (chap.number || '').toUpperCase().startsWith('PART');
+                return (
+                  <button
+                    key={chap.id || `toc-${cIdx}`}
+                    type="button"
+                    onClick={() => {
+                      const targetId = `chapter-${(chap.id || chap.number || '').replace(/\s+/g, '-').toLowerCase()}`;
+                      const el = document.getElementById(targetId) || document.getElementById(`chapter-${(chap.number || '').replace(/\s+/g, '-').toLowerCase()}`);
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className={`px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 ${
+                      isPart 
+                        ? 'hover:bg-purple-500/15 hover:border-purple-500/40 text-neutral-300 hover:text-purple-300' 
+                        : 'hover:bg-amber-500/15 hover:border-amber-500/40 text-neutral-300 hover:text-amber-300'
+                    } transition text-[11px] whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer`}
+                  >
+                    <span className={isPart ? 'text-purple-400 font-bold' : 'text-amber-400 font-bold'}>{chap.number}</span>
+                    <span className="text-neutral-400 max-w-[150px] truncate">{chap.title}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -1626,22 +1634,42 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                 const isCited = citedClauseNumber === clause.clauseNumber;
 
                 const isNewChapter = Boolean(
-                  clause.chapterNumber &&
-                  (clIdx === 0 || doc.clauses[clIdx - 1]?.chapterNumber !== clause.chapterNumber)
+                  (clause.chapterId && (clIdx === 0 || doc.clauses[clIdx - 1]?.chapterId !== clause.chapterId)) ||
+                  (clause.chapterNumber && (clIdx === 0 || doc.clauses[clIdx - 1]?.chapterNumber !== clause.chapterNumber))
                 );
-                const currentChapterObj = isNewChapter ? doc.chapters?.find(ch => ch.number === clause.chapterNumber) : null;
+                const currentChapterObj = isNewChapter ? (
+                  doc.chapters?.find(ch => ch.id === clause.chapterId) ||
+                  doc.chapters?.find(ch => ch.number === clause.chapterNumber && (!clause.chapterTitle || ch.title === clause.chapterTitle)) ||
+                  doc.chapters?.find(ch => ch.number === clause.chapterNumber)
+                ) : null;
+                const isPartUnit = currentChapterObj?.type === 'PART' || 
+                                   (clause.chapterNumber || '').toUpperCase().startsWith('PART') ||
+                                   Boolean(clause.partNumber);
 
                 return (
                   <React.Fragment key={clause.id || `clause-frag-${clause.clauseNumber || clIdx}`}>
-                    {/* Chapter Section Masthead Banner */}
+                    {/* Chapter / Part Section Masthead Banner */}
                     {isNewChapter && (
                       <div
-                        id={`chapter-${(clause.chapterNumber || '').replace(/\s+/g, '-').toLowerCase()}`}
+                        id={`chapter-${(clause.chapterId || clause.chapterNumber || '').replace(/\s+/g, '-').toLowerCase()}`}
                         className="pt-6 first:pt-2 space-y-2"
                       >
-                        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-white/[0.02] to-transparent border-l-4 border-l-amber-500 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                        <div className={`p-4 sm:p-5 rounded-2xl ${
+                          isPartUnit 
+                            ? 'bg-gradient-to-r from-purple-500/15 via-white/[0.02] to-transparent border-l-4 border-l-purple-500' 
+                            : 'bg-gradient-to-r from-amber-500/15 via-white/[0.02] to-transparent border-l-4 border-l-amber-500'
+                        } border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg`}>
                           <div className="flex items-center gap-3">
-                            <span className="px-3 py-1 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider shadow-sm">
+                            {clause.partNumber && !isPartUnit && (
+                              <span className="text-[11px] font-mono text-purple-400 uppercase font-bold tracking-wider">
+                                {clause.partNumber} &rsaquo;
+                              </span>
+                            )}
+                            <span className={`px-3 py-1 rounded-xl border font-mono text-xs font-bold uppercase tracking-wider shadow-sm ${
+                              isPartUnit
+                                ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
+                                : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                            }`}>
                               {clause.chapterNumber}
                             </span>
                             <h3 className="font-serif font-black text-lg sm:text-xl text-white uppercase tracking-wide">

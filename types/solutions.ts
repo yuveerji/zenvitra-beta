@@ -140,8 +140,12 @@ export interface DocumentClause {
   text: string;
   subClauses?: ClauseSubItem[];
   subItems?: ClauseSubItem[];
+  chapterId?: string;     // Unique Chapter instance ID (prevents collision across repeated roman numerals)
   chapterNumber?: string; // e.g. "Chapter I"
   chapterTitle?: string;  // e.g. "Preliminary"
+  partId?: string;        // Unique Part instance ID
+  partNumber?: string;    // e.g. "Part I"
+  partTitle?: string;     // e.g. "Governance Principles"
   sponsorAuthors?: string[];
   amendments?: ClauseAmendment[];
   discussions?: ClauseDiscussion[];
@@ -156,6 +160,9 @@ export interface DocumentChapter {
   id: string;
   number: string; // e.g. "Chapter I", "Part I"
   title: string;  // e.g. "Preliminary", "Student Welfare"
+  type?: 'CHAPTER' | 'PART';
+  partNumber?: string;
+  partTitle?: string;
   clauseIds?: string[];
   clauses?: DocumentClause[];
   description?: string;
