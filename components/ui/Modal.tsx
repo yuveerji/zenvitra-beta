@@ -41,7 +41,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-xl p-3 sm:p-6 flex flex-col justify-start sm:justify-center items-center animate-in fade-in duration-200">
       <div
         className={cn(
-          'relative w-full max-w-lg p-6 sm:p-8 rounded-3xl border border-white/15 bg-[#06070a] shadow-2xl space-y-6 my-auto max-h-[92vh] overflow-y-auto',
+          'relative w-full max-w-lg p-6 sm:p-8 rounded-3xl border border-white/15 bg-[#06070a] shadow-2xl space-y-6 my-auto max-h-[92vh] overflow-y-auto pb-24 sm:pb-8',
           className
         )}
       >

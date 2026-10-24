@@ -455,7 +455,7 @@ export function ListConferenceModal({
           initial={{ opacity: 0, scale: 0.96, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 20 }}
-          className="relative w-full max-w-3xl my-auto max-h-[92vh] overflow-y-auto rounded-3xl border border-cyan-500/30 bg-gradient-to-b from-[#0e1322] via-[#080b14] to-[#04060a] p-6 sm:p-8 shadow-[0_0_90px_rgba(6,182,212,0.18)] space-y-6"
+          className="relative w-full max-w-3xl my-auto max-h-[92vh] overflow-y-auto rounded-3xl border border-cyan-500/30 bg-gradient-to-b from-[#0e1322] via-[#080b14] to-[#04060a] p-6 sm:p-8 shadow-[0_0_90px_rgba(6,182,212,0.18)] space-y-6 pb-24 sm:pb-8"
         >
           {/* Top Close Button */}
           <button

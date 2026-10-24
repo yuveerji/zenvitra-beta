@@ -17,7 +17,8 @@ import {
   Plus,
   Minus,
   GraduationCap,
-  CreditCard
+  CreditCard,
+  Zap
 } from 'lucide-react';
 import { useZenPass } from '@/context/ZenPassContext';
 import { useZenEvents } from '@/context/ZenEventsPlatformContext';
@@ -131,8 +132,9 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
   const gstAmount = totalBasePrice > 0 ? Math.round((totalBasePrice * gstRate) * 100) / 100 : 0;
   const finalPayable = Math.round((totalBasePrice + platformFee + gstAmount) * 100) / 100;
 
-  const handleBooking = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleBooking = (e?: React.FormEvent, options?: { isTestMode?: boolean }) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const isTest = Boolean(options?.isTestMode);
 
     const generatedPass = bookPass({
       eventId: event.id,
@@ -157,20 +159,21 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
     // Record complete delegate intake dossier into event attendee registry
     recordAttendeeBooking(event.id, {
       userId: user?.id || `usr_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
-      name: attendeeName.trim() || user?.name || 'Delegate Envoy',
+      name: attendeeName.trim() || user?.name || (isTest ? 'Organizer Test Envoy' : 'Delegate Envoy'),
       username: (user as any)?.username || (user?.email ? user.email.split('@')[0] : 'delegate'),
       email: attendeeEmail.trim() || user?.email || '',
       phone: attendeePhone.trim() || '',
-      ticketId: generatedPass.ticketNumber,
-      ticketType: selectedTier.name,
+      ticketId: isTest ? `TEST-${generatedPass.ticketNumber}` : generatedPass.ticketNumber,
+      ticketType: isTest ? `${selectedTier.name} (Organizer Test)` : selectedTier.name,
       isStudent: selectedTier.type === 'student_discount' || isGstExempt,
-      price: finalPayable,
+      price: isTest ? 0 : finalPayable,
       status: 'going',
       portfolioPreference: finalPortfolio,
       committeePreference: event.title,
       institution: collegeOrSchool.trim() || 'Independent Delegation',
       experienceLevel: attendeeAge <= 17 ? 'Junior High Delegation' : 'Collegiate / Executive Envoy',
       dietaryPreference: 'Standard Dietary (General Catering)',
+      customResponses: isTest ? { testMode: 'ORGANIZER_TEST_SIMULATION' } : undefined,
     });
 
     // Persist ticket in strong Prisma database with cryptographic seal
@@ -237,23 +240,26 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl max-h-[94vh] bg-[#090a0f] border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 text-white"
+          className="relative w-full max-w-2xl max-h-[94vh] bg-gradient-to-b from-[#0a0d18] via-[#060810] to-[#030408] border border-cyan-500/30 rounded-2xl sm:rounded-3xl shadow-[0_25px_90px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden z-10 text-white font-sans"
         >
+          {/* Subtle Ambient Radial Spotlight */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
           {/* Header */}
-          <div className="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <div className="p-5 sm:p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02] relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
+              <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]">
                 <Ticket className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-display font-bold text-lg text-white flex items-center gap-2">
-                  <span>Official ZenPass Reservation</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white font-bold">
-                    Official Pass
+                <h2 className="font-space font-black text-xl text-white tracking-tight flex items-center gap-2">
+                  <span>ZenPass Reservation</span>
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 font-bold uppercase tracking-wider">
+                    Sovereign Pass
                   </span>
                 </h2>
-                <p className="text-xs text-neutral-400">
-                  {event.title} &bull; {event.location}
+                <p className="text-xs font-outfit text-neutral-300 pt-0.5">
+                  {event.title} &bull; <span className="text-neutral-400">{event.location}</span>
                 </p>
               </div>
             </div>
@@ -267,7 +273,26 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
             </button>
           </div>
 
-          <form onSubmit={handleBooking} className="p-5 sm:p-7 space-y-6 overflow-y-auto max-h-[75vh]">
+          <form onSubmit={handleBooking} className="p-5 sm:p-7 space-y-6 overflow-y-auto max-h-[75vh] pb-24 sm:pb-8 relative z-10">
+            
+            {/* Organizer Sandbox / Test-Mode Advisory Banner */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-orange-950/20 to-black border border-amber-500/35 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                  <Zap className="w-4 h-4 fill-current" />
+                </div>
+                <div className="text-[11px] text-amber-200/90 font-outfit leading-tight">
+                  <strong className="text-amber-300 font-bold font-space uppercase">Organizer Testing Mode:</strong> Skip Cashfree gateway check and issue a simulated pass for testing gate check-ins &amp; dossier table.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleBooking(undefined, { isTestMode: true })}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold font-space text-[11px] uppercase tracking-wider transition shrink-0 cursor-pointer shadow-md shadow-amber-500/20 active:scale-95"
+              >
+                Instant Bypass
+              </button>
+            </div>
             
             {/* Coming Soon & Announcement Waitlist Banner */}
             {isComingSoonMode && (
@@ -604,56 +629,70 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
             </div>
 
             {/* Footer Submit */}
-            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-end gap-3">
+            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              {/* Left: Test Booking Bypass Action */}
               <button
                 type="button"
-                onClick={onClose}
-                className="px-4 py-2.5 rounded-xl bg-white/5 text-neutral-400 hover:text-white text-xs transition"
+                onClick={() => handleBooking(undefined, { isTestMode: true })}
+                className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-space font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+                title="Instant Test-Mode Bypass: Book pass without real payment for organizer gate/roster testing"
               >
-                Close
+                <Zap className="w-3.5 h-3.5 text-amber-400 fill-current" />
+                <span>Test Booking Mode (Instant Bypass)</span>
               </button>
 
-              {isComingSoonMode ? (
+              {/* Right: Payment & Confirmation Actions */}
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => {
-                    setWaitlistJoined(true);
-                    setTimeout(() => {
-                      onClose();
-                    }, 1800);
-                  }}
-                  disabled={waitlistJoined}
-                  className={`px-6 py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                    waitlistJoined 
-                      ? 'bg-emerald-500 text-black' 
-                      : 'bg-gradient-to-r from-amber-400 to-orange-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-105'
-                  }`}
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-mono transition"
                 >
-                  <Check className="w-4 h-4 stroke-[3]" />
-                  <span>{waitlistJoined ? '✓ Joined Priority Waitlist!' : 'Join Priority Waitlist / Notify Me'}</span>
+                  Close
                 </button>
-              ) : (
-                <>
-                  {finalPayable > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowCashfreeModal(true)}
-                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-mono font-semibold text-xs transition cursor-pointer flex items-center gap-2"
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      <span>Pay ₹{finalPayable.toFixed(2)} via Cashfree</span>
-                    </button>
-                  )}
 
+                {isComingSoonMode ? (
                   <button
-                    type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-sans font-bold text-xs shadow-sm transition cursor-pointer flex items-center gap-2"
+                    type="button"
+                    onClick={() => {
+                      setWaitlistJoined(true);
+                      setTimeout(() => {
+                        onClose();
+                      }, 1800);
+                    }}
+                    disabled={waitlistJoined}
+                    className={`px-5 py-2 rounded-xl font-mono text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                      waitlistJoined 
+                        ? 'bg-emerald-500 text-black' 
+                        : 'bg-gradient-to-r from-amber-400 to-orange-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:scale-105'
+                    }`}
                   >
                     <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Confirm &amp; Generate ZenPass</span>
+                    <span>{waitlistJoined ? '✓ Joined Priority Waitlist!' : 'Join Priority Waitlist / Notify Me'}</span>
                   </button>
-                </>
-              )}
+                ) : (
+                  <>
+                    {finalPayable > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowCashfreeModal(true)}
+                        className="px-4 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 font-space font-bold text-xs transition cursor-pointer flex items-center gap-2 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        <span>Pay ₹{finalPayable.toFixed(2)} via Cashfree</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-space font-black text-xs uppercase tracking-wider shadow-lg transition cursor-pointer flex items-center gap-2 active:scale-95"
+                    >
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>Confirm &amp; Generate ZenPass</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </form>
         </motion.div>

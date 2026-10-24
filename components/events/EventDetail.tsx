@@ -263,7 +263,7 @@ export function EventDetail() {
             )}
           </div>
 
-          <h1 className="font-display font-bold text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
+          <h1 className="font-space font-black text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
             {event.title}
           </h1>
 
@@ -276,23 +276,23 @@ export function EventDetail() {
 
             <div className="flex items-center gap-3 font-mono text-center">
               <div className="px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 min-w-[56px]">
-                <span className="block text-lg sm:text-2xl font-bold text-white leading-none">{timeLeft.days}</span>
-                <span className="text-[9px] text-neutral-400 uppercase">Days</span>
+                <span className="block text-xl sm:text-3xl font-space font-black text-white leading-none">{timeLeft.days}</span>
+                <span className="text-[9px] text-neutral-400 uppercase font-mono">Days</span>
               </div>
               <span className="text-cyan-400 font-bold text-lg">:</span>
               <div className="px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 min-w-[56px]">
-                <span className="block text-lg sm:text-2xl font-bold text-white leading-none">{timeLeft.hours.toString().padStart(2, '0')}</span>
-                <span className="text-[9px] text-neutral-400 uppercase">Hours</span>
+                <span className="block text-xl sm:text-3xl font-space font-black text-white leading-none">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                <span className="text-[9px] text-neutral-400 uppercase font-mono">Hours</span>
               </div>
               <span className="text-cyan-400 font-bold text-lg">:</span>
               <div className="px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/10 min-w-[56px]">
-                <span className="block text-lg sm:text-2xl font-bold text-white leading-none">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-                <span className="text-[9px] text-neutral-400 uppercase">Mins</span>
+                <span className="block text-xl sm:text-3xl font-space font-black text-white leading-none">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                <span className="text-[9px] text-neutral-400 uppercase font-mono">Mins</span>
               </div>
               <span className="text-cyan-400 font-bold text-lg">:</span>
               <div className="px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 min-w-[56px]">
-                <span className="block text-lg sm:text-2xl font-bold text-cyan-300 leading-none">{timeLeft.seconds.toString().padStart(2, '0')}</span>
-                <span className="text-[9px] text-cyan-400 uppercase">Secs</span>
+                <span className="block text-xl sm:text-3xl font-space font-black text-cyan-300 leading-none">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+                <span className="text-[9px] text-cyan-400 uppercase font-mono">Secs</span>
               </div>
             </div>
           </div>
@@ -345,12 +345,12 @@ export function EventDetail() {
         {/* Left: Convening Mandate & Host */}
         <div className="lg:col-span-2 space-y-8">
           {/* About Convening Card */}
-          <div className="rounded-3xl p-6 sm:p-8 card-luxury border border-white/10 space-y-4">
-            <h2 className="font-display font-bold text-xl text-white flex items-center gap-2.5">
+          <div className="rounded-3xl p-6 sm:p-8 bg-[#060810] border border-white/10 hover:border-cyan-400/30 transition-all space-y-4 shadow-xl">
+            <h2 className="font-space font-black text-xl text-white tracking-tight uppercase flex items-center gap-2.5">
               <Layers className="w-5 h-5 text-cyan-400" />
               Summit Mandate & Protocol
             </h2>
-            <div className="text-neutral-200 text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-sans">
+            <div className="text-neutral-300 text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-outfit">
               {event.description}
             </div>
 
@@ -370,16 +370,16 @@ export function EventDetail() {
           </div>
 
           {/* Convening Convener Profile */}
-          <div className="rounded-3xl p-6 card-luxury border border-white/10 flex items-center justify-between gap-4">
+          <div className="rounded-3xl p-6 bg-[#060810] border border-white/10 hover:border-cyan-400/30 transition-all flex items-center justify-between gap-4 shadow-xl">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-400 via-violet-500 to-rose-500 p-0.5 shadow-md">
-                <div className="w-full h-full rounded-[14px] bg-[#06080c] flex items-center justify-center font-display font-bold text-lg text-white">
+                <div className="w-full h-full rounded-[14px] bg-[#06080c] flex items-center justify-center font-space font-black text-lg text-white">
                   {event.organizerName?.[0]?.toUpperCase() || 'O'}
                 </div>
               </div>
               <div>
                 <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest block">CONVENER NODE</span>
-                <span className="font-display font-bold text-base text-white">{event.organizerName}</span>
+                <span className="font-space font-black text-base text-white">{event.organizerName}</span>
                 <p className="font-mono text-xs text-neutral-400">@{event.organizerUsername}</p>
               </div>
             </div>
@@ -397,9 +397,9 @@ export function EventDetail() {
           />
 
           {/* Delegate Swarm */}
-          <div className="rounded-3xl p-6 sm:p-8 card-luxury border border-white/10 space-y-4">
+          <div className="rounded-3xl p-6 sm:p-8 bg-[#060810] border border-white/10 hover:border-cyan-400/30 transition-all space-y-4 shadow-xl">
             <div className="flex items-center justify-between">
-              <h2 className="font-display font-bold text-lg text-white flex items-center gap-2">
+              <h2 className="font-space font-black text-lg text-white tracking-tight uppercase flex items-center gap-2">
                 <Users className="w-4 h-4 text-emerald-400" />
                 Delegates & Participants ({goingAttendees.length})
               </h2>
@@ -423,7 +423,7 @@ export function EventDetail() {
                       {att.name?.[0]?.toUpperCase() || 'D'}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-white truncate">{att.name}</p>
+                      <p className="text-xs font-semibold text-white truncate font-outfit">{att.name}</p>
                       <p className="text-[10px] font-mono text-neutral-500 truncate">@{att.username}</p>
                     </div>
                   </div>
@@ -435,7 +435,7 @@ export function EventDetail() {
 
         {/* Right: Holographic Laser Scanner Pass */}
         <div className="space-y-6">
-          <div className="rounded-3xl p-6 sm:p-7 bg-gradient-to-b from-[#111728] via-[#090c14] to-[#04060a] border border-cyan-500/40 shadow-[0_0_50px_rgba(0,242,254,0.2)] space-y-6 relative overflow-hidden">
+          <div className="rounded-3xl p-6 sm:p-7 bg-gradient-to-b from-[#0a0d18] via-[#060810] to-[#030408] border border-cyan-500/40 shadow-[0_0_50px_rgba(0,242,254,0.18)] space-y-6 relative overflow-hidden">
             {/* Holographic Laser Sweep Effect */}
             <div className="laser-scan-effect" />
 
@@ -610,14 +610,14 @@ export function EventDetail() {
       {/* ── CANCEL CONVENING MODAL (ORGANIZER) ── */}
       {showCancelModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in">
-          <div className="relative w-full max-w-lg rounded-3xl bg-neutral-950 border border-rose-500/40 p-6 sm:p-8 space-y-6 shadow-[0_0_80px_rgba(244,63,94,0.3)] font-sans">
+          <div className="relative w-full max-w-lg rounded-3xl bg-neutral-950 border border-rose-500/40 p-6 sm:p-8 pb-24 sm:pb-8 max-h-[90vh] overflow-y-auto space-y-6 shadow-[0_0_80px_rgba(244,63,94,0.3)] font-sans">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-lg text-white">Cancel Convening</h3>
+                  <h3 className="font-space font-black text-lg text-white">Cancel Convening</h3>
                   <p className="text-xs font-mono text-neutral-400">Automated 100% Refund &amp; Delegate Broadcast</p>
                 </div>
               </div>
@@ -636,7 +636,7 @@ export function EventDetail() {
                     <CheckCircle2 className="w-4 h-4" />
                     <span>CONVENING CANCELLED SUCCESSFULLY</span>
                   </div>
-                  <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                  <p className="text-xs text-neutral-300 leading-relaxed font-outfit">
                     All registered delegates have been notified. {cancelResult.refundedCount} paid ZenPass tickets were automatically refunded (Total refunded: ₹{cancelResult.totalRefundAmount.toLocaleString()}).
                   </p>
                 </div>
@@ -646,7 +646,7 @@ export function EventDetail() {
                     setShowCancelModal(false);
                     setCancelResult(null);
                   }}
-                  className="w-full py-3 rounded-xl bg-white text-black font-display font-bold text-xs hover:bg-neutral-200 transition cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-white text-black font-space font-black text-xs hover:bg-neutral-200 transition cursor-pointer"
                 >
                   Close Window
                 </button>
@@ -695,7 +695,7 @@ export function EventDetail() {
                       });
                       setIsCancelling(false);
                     }}
-                    className="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-display font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(244,63,94,0.4)] disabled:opacity-50"
+                    className="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-space font-black text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(244,63,94,0.4)] disabled:opacity-50"
                   >
                     {isCancelling ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
@@ -716,18 +716,18 @@ export function EventDetail() {
       {/* ── DELETE CONVENING MODAL ── */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in">
-          <div className="relative w-full max-w-md rounded-3xl bg-neutral-950 border border-white/15 p-6 sm:p-8 space-y-6 shadow-2xl font-sans">
+          <div className="relative w-full max-w-md rounded-3xl bg-neutral-950 border border-white/15 p-6 sm:p-8 pb-24 sm:pb-8 max-h-[90vh] overflow-y-auto space-y-6 shadow-2xl font-sans">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-display font-bold text-lg text-white">Delete Convening</h3>
+                <h3 className="font-space font-black text-lg text-white">Delete Convening</h3>
                 <p className="text-xs font-mono text-neutral-400">Permanent Record Purge</p>
               </div>
             </div>
 
-            <p className="text-xs text-neutral-300 leading-relaxed">
+            <p className="text-xs text-neutral-300 leading-relaxed font-outfit">
               Are you sure you want to permanently delete <strong>{event.title}</strong>? Any active paid ZenPass tickets will automatically be credited with full refunds.
             </p>
 
@@ -747,7 +747,7 @@ export function EventDetail() {
                   setActiveEventId(null);
                   setActiveView('list');
                 }}
-                className="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-display font-bold text-xs transition cursor-pointer shadow-[0_0_20px_rgba(244,63,94,0.4)]"
+                className="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-space font-black text-xs transition cursor-pointer shadow-[0_0_20px_rgba(244,63,94,0.4)]"
               >
                 Delete Permanently
               </button>

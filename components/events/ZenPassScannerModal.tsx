@@ -389,7 +389,7 @@ export function ZenPassScannerModal({
           </div>
 
           {/* Modal Body */}
-          <div className="p-5 sm:p-7 space-y-6 overflow-y-auto max-h-[82vh] custom-scrollbar text-xs">
+          <div className="p-5 sm:p-7 space-y-6 overflow-y-auto max-h-[82vh] custom-scrollbar text-xs pb-24 sm:pb-8">
             
             {/* ── EVENT TIMING INTELLIGENCE & SCHEDULE BAR ── */}
             <div className={`p-4 rounded-2xl border transition space-y-3 font-mono ${

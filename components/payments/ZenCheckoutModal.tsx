@@ -690,7 +690,7 @@ export function ZenCheckoutModal({
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="relative w-full max-w-xl max-h-[94vh] rounded-2xl sm:rounded-3xl bg-[#08090f] border border-cyan-500/30 p-3.5 sm:p-7 md:p-8 text-white space-y-4 sm:space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.95)] my-auto overflow-y-auto overflow-x-hidden"
+        className="relative w-full max-w-xl max-h-[94vh] rounded-2xl sm:rounded-3xl bg-[#08090f] border border-cyan-500/30 p-3.5 sm:p-7 md:p-8 text-white space-y-4 sm:space-y-6 shadow-[0_25px_80px_rgba(0,0,0,0.95)] my-auto overflow-y-auto overflow-x-hidden pb-24 sm:pb-8"
       >
         {/* Glow ambient */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />

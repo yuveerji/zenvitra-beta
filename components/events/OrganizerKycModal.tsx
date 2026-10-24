@@ -244,7 +244,7 @@ export default function OrganizerKycModal({
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-[#08090f] border border-cyan-500/30 shadow-2xl p-6 sm:p-8 space-y-6 text-white custom-scrollbar"
+        className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-[#08090f] border border-cyan-500/30 shadow-2xl p-6 sm:p-8 space-y-6 text-white custom-scrollbar pb-24 sm:pb-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

@@ -332,7 +332,7 @@ Generated via ZENVITRA Protocol Engine
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 custom-scrollbar font-sans text-xs">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 custom-scrollbar font-sans text-xs pb-24 sm:pb-6">
           
           {/* Quick Real Presets Banner */}
           {/* Quick Real Presets Banner & Custom Model Builder */}

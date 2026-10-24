@@ -362,7 +362,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
           )}
 
           {/* Form Body - Scrollable */}
-          <form onSubmit={handleSubmit} className="space-y-5 overflow-y-auto pr-1 flex-1">
+          <form onSubmit={handleSubmit} className="space-y-5 overflow-y-auto pr-1 flex-1 pb-24 sm:pb-8">
             {/* ── TAB 1: CORE LOGISTICS ── */}
             {activeTab === 'general' && (
               <div className="space-y-4 animate-fade-in">

@@ -657,7 +657,7 @@ export function CreateEventModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-4xl rounded-3xl bg-[#080b11] border border-cyan-500/25 shadow-2xl p-5 sm:p-7 space-y-6 my-6 max-h-[92vh] overflow-y-auto font-sans">
+      <div className="relative w-full max-w-4xl rounded-3xl bg-[#080b11] border border-cyan-500/25 shadow-2xl p-5 sm:p-7 space-y-6 my-6 max-h-[92vh] overflow-y-auto font-sans pb-24 sm:pb-8">
         
         {/* Toast Warning */}
         {toastMessage && (

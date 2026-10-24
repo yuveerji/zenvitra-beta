@@ -355,7 +355,7 @@ export function EventPlansPaymentLinksModal({
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-3xl bg-[#0a0d14] border border-cyan-500/30 rounded-3xl p-5 sm:p-7 text-left shadow-2xl max-h-[92vh] overflow-y-auto no-scrollbar space-y-6 text-white"
+          className="relative w-full max-w-3xl bg-[#0a0d14] border border-cyan-500/30 rounded-3xl p-5 sm:p-7 text-left shadow-2xl max-h-[92vh] overflow-y-auto no-scrollbar space-y-6 text-white pb-24 sm:pb-8"
         >
           {/* Header */}
           <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">

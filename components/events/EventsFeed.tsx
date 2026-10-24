@@ -251,7 +251,11 @@ export function EventsFeed() {
       : (KNOWN_CITIES.find(c => c.value === selectedCity)?.name || selectedCity);
 
   return (
-    <div className="max-w-7xl mx-auto font-sans pb-20 space-y-10 text-white">
+    <div className="max-w-7xl mx-auto font-sans pb-20 space-y-10 text-white relative">
+      {/* ── THEATRICAL STAGE AMBIENCE & OVERHEAD SPOTLIGHT ── */}
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[1200px] h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.18),rgba(167,139,250,0.08),transparent_70%)] blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/90 via-teal-300/80 to-transparent shadow-[0_0_20px_rgba(6,182,212,0.8)] -z-10" />
+
       {/* Pending Secretariat Allotment Notification */}
       <MunInviteBanner />
 
@@ -273,7 +277,7 @@ export function EventsFeed() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-display font-black text-lg tracking-tight uppercase text-white leading-tight">
+                <span className="font-space font-black text-xl tracking-tight uppercase text-white leading-tight">
                   ZENVITRA CONVENING
                 </span>
                 <span className="text-[10px] font-mono text-cyan-400 font-semibold tracking-widest uppercase">
@@ -544,7 +548,7 @@ export function EventsFeed() {
         <section className="space-y-3">
           {/* Title & Date Header Above the Banner */}
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-4xl font-display font-extrabold text-white tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-space font-black text-white tracking-tight leading-tight">
               {featuredEvent.title}
             </h1>
             <p className="text-xs sm:text-sm font-mono text-cyan-400 font-semibold flex items-center gap-2">
@@ -669,10 +673,10 @@ export function EventsFeed() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-space font-black text-white tracking-tight uppercase">
                 Top Summits &amp; Convocations
               </h2>
-              <p className="text-xs text-neutral-400 font-sans">
+              <p className="text-xs text-neutral-300 font-outfit leading-relaxed">
                 Flagship international diplomatic forums and executive conclaves
               </p>
             </div>
@@ -763,10 +767,10 @@ export function EventsFeed() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-space font-black text-white tracking-tight uppercase">
                 Explore Model UN &amp; Assemblies Near You
               </h2>
-              <p className="text-xs text-neutral-400 font-sans">
+              <p className="text-xs text-neutral-300 font-outfit leading-relaxed">
                 Simulate multilateral diplomacy, Youth Parliament, and crisis committees
               </p>
             </div>
@@ -870,11 +874,11 @@ export function EventsFeed() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl font-space font-black text-white tracking-tight uppercase flex items-center gap-2">
                 <Radio className="w-5 h-5 text-cyan-400 animate-pulse" />
                 <span>Virtual Chambers &amp; Digital Summits</span>
               </h2>
-              <p className="text-xs text-neutral-400 font-sans">
+              <p className="text-xs text-neutral-300 font-outfit leading-relaxed">
                 Convene remotely from anywhere in the world with real-time voting and speech timers
               </p>
             </div>
@@ -945,10 +949,10 @@ export function EventsFeed() {
       <section className="space-y-6 pt-4 border-t border-white/10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-space font-black text-white tracking-tight uppercase">
               All Convenings &amp; Delegations
             </h2>
-            <p className="text-xs text-neutral-400 font-sans">
+            <p className="text-xs text-neutral-300 font-outfit leading-relaxed">
               Filter by proximity radar, status, or search through all verified summits
             </p>
           </div>
