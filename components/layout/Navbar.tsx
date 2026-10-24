@@ -390,13 +390,14 @@ export function Navbar({
 
         {/* Navbar Container scaled to 80% so all controls fit cleanly in frame */}
         <nav 
-          className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 [zoom:0.80]"
-          style={{ zoom: '80%' }}
+          className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 [zoom:0.88]"
+          style={{ zoom: '88%' }}
         >
 
           {/* LEFT: Brand Logo & Wordmark (with integrated Platform Drawer Toggle when hasPlatformSidebar=true) */}
           <div className="flex items-center shrink-0 mr-3 sm:mr-4 lg:mr-6 gap-2 sm:gap-2.5">
-            {hasPlatformSidebar && (
+            {/* Navigation Anchor: Three lines on platform, Back button (<-) on inner pages */}
+            {hasPlatformSidebar ? (
               <button
                 type="button"
                 onClick={onTogglePlatformSidebar}
@@ -412,10 +413,7 @@ export function Navbar({
               >
                 <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
-            )}
-
-            {/* Sovereign Universal Back Button (Always redirects ONLY to previous page; hidden on landing root) */}
-            {pathname !== '/' && !hasPlatformSidebar && (
+            ) : pathname !== '/' ? (
               <button
                 type="button"
                 onClick={() => {
@@ -431,7 +429,7 @@ export function Navbar({
               >
                 <ArrowLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5 group-hover:-translate-x-0.5 transition-transform" />
               </button>
-            )}
+            ) : null}
 
             <Link href="/" className="group flex items-center gap-2.5 sm:gap-3">
               <div className="relative h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
@@ -764,8 +762,8 @@ export function Navbar({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              style={{ zoom: '82%' }}
-              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain [zoom:0.82]"
+              style={{ zoom: '88%' }}
+              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain [zoom:0.88]"
             >
               {/* Navigation Links Grid */}
               <div className="grid grid-cols-2 gap-2 font-display text-xs tracking-wider uppercase">
