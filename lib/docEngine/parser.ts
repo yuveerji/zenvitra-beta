@@ -150,6 +150,27 @@ export function detectDocumentType(rawText: string): { type: DocumentType; confi
 }
 
 /**
+ * Unflattens multi-column tables, copy-pasted matrices, and dash-separated provisions
+ * (e.g. "1. Matrix... — — — — 2. Review... — — — — 3. Schedule...") into clean sequential lines
+ */
+export function unflattenPastedTableLines(text: string): string {
+  if (!text) return '';
+  return text
+    // 1. Unflatten multi-dash table column separator followed by a number:
+    // e.g. "matrix. — — — — 2. A review" or "matrix. - - - - 2. A review"
+    .replace(/(?:\.?\s*(?:[—–-]\s*){2,}|\s+[—–-]\s+)(\d+)[\.\)]\s+/g, '.\n$1. ')
+    // 2. Unflatten multi-dash table column separator followed by subclause numbering:
+    // e.g. "Item A — — — — (b) Item B"
+    .replace(/(?:\.?\s*(?:[—–-]\s*){2,}|\s+[—–-]\s+)(\([a-zA-Z\d]+\))\s+/g, '.\n$1 ')
+    // 3. Unflatten multi-dash table column separator between phrases / cells:
+    .replace(/\s*(?:[—–-]\s*){3,}\s*/g, '\n- ')
+    // 4. Tab-separated numbered entries from spreadsheets/tables:
+    .replace(/\t+(\d+)[\.\)]\s+/g, '\n$1. ')
+    // 5. Clean up multiple consecutive newlines:
+    .replace(/\n{3,}/g, '\n\n');
+}
+
+/**
  * Strips raw URLs, markdown link syntax, and source noise while preserving readable text
  */
 export function cleanDocumentText(text: string): string {
@@ -189,7 +210,8 @@ const WORD_OR_NUM_TO_ROMAN: Record<string, string> = {
  * Universal Document Parser & Structuring Engine (ZEN.DOCENGINE)
  */
 export function parseDocument(rawText: string, forcedType?: DocumentType): ParsedDocResult {
-  const sanitizedText = cleanDocumentText(rawText);
+  const unflattenedText = unflattenPastedTableLines(rawText);
+  const sanitizedText = cleanDocumentText(unflattenedText);
   const cleanText = sanitizedText.replace(/\r\n/g, '\n').trim();
   const detection = detectDocumentType(cleanText);
   const docType = forcedType || detection.type;
@@ -249,9 +271,12 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
   const finalizeClause = (clause: DocumentClause | null, subClauses: ClauseSubItem[]): DocumentClause | null => {
     if (!clause) return null;
     if (subClauses.length > 0) {
-      clause.subClauses = [...subClauses];
+      clause.subClauses = subClauses.map(s => ({
+        ...s,
+        text: cleanDocumentText(s.text).replace(/^[—–:\s-]+/, '').trim()
+      }));
     }
-    clause.text = cleanDocumentText(clause.text || '');
+    clause.text = cleanDocumentText(clause.text || '').replace(/^[—–:\s-]+/, '').trim();
     if (clause.title) {
       clause.title = cleanDocumentText(clause.title)
         .replace(/^[#\s*—:;–-]+/, '')
@@ -429,7 +454,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
 
           activeSubClauses.push({
             number: sNum,
-            text: cleanDocumentText(nextLine)
+            text: cleanDocumentText(nextLine).replace(/^[—–:\s-]+/, '').trim()
           });
           i++; // advance past text line
           continue;
@@ -446,7 +471,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
 
         activeSubClauses.push({
           number: sNum,
-          text: cleanDocumentText(explicitSubMatch[2].trim())
+          text: cleanDocumentText(explicitSubMatch[2].trim()).replace(/^[—–:\s-]+/, '').trim()
         });
         continue;
       }
@@ -460,17 +485,17 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
           let sNum = nestedM[1];
           if (/^\d+[\.\)]$/.test(sNum)) sNum = `(${sNum.replace(/\D/g, '')})`;
           else if (/^[a-zA-Z][\.\)]$/.test(sNum)) sNum = `(${sNum[0].toLowerCase()})`;
-          activeSubClauses.push({ number: sNum, text: cleanDocumentText(nestedM[2].trim()) });
+          activeSubClauses.push({ number: sNum, text: cleanDocumentText(nestedM[2].trim()).replace(/^[—–:\s-]+/, '').trim() });
         } else {
           const defM = bText.match(/^(["“'][^"”']+["”'])\s*(?:means|includes|is|shall|—|-|:)\s*(.*)$/i);
           if (defM) {
             const letter = String.fromCharCode(97 + (activeSubClauses.length % 26));
             activeSubClauses.push({
               number: `(${letter})`,
-              text: `**${defM[1]}** means ${cleanDocumentText(defM[2].trim())}`
+              text: `**${defM[1]}** means ${cleanDocumentText(defM[2].trim()).replace(/^[—–:\s-]+/, '').trim()}`
             });
           } else {
-            activeSubClauses.push({ number: '•', text: cleanDocumentText(bText) });
+            activeSubClauses.push({ number: '•', text: cleanDocumentText(bText).replace(/^[—–:\s-]+/, '').trim() });
           }
         }
         continue;
@@ -503,7 +528,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
 
         activeSubClauses.push({
           number: sNum,
-          text: `**${defMatch[1]}** means ${cleanDocumentText(defMatch[2].trim())}`
+          text: `**${defMatch[1]}** means ${cleanDocumentText(defMatch[2].trim()).replace(/^[—–:\s-]+/, '').trim()}`
         });
         continue;
       }
@@ -555,7 +580,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
           }
           activeSubClauses.push({
             number: `(${lineNum})`,
-            text: cleanDocumentText(sText)
+            text: cleanDocumentText(sText).replace(/^[—–:\s-]+/, '').trim()
           });
           continue;
         }
@@ -627,7 +652,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
           else if (/^[a-zA-Z][\.\)]$/.test(sNum)) sNum = `(${sNum[0].toLowerCase()})`;
           activeSubClauses.push({
             number: sNum,
-            text: cleanDocumentText(subM[2].trim())
+            text: cleanDocumentText(subM[2].trim()).replace(/^[—–:\s-]+/, '').trim()
           });
           clauseText = '';
         }

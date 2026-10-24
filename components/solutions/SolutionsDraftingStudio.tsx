@@ -1379,18 +1379,20 @@ Zone 4 (Rural Enclaves): 68
 
                                   {/* Substantive clause text and all subclauses grouped in ONE continuous unbroken block & pipe ONLY when body content exists */}
                                   {hasBodyContent && (
-                                    <div className="pl-3 sm:pl-4 border-l-2 border-cyan-500/40 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
+                                    <div className="rounded-r-xl border-l-2 border-cyan-400/40 bg-gradient-to-r from-cyan-950/[0.12] via-cyan-950/[0.04] to-transparent pl-4 sm:pl-5 pr-3 py-3 my-2 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
                                       {hasTextToShow && (
-                                        <div>
+                                        <div className="text-neutral-100">
                                           <SolutionRichContent content={clause.text} />
                                         </div>
                                       )}
 
                                       {hasSubClauses && (
-                                        <div className="space-y-2 pt-0.5">
+                                        <div className="space-y-2.5 pt-1">
                                           {clause.subClauses!.map((sub, sIdx) => (
                                             <div key={`sub-${sIdx}`} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-serif text-neutral-300 leading-relaxed">
-                                              <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none">{sub.number}</span>
+                                              <span className="font-mono text-cyan-300 font-semibold text-xs shrink-0 mt-0.5 select-none bg-cyan-950/60 border border-cyan-500/25 px-1.5 py-0.5 rounded text-center min-w-[24px]">
+                                                {sub.number}
+                                              </span>
                                               <div className="text-neutral-200 flex-1">
                                                 <SolutionRichContent content={sub.text} />
                                               </div>
@@ -1436,17 +1438,19 @@ Zone 4 (Rural Enclaves): 68
                             </h4>
 
                             {hasBodyContent && (
-                              <div className="pl-3 sm:pl-4 border-l-2 border-cyan-500/40 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
+                              <div className="rounded-r-xl border-l-2 border-cyan-400/40 bg-gradient-to-r from-cyan-950/[0.12] via-cyan-950/[0.04] to-transparent pl-4 sm:pl-5 pr-3 py-3 my-2 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
                                 {hasTextToShow && (
-                                  <div>
+                                  <div className="text-neutral-100">
                                     <SolutionRichContent content={clause.text} />
                                   </div>
                                 )}
                                 {hasSubClauses && (
-                                  <div className="space-y-2 pt-0.5">
+                                  <div className="space-y-2.5 pt-1">
                                     {clause.subClauses!.map((sub, sIdx) => (
                                       <div key={`sub-${sIdx}`} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-serif text-neutral-300 leading-relaxed">
-                                        <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none">{sub.number}</span>
+                                        <span className="font-mono text-cyan-300 font-semibold text-xs shrink-0 mt-0.5 select-none bg-cyan-950/60 border border-cyan-500/25 px-1.5 py-0.5 rounded text-center min-w-[24px]">
+                                          {sub.number}
+                                        </span>
                                         <div className="text-neutral-200 flex-1">
                                           <SolutionRichContent content={sub.text} />
                                         </div>

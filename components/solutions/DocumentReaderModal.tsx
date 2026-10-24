@@ -2796,7 +2796,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                     </div>
 
                     {/* Complete Schedule Text grouped into one unified block */}
-                    <div className="text-neutral-200 font-serif text-[13px] sm:text-[14px] leading-relaxed pl-3.5 sm:pl-5 border-l-2 border-amber-500/25 overflow-x-auto">
+                    <div className="rounded-r-xl border-l-2 border-amber-400/40 bg-gradient-to-r from-amber-950/[0.12] via-amber-950/[0.04] to-transparent pl-4 sm:pl-5 pr-3 py-3 my-2 text-neutral-200 font-serif text-[13px] sm:text-[14px] leading-relaxed overflow-x-auto">
                       <SolutionRichContent content={schedule.content} />
                     </div>
                   </div>
@@ -2883,7 +2883,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
 
                             {/* Continuous unified legislative block: entire text + all subclauses */}
                             {hasBodyContent && (
-                              <div className="pl-3.5 sm:pl-5 border-l-2 border-purple-500/30 text-neutral-200 font-serif text-[14px] sm:text-[15px] leading-relaxed space-y-3">
+                              <div className="rounded-r-xl border-l-2 border-purple-400/40 bg-gradient-to-r from-purple-950/[0.12] via-purple-950/[0.04] to-transparent pl-4 sm:pl-5 pr-3 py-3 my-2 text-neutral-200 font-serif text-[14px] sm:text-[15px] leading-relaxed space-y-3">
                                 {hasTextToShow && (
                                   <div className="text-neutral-100">
                                     <SolutionRichContent content={clause.text} />
@@ -2891,16 +2891,18 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                                 )}
 
                                 {hasSubClauses && (
-                                  <div className="space-y-2 pt-0.5">
+                                  <div className="space-y-2.5 pt-1">
                                     {clause.subClauses!.map((sub: ClauseSubItem, sIdx: number) => (
                                       <div
                                         key={`floor-sub-${clause.id || clause.clauseNumber}-${sub.number || sIdx}`}
                                         className="flex items-start gap-2.5 text-[13px] sm:text-[14px] text-neutral-300 leading-relaxed"
                                       >
-                                        <span className="font-mono text-cyan-400/90 font-bold shrink-0 mt-0.5 select-none">
+                                        <span className="font-mono text-purple-300 font-semibold text-xs sm:text-[13px] shrink-0 mt-0.5 select-none bg-purple-950/60 border border-purple-500/25 px-1.5 py-0.5 rounded text-center min-w-[24px]">
                                           {sub.number}
                                         </span>
-                                        <span className="text-neutral-200">{sub.text}</span>
+                                        <div className="text-neutral-200 flex-1">
+                                          <SolutionRichContent content={sub.text} />
+                                        </div>
                                       </div>
                                     ))}
                                   </div>

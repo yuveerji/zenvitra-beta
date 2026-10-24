@@ -8,6 +8,7 @@ import {
   CheckCircle2, 
   Table as TableIcon, 
   Sparkles, 
+  Star,
   Activity,
   Layers,
   ArrowUpRight,
@@ -614,6 +615,206 @@ export function RenderedKPIs({ block }: { block: ParsedKPIs }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// PARAGRAPH & INLINE STATUTORY FORMATTER
+// ─────────────────────────────────────────────────────────────────────────────
+function toRomanLower(num: number): string {
+  const romanMap: [number, string][] = [
+    [10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']
+  ];
+  let result = '';
+  let n = num;
+  for (const [val, sym] of romanMap) {
+    while (n >= val) {
+      result += sym;
+      n -= val;
+    }
+  }
+  return result || String(num);
+}
+
+function formatInlineText(raw: string): React.ReactNode {
+  const cleaned = raw
+    .replace(/\[([^\]]+)\]\((?:https?:\/\/[^\s)]+|www\.[^\s)]+)\)/gi, (_, label) => {
+      return /^(?:https?:\/\/|www\.)/i.test(label) ? '' : label;
+    })
+    .replace(/<https?:\/\/[^>]+>/gi, '')
+    .replace(/(?:Source|Ref|Available at|URL|See|Link):\s*(?:https?:\/\/|www\.)[^\s<>"')]+/gi, '')
+    .replace(/\b(?:https?:\/\/|www\.)[^\s<>"')]+(?:\b|\/)?/gi, '')
+    .replace(/\(\s*\)/g, '');
+
+  const parts = cleaned.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, partIdx) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={partIdx} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+    }
+    const subTokens = part.split(/(\B#[\w-]+)/g);
+    if (subTokens.length > 1) {
+      return (
+        <span key={partIdx}>
+          {subTokens.map((tok, tIdx) => {
+            if (tok.startsWith('#') && tok.length > 1) {
+              return (
+                <span
+                  key={`tag-${tIdx}`}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 font-mono text-[11px] font-bold mx-1"
+                >
+                  {tok}
+                </span>
+              );
+            }
+            return tok;
+          })}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
+function renderStructuredParagraph(paragraph: string, bIdx: number, pIdx: number) {
+  const trimmed = paragraph.trim();
+  if (!trimmed) return null;
+
+  // 1. Markdown Header Check
+  const headerMatch = trimmed.match(/^(#{1,4})\s+(.*)$/);
+  if (headerMatch) {
+    const level = headerMatch[1].length;
+    const hText = headerMatch[2].trim().replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
+    if (level === 1) {
+      return (
+        <h2 key={`h1-${bIdx}-${pIdx}`} className="text-base sm:text-lg font-space font-black text-white mt-4 mb-2 tracking-tight">
+          {hText}
+        </h2>
+      );
+    }
+    if (level === 2) {
+      return (
+        <h3 key={`h2-${bIdx}-${pIdx}`} className="text-sm sm:text-base font-space font-bold text-cyan-300 mt-3 mb-1.5 tracking-tight uppercase">
+          {hText}
+        </h3>
+      );
+    }
+    if (level === 3) {
+      return (
+        <h4 key={`h3-${bIdx}-${pIdx}`} className="text-xs sm:text-sm font-space font-bold text-amber-300 mt-2.5 mb-1 tracking-tight">
+          {hText}
+        </h4>
+      );
+    }
+    return (
+      <h5 key={`h4-${bIdx}-${pIdx}`} className="text-xs font-mono font-bold text-neutral-300 mt-2 mb-1 uppercase tracking-wider">
+        {hText}
+      </h5>
+    );
+  }
+
+  // Split lines within paragraph to detect bullet groups, parent statements, or numbered items
+  const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return null;
+
+  const isBulletLine = (line: string) => /^[-*•—–]\s+(.*)$/.test(line);
+  const isNumberedLine = (line: string) => /^\d+[\.\)]\s+(.*)$/.test(line);
+
+  // Pattern A: Parent Lead Statement + Child Bullet Points
+  // E.g. Parent line ending with ':' or major provision > 40 chars, followed by lines starting with '-'
+  const firstLineIsParentWithBullets = 
+    lines.length > 1 && 
+    (lines[0].endsWith(':') || (lines[0].length > 40 && isBulletLine(lines[1])));
+
+  if (firstLineIsParentWithBullets) {
+    const rawParentText = lines[0].replace(/^[-*•—–]\s*/, '').replace(/^[—–:\s-]+/, '').trim();
+    const childLines = lines.slice(1);
+
+    return (
+      <div key={`parent-group-${bIdx}-${pIdx}`} className="space-y-2.5 my-2">
+        {/* Prominent Parent Statement with Star/Sparkle Badge */}
+        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-gradient-to-r from-amber-500/[0.08] via-amber-500/[0.03] to-transparent border border-amber-500/25 shadow-sm">
+          <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+          <div className="text-neutral-100 font-medium text-xs sm:text-sm leading-relaxed">
+            {formatInlineText(rawParentText)}
+          </div>
+        </div>
+
+        {/* Indented Numbered Child Points (e.g. (i), (ii), (iii)) */}
+        <div className="pl-4 sm:pl-6 space-y-2">
+          {childLines.map((cLine, cIdx) => {
+            const cleanChild = cLine.replace(/^[-*•—–]\s*/, '').replace(/^[—–:\s-]+/, '').trim();
+            return (
+              <div key={`child-pt-${bIdx}-${pIdx}-${cIdx}`} className="flex items-start gap-2.5 text-xs sm:text-[13px] text-neutral-200 leading-relaxed">
+                <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none bg-cyan-950/50 border border-cyan-500/20 px-1.5 py-0.5 rounded text-center min-w-[26px]">
+                  ({toRomanLower(cIdx + 1)})
+                </span>
+                <div className="flex-1 text-neutral-300">
+                  {formatInlineText(cleanChild)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Pattern B: Sequence of Numbered Items (e.g. statutory matrix/schedule provisions)
+  const allNumbered = lines.length > 1 && lines.every(l => isNumberedLine(l));
+  if (allNumbered) {
+    return (
+      <div key={`num-group-${bIdx}-${pIdx}`} className="space-y-2 my-2 pl-1">
+        {lines.map((nLine, nIdx) => {
+          const match = nLine.match(/^(\d+)[\.\)]\s+(.*)$/);
+          const num = match ? match[1] : `${nIdx + 1}`;
+          const text = match ? match[2].trim() : nLine;
+          return (
+            <div key={`num-row-${bIdx}-${pIdx}-${nIdx}`} className="flex items-start gap-2.5 text-xs sm:text-sm text-neutral-200 leading-relaxed">
+              <span className="font-mono text-cyan-300 font-bold shrink-0 mt-0.5 select-none bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-md min-w-[26px] text-center">
+                {num}.
+              </span>
+              <div className="flex-1 text-neutral-200">
+                {formatInlineText(text)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Pattern C: Bullet items with styled glowing dots instead of raw '-'
+  const hasAnyBullets = lines.some(l => isBulletLine(l));
+  if (hasAnyBullets) {
+    return (
+      <div key={`bullet-group-${bIdx}-${pIdx}`} className="space-y-1.5 my-1.5 pl-1">
+        {lines.map((bLine, bSubIdx) => {
+          if (isBulletLine(bLine)) {
+            const cleanBullet = bLine.replace(/^[-*•—–]\s*/, '').replace(/^[—–:\s-]+/, '').trim();
+            return (
+              <div key={`dot-${bIdx}-${pIdx}-${bSubIdx}`} className="flex items-start gap-2.5 pl-2 py-0.5 text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2 shrink-0 shadow-[0_0_8px_rgba(34,211,238,0.7)]" />
+                <div className="flex-1">
+                  {formatInlineText(cleanBullet)}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <p key={`p-sub-${bIdx}-${pIdx}-${bSubIdx}`} className="leading-relaxed text-neutral-200 text-xs sm:text-sm">
+              {formatInlineText(bLine)}
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Pattern D: Standard Text Paragraph
+  return (
+    <p key={`p-${bIdx}-${pIdx}`} className="leading-relaxed text-neutral-200 text-xs sm:text-sm">
+      {formatInlineText(trimmed)}
+    </p>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN EXPORT: SolutionRichContent
 // ─────────────────────────────────────────────────────────────────────────────
 interface SolutionRichContentProps {
@@ -640,90 +841,10 @@ export function SolutionRichContent({ content, className = '' }: SolutionRichCon
         if (block.type === 'kpi') {
           return <RenderedKPIs key={`block-kpi-${bIdx}`} block={block} />;
         }
-        // Text block: format line breaks, markdown headers, hashtags & clean links
+        // Text block: format line breaks, markdown headers, parent stars, sub-points & clean links
         return (
           <div key={`block-txt-${bIdx}`} className="text-neutral-200 font-serif leading-relaxed text-sm sm:text-[15px] space-y-2.5">
-            {block.content.split('\n\n').map((paragraph, pIdx) => {
-              const trimmed = paragraph.trim();
-              if (!trimmed) return null;
-
-              // Check if paragraph is a markdown header (# Header, ## Header, ### Header)
-              const headerMatch = trimmed.match(/^(#{1,4})\s+(.*)$/);
-              if (headerMatch) {
-                const level = headerMatch[1].length;
-                const hText = headerMatch[2].trim().replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
-                if (level === 1) {
-                  return (
-                    <h2 key={`h1-${bIdx}-${pIdx}`} className="text-base sm:text-lg font-space font-black text-white mt-4 mb-2 tracking-tight">
-                      {hText}
-                    </h2>
-                  );
-                }
-                if (level === 2) {
-                  return (
-                    <h3 key={`h2-${bIdx}-${pIdx}`} className="text-sm sm:text-base font-space font-bold text-cyan-300 mt-3 mb-1.5 tracking-tight uppercase">
-                      {hText}
-                    </h3>
-                  );
-                }
-                if (level === 3) {
-                  return (
-                    <h4 key={`h3-${bIdx}-${pIdx}`} className="text-xs sm:text-sm font-space font-bold text-amber-300 mt-2.5 mb-1 tracking-tight">
-                      {hText}
-                    </h4>
-                  );
-                }
-                return (
-                  <h5 key={`h4-${bIdx}-${pIdx}`} className="text-xs font-mono font-bold text-neutral-300 mt-2 mb-1 uppercase tracking-wider">
-                    {hText}
-                  </h5>
-                );
-              }
-
-              // Clean any raw URLs or markdown link syntax from paragraph text
-              const cleanedText = trimmed
-                .replace(/\[([^\]]+)\]\((?:https?:\/\/[^\s)]+|www\.[^\s)]+)\)/gi, (_, label) => {
-                  return /^(?:https?:\/\/|www\.)/i.test(label) ? '' : label;
-                })
-                .replace(/<https?:\/\/[^>]+>/gi, '')
-                .replace(/(?:Source|Ref|Available at|URL|See|Link):\s*(?:https?:\/\/|www\.)[^\s<>"')]+/gi, '')
-                .replace(/\b(?:https?:\/\/|www\.)[^\s<>"')]+(?:\b|\/)?/gi, '')
-                .replace(/\(\s*\)/g, '');
-
-              // Parse simple **bold**
-              const parts = cleanedText.split(/(\*\*.*?\*\*)/g);
-              return (
-                <p key={`p-${bIdx}-${pIdx}`} className="leading-relaxed">
-                  {parts.map((part, partIdx) => {
-                    if (part.startsWith('**') && part.endsWith('**')) {
-                      return <strong key={partIdx} className="font-bold text-white">{part.slice(2, -2)}</strong>;
-                    }
-                    // Check for inline hashtags (e.g. #governance, #section4)
-                    const subTokens = part.split(/(\B#[\w-]+)/g);
-                    if (subTokens.length > 1) {
-                      return (
-                        <span key={partIdx}>
-                          {subTokens.map((tok, tIdx) => {
-                            if (tok.startsWith('#') && tok.length > 1) {
-                              return (
-                                <span
-                                  key={`tag-${tIdx}`}
-                                  className="inline-flex items-center px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 font-mono text-[11px] font-bold mx-1"
-                                >
-                                  {tok}
-                                </span>
-                              );
-                            }
-                            return tok;
-                          })}
-                        </span>
-                      );
-                    }
-                    return part;
-                  })}
-                </p>
-              );
-            })}
+            {block.content.split('\n\n').map((paragraph, pIdx) => renderStructuredParagraph(paragraph, bIdx, pIdx))}
           </div>
         );
       })}
