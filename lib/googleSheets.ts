@@ -179,7 +179,8 @@ export interface RegisterRecord {
   institutionOrSchool?: string;
   phoneNumber?: string;
   countryCity?: string;
-  registrationType?: 'PRE_REGISTER' | 'DIRECT_REGISTER' | 'STANDARD' | string;
+  registrationType?: 'PRE_REGISTER' | 'DIRECT_REGISTER' | 'STANDARD' | 'PREREGISTER' | 'REGISTER' | string;
+  registrationStatus?: 'PREREGISTER' | 'REGISTER' | string;
   preferredTrack?: string;
   termsRatified?: boolean | string;
 }
@@ -486,7 +487,8 @@ export async function syncToGoogleSheet(payload: any) {
       institution: payload.institution || payload.institutionOrSchool,
       phoneNumber: payload.phoneNumber || payload.phone,
       countryCity: payload.countryCity || payload.city,
-      registrationType: payload.registrationType || 'DIRECT_REGISTER',
+      registrationType: (payload.registrationType && String(payload.registrationType).toUpperCase().indexOf('PRE') !== -1) ? 'PREREGISTER' : (payload.registrationType || 'REGISTER'),
+      registrationStatus: (payload.registrationType && String(payload.registrationType).toUpperCase().indexOf('PRE') !== -1) ? 'PREREGISTER' : 'REGISTER',
       preferredTrack: payload.preferredTrack || payload.initialRole,
       termsRatified: true,
     });

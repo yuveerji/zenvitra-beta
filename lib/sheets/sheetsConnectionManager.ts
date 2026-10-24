@@ -570,7 +570,7 @@ function initAllTabs() {
           "Phone Number [Optional]", "Age (Years)", "Minor Status (Under 18 / Adult)", "Parent / Guardian Full Name",
           "Parent / Guardian Emergency Contact", "Minor Consent & Parental Accord", "Role Designation", "Access Level",
           "Auth Provider", "Institution / School / University", "Country & City", "Registration Type",
-          "Terms & Privacy Ratification", "Account Status"
+          "Registration Status (REGISTER / PREREGISTER)", "Terms & Privacy Ratification", "Account Status"
         ];
       } else if (name === "People" || name === "01 People") {
         colHeaders = [

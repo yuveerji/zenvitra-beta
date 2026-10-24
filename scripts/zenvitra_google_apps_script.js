@@ -127,7 +127,7 @@ var TAB_SCHEMAS = {
       'Phone Number [Optional]', 'Age (Years)', 'Minor Status (Under 18 / Adult)', 'Parent / Guardian Full Name',
       'Parent / Guardian Emergency Contact', 'Minor Consent & Parental Accord', 'Role Designation', 'Access Level',
       'Auth Provider', 'Institution / School / University', 'Country & City', 'Registration Type',
-      'Terms & Privacy Ratification', 'Account Status', 'IP Address', 'Device / Browser'
+      'Registration Status (REGISTER / PREREGISTER)', 'Terms & Privacy Ratification', 'Account Status', 'IP Address', 'Device / Browser'
     ]
   },
 
@@ -1176,15 +1176,13 @@ function lookupVal(data, header) {
     return data.minorConsent || data.minorConfirmed || data["Minor Consent & Parental Accord"] || "PENDING";
   }
 
-  // ── REGISTRATION TYPE (PRE-LAUNCH WHITELIST vs DIRECT LIVE) ──
-  if (hAlpha.indexOf("registrationtype") !== -1 || hAlpha.indexOf("regtype") !== -1 || (hAlpha.indexOf("type") !== -1 && hAlpha.indexOf("regist") !== -1)) {
-    if (data.registrationType) {
-      if (String(data.registrationType).toUpperCase().indexOf("PRE") !== -1) return "PRE_REGISTER (Genesis Whitelist)";
-      return data.registrationType;
+  // ── REGISTRATION TYPE & STATUS (REGISTER / PREREGISTER FOR PERKS) ──
+  if (hAlpha.indexOf("registrationtype") !== -1 || hAlpha.indexOf("regtype") !== -1 || hAlpha.indexOf("preregister") !== -1 || (hAlpha.indexOf("status") !== -1 && (hAlpha.indexOf("regist") !== -1 || hAlpha.indexOf("perk") !== -1))) {
+    var rawReg = String(data["Registration Status (REGISTER / PREREGISTER)"] || data["Registration Type"] || data.registrationType || data.registrationStatus || data.regType || data.accessLevel || "").toUpperCase();
+    if (rawReg.indexOf("PRE") !== -1 || data.isPreRegistered === true) {
+      return "PREREGISTER";
     }
-    if (data.accessLevel && String(data.accessLevel).toLowerCase().indexOf("pre-register") !== -1) return "PRE_REGISTER (Genesis Whitelist)";
-    if (data.isPreRegistered) return "PRE_REGISTER (Genesis Whitelist)";
-    return "DIRECT_REGISTER";
+    return "REGISTER";
   }
 
   // ── ID PROOF / ENROLLMENT VERIFICATION ──
@@ -1397,6 +1395,8 @@ function mapPayloadToRow(schemaKey, data) {
       ];
 
     case 'REGISTER_CORE':
+      var rawRegInput = String(data["Registration Status (REGISTER / PREREGISTER)"] || data["Registration Type"] || data.registrationType || data.registrationStatus || data.regType || data.accessLevel || "").toUpperCase();
+      var regStatusFinal = (rawRegInput.indexOf("PRE") !== -1 || data.isPreRegistered === true) ? "PREREGISTER" : "REGISTER";
       return [
         now,
         data.userId || data.id || ('USR-' + Math.random().toString(36).substring(2, 8).toUpperCase()),
@@ -1410,11 +1410,12 @@ function mapPayloadToRow(schemaKey, data) {
         lookupVal(data, 'Parent / Guardian Emergency Contact'),
         lookupVal(data, 'Minor Consent & Parental Accord'),
         data.roleDesignation || data.role || 'DELEGATE',
-        data.accessLevel || 'MEMBER',
+        data.accessLevel || (regStatusFinal === "PREREGISTER" ? "Pre-Registered Sovereign Whitelist" : "MEMBER"),
         data.authProvider || data.provider || 'CREDENTIALS',
         lookupVal(data, 'Institution / School / University'),
         lookupVal(data, 'Location & Timezone'),
-        lookupVal(data, 'Registration Type'),
+        regStatusFinal,
+        regStatusFinal,
         'RATIFIED',
         data.accountStatus || 'ACTIVE',
         ip,

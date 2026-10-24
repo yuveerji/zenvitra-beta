@@ -98,7 +98,8 @@ export async function POST(req: Request) {
       institution,
       phoneNumber,
       countryCity,
-      registrationType: registrationType || 'DIRECT_REGISTER',
+      registrationType: (registrationType && String(registrationType).toUpperCase().indexOf('PRE') !== -1) ? 'PREREGISTER' : 'REGISTER',
+      registrationStatus: (registrationType && String(registrationType).toUpperCase().indexOf('PRE') !== -1) ? 'PREREGISTER' : 'REGISTER',
       preferredTrack: initialRole,
     });
 

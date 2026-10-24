@@ -338,7 +338,8 @@ export default function PreRegisterPage() {
         institution: formData.institutionOrSchool?.trim() || undefined,
         phoneNumber: formData.phoneNumber?.trim() || undefined,
         countryCity: formData.countryCity?.trim() || undefined,
-        registrationType: 'PRE_REGISTER',
+        registrationType: 'PREREGISTER',
+        registrationStatus: 'PREREGISTER',
         preferredTrack: formData.roleInterest,
         termsRatified: true,
       });
@@ -362,7 +363,8 @@ export default function PreRegisterPage() {
             institution: formData.institutionOrSchool?.trim() || undefined,
             phoneNumber: formData.phoneNumber?.trim() || undefined,
             countryCity: formData.countryCity?.trim() || undefined,
-            registrationType: 'PRE_REGISTER',
+            registrationType: 'PREREGISTER',
+        registrationStatus: 'PREREGISTER',
           }),
         });
 
