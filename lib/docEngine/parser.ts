@@ -150,10 +150,47 @@ export function detectDocumentType(rawText: string): { type: DocumentType; confi
 }
 
 /**
+ * Strips raw URLs, markdown link syntax, and source noise while preserving readable text
+ */
+export function cleanDocumentText(text: string): string {
+  if (!text) return '';
+  return text
+    // 1. Convert markdown links [Label](url) -> if Label is a URL or empty, remove; else keep Label
+    .replace(/\[([^\]]+)\]\((?:https?:\/\/[^\s)]+|www\.[^\s)]+)\)/gi, (_, label) => {
+      const trimmed = label.trim();
+      if (/^(?:https?:\/\/|www\.)/i.test(trimmed)) return '';
+      return trimmed;
+    })
+    // 2. Remove angle bracket links <https://...>
+    .replace(/<https?:\/\/[^>]+>/gi, '')
+    // 3. Remove raw URLs with prefixes like Source: https://...
+    .replace(/(?:Source|Ref|Available at|URL|See|Link):\s*(?:https?:\/\/|www\.)[^\s<>"')]+/gi, '')
+    // 4. Remove bare URLs
+    .replace(/\b(?:https?:\/\/|www\.)[^\s<>"')]+(?:\b|\/)?/gi, '')
+    // 5. Remove leftover empty parentheses or brackets
+    .replace(/\(\s*\)/g, '')
+    .replace(/\[\s*\]/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+
+const WORD_OR_NUM_TO_ROMAN: Record<string, string> = {
+  '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V',
+  '6': 'VI', '7': 'VII', '8': 'VIII', '9': 'IX', '10': 'X',
+  '11': 'XI', '12': 'XII', '13': 'XIII', '14': 'XIV', '15': 'XV',
+  '16': 'XVI', '17': 'XVII', '18': 'XVIII', '19': 'XIX', '20': 'XX',
+  ONE: 'I', TWO: 'II', THREE: 'III', FOUR: 'IV', FIVE: 'V',
+  SIX: 'VI', SEVEN: 'VII', EIGHT: 'VIII', NINE: 'IX', TEN: 'X',
+  ELEVEN: 'XI', TWELVE: 'XII', THIRTEEN: 'XIII', FOURTEEN: 'XIV', FIFTEEN: 'XV',
+  SIXTEEN: 'XVI', SEVENTEEN: 'XVII', EIGHTEEN: 'XVIII', NINETEEN: 'XIX', TWENTY: 'XX',
+};
+
+/**
  * Universal Document Parser & Structuring Engine (ZEN.DOCENGINE)
  */
 export function parseDocument(rawText: string, forcedType?: DocumentType): ParsedDocResult {
-  const cleanText = rawText.replace(/\r\n/g, '\n').trim();
+  const sanitizedText = cleanDocumentText(rawText);
+  const cleanText = sanitizedText.replace(/\r\n/g, '\n').trim();
   const detection = detectDocumentType(cleanText);
   const docType = forcedType || detection.type;
 
@@ -165,15 +202,16 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
 
   for (let i = 0; i < Math.min(lines.length, 8); i++) {
     const l = lines[i];
+    const strippedL = l.replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
     if (
-      l.toUpperCase().startsWith('THE ') &&
-      (l.toUpperCase().includes('BILL') || l.toUpperCase().includes('ACT') || l.toUpperCase().includes('POLICY') || l.toUpperCase().includes('RESOLUTION') || l.toUpperCase().includes('CHARTER'))
+      strippedL.toUpperCase().startsWith('THE ') &&
+      (strippedL.toUpperCase().includes('BILL') || strippedL.toUpperCase().includes('ACT') || strippedL.toUpperCase().includes('POLICY') || strippedL.toUpperCase().includes('RESOLUTION') || strippedL.toUpperCase().includes('CHARTER'))
     ) {
-      title = l;
+      title = strippedL;
       titleEndIndex = i;
       break;
-    } else if (l.toUpperCase().includes('BILL, 202') || l.toUpperCase().includes('ACT, 202') || l.toUpperCase().includes('RESOLUTION')) {
-      title = l;
+    } else if (strippedL.toUpperCase().includes('BILL, 202') || strippedL.toUpperCase().includes('ACT, 202') || strippedL.toUpperCase().includes('RESOLUTION')) {
+      title = strippedL;
       titleEndIndex = i;
       break;
     }
@@ -181,7 +219,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
 
   // If no specialized title line was found, take the very first non-empty line
   if (title === 'UNTITLED LEGISLATIVE PROPOSAL' && lines.length > 0) {
-    title = lines[0];
+    title = lines[0].replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
     titleEndIndex = 0;
   }
 
@@ -200,10 +238,10 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
   let activeSubClauses: ClauseSubItem[] = [];
   let inCodeBlock = false;
 
-  const chapterRegex = /^(?:CHAPTER|PART)\s+([IVXLCDM\d]+)[—:\s.-]+(.*)$/i;
+  const chapterRegex = /^(?:CHAPTER|PART)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i;
   const scheduleRegex = /^(?:THE\s+)?([A-Z0-9IVXLCDM\w\s-]+SCHEDULE|SCHEDULE\s+[A-Z0-9IVXLCDM\w-]+)[—:\s.-]*(.*)$/i;
   const clauseRegex = /^(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:-]+(.*)$/i;
-  const subClauseRegex = /^(\(\d+\)|\([a-zA-Z]\)|\([ivxlcdmIVXLCDM]+\)|\[\w+\]|\d+\.\d+)\s*(.*)$/;
+  const subClauseRegex = /^(\(\d+\)|\([a-zA-Z]\)|\([ivxlcdmIVXLCDM]+\)|\[\w+\]|\d+\.\d+|\([a-zA-Z\d]+\)\.|\d+\)|\b[a-zA-Z]\)|\b[a-zA-Z]\.)\s*(.*)$/;
   const enactingRegex = /^(?:BE\s+it\s+enacted|WHEREAS|AND\s+WHEREAS|HAVING\s+CONSIDERED|NOTING\s+WITH\s+SATISFACTION)/i;
 
   let bodyStartIndex = titleEndIndex + 1;
@@ -213,8 +251,19 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
     if (subClauses.length > 0) {
       clause.subClauses = [...subClauses];
     }
+    clause.text = cleanDocumentText(clause.text || '');
+    if (clause.title) {
+      clause.title = cleanDocumentText(clause.title)
+        .replace(/^[#\s*—:;.-]+/, '')
+        .replace(/[;.:—–-]+$/, '')
+        .trim();
+    }
+    // If text is identical to title, clear text so it never duplicates in rendering
+    if (clause.text && clause.title && clause.text.toLowerCase().trim() === clause.title.toLowerCase().trim()) {
+      clause.text = '';
+    }
     if (!clause.text && (!clause.subClauses || clause.subClauses.length === 0)) {
-      clause.text = clause.title || `Clause ${clause.clauseNumber}`;
+      clause.text = clause.title ? '' : `Clause ${clause.clauseNumber}`;
     }
     return clause;
   };
@@ -310,9 +359,30 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       }
     }
 
-    // Check for Chapter / Part header (e.g. "# CHAPTER XII" or "CHAPTER I — PRELIMINARY")
-    const chapMatch = strippedLine.match(chapterRegex);
+    // Check for Chapter / Part header (e.g. "# CHAPTER XII", "CHAPTER I — PRELIMINARY", "CHAPTER 1", "PART II")
+    const chapMatch = strippedLine.match(/^(?:CHAPTER|PART)\s+([IVXLCDM\d]+|[A-Za-z]+)(?:[—:.-]|\s+—|\s+-|\s*:|\s+|$)(.*)$/i);
     if (chapMatch) {
+      const rawNum = chapMatch[1].trim().toUpperCase();
+      const romanNum = WORD_OR_NUM_TO_ROMAN[rawNum] || (/^[IVXLCDM]+$/.test(rawNum) ? rawNum : rawNum);
+      
+      let chapTitle = cleanDocumentText(chapMatch[2]?.trim() || '').replace(/^[—:.-]+/, '').trim();
+      // If chapter title was on the next line (e.g. line 1: CHAPTER I, line 2: PRELIMINARY)
+      if (!chapTitle && i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        const nextStripped = nextLine.replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
+        if (
+          !/^(?:CHAPTER|PART|CLAUSE|SECTION|ARTICLE|RULE|\d+[\.\)])/i.test(nextStripped) &&
+          !/^(?:BE\s+it\s+enacted|WHEREAS|AND\s+WHEREAS)/i.test(nextStripped) &&
+          nextLine.length < 90
+        ) {
+          chapTitle = cleanDocumentText(nextStripped);
+          i++; // advance past title line
+        }
+      }
+      if (!chapTitle) {
+        chapTitle = 'General Provisions';
+      }
+
       if (activeClause) {
         const finalized = finalizeClause(activeClause, activeSubClauses);
         if (finalized) clauses.push(finalized);
@@ -320,8 +390,8 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         activeSubClauses = [];
       }
 
-      currentChapterNumber = `Chapter ${chapMatch[1].toUpperCase()}`;
-      currentChapterTitle = chapMatch[2]?.trim() || 'General';
+      currentChapterNumber = `Chapter ${romanNum}`;
+      currentChapterTitle = chapTitle;
       const isDataChapter = /data|metric|statistics|outlay|budget|empirical|analytical/i.test(currentChapterTitle);
       
       const chapId = `chap_${chapters.length + 1}`;
@@ -335,19 +405,118 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       continue;
     }
 
-    // Check for Sub-clause (e.g. "(1) Every public authority..." or "(a) 'coaching' means..." or "6.1")
-    const subMatch = strippedLine.match(subClauseRegex);
-    if (subMatch && activeClause) {
-      activeSubClauses.push({
-        number: subMatch[1],
-        text: subMatch[2].trim()
-      });
-      continue;
+    // ─────────────────────────────────────────────────────────────────────────
+    // SUBCLAUSE EXTRACTION & CONTINUOUS CLAUSE BINDING
+    // ─────────────────────────────────────────────────────────────────────────
+    if (activeClause) {
+      // 1. Standalone Subclause Marker on its own line (e.g. line 1 is "1." or "(1)", line 2 has the text)
+      const standaloneMarkerMatch = strippedLine.match(/^(\(\d+\)|\([a-zA-Z]\)|\([ivxlcdmIVXLCDM]+\)|\d+\.|\d+\)|\b[a-zA-Z]\.|\b[a-zA-Z]\))$/);
+      if (standaloneMarkerMatch && i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        const nextStripped = nextLine.replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
+        if (
+          !/^(?:CHAPTER|PART|CLAUSE|SECTION|ARTICLE|RULE)/i.test(nextStripped) &&
+          nextLine.length > 0
+        ) {
+          let sNum = standaloneMarkerMatch[1];
+          if (/^\d+\.$/.test(sNum)) sNum = `(${sNum.slice(0, -1)})`;
+          else if (/^\d+\)$/.test(sNum)) sNum = `(${sNum.slice(0, -1)})`;
+          else if (/^[a-zA-Z][\.\)]$/.test(sNum)) sNum = `(${sNum[0].toLowerCase()})`;
+
+          activeSubClauses.push({
+            number: sNum,
+            text: cleanDocumentText(nextLine)
+          });
+          i++; // advance past text line
+          continue;
+        }
+      }
+
+      // 2. Explicit Subclause Marker on the same line:
+      // (1) Text..., (a) Text..., (i) Text..., [a] Text..., 1) Text..., a) Text..., a. Text...
+      const explicitSubMatch = strippedLine.match(/^(\(\d+\)|\([a-zA-Z]\)|\([ivxlcdmIVXLCDM]+\)|\[\w+\]|\d+\.\d+|\([a-zA-Z\d]+\)\.|\d+\)|\b[a-zA-Z]\)|\b[a-zA-Z]\.)\s+(.*)$/);
+      if (explicitSubMatch) {
+        let sNum = explicitSubMatch[1];
+        if (/^\d+\)$/.test(sNum)) sNum = `(${sNum.slice(0, -1)})`;
+        else if (/^[a-zA-Z][\.\)]$/.test(sNum)) sNum = `(${sNum[0].toLowerCase()})`;
+
+        activeSubClauses.push({
+          number: sNum,
+          text: cleanDocumentText(explicitSubMatch[2].trim())
+        });
+        continue;
+      }
+
+      // 3. Bullet points inside an active clause
+      const bulletMatch = strippedLine.match(/^[-*•—]\s+(.*)$/);
+      if (bulletMatch) {
+        const bText = bulletMatch[1].trim();
+        const nestedM = bText.match(/^(\(\d+\)|\([a-zA-Z]\)|\d+[\.\)]|[a-zA-Z][\.\)])\s*(.*)$/);
+        if (nestedM) {
+          let sNum = nestedM[1];
+          if (/^\d+[\.\)]$/.test(sNum)) sNum = `(${sNum.replace(/\D/g, '')})`;
+          else if (/^[a-zA-Z][\.\)]$/.test(sNum)) sNum = `(${sNum[0].toLowerCase()})`;
+          activeSubClauses.push({ number: sNum, text: cleanDocumentText(nestedM[2].trim()) });
+        } else {
+          const defM = bText.match(/^(["“'][^"”']+["”'])\s*(?:means|includes|is|shall|—|-|:)\s*(.*)$/i);
+          if (defM) {
+            const letter = String.fromCharCode(97 + (activeSubClauses.length % 26));
+            activeSubClauses.push({
+              number: `(${letter})`,
+              text: `**${defM[1]}** means ${cleanDocumentText(defM[2].trim())}`
+            });
+          } else {
+            activeSubClauses.push({ number: '•', text: cleanDocumentText(bText) });
+          }
+        }
+        continue;
+      }
+
+      // 4. Definition items without bullet (e.g. "term" means ... or 'term' includes ...)
+      const defMatch = strippedLine.match(/^(["“'][^"”']+["”'])\s*(?:means|includes|is|shall|—|-|:)\s*(.*)$/i);
+      if (defMatch && (/definition/i.test(activeClause.title || '') || /definition/i.test(activeClause.text || '') || activeSubClauses.length > 0)) {
+        const letter = String.fromCharCode(97 + (activeSubClauses.length % 26));
+        activeSubClauses.push({
+          number: `(${letter})`,
+          text: `**${defMatch[1]}** means ${cleanDocumentText(defMatch[2].trim())}`
+        });
+        continue;
+      }
+
+      // 5. Numbered point (e.g. "1. the supremacy of the Constitution;" or "1. Every covered public authority...")
+      const numberedPointMatch = strippedLine.match(/^(\d+)[\.\)]\s*(.*)$/);
+      if (numberedPointMatch) {
+        const lineNum = parseInt(numberedPointMatch[1], 10);
+        const restOfLine = numberedPointMatch[2].trim();
+        const currentClauseNum = parseInt(activeClause.clauseNumber, 10);
+
+        // Disqualify if it has an explicit clause keyword like "CLAUSE 5", "SECTION 5"
+        const hasExplicitClauseWord = /^(?:CLAUSE|SECTION|ARTICLE|RULE)\b/i.test(strippedLine);
+
+        // Detect if this is definitely a subclause:
+        const isSeqSub = activeSubClauses.length > 0 && lineNum === activeSubClauses.length + 1;
+        const isLessOrEqual = !isNaN(currentClauseNum) && lineNum <= currentClauseNum;
+        const endsWithSemicolon = /[;,]$/.test(restOfLine);
+        const isPrinciplesClause = /governing|principles|standards|guidelines|powers|duties|functions|responsibilities|definitions/i.test(activeClause.title || '') ||
+                                   /consistently with:|as follows:|including:|requirements:/i.test(activeClause.text || '');
+
+        const hasSectionTitle = restOfLine.includes(' — ') || restOfLine.includes(' - ') || restOfLine.includes('—') || (restOfLine.length < 35 && !endsWithSemicolon && !isSeqSub);
+
+        if (!hasExplicitClauseWord && (isLessOrEqual || endsWithSemicolon || isSeqSub || isPrinciplesClause || !hasSectionTitle)) {
+          activeSubClauses.push({
+            number: `(${lineNum})`,
+            text: cleanDocumentText(restOfLine)
+          });
+          continue;
+        }
+      }
     }
 
-    // Check for Main Clause / Section (e.g. "56. Public-service standards" or "Clause 1. Short Title")
-    const clauseMatch = strippedLine.match(clauseRegex);
-    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE|\d+[\.\)])/i.test(strippedLine);
+    // ─────────────────────────────────────────────────────────────────────────
+    // NEW TOP-LEVEL CLAUSE / SECTION
+    // ─────────────────────────────────────────────────────────────────────────
+    const clauseMatch = strippedLine.match(/^(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:-]+(.*)$/i);
+    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE)\b|\d+[\.\s—:-]/i.test(strippedLine);
 
     if (clauseMatch && isExplicitClause) {
       if (activeClause) {
@@ -362,22 +531,22 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       let clauseText = clauseTitleAndText;
 
       // Extract clause title if separated by dash, period, or em-dash
-      // e.g. "Short Title and Commencement. — (1) This Act may..."
-      const titleSplit = clauseTitleAndText.split(/[.—–-]\s+/);
-      if (titleSplit.length > 1 && titleSplit[0].length < 60) {
-        clauseTitle = titleSplit[0].replace(/^[#\s*—:-]+/, '').replace(/[.—–-]+$/, '').trim();
+      // e.g. "Governing principles — Every power and duty..."
+      const titleSplit = clauseTitleAndText.split(/\s*[—–-]\s+|\s*\.\s+(?=[A-Z])/);
+      if (titleSplit.length > 1 && titleSplit[0].length < 80) {
+        clauseTitle = titleSplit[0].replace(/^[#\s*—:-]+/, '').replace(/[;.:—–-]+$/, '').trim();
         clauseText = titleSplit.slice(1).join(' — ').trim();
       } else if (
-        clauseTitleAndText.length < 60 &&
+        clauseTitleAndText.length < 80 &&
         i + 1 < lines.length &&
-        !/^(?:CLAUSE|SECTION|ARTICLE|RULE|\d+[\.\)]|#)/i.test(lines[i + 1].trim()) &&
+        !/^(?:CHAPTER|PART|CLAUSE|SECTION|ARTICLE|RULE|\d+[\.\)]|#)/i.test(lines[i + 1].trim()) &&
         !subClauseRegex.test(lines[i + 1].trim())
       ) {
-        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[.—–-]+$/, '').trim();
+        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[;.:—–-]+$/, '').trim();
         clauseText = lines[i + 1].trim();
         i++;
-      } else if (clauseTitleAndText.length < 60 && !subClauseRegex.test(clauseTitleAndText)) {
-        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[.—–-]+$/, '').trim();
+      } else if (clauseTitleAndText.length < 80 && !subClauseRegex.test(clauseTitleAndText)) {
+        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[;.:—–-]+$/, '').trim();
         clauseText = '';
       } else {
         clauseTitle = '';
@@ -395,11 +564,14 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
 
       // Check if clauseText starts with an embedded subclause (e.g. "(1) Every public authority...")
       if (clauseText) {
-        const subM = clauseText.match(subClauseRegex);
+        const subM = clauseText.match(/^(\(\d+\)|\([a-zA-Z]\)|\([ivxlcdmIVXLCDM]+\)|\[\w+\]|\d+\.\d+|\([a-zA-Z\d]+\)\.|\d+\)|\b[a-zA-Z]\)|\b[a-zA-Z]\.)\s+(.*)$/);
         if (subM) {
+          let sNum = subM[1];
+          if (/^\d+\)$/.test(sNum)) sNum = `(${sNum.slice(0, -1)})`;
+          else if (/^[a-zA-Z][\.\)]$/.test(sNum)) sNum = `(${sNum[0].toLowerCase()})`;
           activeSubClauses.push({
-            number: subM[1],
-            text: subM[2].trim()
+            number: sNum,
+            text: cleanDocumentText(subM[2].trim())
           });
           clauseText = '';
         }
@@ -410,7 +582,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         clauseNumber: num,
         title: clauseTitle || undefined,
         type: docType === 'DRAFT_RESOLUTION' ? 'OPERATIVE' : docType === 'TREATY_CHARTER' ? 'ARTICLE' : 'SECTION',
-        text: clauseText,
+        text: cleanDocumentText(clauseText),
         chapterNumber: currentChapterNumber || undefined,
         chapterTitle: currentChapterTitle || undefined,
         subClauses: []

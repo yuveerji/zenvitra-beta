@@ -640,17 +640,84 @@ export function SolutionRichContent({ content, className = '' }: SolutionRichCon
         if (block.type === 'kpi') {
           return <RenderedKPIs key={`block-kpi-${bIdx}`} block={block} />;
         }
-        // Text block: format line breaks & bold formatting
+        // Text block: format line breaks, markdown headers, hashtags & clean links
         return (
-          <div key={`block-txt-${bIdx}`} className="text-neutral-200 font-serif leading-relaxed text-sm sm:text-[15px] space-y-2">
+          <div key={`block-txt-${bIdx}`} className="text-neutral-200 font-serif leading-relaxed text-sm sm:text-[15px] space-y-2.5">
             {block.content.split('\n\n').map((paragraph, pIdx) => {
+              const trimmed = paragraph.trim();
+              if (!trimmed) return null;
+
+              // Check if paragraph is a markdown header (# Header, ## Header, ### Header)
+              const headerMatch = trimmed.match(/^(#{1,4})\s+(.*)$/);
+              if (headerMatch) {
+                const level = headerMatch[1].length;
+                const hText = headerMatch[2].trim().replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
+                if (level === 1) {
+                  return (
+                    <h2 key={`h1-${bIdx}-${pIdx}`} className="text-base sm:text-lg font-space font-black text-white mt-4 mb-2 tracking-tight">
+                      {hText}
+                    </h2>
+                  );
+                }
+                if (level === 2) {
+                  return (
+                    <h3 key={`h2-${bIdx}-${pIdx}`} className="text-sm sm:text-base font-space font-bold text-cyan-300 mt-3 mb-1.5 tracking-tight uppercase">
+                      {hText}
+                    </h3>
+                  );
+                }
+                if (level === 3) {
+                  return (
+                    <h4 key={`h3-${bIdx}-${pIdx}`} className="text-xs sm:text-sm font-space font-bold text-amber-300 mt-2.5 mb-1 tracking-tight">
+                      {hText}
+                    </h4>
+                  );
+                }
+                return (
+                  <h5 key={`h4-${bIdx}-${pIdx}`} className="text-xs font-mono font-bold text-neutral-300 mt-2 mb-1 uppercase tracking-wider">
+                    {hText}
+                  </h5>
+                );
+              }
+
+              // Clean any raw URLs or markdown link syntax from paragraph text
+              const cleanedText = trimmed
+                .replace(/\[([^\]]+)\]\((?:https?:\/\/[^\s)]+|www\.[^\s)]+)\)/gi, (_, label) => {
+                  return /^(?:https?:\/\/|www\.)/i.test(label) ? '' : label;
+                })
+                .replace(/<https?:\/\/[^>]+>/gi, '')
+                .replace(/(?:Source|Ref|Available at|URL|See|Link):\s*(?:https?:\/\/|www\.)[^\s<>"')]+/gi, '')
+                .replace(/\b(?:https?:\/\/|www\.)[^\s<>"')]+(?:\b|\/)?/gi, '')
+                .replace(/\(\s*\)/g, '');
+
               // Parse simple **bold**
-              const parts = paragraph.split(/(\*\*.*?\*\*)/g);
+              const parts = cleanedText.split(/(\*\*.*?\*\*)/g);
               return (
                 <p key={`p-${bIdx}-${pIdx}`} className="leading-relaxed">
                   {parts.map((part, partIdx) => {
                     if (part.startsWith('**') && part.endsWith('**')) {
                       return <strong key={partIdx} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+                    }
+                    // Check for inline hashtags (e.g. #governance, #section4)
+                    const subTokens = part.split(/(\B#[\w-]+)/g);
+                    if (subTokens.length > 1) {
+                      return (
+                        <span key={partIdx}>
+                          {subTokens.map((tok, tIdx) => {
+                            if (tok.startsWith('#') && tok.length > 1) {
+                              return (
+                                <span
+                                  key={`tag-${tIdx}`}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 font-mono text-[11px] font-bold mx-1"
+                                >
+                                  {tok}
+                                </span>
+                              );
+                            }
+                            return tok;
+                          })}
+                        </span>
+                      );
                     }
                     return part;
                   })}

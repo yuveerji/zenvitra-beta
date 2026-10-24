@@ -1072,7 +1072,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
   };
 
   const cleanClauseTitle = (title: string) => {
-    return title.replace(/^[#\s*—:-]+/, '').replace(/[.—–-]+$/, '').trim();
+    return title.replace(/^[#\s*—:;.-]+/, '').replace(/[;.:—–-]+$/, '').trim();
   };
 
   return (
@@ -1762,7 +1762,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                           </svg>
                         </div>
 
-                        {clause.text && (
+                        {clause.text && cleanClauseTitle(clause.title || '').toLowerCase() !== clause.text.trim().toLowerCase() && (
                           <div className="text-neutral-100">
                             <SolutionRichContent content={clause.text} />
                           </div>
@@ -2854,7 +2854,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
 
                       {/* Continuous unified legislative block: entire text + all subclauses */}
                       <div className="pl-3.5 sm:pl-5 border-l-2 border-purple-500/30 text-neutral-200 font-serif text-[14px] sm:text-[15px] leading-relaxed space-y-3">
-                        {clause.text && (
+                        {clause.text && cleanClauseTitle(clause.title || '').toLowerCase() !== clause.text.trim().toLowerCase() && (
                           <div className="text-neutral-100">
                             <SolutionRichContent content={clause.text} />
                           </div>
