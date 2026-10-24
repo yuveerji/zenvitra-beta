@@ -415,7 +415,7 @@ export function Navbar({
             )}
 
             {/* Sovereign Universal Back Button (Always redirects ONLY to previous page; hidden on landing root) */}
-            {pathname !== '/' && (
+            {pathname !== '/' && !hasPlatformSidebar && (
               <button
                 type="button"
                 onClick={() => {
