@@ -156,6 +156,15 @@ export default function ZenSupportPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            {profile?.role && ['FOUNDER', 'CO_FOUNDER', 'ADMIN', 'CORE_TEAM', 'SUPPORT_LEAD', 'STAFF'].includes(String(profile.role).toUpperCase()) && (
+              <Link
+                href="/support/admin"
+                className="px-4 py-2.5 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-white border border-purple-500/30 transition font-mono text-xs flex items-center gap-2"
+              >
+                <Shield className="w-4 h-4 text-purple-400" />
+                <span>Admin Desk</span>
+              </Link>
+            )}
             <Link
               href="/support/help"
               className="px-4 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition font-mono text-xs flex items-center gap-2"

@@ -149,19 +149,50 @@ model SupportTicket {
   messages           SupportMessage[]
   internalNotes      SupportInternalNote[]
   auditLogs          SupportAuditLog[]
+  events             SupportEvent[]
+
+  requesterUserId    String?
+  assignedToUserId   String?
+  relatedModule      String?
+  isSensitive        Boolean               @default(false)
+
+  @@index([userId, updatedAt])
+  @@index([requesterUserId, updatedAt])
+  @@index([status, priority, createdAt])
+  @@index([assignedToUserId, status])
 }
 
 model SupportMessage {
   id          String        @id @default(cuid())
   ticketId    String
   ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  senderId    String
-  senderName  String
-  senderRole  String        // USER, STAFF, ADMIN, FOUNDER, SYSTEM
-  content     String
+  senderId    String        @default("user")
+  senderName  String        @default("User")
+  senderRole  String        @default("USER") // USER, STAFF, ADMIN, FOUNDER, SYSTEM
+  content     String        @default("")
   attachments String?       // JSON array string
   isOfficial  Boolean       @default(false)
   createdAt   DateTime      @default(now())
+
+  senderUserId String?
+  body         String?
+  isInternal   Boolean       @default(false)
+
+  @@index([ticketId, createdAt])
+  @@index([senderUserId, createdAt])
+}
+
+model SupportEvent {
+  id          String        @id @default(cuid())
+  ticketId    String
+  actorUserId String
+  action      String
+  details     String?
+  createdAt   DateTime      @default(now())
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@index([actorUserId, createdAt])
 }
 
 model SupportInternalNote {

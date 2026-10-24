@@ -43,6 +43,8 @@ const PUBLIC_PREFIXES = [
   '/onboarding',
   '/pre-register',
   '/pre-login',
+  '/support',
+  '/zen-support',
 ];
 
 const STATIC_EXTENSIONS = [
@@ -204,6 +206,8 @@ export async function middleware(request: NextRequest) {
       '/statusregister',
       '/statussignin',
       '/api',
+      '/support',
+      '/zen-support',
     ];
 
     const isCountdownWhitelisted = COUNTDOWN_WHITELIST_PREFIXES.some(
