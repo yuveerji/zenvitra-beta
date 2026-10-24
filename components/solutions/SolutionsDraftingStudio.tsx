@@ -108,7 +108,7 @@ const isDuplicateTitle = (title?: string, clauseNumber?: string) => {
 };
 
 const cleanClauseTitle = (title: string) => {
-  return title.replace(/^[#\s*—:;.-]+/, '').replace(/[;.:—–-]+$/, '').trim();
+  return title.replace(/^[#\s*—:;–.-]+/, '').replace(/[;.:—–-]+$/, '').trim();
 };
 
 const OPERATIVE_PHRASES = [
@@ -1261,9 +1261,11 @@ Zone 4 (Rural Enclaves): 68
                               const isTextDuplicateOfTitle = Boolean(
                                 clause.text &&
                                 clause.title &&
-                                cleanClauseTitle(clause.title).toLowerCase() === clause.text.trim().toLowerCase()
+                                cleanClauseTitle(clause.title).toLowerCase() === cleanClauseTitle(clause.text).toLowerCase()
                               );
                               const hasTextToShow = Boolean(clause.text && clause.text.trim().length > 0 && !isTextDuplicateOfTitle);
+                              const hasSubClauses = Boolean(clause.subClauses && clause.subClauses.length > 0);
+                              const hasBodyContent = hasTextToShow || hasSubClauses;
 
                               return (
                                 <div
@@ -1273,31 +1275,33 @@ Zone 4 (Rural Enclaves): 68
                                   <h4 className="font-serif font-bold text-white text-sm sm:text-base tracking-tight leading-snug">
                                     <span className="font-mono text-cyan-400 font-bold mr-1.5">{clause.clauseNumber}.</span>
                                     {clause.title && !isDuplicateTitle(clause.title, clause.clauseNumber) && (
-                                      <span>{cleanClauseTitle(clause.title)} &mdash;&nbsp;</span>
+                                      <span>{cleanClauseTitle(clause.title)}{hasTextToShow ? ' \u2014 ' : ''}</span>
                                     )}
                                   </h4>
 
-                                  {/* Substantive clause text and all subclauses grouped in ONE continuous unbroken block & pipe */}
-                                  <div className="pl-3 sm:pl-4 border-l-2 border-cyan-500/40 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
-                                    {hasTextToShow && (
-                                      <div>
-                                        <SolutionRichContent content={clause.text} />
-                                      </div>
-                                    )}
+                                  {/* Substantive clause text and all subclauses grouped in ONE continuous unbroken block & pipe ONLY when body content exists */}
+                                  {hasBodyContent && (
+                                    <div className="pl-3 sm:pl-4 border-l-2 border-cyan-500/40 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
+                                      {hasTextToShow && (
+                                        <div>
+                                          <SolutionRichContent content={clause.text} />
+                                        </div>
+                                      )}
 
-                                    {clause.subClauses && clause.subClauses.length > 0 && (
-                                      <div className="space-y-2 pt-0.5">
-                                        {clause.subClauses.map((sub, sIdx) => (
-                                          <div key={`sub-${sIdx}`} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-serif text-neutral-300 leading-relaxed">
-                                            <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none">{sub.number}</span>
-                                            <div className="text-neutral-200 flex-1">
-                                              <SolutionRichContent content={sub.text} />
+                                      {hasSubClauses && (
+                                        <div className="space-y-2 pt-0.5">
+                                          {clause.subClauses!.map((sub, sIdx) => (
+                                            <div key={`sub-${sIdx}`} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-serif text-neutral-300 leading-relaxed">
+                                              <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none">{sub.number}</span>
+                                              <div className="text-neutral-200 flex-1">
+                                                <SolutionRichContent content={sub.text} />
+                                              </div>
                                             </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })
@@ -1318,37 +1322,42 @@ Zone 4 (Rural Enclaves): 68
                         const isTextDuplicateOfTitle = Boolean(
                           clause.text &&
                           clause.title &&
-                          cleanClauseTitle(clause.title).toLowerCase() === clause.text.trim().toLowerCase()
+                          cleanClauseTitle(clause.title).toLowerCase() === cleanClauseTitle(clause.text).toLowerCase()
                         );
                         const hasTextToShow = Boolean(clause.text && clause.text.trim().length > 0 && !isTextDuplicateOfTitle);
+                        const hasSubClauses = Boolean(clause.subClauses && clause.subClauses.length > 0);
+                        const hasBodyContent = hasTextToShow || hasSubClauses;
 
                         return (
                           <div key={`cl-prev-${clause.id || clIdx}`} className="space-y-2 py-4 border-b border-white/[0.08] last:border-b-0">
                             <h4 className="font-serif font-bold text-white text-sm sm:text-base tracking-tight leading-snug">
                               <span className="font-mono text-cyan-400 font-bold mr-1.5">{clause.clauseNumber}.</span>
                               {clause.title && !isDuplicateTitle(clause.title, clause.clauseNumber) && (
-                                <span>{cleanClauseTitle(clause.title)} &mdash;&nbsp;</span>
+                                <span>{cleanClauseTitle(clause.title)}{hasTextToShow ? ' \u2014 ' : ''}</span>
                               )}
                             </h4>
-                            <div className="pl-3 sm:pl-4 border-l-2 border-cyan-500/40 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
-                              {hasTextToShow && (
-                                <div>
-                                  <SolutionRichContent content={clause.text} />
-                                </div>
-                              )}
-                              {clause.subClauses && clause.subClauses.length > 0 && (
-                                <div className="space-y-2 pt-0.5">
-                                  {clause.subClauses.map((sub, sIdx) => (
-                                    <div key={`sub-${sIdx}`} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-serif text-neutral-300 leading-relaxed">
-                                      <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none">{sub.number}</span>
-                                      <div className="text-neutral-200 flex-1">
-                                        <SolutionRichContent content={sub.text} />
+
+                            {hasBodyContent && (
+                              <div className="pl-3 sm:pl-4 border-l-2 border-cyan-500/40 text-neutral-200 text-xs sm:text-sm font-serif leading-relaxed space-y-2.5">
+                                {hasTextToShow && (
+                                  <div>
+                                    <SolutionRichContent content={clause.text} />
+                                  </div>
+                                )}
+                                {hasSubClauses && (
+                                  <div className="space-y-2 pt-0.5">
+                                    {clause.subClauses!.map((sub, sIdx) => (
+                                      <div key={`sub-${sIdx}`} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-serif text-neutral-300 leading-relaxed">
+                                        <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none">{sub.number}</span>
+                                        <div className="text-neutral-200 flex-1">
+                                          <SolutionRichContent content={sub.text} />
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       })

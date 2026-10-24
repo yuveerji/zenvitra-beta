@@ -1072,7 +1072,7 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
   };
 
   const cleanClauseTitle = (title: string) => {
-    return title.replace(/^[#\s*—:;.-]+/, '').replace(/[;.:—–-]+$/, '').trim();
+    return title.replace(/^[#\s*—:;–.-]+/, '').replace(/[;.:—–-]+$/, '').trim();
   };
 
   return (
@@ -1663,156 +1663,173 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                       className="py-6 sm:py-8 border-b border-white/[0.08] last:border-b-0 space-y-3.5 relative group"
                     >
                       {/* Prominent Legislative Clause Heading with sleek utility actions */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <h4 className="font-serif font-bold text-white text-base sm:text-lg tracking-tight leading-snug">
-                            <span className="font-mono text-cyan-400 font-bold mr-2 text-sm sm:text-base">
-                              {clause.clauseNumber}.
-                            </span>
-                            {clause.title && !isDuplicateTitle(clause.title, clause.clauseNumber) && (
-                              <span>{cleanClauseTitle(clause.title)} &mdash;&nbsp;</span>
-                            )}
-                          </h4>
-                        </div>
+                      {(() => {
+                        const isTextDuplicate = Boolean(
+                          clause.text &&
+                          clause.title &&
+                          cleanClauseTitle(clause.title).toLowerCase() === cleanClauseTitle(clause.text).toLowerCase()
+                        );
+                        const hasTextToShow = Boolean(clause.text && clause.text.trim().length > 0 && !isTextDuplicate);
+                        const hasSubClauses = Boolean(clause.subClauses && clause.subClauses.length > 0);
+                        const hasBodyContent = hasTextToShow || hasSubClauses;
 
-                        {/* Compact utility controls (Debate, Amend, Cite) */}
-                        <div className="flex items-center gap-1.5 shrink-0 opacity-80 group-hover:opacity-100 transition">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (isInteracting && interactionType === 'discuss') {
-                                setActiveClauseInteraction(null);
-                              } else {
-                                setActiveClauseInteraction({ clauseId: clause.id!, type: 'discuss' });
-                              }
-                            }}
-                            className={`px-2.5 py-1 rounded-lg border transition flex items-center gap-1.5 cursor-pointer text-xs font-mono ${
-                              isInteracting && interactionType === 'discuss'
-                                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
-                                : 'bg-white/5 border-white/10 text-neutral-400 hover:text-cyan-300 hover:bg-white/10'
-                            }`}
-                            title="Debate this clause"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
-                            <span className="hidden sm:inline">Debate</span>
-                            {hasDiscussions && (
-                              <span className="px-1.5 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px]">
-                                {clause.discussions!.length}
-                              </span>
-                            )}
-                          </button>
+                        return (
+                          <>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <h4 className="font-serif font-bold text-white text-base sm:text-lg tracking-tight leading-snug">
+                                  <span className="font-mono text-cyan-400 font-bold mr-2 text-sm sm:text-base">
+                                    {clause.clauseNumber}.
+                                  </span>
+                                  {clause.title && !isDuplicateTitle(clause.title, clause.clauseNumber) && (
+                                    <span>{cleanClauseTitle(clause.title)}{hasTextToShow ? ' \u2014 ' : ''}</span>
+                                  )}
+                                </h4>
+                              </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (isInteracting && interactionType === 'amend') {
-                                setActiveClauseInteraction(null);
-                              } else {
-                                openAmendmentForm(clause);
-                              }
-                            }}
-                            className={`px-2.5 py-1 rounded-lg border transition flex items-center gap-1.5 cursor-pointer text-xs font-mono ${
-                              isInteracting && interactionType === 'amend'
-                                ? 'bg-purple-500/20 border-purple-400 text-purple-300'
-                                : 'bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/30 text-purple-300 hover:border-purple-400'
-                            }`}
-                            title="Propose Amendment"
-                          >
-                            <Scale className="w-3.5 h-3.5 text-purple-400" />
-                            <span className="hidden sm:inline">Amend</span>
-                            {hasAmendments && (
-                              <span className="px-1.5 py-0.2 rounded-full bg-purple-400/20 text-purple-300 text-[10px]">
-                                {clause.amendments!.length}
-                              </span>
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleCiteClause(clause)}
-                            className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-400 text-red-300 transition flex items-center gap-1.5 cursor-pointer text-xs font-mono font-medium"
-                            title="Copy statutory citation link for whole clause"
-                          >
-                            {isCited ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="font-bold text-emerald-300">Cited</span>
-                              </>
-                            ) : (
-                              <>
-                                <Quote className="w-3.5 h-3.5 text-red-400" />
-                                <span>Cite whole clause</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Continuous unified legislative block: entire text + all subclauses with left vertical boundary bracket */}
-                      <div className="relative pl-6 sm:pl-8 text-neutral-200 font-serif text-[14px] sm:text-[15px] leading-relaxed space-y-3 group/clauseblock">
-                        {/* Overarching continuous vertical bracket / spine matching reference image */}
-                        <div
-                          onClick={() => handleCiteClause(clause)}
-                          title="Click to cite whole clause"
-                          className="absolute left-0 top-0 bottom-0 w-5 cursor-pointer group/rail flex items-center justify-center select-none"
-                        >
-                          <div className="absolute left-1.5 top-1 bottom-1 w-[2.5px] rounded-full bg-white/15 group-hover/rail:bg-red-500 group-hover/clauseblock:bg-red-500/70 transition-colors shadow-sm" />
-                          <svg className="absolute left-0 top-0 w-full h-full stroke-white/15 group-hover/rail:stroke-red-500 group-hover/clauseblock:stroke-red-500/70 fill-none transition-colors pointer-events-none" preserveAspectRatio="none" viewBox="0 0 16 100">
-                            <path d="M 14,2 C 6,2 6,14 6,30 L 6,44 C 6,48 1,50 1,50 C 1,50 6,52 6,56 L 6,70 C 6,86 6,98 14,98" strokeWidth="2" strokeLinecap="round" />
-                          </svg>
-                        </div>
-
-                        {clause.text && cleanClauseTitle(clause.title || '').toLowerCase() !== clause.text.trim().toLowerCase() && (
-                          <div className="text-neutral-100">
-                            <SolutionRichContent content={clause.text} />
-                          </div>
-                        )}
-
-                        {clause.subClauses && clause.subClauses.length > 0 && (
-                          <div className="space-y-1.5 pt-1">
-                            {clause.subClauses.map((sub, sIdx) => {
-                              const subKey = `${clause.id || clause.clauseNumber}-${sub.number}`;
-                              const isSubCited = citedSubClauseKey === subKey;
-                              return (
-                                <div
-                                  key={`sub-${clause.id || clause.clauseNumber}-${sub.number || sIdx}`}
-                                  className="group/sub flex items-start justify-between gap-3 p-2 rounded-xl border border-transparent hover:border-cyan-500/30 hover:bg-cyan-500/[0.04] text-[13px] sm:text-[14px] text-neutral-300 font-serif leading-relaxed transition-all"
+                              {/* Compact utility controls (Debate, Amend, Cite) */}
+                              <div className="flex items-center gap-1.5 shrink-0 opacity-80 group-hover:opacity-100 transition">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (isInteracting && interactionType === 'discuss') {
+                                      setActiveClauseInteraction(null);
+                                    } else {
+                                      setActiveClauseInteraction({ clauseId: clause.id!, type: 'discuss' });
+                                    }
+                                  }}
+                                  className={`px-2.5 py-1 rounded-lg border transition flex items-center gap-1.5 cursor-pointer text-xs font-mono ${
+                                    isInteracting && interactionType === 'discuss'
+                                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                                      : 'bg-white/5 border-white/10 text-neutral-400 hover:text-cyan-300 hover:bg-white/10'
+                                  }`}
+                                  title="Debate this clause"
                                 >
-                                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                                    <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none text-xs sm:text-sm">
-                                      {sub.number}
+                                  <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                                  <span className="hidden sm:inline">Debate</span>
+                                  {hasDiscussions && (
+                                    <span className="px-1.5 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[10px]">
+                                      {clause.discussions!.length}
                                     </span>
-                                    <span className="text-neutral-200 leading-relaxed">{sub.text}</span>
-                                  </div>
+                                  )}
+                                </button>
 
-                                  {/* Interactive Cite Subclause Action Button */}
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCiteSubClause(clause, sub.number, sub.text);
-                                    }}
-                                    className="opacity-0 group-hover/sub:opacity-100 transition-all duration-150 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-black font-mono text-[10px] font-bold uppercase tracking-wider shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer select-none"
-                                    title={`Cite Subclause ${sub.number}`}
-                                  >
-                                    {isSubCited ? (
-                                      <>
-                                        <Check className="w-3 h-3 text-emerald-400" />
-                                        <span>Cited</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Quote className="w-3 h-3" />
-                                        <span>Cite subclause</span>
-                                      </>
-                                    )}
-                                  </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (isInteracting && interactionType === 'amend') {
+                                      setActiveClauseInteraction(null);
+                                    } else {
+                                      openAmendmentForm(clause);
+                                    }
+                                  }}
+                                  className={`px-2.5 py-1 rounded-lg border transition flex items-center gap-1.5 cursor-pointer text-xs font-mono ${
+                                    isInteracting && interactionType === 'amend'
+                                      ? 'bg-purple-500/20 border-purple-400 text-purple-300'
+                                      : 'bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/30 text-purple-300 hover:border-purple-400'
+                                  }`}
+                                  title="Propose Amendment"
+                                >
+                                  <Scale className="w-3.5 h-3.5 text-purple-400" />
+                                  <span className="hidden sm:inline">Amend</span>
+                                  {hasAmendments && (
+                                    <span className="px-1.5 py-0.2 rounded-full bg-purple-400/20 text-purple-300 text-[10px]">
+                                      {clause.amendments!.length}
+                                    </span>
+                                  )}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleCiteClause(clause)}
+                                  className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-400 text-red-300 transition flex items-center gap-1.5 cursor-pointer text-xs font-mono font-medium"
+                                  title="Copy statutory citation link for whole clause"
+                                >
+                                  {isCited ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                      <span className="font-bold text-emerald-300">Cited</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Quote className="w-3.5 h-3.5 text-red-400" />
+                                      <span>Cite whole clause</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Continuous unified legislative block: entire text + all subclauses with left vertical boundary bracket */}
+                            {hasBodyContent && (
+                              <div className="relative pl-6 sm:pl-8 text-neutral-200 font-serif text-[14px] sm:text-[15px] leading-relaxed space-y-3 group/clauseblock">
+                                {/* Overarching continuous vertical bracket / spine matching reference image */}
+                                <div
+                                  onClick={() => handleCiteClause(clause)}
+                                  title="Click to cite whole clause"
+                                  className="absolute left-0 top-0 bottom-0 w-5 cursor-pointer group/rail flex items-center justify-center select-none"
+                                >
+                                  <div className="absolute left-1.5 top-1 bottom-1 w-[2.5px] rounded-full bg-white/15 group-hover/rail:bg-red-500 group-hover/clauseblock:bg-red-500/70 transition-colors shadow-sm" />
+                                  <svg className="absolute left-0 top-0 w-full h-full stroke-white/15 group-hover/rail:stroke-red-500 group-hover/clauseblock:stroke-red-500/70 fill-none transition-colors pointer-events-none" preserveAspectRatio="none" viewBox="0 0 16 100">
+                                    <path d="M 14,2 C 6,2 6,14 6,30 L 6,44 C 6,48 1,50 1,50 C 1,50 6,52 6,56 L 6,70 C 6,86 6,98 14,98" strokeWidth="2" strokeLinecap="round" />
+                                  </svg>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
+
+                                {hasTextToShow && (
+                                  <div className="text-neutral-100">
+                                    <SolutionRichContent content={clause.text} />
+                                  </div>
+                                )}
+
+                                {hasSubClauses && (
+                                  <div className="space-y-1.5 pt-1">
+                                    {clause.subClauses!.map((sub, sIdx) => {
+                                      const subKey = `${clause.id || clause.clauseNumber}-${sub.number}`;
+                                      const isSubCited = citedSubClauseKey === subKey;
+                                      return (
+                                        <div
+                                          key={`sub-${clause.id || clause.clauseNumber}-${sub.number || sIdx}`}
+                                          className="group/sub flex items-start justify-between gap-3 p-2 rounded-xl border border-transparent hover:border-cyan-500/30 hover:bg-cyan-500/[0.04] text-[13px] sm:text-[14px] text-neutral-300 font-serif leading-relaxed transition-all"
+                                        >
+                                          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                                            <span className="font-mono text-cyan-400 font-bold shrink-0 mt-0.5 select-none text-xs sm:text-sm">
+                                              {sub.number}
+                                            </span>
+                                            <span className="text-neutral-200 leading-relaxed">{sub.text}</span>
+                                          </div>
+
+                                          {/* Interactive Cite Subclause Action Button */}
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleCiteSubClause(clause, sub.number, sub.text);
+                                            }}
+                                            className="opacity-0 group-hover/sub:opacity-100 transition-all duration-150 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 hover:text-black font-mono text-[10px] font-bold uppercase tracking-wider shrink-0 flex items-center gap-1.5 shadow-xs cursor-pointer select-none"
+                                            title={`Cite Subclause ${sub.number}`}
+                                          >
+                                            {isSubCited ? (
+                                              <>
+                                                <Check className="w-3 h-3 text-emerald-400" />
+                                                <span>Cited</span>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Quote className="w-3 h-3" />
+                                                <span>Cite subclause</span>
+                                              </>
+                                            )}
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
 
                     {/* RIGHT-END SIDE: List of Amendments Made with Full Parliamentary Record */}
                     {(ratifiedClauseAmendments.length > 0 || clause.amendedBy) && (
@@ -2838,44 +2855,61 @@ export function DocumentReaderModal({ isOpen, onClose, document: initialDoc, onV
                       className="py-6 sm:py-8 border-b border-purple-500/20 last:border-b-0 space-y-4"
                     >
                       {/* Main Clause Heading */}
-                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-white/[0.08] pb-2.5">
-                        <h4 className="font-serif font-bold text-white text-base sm:text-lg tracking-tight leading-snug">
-                          <span className="font-mono text-cyan-400 font-bold mr-2 text-sm sm:text-base">
-                            Clause {clause.clauseNumber}.
-                          </span>
-                          {clause.title && !isDuplicateTitle(clause.title, clause.clauseNumber) && (
-                            <span>{cleanClauseTitle(clause.title)} &mdash;&nbsp;</span>
-                          )}
-                        </h4>
-                        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-bold w-fit">
-                          {amendments.length} {amendments.length === 1 ? 'Amendment Tabled' : 'Amendments Tabled'}
-                        </span>
-                      </div>
+                      {(() => {
+                        const isTextDuplicate = Boolean(
+                          clause.text &&
+                          clause.title &&
+                          cleanClauseTitle(clause.title).toLowerCase() === cleanClauseTitle(clause.text).toLowerCase()
+                        );
+                        const hasTextToShow = Boolean(clause.text && clause.text.trim().length > 0 && !isTextDuplicate);
+                        const hasSubClauses = Boolean(clause.subClauses && clause.subClauses.length > 0);
+                        const hasBodyContent = hasTextToShow || hasSubClauses;
 
-                      {/* Continuous unified legislative block: entire text + all subclauses */}
-                      <div className="pl-3.5 sm:pl-5 border-l-2 border-purple-500/30 text-neutral-200 font-serif text-[14px] sm:text-[15px] leading-relaxed space-y-3">
-                        {clause.text && cleanClauseTitle(clause.title || '').toLowerCase() !== clause.text.trim().toLowerCase() && (
-                          <div className="text-neutral-100">
-                            <SolutionRichContent content={clause.text} />
-                          </div>
-                        )}
-
-                        {clause.subClauses && clause.subClauses.length > 0 && (
-                          <div className="space-y-2 pt-0.5">
-                            {clause.subClauses.map((sub: ClauseSubItem, sIdx: number) => (
-                              <div
-                                key={`floor-sub-${clause.id || clause.clauseNumber}-${sub.number || sIdx}`}
-                                className="flex items-start gap-2.5 text-[13px] sm:text-[14px] text-neutral-300 leading-relaxed"
-                              >
-                                <span className="font-mono text-cyan-400/90 font-bold shrink-0 mt-0.5 select-none">
-                                  {sub.number}
+                        return (
+                          <>
+                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-white/[0.08] pb-2.5">
+                              <h4 className="font-serif font-bold text-white text-base sm:text-lg tracking-tight leading-snug">
+                                <span className="font-mono text-cyan-400 font-bold mr-2 text-sm sm:text-base">
+                                  Clause {clause.clauseNumber}.
                                 </span>
-                                <span className="text-neutral-200">{sub.text}</span>
+                                {clause.title && !isDuplicateTitle(clause.title, clause.clauseNumber) && (
+                                  <span>{cleanClauseTitle(clause.title)}{hasTextToShow ? ' \u2014 ' : ''}</span>
+                                )}
+                              </h4>
+                              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-bold w-fit">
+                                {amendments.length} {amendments.length === 1 ? 'Amendment Tabled' : 'Amendments Tabled'}
+                              </span>
+                            </div>
+
+                            {/* Continuous unified legislative block: entire text + all subclauses */}
+                            {hasBodyContent && (
+                              <div className="pl-3.5 sm:pl-5 border-l-2 border-purple-500/30 text-neutral-200 font-serif text-[14px] sm:text-[15px] leading-relaxed space-y-3">
+                                {hasTextToShow && (
+                                  <div className="text-neutral-100">
+                                    <SolutionRichContent content={clause.text} />
+                                  </div>
+                                )}
+
+                                {hasSubClauses && (
+                                  <div className="space-y-2 pt-0.5">
+                                    {clause.subClauses!.map((sub: ClauseSubItem, sIdx: number) => (
+                                      <div
+                                        key={`floor-sub-${clause.id || clause.clauseNumber}-${sub.number || sIdx}`}
+                                        className="flex items-start gap-2.5 text-[13px] sm:text-[14px] text-neutral-300 leading-relaxed"
+                                      >
+                                        <span className="font-mono text-cyan-400/90 font-bold shrink-0 mt-0.5 select-none">
+                                          {sub.number}
+                                        </span>
+                                        <span className="text-neutral-200">{sub.text}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                            )}
+                          </>
+                        );
+                      })()}
 
                       {/* Amendments Proposed on this Clause */}
                       <div className="space-y-3 pt-2">

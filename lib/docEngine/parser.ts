@@ -254,13 +254,17 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
     clause.text = cleanDocumentText(clause.text || '');
     if (clause.title) {
       clause.title = cleanDocumentText(clause.title)
-        .replace(/^[#\s*—:;.-]+/, '')
+        .replace(/^[#\s*—:;–-]+/, '')
         .replace(/[;.:—–-]+$/, '')
         .trim();
     }
-    // If text is identical to title, clear text so it never duplicates in rendering
-    if (clause.text && clause.title && clause.text.toLowerCase().trim() === clause.title.toLowerCase().trim()) {
-      clause.text = '';
+    // If text is identical to title (ignoring trailing punctuation/dashes), clear text so it never duplicates in rendering
+    if (clause.text && clause.title) {
+      const cleanT = clause.title.replace(/^[#\s*—:;–-]+/, '').replace(/[;.:—–-]+$/, '').trim().toLowerCase();
+      const cleanB = clause.text.replace(/^[#\s*—:;–-]+/, '').replace(/[;.:—–-]+$/, '').trim().toLowerCase();
+      if (cleanT === cleanB) {
+        clause.text = '';
+      }
     }
     if (!clause.text && (!clause.subClauses || clause.subClauses.length === 0)) {
       clause.text = clause.title ? '' : `Clause ${clause.clauseNumber}`;
@@ -271,8 +275,8 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
   for (let i = bodyStartIndex; i < lines.length; i++) {
     const line = lines[i];
     const trimmedLine = line.trim();
-    // Clean string without markdown header hashes or asterisks for structural matching
-    const strippedLine = trimmedLine.replace(/^[#\s*—:-]+/, '').replace(/[*_~`]/g, '').trim();
+    // Clean string without markdown header hashes, leading em-dashes or asterisks for structural matching
+    const strippedLine = trimmedLine.replace(/^[#\s*—:–-]+/, '').replace(/[*_~`]/g, '').trim();
 
     // Code block tracking (for charts, graphs, and kpis)
     if (trimmedLine.startsWith('```')) {
@@ -483,7 +487,7 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         continue;
       }
 
-      // 5. Numbered point (e.g. "1. the supremacy of the Constitution;" or "1. Every covered public authority...")
+      // 5. Numbered point (e.g. subclauses "1. the supremacy of the Constitution;" inside Clause 4)
       const numberedPointMatch = strippedLine.match(/^(\d+)[\.\)]\s*(.*)$/);
       if (numberedPointMatch) {
         const lineNum = parseInt(numberedPointMatch[1], 10);
@@ -493,16 +497,17 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         // Disqualify if it has an explicit clause keyword like "CLAUSE 5", "SECTION 5"
         const hasExplicitClauseWord = /^(?:CLAUSE|SECTION|ARTICLE|RULE)\b/i.test(strippedLine);
 
-        // Detect if this is definitely a subclause:
-        const isSeqSub = activeSubClauses.length > 0 && lineNum === activeSubClauses.length + 1;
-        const isLessOrEqual = !isNaN(currentClauseNum) && lineNum <= currentClauseNum;
-        const endsWithSemicolon = /[;,]$/.test(restOfLine);
-        const isPrinciplesClause = /governing|principles|standards|guidelines|powers|duties|functions|responsibilities|definitions/i.test(activeClause.title || '') ||
-                                   /consistently with:|as follows:|including:|requirements:/i.test(activeClause.text || '');
+        // CRITICAL: If lineNum is greater than or equal to currentClauseNum + 1 (e.g. at Clause 2, lineNum is 3),
+        // this is NEVER a subclause of Clause 2. It is the next top-level clause in the statute!
+        const isNextTopLevelClause = !isNaN(currentClauseNum) && lineNum >= currentClauseNum + 1;
 
-        const hasSectionTitle = restOfLine.includes(' — ') || restOfLine.includes(' - ') || restOfLine.includes('—') || (restOfLine.length < 35 && !endsWithSemicolon && !isSeqSub);
+        // A numbered line without brackets is ONLY a subclause if:
+        // 1) Numbering resets or is less than/equal to the active clause number (e.g. points 1, 2, 3 inside Clause 4)
+        // 2) It continues an active subclause list that started with (1) AND is <= currentClauseNum
+        const isSubclauseNumber = !isNaN(currentClauseNum) && lineNum <= currentClauseNum;
+        const isSeqSub = activeSubClauses.length > 0 && lineNum === activeSubClauses.length + 1 && lineNum <= currentClauseNum;
 
-        if (!hasExplicitClauseWord && (isLessOrEqual || endsWithSemicolon || isSeqSub || isPrinciplesClause || !hasSectionTitle)) {
+        if (!hasExplicitClauseWord && !isNextTopLevelClause && (isSubclauseNumber || isSeqSub)) {
           activeSubClauses.push({
             number: `(${lineNum})`,
             text: cleanDocumentText(restOfLine)
@@ -515,8 +520,8 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
     // ─────────────────────────────────────────────────────────────────────────
     // NEW TOP-LEVEL CLAUSE / SECTION
     // ─────────────────────────────────────────────────────────────────────────
-    const clauseMatch = strippedLine.match(/^(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:-]+(.*)$/i);
-    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE)\b|\d+[\.\s—:-]/i.test(strippedLine);
+    const clauseMatch = strippedLine.match(/^(?:CLAUSE|SECTION|ARTICLE|RULE)?\s*(\d+)[\.\s—:–-]+(.*)$/i);
+    const isExplicitClause = /^(?:CLAUSE|SECTION|ARTICLE|RULE)\b|^\d+[\.\s—:–-]/i.test(strippedLine);
 
     if (clauseMatch && isExplicitClause) {
       if (activeClause) {
@@ -526,31 +531,37 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
       }
 
       const num = clauseMatch[1];
-      let clauseTitleAndText = clauseMatch[2]?.trim() || '';
+      let rawTitleAndText = clauseMatch[2]?.trim() || '';
+      // Strip leading and trailing dashes, colons, dots, hyphens
+      let cleanTitleAndText = rawTitleAndText.replace(/^[#\s*—:–-]+/, '').replace(/[;.:—–-]+$/, '').trim();
       let clauseTitle = '';
-      let clauseText = clauseTitleAndText;
+      let clauseText = '';
 
-      // Extract clause title if separated by dash, period, or em-dash
+      // Check if there is an internal separator dividing title and body text on the same line
       // e.g. "Governing principles — Every power and duty..."
-      const titleSplit = clauseTitleAndText.split(/\s*[—–-]\s+|\s*\.\s+(?=[A-Z])/);
-      if (titleSplit.length > 1 && titleSplit[0].length < 80) {
+      const titleSplit = cleanTitleAndText.split(/\s*[—–-]\s+|\s*\.\s+(?=[A-Z])/);
+      if (titleSplit.length > 1 && titleSplit[0].length < 80 && titleSplit[1].trim().length > 0) {
         clauseTitle = titleSplit[0].replace(/^[#\s*—:-]+/, '').replace(/[;.:—–-]+$/, '').trim();
         clauseText = titleSplit.slice(1).join(' — ').trim();
       } else if (
-        clauseTitleAndText.length < 80 &&
+        cleanTitleAndText.length < 90 &&
         i + 1 < lines.length &&
         !/^(?:CHAPTER|PART|CLAUSE|SECTION|ARTICLE|RULE|\d+[\.\)]|#)/i.test(lines[i + 1].trim()) &&
-        !subClauseRegex.test(lines[i + 1].trim())
+        !subClauseRegex.test(lines[i + 1].trim()) &&
+        lines[i + 1].trim().length > 0
       ) {
-        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[;.:—–-]+$/, '').trim();
+        // Single title line followed by body text on the next line
+        clauseTitle = cleanTitleAndText;
         clauseText = lines[i + 1].trim();
         i++;
-      } else if (clauseTitleAndText.length < 80 && !subClauseRegex.test(clauseTitleAndText)) {
-        clauseTitle = clauseTitleAndText.replace(/^[#\s*—:-]+/, '').replace(/[;.:—–-]+$/, '').trim();
+      } else if (cleanTitleAndText.length < 90 && !subClauseRegex.test(cleanTitleAndText)) {
+        // Title only (e.g. "1. A record of the system's purpose —")
+        clauseTitle = cleanTitleAndText;
         clauseText = '';
       } else {
+        // Substantive text without standalone title
         clauseTitle = '';
-        clauseText = clauseTitleAndText;
+        clauseText = cleanTitleAndText;
       }
 
       // Discard duplicate/redundant title (e.g. "Clause 5" or "Section 5")
