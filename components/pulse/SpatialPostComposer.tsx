@@ -37,6 +37,10 @@ export function SpatialPostComposer({ onPublish, onOpenFluxComposer }: SpatialPo
       router.push('/discussions');
       return;
     }
+    if (key === 'REPORT') {
+      router.push('/press');
+      return;
+    }
     setActiveMode(key);
   };
 
