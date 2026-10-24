@@ -37,31 +37,28 @@ import {
 } from 'lucide-react';
 import { StatusNotificationModal } from '@/components/navigation/StatusNotificationModal';
 import { useSovereignAudio, SOUNDSCAPE_MODES, AmbientSoundscape } from '@/components/audio/useSovereignAudio';
+import { useLaunchSequence } from '@/components/countdown/useLaunchSequence';
 import { AudioSpectrumVisualizer } from '@/components/audio/AudioSpectrumVisualizer';
 import { HolographicPassport } from '@/components/visuals/HolographicPassport';
 import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 
 export default function CountdownPage() {
-  // Pre-Launch Milestone: October 19, 2026, 17:00:00 IST (UTC+05:30)
-  const prelaunchDate = new Date('2026-10-19T17:00:00+05:30').getTime();
-  // Target Platform Ignition: October 25, 2026, 14:00:00 IST (UTC+05:30)
+  // Target Platform Ignition: October 25, 2026, 14:00:00 IST (UTC+05:30) (2:00:00 PM)
   const targetDate = new Date('2026-10-25T14:00:00+05:30').getTime();
 
-  const [activeCountdownTab, setActiveCountdownTab] = useState<'prelaunch' | 'ignition'>('prelaunch');
-
-  const [prelaunchTimeLeft, setPrelaunchTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  // Time-synced launch sequence engine with Web Audio API sound design
+  const {
+    timeLeft,
+    phase,
+    isDimmed,
+    isVideoVisible,
+    isWhiteFlashActive,
+    videoRef,
+    handleVideoTimeUpdate,
+    portalAudio,
+  } = useLaunchSequence({
+    targetTimestamp: targetDate,
+  });
 
   const sovereignAudio = useSovereignAudio();
 
@@ -185,40 +182,10 @@ export default function CountdownPage() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now();
-
-      // Pre-launch difference (19 Oct 2026, 17:00 IST)
-      const diffPrelaunch = prelaunchDate - now;
-      if (diffPrelaunch <= 0) {
-        setPrelaunchTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      } else {
-        const days = Math.floor(diffPrelaunch / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diffPrelaunch / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((diffPrelaunch / 1000 / 60) % 60);
-        const seconds = Math.floor((diffPrelaunch / 1000) % 60);
-        setPrelaunchTimeLeft({ days, hours, minutes, seconds });
-      }
-
-      // Final ignition difference (25 Oct 2026, 14:00 IST)
-      const difference = targetDate - now;
-      if (difference <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      } else {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-        setTimeLeft({ days, hours, minutes, seconds });
-      }
-
-      if (!sovereignAudio.isMuted) {
-        playTickSoundRef.current();
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [prelaunchDate, targetDate, sovereignAudio.isMuted]);
+    if (!sovereignAudio.isMuted && timeLeft.seconds !== undefined) {
+      playTickSoundRef.current();
+    }
+  }, [timeLeft.seconds, sovereignAudio.isMuted]);
 
   return (
     <div className="min-h-screen bg-[#020305] text-white flex flex-col justify-between selection:bg-amber-400 selection:text-black font-sans relative overflow-x-hidden">
@@ -350,8 +317,13 @@ export default function CountdownPage() {
           </p>
         </div>
 
-        {/* Hero Monolith Interactive 3D Card with Mouse Cursor Effect */}
-        <div className="w-full max-w-[280px] xs:max-w-xs sm:max-w-sm mx-auto my-2">
+        {/* Hero Monolith Interactive 3D Card with Mouse Cursor Effect & Time-Synced Video Portal Stack */}
+        <div 
+          id="monolith-section" 
+          className={`w-full max-w-[280px] xs:max-w-xs sm:max-w-sm mx-auto my-2 transition-all duration-700 ${
+            isDimmed ? 'scale-105 z-40 drop-shadow-[0_0_80px_rgba(251,191,36,0.35)]' : ''
+          }`}
+        >
           <div
             style={{ perspective: 1200 }}
             className="relative w-full aspect-[4/5.2] select-none py-2"
@@ -376,10 +348,10 @@ export default function CountdownPage() {
                 }}
               />
 
-              {/* Full-Bleed Monolith Artwork */}
-              <div className="absolute inset-0 z-0 select-none pointer-events-none">
+              {/* Full-Bleed Monolith Artwork & Exact Stacked Video Element */}
+              <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
                 <Image
-                  src="/assets/hero-monolith.png"
+                  src="/hero-monolith.webp"
                   alt="Zenvitra Monolith Portal"
                   fill
                   priority
@@ -387,9 +359,24 @@ export default function CountdownPage() {
                   style={{ objectPosition: 'center 65%' }}
                   className="object-cover brightness-[0.92] contrast-[1.08] group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
+
+                {/* Video element stacked directly over hero-monolith.webp with zero layout shift */}
+                <video
+                  ref={videoRef}
+                  src="/portal-opening.mp4"
+                  playsInline
+                  muted
+                  preload="auto"
+                  onTimeUpdate={handleVideoTimeUpdate}
+                  style={{ objectPosition: 'center 65%' }}
+                  className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-150 z-10 ${
+                    isVideoVisible ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+
                 {/* Obsidian Gradient Vignettes */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/80" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/90" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/80 z-20 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/90 z-20 pointer-events-none" />
               </div>
 
               {/* Monolith Card Header */}
@@ -441,99 +428,51 @@ export default function CountdownPage() {
           </div>
         </div>
 
-        {/* Dual-Target Countdown Stage: 19 Oct Pre-Launch & 25 Oct Platform Ignition */}
-        <div className="w-full max-w-3xl">
+        {/* Official Launch Countdown Stage: 2:00:00 PM (14:00:00 IST) Platform Ignition */}
+        <div className={`w-full max-w-3xl transition-opacity duration-700 ${isDimmed ? 'opacity-40' : 'opacity-100'}`}>
           <div className="p-4 xs:p-6 sm:p-8 lg:p-10 rounded-2xl sm:rounded-[2.5rem] bg-[#07090f]/90 border border-white/[0.1] shadow-[0_30px_100px_rgba(0,0,0,0.95)] backdrop-blur-xl space-y-6 sm:space-y-8">
             
-            {/* Countdown Milestone Selector Tabs */}
+            {/* Target Milestone Header */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
-              <div className="flex items-center gap-2 p-1 rounded-2xl bg-black/50 border border-white/10 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setActiveCountdownTab('prelaunch')}
-                  className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-mono font-bold tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                    activeCountdownTab === 'prelaunch'
-                      ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-[0_0_20px_rgba(251,191,36,0.35)]'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>PRE-LAUNCH // 19 OCT</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/20 text-black font-black">5 PM</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveCountdownTab('ignition')}
-                  className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-mono font-bold tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                    activeCountdownTab === 'ignition'
-                      ? 'bg-gradient-to-r from-cyan-400 to-emerald-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.35)]'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
-                >
-                  <Radio className="w-3.5 h-3.5" />
-                  <span>IGNITION // 25 OCT</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-black/20 text-black font-black">2 PM</span>
-                </button>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-black/60 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold tracking-wider">
+                <Radio className="w-4 h-4 text-amber-400 animate-pulse" />
+                <span>PLATFORM IGNITION // OFFICIAL LAUNCH</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-400 text-black font-black">2:00:00 PM</span>
               </div>
 
               <div className="flex items-center gap-2 text-right">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
                 <span className="font-mono text-[10px] sm:text-xs text-amber-300 tracking-wider uppercase font-semibold">
-                  {activeCountdownTab === 'prelaunch'
-                    ? '19 OCT 2026 // 17:00 IST'
-                    : '25 OCT 2026 // 14:00 IST'}
+                  25 OCT 2026 // 14:00:00 IST
                 </span>
               </div>
             </div>
 
-            {/* Target Header Banner */}
+            {/* Target Subtitle */}
             <div className="flex flex-col xs:flex-row items-center justify-between gap-1.5 border-b border-white/[0.06] pb-3 text-center xs:text-left">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[9px] sm:text-[11px] tracking-[0.2em] sm:tracking-[0.25em] text-neutral-400 uppercase">
-                  {activeCountdownTab === 'prelaunch'
-                    ? 'EXCLUSIVE PRE-LAUNCH ROLLOUT'
-                    : 'FULL PLATFORM LAUNCH IGNITION'}
+                  FULL PLATFORM LAUNCH IGNITION
                 </span>
               </div>
               <span className="font-mono text-[9px] sm:text-[11px] text-neutral-400">
-                {activeCountdownTab === 'prelaunch'
-                  ? 'Early Access • Username Claim • Founding Perks'
-                  : 'Public Chambers • Live Dais • All Ecosystem Doors'}
+                Public Chambers • Live Dais • All Ecosystem Doors
               </span>
             </div>
 
             {/* 4-Digit Timer Display */}
             <div className="grid grid-cols-4 gap-1.5 xs:gap-2 sm:gap-4 lg:gap-6">
               {[
-                { 
-                  label: 'DAYS', 
-                  value: activeCountdownTab === 'prelaunch' ? prelaunchTimeLeft.days : timeLeft.days 
-                },
-                { 
-                  label: 'HOURS', 
-                  value: activeCountdownTab === 'prelaunch' ? prelaunchTimeLeft.hours : timeLeft.hours 
-                },
-                { 
-                  label: 'MINS', 
-                  value: activeCountdownTab === 'prelaunch' ? prelaunchTimeLeft.minutes : timeLeft.minutes 
-                },
-                { 
-                  label: 'SECS', 
-                  value: activeCountdownTab === 'prelaunch' ? prelaunchTimeLeft.seconds : timeLeft.seconds 
-                },
+                { label: 'DAYS', value: timeLeft.days },
+                { label: 'HOURS', value: timeLeft.hours },
+                { label: 'MINS', value: timeLeft.minutes },
+                { label: 'SECS', value: timeLeft.seconds },
               ].map((item, index) => (
                 <div 
                   key={index}
-                  className={`flex flex-col items-center justify-center p-2 xs:p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-black/60 border shadow-inner transition-all ${
-                    activeCountdownTab === 'prelaunch' 
-                      ? 'border-amber-400/20 shadow-[0_0_20px_rgba(251,191,36,0.05)]' 
-                      : 'border-cyan-400/20 shadow-[0_0_20px_rgba(6,182,212,0.05)]'
-                  }`}
+                  className="flex flex-col items-center justify-center p-2 xs:p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-black/60 border border-amber-400/20 shadow-[0_0_20px_rgba(251,191,36,0.05)] shadow-inner transition-all"
                 >
-                  <span className={`font-mono text-xl xs:text-2xl sm:text-5xl lg:text-6xl font-bold tracking-tight tabular-nums ${
-                    activeCountdownTab === 'prelaunch' ? 'text-amber-300' : 'text-white'
-                  }`}>
+                  <span className="font-mono text-xl xs:text-2xl sm:text-5xl lg:text-6xl font-bold tracking-tight tabular-nums text-amber-300">
                     {String(item.value).padStart(2, '0')}
                   </span>
                   <span className="font-mono text-[7px] xs:text-[8px] sm:text-[11px] text-neutral-500 tracking-wider sm:tracking-[0.2em] uppercase mt-1 sm:mt-2">
@@ -1145,6 +1084,27 @@ export default function CountdownPage() {
           </span>
         </div>
       </footer>
+
+      {/* Floating Audio Control Pill */}
+      <button
+        type="button"
+        onClick={portalAudio.toggleSound}
+        className="fixed bottom-6 left-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-black/85 border border-amber-400/40 text-white font-mono text-xs backdrop-blur-md shadow-[0_0_20px_rgba(251,191,36,0.25)] hover:border-amber-300 transition-all cursor-pointer group"
+      >
+        {portalAudio.isMuted ? (
+          <VolumeX className="w-4 h-4 text-neutral-400 group-hover:text-white" />
+        ) : (
+          <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
+        )}
+        <span className="tracking-wider">
+          SOUND: <span className={portalAudio.isMuted ? 'text-neutral-400' : 'text-amber-300 font-bold'}>{portalAudio.isMuted ? 'OFF' : 'ARMED'}</span>
+        </span>
+      </button>
+
+      {/* Full-Screen Pure White Flash Overlay on T-0s (2:00:00 PM) */}
+      {isWhiteFlashActive && (
+        <div className="fixed inset-0 z-[9999] bg-white pointer-events-none transition-opacity duration-150 opacity-100" />
+      )}
     </div>
   );
 }

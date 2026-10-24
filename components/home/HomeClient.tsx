@@ -316,8 +316,42 @@ export default function HomeClient({ session }: HomeClientProps) {
   /* Word-by-word hero animation */
   const heroWords = ['Meaningful', 'Change', 'Starts', 'With'];
 
+  // 4. Portal Flash Dissolve from Countdown sequence
+  const [showFlashDissolve, setShowFlashDissolve] = useState(false);
+  const [flashOpacity, setFlashOpacity] = useState(1);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const fromFlash = sessionStorage.getItem('from_portal_flash');
+      if (fromFlash === 'true') {
+        sessionStorage.removeItem('from_portal_flash');
+        setShowFlashDissolve(true);
+        // Start fading from 1 to 0 over 800ms
+        const timer = setTimeout(() => {
+          setFlashOpacity(0);
+        }, 50);
+        const cleanup = setTimeout(() => {
+          setShowFlashDissolve(false);
+        }, 850);
+        return () => {
+          clearTimeout(timer);
+          clearTimeout(cleanup);
+        };
+      }
+    } catch {}
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#030405] text-white overflow-x-hidden font-sans relative">
+      {/* Portal Flash Dissolve Overlay */}
+      {showFlashDissolve && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-white pointer-events-none transition-opacity duration-800 ease-out"
+          style={{ opacity: flashOpacity }}
+        />
+      )}
+
       {/* Ambient Aurora Background */}
       <AuroraBackground />
 
