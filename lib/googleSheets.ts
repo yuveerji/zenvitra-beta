@@ -369,6 +369,7 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
 
   const outgoingPayload = {
     targetTab,
+    sheetTab: payload.tab,
     ...enrichedData,
   };
 

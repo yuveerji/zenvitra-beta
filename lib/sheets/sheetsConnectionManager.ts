@@ -302,296 +302,489 @@ export function generateIntegratedAppsScriptCode(params: {
 
   return `/**
  * ==============================================================================
- * ZENVITRA × GOOGLE SHEETS UNIFIED TWO-WAY INTEGRATION ENGINE
+ * ZENVITRA MASTER OMNI-STREAM TELEMETRY & TWO-WAY ENGINE (v2.5)
  * ==============================================================================
  * Target Spreadsheet: ${spreadsheetUrl}
  * Spreadsheet ID: ${spreadsheetId}
  * Convening / Context: ${eventName || eventId || 'ZENVITRA Core Ecosystem'}
- * Webhook Inbound: ${webhookEndpoint}
+ * Inbound Webhook: ${webhookEndpoint}
  * Generated: ${new Date().toISOString()}
  * ==============================================================================
  * 
- * SETUP INSTRUCTIONS (Takes ~45 seconds):
- * 1. In your Google Sheet, click "Extensions" > "Apps Script".
- * 2. Delete any existing code and PASTE this entire script.
- * 3. Click "Save" (Floppy disk icon or Ctrl+S / Cmd+S).
- * 4. Run "setupZenvitraTriggers" once from the toolbar to enable live 2-way sync!
- * 5. (Optional) Run "initAllTabs" to automatically create and format all Core Registers!
- * 6. Click "Deploy" > "New deployment" > "Web app"
+ * 🚀 QUICK SETUP INSTRUCTIONS:
+ * 1. In your Google Sheet, click "Extensions" -> "Apps Script".
+ * 2. Delete ALL existing code and PASTE this entire script.
+ * 3. Click "Save" (Ctrl+S / Cmd+S).
+ * 4. Select function "initAllTabs" from the top dropdown and click "Run".
+ *    (Accept permissions: Advanced -> Go to project -> Allow).
+ * 5. Run "setupZenvitraTriggers" once from toolbar to enable live 2-way sync!
+ * 6. Click "Deploy" (top right) -> "New deployment" -> "Web app":
+ *    - Description: Zenvitra Integration
  *    - Execute as: "Me"
- *    - Who has access: "Anyone"
- * 7. Copy the Web App URL and paste it in ZENVITRA.
+ *    - Who has access: "Anyone" (CRITICAL: must be Anyone!)
+ * 7. Copy the Web App URL and paste it into ZENVITRA.
  * ==============================================================================
  */
 
 var ZENVITRA_CONFIG = {
-  VERSION: "v2.6-OMNI",
+  VERSION: "v2.5.0",
   SPREADSHEET_ID: "${spreadsheetId}",
   WEBHOOK_INBOUND_URL: "${webhookEndpoint}",
   WEBHOOK_SECRET: "${webhookSecret}",
   EVENT_ID: "${eventId || 'ZEN_MASTER_GLOBAL'}",
   TIMEZONE: "Asia/Kolkata",
-  HEADER_ROW: 1,
-  DATA_START_ROW: 2,
+  C: {
+    OBSIDIAN: "#0f172a",
+    WHITE: "#ffffff"
+  }
 };
 
-/**
- * HTTP POST: Handles incoming records from ZENVITRA directly into Google Sheets tabs
- */
-function doPost(e) {
-  try {
-    var raw = e && e.postData && e.postData.contents ? e.postData.contents : "{}";
-    var payload = JSON.parse(raw);
-    var ss = SpreadsheetApp.openById(ZENVITRA_CONFIG.SPREADSHEET_ID);
-    
-    // Handshake ping check
-    if (payload.action === "PING" || payload.target === "HEALTH_CHECK") {
-      return ContentService.createTextOutput(JSON.stringify({
-        status: "SUCCESS",
-        message: "ZENVITRA Integration Active & Healthy",
-        spreadsheetId: ZENVITRA_CONFIG.SPREADSHEET_ID,
-        timestamp: new Date().toISOString()
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
+var TAB_SCHEMAS = {
+  REGISTER_CORE: {
+    sheetName: 'Register Data Core',
+    companionName: '02 Core Registrations',
+    headers: [
+      'Timestamp', 'User ID / Person ID', 'Full Legal Name', 'Display Name / Username', 'Primary Email Address',
+      'Phone Number [Optional]', 'Age (Years)', 'Minor Status (Under 18 / Adult)', 'Parent / Guardian Full Name',
+      'Parent / Guardian Emergency Contact', 'Minor Consent & Parental Accord', 'Role Designation', 'Access Level',
+      'Auth Provider', 'Institution / School / University', 'Country & City', 'Registration Type',
+      'Registration Status (REGISTER / PREREGISTER)', 'Terms & Privacy Ratification', 'Account Status', 'IP Address', 'Device / Browser'
+    ]
+  },
+  LOGIN_CORE: {
+    sheetName: 'Login Data Core',
+    companionName: '03 Login Activity',
+    headers: [
+      'Timestamp', 'Login Event ID', 'User ID / Person ID', 'Full Name', 'Email Address', 'Username / Handle',
+      'Auth Provider', 'Event Type', 'Login Status / Outcome', 'Risk Score', 'Session Hash', 'IP Address (Masked)', 'Device / User Agent Summary'
+    ]
+  },
+  EVENTS: {
+    sheetName: 'Event Registrations',
+    companionName: '12 Event Registrations',
+    headers: [
+      'Timestamp', 'Registration ID / Ticket ID', 'Full Name of the Delegate', 'Primary Contact Email Address',
+      'WhatsApp / Calling Number', 'School / College / University or Independent', 'Current City & State of Residence',
+      'Participation Track', 'Selected Delegation Pass Tier', 'Total Pass Fee (INR)', 'Preferred Payment Mode',
+      '12-Digit UPI Transaction ID / UTR Number', 'Upload Payment Screenshot / Receipt Proof URL', 'Digital Signature (Full Legal Name)',
+      'Date of Submission', 'Payment Verification Status', 'Allocated Committee', 'Allocated Seat / Portfolio',
+      'Dais Review Status', 'Dais Review Notes', 'IP Address', 'Device / Browser'
+    ]
+  },
+  CAMPUS_AMBASSADOR: {
+    sheetName: 'Campus Ambassadors',
+    companionName: '10 Campus Ambassadors',
+    headers: [
+      'Timestamp', 'Ambassador Application ID', 'Full Legal Name', 'Primary Contact Email', 'WhatsApp / Calling Phone Number',
+      'College / University / School Name', 'City & State of Residence', 'Degree, Stream & Academic Year',
+      'Leadership Experience', 'Proposed Strategy & Outreach Plan', 'Approval Status', 'Reviewer Notes', 'IP Address', 'Device / Browser'
+    ]
+  },
+  CORE_TEAM: {
+    sheetName: 'Core Team Applications',
+    companionName: '04 Team Applications',
+    headers: [
+      'Timestamp', 'Application ID', 'Full Legal Name', 'Zenvitra Sovereign Username (@handle)', 'Primary Email Address',
+      'WhatsApp Phone Number', 'Role Applied For', 'Primary Department Choice', 'Portfolio / Proof of Work URL',
+      'Strategic Vision & Impact Statement', 'Weekly Bandwidth Commitment', 'Application Status', 'Reviewer / Directorate Notes', 'IP Address', 'Device / Browser'
+    ]
+  },
+  CONTACT: {
+    sheetName: 'Contact Inquiries',
+    companionName: '06 Contact Inquiries',
+    headers: [
+      'Timestamp', 'Inquiry ID', 'Full Legal Name', 'Primary Contact Email', 'Contact Phone Number',
+      'Subject / Topic', 'Query Category', 'Message / Inquiry Details', 'Source Page URL', 'Inquiry Status', 'IP Address', 'Device / Browser'
+    ]
+  },
+  NEWSLETTER: {
+    sheetName: 'Newsletter Subscribers',
+    companionName: '07 Newsletter Subscribers',
+    headers: ['Timestamp', 'Subscriber ID', 'Subscriber Email Address', 'Subscription Source / Page', 'Marketing & Consent Accord', 'UTM Campaign Track', 'Subscription Status', 'IP Address']
+  },
+  DONATIONS: {
+    sheetName: 'Donations',
+    companionName: '20 Donations Charity',
+    headers: [
+      'Timestamp', 'Donation ID / Contribution ID', 'Contributor / Donor Full Name', 'Contributor Email Address',
+      'Phone Number [WhatsApp Active]', 'Voluntary Contribution Amount (INR)', '12-Digit UPI UTR / Transaction Reference ID',
+      'Target Project / Relief Stream', 'Payment Mode / Channel', 'Anonymous Contribution Preference',
+      'Contributor Notes / Dedication / Prayer', 'Payment Screenshot / Receipt Proof URL', 'Verification & Audit Status', 'IP Address', 'Device / Browser'
+    ]
+  },
+  COLLAB: {
+    sheetName: 'Collab & Partnerships',
+    companionName: '08 Collaborations',
+    headers: [
+      'Timestamp', 'Partnership ID', 'Organization / Institution Name', 'Lead Representative Name', 'Official Contact Email',
+      'Phone / WhatsApp Number', 'Collaboration Type / Scope', 'Proposal Summary & Objectives', 'Budget / Resource Commitment', 'Partnership Pipeline Stage', 'IP Address', 'Device / Browser'
+    ]
+  },
+  COMMUNITY: {
+    sheetName: 'Community Members',
+    companionName: '09 Community Members',
+    headers: [
+      'Timestamp', 'Member ID', 'Full Legal Name', 'Email Address', 'Location (City & Country)', 'Institution / College / Affiliation',
+      'Primary Skills & Expertise', 'Areas of Platform Interest', 'Discord / Telegram Handle', 'Membership Verification Status', 'IP Address', 'Device / Browser'
+    ]
+  },
+  FEEDBACK: {
+    sheetName: 'Feedback & Grievance',
+    companionName: '23 Feedback',
+    headers: [
+      'Timestamp', 'Ticket ID', 'Submitter Full Name', 'Contact Email Address', 'Feedback Category',
+      'Severity / Priority Rank', 'Target URL / Feature Name', 'Feedback Description / Grievance Details', 'Attachment / Screenshot URL', 'Resolution Status', 'IP Address', 'Device / Browser'
+    ]
+  },
+  FORMS: {
+    sheetName: 'Form Submissions',
+    companionName: '45 Form Submissions',
+    headers: [
+      'Timestamp', 'Submission ID', 'Form ID', 'Form Title', 'Submitter Name', 'Submitter Email', 'Submitter Handle (@tag)', 'Raw Submission Payload', 'IP Address', 'Device / Browser'
+    ]
+  }
+};
 
-    // Auto-initialize tabs command
-    if (payload.action === "INIT_TABS") {
-      var tabCount = initAllTabs();
-      return ContentService.createTextOutput(JSON.stringify({
-        status: "SUCCESS",
-        message: "Initialized " + tabCount + " tabs in Google Sheet.",
-        timestamp: new Date().toISOString()
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
+function initAllTabs() {
+  var ss = getOrCreateSpreadsheet_();
+  var created = [];
 
-    // Resolve target tab name (clean title case, zero numbers, zero underscores)
-    var tabName = (payload.targetTab || payload.tab || "Core Registrations").toString().replace(/^\d+[\s_-]*/, "").replace(/_/g, " ").trim();
-    var sheet = ss.getSheetByName(tabName);
-    
-    // Auto-create tab if missing
-    if (!sheet) {
-      sheet = ss.insertSheet(tabName);
-      sheet.setTabColor("#0F766E");
-    }
+  for (var key in TAB_SCHEMAS) {
+    if (TAB_SCHEMAS.hasOwnProperty(key)) {
+      var sch = TAB_SCHEMAS[key];
+      var sh = getOrCreateTabWithHeaders_(ss, sch.sheetName, sch.headers);
+      if (sh) created.push(sch.sheetName);
 
-    // Extract headers from Row 1
-    var lastCol = Math.max(sheet.getLastColumn(), 1);
-    var headers = [];
-    if (sheet.getLastRow() >= 1) {
-      headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-    }
-
-    // If tab is empty, seed headers dynamically from payload keys
-    var dataObj = payload.data || payload;
-    var keys = Object.keys(dataObj).filter(function(k) { return k !== "targetTab" && k !== "tab" && k !== "action"; });
-
-    if (headers.length === 0 || !headers[0]) {
-      headers = ["Timestamp", "Record ID"].concat(keys);
-      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#0f172a").setFontColor("#FFFFFF");
-      sheet.setFrozenRows(1);
-    }
-
-    // Build row values matching headers
-    var rowValues = [];
-    for (var i = 0; i < headers.length; i++) {
-      var headerName = headers[i].toString().toLowerCase().trim();
-      var val = "";
-
-      if (headerName === "timestamp" || headerName === "date") {
-        val = payload.timestamp || dataObj.timestamp || new Date().toISOString();
-      } else if (headerName === "record id" || headerName === "id") {
-        val = dataObj.id || dataObj.recordId || dataObj.registrationId || "REC-" + Utilities.getUuid().substring(0, 8).toUpperCase();
-      } else {
-        // Find matching key case-insensitively
-        for (var k in dataObj) {
-          if (k.toLowerCase().trim() === headerName || headerName.indexOf(k.toLowerCase()) !== -1) {
-            val = dataObj[k];
-            break;
-          }
-        }
+      if (sch.companionName && sch.companionName !== sch.sheetName) {
+        var compSh = getOrCreateTabWithHeaders_(ss, sch.companionName, sch.headers);
+        if (compSh) created.push(sch.companionName);
       }
-
-      if (typeof val === "object" && val !== null) {
-        val = JSON.stringify(val);
-      }
-      rowValues.push(val !== undefined && val !== null ? val : "");
     }
-
-    // Append row
-    sheet.appendRow(rowValues);
-
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "SUCCESS",
-      tab: tabName,
-      row: sheet.getLastRow(),
-      timestamp: new Date().toISOString()
-    })).setMimeType(ContentService.MimeType.JSON);
-
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "ERROR",
-      error: err.message,
-      timestamp: new Date().toISOString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-/**
- * HTTP GET: Returns query status or attendee rosters
- */
-function doGet(e) {
-  var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : "PING";
-  
-  if (action === "INIT") {
-    var tabsCreated = initAllTabs();
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "SUCCESS",
-      message: "Initialized " + tabsCreated + " tabs.",
-      timestamp: new Date().toISOString()
-    })).setMimeType(ContentService.MimeType.JSON);
   }
 
-  return ContentService.createTextOutput(JSON.stringify({
-    status: "CONNECTED",
-    engine: "ZENVITRA_APPS_SCRIPT_TWO_WAY_V2",
-    spreadsheetId: ZENVITRA_CONFIG.SPREADSHEET_ID,
-    timestamp: new Date().toISOString()
-  })).setMimeType(ContentService.MimeType.JSON);
+  var peopleHeaders = ['Person ID', 'Full Name', 'Display Name', 'Email Address', 'Phone Number', 'Username / Handle', 'Account Type', 'Account Status', 'Country & City', 'Created At'];
+  getOrCreateTabWithHeaders_(ss, '01 People', peopleHeaders);
+
+  var defaultSheet = ss.getSheetByName('Sheet1');
+  if (defaultSheet && ss.getSheets().length > 1) {
+    try { ss.deleteSheet(defaultSheet); } catch (e) {}
+  }
+
+  try { SpreadsheetApp.getActiveSpreadsheet().toast('Zenvitra tabs initialized! ' + created.length + ' tabs ready with Row 1 headers.', '⚡ Setup Complete', 6); } catch (e) {}
+
+  return { ok: true, tabsConfigured: created.length };
 }
 
-/**
- * Trigger: On-Edit event streaming from Google Sheet to ZENVITRA
- */
-function handleZenvitraSheetEdit(e) {
-  if (!e || !e.range) return;
+function getOrCreateTabWithHeaders_(ss, sheetName, headers) {
+  var sh = getSheetLoose_(ss, sheetName);
+  var isNew = false;
+  if (!sh) {
+    sh = ss.insertSheet(sheetName);
+    isNew = true;
+  }
+  if (isNew || sh.getLastRow() === 0) {
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    formatHeaderRow_(sh, headers.length);
+  }
+  return sh;
+}
 
-  var sheet = e.range.getSheet();
-  var sheetName = sheet.getName();
-  var row = e.range.getRow();
-  var col = e.range.getColumn();
-
-  if (row <= 1) return; // Header row
-  if (sheetName.indexOf("Audit") !== -1) return;
-
-  var header = sheet.getRange(1, col).getValue();
-  var recordId = sheet.getRange(row, 1).getValue();
-  var oldValue = e.oldValue !== undefined ? e.oldValue : null;
-  var newValue = e.value !== undefined ? e.value : e.range.getValue();
-  var userEmail = Session.getActiveUser().getEmail() || "authorized_collaborator";
-
-  var payload = {
-    editUuid: "EDIT-" + Utilities.getUuid().substring(0, 8).toUpperCase(),
-    eventId: ZENVITRA_CONFIG.EVENT_ID,
-    spreadsheetId: ZENVITRA_CONFIG.SPREADSHEET_ID,
-    webhookSecret: ZENVITRA_CONFIG.WEBHOOK_SECRET,
-    tabName: sheetName,
-    row: row,
-    column: col,
-    columnHeader: String(header),
-    recordId: String(recordId),
-    oldValue: oldValue,
-    newValue: newValue,
-    userEmail: userEmail,
-    timestamp: new Date().toISOString()
-  };
-
+function formatHeaderRow_(sheet, colCount) {
   try {
-    var options = {
-      method: "post",
-      contentType: "application/json",
-      headers: {
-        "x-zenvitra-secret": ZENVITRA_CONFIG.WEBHOOK_SECRET
-      },
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true
-    };
-
-    var response = UrlFetchApp.fetch(ZENVITRA_CONFIG.WEBHOOK_INBOUND_URL, options);
-    var code = response.getResponseCode();
-    if (code >= 200 && code < 300) {
-      sheet.toast("Change synced to ZENVITRA", "Sync Active", 2);
-    }
-  } catch (err) {
-    Logger.log("Outbound sync warn: " + err.message);
-  }
+    var range = sheet.getRange(1, 1, 1, colCount);
+    range.setBackground(ZENVITRA_CONFIG.C.OBSIDIAN);
+    range.setFontColor(ZENVITRA_CONFIG.C.WHITE);
+    range.setFontWeight('bold');
+    range.setFontFamily('Roboto Mono');
+    range.setFontSize(10);
+    sheet.setFrozenRows(1);
+  } catch (e) {}
 }
 
-/**
- * Installs the onEdit trigger for near real-time streaming
- */
+function smartAppendRow_(sheet, rowData) {
+  var lastRow = sheet.getLastRow();
+  var targetRow = lastRow + 1;
+  if (targetRow <= 1) targetRow = 2;
+  sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+  return targetRow;
+}
+
 function setupZenvitraTriggers() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
     ScriptApp.deleteTrigger(triggers[i]);
   }
-
   ScriptApp.newTrigger("handleZenvitraSheetEdit")
-    .forSpreadsheet(SpreadsheetApp.openById(ZENVITRA_CONFIG.SPREADSHEET_ID))
+    .forSpreadsheet(getOrCreateSpreadsheet_())
     .onEdit()
     .create();
 
-  SpreadsheetApp.openById(ZENVITRA_CONFIG.SPREADSHEET_ID).toast(
-    "ZENVITRA Live Two-Way Sync Trigger Installed Successfully!",
-    "Integration Active",
-    6
-  );
+  try {
+    SpreadsheetApp.getActiveSpreadsheet().toast("ZENVITRA Sync Trigger installed successfully!", "Integration Active", 5);
+  } catch (e) {}
 }
 
-/**
- * Initializes Core Operational Tabs in the target Google Sheet
- */
-function initAllTabs() {
-  var ss = SpreadsheetApp.openById(ZENVITRA_CONFIG.SPREADSHEET_ID);
-  var coreTabs = [
-    "People",
-    "Core Registrations",
-    "Contact Inquiries",
-    "Events",
-    "Event Registrations",
-    "Delegate Rosters",
-    "EB Secretariat",
-    "Attendance Rollcall",
-    "Payments",
-    "Support Cases",
-    "Audit Logs",
-    "Pulse Posts",
-    "Form Submissions"
-  ];
+function handleZenvitraSheetEdit(e) {
+  if (!e || !e.range) return;
+  var sheet = e.range.getSheet();
+  var sheetName = sheet.getName();
+  var row = e.range.getRow();
+  var col = e.range.getColumn();
+  if (row <= 1) return;
 
-  for (var i = 0; i < coreTabs.length; i++) {
-    var name = coreTabs[i];
-    if (!ss.getSheetByName(name)) {
-      var s = ss.insertSheet(name);
-      var colHeaders = ["Timestamp", "Record ID", "Name", "Email", "Details", "Status"];
-      if (name === "Core Registrations" || name === "Register Data Core") {
-        colHeaders = [
-          "Timestamp", "Record ID", "Full Legal Name", "Display Name / Username", "Primary Email Address",
-          "Phone Number [Optional]", "Age (Years)", "Minor Status (Under 18 / Adult)", "Parent / Guardian Full Name",
-          "Parent / Guardian Emergency Contact", "Minor Consent & Parental Accord", "Role Designation", "Access Level",
-          "Auth Provider", "Institution / School / University", "Country & City", "Registration Type",
-          "Registration Status (REGISTER / PREREGISTER)", "Terms & Privacy Ratification", "Account Status"
-        ];
-      } else if (name === "People" || name === "01 People") {
-        colHeaders = [
-          "Person_ID", "Full_Name", "Display_Name", "Email", "Phone_Optional", "Username",
-          "Age", "Minor_Status", "Parent_Contact", "Institution", "Account_Type", "Account_Status",
-          "Country", "City_Optional", "Joined_On", "Consent_Status", "Source", "Notes"
-        ];
+  var header = sheet.getRange(1, col).getValue();
+  var recordId = sheet.getRange(row, 1).getValue();
+  var oldValue = e.oldValue !== undefined ? e.oldValue : null;
+  var newValue = e.value !== undefined ? e.value : e.range.getValue();
+
+  var payload = {
+    eventId: ZENVITRA_CONFIG.EVENT_ID,
+    webhookSecret: ZENVITRA_CONFIG.WEBHOOK_SECRET,
+    tabName: sheetName,
+    row: row,
+    columnHeader: String(header),
+    recordId: String(recordId),
+    oldValue: oldValue,
+    newValue: newValue,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    UrlFetchApp.fetch(ZENVITRA_CONFIG.WEBHOOK_INBOUND_URL, {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+  } catch (err) {}
+}
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(20000);
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, error: "Empty body" })).setMimeType(ContentService.MimeType.JSON);
+    }
+    var payload = JSON.parse(e.postData.contents);
+    var ss = getOrCreateSpreadsheet_();
+
+    if (payload.action === "PING") {
+      return ContentService.createTextOutput(JSON.stringify({ status: "SUCCESS", message: "ZENVITRA Online" })).setMimeType(ContentService.MimeType.JSON);
+    }
+    if (payload.action === "INIT" || payload.action === "INIT_TABS") {
+      return ContentService.createTextOutput(JSON.stringify(initAllTabs())).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var rawTab = payload.targetTab || payload.sheetTab || payload.tab || 'Register Data Core';
+    var schemaKey = resolveSchemaKey_(rawTab);
+    var targetTabName = 'Register Data Core';
+    var companionTabName = '02 Core Registrations';
+    var expectedHeaders = TAB_SCHEMAS.REGISTER_CORE.headers;
+
+    if (schemaKey && TAB_SCHEMAS[schemaKey]) {
+      targetTabName = TAB_SCHEMAS[schemaKey].sheetName;
+      companionTabName = TAB_SCHEMAS[schemaKey].companionName;
+      expectedHeaders = TAB_SCHEMAS[schemaKey].headers;
+    }
+
+    var targetSheet = getOrCreateTabWithHeaders_(ss, targetTabName, expectedHeaders);
+    var currentHeaders = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
+
+    // Dynamic column expansion for custom question keys
+    var ignored = { action: true, targetTab: true, sheetTab: true, tab: true, secret: true };
+    var missingHeaders = [];
+    for (var k in payload) {
+      if (payload.hasOwnProperty(k) && !ignored[k]) {
+        var pVal = payload[k];
+        if (pVal !== "" && pVal !== null && pVal !== undefined && typeof pVal !== "object") {
+          var normK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+          var found = currentHeaders.some(function(ch) { return ch.toLowerCase().replace(/[^a-z0-9]/g, "") === normK; });
+          if (!found && currentHeaders.length < 50) missingHeaders.push(k);
+        }
       }
-      s.getRange(1, 1, 1, colHeaders.length).setValues([colHeaders]);
-      s.getRange(1, 1, 1, colHeaders.length).setFontWeight("bold").setBackground("#0f172a").setFontColor("#FFFFFF");
-      s.setFrozenRows(1);
+    }
+    if (missingHeaders.length > 0) {
+      targetSheet.getRange(1, currentHeaders.length + 1, 1, missingHeaders.length).setValues([missingHeaders]);
+      formatHeaderRow_(targetSheet, currentHeaders.length + missingHeaders.length);
+      currentHeaders = currentHeaders.concat(missingHeaders);
+    }
+
+    var targetRow = currentHeaders.map(function(h) { return safe_(lookupVal_(payload, h)); });
+    var writtenRow = smartAppendRow_(targetSheet, targetRow);
+
+    if (companionTabName && companionTabName !== targetTabName) {
+      try {
+        var compSheet = getOrCreateTabWithHeaders_(ss, companionTabName, expectedHeaders);
+        if (compSheet && compSheet.getSheetId() !== targetSheet.getSheetId()) {
+          var cHeaders = compSheet.getRange(1, 1, 1, compSheet.getLastColumn()).getValues()[0];
+          var cRow = cHeaders.map(function(ch) { return safe_(lookupVal_(payload, ch)); });
+          smartAppendRow_(compSheet, cRow);
+        }
+      } catch (ce) {}
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, status: "success", tab: targetTabName, row: writtenRow })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+}
+
+function doGet(e) {
+  var ss = getOrCreateSpreadsheet_();
+  return ContentService.createTextOutput(JSON.stringify({ ok: true, status: "ONLINE", url: ss.getUrl() })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function resolveSchemaKey_(raw) {
+  if (!raw) return null;
+  var s = String(raw).toUpperCase().trim();
+  if (s.indexOf('REGISTER') !== -1 || s.indexOf('CORE REG') !== -1) return 'REGISTER_CORE';
+  if (s.indexOf('LOGIN') !== -1 || s.indexOf('AUTH') !== -1) return 'LOGIN_CORE';
+  if (s.indexOf('EVENT') !== -1 || s.indexOf('PASS') !== -1 || s.indexOf('TICKET') !== -1) return 'EVENTS';
+  if (s.indexOf('AMBASSADOR') !== -1 || s.indexOf('CAMPUS') !== -1) return 'CAMPUS_AMBASSADOR';
+  if (s.indexOf('CORE TEAM') !== -1 || s.indexOf('TEAM APPL') !== -1) return 'CORE_TEAM';
+  if (s.indexOf('CONTACT') !== -1 || s.indexOf('INQUIR') !== -1) return 'CONTACT';
+  if (s.indexOf('NEWSLETTER') !== -1 || s.indexOf('SUBSCRIB') !== -1) return 'NEWSLETTER';
+  if (s.indexOf('COLLAB') !== -1 || s.indexOf('PARTNER') !== -1) return 'COLLAB';
+  if (s.indexOf('COMMUNITY') !== -1) return 'COMMUNITY';
+  if (s.indexOf('DONAT') !== -1) return 'DONATIONS';
+  if (s.indexOf('FEEDBACK') !== -1 || s.indexOf('GRIEVANCE') !== -1) return 'FEEDBACK';
+  if (s.indexOf('FORM') !== -1 || s.indexOf('SUBMISSION') !== -1) return 'FORMS';
+  return null;
+}
+
+function lookupVal_(data, header) {
+  if (!data || !header) return "";
+  if (data[header] !== undefined && data[header] !== null && data[header] !== "") return data[header];
+
+  var hLower = String(header).toLowerCase();
+  for (var k in data) {
+    if (data.hasOwnProperty(k) && k.toLowerCase() === hLower) {
+      if (data[k] !== undefined && data[k] !== null && data[k] !== "") return data[k];
     }
   }
-  return coreTabs.length;
+
+  var hAlpha = hLower.replace(/[^a-z0-9]/g, "");
+  for (var k2 in data) {
+    if (data.hasOwnProperty(k2)) {
+      if (k2.toLowerCase().replace(/[^a-z0-9]/g, "") === hAlpha && data[k2] !== undefined && data[k2] !== null && data[k2] !== "") {
+        return data[k2];
+      }
+    }
+  }
+
+  if (hAlpha.indexOf("timestamp") !== -1 || hAlpha.indexOf("date") !== -1) {
+    return data.timestamp || data.submissionDate || Utilities.formatDate(new Date(), ZENVITRA_CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+  }
+  if (hAlpha.indexOf("username") !== -1 || hAlpha.indexOf("handle") !== -1 || hAlpha.indexOf("displayname") !== -1) {
+    var rawHandle = data.username || data.preferredHandle || data.handle || data.displayName || data.submitterHandle || "";
+    if (rawHandle) return (String(rawHandle).startsWith('@') ? '' : '@') + String(rawHandle).replace(/[^a-zA-Z0-9_]/g, '');
+    return data.email ? '@' + String(data.email).split('@')[0] : '';
+  }
+  if (hAlpha.indexOf("userid") !== -1 || hAlpha.indexOf("personid") !== -1) {
+    return data.userId || data.personId || data.id || ('ZV-USR-' + Math.random().toString(36).substring(2, 8).toUpperCase());
+  }
+  if (hAlpha.indexOf("name") !== -1 && hAlpha.indexOf("parent") === -1 && hAlpha.indexOf("guardian") === -1) {
+    return data.fullName || data.legalName || data.name || data.participantName || "Sovereign Citizen";
+  }
+  if (hAlpha.indexOf("email") !== -1 && hAlpha.indexOf("guardian") === -1) {
+    return data.email || data.primaryEmail || data.participantEmail || "";
+  }
+  if (hAlpha.indexOf("phone") !== -1 || hAlpha.indexOf("whatsapp") !== -1 || hAlpha.indexOf("calling") !== -1 || hAlpha.indexOf("contactnumber") !== -1) {
+    return data.phoneNumber || data.phone || data.contactNumber || "N/A";
+  }
+  if (hAlpha.indexOf("age") !== -1 && hAlpha.indexOf("minor") === -1) {
+    return data.age !== undefined && data.age !== null ? String(data.age) : "";
+  }
+  if (hAlpha.indexOf("minorstatus") !== -1 || (hAlpha.indexOf("minor") !== -1 && hAlpha.indexOf("status") !== -1)) {
+    if (data.minorStatus) return data.minorStatus;
+    return Number(data.age) < 18 ? "MINOR (<18)" : "ADULT (18+)";
+  }
+  if (hAlpha.indexOf("parent") !== -1 || hAlpha.indexOf("guardian") !== -1) {
+    if (hAlpha.indexOf("contact") !== -1 || hAlpha.indexOf("phone") !== -1 || hAlpha.indexOf("emergency") !== -1) {
+      return data.parentContact || data.parentGuardianContact || (Number(data.age) < 18 ? "PENDING_CONTACT" : "N/A (ADULT 18+)");
+    }
+    return data.parentName || data.parentGuardianName || (Number(data.age) < 18 ? "PENDING_GUARDIAN" : "N/A (ADULT 18+)");
+  }
+  if (hAlpha.indexOf("roledesignation") !== -1 || hAlpha.indexOf("role") !== -1 || hAlpha.indexOf("track") !== -1) {
+    return data.roleDesignation || data.roleInterest || data.preferredTrack || data.initialRole || data.roleAppliedFor || data.ticketPassType || "Student Delegate";
+  }
+  if (hAlpha.indexOf("accesslevel") !== -1) {
+    return data.accessLevel || (String(data.registrationStatus || data.registrationType || '').toUpperCase().includes('PRE') ? 'Pre-Registered Sovereign Whitelist' : 'Direct Member');
+  }
+  if (hAlpha.indexOf("authprovider") !== -1 || hAlpha.indexOf("provider") !== -1) {
+    return data.authProvider || data.provider || "DIRECT_ENROLL";
+  }
+  if (hAlpha.indexOf("institution") !== -1 || hAlpha.indexOf("school") !== -1 || hAlpha.indexOf("college") !== -1) {
+    return data.institution || data.institutionOrSchool || data.collegeUniversityName || "Independent";
+  }
+  if (hAlpha.indexOf("city") !== -1 || hAlpha.indexOf("country") !== -1 || hAlpha.indexOf("location") !== -1) {
+    return data.countryCity || data.cityState || data.city || "Pan-India / Global";
+  }
+  if (hAlpha.indexOf("registrationstatus") !== -1 || hAlpha.indexOf("registrationtype") !== -1 || hAlpha.indexOf("preregister") !== -1) {
+    var rawReg = String(data.registrationStatus || data.registrationType || data.accessLevel || "").toUpperCase();
+    return rawReg.indexOf("PRE") !== -1 ? "PREREGISTER" : "REGISTER";
+  }
+  if (hAlpha.indexOf("terms") !== -1 || hAlpha.indexOf("ratification") !== -1) {
+    return (data.termsRatified || data.termsAccepted) ? "RATIFIED" : "PENDING";
+  }
+  if (hAlpha.indexOf("status") !== -1) {
+    return data.accountStatus || data.approvalStatus || data.paymentStatus || "ACTIVE";
+  }
+  if (hAlpha.indexOf("ticketid") !== -1 || hAlpha.indexOf("registrationid") !== -1 || hAlpha.indexOf("applicationid") !== -1 || hAlpha.indexOf("id") !== -1) {
+    return data.ticketId || data.registrationId || data.applicationId || ('ZV-' + Math.random().toString(36).substring(2, 8).toUpperCase());
+  }
+  if (hAlpha.indexOf("fee") !== -1 || hAlpha.indexOf("amount") !== -1 || hAlpha.indexOf("price") !== -1) {
+    return data.totalPrice !== undefined ? String(data.totalPrice) : (data.amountInr !== undefined ? String(data.amountInr) : "0");
+  }
+  if (hAlpha.indexOf("ip") !== -1) return data.ipAddress || data.ip || "127.0.0.1";
+  if (hAlpha.indexOf("device") !== -1 || hAlpha.indexOf("browser") !== -1) return data.deviceInfo || data.deviceBrowserInfo || data.userAgent || "Web Browser";
+
+  return "";
+}
+
+function getSheetLoose_(ss, name) {
+  if (!ss || !name) return null;
+  var target = String(name).trim();
+  var sh = ss.getSheetByName(target);
+  if (sh) return sh;
+
+  var spaceName = target.replace(/_/g, " ").replace(/\s+/g, " ").trim();
+  sh = ss.getSheetByName(spaceName);
+  if (sh) return sh;
+
+  var sheets = ss.getSheets();
+  var normTarget = target.toLowerCase().replace(/[^a-z0-9]/g, "");
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].getName().toLowerCase().replace(/[^a-z0-9]/g, "") === normTarget) return sheets[i];
+  }
+  var stripped = target.replace(/^\d+[\s_-]*/, "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (stripped) {
+    for (var j = 0; j < sheets.length; j++) {
+      if (sheets[j].getName().replace(/^\d+[\s_-]*/, "").trim().toLowerCase().replace(/[^a-z0-9]/g, "") === stripped) return sheets[j];
+    }
+  }
+  return null;
+}
+
+function getOrCreateSpreadsheet_() {
+  var ss = null;
+  try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) {}
+  if (!ss && ZENVITRA_CONFIG.SPREADSHEET_ID) {
+    try { ss = SpreadsheetApp.openById(ZENVITRA_CONFIG.SPREADSHEET_ID); } catch (e) {}
+  }
+  return ss || SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function safe_(val) {
+  if (val === null || val === undefined) return "";
+  return val;
 }
 `;
 }
 
-/**
- * 5. Saves and activates a new Sheets + Apps Script integration
- */
 export async function saveSheetsIntegration(params: {
   sheetUrl: string;
   scriptUrl: string;

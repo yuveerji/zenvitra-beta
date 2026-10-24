@@ -26,49 +26,24 @@ function mapTabToTarget(rawTab: string): string {
   const upper = (rawTab || '').toUpperCase().trim();
   let resolved = '';
 
-  // Clean register names (zero numbers, zero underscores)
-  if (upper.includes('PEOPLE') || upper === 'USERS') resolved = 'People';
-  else if (upper.includes('CORE REG') || upper.includes('REGISTER_CORE') || upper.includes('REGISTER DATA')) resolved = 'Core Registrations';
-  else if (upper.includes('CORE TEAM') || upper.includes('CORE_TEAM')) resolved = 'Core Team Applications';
-  else if (upper.includes('TEAM APPL') || upper.includes('TEAM_APPL')) resolved = 'Team Applications';
-  else if (upper.includes('TEAM_ROLES') || upper.includes('TEAM ROLES') || upper.includes('ROLES ACCESS')) resolved = 'Team Roles Access';
-  else if (upper.includes('CONTACT') || upper.includes('INQUIR')) resolved = 'Contact Inquiries';
-  else if (upper.includes('NEWSLETTER')) resolved = 'Newsletter Subscribers';
-  else if (upper.includes('COLLAB') || upper.includes('PARTNERSHIP')) resolved = 'Collaborations';
-  else if (upper.includes('COMMUNITY')) resolved = 'Community Members';
+  if (upper.includes('REGISTER') || upper.includes('CORE REG')) resolved = 'Register Data Core';
+  else if (upper.includes('LOGIN') || upper.includes('AUTH')) resolved = 'Login Data Core';
+  else if (upper.includes('EVENT REG') || upper.includes('PASS') || upper.includes('TICKET')) resolved = 'Event Registrations';
+  else if (upper === 'EVENTS' || upper.includes('CONFERENCE') || upper.includes('MUN') || upper.includes('DIPLOMACY')) resolved = 'Event Registrations';
   else if (upper.includes('CAMPUS') || upper.includes('AMBASSADOR')) resolved = 'Campus Ambassadors';
-  else if (upper.includes('EVENT REGISTRATIONS') || upper.includes('EVENT_REGISTRATIONS') || upper.includes('PASS') || upper.includes('TICKET')) resolved = 'Event Registrations';
-  else if (upper === 'EVENTS' || upper.includes('CONFERENCE') || upper.includes('MUN') || upper.includes('DIPLOMACY')) resolved = 'Events';
-  else if (upper.includes('COMMITTEE')) resolved = 'Committees';
-  else if (upper.includes('DELEGATE') || upper.includes('ROSTER') || upper.includes('MATRIX') || upper.includes('PORTFOLIO') || upper === 'AIPPM' || upper === 'EMI' || upper === 'UNSC' || upper === 'UNODC') resolved = 'Delegate Rosters';
-  else if (upper.includes('SECRETARIAT') || upper.includes('DAIS') || upper.includes('EB')) resolved = 'EB Secretariat';
-  else if (upper.includes('ATTENDANCE') || upper.includes('ROLLCALL')) resolved = 'Attendance Rollcall';
-  else if (upper.includes('AWARDS') || upper.includes('CERTIFICATE')) resolved = 'Awards Certificates';
-  else if (upper.includes('PAYMENT') || upper.includes('CASHFREE') || upper.includes('TRANSACTION')) resolved = 'Payments';
-  else if (upper.includes('EXPENSE')) resolved = 'Expenses';
-  else if (upper.includes('BUDGET')) resolved = 'Budgets';
-  else if (upper.includes('TASK')) resolved = 'Tasks';
-  else if (upper.includes('FEEDBACK') || upper.includes('GRIEVANCE')) resolved = 'Feedback';
-  else if (upper.includes('SUPPORT') || upper.includes('TICKET') || upper.includes('CASE')) resolved = 'Support Cases';
-  else if (upper.includes('AUDIT') || upper.includes('LOG')) resolved = 'Audit Logs';
-  else if (upper.includes('CHIT') && upper.includes('ARCHIVE')) resolved = 'Chits Archive';
-  else if (upper.includes('CHIT')) resolved = 'Chits Active Roster';
-  else if (upper.includes('MEET') && upper.includes('ATTENDEE')) resolved = 'Meet Attendees';
-  else if (upper.includes('MEET') || upper.includes('CALL')) resolved = 'Meet Sessions';
-  else if (upper.includes('PULSE') && upper.includes('CHANNEL')) resolved = 'Pulse Channels';
-  else if (upper.includes('PULSE') && upper.includes('COMMENT')) resolved = 'Pulse Comments';
-  else if (upper.includes('PULSE') || upper.includes('POST')) resolved = 'Pulse Posts';
-  else if (upper.includes('CONTENT') || upper.includes('EDITORIAL') || upper.includes('NEWS')) resolved = 'Content Editorial';
-  else if (upper.includes('FEATURE') || upper.includes('BUG') || upper.includes('ISSUE')) resolved = 'Feature Bugs';
-  else if (upper.includes('MODULE')) resolved = 'Module Catalog';
-  else if (upper.includes('BILL') && upper.includes('AMENDMENT')) resolved = 'Bill Amendments';
-  else if (upper.includes('BILL') || upper.includes('LEGISLATION') || upper.includes('SOLUTION')) resolved = 'Legislation Bills';
-  else if (upper.includes('FORM')) resolved = 'Form Submissions';
-  else if (upper.includes('DOCS')) resolved = 'Zen Docs Metrics';
-  else resolved = rawTab || 'Core Registrations';
+  else if (upper.includes('CORE TEAM') || upper.includes('TEAM APPL') || upper.includes('CAREER')) resolved = 'Core Team Applications';
+  else if (upper.includes('CONTACT') || upper.includes('INQUIR')) resolved = 'Contact Inquiries';
+  else if (upper.includes('NEWSLETTER') || upper.includes('SUBSCRIB')) resolved = 'Newsletter Subscribers';
+  else if (upper.includes('COLLAB') || upper.includes('PARTNER')) resolved = 'Collab & Partnerships';
+  else if (upper.includes('COMMUNITY')) resolved = 'Community Members';
+  else if (upper.includes('DONAT')) resolved = 'Donations';
+  else if (upper.includes('IMPACT')) resolved = 'Impact Ledger';
+  else if (upper.includes('FEEDBACK') || upper.includes('GRIEVANCE')) resolved = 'Feedback & Grievance';
+  else if (upper.includes('FORM') || upper.includes('SUBMISSION')) resolved = 'Form Submissions';
+  else if (upper.includes('PEOPLE') || upper === 'USERS') resolved = '01 People';
+  else resolved = rawTab || 'Register Data Core';
 
-  // Strip any leading numbers (e.g. "01 ", "02_") and underscores
-  return resolved.replace(/^\d+[\s_-]*/, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  return resolved.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /**
