@@ -215,7 +215,13 @@ export function detectClientEnvironment(): {
     deviceName,
     browser,
     os,
-    ipAddress: '127.0.0.1 (Verified Active Session)',
+    ipAddress: (() => {
+      try {
+        const cached = localStorage.getItem('zenvitra_client_ip');
+        if (cached) return cached;
+      } catch (_) {}
+      return '127.0.0.1 (Verified Active Session)';
+    })(),
     location: 'Current Node Connection',
   };
 }

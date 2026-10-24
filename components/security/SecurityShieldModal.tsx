@@ -494,6 +494,12 @@ export function SecurityShieldModal({ isOpen, onClose }: { isOpen: boolean; onCl
                     <p className="text-xs text-rose-300/80">
                       Suspect unauthorized access or lost a device? Instantly terminate all other active logins across devices.
                     </p>
+                    <div className="pt-1 flex items-center gap-2 font-mono text-[11px] text-zinc-300">
+                      <span className="text-zinc-500">Current Node IP:</span>
+                      <span className="px-2 py-0.5 rounded bg-black/60 border border-white/10 text-emerald-300 font-bold">
+                        {securityProfile.activeSessions.find((s) => s.isCurrent)?.ipAddress || '127.0.0.1'}
+                      </span>
+                    </div>
                   </div>
 
                   <button
@@ -568,13 +574,20 @@ export function SecurityShieldModal({ isOpen, onClose }: { isOpen: boolean; onCl
                                   <span>REMOTE NODE</span>
                                 </div>
                               )}
+
+                              {/* Prominent Device IP Badge */}
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 text-[10px] font-mono border border-cyan-500/25">
+                                <Globe2 className="w-3 h-3 text-cyan-400 shrink-0" />
+                                <span className="text-zinc-400">IP:</span>
+                                <span className="font-semibold text-white tracking-wide">{session.ipAddress}</span>
+                              </div>
                             </div>
                             <div className="font-mono text-[10px] text-zinc-400 space-x-2 pt-1 flex flex-wrap items-center">
                               <span>{session.browser}</span>
                               <span>&bull;</span>
                               <span>{session.os}</span>
                               <span>&bull;</span>
-                              <span>{session.ipAddress}</span>
+                              <span className="text-cyan-300 font-medium">Node IP: {session.ipAddress}</span>
                               <span>&bull;</span>
                               <span className="text-zinc-500">{session.isCurrent ? 'Active now' : 'Verified connection'}</span>
                             </div>
