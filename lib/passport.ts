@@ -555,6 +555,47 @@ export function getOrCreateDefaultPassport(username: string, fullName?: string, 
       existing.statusLabel = 'Test Node';
       mutated = true;
     }
+
+    // Self-heal onboarding reward grant if missing from contributions
+    if ((clean === 'yuveer' || clean === 'founder') && !existing.contributions?.some(c => c.id?.startsWith('onboarding_reward_'))) {
+      if (!existing.contributions) existing.contributions = [];
+      existing.contributions.unshift({
+        id: 'onboarding_reward_genesis_yuveer',
+        title: 'Account Creation Grant — Founder Tier',
+        initiative: 'Earned 500 Passport Points as User #1 (Users #1–25).',
+        type: 'Open Source Tooling',
+        date: '2026-10-18',
+        isVerified: true,
+        pointsEarned: 500
+      });
+      (existing as any).userNumber = 1;
+      (existing as any).onboardingTier = 'Founder Tier';
+      (existing as any).onboardingClaimed = true;
+      mutated = true;
+    } else if (typeof window !== 'undefined') {
+      try {
+        const rawClaim = localStorage.getItem(`zenvitra_onboarding_reward_claimed_${clean}`);
+        if (rawClaim) {
+          const claim = JSON.parse(rawClaim);
+          if (claim.claimed && !existing.contributions?.some(c => c.id?.startsWith('onboarding_reward_'))) {
+            if (!existing.contributions) existing.contributions = [];
+            existing.contributions.unshift({
+              id: `onboarding_reward_${clean}`,
+              title: `Account Creation Grant — ${claim.tierId || 'Onboarding'}`,
+              initiative: `Claimed ${claim.points || 500} Passport Points (User #${claim.userNumber || 1}).`,
+              type: 'Open Source Tooling',
+              date: claim.claimedAt ? new Date(claim.claimedAt).toISOString().split('T')[0] : '2026-10-18',
+              isVerified: true,
+              pointsEarned: claim.points || 500
+            });
+            (existing as any).userNumber = claim.userNumber || 1;
+            (existing as any).onboardingClaimed = true;
+            mutated = true;
+          }
+        }
+      } catch (_) {}
+    }
+
     if (mutated) {
       savePassport(existing);
     }
@@ -710,7 +751,30 @@ export async function fetchServerPassportById(passportId: string): Promise<ZenPa
  * Calculates genuine ZEN.POINTS directly from verified passport records
  */
 export function calculateZenPoints(passport: ZenPassport): number {
+  if (!passport) return 0;
   let total = 0;
+
+  // Onboarding Genesis / Sign-up Grant
+  const clean = (passport.username || '').toLowerCase().replace(/^@/, '').trim();
+  let onboardingPoints = 0;
+
+  const existingGrant = passport.contributions?.find(c => c.id?.startsWith('onboarding_reward_'));
+  if (existingGrant) {
+    onboardingPoints = existingGrant.pointsEarned || 500;
+  } else if (clean === 'yuveer' || clean === 'founder') {
+    onboardingPoints = 500;
+  } else if ((passport as any).onboardingClaimed) {
+    onboardingPoints = (passport as any).points || 250;
+  } else if (typeof window !== 'undefined') {
+    try {
+      const rawClaim = localStorage.getItem(`zenvitra_onboarding_reward_claimed_${clean}`);
+      if (rawClaim) {
+        const parsed = JSON.parse(rawClaim);
+        if (parsed.claimed) onboardingPoints = parsed.points || 250;
+      }
+    } catch {}
+  }
+  total += onboardingPoints;
 
   // MUN records
   passport.munRecords?.forEach((m) => {
@@ -730,9 +794,9 @@ export function calculateZenPoints(passport: ZenPassport): number {
     if (s.isVerified) total += 50;
   });
 
-  // Contributions
+  // Contributions (exclude existingGrant which was already counted above to avoid double counting)
   passport.contributions?.forEach((c) => {
-    if (c.isVerified) {
+    if (c.isVerified && !c.id?.startsWith('onboarding_reward_')) {
       total += c.pointsEarned || 50;
     }
   });
@@ -743,9 +807,9 @@ export function calculateZenPoints(passport: ZenPassport): number {
   });
 
   // Baseline verification tiers
-  if (passport.verification.level >= 1) total += 25;
-  if (passport.verification.level >= 2) total += 50;
-  if (passport.verification.level >= 3) total += 75;
+  if (passport.verification?.level >= 1) total += 25;
+  if (passport.verification?.level >= 2) total += 50;
+  if (passport.verification?.level >= 3) total += 75;
 
   return total;
 }
