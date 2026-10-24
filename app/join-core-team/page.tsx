@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -39,7 +40,15 @@ interface Track {
   requirements: string[];
 }
 
+const LAUNCH_TIMESTAMP = new Date('2026-10-25T14:00:00+05:30').getTime();
+
 export default function JoinCoreTeamPage() {
+  const router = useRouter();
+  const [isPastLaunch, setIsPastLaunch] = useState(false);
+
+  useEffect(() => {
+    setIsPastLaunch(Date.now() >= LAUNCH_TIMESTAMP);
+  }, []);
   const [selectedTrack, setSelectedTrack] = useState<TrackId>('cofounder');
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -222,6 +231,11 @@ export default function JoinCoreTeamPage() {
       }
 
       setIsSuccess(true);
+      if (Date.now() >= LAUNCH_TIMESTAMP) {
+        setTimeout(() => {
+          router.push('/');
+        }, 2200);
+      }
     } catch (err: any) {
       console.error('Submission error:', err);
       setSubmitError(err?.message || 'Submission failed. Please check your network and try again.');
@@ -235,7 +249,7 @@ export default function JoinCoreTeamPage() {
       {/* Lockdown Focused Navigation Header */}
       <header className="sticky top-0 z-50 w-full bg-[#030405]/80 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/countdown" className="flex items-center gap-3 group">
+          <Link href={isPastLaunch ? "/" : "/countdown"} className="flex items-center gap-3 group">
             <div className="relative h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105">
               <img
                 src="/assets/logo-new.png"
@@ -271,10 +285,10 @@ export default function JoinCoreTeamPage() {
             </button>
 
             <Link
-              href="/countdown"
+              href={isPastLaunch ? "/" : "/countdown"}
               className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-mono text-neutral-300 transition"
             >
-              <span>Launch Countdown</span>
+              <span>{isPastLaunch ? "Homepage" : "Launch Countdown"}</span>
               <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
             </Link>
           </div>
@@ -328,12 +342,26 @@ export default function JoinCoreTeamPage() {
                 </div>
               </div>
 
-              <Link
-                href="/countdown"
-                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition shadow-[0_0_25px_rgba(255,255,255,0.15)]"
-              >
-                View Launch Protocol & Countdown
-              </Link>
+              {isPastLaunch ? (
+                <div className="space-y-3">
+                  <p className="font-mono text-xs text-neutral-400">
+                    Platform is live. Redirecting to homepage...
+                  </p>
+                  <Link
+                    href="/"
+                    className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition shadow-[0_0_25px_rgba(255,255,255,0.15)]"
+                  >
+                    Return to Homepage &rarr;
+                  </Link>
+                </div>
+              ) : (
+                <Link
+                  href="/countdown"
+                  className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition shadow-[0_0_25px_rgba(255,255,255,0.15)]"
+                >
+                  View Launch Protocol & Countdown
+                </Link>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">

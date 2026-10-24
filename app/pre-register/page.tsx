@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -128,7 +129,23 @@ const EXPERIENCE_TIERS = [
   { id: 'DAIS_MEMBER', label: 'Secretariat / Executive Dais Aspirant', desc: 'Experienced Executive Board chair, director, or procedural rapporteur.' }
 ];
 
+const LAUNCH_TIMESTAMP = new Date('2026-10-25T14:00:00+05:30').getTime();
+
 export default function PreRegisterPage() {
+  const router = useRouter();
+  const [isClosed, setIsClosed] = useState(false);
+
+  useEffect(() => {
+    const checkLaunch = () => {
+      if (Date.now() >= LAUNCH_TIMESTAMP) {
+        setIsClosed(true);
+        router.replace('/register');
+      }
+    };
+    checkLaunch();
+    const timer = setInterval(checkLaunch, 1000);
+    return () => clearInterval(timer);
+  }, [router]);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -278,6 +295,11 @@ export default function PreRegisterPage() {
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (Date.now() >= LAUNCH_TIMESTAMP) {
+      setErrorMessage('Pre-registration has closed with the official launch of ZENVITRA. Redirecting to live registration...');
+      setTimeout(() => router.replace('/register'), 1200);
+      return;
+    }
     if (!isStep1Valid || !isStep2Valid || !isStep3Valid || !isStep4Valid) {
       setErrorMessage('Please complete all required fields and accept the civic covenants before submitting.');
       return;
@@ -421,6 +443,38 @@ export default function PreRegisterPage() {
   const selectedPrimaryTrack = useMemo(() => {
     return COMMITTEE_TRACKS.find(c => c.id === formData.primaryCommitteePreference) || COMMITTEE_TRACKS[0];
   }, [formData.primaryCommitteePreference]);
+
+  if (isClosed) {
+    return (
+      <div className="min-h-screen bg-[#020305] text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:28px_28px] opacity-60 z-0" />
+        <div className="relative z-10 max-w-md w-full rounded-3xl bg-[#08090d] border border-amber-500/30 p-8 sm:p-10 text-center space-y-6 shadow-[0_30px_90px_rgba(0,0,0,0.95)]">
+          <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/35 mx-auto flex items-center justify-center text-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.15)]">
+            <Sparkles className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-[10px] font-mono tracking-widest text-amber-300 uppercase">
+              LAUNCH PROTOCOL COMPLETE
+            </div>
+            <h1 className="font-display font-medium text-2xl text-white tracking-tight">
+              Pre-Registration Closed
+            </h1>
+            <p className="text-xs text-neutral-400 font-light leading-relaxed">
+              ZENVITRA has officially launched! Pre-registration has ended and full live registration is active. Redirecting you to official registration...
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center w-full px-6 py-3.5 rounded-full bg-white text-black font-mono text-xs font-semibold hover:bg-neutral-200 transition shadow-[0_0_25px_rgba(255,255,255,0.15)]"
+            >
+              Go to Official Registration &rarr;
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#020305] text-white flex flex-col justify-between selection:bg-amber-400 selection:text-black font-sans relative overflow-x-hidden">

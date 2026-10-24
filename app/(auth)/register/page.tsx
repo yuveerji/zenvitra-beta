@@ -501,21 +501,6 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Pre-Register Whitelist Sync Banner */}
-              <div className="p-3.5 rounded-2xl bg-amber-500/[0.08] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="text-[11px] text-amber-200 font-sans">
-                    Registering prior to launch? Claim Genesis Founding perks &amp; dais priority.
-                  </span>
-                </div>
-                <Link
-                  href="/pre-register"
-                  className="px-3 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-[10px] font-bold transition shrink-0 text-center shadow-[0_0_15px_rgba(251,191,36,0.3)]"
-                >
-                  Pre-Register Now &rarr;
-                </Link>
-              </div>
 
               {/* Professional / Event Organizer Link Banner */}
               <div className="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
