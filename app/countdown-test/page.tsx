@@ -22,10 +22,12 @@ import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 export default function CountdownTestPage() {
   const router = useRouter();
   const [isAuthorizedHost, setIsAuthorizedHost] = useState<boolean | null>(null);
+  const [hasMounted, setHasMounted] = useState(false);
 
   // Strict Localhost / Dev Guard:
   // If running in production build or accessed on any external host/IP, reject immediately with 404
   useEffect(() => {
+    setHasMounted(true);
     if (typeof window === 'undefined') return;
     const host = window.location.hostname;
     const isLocal = host === 'localhost' || host === '127.0.0.1';
@@ -299,8 +301,11 @@ export default function CountdownTestPage() {
                 <Radio className="w-3.5 h-3.5 animate-pulse text-amber-400" />
                 <span>OFFICIAL LAUNCH // 2:00:00 PM</span>
               </div>
-              <span className="font-mono text-xs text-neutral-400 tabular-nums">
-                {(totalRemainingMs / 1000).toFixed(1)}s REMAINING
+              <span 
+                suppressHydrationWarning
+                className="font-mono text-xs text-neutral-400 tabular-nums"
+              >
+                {hasMounted ? `${(totalRemainingMs / 1000).toFixed(1)}s REMAINING` : '0.0s REMAINING'}
               </span>
             </div>
 
@@ -315,8 +320,11 @@ export default function CountdownTestPage() {
                   key={index}
                   className="flex flex-col items-center justify-center p-3 sm:p-5 rounded-xl bg-black/60 border border-amber-400/20 shadow-inner"
                 >
-                  <span className="font-mono text-2xl sm:text-5xl font-bold tracking-tight tabular-nums text-amber-300">
-                    {String(item.value).padStart(2, '0')}
+                  <span 
+                    suppressHydrationWarning
+                    className="font-mono text-2xl sm:text-5xl font-bold tracking-tight tabular-nums text-amber-300"
+                  >
+                    {hasMounted ? String(item.value).padStart(2, '0') : '00'}
                   </span>
                   <span className="font-mono text-[8px] sm:text-[10px] text-neutral-500 tracking-[0.2em] uppercase mt-1">
                     {item.label}

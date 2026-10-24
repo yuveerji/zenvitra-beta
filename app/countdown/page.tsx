@@ -42,6 +42,11 @@ import { HolographicPassport } from '@/components/visuals/HolographicPassport';
 import { ConstellationCanvas } from '@/components/visuals/ConstellationCanvas';
 
 export default function CountdownPage() {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
   // Target Platform Ignition: October 25, 2026, 14:00:00 IST (UTC+05:30) (2:00:00 PM)
   const targetDate = useMemo(() => new Date('2026-10-25T14:00:00+05:30').getTime(), []);
 
@@ -460,8 +465,11 @@ export default function CountdownPage() {
                   key={index}
                   className="flex flex-col items-center justify-center p-2 xs:p-3 sm:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-black/60 border border-amber-400/20 shadow-[0_0_20px_rgba(251,191,36,0.05)] shadow-inner transition-all"
                 >
-                  <span className="font-mono text-xl xs:text-2xl sm:text-5xl lg:text-6xl font-bold tracking-tight tabular-nums text-amber-300">
-                    {String(item.value).padStart(2, '0')}
+                  <span 
+                    suppressHydrationWarning
+                    className="font-mono text-xl xs:text-2xl sm:text-5xl lg:text-6xl font-bold tracking-tight tabular-nums text-amber-300"
+                  >
+                    {hasMounted ? String(item.value).padStart(2, '0') : '00'}
                   </span>
                   <span className="font-mono text-[7px] xs:text-[8px] sm:text-[11px] text-neutral-500 tracking-wider sm:tracking-[0.2em] uppercase mt-1 sm:mt-2">
                     {item.label}
