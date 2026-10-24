@@ -476,18 +476,39 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         continue;
       }
 
-      // 4. Definition items without bullet (e.g. "term" means ... or 'term' includes ...)
-      const defMatch = strippedLine.match(/^(["“'][^"”']+["”'])\s*(?:means|includes|is|shall|—|-|:)\s*(.*)$/i);
-      if (defMatch && (/definition/i.test(activeClause.title || '') || /definition/i.test(activeClause.text || '') || activeSubClauses.length > 0)) {
-        const letter = String.fromCharCode(97 + (activeSubClauses.length % 26));
+      // 4. Definition items with or without number/bullet (e.g. "term" means ... or 5. "Fiscal stress" means ...)
+      const defMatch = strippedLine.match(/^(?:(?:\(\d+\)|\d+[\.\)]|\([a-zA-Z]\)|[a-zA-Z][\.\)])\s*)?(["“'‘][^"”'’]+["”'’])\s*(?:means|includes|shall\s+mean|is|refers\s+to|signifies|—|-|:)\s*(.*)$/i);
+      const isDefClause = /definition/i.test(activeClause.title || '') ||
+                          /definition/i.test(activeClause.text || '') ||
+                          activeSubClauses.some(s => /means|includes/i.test(s.text));
+
+      if (defMatch && (isDefClause || activeSubClauses.length > 0)) {
+        // Extract existing numbering if present in the line (e.g. "5." or "(5)" -> "(5)")
+        const numPrefixMatch = strippedLine.match(/^(\(\d+\)|\d+[\.\)]|\([a-zA-Z]\)|[a-zA-Z][\.\)])\s*/);
+        let sNum = '';
+        if (numPrefixMatch) {
+          const rawNum = numPrefixMatch[1].trim();
+          if (/^\d+[\.\)]$/.test(rawNum)) {
+            sNum = `(${rawNum.replace(/\D/g, '')})`;
+          } else if (/^\(\d+\)$/.test(rawNum)) {
+            sNum = rawNum;
+          } else if (/^[a-zA-Z][\.\)]$/.test(rawNum)) {
+            sNum = `(${rawNum[0].toLowerCase()})`;
+          } else {
+            sNum = rawNum;
+          }
+        } else {
+          sNum = `(${String.fromCharCode(97 + (activeSubClauses.length % 26))})`;
+        }
+
         activeSubClauses.push({
-          number: `(${letter})`,
+          number: sNum,
           text: `**${defMatch[1]}** means ${cleanDocumentText(defMatch[2].trim())}`
         });
         continue;
       }
 
-      // 5. Numbered point (e.g. subclauses "1. the supremacy of the Constitution;" inside Clause 4)
+      // 5. Numbered point (e.g. subclauses "1. the supremacy of the Constitution;" inside Clause 4, or subclause continuation)
       const numberedPointMatch = strippedLine.match(/^(\d+)[\.\)]\s*(.*)$/);
       if (numberedPointMatch) {
         const lineNum = parseInt(numberedPointMatch[1], 10);
@@ -497,20 +518,44 @@ export function parseDocument(rawText: string, forcedType?: DocumentType): Parse
         // Disqualify if it has an explicit clause keyword like "CLAUSE 5", "SECTION 5"
         const hasExplicitClauseWord = /^(?:CLAUSE|SECTION|ARTICLE|RULE)\b/i.test(strippedLine);
 
-        // CRITICAL: If lineNum is greater than or equal to currentClauseNum + 1 (e.g. at Clause 2, lineNum is 3),
-        // this is NEVER a subclause of Clause 2. It is the next top-level clause in the statute!
-        const isNextTopLevelClause = !isNaN(currentClauseNum) && lineNum >= currentClauseNum + 1;
+        // Check if line is a definition item (e.g. "term" means ...):
+        const isDefItem = /^["“'‘][^"”'’]+["”'’]\s*(?:means|includes|shall\s+mean|is|refers|signifies)/i.test(restOfLine);
 
-        // A numbered line without brackets is ONLY a subclause if:
-        // 1) Numbering resets or is less than/equal to the active clause number (e.g. points 1, 2, 3 inside Clause 4)
-        // 2) It continues an active subclause list that started with (1) AND is <= currentClauseNum
-        const isSubclauseNumber = !isNaN(currentClauseNum) && lineNum <= currentClauseNum;
-        const isSeqSub = activeSubClauses.length > 0 && lineNum === activeSubClauses.length + 1 && lineNum <= currentClauseNum;
+        // Check if line has a distinct section title separated by a dash:
+        // e.g. "3. Appropriate security and access controls —" -> has a section title!
+        const hasSectionTitleDash = (restOfLine.includes(' — ') || restOfLine.includes(' - ') || restOfLine.includes('–')) && !isDefItem;
+        const endsWithSemicolon = /[;,]$/.test(restOfLine);
 
-        if (!hasExplicitClauseWord && !isNextTopLevelClause && (isSubclauseNumber || isSeqSub)) {
+        // Subclause sequence continuity:
+        // Does this number continue an existing subclause list? (e.g. activeSubClauses has 4 items, and lineNum is 5)
+        const isContinuingSubList = activeSubClauses.length > 0 && lineNum === activeSubClauses.length + 1;
+
+        // Numbering resets (e.g. inside Clause 4, item 1, 2, 3):
+        const isResetNumber = !isNaN(currentClauseNum) && lineNum <= currentClauseNum;
+
+        // An item is definitely a subclause if:
+        // 1. It is a definition item inside a definitions clause or active definition list
+        // 2. OR it continues an existing subclause list and does NOT have a section title dash
+        // 3. OR its number is <= currentClauseNum and does not have a section title dash
+        // 4. OR it ends with a semicolon typical of statutory clauses in a list
+        const isSubclause = !hasExplicitClauseWord && (
+          (isDefClause && isDefItem) ||
+          (isContinuingSubList && !hasSectionTitleDash) ||
+          (isResetNumber && !hasSectionTitleDash) ||
+          (endsWithSemicolon && !hasSectionTitleDash)
+        );
+
+        if (isSubclause) {
+          let sText = restOfLine;
+          if (isDefItem) {
+            const defM = restOfLine.match(/^(["“'‘][^"”'’]+["”'’])\s*(?:means|includes|shall\s+mean|is|refers\s+to|signifies|—|-|:)\s*(.*)$/i);
+            if (defM) {
+              sText = `**${defM[1]}** means ${cleanDocumentText(defM[2].trim())}`;
+            }
+          }
           activeSubClauses.push({
             number: `(${lineNum})`,
-            text: cleanDocumentText(restOfLine)
+            text: cleanDocumentText(sText)
           });
           continue;
         }
