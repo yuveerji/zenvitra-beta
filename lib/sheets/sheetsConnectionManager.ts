@@ -563,8 +563,24 @@ function initAllTabs() {
     var name = coreTabs[i];
     if (!ss.getSheetByName(name)) {
       var s = ss.insertSheet(name);
-      s.getRange(1, 1, 1, 6).setValues([["Timestamp", "Record ID", "Name", "Email", "Details", "Status"]]);
-      s.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#0f172a").setFontColor("#FFFFFF");
+      var colHeaders = ["Timestamp", "Record ID", "Name", "Email", "Details", "Status"];
+      if (name === "Core Registrations" || name === "Register Data Core") {
+        colHeaders = [
+          "Timestamp", "Record ID", "Full Legal Name", "Display Name / Username", "Primary Email Address",
+          "Phone Number [Optional]", "Age (Years)", "Minor Status (Under 18 / Adult)", "Parent / Guardian Full Name",
+          "Parent / Guardian Emergency Contact", "Minor Consent & Parental Accord", "Role Designation", "Access Level",
+          "Auth Provider", "Institution / School / University", "Country & City", "Registration Type",
+          "Terms & Privacy Ratification", "Account Status"
+        ];
+      } else if (name === "People" || name === "01 People") {
+        colHeaders = [
+          "Person_ID", "Full_Name", "Display_Name", "Email", "Phone_Optional", "Username",
+          "Age", "Minor_Status", "Parent_Contact", "Institution", "Account_Type", "Account_Status",
+          "Country", "City_Optional", "Joined_On", "Consent_Status", "Source", "Notes"
+        ];
+      }
+      s.getRange(1, 1, 1, colHeaders.length).setValues([colHeaders]);
+      s.getRange(1, 1, 1, colHeaders.length).setFontWeight("bold").setBackground("#0f172a").setFontColor("#FFFFFF");
       s.setFrozenRows(1);
     }
   }

@@ -162,10 +162,26 @@ export interface RegisterRecord {
   userId: string;
   fullName: string;
   email: string;
+  username?: string;
   roleDesignation: string;
   accessLevel: string;
   authProvider: string;
   accountStatus: 'ACTIVE' | 'PENDING_VERIFICATION' | 'ARCHIVED';
+  age?: number | string;
+  isMinor?: boolean;
+  minorStatus?: string;
+  parentGuardianName?: string;
+  parentGuardianContact?: string;
+  parentName?: string;
+  parentContact?: string;
+  minorConsent?: boolean;
+  institution?: string;
+  institutionOrSchool?: string;
+  phoneNumber?: string;
+  countryCity?: string;
+  registrationType?: 'PRE_REGISTER' | 'DIRECT_REGISTER' | 'STANDARD' | string;
+  preferredTrack?: string;
+  termsRatified?: boolean | string;
 }
 
 export interface ContactInquiryRecord {
@@ -445,14 +461,34 @@ export const sheetSync = {
 // Backward-compatible alias
 export async function syncToGoogleSheet(payload: any) {
   if (payload.event === 'REGISTRATION') {
+    const isMinorCalc = payload.isMinor !== undefined 
+      ? payload.isMinor 
+      : (payload.age ? Number(payload.age) < 18 : undefined);
+    const minorStatusCalc = payload.minorStatus || (payload.age ? (Number(payload.age) < 18 ? 'MINOR (<18)' : 'ADULT (18+)') : undefined);
+
     return sheetSync.register({
       userId: payload.userId || payload.username || 'unknown',
       fullName: payload.name || payload.username || 'User',
       email: payload.email,
-      roleDesignation: payload.role || 'USER',
-      accessLevel: 'Member',
+      username: payload.username,
+      roleDesignation: payload.role || payload.initialRole || 'USER',
+      accessLevel: payload.accessLevel || 'Member',
       authProvider: payload.provider || 'CREDENTIALS',
-      accountStatus: 'ACTIVE',
+      accountStatus: payload.accountStatus || 'ACTIVE',
+      age: payload.age,
+      isMinor: isMinorCalc,
+      minorStatus: minorStatusCalc,
+      parentGuardianName: payload.parentGuardianName || payload.parentName,
+      parentGuardianContact: payload.parentGuardianContact || payload.parentContact,
+      parentName: payload.parentName || payload.parentGuardianName,
+      parentContact: payload.parentContact || payload.parentGuardianContact,
+      minorConsent: payload.minorConsent !== undefined ? payload.minorConsent : payload.minorConfirmed,
+      institution: payload.institution || payload.institutionOrSchool,
+      phoneNumber: payload.phoneNumber || payload.phone,
+      countryCity: payload.countryCity || payload.city,
+      registrationType: payload.registrationType || 'DIRECT_REGISTER',
+      preferredTrack: payload.preferredTrack || payload.initialRole,
+      termsRatified: true,
     });
   }
   return sheetSync.login({

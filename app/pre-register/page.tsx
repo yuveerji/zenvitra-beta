@@ -291,23 +291,38 @@ export default function PreRegisterPage() {
     try {
       // 1. Ingest into Google Sheet Register Data Core with full metadata
       const primaryTrackObj = COMMITTEE_TRACKS.find(c => c.id === formData.primaryCommitteePreference);
+      const cleanHandle = (formData.preferredHandle || formData.email.split('@')[0])
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '');
+      const isMinorApplicant = formData.age ? Number(formData.age) < 18 : false;
 
       await sheetSync.register({
         userId: generatedUserId,
         fullName: formData.fullName.trim(),
+        username: cleanHandle,
         email: formData.email.trim().toLowerCase(),
         roleDesignation: `${formData.roleInterest} | ${primaryTrackObj?.abbreviation || 'GEN'} Track`,
         accessLevel: 'Pre-Registered Sovereign Whitelist',
         authProvider: 'DIRECT_ENROLL',
         accountStatus: 'PENDING_VERIFICATION',
+        age: formData.age ? Number(formData.age) : undefined,
+        isMinor: isMinorApplicant,
+        minorStatus: isMinorApplicant ? 'MINOR (<18)' : 'ADULT (18+)',
+        parentGuardianName: formData.parentName?.trim() || undefined,
+        parentGuardianContact: formData.parentContact?.trim() || undefined,
+        parentName: formData.parentName?.trim() || undefined,
+        parentContact: formData.parentContact?.trim() || undefined,
+        minorConsent: Boolean(formData.minorPolicyAcknowledged),
+        institution: formData.institutionOrSchool?.trim() || undefined,
+        phoneNumber: formData.phoneNumber?.trim() || undefined,
+        countryCity: formData.countryCity?.trim() || undefined,
+        registrationType: 'PRE_REGISTER',
+        preferredTrack: formData.roleInterest,
+        termsRatified: true,
       });
 
       // 1b. Create User in SQLite Database with hashed password for immediate and future login
       try {
-        const cleanHandle = (formData.preferredHandle || formData.email.split('@')[0])
-          .toLowerCase()
-          .replace(/[^a-z0-9_]/g, '');
-
         await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -317,6 +332,15 @@ export default function PreRegisterPage() {
             email: formData.email.trim().toLowerCase(),
             password: formData.password,
             initialRole: `${formData.roleInterest} | ${primaryTrackObj?.abbreviation || 'DELEGATE'}`,
+            age: formData.age ? Number(formData.age) : undefined,
+            isMinor: isMinorApplicant,
+            parentName: formData.parentName?.trim() || undefined,
+            parentContact: formData.parentContact?.trim() || undefined,
+            minorConfirmed: Boolean(formData.minorPolicyAcknowledged),
+            institution: formData.institutionOrSchool?.trim() || undefined,
+            phoneNumber: formData.phoneNumber?.trim() || undefined,
+            countryCity: formData.countryCity?.trim() || undefined,
+            registrationType: 'PRE_REGISTER',
           }),
         });
 
@@ -722,6 +746,22 @@ export default function PreRegisterPage() {
                 <span>{errorMessage}</span>
               </div>
             )}
+
+            {/* Direct Register Link Banner */}
+            <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white/[0.04] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span className="text-neutral-300">
+                  Prefer instant direct account registration? You can register directly without pre-launch reservations.
+                </span>
+              </div>
+              <Link
+                href="/register"
+                className="shrink-0 px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold font-mono text-xs transition text-center"
+              >
+                Standard Register &rarr;
+              </Link>
+            </div>
 
             {/* Form Enclave */}
             <form onSubmit={handleFinalSubmit} className="max-w-4xl mx-auto">

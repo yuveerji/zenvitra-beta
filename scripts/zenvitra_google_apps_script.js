@@ -124,7 +124,9 @@ var TAB_SCHEMAS = {
     sheetName: 'Register Data Core',
     headers: [
       'Timestamp', 'User ID / Person ID', 'Full Legal Name', 'Display Name / Username', 'Primary Email Address',
-      'Phone Number [Optional]', 'Role Designation', 'Access Level', 'Auth Provider', 'Country & City',
+      'Phone Number [Optional]', 'Age (Years)', 'Minor Status (Under 18 / Adult)', 'Parent / Guardian Full Name',
+      'Parent / Guardian Emergency Contact', 'Minor Consent & Parental Accord', 'Role Designation', 'Access Level',
+      'Auth Provider', 'Institution / School / University', 'Country & City', 'Registration Type',
       'Terms & Privacy Ratification', 'Account Status', 'IP Address', 'Device / Browser'
     ]
   },
@@ -223,7 +225,7 @@ const SCHEMAS = [
    "Account_Type=Member|Delegate|EB|Secretariat|Volunteer|Team|Partner|Sponsor|Other;Account_Status=Pending|Active|Suspended|Closed|Deleted;Consent_Status=Unknown|Granted|Withdrawn|Not_Required","Confidential"],
 
   ["02 Core Registrations","Platform registrations",
-   "Core_Registration_ID,Person_ID,Full_Name,Email,Username,Registration_Date,Registration_Source,Account_Type,Verification_Status,Terms_Version,Privacy_Notice_Version,Consent_Status,Account_Status,Review_Required,Notes",
+   "Core_Registration_ID,Person_ID,Full_Name,Email,Username,Age_Years,Minor_Status,Parent_Guardian_Name,Parent_Guardian_Contact,Minor_Consent,Institution,Registration_Date,Registration_Source,Account_Type,Verification_Status,Terms_Version,Privacy_Notice_Version,Consent_Status,Account_Status,Review_Required,Notes",
    "Registration_Source=Website|Event|Referral|Campus_Ambassador|Partner|Other;Account_Type=Member|Delegate|EB|Secretariat|Volunteer|Team|Partner|Other;Verification_Status=Pending|Verified|Failed|Not_Required;Consent_Status=Unknown|Granted|Withdrawn;Account_Status=Pending|Active|Suspended|Closed;Review_Required=Yes|No","Confidential"],
 
   ["03 Login Activity","Authentication event logs",
@@ -1135,14 +1137,54 @@ function lookupVal(data, header) {
     return data["Department Practical Response / Execution Plan"] || data.step3_practical_response || data.practicalTaskResponse || data.taskPlan || "";
   }
 
-  // ── GUARDIAN / EMERGENCY CONTACT NAME ──
-  if (hAlpha.indexOf("guardian") !== -1 && hAlpha.indexOf("phone") === -1) {
-    return data["Parent / Guardian / Faculty Advisor Name"] || data.step8_guardian_name || data.guardianName || data.facultyAdvisor || "N/A";
+  // ── AGE (YEARS) / DATE OF BIRTH ──
+  if ((hAlpha.indexOf("age") !== -1 || hAlpha.indexOf("years") !== -1 || hAlpha.indexOf("dob") !== -1 || hAlpha.indexOf("birth") !== -1) && hAlpha.indexOf("category") === -1 && hAlpha.indexOf("minor") === -1) {
+    var rawAge = data["Age (Years)"] || data["Age"] || data.age || data.userAge || data.step1_age || data.step2_age || data.dateOfBirth || data.dob || "";
+    return rawAge ? String(rawAge) : "";
   }
 
-  // ── GUARDIAN / EMERGENCY CONTACT PHONE ──
-  if (hAlpha.indexOf("guardian") !== -1 || hAlpha.indexOf("emergency") !== -1) {
-    return data["Guardian Emergency Contact Number"] || data.step8_guardian_phone || data.emergencyContact || data.guardianPhone || "N/A";
+  // ── MINOR STATUS (UNDER 18 / ADULT) ──
+  if (hAlpha.indexOf("minor") !== -1 || hAlpha.indexOf("under18") !== -1 || hAlpha.indexOf("agecategory") !== -1 || (hAlpha.indexOf("adult") !== -1 && hAlpha.indexOf("status") !== -1)) {
+    if (data.isMinor === true || data.isMinor === "true") return "MINOR (<18)";
+    if (data.isMinor === false || data.isMinor === "false") return "ADULT (18+)";
+    var ageVal = Number(data.age || data["Age (Years)"] || data.userAge || data.step1_age);
+    if (!isNaN(ageVal) && ageVal > 0) {
+      return ageVal < 18 ? "MINOR (<18)" : "ADULT (18+)";
+    }
+    return data.minorStatus || data.ageCategory || data["Minor Status (Under 18 / Adult)"] || (data["Minor Status"] || "NOT_DECLARED");
+  }
+
+  // ── PARENT / GUARDIAN FULL NAME ──
+  if ((hAlpha.indexOf("guardian") !== -1 || hAlpha.indexOf("parent") !== -1) && hAlpha.indexOf("phone") === -1 && hAlpha.indexOf("contact") === -1 && hAlpha.indexOf("emergency") === -1 && hAlpha.indexOf("consent") === -1 && hAlpha.indexOf("accord") === -1) {
+    return data["Parent / Guardian Full Name"] || data["Parent / Guardian / Faculty Advisor Name"] || data.parentName || data.parentGuardianName || data.guardianName || data.step8_guardian_name || data.facultyAdvisor || "N/A";
+  }
+
+  // ── PARENT / GUARDIAN CONTACT / EMERGENCY PHONE ──
+  if ((hAlpha.indexOf("guardian") !== -1 || hAlpha.indexOf("parent") !== -1 || hAlpha.indexOf("emergency") !== -1) && (hAlpha.indexOf("phone") !== -1 || hAlpha.indexOf("contact") !== -1 || hAlpha.indexOf("number") !== -1)) {
+    return data["Parent / Guardian Emergency Contact"] || data["Guardian Emergency Contact Number"] || data.parentContact || data.parentGuardianContact || data.guardianPhone || data.guardianEmergencyContact || data.emergencyContact || data.step8_guardian_phone || "N/A";
+  }
+
+  // ── MINOR CONSENT & PARENTAL ACCORD ──
+  if (hAlpha.indexOf("consent") !== -1 || hAlpha.indexOf("accord") !== -1) {
+    if (data.minorConsent === true || data.minorConfirmed === true || data.minorPolicyAcknowledged === true || data["Minor Consent & Parental Accord"] === "CONSENT_RATIFIED") {
+      return "CONSENT_RATIFIED";
+    }
+    var ageCheck = Number(data.age || data["Age (Years)"]);
+    if (!isNaN(ageCheck) && ageCheck >= 18) {
+      return "NOT_APPLICABLE (ADULT 18+)";
+    }
+    return data.minorConsent || data.minorConfirmed || data["Minor Consent & Parental Accord"] || "PENDING";
+  }
+
+  // ── REGISTRATION TYPE (PRE-LAUNCH WHITELIST vs DIRECT LIVE) ──
+  if (hAlpha.indexOf("registrationtype") !== -1 || hAlpha.indexOf("regtype") !== -1 || (hAlpha.indexOf("type") !== -1 && hAlpha.indexOf("regist") !== -1)) {
+    if (data.registrationType) {
+      if (String(data.registrationType).toUpperCase().indexOf("PRE") !== -1) return "PRE_REGISTER (Genesis Whitelist)";
+      return data.registrationType;
+    }
+    if (data.accessLevel && String(data.accessLevel).toLowerCase().indexOf("pre-register") !== -1) return "PRE_REGISTER (Genesis Whitelist)";
+    if (data.isPreRegistered) return "PRE_REGISTER (Genesis Whitelist)";
+    return "DIRECT_REGISTER";
   }
 
   // ── ID PROOF / ENROLLMENT VERIFICATION ──
@@ -1362,10 +1404,17 @@ function mapPayloadToRow(schemaKey, data) {
         lookupVal(data, 'Desired ZEN Handle'),
         lookupVal(data, 'Primary Email'),
         lookupVal(data, 'Phone [Whatsapp Active]'),
+        lookupVal(data, 'Age (Years)'),
+        lookupVal(data, 'Minor Status (Under 18 / Adult)'),
+        lookupVal(data, 'Parent / Guardian Full Name'),
+        lookupVal(data, 'Parent / Guardian Emergency Contact'),
+        lookupVal(data, 'Minor Consent & Parental Accord'),
         data.roleDesignation || data.role || 'DELEGATE',
         data.accessLevel || 'MEMBER',
         data.authProvider || data.provider || 'CREDENTIALS',
+        lookupVal(data, 'Institution / School / University'),
         lookupVal(data, 'Location & Timezone'),
+        lookupVal(data, 'Registration Type'),
         'RATIFIED',
         data.accountStatus || 'ACTIVE',
         ip,
@@ -1886,6 +1935,12 @@ function doPost(e) {
 
       // ── COMPANION DUAL-TAB SYNCHRONIZATION ──
       var companionMap = {
+        "register data core": "02 Core Registrations",
+        "02 core registrations": "Register Data Core",
+        "core registrations": "Register Data Core",
+        "login data core": "03 Login Activity",
+        "03 login activity": "Login Data Core",
+        "login activity": "Login Data Core",
         "core team applications": "04 Team Applications",
         "04 team applications": "Core Team Applications",
         "event registrations": "12 Event Registrations",
@@ -1942,10 +1997,14 @@ function doPost(e) {
             Account_Status: "Active",
             Country: payload.country || "India",
             City_Optional: payload.city || payload.step1_city || "",
+            Age: lookupVal(payload, "Age (Years)"),
+            Minor_Status: lookupVal(payload, "Minor Status (Under 18 / Adult)"),
+            Parent_Contact: lookupVal(payload, "Parent / Guardian Emergency Contact"),
+            Institution: lookupVal(payload, "Institution / School / University"),
             Joined_On: new Date(),
             Consent_Status: "Granted",
             Source: rawTab || "Webhook Ingestion",
-            Notes: "Auto-synced from " + (rawTab || "Portal")
+            Notes: "Auto-synced from " + (rawTab || "Portal") + (payload.age ? " [Age: " + payload.age + "]" : "")
           };
           upsertObject_(personSh, person, "Person_ID", ZEN.HEADER_ROW, ZEN.DATA_START_ROW);
         }

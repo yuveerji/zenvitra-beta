@@ -7,7 +7,25 @@ import { sanitizeHandle } from '@/lib/utils';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, username, email, password, initialRole } = body;
+    const { 
+      name, 
+      username, 
+      email, 
+      password, 
+      initialRole,
+      age,
+      isMinor,
+      parentName,
+      parentContact,
+      parentGuardianName,
+      parentGuardianContact,
+      minorConsent,
+      minorConfirmed,
+      institution,
+      phoneNumber,
+      countryCity,
+      registrationType
+    } = body;
 
     if (!username || !email || !password) {
       return NextResponse.json({ error: 'Missing critical cryptographic credentials.' }, { status: 400 });
@@ -43,6 +61,12 @@ export async function POST(req: Request) {
     const assignedRole = isFounder ? 'FOUNDER' : 'USER';
 
     // 4. Mint Node in Database
+    const bioParts = [];
+    if (initialRole) bioParts.push(`[ROLE: ${initialRole}]`);
+    if (age) bioParts.push(`[AGE: ${age}${Number(age) < 18 ? ' (MINOR)' : ''}]`);
+    if (institution) bioParts.push(`[INSTITUTION: ${institution}]`);
+    if (registrationType) bioParts.push(`[TYPE: ${registrationType}]`);
+
     const newUser = await db.user.create({
       data: {
         name: name || 'Sovereign Node',
@@ -50,12 +74,11 @@ export async function POST(req: Request) {
         email: cleanEmail,
         password: hashedPassword,
         role: assignedRole,
-        // If they passed persona data from the dual-tab login, format it into bio initially
-        bio: initialRole ? `[INITIALIZED AS: ${initialRole}]` : null,
+        bio: bioParts.length > 0 ? bioParts.join(' ') : null,
       },
     });
 
-    // 5. Dispatch Telemetry
+    // 5. Dispatch Telemetry with Age Factor & Full Profile Metadata
     await syncToGoogleSheet({
       userId: newUser.id,
       name: newUser.name,
@@ -64,6 +87,19 @@ export async function POST(req: Request) {
       provider: 'CREDENTIALS',
       role: assignedRole,
       event: 'REGISTRATION',
+      age,
+      isMinor: isMinor !== undefined ? isMinor : (age ? Number(age) < 18 : false),
+      minorStatus: age ? (Number(age) < 18 ? 'MINOR (<18)' : 'ADULT (18+)') : undefined,
+      parentGuardianName: parentGuardianName || parentName,
+      parentGuardianContact: parentGuardianContact || parentContact,
+      parentName: parentName || parentGuardianName,
+      parentContact: parentContact || parentGuardianContact,
+      minorConsent: minorConsent !== undefined ? minorConsent : minorConfirmed,
+      institution,
+      phoneNumber,
+      countryCity,
+      registrationType: registrationType || 'DIRECT_REGISTER',
+      preferredTrack: initialRole,
     });
 
     return NextResponse.json(

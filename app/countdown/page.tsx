@@ -260,6 +260,14 @@ export default function CountdownPage() {
         </div>
 
         <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-3">
+          <Link
+            href="/pre-register"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-[10px] sm:text-xs font-semibold tracking-wider uppercase transition shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.5)] cursor-pointer"
+          >
+            <Sparkles className="w-3 h-3 text-black shrink-0" />
+            <span>Pre-Register</span>
+          </Link>
+
           {/* Sovereign Audio Spectrum Visualizer with dedicated mute control and multi-soundscape selector */}
           <AudioSpectrumVisualizer
             frequencyData={sovereignAudio.frequencyData}
@@ -856,13 +864,14 @@ export default function CountdownPage() {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
 
-            <button
-              onClick={() => setIsClearanceModalOpen(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-4 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-neutral-300 font-mono text-xs transition cursor-pointer"
+            <Link
+              href="/pre-register"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-bold transition shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:shadow-[0_0_40px_rgba(251,191,36,0.6)] cursor-pointer"
             >
-              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-              <span>Sovereign Clearance</span>
-            </button>
+              <Sparkles className="w-4 h-4 text-black" />
+              <span>Pre-Register for Launch</span>
+              <ArrowRight className="w-4 h-4 text-black" />
+            </Link>
           </div>
         </div>
       </main>
