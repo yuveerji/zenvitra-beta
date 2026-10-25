@@ -126,6 +126,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(dashboardUrl, { status: 307 });
   }
 
+  if (pathname === '/committee' || pathname === '/committee/' || pathname.startsWith('/committee/')) {
+    const diasUrl = new URL('/dias', request.url);
+    diasUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(diasUrl, { status: 308 });
+  }
+
   // Allow static files and internal Next.js assets immediately
   if (
     pathname.startsWith('/_next') ||
