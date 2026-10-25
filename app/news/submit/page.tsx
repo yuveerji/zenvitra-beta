@@ -40,6 +40,7 @@ import {
   Maximize2,
   Minimize2,
   ChevronRight,
+  ChevronLeft,
   Info
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
@@ -56,6 +57,7 @@ import { PressArticle, PressCategory } from '@/types/press';
 import { PulsePost } from '@/types/pulse';
 import { notifyCategorySubscribers } from '@/lib/categorySubscriptionService';
 import { DesktopModeAdvisory } from '@/components/common/DesktopModeAdvisory';
+import { PressDraftPreviewModal } from '@/components/press/PressDraftPreviewModal';
 
 const CATEGORIES: { value: NewsCategory; label: string; pressCategory: PressCategory; color: string }[] = [
   { value: 'BREAKING', label: 'Breaking News', pressCategory: 'UPDATES', color: 'text-rose-400 border-rose-500/30 bg-rose-500/10' },
@@ -117,6 +119,29 @@ export default function SubmitNewsWirePage() {
 
   // Custom Image Upload & Photo Adjuster State
   const [coverImage, setCoverImage] = useState(PRESET_COVERS[0].url);
+  const [galleryImages, setGalleryImages] = useState<string[]>([PRESET_COVERS[0].url]);
+  const [showFinalDraftModal, setShowFinalDraftModal] = useState(false);
+  const multiFileInputRef = useRef<HTMLInputElement>(null);
+
+  const movePhoto = (fromIdx: number, toIdx: number) => {
+    if (toIdx < 0 || toIdx >= galleryImages.length) return;
+    setGalleryImages((prev) => {
+      const copy = [...prev];
+      const [moved] = copy.splice(fromIdx, 1);
+      copy.splice(toIdx, 0, moved);
+      setCoverImage(copy[0] || PRESET_COVERS[0].url);
+      return copy;
+    });
+  };
+
+  const removePhoto = (idx: number) => {
+    setGalleryImages((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      const fallback = next.length > 0 ? next : [PRESET_COVERS[0].url];
+      setCoverImage(fallback[0]);
+      return fallback;
+    });
+  };
   const [coverAdjustment, setCoverAdjustment] = useState<NewsCoverAdjustment>({
     scale: 1,
     positionX: 50,
@@ -164,35 +189,49 @@ export default function SubmitNewsWirePage() {
 
   // Custom Image File Handlers
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file (PNG, JPG, WEBP, or SVG).');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setCoverImage(reader.result);
-        setShowAdjuster(true);
-      }
-    };
-    reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          const res = reader.result;
+          setGalleryImages((prev) => {
+            const isDefaultOnly = prev.length === 1 && prev[0] === PRESET_COVERS[0].url;
+            const updated = isDefaultOnly ? [res] : [...prev, res];
+            setCoverImage(updated[0]);
+            return updated;
+          });
+          setShowAdjuster(true);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          setCoverImage(reader.result);
-          setShowAdjuster(true);
-        }
-      };
-      reader.readAsDataURL(file);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      Array.from(files).forEach((file) => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            const res = reader.result;
+            setGalleryImages((prev) => {
+              const isDefaultOnly = prev.length === 1 && prev[0] === PRESET_COVERS[0].url;
+              const updated = isDefaultOnly ? [res] : [...prev, res];
+              setCoverImage(updated[0]);
+              return updated;
+            });
+            setShowAdjuster(true);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
@@ -430,7 +469,8 @@ export default function SubmitNewsWirePage() {
         publishedAt: now,
         lastUpdatedAt: now,
         location: location.trim() || 'Global Wire Mesh',
-        coverImage: coverImage.trim() || PRESET_COVERS[0].url,
+        coverImage: galleryImages[0] || coverImage.trim() || PRESET_COVERS[0].url,
+        images: galleryImages,
         coverAdjustment: coverAdjustment,
         summary: summary.trim(),
         whatHappened: whatHappened.trim(),
@@ -473,7 +513,8 @@ export default function SubmitNewsWirePage() {
         slug: cleanSlug,
         content: formattedContent,
         excerpt: summary.trim(),
-        coverImage: coverImage.trim() || PRESET_COVERS[0].url,
+        coverImage: galleryImages[0] || coverImage.trim() || PRESET_COVERS[0].url,
+        images: galleryImages,
         coverAdjustment: coverAdjustment,
         sourceName: primarySourceName,
         sourceUrl: primarySourceUrl,
@@ -514,7 +555,7 @@ export default function SubmitNewsWirePage() {
         authorUsername,
         authorRole: 'correspondent',
         content: pulseContent,
-        images: coverImage ? [coverImage] : [],
+        images: galleryImages.length > 0 ? galleryImages : (coverImage ? [coverImage] : []),
         location: location.trim(),
         tags: Array.from(new Set(['#Wire', '#LiveDispatch', `#${category}`, ...parsedTags])),
         sourceName: primarySourceName,
@@ -917,6 +958,7 @@ export default function SubmitNewsWirePage() {
                 <input
                   ref={fileInputRef}
                   type="file"
+                  multiple
                   accept="image/*"
                   onChange={handleImageFileChange}
                   className="hidden"
@@ -960,6 +1002,7 @@ export default function SubmitNewsWirePage() {
                       type="button"
                       onClick={() => {
                         setCoverImage(preset.url);
+                        setGalleryImages((prev) => [preset.url, ...prev.filter(p => p !== preset.url)]);
                         handleResetAdjuster();
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition cursor-pointer ${
@@ -971,6 +1014,84 @@ export default function SubmitNewsWirePage() {
                       {preset.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* MULTI-PHOTO GALLERY & REORDERING STRIP */}
+              <div className="pt-4 border-t border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                      Photo Sequence &amp; Rearrangement ({galleryImages.length} Photos)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-xs font-mono text-purple-300 hover:text-purple-200 flex items-center gap-1 cursor-pointer bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/30"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Multiple Photos</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar">
+                  {galleryImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group shrink-0 w-32 h-24 rounded-2xl overflow-hidden border border-white/20 bg-black/60 shadow-lg"
+                    >
+                      <img src={img} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover" />
+                      
+                      {/* Badge */}
+                      <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-black/80 border border-white/20 text-[9px] font-mono font-bold text-white flex items-center gap-1">
+                        {idx === 0 ? <span className="text-amber-400 font-bold">#1 Cover</span> : <span>#{idx + 1}</span>}
+                      </div>
+
+                      {/* Rearrange & Remove Overlay Controls */}
+                      <div className="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-black/95 via-black/85 to-transparent flex items-center justify-between gap-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => movePhoto(idx, idx - 1)}
+                          className="p-1 rounded-md bg-white/10 hover:bg-purple-500/40 text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition"
+                          title="Move photo left"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(idx)}
+                          className="p-1 rounded-md bg-white/10 hover:bg-rose-500/50 text-rose-300 cursor-pointer transition"
+                          title="Remove this photo"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={idx === galleryImages.length - 1}
+                          onClick={() => movePhoto(idx, idx + 1)}
+                          className="p-1 rounded-md bg-white/10 hover:bg-purple-500/40 text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition"
+                          title="Move photo right"
+                        >
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-32 h-24 rounded-2xl border-2 border-dashed border-white/20 hover:border-purple-400 text-neutral-400 hover:text-purple-300 flex flex-col items-center justify-center gap-1.5 transition shrink-0 cursor-pointer bg-white/[0.02]"
+                    title="Add another photo to article"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span className="text-[10px] font-mono">+ Add Photo</span>
+                  </button>
                 </div>
               </div>
 
@@ -1507,8 +1628,28 @@ export default function SubmitNewsWirePage() {
               </div>
             </div>
 
+            {/* CHECK FINAL DRAFT BUTTON */}
+            <div className="pt-2 space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!headline.trim()) {
+                    alert('Please enter a headline first.');
+                    return;
+                  }
+                  if (!summary.trim() || !whatHappened.trim()) {
+                    alert('Please fill in the summary and story report before checking final draft.');
+                    return;
+                  }
+                  setShowFinalDraftModal(true);
+                }}
+                className="w-full py-3.5 px-6 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold font-display text-sm sm:text-base transition cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.15)]"
+              >
+                <Eye className="w-4 h-4" />
+                <span>Check Your Final Draft (All Formats &amp; Photos)</span>
+              </button>
+
             {/* SUBMIT BUTTON */}
-            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -1844,6 +1985,28 @@ export default function SubmitNewsWirePage() {
       </main>
 
       <Footer />
+      {/* Final Draft Review Modal */}
+      <PressDraftPreviewModal
+        isOpen={showFinalDraftModal}
+        onClose={() => setShowFinalDraftModal(false)}
+        onConfirmPublish={() => {
+          setShowFinalDraftModal(false);
+          const formElement = document.querySelector('form');
+          if (formElement) {
+            formElement.requestSubmit();
+          }
+        }}
+        title={headline}
+        excerpt={summary}
+        content={whatHappened}
+        images={galleryImages}
+        category={category}
+        tags={tagsInput.split(',').map((t) => t.trim()).filter(Boolean)}
+        authorName={authorName}
+        authorUsername={authorUsername}
+        sources={sources}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

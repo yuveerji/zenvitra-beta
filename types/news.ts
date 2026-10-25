@@ -49,6 +49,7 @@ export interface NewsStory {
   lastUpdatedAt: string;
   location: string;
   coverImage: string;
+  images?: string[];
   coverAdjustment?: NewsCoverAdjustment;
   summary: string;
   whatHappened: string;

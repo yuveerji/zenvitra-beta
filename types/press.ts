@@ -36,6 +36,7 @@ export interface PressArticle {
   content: string; // HTML
   excerpt: string;
   coverImage?: string;
+  images?: string[];
   coverAdjustment?: {
     scale: number;
     positionX: number;

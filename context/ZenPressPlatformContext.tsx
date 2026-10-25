@@ -66,6 +66,7 @@ interface ZenPressContextType {
     sourceUrl: string;
     sources?: { id: string; name: string; url: string; label: string; domain?: string }[];
     coverImage?: string;
+    images?: string[];
     excerpt?: string;
     isOfficial?: boolean;
     status?: 'draft' | 'published';
@@ -257,6 +258,7 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
       sourceUrl: string;
       sources?: { id: string; name: string; url: string; label: string; domain?: string }[];
       coverImage?: string;
+      images?: string[];
       excerpt?: string;
       isOfficial?: boolean;
       status?: 'draft' | 'published';
@@ -285,6 +287,7 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
         content: formattedContent,
         excerpt: wireExcerpt,
         coverImage: data.coverImage?.trim() || undefined,
+        images: data.images && data.images.length > 0 ? data.images : (data.coverImage?.trim() ? [data.coverImage.trim()] : undefined),
         sourceName: data.sourceName?.trim() || 'Zenvitra Sovereign Wire',
         sourceUrl: data.sourceUrl?.trim() || '/press',
         sources: data.sources,
@@ -318,7 +321,7 @@ export function ZenPressPlatformProvider({ children }: { children: React.ReactNo
             authorUsername: currentUserUsername,
             authorRole: 'correspondent',
             content: `⚡ **OFFICIAL WIRE DISPATCH [${wireRef}]**\n\n### ${wireFormattedTitle}\n\n${wireExcerpt}\n\n[Read full wire report in Press & Newsroom →](/press)`,
-            images: data.coverImage ? [data.coverImage] : [],
+            images: data.images && data.images.length > 0 ? data.images : (data.coverImage ? [data.coverImage] : []),
             tags: ['#Wire', '#LiveDispatch', `#${data.category}`],
             createdAt: now,
             likesCount: 0,

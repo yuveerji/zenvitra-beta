@@ -50,8 +50,11 @@ import {
   BookOpen,
   Feather,
   Scale,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+import { FinalDraftPreviewModal } from './FinalDraftPreviewModal';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { PulsePostFormat, PulseSourceItem } from '@/types/pulse';
 import { MusicPickerModal, SelectedTrackPayload } from './MusicPickerModal';
@@ -212,6 +215,18 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
 
   // Creative Post Format (Micro Dispatch, Blog / Essay, Poetry & Verses, Treaty)
   const [postFormat, setPostFormat] = useState<PulsePostFormat>('dispatch');
+  const [showFinalDraftModal, setShowFinalDraftModal] = useState(false);
+
+  const moveImage = (fromIdx: number, toIdx: number) => {
+    if (toIdx < 0 || toIdx >= images.length) return;
+    setImages((prev) => {
+      const copy = [...prev];
+      const [moved] = copy.splice(fromIdx, 1);
+      copy.splice(toIdx, 0, moved);
+      return copy;
+    });
+    setSelectedImageIdx(toIdx);
+  };
   const [postTitle, setPostTitle] = useState('');
   const [poetryAlign, setPoetryAlign] = useState<'left' | 'center'>('left');
 
@@ -918,7 +933,20 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {!isStudioFlipped && (
+              <button
+                type="button"
+                onClick={() => setShowFinalDraftModal(true)}
+                disabled={!isPostValid}
+                className="px-3.5 py-1.5 rounded-full border border-cyan-400/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer disabled:opacity-30"
+                title="Check your final draft before publishing"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Check Final Draft</span>
+              </button>
+            )}
+
             {isStudioFlipped ? (
               <button
                 type="button"
@@ -930,7 +958,13 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
               </button>
             ) : (
               <button
-                onClick={handlePost}
+                onClick={() => {
+                  if (postFormat === 'blog' || postFormat === 'essay' || postFormat === 'treaty' || postTitle.trim().length > 0 || images.length > 1) {
+                    setShowFinalDraftModal(true);
+                  } else {
+                    handlePost();
+                  }
+                }}
                 disabled={!isPostValid}
                 className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   !auditResult.passed && content.trim()
@@ -966,9 +1000,9 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
         <div className="grid grid-cols-1 md:grid-cols-12 flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
           
           {/* ── LEFT: MEDIA STAGE (7 cols) ── */}
-          <div className="md:col-span-7 bg-black/60 border-b md:border-b-0 md:border-r border-white/10 flex flex-col items-center justify-between p-4 relative min-h-[340px] md:min-h-[500px]">
+          <div className="md:col-span-7 bg-black/60 border-b md:border-b-0 md:border-r border-white/10 flex flex-col items-center justify-between p-4 relative min-h-[340px] md:min-h-[500px] min-w-0 overflow-hidden">
             {/* Top Media Bar */}
-            <div className="w-full flex items-center justify-between z-10 gap-2 min-h-[38px]">
+            <div className="w-full flex flex-wrap sm:flex-nowrap items-center justify-between z-10 gap-2 min-h-[38px] min-w-0 overflow-hidden">
               {images.length > 0 ? (
                 <>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] font-mono text-zinc-300 relative shrink-0">
@@ -1119,7 +1153,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       title={isStudioFlipped ? 'Close FX Studio & Return' : 'Open Pro FX & Text Studio'}
                     >
                       <Wand2 className={`w-3.5 h-3.5 ${isStudioFlipped ? 'text-black' : 'text-cyan-400'}`} />
-                      <span>{isStudioFlipped ? 'Close FX' : 'FX & Text Studio'}</span>
+                      <span>{isStudioFlipped ? 'Close FX' : 'FX Studio'}</span>
                     </button>
                   </div>
                 </>
@@ -1418,45 +1452,96 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
               )}
             </div>
 
-            {/* Bottom Thumbnail & Multi-Slide Strip */}
+            {/* Bottom Thumbnail & Multi-Slide Strip with Reordering */}
             {images.length > 0 && (
-              <div className="w-full flex items-center justify-center gap-2 pt-2 overflow-x-auto no-scrollbar">
-                {images.map((img, i) => {
-                  const isItemVideo = img.startsWith('data:video') || img.includes('.mp4') || img.includes('.webm') || img.includes('.mov');
-                  return (
-                    <div
-                      key={i}
-                      onClick={() => {
-                        setSelectedImageIdx(i);
-                        setActiveOverlayId(null);
-                      }}
-                      className={`w-11 h-11 rounded-xl overflow-hidden border-2 cursor-pointer transition shrink-0 relative ${
-                        selectedImageIdx === i ? 'border-cyan-400 scale-105 shadow-md' : 'border-white/20 opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      {isItemVideo ? (
-                        <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-[9px] font-mono text-cyan-300">▶ VID</div>
-                      ) : (
-                        <img src={img} alt="" className="w-full h-full object-cover" />
-                      )}
-                      <span className="absolute bottom-0 right-0 px-1 text-[8px] bg-black/80 font-mono text-white rounded-tl">{i + 1}</span>
-                    </div>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-11 h-11 rounded-xl border-2 border-dashed border-white/30 hover:border-white text-zinc-400 hover:text-white flex items-center justify-center transition shrink-0 cursor-pointer bg-white/5"
-                  title="Add another slide / image / video"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+              <div className="w-full flex flex-col items-center gap-1.5 pt-2">
+                <div className="w-full flex items-center justify-between px-2 text-[10px] font-mono text-zinc-400">
+                  <span className="font-semibold text-zinc-300">REARRANGE PHOTOS ({images.length})</span>
+                  <span className="text-[9px] text-zinc-500">Tap arrows to reorder sequence</span>
+                </div>
+                <div className="w-full flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
+                  {images.map((img, i) => {
+                    const isItemVideo = img.startsWith('data:video') || img.includes('.mp4') || img.includes('.webm') || img.includes('.mov');
+                    return (
+                      <div
+                        key={i}
+                        className={`group relative rounded-xl border-2 transition-all duration-150 shrink-0 ${
+                          selectedImageIdx === i ? 'border-cyan-400 scale-105 shadow-md shadow-cyan-500/20' : 'border-white/10 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <div
+                          onClick={() => {
+                            setSelectedImageIdx(i);
+                            setActiveOverlayId(null);
+                          }}
+                          className="w-12 h-12 rounded-lg overflow-hidden bg-zinc-900 cursor-pointer relative"
+                        >
+                          {isItemVideo ? (
+                            <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-[9px] font-mono text-cyan-300">▶ VID</div>
+                          ) : (
+                            <img src={img} alt="" className="w-full h-full object-cover" />
+                          )}
+                          <span className="absolute bottom-0 right-0 px-1 py-0.2 text-[8px] bg-black/85 font-mono font-bold text-white rounded-tl">{i + 1}</span>
+                        </div>
+
+                        {/* Reorder controls */}
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-black/95 border border-white/20 rounded-md p-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                          {i > 0 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                moveImage(i, i - 1);
+                              }}
+                              className="p-0.5 hover:bg-white/20 rounded text-white text-[9px] cursor-pointer"
+                              title="Move photo left"
+                            >
+                              <ChevronLeft className="w-3 h-3" />
+                            </button>
+                          )}
+                          {i < images.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                moveImage(i, i + 1);
+                              }}
+                              className="p-0.5 hover:bg-white/20 rounded text-white text-[9px] cursor-pointer"
+                              title="Move photo right"
+                            >
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeImage(i);
+                            }}
+                            className="p-0.5 hover:bg-rose-600 rounded text-white text-[9px] cursor-pointer"
+                            title="Remove this photo"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-12 h-12 rounded-xl border-2 border-dashed border-white/30 hover:border-cyan-400 text-zinc-400 hover:text-cyan-300 flex items-center justify-center transition shrink-0 cursor-pointer bg-white/5"
+                    title="Add another photo / slide"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
           {/* ── RIGHT: 3D FLIP CONTAINER (5 cols) ── */}
-          <div className="md:col-span-5 relative bg-[#0e0f16] flex flex-col justify-between overflow-hidden [perspective:1400px]">
+          <div className="md:col-span-5 relative bg-[#0e0f16] flex flex-col justify-between overflow-hidden [perspective:1400px] min-w-0">
             <AnimatePresence mode="wait">
               {!isStudioFlipped ? (
                 /* ── FACE A: DISPATCH CAPTION & COMPOSITION ── */
@@ -1470,16 +1555,16 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                 >
                   <div className="space-y-4">
                     {/* User Profile Dossier Row */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[2px]">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 via-teal-400 to-blue-500 p-[2px] shrink-0">
                           <div className="w-full h-full rounded-full bg-black flex items-center justify-center font-bold text-xs text-white uppercase">
                             {(currentUserName || currentUserUsername || 'U')[0]?.toUpperCase() || 'U'}
                           </div>
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-white">{currentUserUsername}</p>
-                          <p className="text-[10px] text-zinc-500">{currentUserName}</p>
+                        <div className="min-w-0 truncate">
+                          <p className="text-xs font-bold text-white truncate">{currentUserUsername}</p>
+                          <p className="text-[10px] text-zinc-500 truncate">{currentUserName}</p>
                         </div>
                       </div>
 
@@ -1487,7 +1572,7 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       <button
                         type="button"
                         onClick={() => setPrivacy(privacy === 'public' ? 'community' : privacy === 'community' ? 'mesh' : 'public')}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/10 text-zinc-300 hover:text-white transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/10 text-zinc-300 hover:text-white transition cursor-pointer shrink-0 whitespace-nowrap"
                       >
                         {privacy === 'public' && <Globe className="w-3 h-3 text-emerald-400" />}
                         {privacy === 'community' && <ShieldCheck className="w-3 h-3 text-cyan-400" />}
@@ -2878,6 +2963,30 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
           setShowLocationPicker(false);
         }}
         onRemoveLocation={() => setLocation('')}
+      />
+
+      {/* ─── FINAL DRAFT PREVIEW MODAL ─── */}
+      <FinalDraftPreviewModal
+        isOpen={showFinalDraftModal}
+        onClose={() => setShowFinalDraftModal(false)}
+        onConfirmPublish={handlePost}
+        title={postTitle}
+        content={content}
+        images={images}
+        postFormat={postFormat}
+        selectedFont={selectedFont}
+        tags={tags}
+        privacy={privacy}
+        authorName={currentUserName || currentUserUsername || 'Delegate'}
+        authorUsername={currentUserUsername || 'delegate'}
+        authorAvatar={undefined}
+        authorBadge={undefined}
+        attachedSong={attachedSong ? {
+          title: attachedSong.title,
+          artist: attachedSong.artist,
+          audioUrl: attachedSong.audioUrl
+        } : null}
+        sources={sources}
       />
     </div>
   );

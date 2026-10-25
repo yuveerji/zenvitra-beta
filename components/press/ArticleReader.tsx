@@ -15,7 +15,10 @@ import {
   Type,
   Zap,
   Layers,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useZenPress } from '@/context/ZenPressPlatformContext';
 import { CommentSection } from './CommentSection';
@@ -35,6 +38,7 @@ export function ArticleReader() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg'>('base');
   const [isFlexMode, setIsFlexMode] = useState(false);
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
   const article = activeArticleId ? getArticleById(activeArticleId) : undefined;
 
@@ -284,8 +288,59 @@ export function ArticleReader() {
         </div>
       </div>
 
-      {/* Hero Cover Image */}
-      {article.coverImage && (
+      {/* Hero Cover / Multi-Photo Gallery */}
+      {article.images && article.images.length > 1 ? (
+        <div className="mb-8 space-y-3">
+          <div className="rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.6)] relative aspect-[16/9] bg-black/60">
+            <img
+              src={article.images[activePhotoIdx] || article.images[0]}
+              alt={article.title}
+              className="w-full h-full object-cover"
+            />
+            {/* Arrows */}
+            <button
+              type="button"
+              onClick={() => setActivePhotoIdx((prev) => (prev > 0 ? prev - 1 : article.images!.length - 1))}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 hover:bg-black/90 border border-white/20 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-sm"
+              title="Previous photo"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActivePhotoIdx((prev) => (prev < article.images!.length - 1 ? prev + 1 : 0))}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/70 hover:bg-black/90 border border-white/20 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-sm"
+              title="Next photo"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-xs font-mono font-bold text-white flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{activePhotoIdx + 1} / {article.images.length}</span>
+            </div>
+          </div>
+          {/* Thumbnails Strip */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {article.images.map((img, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setActivePhotoIdx(idx)}
+                className={`relative w-20 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition cursor-pointer ${
+                  activePhotoIdx === idx
+                    ? 'border-cyan-400 ring-2 ring-cyan-400/30'
+                    : 'border-white/20 opacity-60 hover:opacity-100'
+                }`}
+              >
+                <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                <span className="absolute bottom-0.5 right-0.5 bg-black/80 text-[8px] font-mono px-1 rounded text-white">
+                  {idx + 1}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : article.coverImage ? (
         <div className="mb-8 rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.6)]">
           <img
             src={article.coverImage}
@@ -299,7 +354,7 @@ export function ArticleReader() {
             }}
           />
         </div>
-      )}
+      ) : null}
 
       {/* DUAL MODE BODY: Interactive Flex vs Full Article */}
       {isFlexMode ? (

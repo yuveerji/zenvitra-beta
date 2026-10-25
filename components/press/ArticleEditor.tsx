@@ -32,12 +32,15 @@ import {
   FileText,
   AlertCircle,
   Plus,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useZenPress } from '@/context/ZenPressPlatformContext';
 import { PressCategory } from '@/types/press';
 import { MediaStudioModal } from '@/components/creator/MediaStudioModal';
 import { DesktopModeAdvisory } from '@/components/common/DesktopModeAdvisory';
+import { PressDraftPreviewModal } from './PressDraftPreviewModal';
 
 const CATEGORIES: PressCategory[] = [
   'MANIFESTO',
@@ -55,6 +58,8 @@ export function ArticleEditor() {
     publishArticle,
     setActiveView,
     setEditingArticle,
+    currentUserName,
+    currentUserUsername,
   } = useZenPress();
 
   const isEditing = !!editingArticle;
@@ -62,6 +67,54 @@ export function ArticleEditor() {
   const [title, setTitle] = useState(editingArticle?.title || '');
   const [excerpt, setExcerpt] = useState(editingArticle?.excerpt || '');
   const [coverImage, setCoverImage] = useState(editingArticle?.coverImage || '');
+  const [galleryImages, setGalleryImages] = useState<string[]>(
+    editingArticle?.images && editingArticle.images.length > 0
+      ? editingArticle.images
+      : (editingArticle?.coverImage ? [editingArticle.coverImage] : [])
+  );
+  const [showFinalDraftModal, setShowFinalDraftModal] = useState(false);
+  const multiFileInputRef = useRef<HTMLInputElement>(null);
+
+  const moveGalleryImage = (fromIdx: number, toIdx: number) => {
+    if (toIdx < 0 || toIdx >= galleryImages.length) return;
+    setGalleryImages((prev) => {
+      const copy = [...prev];
+      const [moved] = copy.splice(fromIdx, 1);
+      copy.splice(toIdx, 0, moved);
+      if (toIdx === 0 || fromIdx === 0) {
+        setCoverImage(copy[0] || '');
+      }
+      return copy;
+    });
+  };
+
+  const removeGalleryImage = (idx: number) => {
+    setGalleryImages((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      setCoverImage(next[0] || '');
+      return next;
+    });
+  };
+
+  const handleMultiPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (loadEvt) => {
+        if (loadEvt.target?.result) {
+          const url = loadEvt.target.result as string;
+          setGalleryImages((prev) => {
+            const next = [...prev, url];
+            if (!coverImage) setCoverImage(url);
+            return next;
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
   const [isCoverStudioOpen, setIsCoverStudioOpen] = useState(false);
   const [sourceName, setSourceName] = useState(editingArticle?.sourceName || '');
   const [sourceUrl, setSourceUrl] = useState(editingArticle?.sourceUrl || '');
@@ -139,7 +192,9 @@ export function ArticleEditor() {
       const reader = new FileReader();
       reader.onload = (loadEvt) => {
         if (loadEvt.target?.result) {
-          setCoverImage(loadEvt.target.result as string);
+          const url = loadEvt.target.result as string;
+          setCoverImage(url);
+          setGalleryImages((prev) => (prev.includes(url) ? prev : [url, ...prev]));
         }
       };
       reader.readAsDataURL(file);
@@ -217,7 +272,8 @@ export function ArticleEditor() {
       title: title.trim(),
       content: getContent(),
       excerpt: excerpt.trim(),
-      coverImage: coverImage.trim() || undefined,
+      coverImage: galleryImages[0] || coverImage.trim() || undefined,
+      images: galleryImages.length > 0 ? galleryImages : (coverImage.trim() ? [coverImage.trim()] : undefined),
       sourceName: primarySource.name || sourceName.trim() || 'Zenvitra Sovereign Wire',
       sourceUrl: primarySource.url || sourceUrl.trim() || '/press',
       sources: validSources.length > 0 ? validSources : undefined,
@@ -304,6 +360,29 @@ export function ArticleEditor() {
           >
             {isPreview ? <Edit3 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             <span>{isPreview ? 'Edit Mode' : 'Preview Mode'}</span>
+          </button>
+
+          {/* Check Final Draft Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (!title.trim()) {
+                alert('Please enter a dispatch title first.');
+                return;
+              }
+              const hasValidSource = sources.some((s) => s.name.trim() && s.url.trim()) || (sourceName.trim() && sourceUrl.trim());
+              if (!hasValidSource) {
+                setShowSourceError(true);
+                return;
+              }
+              setShowFinalDraftModal(true);
+            }}
+            disabled={!title.trim()}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 font-mono text-xs font-semibold transition cursor-pointer disabled:opacity-40"
+            title="Review your rearranged photos, typography, citations, and layout"
+          >
+            <Eye className="w-3.5 h-3.5 text-purple-400" />
+            <span>Check Final Draft</span>
           </button>
 
           {/* Save Draft */}
@@ -497,19 +576,96 @@ export function ArticleEditor() {
                 className="flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-white transition cursor-pointer flex items-center justify-center gap-2"
               >
                 <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                <span>{coverImage ? 'Change Cover Image' : 'Upload Cover Image'}</span>
+                <span>{coverImage ? 'Change Cover' : 'Upload Cover'}</span>
               </button>
-              {coverImage && (
-                <button
-                  type="button"
-                  onClick={() => setCoverImage('')}
-                  className="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-xs font-mono transition cursor-pointer"
-                >
-                  Remove
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => multiFileInputRef.current?.click()}
+                className="px-3 py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-mono transition cursor-pointer flex items-center gap-1.5"
+                title="Add multiple photos to article gallery"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Photos</span>
+              </button>
+              <input
+                ref={multiFileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={handleMultiPhotoUpload}
+              />
             </div>
           </div>
+
+        {/* MULTI-PHOTO GALLERY & REORDERING STRIP */}
+        {galleryImages.length > 0 && (
+          <div className="col-span-full pt-3 pb-1 border-t border-white/[0.06] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
+                <span>Article Photo Gallery &amp; Sequence ({galleryImages.length} Photos)</span>
+                <span className="text-neutral-500 font-normal">Use arrows to rearrange</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => multiFileInputRef.current?.click()}
+                className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Add More Photos</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar">
+              {galleryImages.map((img, idx) => (
+                <div
+                  key={idx}
+                  className="relative group shrink-0 w-28 h-20 rounded-xl overflow-hidden border border-white/20 bg-black/60 shadow-md"
+                >
+                  <img src={img} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                  
+                  {/* Badge */}
+                  <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/80 border border-white/20 text-[9px] font-mono font-bold text-white flex items-center gap-0.5">
+                    {idx === 0 ? <span className="text-amber-400 font-bold">#1 Cover</span> : <span>#{idx + 1}</span>}
+                  </div>
+
+                  {/* Rearrange & Remove Overlay Controls */}
+                  <div className="absolute inset-x-0 bottom-0 p-1 bg-gradient-to-t from-black/95 via-black/80 to-transparent flex items-center justify-between gap-1">
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => moveGalleryImage(idx, idx - 1)}
+                      className="p-1 rounded bg-white/10 hover:bg-cyan-500/40 text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition"
+                      title="Move photo left"
+                    >
+                      <ChevronLeft className="w-3 h-3" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(idx)}
+                      className="p-1 rounded bg-white/10 hover:bg-rose-500/50 text-rose-300 cursor-pointer transition"
+                      title="Remove this photo"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={idx === galleryImages.length - 1}
+                      onClick={() => moveGalleryImage(idx, idx + 1)}
+                      className="p-1 rounded bg-white/10 hover:bg-cyan-500/40 text-white disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed transition"
+                      title="Move photo right"
+                    >
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
           {/* Tags */}
           <div className="space-y-1.5">
