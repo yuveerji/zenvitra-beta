@@ -23,9 +23,24 @@ module.exports = {
       },
       colors: {
         obsidian: {
+          DEFAULT: '#08090B',
           950: '#020203',
           900: '#050608',
           800: '#08090c',
+        },
+        dias: {
+          obsidian: '#08090B',
+          charcoal: '#111318',
+          surface: '#181B21',
+          border: '#232731',
+          gold: '#C5A46D',
+          goldLight: '#E6D1A5',
+          goldDark: '#9A7E4F',
+          text: '#F4F2ED',
+          muted: '#9A9DA5',
+          emerald: '#1C3829',
+          crimson: '#822424',
+          amber: '#B87A24',
         },
       },
       animation: {

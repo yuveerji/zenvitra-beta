@@ -618,6 +618,41 @@ input::-moz-selection {
   transform: translateY(100%) rotate(25deg);
 }
 
+/* ─── ZENVITRA MUN DIAS DESIGN SYSTEM TOKENS ─── */
+:root {
+  --dias-obsidian: #08090B;
+  --dias-charcoal: #111318;
+  --dias-surface: #181B21;
+  --dias-border: #232731;
+  --dias-gold: #C5A46D;
+  --dias-gold-light: #E6D1A5;
+  --dias-gold-dark: #9A7E4F;
+  --dias-text: #F4F2ED;
+  --dias-muted: #9A9DA5;
+}
+
+.dias-gold-glow {
+  box-shadow: 0 0 30px -5px rgba(197, 164, 109, 0.2);
+}
+
+.dias-gold-border {
+  border-color: rgba(197, 164, 109, 0.25);
+}
+
+.dias-gold-gradient-text {
+  background: linear-gradient(135deg, #F4F2ED 20%, #E6D1A5 60%, #C5A46D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dias-motion {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
 /* ── Sovereign Logo Background Transparency ── */
 /* Automatically hides any dark/black background box from logo images seamlessly across the site */
 img[src*="logo-new"],

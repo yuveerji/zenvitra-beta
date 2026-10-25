@@ -825,3 +825,264 @@ model CashfreePaymentOrder {
   @@index([customerEmail])
   @@index([orderStatus])
 }
+
+// ─── ZENVITRA MUN DIAS SOVEREIGN RELATIONAL SCHEMA ───
+
+model MunConference {
+  id              String             @id @default(cuid())
+  slug            String             @unique
+  name            String
+  acronym         String
+  description     String?
+  bannerUrl       String?
+  emblemUrl       String?
+  startDate       DateTime
+  endDate         DateTime
+  timeZone        String             @default("Asia/Kolkata")
+  status          String             @default("DRAFT") // DRAFT, PUBLISHED, IN_SESSION, ARCHIVED
+  visibility      String             @default("PUBLIC") // PUBLIC, PRIVATE, UNLISTED
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  memberships     MunMembership[]
+  committees      MunCommittee[]
+
+  @@index([status, visibility])
+  @@index([startDate])
+}
+
+model MunMembership {
+  id              String        @id @default(cuid())
+  conferenceId    String
+  userId          String
+  role            String        @default("DELEGATE") // SUPER_ADMIN, SEC_GEN, CHAIR, VICE_CHAIR, DELEGATE, PRESS, CRISIS_STAFF, OBSERVER
+  assignedCountry String?
+  assignedEntity  String?       // Ministry, News Agency, or Cabinet Portfolio
+  status          String        @default("ACTIVE") // PENDING, ACTIVE, REVOKED
+  invitedAt       DateTime      @default(now())
+  acceptedAt      DateTime?
+
+  conference      MunConference @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
+
+  @@unique([conferenceId, userId])
+  @@index([conferenceId, role])
+  @@index([userId])
+}
+
+model MunCommittee {
+  id              String               @id @default(cuid())
+  conferenceId    String
+  code            String               // e.g. "LOK_SABHA", "UNSC", "IPC"
+  name            String
+  template        String               @default("UN_GENERAL") // INDIAN_PARLIAMENT, PRESS_CORPS, CRISIS_CABINET, UN_GENERAL, CUSTOM
+  agenda          String
+  emblemUrl       String?
+  totalSeats      Int                  @default(0)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  conference      MunConference        @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
+  config          MunCommitteeConfig?
+  sessions        MunSession[]
+  bills           ParliamentaryBill[]
+  publications    PressPublication[]
+  directives      CrisisDirective[]
+
+  @@index([conferenceId, code])
+}
+
+model MunCommitteeConfig {
+  id                     String       @id @default(cuid())
+  committeeId            String       @unique
+  enablePublicSessions   Boolean      @default(true)
+  enablePrivateSessions  Boolean      @default(true)
+  enableBills            Boolean      @default(false)
+  enableAmendments       Boolean      @default(false)
+  enablePressSubmissions Boolean      @default(false)
+  enableCrisisDirectives Boolean      @default(false)
+  enableRightOfReply     Boolean      @default(true)
+  defaultGslDurationSec  Int          @default(90)
+  votingMajorityRule     String       @default("SIMPLE") // SIMPLE, TWO_THIRDS, CONSENSUS, P5_VETO
+  quorumRatio            Float        @default(0.33)
+  terminology            String?      // JSON mapping for Speaker, Treasury, Opposition, etc.
+
+  committee              MunCommittee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+}
+
+model MunSession {
+  id                  String             @id @default(cuid())
+  committeeId         String
+  sessionCode         String             @unique
+  sessionTitle        String
+  visibility          String             @default("PUBLIC") // PUBLIC, PRIVATE, RESTRICTED
+  status              String             @default("PRE_SESSION") // PRE_SESSION, LIVE, PAUSED, ADJOURNED
+  activeMode          String             @default("GSL") // GSL, MOD_CAUCUS, UNMOD_CAUCUS, BILL_DEBATE, VOTING
+  
+  timerDurationSec    Int                @default(90)
+  timerAnchorEpochMs  BigInt?
+  timerRemainingAtMs  BigInt             @default(90000)
+  isTimerRunning      Boolean            @default(false)
+
+  currentSpeakerId    String?
+  currentSpeakerName  String?
+  currentSpeakerRole  String?
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  committee           MunCommittee       @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+  speakerQueue        MunSpeakerQueue[]
+  votes               MunVoteSession[]
+  auditEvents         MunSessionAudit[]
+
+  @@index([committeeId, status])
+}
+
+model MunSpeakerQueue {
+  id              String      @id @default(cuid())
+  sessionId       String
+  delegateId      String
+  countryOrSeat   String
+  delegateName    String
+  position        Int
+  status          String      @default("QUEUED") // QUEUED, SPEAKING, COMPLETED, YIELDED, SKIPPED
+  createdAt       DateTime    @default(now())
+
+  session         MunSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, position])
+}
+
+model ParliamentaryBill {
+  id              String          @id @default(cuid())
+  committeeId     String
+  billNumber      String          @unique // e.g. "LS-BILL-2026-04"
+  title           String
+  sponsoringSeat  String
+  ministry        String?
+  objectives      String
+  stage           String          @default("DRAFT") // DRAFT, SUBMITTED, REVIEW, INTRODUCED, UNDER_DEBATE, AMENDMENT, VOTING, PASSED, REJECTED
+  version         Int             @default(1)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  committee       MunCommittee    @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+  clauses         BillClause[]
+
+  @@index([committeeId, stage])
+}
+
+model BillClause {
+  id              String          @id @default(cuid())
+  billId          String
+  clauseIndex     Int
+  clauseTitle     String
+  clauseBody      String
+  status          String          @default("PROPOSED") // PROPOSED, AMENDED, ADOPTED, DROPPED
+
+  bill            ParliamentaryBill @relation(fields: [billId], references: [id], onDelete: Cascade)
+  amendments      BillAmendment[]
+
+  @@index([billId, clauseIndex])
+}
+
+model BillAmendment {
+  id              String      @id @default(cuid())
+  clauseId        String
+  proposedBySeat  String
+  proposedText    String
+  rationale       String
+  status          String      @default("PENDING") // PENDING, ACCEPTED, REJECTED, WITHDRAWN
+  createdAt       DateTime    @default(now())
+
+  clause          BillClause  @relation(fields: [clauseId], references: [id], onDelete: Cascade)
+
+  @@index([clauseId, status])
+}
+
+model PressPublication {
+  id              String        @id @default(cuid())
+  committeeId     String
+  headline        String
+  leadAgency      String        // Reuters, PTI, BBC, TASS, The Hindu
+  authorUserId    String
+  bodyText        String
+  publicationType String        // PRESS_RELEASE, ARTICLE, EDITORIAL, COMMUNIQUE
+  status          String        @default("DRAFT") // DRAFT, SUBMITTED, EDITORIAL_REVIEW, APPROVED, PUBLISHED, EMBARGOED
+  embargoUntil    DateTime?
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+
+  committee       MunCommittee  @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+
+  @@index([committeeId, status])
+}
+
+model CrisisDirective {
+  id               String        @id @default(cuid())
+  committeeId      String
+  directiveNumber  String        // e.g. "DIR-SEC-01"
+  title            String
+  actionType       String        // COVERT_OPS, DIPLOMATIC_NOTE, TROOP_DEPLOYMENT, SANCTION
+  fromSeat         String
+  targetRecipients String        // JSON array of authorized seats/roles
+  content          String
+  isConfidential   Boolean       @default(true)
+  status           String        @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED
+  createdAt        DateTime      @default(now())
+
+  committee        MunCommittee  @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+
+  @@index([committeeId, isConfidential])
+}
+
+model MunVoteSession {
+  id              String        @id @default(cuid())
+  sessionId       String
+  motionId        String?
+  billId          String?
+  clauseId        String?
+  subject         String
+  voteType        String        @default("PROCEDURAL") // PROCEDURAL, SUBSTANTIVE, DIVISION, ROLL_CALL
+  isSecretBallot  Boolean       @default(false)
+  status          String        @default("ACTIVE") // ACTIVE, TALLIED, CLOSED
+  totalEligible   Int           @default(0)
+  votesInFavor    Int           @default(0)
+  votesAgainst    Int           @default(0)
+  abstentions     Int           @default(0)
+  resultOutcome   String?       // PASSED, FAILED, TIE
+  createdAt       DateTime      @default(now())
+
+  session         MunSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  ballots         MunBallot[]
+
+  @@index([sessionId, status])
+}
+
+model MunBallot {
+  id              String          @id @default(cuid())
+  voteSessionId   String
+  voterUserId     String?         // Nullified for confidential secret ballots
+  voterSeat       String?
+  choice          String          // YES, NO, ABSTAIN, YES_WITH_RESERVATIONS
+  submittedAt     DateTime        @default(now())
+
+  voteSession     MunVoteSession  @relation(fields: [voteSessionId], references: [id], onDelete: Cascade)
+
+  @@index([voteSessionId])
+}
+
+model MunSessionAudit {
+  id              String      @id @default(cuid())
+  sessionId       String
+  actorUserId     String
+  actorSeat       String?
+  action          String      // GAVEL_STRUCK, SPEAKER_RECOGNIZED, MOTION_PASSED, BILL_INTRODUCED, VOTE_CLOSED
+  summary         String
+  createdAt       DateTime    @default(now())
+
+  session         MunSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
