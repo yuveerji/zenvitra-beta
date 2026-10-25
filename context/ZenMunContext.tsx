@@ -39,13 +39,13 @@ export function createInitialZenMunSession(initialCode?: string): ZenMunSession 
   return {
     sessionCode: validCode,
     chairPassword: generateChairPassword(),
-    chairName: 'Chair',
+    chairName: '',
     chairRole: 'moderator',
-    committeeName: 'Lok Sabha',
-    committeeAcronym: 'LOK SABHA',
-    topic: 'Delimitation of Constituencies and Democratic Governance',
-    emblemUrl: '/assets/committees/emblem_of_india.svg',
-    isIndianCommittee: true,
+    committeeName: '',
+    committeeAcronym: '',
+    topic: '',
+    emblemUrl: '/assets/committees/un.svg',
+    isIndianCommittee: false,
 
     roster: [],
     speakerQueue: [],
@@ -106,7 +106,7 @@ export function createInitialZenMunSession(initialCode?: string): ZenMunSession 
       majorityRule: 'simple',
     },
 
-    sessionState: 'in-session',
+    sessionState: 'pre-session',
     tutorial: {
       isActive: false,
       currentStep: 1,
@@ -245,7 +245,19 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === 'object') {
-          // Purge legacy hardcoded code 'PJL6KY' and generate a fresh unseeded code
+          // If stored session has no real roster, or is pre-session, or was a legacy unconfigured Lok Sabha seed: PURGE IT!
+          const hasGenuineRoster = Array.isArray(parsed.roster) && parsed.roster.length > 0;
+          const isLegacyLokSabhaSeed = parsed.committeeName === 'Lok Sabha' && (!parsed.roster || parsed.roster.length === 0);
+
+          if (!hasGenuineRoster || isLegacyLokSabhaSeed || parsed.sessionState === 'pre-session' || !parsed.committeeName) {
+            localStorage.removeItem(LS_ZENMUN_SESSION);
+            localStorage.removeItem('zenvitra_dias_active_session');
+            setSession(createInitialZenMunSession());
+            setIsMounted(true);
+            return;
+          }
+
+          // Real user session: sanitize and restore
           const isLegacySeededCode = parsed.sessionCode === 'PJL6KY' || !parsed.sessionCode;
           const cleanCode = isLegacySeededCode ? generateSessionCode() : parsed.sessionCode.toUpperCase();
           const cleanPassword = isLegacySeededCode && parsed.chairPassword === '4829'
@@ -266,7 +278,7 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
             chairPassword: cleanPassword,
             pointsLedger: cleanPointsLedger,
             commenterFeedbacks: cleanCommenterFeedbacks,
-            roster: Array.isArray(parsed.roster) ? parsed.roster : [],
+            roster: parsed.roster,
             speakerQueue: Array.isArray(parsed.speakerQueue) ? parsed.speakerQueue : [],
             tutorial: {
               ...(parsed.tutorial || {}),

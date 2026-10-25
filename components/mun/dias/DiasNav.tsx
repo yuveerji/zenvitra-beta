@@ -67,18 +67,28 @@ export const DiasNav: React.FC = () => {
       const munRaw = localStorage.getItem('zenvitra_zenmun_live_session_v1');
       if (munRaw) {
         const parsed = JSON.parse(munRaw);
-        if (parsed?.committeeName && parsed?.sessionCode) {
+        const hasGenuineRoster = Array.isArray(parsed?.roster) && parsed.roster.length > 0;
+        const isLegacySeed = parsed?.committeeName === 'Lok Sabha' && !hasGenuineRoster;
+
+        if (parsed?.committeeName && parsed?.sessionCode && hasGenuineRoster && !isLegacySeed && parsed?.sessionState === 'in-session') {
           setActiveStoredSession({
             sessionCode: parsed.sessionCode,
             committeeName: parsed.committeeName,
             committeeAcronym: parsed.committeeAcronym || parsed.committeeName.slice(0, 8),
-            topic: parsed.topic || 'Parliamentary & Substantive Debate',
+            topic: parsed.topic || '',
             emblemUrl: parsed.emblemUrl,
             isIndianCommittee: Boolean(parsed.isIndianCommittee),
-            rosterCount: parsed.roster?.length || 0,
+            rosterCount: parsed.roster.length,
             chairName: parsed.chairName || 'Chair',
           });
+        } else {
+          localStorage.removeItem('zenvitra_zenmun_live_session_v1');
+          localStorage.removeItem('zenvitra_dias_active_session');
+          setActiveStoredSession(null);
         }
+      } else {
+        localStorage.removeItem('zenvitra_dias_active_session');
+        setActiveStoredSession(null);
       }
     } catch {}
   }, []);

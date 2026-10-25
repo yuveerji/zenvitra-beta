@@ -80,32 +80,31 @@ export default function DiasLandingPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const diasRaw = localStorage.getItem('zenvitra_dias_active_session');
       const munRaw = localStorage.getItem('zenvitra_zenmun_live_session_v1');
       if (munRaw) {
         const parsed = JSON.parse(munRaw);
-        if (parsed?.committeeName) {
+        // STRICT DATA INTEGRITY: Only restore if a real user-configured session with real delegates was launched!
+        const hasGenuineRoster = Array.isArray(parsed?.roster) && parsed.roster.length > 0;
+        const isLegacySeed = parsed?.committeeName === 'Lok Sabha' && !hasGenuineRoster;
+
+        if (parsed?.committeeName && hasGenuineRoster && !isLegacySeed && parsed?.sessionState === 'in-session') {
           setActiveStoredSession({
             sessionCode: parsed.sessionCode || 'ZEN01',
             committeeName: parsed.committeeName,
-            topic: parsed.topic || 'Parliamentary Debate & Resolution Drafting',
+            topic: parsed.topic || '',
             activeMode: parsed.activeMode || 'GSL',
-            rosterCount: parsed.roster?.length || 0,
+            rosterCount: parsed.roster.length,
           });
           return;
+        } else {
+          // Zero seeded data: purge empty or unconfigured sessions immediately
+          localStorage.removeItem('zenvitra_zenmun_live_session_v1');
+          localStorage.removeItem('zenvitra_dias_active_session');
+          setActiveStoredSession(null);
         }
-      }
-      if (diasRaw) {
-        const parsed = JSON.parse(diasRaw);
-        if (parsed?.committeeName) {
-          setActiveStoredSession({
-            sessionCode: parsed.sessionCode || 'ZEN01',
-            committeeName: parsed.committeeName,
-            topic: parsed.topic || 'Parliamentary Debate & Resolution Drafting',
-            activeMode: 'GSL',
-            rosterCount: 0,
-          });
-        }
+      } else {
+        localStorage.removeItem('zenvitra_dias_active_session');
+        setActiveStoredSession(null);
       }
     } catch {}
   }, []);

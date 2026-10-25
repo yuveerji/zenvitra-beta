@@ -249,28 +249,31 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
   const searchParams = useSearchParams();
   const { session, setSession } = useZenMun();
 
-  // Step 1: Committee Details
-  const [committeeName, setCommitteeName] = useState(session.committeeName || '');
-  const [acronym, setAcronym] = useState(session.committeeAcronym || '');
-  const [topic, setTopic] = useState(session.topic || '');
-  const [emblem, setEmblem] = useState(session.emblemUrl || '/assets/committees/un.svg');
-  const [isIndian, setIsIndian] = useState(Boolean(session.isIndianCommittee));
+  // Step 1: Committee Details - ALWAYS INITIALIZE 100% CLEAN & EMPTY BY DEFAULT (STRICT DATA INTEGRITY)
+  const hasGenuineExistingRoster = Boolean(session.roster && session.roster.length > 0 && session.sessionState === 'in-session');
+  const [committeeName, setCommitteeName] = useState(hasGenuineExistingRoster ? (session.committeeName || '') : '');
+  const [acronym, setAcronym] = useState(hasGenuineExistingRoster ? (session.committeeAcronym || '') : '');
+  const [topic, setTopic] = useState(hasGenuineExistingRoster ? (session.topic || '') : '');
+  const [emblem, setEmblem] = useState(
+    hasGenuineExistingRoster && session.emblemUrl
+      ? session.emblemUrl
+      : '/assets/committees/un.svg'
+  );
+  const [isIndian, setIsIndian] = useState(hasGenuineExistingRoster ? Boolean(session.isIndianCommittee) : false);
 
   // Chairs list
   const [chairInput, setChairInput] = useState('');
   const [chairs, setChairs] = useState<string[]>(
-    session.chairName && session.chairName !== 'Chair' ? [session.chairName] : []
+    hasGenuineExistingRoster && session.chairName && session.chairName !== 'Chair' ? [session.chairName] : []
   );
 
-  // Step 2: Delegations
+  // Step 2: Delegations - Strict zero seeded items
   const [searchCountry, setSearchCountry] = useState('');
   const [pasteList, setPasteList] = useState('');
-  const [delegations, setDelegations] = useState<ZenDelegate[]>(session.roster || []);
+  const [delegations, setDelegations] = useState<ZenDelegate[]>(hasGenuineExistingRoster ? (session.roster || []) : []);
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [blocTab, setBlocTab] = useState<'all' | 'indian' | 'international'>(
-    session.isIndianCommittee ? 'indian' : 'all'
-  );
+  const [blocTab, setBlocTab] = useState<'all' | 'indian' | 'international'>('international');
 
   // First-Timer Explore Tour & Demo States
   const [exploreTourOpen, setExploreTourOpen] = useState(false);
