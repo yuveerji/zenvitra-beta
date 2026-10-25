@@ -117,7 +117,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
   } = useZenMun();
 
   // ── THEME STATE: Light Diplomatic Mode is DEFAULT as requested ──
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -326,11 +326,11 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
   if (isPreSession) {
     return (
       <div className={`min-h-screen font-sans antialiased flex flex-col select-none relative overflow-x-hidden transition-colors duration-200 ${
-        isLight ? 'bg-[#F5F2EB] text-[#1E2520]' : 'bg-[#030407] text-white'
+        isLight ? 'bg-[#F8FAFC] text-[#0F172A]' : 'bg-[#030407] text-white'
       }`}>
         {/* Top Header */}
         <header className={`h-14 px-6 flex items-center justify-between z-40 relative border-b transition-colors ${
-          isLight ? 'bg-[#FAF7F2] border-[#E2DBD0] text-[#1E2520]' : 'bg-[#070a12]/95 border-white/10 text-white'
+          isLight ? 'bg-[#FFFFFF] border-[#E2E8F0] text-[#0F172A]' : 'bg-[#070a12]/95 border-white/10 text-white'
         }`}>
           <div className="flex items-center gap-2.5 min-w-0">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center p-1 border overflow-hidden shrink-0 ${
@@ -344,7 +344,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               />
             </div>
             <div className="flex items-center gap-2 min-w-0">
-              <span className={`text-sm font-bold tracking-tight truncate ${isLight ? 'text-[#1E2520]' : 'text-cyan-400'}`}>
+              <span className={`text-sm font-bold tracking-tight truncate ${isLight ? 'text-[#0F172A]' : 'text-cyan-400'}`}>
                 {(session.committeeName || 'UN Human Rights Council').replace(/_/g, ' ')}: {session.topic}
               </span>
             </div>
@@ -356,7 +356,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => setShowQrOverlay(true)}
               className={`px-3 py-1.5 rounded-xl font-mono font-bold text-xs border flex items-center gap-1.5 transition cursor-pointer ${
-                isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
+                isLight ? 'bg-white border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9]' : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
               }`}
               title="Present Room Code"
             >
@@ -369,7 +369,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => daisAudio.playDoubleGavel()}
               className={`p-2 rounded-xl border transition cursor-pointer ${
-                isLight ? 'bg-white border-[#D5CEBF] text-[#8C6D1F] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-amber-400'
+                isLight ? 'bg-white border-[#CBD5E1] text-[#8C6D1F] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-amber-400'
               }`}
               title="Strike Gavel [G]"
             >
@@ -381,11 +381,11 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={toggleTheme}
               className={`p-2 rounded-xl border transition cursor-pointer text-xs font-bold flex items-center gap-1 ${
-                isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-neutral-300'
+                isLight ? 'bg-white border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-neutral-300'
               }`}
               title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
             >
-              {isLight ? <Moon className="w-4 h-4 text-[#4A554E]" /> : <Sun className="w-4 h-4 text-amber-300" />}
+              {isLight ? <Moon className="w-4 h-4 text-[#64748B]" /> : <Sun className="w-4 h-4 text-amber-300" />}
             </button>
 
             {/* Scoreboard */}
@@ -393,7 +393,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => setShowScoreboardModal(true)}
               className={`p-2 rounded-xl border transition cursor-pointer ${
-                isLight ? 'bg-white border-[#D5CEBF] text-[#8C6D1F] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-amber-400'
+                isLight ? 'bg-white border-[#CBD5E1] text-[#8C6D1F] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-amber-400'
               }`}
               title="Scoreboard"
             >
@@ -405,7 +405,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => setShowSettingsModal(true)}
               className={`p-2 rounded-xl border transition cursor-pointer ${
-                isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-neutral-300'
+                isLight ? 'bg-white border-[#CBD5E1] text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-neutral-300'
               }`}
               title="Settings"
             >
@@ -417,7 +417,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => setShowSupportModal(true)}
               className={`p-2 rounded-xl border transition cursor-pointer ${
-                isLight ? 'bg-white border-[#D5CEBF] text-teal-700 hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-cyan-400'
+                isLight ? 'bg-white border-[#CBD5E1] text-teal-700 hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-cyan-400'
               }`}
               title="Dais & Secretariat Support Hotline"
             >
@@ -429,22 +429,24 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
         {/* Center Canvas: Matches Screenshot 1 */}
         <main className="flex-1 flex items-center justify-center p-6 gap-6 flex-wrap">
           {/* Left Card: Join on your phone */}
-          <div className="bg-[#FAF7F2] text-[#1E2520] border border-[#E0D9CD] rounded-3xl shadow-xl p-6 max-w-[270px] w-full text-center space-y-3.5 shrink-0">
+          <div className={`rounded-3xl shadow-xl p-6 max-w-[270px] w-full text-center space-y-3.5 shrink-0 border ${
+            isLight ? 'bg-white text-[#0F172A] border-[#E2E8F0]' : 'bg-[#0E131F] text-white border-white/10'
+          }`}>
             <div className="space-y-0.5">
               <div className="text-[10px] font-mono font-black tracking-widest text-[#78716C] uppercase">
                 JOIN ON YOUR PHONE
               </div>
-              <div className="text-xs font-bold text-[#1E2520] font-mono">
+              <div className="text-xs font-bold text-[#0F172A] font-mono">
                 zenvitra.xyz/host/join
               </div>
             </div>
 
-            <div className="text-3xl sm:text-4xl font-mono font-black tracking-widest text-[#183023] py-1 select-all">
+            <div className="text-3xl sm:text-4xl font-mono font-black tracking-widest text-[#C5A46D] py-1 select-all">
               {session.sessionCode}
             </div>
 
             {/* Real QR Code */}
-            <div className="p-3 bg-white rounded-2xl border border-[#E0D9CD] shadow-sm inline-block mx-auto">
+            <div className="p-3 bg-white rounded-2xl border border-[#E2E8F0] shadow-sm inline-block mx-auto">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://zenvitra.xyz/host/join?code=${session.sessionCode}`)}`}
                 alt="Session QR Code"
@@ -459,7 +461,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             <button
               type="button"
               onClick={() => setShowQrOverlay(true)}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#1B382B] hover:bg-[#152D22] text-white font-bold text-xs tracking-tight transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 px-4 rounded-xl bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] font-black text-xs tracking-tight transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
             >
               <span>Present on screen ⤢</span>
             </button>
@@ -467,14 +469,16 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             <button
               type="button"
               onClick={() => regenerateSessionCode()}
-              className="text-[11px] font-semibold text-[#78716C] hover:text-[#1E2520] underline transition cursor-pointer"
+              className="text-[11px] font-semibold text-[#78716C] hover:text-[#0F172A] underline transition cursor-pointer"
             >
               Change
             </button>
           </div>
 
           {/* Center Card: Deep Diplomatic Forest Slate Attendance Card */}
-          <div className="bg-[#183023] text-white rounded-3xl p-6 sm:p-7 max-w-xl w-full border border-[#234232] shadow-2xl space-y-4">
+          <div className={`rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl space-y-4 border ${
+            isLight ? 'bg-white text-[#0F172A] border-[#E2E8F0]' : 'bg-[#0E131F] text-white border-white/10'
+          }`}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3 min-w-0">
@@ -553,7 +557,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               <button
                 type="button"
                 onClick={() => setAllAttendance('present')}
-                className="py-2.5 rounded-xl bg-[#234232] hover:bg-[#2C523F] border border-emerald-500/25 text-emerald-200 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
+                className="py-2.5 rounded-xl bg-[#141A29] hover:bg-[#1C2438] border border-white/10 text-[#C5A46D] text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
               >
                 ALL PRESENT
               </button>
@@ -648,7 +652,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     },
                   }));
                 }}
-                className="w-full py-3.5 rounded-2xl bg-[#234232] hover:bg-[#2C523F] text-emerald-100 font-bold text-xs uppercase tracking-wider cursor-pointer shadow-lg active:scale-98 transition text-center flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#C5A46D] via-[#DFBA73] to-[#C5A46D] text-[#08090C] font-black text-xs uppercase tracking-wider cursor-pointer shadow-[0_0_25px_rgba(197,164,109,0.35)] active:scale-98 transition text-center flex items-center justify-center gap-2"
               >
                 <span>MARK AT LEAST 1 DELEGATE PRESENT</span>
               </button>
@@ -682,13 +686,13 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
   // ═════════════════════════════════════════════════════════════════
   return (
     <div className={`h-screen max-h-screen overflow-hidden font-sans antialiased flex flex-col select-none relative transition-colors duration-200 ${
-      isLight ? 'bg-[#F5F2EB] text-[#1E2520]' : 'bg-[#030407] text-white'
+      isLight ? 'bg-[#F8FAFC] text-[#0F172A]' : 'bg-[#030407] text-white'
     }`}>
       {/* ─────────────────────────────────────────────────────────────
           1. TOP BAR (52px, Diplomatic Porcelain or Obsidian Glass)
       ───────────────────────────────────────────────────────────── */}
       <header className={`h-[52px] px-4 flex items-center justify-between z-40 shrink-0 relative border-b transition-colors ${
-        isLight ? 'bg-[#FAF7F2] border-[#E2DBD0] text-[#1E2520]' : 'bg-[#070a12]/95 border-white/10 text-white'
+        isLight ? 'bg-[#FFFFFF] border-[#E2E8F0] text-[#0F172A]' : 'bg-[#070a12]/95 border-white/10 text-white'
       }`}>
         {/* Left: Navigation Controls */}
         <div className="flex items-center gap-1.5" id="tutorial-target-nav">
@@ -696,7 +700,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={toggleSidebar}
             className={`p-2 rounded-xl transition cursor-pointer mr-1 ${
-              isLight ? 'text-[#4A554E] hover:text-[#18201B] hover:bg-black/5' : 'text-white/70 hover:text-white hover:bg-white/10'
+              isLight ? 'text-[#64748B] hover:text-[#18201B] hover:bg-black/5' : 'text-white/70 hover:text-white hover:bg-white/10'
             }`}
             title="Toggle Sidebar"
           >
@@ -708,7 +712,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             id="tutorial-target-rollcall-tab"
             onClick={() => setShowRollCallModal(true)}
             className={`px-3 py-1 rounded-xl font-bold text-xs border transition cursor-pointer active:scale-95 ${
-              isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              isLight ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
             }`}
           >
             Roll Call
@@ -719,7 +723,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             id="tutorial-target-motions-tab"
             onClick={() => setShowMotionsModal(true)}
             className={`px-3 py-1 rounded-xl font-bold text-xs border transition cursor-pointer active:scale-95 ${
-              isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              isLight ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
             }`}
           >
             Motions
@@ -730,7 +734,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             id="tutorial-target-docs-tab"
             onClick={() => setShowDocumentsModal(true)}
             className={`px-3 py-1 rounded-xl font-bold text-xs border transition cursor-pointer active:scale-95 ${
-              isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+              isLight ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
             }`}
           >
             Documents
@@ -741,7 +745,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => daisAudio.playDoubleGavel()}
             className={`px-2.5 py-1 rounded-xl font-bold text-xs border transition cursor-pointer flex items-center gap-1.5 active:scale-95 ${
-              isLight ? 'bg-[#1B382B] text-white hover:bg-[#152D22] border-[#1B382B]' : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+              isLight ? 'bg-[#0F172A] text-white hover:bg-[#1E293B] border-[#0F172A]' : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
             }`}
             title="Strike Gavel [G]"
           >
@@ -752,10 +756,10 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
 
         {/* Center: Live Quorum Status (Compact Pill) */}
         <div className={`hidden md:flex items-center gap-2 px-3 py-0.5 rounded-full border text-[11px] font-mono ${
-          isLight ? 'bg-[#EDE8DE] border-[#DDD5C7] text-[#4A554E]' : 'bg-white/5 border-white/10 text-neutral-300'
+          isLight ? 'bg-[#EDE8DE] border-[#DDD5C7] text-[#64748B]' : 'bg-white/5 border-white/10 text-neutral-300'
         }`}>
           <span className="font-bold">Quorum:</span>
-          <span className={`font-black ${isLight ? 'text-[#162E23]' : 'text-cyan-400'}`}>{quorum.present} Present</span>
+          <span className={`font-black ${isLight ? 'text-[#0F172A]' : 'text-cyan-400'}`}>{quorum.present} Present</span>
           <span>•</span>
           <span>2/3: {quorum.twoThirds}</span>
           <span>•</span>
@@ -769,7 +773,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => setShowQrOverlay(true)}
             className={`px-3 py-1 rounded-xl font-mono font-bold text-xs border flex items-center gap-1.5 transition cursor-pointer ${
-              isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
+              isLight ? 'bg-white border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9]' : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
             }`}
             title="Project Room Code"
           >
@@ -782,11 +786,11 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={toggleTheme}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
-              isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#18201B] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-neutral-300 hover:text-white'
+              isLight ? 'bg-white border-[#CBD5E1] text-[#64748B] hover:text-[#18201B] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-neutral-300 hover:text-white'
             }`}
             title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
           >
-            {isLight ? <Moon className="w-4 h-4 text-[#4A554E]" /> : <Sun className="w-4 h-4 text-amber-300" />}
+            {isLight ? <Moon className="w-4 h-4 text-[#64748B]" /> : <Sun className="w-4 h-4 text-amber-300" />}
           </button>
 
           {/* Chat */}
@@ -794,7 +798,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => setShowChatDrawer(true)}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
-              isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#18201B] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
+              isLight ? 'bg-white border-[#CBD5E1] text-[#64748B] hover:text-[#18201B] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
             }`}
             title="Open Chat"
           >
@@ -806,7 +810,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => setShowScoreboardModal(true)}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
-              isLight ? 'bg-white border-[#D5CEBF] text-[#8C6D1F] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-amber-400'
+              isLight ? 'bg-white border-[#CBD5E1] text-[#8C6D1F] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-amber-400'
             }`}
             title="Open Scoreboard"
           >
@@ -818,7 +822,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => setShowSettingsModal(true)}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
-              isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#18201B] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
+              isLight ? 'bg-white border-[#CBD5E1] text-[#64748B] hover:text-[#18201B] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
             }`}
             title="Settings"
           >
@@ -830,7 +834,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => setShowSupportModal(true)}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
-              isLight ? 'bg-white border-[#D5CEBF] text-teal-700 hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-cyan-400'
+              isLight ? 'bg-white border-[#CBD5E1] text-teal-700 hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-cyan-400'
             }`}
             title="Dais & Secretariat Support Hotline"
           >
@@ -843,7 +847,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             onClick={startTutorial}
             className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition border ${
               isLight
-                ? 'bg-[#1B382B] text-white hover:bg-[#152D22] border-[#1B382B]'
+                ? 'bg-[#0F172A] text-white hover:bg-[#1E293B] border-[#0F172A]'
                 : 'bg-gradient-to-r from-amber-500/15 to-emerald-500/15 text-amber-200 border-amber-500/30'
             }`}
             title="Dais Protocol Guide & Tour [?]"
@@ -861,7 +865,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             }}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
               isLight
-                ? 'bg-white border-[#D5CEBF] text-[#8C8273] hover:text-red-600 hover:border-red-300'
+                ? 'bg-white border-[#CBD5E1] text-[#8C8273] hover:text-red-600 hover:border-red-300'
                 : 'bg-white/5 border-white/10 text-white/50 hover:text-red-400'
             }`}
             title="Exit Live Dais to Dias Hub"
@@ -881,7 +885,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             id="tutorial-target-sidebar"
             className={`w-[280px] flex flex-col shrink-0 z-20 border-r transition-colors ${
               isLight
-                ? 'bg-[#162E23] text-white border-[#1B382B]'
+                ? 'bg-[#0F172A] text-white border-[#0F172A]'
                 : 'bg-[#070a12]/95 text-white border-white/10'
             }`}
           >
@@ -1056,7 +1060,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                           key={del.id}
                           className={`p-2 rounded-xl flex items-center justify-between gap-2 transition ${
                             isActive
-                              ? 'bg-[#1B382B] border border-emerald-400/40 shadow-sm'
+                              ? 'bg-[#C5A46D] text-[#08090C] border border-[#E6D1A5] shadow-[0_0_12px_rgba(197,164,109,0.4)]'
                               : 'bg-black/30 hover:bg-black/50 border border-white/5'
                           }`}
                         >
@@ -1154,7 +1158,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
           <div className="flex items-center justify-center gap-2 relative z-10 shrink-0">
             <span className={`text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-full border shadow-xs flex items-center gap-1.5 ${
               isLight
-                ? 'bg-white border-[#D5CEBF] text-[#1E2520]'
+                ? 'bg-white border-[#CBD5E1] text-[#0F172A]'
                 : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
             }`}>
               {session.activeMode === 'gsl' ? (
@@ -1193,7 +1197,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                   <div
                     className={`w-9 h-9 rounded-full overflow-hidden border-2 transition shadow-sm ${
                       isFirst
-                        ? 'border-[#1B382B] ring-2 ring-[#1B382B]/20 scale-105'
+                        ? 'border-[#C5A46D] ring-2 ring-[#C5A46D]/30 scale-105'
                         : 'border-black/20 opacity-70 hover:opacity-100'
                     }`}
                   >
@@ -1203,7 +1207,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className={`text-[10px] font-bold truncate max-w-[65px] ${isLight ? 'text-[#1E2520]' : 'text-white'}`}>
+                  <span className={`text-[10px] font-bold truncate max-w-[65px] ${isLight ? 'text-[#0F172A]' : 'text-white'}`}>
                     {d.name}
                   </span>
                   <button
@@ -1226,7 +1230,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 <div className="relative">
                   <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 transition-all duration-300 shadow-xl relative ${
                     session.isTimerRunning
-                      ? 'border-[#1B382B] ring-4 ring-[#1B382B]/20 scale-102'
+                      ? 'border-[#C5A46D] ring-4 ring-[#C5A46D]/30 scale-102'
                       : 'border-black/15 ring-2 ring-black/5'
                   }`}>
                     <img
@@ -1237,7 +1241,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                   </div>
 
                   {session.isTimerRunning && (
-                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#183023] border border-emerald-400/40 shadow-sm flex items-center gap-1 z-10">
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#0E131F] border border-[#C5A46D]/40 shadow-sm flex items-center gap-1 z-10">
                       <div className="flex items-end gap-0.5 h-2.5">
                         <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse h-1.5" />
                         <span className="w-0.5 bg-emerald-300 rounded-full animate-pulse h-2.5" />
@@ -1249,7 +1253,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 </div>
 
                 <div className="text-center space-y-0.5 pt-1">
-                  <h3 className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-[#1E2520]' : 'text-white'}`}>
+                  <h3 className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-[#0F172A]' : 'text-white'}`}>
                     {activeDelegate.name}
                   </h3>
                   <div className={`text-xs font-medium ${isLight ? 'text-[#6B655B]' : 'text-neutral-400'}`}>
@@ -1274,7 +1278,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 : isAmber
                 ? 'text-amber-500 animate-pulse'
                 : isLight
-                ? 'text-[#1E2520] hover:text-[#162E23]'
+                ? 'text-[#0F172A] hover:text-[#0F172A]'
                 : 'text-white hover:text-cyan-300'
             }`}
             title="Click clock to Start / Pause [Space]"
@@ -1331,7 +1335,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               onClick={resetTimer}
               className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
                 isLight
-                  ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#4A554E] hover:text-[#1E2520]'
+                  ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#64748B] hover:text-[#0F172A]'
                   : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
               }`}
               title="Reset clock [R]"
@@ -1347,7 +1351,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               className={`w-48 h-11 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
                 session.isTimerRunning
                   ? 'bg-[#8C6D1F] hover:bg-[#735A19] text-white shadow-amber-900/20'
-                  : 'bg-[#1B382B] hover:bg-[#152D22] text-white shadow-[#1B382B]/25'
+                  : 'bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-sm'
               }`}
               title="Start / Pause [Space]"
             >
@@ -1371,7 +1375,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               onClick={nextSpeaker}
               className={`w-36 h-11 rounded-xl border font-bold text-xs uppercase tracking-wider transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
                 isLight
-                  ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]'
+                  ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]'
                   : 'bg-[#0c1424] hover:bg-[#121f38] border-cyan-500/30 text-cyan-300'
               }`}
               title="Next Speaker [N]"
@@ -1388,7 +1392,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 onClick={() => setShowAddTimePopover(!showAddTimePopover)}
                 className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
                   isLight
-                    ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]'
+                    ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]'
                     : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
                 }`}
                 title="Add time to clock"
@@ -1399,7 +1403,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               {/* Add Time Popover (Anchored Right Above Button) */}
               {showAddTimePopover && (
                 <div className={`absolute bottom-14 right-0 z-50 p-3 rounded-2xl shadow-2xl border w-48 space-y-2 text-left backdrop-blur-xl ${
-                  isLight ? 'bg-[#FAF7F2] border-[#D5CEBF] text-[#1E2520]' : 'bg-[#0a0f1d] border-white/15 text-white'
+                  isLight ? 'bg-[#FFFFFF] border-[#CBD5E1] text-[#0F172A]' : 'bg-[#0a0f1d] border-white/15 text-white'
                 }`}>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Add Time</div>
                   <div className="grid grid-cols-3 gap-1">
@@ -1413,7 +1417,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                         }}
                         className={`p-1.5 rounded-lg border text-xs font-bold text-center cursor-pointer transition ${
                           isLight
-                            ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF]'
+                            ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1]'
                             : 'bg-white/5 hover:bg-white/15 border-white/10'
                         }`}
                       >
@@ -1446,7 +1450,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               onClick={() => daisAudio.playDoubleGavel()}
               className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
                 isLight
-                  ? 'bg-[#1B382B] hover:bg-[#152D22] border-[#1B382B] text-amber-300'
+                  ? 'bg-[#0F172A] hover:bg-[#1E293B] border-[#0F172A] text-[#C5A46D]'
                   : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
               }`}
               title="Rap Gavel [G]"
@@ -1458,7 +1462,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
           {/* Floating Yield Popover (Anchored Right Above Controls) */}
           {session.yieldPopoverOpen && (
             <div className={`absolute bottom-16 right-4 sm:right-12 z-50 w-72 rounded-2xl border shadow-2xl overflow-hidden text-left backdrop-blur-xl ${
-              isLight ? 'bg-[#FAF7F2] border-[#D5CEBF] text-[#1E2520]' : 'bg-[#0a0f1d] border-white/15 text-white'
+              isLight ? 'bg-[#FFFFFF] border-[#CBD5E1] text-[#0F172A]' : 'bg-[#0a0f1d] border-white/15 text-white'
             }`}>
               <div className={`p-3 flex items-center justify-between border-b ${
                 isLight ? 'bg-[#EDE8DE] border-[#DDD5C7]' : 'bg-black/40 border-white/10'
@@ -1484,7 +1488,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     type="button"
                     onClick={yieldToNextSpeaker}
                     className={`w-full p-2.5 rounded-xl border text-left transition cursor-pointer ${
-                      isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF]' : 'bg-white/5 hover:bg-white/10 border-white/10'
+                      isLight ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1]' : 'bg-white/5 hover:bg-white/10 border-white/10'
                     }`}
                   >
                     <div className="text-xs font-bold">{nextQueuedDelegate.name} (Next)</div>
@@ -1499,7 +1503,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     value={yieldSelectedId}
                     onChange={(e) => setYieldSelectedId(e.target.value)}
                     className={`w-full p-2 rounded-lg border text-xs font-semibold focus:outline-none ${
-                      isLight ? 'bg-white border-[#D5CEBF]' : 'bg-black/40 border-white/15 text-white'
+                      isLight ? 'bg-white border-[#CBD5E1]' : 'bg-black/40 border-white/15 text-white'
                     }`}
                   >
                     <option value="">Select country...</option>
@@ -1515,7 +1519,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     type="button"
                     disabled={!yieldSelectedId}
                     onClick={() => yieldToDelegate(yieldSelectedId)}
-                    className="w-full py-2 rounded-lg bg-[#1B382B] hover:bg-[#152D22] text-white font-bold text-xs uppercase cursor-pointer disabled:opacity-40 transition shadow-sm mt-1"
+                    className="w-full py-2 rounded-lg bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] font-black text-xs uppercase cursor-pointer disabled:opacity-40 transition shadow-sm mt-1"
                   >
                     Yield {formatTime(session.yieldRemainingSeconds)}
                   </button>
@@ -1532,7 +1536,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
       <footer
         id="tutorial-target-bottom-bar"
         className={`h-[52px] px-4 flex items-center justify-between gap-4 z-30 shrink-0 relative border-t transition-colors ${
-          isLight ? 'bg-[#FAF7F2] border-[#E2DBD0] text-[#1E2520]' : 'bg-[#070a12]/95 border-white/10 text-white'
+          isLight ? 'bg-[#FFFFFF] border-[#E2E8F0] text-[#0F172A]' : 'bg-[#070a12]/95 border-white/10 text-white'
         }`}
       >
         {/* Left: Quick-add speaker input */}
@@ -1558,14 +1562,14 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             placeholder="Add to queue... (Type country and press Enter)"
             className={`w-full px-3 py-1.5 rounded-xl border text-xs font-medium focus:outline-none shadow-xs transition ${
               isLight
-                ? 'bg-white border-[#D5CEBF] text-[#1E2520] placeholder-[#8C857B] focus:border-[#1B382B]'
+                ? 'bg-white border-[#CBD5E1] text-[#0F172A] placeholder-[#8C857B] focus:border-[#C5A46D]'
                 : 'bg-white/5 border-white/10 text-white placeholder-neutral-500 focus:border-cyan-400'
             }`}
           />
 
           {bottomDropdown && bottomInput.trim() && filteredBottomDelegates.length > 0 && (
             <div className={`absolute bottom-12 left-0 right-0 rounded-2xl shadow-2xl border max-h-48 overflow-y-auto z-50 ${
-              isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520]' : 'bg-[#0a0f1d] border-white/15 text-white'
+              isLight ? 'bg-white border-[#CBD5E1] text-[#0F172A]' : 'bg-[#0a0f1d] border-white/15 text-white'
             }`}>
               {filteredBottomDelegates.map((d) => (
                 <button
@@ -1577,7 +1581,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     setBottomDropdown(false);
                   }}
                   className={`w-full px-3 py-2 text-left flex items-center gap-2 border-b last:border-none cursor-pointer text-xs font-bold transition ${
-                    isLight ? 'hover:bg-[#EAE4D7] border-black/5' : 'hover:bg-white/10 border-white/5'
+                    isLight ? 'hover:bg-[#F1F5F9] border-black/5' : 'hover:bg-white/10 border-white/5'
                   }`}
                 >
                   <img
@@ -1625,10 +1629,10 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 className={`px-2 py-0.5 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
                   session.speakingTimeSeconds === s
                     ? isLight
-                      ? 'bg-[#1B382B] text-white shadow-xs'
+                      ? 'bg-[#C5A46D] text-[#08090C] font-black shadow-xs'
                       : 'bg-cyan-500 text-black shadow-xs'
                     : isLight
-                    ? 'bg-white border border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]'
+                    ? 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9]'
                     : 'bg-white/5 border border-white/10 text-white/90'
                 }`}
               >
@@ -1642,7 +1646,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               value={session.speakingTimeSeconds}
               onChange={(e) => setSpeakingSlotTime(Math.max(10, parseInt(e.target.value) || 90))}
               className={`w-12 px-1 py-0.5 rounded-lg font-mono text-center font-bold text-xs focus:outline-none border ${
-                isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 border-white/10 text-white'
+                isLight ? 'bg-white border-[#CBD5E1] text-[#0F172A]' : 'bg-white/5 border-white/10 text-white'
               }`}
               title="Custom seconds"
             />

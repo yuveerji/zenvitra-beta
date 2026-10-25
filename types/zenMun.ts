@@ -1319,6 +1319,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'g7',
+    category: 'international',
     name: 'G7',
     icon: '🌐',
     count: 7,
@@ -1334,6 +1335,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'brics',
+    category: 'international',
     name: 'BRICS+',
     icon: '🌐',
     count: 10,
@@ -1352,6 +1354,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'g20',
+    category: 'international',
     name: 'G20',
     icon: '🌐',
     count: 19,
@@ -1379,6 +1382,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'eu',
+    category: 'international',
     name: 'EU',
     icon: '🇪🇺',
     count: 27,
@@ -1396,6 +1400,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'nato',
+    category: 'international',
     name: 'NATO',
     icon: '🧭',
     count: 32,
@@ -1415,6 +1420,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'asean',
+    category: 'international',
     name: 'ASEAN',
     icon: '🌾',
     count: 11,
@@ -1427,6 +1433,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'unsc2026',
+    category: 'international',
     name: 'UNSC 2026',
     icon: '🇺🇳',
     count: 15,
@@ -1450,6 +1457,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'au',
+    category: 'international',
     name: 'AU',
     icon: '🌍',
     count: 55,
@@ -1476,6 +1484,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'opec',
+    category: 'international',
     name: 'OPEC',
     icon: '🛢️',
     count: 12,
@@ -1488,6 +1497,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
   {
     id: 'arab_league',
+    category: 'international',
     name: 'Arab League',
     icon: '🌙',
     count: 22,

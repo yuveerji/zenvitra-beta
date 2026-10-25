@@ -130,7 +130,7 @@ export function TutorialEngine() {
   if (welcomeModalOpen) {
     return (
       <div className="fixed inset-0 z-[9999] bg-[#14261b]/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
-        <div className="w-full max-w-2xl bg-white rounded-[32px] border border-[#ded8cb] shadow-[0_20px_70px_rgba(0,0,0,0.35)] p-6 sm:p-8 text-[#1f2937] relative overflow-visible">
+        <div className="w-full max-w-2xl bg-[#0E131F] rounded-[32px] border border-white/10 text-white shadow-[0_20px_70px_rgba(0,0,0,0.35)] p-6 sm:p-8 text-[#1f2937] relative overflow-visible">
           {/* Zeno the Sovereign Envoy Mascot perched on top */}
           <div className="absolute -top-16 left-8 sm:left-12 pointer-events-none z-20">
             <img
@@ -163,7 +163,7 @@ export function TutorialEngine() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-7 sm:gap-8 items-center pt-2">
             {/* Left Column: Greeting & Actions */}
             <div className="md:col-span-7 space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1b3d29]/10 text-[#1b3d29] text-[10px] font-mono font-bold tracking-wider uppercase">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C5A46D]/15 text-[#C5A46D] text-[10px] font-mono font-bold tracking-wider uppercase">
                 <Gavel className="w-3 h-3" />
                 <span>Zenvitra Dais Protocol</span>
               </div>
@@ -186,7 +186,7 @@ export function TutorialEngine() {
                       tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: true, currentStep: 1 },
                     }));
                   }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-[#1b3d29] hover:bg-[#142d1f] text-white font-bold text-sm tracking-tight transition shadow-md shadow-[#1b3d29]/25 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#C5A46D] via-[#DFBA73] to-[#C5A46D] text-[#08090C] font-black text-sm tracking-tight transition shadow-lg shadow-[#C5A46D]/25 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
                 >
                   <span>Show me around</span>
                 </button>
@@ -203,7 +203,7 @@ export function TutorialEngine() {
                       tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: false, isCompleted: true },
                     }));
                   }}
-                  className="w-full py-2.5 px-6 rounded-2xl bg-[#ede8df] hover:bg-[#ded7cb] text-[#3f3b35] font-bold text-xs tracking-tight transition cursor-pointer active:scale-98 text-center"
+                  className="w-full py-2.5 px-6 rounded-2xl bg-[#141A29] hover:bg-[#1C2438] text-slate-300 font-bold text-xs tracking-tight transition cursor-pointer active:scale-98 text-center border border-white/10"
                 >
                   Skip tutorial
                 </button>
@@ -211,7 +211,7 @@ export function TutorialEngine() {
             </div>
 
             {/* Right Column: Chair Video Guide Card */}
-            <div className="md:col-span-5 bg-[#fbfaf8] border border-[#ded8cb] rounded-2xl p-3 shadow-2xs space-y-2">
+            <div className="md:col-span-5 bg-[#141A29] border border-white/10 rounded-2xl p-3 shadow-2xs space-y-2">
               <div className="space-y-0.5 px-1">
                 <div className="text-[10px] font-mono font-bold text-[#8c7860] uppercase tracking-wider flex items-center gap-1">
                   <span>🏛️</span>
@@ -223,7 +223,7 @@ export function TutorialEngine() {
               </div>
 
               {/* Video Preview Thumbnail */}
-              <div className="relative rounded-xl overflow-hidden aspect-video bg-black/10 border border-[#ded8cb] group cursor-pointer shadow-inner">
+              <div className="relative rounded-xl overflow-hidden aspect-video bg-black/10 border border-white/10 group cursor-pointer shadow-inner">
                 <img
                   src="/assets/chair_guide_video_thumb.png"
                   alt="Zenvitra Dais Guide Video Preview"
@@ -231,7 +231,7 @@ export function TutorialEngine() {
                 />
                 {/* Play Button Overlay */}
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-[#1b3d29] border-2 border-white/60 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#C5A46D] to-[#9E7D47] text-[#08090C] font-black border-2 border-[#E6D1A5] flex items-center justify-center shadow-[0_0_20px_rgba(197,164,109,0.4)] group-hover:scale-110 transition">
                     <div className="w-0 h-0 border-y-6 border-y-transparent border-l-10 border-l-white ml-1" />
                   </div>
                 </div>
@@ -341,7 +341,7 @@ export function TutorialEngine() {
 
       {/* Floating Zenvitra Step Card with Zeno Mascot */}
       <div className="fixed top-24 right-8 sm:right-16 max-w-md w-full pointer-events-auto z-[95] animate-in fade-in slide-in-from-top-4">
-        <div className="bg-white rounded-[26px] border border-[#ded8cb] shadow-[0_20px_60px_rgba(0,0,0,0.35)] p-6 space-y-4 text-[#1f2937] relative overflow-visible">
+        <div className="bg-[#0E131F] rounded-[26px] border border-white/10 text-white shadow-[0_20px_60px_rgba(0,0,0,0.35)] p-6 space-y-4 text-[#1f2937] relative overflow-visible">
           {/* Zeno Pointer Mascot perched on top of card */}
           <div className="absolute -top-14 left-8 pointer-events-none z-20">
             <img
@@ -354,7 +354,7 @@ export function TutorialEngine() {
           {/* Top Bar: Step Counter & End Tutorial */}
           <div className="flex items-center justify-between border-b border-[#f0ece1] pb-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-extrabold text-[#1b3d29] tracking-wider uppercase bg-[#1b3d29]/10 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-mono font-extrabold text-[#C5A46D] tracking-wider uppercase bg-[#C5A46D]/15 px-2 py-0.5 rounded-md">
                 ZENVITRA DAIS
               </span>
               <span className="text-xs font-mono font-bold text-[#8c7860]">
@@ -396,8 +396,8 @@ export function TutorialEngine() {
               type="button"
               disabled={currentStep === 1}
               onClick={prevTutorialStep}
-              className={`px-4 py-2 rounded-xl bg-[#ede8df] text-[#3f3b35] font-bold text-xs transition ${
-                currentStep === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#ded7cb] cursor-pointer'
+              className={`px-4 py-2 rounded-xl bg-[#141A29] text-slate-300 border border-white/10 font-bold text-xs transition ${
+                currentStep === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#1C2438] cursor-pointer'
               }`}
             >
               Back
@@ -415,7 +415,7 @@ export function TutorialEngine() {
                   nextTutorialStep();
                 }
               }}
-              className="px-5 py-2 rounded-xl bg-[#1b3d29] hover:bg-[#142d1f] text-white font-bold text-xs transition cursor-pointer shadow-xs active:scale-95"
+              className="px-5 py-2 rounded-xl bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] font-black text-xs transition cursor-pointer shadow-xs active:scale-95"
             >
               {currentStep === 4 ? 'Skip' : isFinal ? 'Finish' : 'Next'}
             </button>

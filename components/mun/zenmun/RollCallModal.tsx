@@ -70,18 +70,18 @@ export function RollCallModal() {
       <div className="w-full max-w-4xl flex flex-col md:flex-row items-center md:items-start justify-center gap-6 max-h-[92vh]">
         
         {/* Floating Phone Join Card (Zenvitra Mobile) */}
-        <div className="w-full md:w-56 shrink-0 bg-white rounded-3xl p-5 border border-[#ded8cb] shadow-2xl space-y-3.5 order-2 md:order-1 animate-in fade-in slide-in-from-left-4">
+        <div className="w-full md:w-56 shrink-0 bg-[#0E131F] rounded-3xl p-5 border border-white/10 text-white shadow-2xl space-y-3.5 order-2 md:order-1 animate-in fade-in slide-in-from-left-4">
           <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-2xl bg-[#1b3d29] text-white flex items-center justify-center shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#C5A46D] to-[#9E7D47] text-[#08090C] font-black flex items-center justify-center shadow-[0_0_15px_rgba(197,164,109,0.3)]">
               <Smartphone className="w-5 h-5 text-emerald-300" />
             </div>
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#1b3d29] bg-[#1b3d29]/10 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#C5A46D] bg-[#C5A46D]/15/10 px-2 py-0.5 rounded-full">
               Zenvitra Mobile
             </span>
           </div>
 
           <div>
-            <h4 className="text-sm font-black font-serif text-[#1f2937] leading-tight">
+            <h4 className="text-sm font-black font-serif text-white leading-tight">
               Will delegates join on their phones?
             </h4>
             <p className="text-[11px] text-[#78716c] font-medium leading-tight mt-1">
@@ -94,26 +94,26 @@ export function RollCallModal() {
               <button
                 type="button"
                 onClick={() => setPhoneJoinDecision('yes')}
-                className="py-2.5 rounded-xl bg-[#1b3d29] hover:bg-[#142d1f] text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+                className="py-2.5 rounded-xl bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] text-xs font-black transition shadow-xs cursor-pointer active:scale-95"
               >
                 Yes
               </button>
               <button
                 type="button"
                 onClick={() => setPhoneJoinDecision('no')}
-                className="py-2.5 rounded-xl bg-[#ede8df] hover:bg-[#ded7cb] text-[#3f3b35] text-xs font-bold transition cursor-pointer active:scale-95"
+                className="py-2.5 rounded-xl bg-[#141A29] hover:bg-[#1C2438] text-slate-300 text-xs font-bold transition cursor-pointer active:scale-95"
               >
                 No
               </button>
             </div>
           ) : phoneJoinDecision === 'yes' ? (
-            <div className="space-y-2.5 pt-1 border-t border-[#ded8cb]">
-              <div className="bg-[#f5f2eb] p-2 rounded-xl flex items-center justify-center border border-[#ded8cb]">
+            <div className="space-y-2.5 pt-1 border-t border-white/10">
+              <div className="bg-[#141A29] p-2 rounded-xl flex items-center justify-center border border-white/10">
                 <img src={qrUrl} alt="Join QR Code" className="w-28 h-28 object-contain rounded-lg" />
               </div>
               <div className="text-center space-y-0.5">
                 <span className="text-[10px] font-mono text-[#8c7860] uppercase">Chamber PIN</span>
-                <div className="text-base font-black font-mono tracking-widest text-[#1b3d29]">
+                <div className="text-base font-black font-mono tracking-widest text-[#C5A46D]">
                   {session.sessionCode}
                 </div>
               </div>
