@@ -31,8 +31,12 @@ import {
   ChevronRight,
   Send,
   SlidersHorizontal,
+  Wifi,
+  WifiOff,
+  Menu,
 } from 'lucide-react';
 import { daisAudio } from '@/lib/daisAudio';
+import { DiasRealtimeManager, DiasConnectionStatus } from '@/lib/mun/diasRealtime';
 import { DiasButton } from './DiasButton';
 import { DiasBadge } from './DiasBadge';
 import { DiasCard } from './DiasCard';
@@ -85,13 +89,22 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
   topic = 'Delimitation of Constituencies, Federalism & Democratic Governance',
   isIndianCommittee = true,
 }) => {
+  // ─── Realtime Manager Ref & Connection Status ───
+  const [connectionStatus, setConnectionStatus] = useState<DiasConnectionStatus>('CONNECTING');
+  const realtimeRef = useRef<DiasRealtimeManager | null>(null);
+
   // ─── Procedural Audio & Gavel ───
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   // ─── Mode & Active State ───
-  const [activeMode, setActiveMode] = useState<CommitteeMode>(
+  const [activeMode, setActiveModeState] = useState<CommitteeMode>(
     isIndianCommittee ? 'PARLIAMENT_BILLS' : 'GSL'
   );
+
+  const setActiveMode = (mode: CommitteeMode) => {
+    setActiveModeState(mode);
+    realtimeRef.current?.broadcastMode(mode);
+  };
 
   // ─── Authoritative Timer State ───
   const [durationSec, setDurationSec] = useState(90);
@@ -162,6 +175,9 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
       status: 'PENDING',
     },
   ]);
+
+  // ─── Mobile Drawer Bottom Sheet States ───
+  const [mobileDrawer, setMobileDrawer] = useState<'NONE' | 'MODES' | 'QUEUE' | 'MOTIONS'>('NONE');
 
   // ─── Parliamentary State ───
   const [bills, setBills] = useState<any[]>([
@@ -262,6 +278,51 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
   // ─── Yield Popover State ───
   const [yieldOpen, setYieldOpen] = useState(false);
 
+  // ─── Initialize Supabase Realtime Channel ───
+  useEffect(() => {
+    const manager = new DiasRealtimeManager(sessionCode, {
+      onStatusChange: (status) => {
+        setConnectionStatus(status);
+      },
+      onTimerSync: ({ durationSec: d, remainingSec: r, isRunning, anchorEpochMs }) => {
+        setDurationSec(d);
+        if (isRunning && anchorEpochMs) {
+          const elapsedSec = Math.floor((Date.now() - anchorEpochMs) / 1000);
+          const computed = Math.max(0, r - elapsedSec);
+          setRemainingSec(computed);
+        } else {
+          setRemainingSec(r);
+        }
+        setIsTimerRunning(isRunning);
+      },
+      onQueueSync: (newQueue) => {
+        if (Array.isArray(newQueue)) {
+          setQueue(newQueue);
+        }
+      },
+      onSpeakerSync: (spk) => {
+        setCurrentSpeaker(spk);
+      },
+      onModeSync: (m) => {
+        if (m) setActiveModeState(m as CommitteeMode);
+      },
+      onMotionSync: (mots) => {
+        if (Array.isArray(mots)) {
+          setPendingMotions(mots);
+        }
+      },
+      onGavelStrike: (intensity) => {
+        daisAudio.playGavelStrike(intensity || 1.0);
+      },
+    });
+
+    realtimeRef.current = manager;
+
+    return () => {
+      manager.destroy();
+    };
+  }, [sessionCode]);
+
   // ─── Authoritative Timer Engine ───
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -292,6 +353,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
       ) {
         e.preventDefault();
         daisAudio.playGavelStrike(1.0);
+        realtimeRef.current?.broadcastGavel(1.0);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -300,32 +362,45 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
 
   const handleStrikeGavel = () => {
     daisAudio.playGavelStrike(1.0);
+    realtimeRef.current?.broadcastGavel(1.0);
   };
 
   const toggleTimer = () => {
-    if (!isTimerRunning && remainingSec === 0) {
-      setRemainingSec(durationSec);
-    }
-    setIsTimerRunning(!isTimerRunning);
+    const nextRunning = !isTimerRunning;
+    const nextRem = !isTimerRunning && remainingSec === 0 ? durationSec : remainingSec;
+    setRemainingSec(nextRem);
+    setIsTimerRunning(nextRunning);
+    realtimeRef.current?.broadcastTimer(durationSec, nextRem, nextRunning);
   };
 
   const resetTimer = () => {
     setIsTimerRunning(false);
     setRemainingSec(durationSec);
+    realtimeRef.current?.broadcastTimer(durationSec, durationSec, false);
   };
 
   const handleNextSpeaker = () => {
     daisAudio.playGavelStrike(0.8);
+    realtimeRef.current?.broadcastGavel(0.8);
+
     if (queue.length > 0) {
       const next = queue[0];
+      const remainingQueue = queue.slice(1);
       setCurrentSpeaker(next);
-      setQueue(queue.slice(1));
+      setQueue(remainingQueue);
       setRemainingSec(durationSec);
       setIsTimerRunning(true);
+
+      realtimeRef.current?.broadcastSpeaker(next);
+      realtimeRef.current?.broadcastQueue(remainingQueue);
+      realtimeRef.current?.broadcastTimer(durationSec, durationSec, true);
     } else {
       setCurrentSpeaker(null);
       setIsTimerRunning(false);
       setRemainingSec(durationSec);
+
+      realtimeRef.current?.broadcastSpeaker(null);
+      realtimeRef.current?.broadcastTimer(durationSec, durationSec, false);
     }
   };
 
@@ -340,30 +415,35 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
       name: newDelegateName || `Hon. Member (${newCountry})`,
       position: queue.length + 1,
     };
-    setQueue([...queue, newItem]);
+    const updated = [...queue, newItem];
+    setQueue(updated);
     setNewDelegateName('');
+    realtimeRef.current?.broadcastQueue(updated);
   };
 
   const handleRemoveQueue = (id: string) => {
-    setQueue(queue.filter((q) => q.id !== id));
+    const updated = queue.filter((q) => q.id !== id);
+    setQueue(updated);
+    realtimeRef.current?.broadcastQueue(updated);
   };
 
   const handleRecognizeHand = (country: string) => {
     setRaisedHands(raisedHands.filter((h) => h !== country));
-    setQueue([
-      ...queue,
-      {
-        id: `spk_${Date.now()}`,
-        country,
-        flag: '🏛️',
-        name: `Hon. Delegate of ${country}`,
-        position: queue.length + 1,
-      },
-    ]);
+    const newItem: SpeakerQueueItem = {
+      id: `spk_${Date.now()}`,
+      country,
+      flag: '🏛️',
+      name: `Hon. Delegate of ${country}`,
+      position: queue.length + 1,
+    };
+    const updated = [...queue, newItem];
+    setQueue(updated);
+    realtimeRef.current?.broadcastQueue(updated);
   };
 
   const handleYield = (type: 'CHAIR' | 'DELEGATE' | 'QUESTIONS') => {
     daisAudio.playGavelStrike(0.7);
+    realtimeRef.current?.broadcastGavel(0.7);
     setYieldOpen(false);
     if (type === 'CHAIR') {
       handleNextSpeaker();
@@ -403,7 +483,34 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
               <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
               LIVE IN SESSION
             </span>
-            <span className="text-xs text-[#9A9DA5] font-mono hidden md:inline">
+
+            {/* Realtime Connection Indicator */}
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono border ${
+                connectionStatus === 'CONNECTED'
+                  ? 'bg-[#1C3829]/40 text-[#86EFAC] border-[#22C55E]/30'
+                  : 'bg-[#B87A24]/20 text-[#FCD34D] border-[#F59E0B]/30'
+              }`}
+              title={
+                connectionStatus === 'CONNECTED'
+                  ? 'Supabase WebSocket Realtime Synchronized'
+                  : 'Operating in Sovereign Local Mode'
+              }
+            >
+              {connectionStatus === 'CONNECTED' ? (
+                <>
+                  <Wifi className="w-3 h-3 text-[#22C55E]" />
+                  <span className="hidden md:inline">REALTIME SYNCED</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3 text-[#F59E0B]" />
+                  <span className="hidden md:inline">LOCAL BUFFER</span>
+                </>
+              )}
+            </span>
+
+            <span className="text-xs text-[#9A9DA5] font-mono hidden lg:inline">
               Quorum: <strong>48 Present</strong> (14 P&V)
             </span>
           </div>
@@ -419,7 +526,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           </span>
         </div>
 
-        {/* Right Actions: Audio Toggle & Fullscreen Gavel */}
+        {/* Right Actions: Audio Toggle & Gavel */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => {
@@ -450,7 +557,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
 
       {/* ─── 2. MAIN THREE-COLUMN WORKSPACE ─── */}
       <div className="flex-1 flex overflow-hidden">
-        {/* ── LEFT SIDEBAR: Session Identity & Committee Modes ── */}
+        {/* ── LEFT SIDEBAR: Session Identity & Committee Modes (Desktop) ── */}
         <aside className="w-64 bg-[#0A0C0F] border-r border-[#181B21] p-4 flex flex-col justify-between shrink-0 hidden md:flex overflow-y-auto">
           <div className="space-y-5">
             {/* Session Identity Card */}
@@ -693,7 +800,10 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
 
               {/* 64px Authoritative Digital Clock Display */}
               <div className="py-6 sm:py-10 text-center space-y-2">
-                <div className="font-mono text-6xl sm:text-7xl font-bold tracking-tight text-[#F4F2ED] select-none">
+                <div
+                  aria-label={`Time remaining: ${formatClock(remainingSec)}`}
+                  className="font-mono text-6xl sm:text-7xl font-bold tracking-tight text-[#F4F2ED] select-none"
+                >
                   {formatClock(remainingSec)}
                 </div>
                 <p className="text-[11px] text-[#575B66] font-mono tracking-widest uppercase">
@@ -773,7 +883,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                 </div>
               </div>
 
-              {/* Docked Speaker Queue */}
+              {/* Docked Speaker Queue (Desktop) */}
               <div className="space-y-2 pt-3 border-t border-[#181B21]">
                 <div className="flex items-center justify-between text-xs font-semibold text-[#F4F2ED] uppercase tracking-wider">
                   <span className="flex items-center gap-1.5">
@@ -844,7 +954,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           </footer>
         </main>
 
-        {/* ── RIGHT PANEL: Raised Hands & Motions ── */}
+        {/* ── RIGHT PANEL: Raised Hands & Motions (Desktop) ── */}
         <aside className="w-72 bg-[#0A0C0F] border-l border-[#181B21] p-4 flex flex-col justify-between shrink-0 hidden lg:flex overflow-y-auto">
           <div className="space-y-6">
             {/* Raised Hands Section */}
@@ -923,6 +1033,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                       <button
                         onClick={() => {
                           daisAudio.playGavelStrike(0.9);
+                          realtimeRef.current?.broadcastGavel(0.9);
                           setPendingMotions(pendingMotions.filter((m) => m.id !== motion.id));
                           if (motion.type === 'Moderated Caucus') {
                             setActiveMode('MOD_CAUCUS');
@@ -951,6 +1062,223 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           </div>
         </aside>
       </div>
+
+      {/* ─── 3. MOBILE RESPONSIVE BOTTOM DRAWER CONTROLS (< 1024px) ─── */}
+      <div className="lg:hidden h-12 bg-[#0A0C0F] border-t border-[#181B21] grid grid-cols-3 shrink-0 z-40 text-xs">
+        <button
+          onClick={() => setMobileDrawer(mobileDrawer === 'MODES' ? 'NONE' : 'MODES')}
+          className={`flex items-center justify-center gap-1.5 font-medium transition-colors ${
+            mobileDrawer === 'MODES' ? 'text-[#C5A46D] bg-[#111318]' : 'text-[#9A9DA5]'
+          }`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" /> Modes
+        </button>
+        <button
+          onClick={() => setMobileDrawer(mobileDrawer === 'QUEUE' ? 'NONE' : 'QUEUE')}
+          className={`flex items-center justify-center gap-1.5 font-medium transition-colors border-x border-[#181B21] ${
+            mobileDrawer === 'QUEUE' ? 'text-[#C5A46D] bg-[#111318]' : 'text-[#9A9DA5]'
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" /> Queue ({queue.length})
+        </button>
+        <button
+          onClick={() => setMobileDrawer(mobileDrawer === 'MOTIONS' ? 'NONE' : 'MOTIONS')}
+          className={`flex items-center justify-center gap-1.5 font-medium transition-colors ${
+            mobileDrawer === 'MOTIONS' ? 'text-[#C5A46D] bg-[#111318]' : 'text-[#9A9DA5]'
+          }`}
+        >
+          <Hand className="w-3.5 h-3.5" /> Motions ({pendingMotions.length})
+        </button>
+      </div>
+
+      {/* ─── 4. TOUCH-FRIENDLY BOTTOM SHEET DRAWERS ─── */}
+      {mobileDrawer !== 'NONE' && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-[#08090B]/80 backdrop-blur-sm flex flex-col justify-end animate-in fade-in">
+          <div
+            className="w-full max-h-[70vh] bg-[#111318] border-t border-[#232731] rounded-t-3xl p-5 overflow-y-auto space-y-4 shadow-2xl animate-in slide-in-from-bottom"
+          >
+            {/* Drawer Handle & Header */}
+            <div className="flex items-center justify-between pb-2 border-b border-[#181B21]">
+              <div className="w-8 h-1 rounded-full bg-[#2A2E39] mx-auto absolute top-2.5 left-1/2 -translate-x-1/2" />
+              <h4 className="text-sm font-semibold text-[#F4F2ED]">
+                {mobileDrawer === 'MODES'
+                  ? 'Procedural Modes'
+                  : mobileDrawer === 'QUEUE'
+                  ? 'Speaking Queue Management'
+                  : 'Motions & Raised Hands'}
+              </h4>
+              <button
+                onClick={() => setMobileDrawer('NONE')}
+                className="p-1 rounded-lg text-[#9A9DA5] hover:text-[#F4F2ED]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content for Modes */}
+            {mobileDrawer === 'MODES' && (
+              <div className="grid grid-cols-2 gap-2 text-left">
+                <button
+                  onClick={() => {
+                    setActiveMode('GSL');
+                    setMobileDrawer('NONE');
+                  }}
+                  className={`p-3 rounded-xl border text-xs font-semibold ${
+                    activeMode === 'GSL'
+                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
+                  }`}
+                >
+                  General Speakers' List
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveMode('MOD_CAUCUS');
+                    setMobileDrawer('NONE');
+                  }}
+                  className={`p-3 rounded-xl border text-xs font-semibold ${
+                    activeMode === 'MOD_CAUCUS'
+                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
+                  }`}
+                >
+                  Moderated Caucus
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveMode('UNMOD_CAUCUS');
+                    setMobileDrawer('NONE');
+                  }}
+                  className={`p-3 rounded-xl border text-xs font-semibold ${
+                    activeMode === 'UNMOD_CAUCUS'
+                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
+                  }`}
+                >
+                  Unmoderated Caucus
+                </button>
+                {isIndianCommittee && (
+                  <button
+                    onClick={() => {
+                      setActiveMode('PARLIAMENT_BILLS');
+                      setMobileDrawer('NONE');
+                    }}
+                    className={`p-3 rounded-xl border text-xs font-semibold ${
+                      activeMode === 'PARLIAMENT_BILLS'
+                        ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                        : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
+                    }`}
+                  >
+                    Legislative Bills
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setActiveMode('VOTING');
+                    setMobileDrawer('NONE');
+                  }}
+                  className={`p-3 rounded-xl border text-xs font-semibold ${
+                    activeMode === 'VOTING'
+                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
+                  }`}
+                >
+                  Division & Voting
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveMode('PRESS');
+                    setMobileDrawer('NONE');
+                  }}
+                  className={`p-3 rounded-xl border text-xs font-semibold ${
+                    activeMode === 'PRESS'
+                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
+                  }`}
+                >
+                  Press Wire (IPC)
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveMode('CRISIS');
+                    setMobileDrawer('NONE');
+                  }}
+                  className={`p-3 rounded-xl border text-xs font-semibold ${
+                    activeMode === 'CRISIS'
+                      ? 'bg-[#822424] text-[#FCA5A5] border-[#822424]'
+                      : 'bg-[#181B21] text-[#F87171] border-[#822424]/40'
+                  }`}
+                >
+                  Crisis War Room
+                </button>
+              </div>
+            )}
+
+            {/* Content for Queue */}
+            {mobileDrawer === 'QUEUE' && (
+              <div className="space-y-2 text-left">
+                {queue.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    className="p-3 rounded-xl bg-[#08090B] border border-[#232731] flex items-center justify-between"
+                  >
+                    <div>
+                      <span className="text-xs font-semibold text-[#F4F2ED]">
+                        #{idx + 1} {item.country}
+                      </span>
+                      <p className="text-[11px] text-[#9A9DA5]">{item.name}</p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveQueue(item.id)}
+                      className="text-[#F87171] p-1.5 rounded-lg"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Content for Motions */}
+            {mobileDrawer === 'MOTIONS' && (
+              <div className="space-y-3 text-left">
+                <span className="text-xs font-mono uppercase text-[#C5A46D] block">
+                  Raised Hands ({raisedHands.length})
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {raisedHands.map((h) => (
+                    <button
+                      key={h}
+                      onClick={() => handleRecognizeHand(h)}
+                      className="px-3 py-1.5 rounded-xl bg-[#181B21] border border-[#2A2E39] text-xs font-medium text-[#F4F2ED] flex items-center gap-1.5"
+                    >
+                      <Hand className="w-3.5 h-3.5 text-[#C5A46D]" /> {h}
+                    </button>
+                  ))}
+                </div>
+
+                <span className="text-xs font-mono uppercase text-[#C5A46D] block pt-2">
+                  Pending Motions ({pendingMotions.length})
+                </span>
+                <div className="space-y-2">
+                  {pendingMotions.map((m) => (
+                    <div
+                      key={m.id}
+                      className="p-3 rounded-xl bg-[#08090B] border border-[#232731] space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-[#E6D1A5]">{m.type}</span>
+                        <span className="text-[10px] text-[#9A9DA5]">By {m.proposedBy}</span>
+                      </div>
+                      <p className="text-xs text-[#F4F2ED]">{m.topic}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Bill Editor Modal */}
       <BillEditorModal
