@@ -111,11 +111,12 @@ export default function DiasLandingPage() {
   }, []);
 
   if (viewMode === 'dais') {
-    return <ZenMunMasterDais initialView="chair" />;
+    const hasRoster = Boolean(activeStoredSession && activeStoredSession.rosterCount && activeStoredSession.rosterCount > 0);
+    return <ZenMunMasterDais initialView={hasRoster ? 'chair' : 'setup'} onExit={() => setViewMode('normal')} />;
   }
 
   if (viewMode === 'setup') {
-    return <ZenMunMasterDais initialView="setup" />;
+    return <ZenMunMasterDais initialView="setup" onExit={() => setViewMode('normal')} />;
   }
 
   const handleJoinChamber = (e: React.FormEvent) => {

@@ -347,9 +347,13 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Comprehensive Committee Autocomplete Filter
+  // Comprehensive Committee Autocomplete Filter with Strict Category Separation
   const cleanQuery = committeeName.trim().toLowerCase();
   const filteredPresets = PRESET_COMMITTEES.filter((p) => {
+    // Strict Portfolio Separation: Never mix International with Parliamentary
+    if (!isIndian && p.isIndian) return false;
+    if (isIndian && !p.isIndian) return false;
+
     if (!cleanQuery) return true;
     if (p.name.toLowerCase().includes(cleanQuery)) return true;
     if (p.acronym.toLowerCase().includes(cleanQuery)) return true;
@@ -567,7 +571,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
     if (onBack) {
       onBack();
     } else {
-      router.push('/committee');
+      router.push('/dias');
     }
   };
 
@@ -630,32 +634,32 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
       <header className="w-full bg-[#ede8df] border-b border-[#ded7ca]/70 px-4 sm:px-8 py-3.5 flex items-center justify-between z-30">
         <div className="flex items-center gap-4 sm:gap-6">
           {/* Logo Brand */}
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#ded7cb] flex items-center justify-center text-[#5c4a3b]">
+          <Link href="/dias" className="flex items-center gap-2.5 group cursor-pointer">
+            <div className="w-8 h-8 rounded-xl bg-[#1b3d29] flex items-center justify-center text-[#e6d1a5] shadow-xs group-hover:scale-105 transition-transform">
               <Gavel className="w-4 h-4" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col text-left">
               <span className="font-serif font-black text-sm tracking-tight text-[#2d2822] leading-none">
-                ZENVITRA
+                ZENVITRA MUN DIAS
               </span>
               <span className="text-[9px] font-bold text-[#8c7860] uppercase tracking-wider leading-none mt-0.5">
-                Dais &amp; Committee Ecosystem
+                Committee Configuration Studio &bull; Presidium 2.4
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* BACK Button */}
           <button
             type="button"
             onClick={handleBackNavigation}
-            className="text-xs font-bold text-[#3f3b35] hover:text-black flex items-center gap-0.5 cursor-pointer transition uppercase tracking-wider pl-2"
+            className="text-xs font-bold text-[#3f3b35] hover:text-black flex items-center gap-1 cursor-pointer transition uppercase tracking-wider pl-2"
           >
             <ChevronLeft className="w-4 h-4" />
-            <span>BACK</span>
+            <span>BACK TO DIAS</span>
           </button>
         </div>
 
-        {/* Right Section: Explore Tour, Bridge to ZEN.HOST and Language */}
+        {/* Right Section: Explore Tour and Language */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
@@ -663,20 +667,12 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
               setExploreStep(1);
               setExploreTourOpen(true);
             }}
-            className="text-xs font-bold text-[#1b3d29] hover:text-black bg-[#1b3d29]/10 hover:bg-[#1b3d29]/20 border border-[#1b3d29]/25 px-3 py-1.5 rounded-full transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="text-xs font-bold text-[#1b3d29] hover:text-black bg-[#1b3d29]/10 hover:bg-[#1b3d29]/20 border border-[#1b3d29]/25 px-3.5 py-1.5 rounded-full transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
             title="Open Interactive Explore Tour for First-Timers"
           >
             <Compass className="w-3.5 h-3.5 text-[#1b3d29]" />
             <span>Explore Tour</span>
           </button>
-
-          <Link
-            href="/host"
-            className="hidden sm:flex text-xs font-semibold text-[#4a453e] hover:text-black bg-white/70 hover:bg-white border border-[#ded8cb] px-3 py-1.5 rounded-full transition items-center gap-1.5 shadow-2xs cursor-pointer"
-          >
-            <span>⚡</span>
-            <span>Switch to ZEN.HOST</span>
-          </Link>
 
           <div className="text-xs font-bold text-[#2d2822] flex items-center gap-1.5 px-2 py-1">
             <Globe className="w-4 h-4 text-[#3f3b35]" />
@@ -754,11 +750,51 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
         <div className="lg:col-span-7 bg-white rounded-[26px] p-6 sm:p-8 border border-[#ded8cb] shadow-[0_4px_24px_rgba(0,0,0,0.03)] space-y-7">
           {/* STEP 1: COMMITTEE */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <span className="w-7 h-7 rounded-full bg-[#1b3d29] text-white font-bold text-xs flex items-center justify-center shrink-0">
-                1
-              </span>
-              <h2 className="text-xl font-bold text-[#1f2421] tracking-tight">Committee</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-full bg-[#1b3d29] text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  1
+                </span>
+                <h2 className="text-xl font-bold text-[#1f2421] tracking-tight">Committee</h2>
+              </div>
+
+              {/* Strict Committee Category Selector (International vs Parliamentary) */}
+              <div className="flex items-center p-1 bg-[#ede8df] rounded-xl border border-[#ded8cb] self-stretch sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsIndian(false);
+                    setBlocTab('international');
+                    if (emblem === '/assets/committees/emblem_of_india.svg') {
+                      setEmblem('/assets/committees/un.svg');
+                    }
+                  }}
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    !isIndian
+                      ? 'bg-white text-[#1f2937] shadow-2xs'
+                      : 'text-[#64748b] hover:text-[#1f2937]'
+                  }`}
+                >
+                  <span>🌐</span>
+                  <span>International UN Committee</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsIndian(true);
+                    setBlocTab('indian');
+                    setEmblem('/assets/committees/emblem_of_india.svg');
+                  }}
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    isIndian
+                      ? 'bg-white text-[#1f2937] shadow-2xs'
+                      : 'text-[#64748b] hover:text-[#1f2937]'
+                  }`}
+                >
+                  <span>🇮🇳</span>
+                  <span>Parliamentary / Lok Sabha</span>
+                </button>
+              </div>
             </div>
 
             {/* Committee Live Preview Card */}
@@ -985,7 +1021,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                         handleAddCountry(searchCountry);
                       }
                     }}
-                    placeholder="Type a country, or any custom name"
+                    placeholder={isIndian ? "Type an MP, Minister, or Constituency (e.g. Varanasi, Wayanad)" : "Type a country (e.g. Angola, Japan, France, USA)"}
                     className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-white border border-[#ded8cb] text-sm text-[#1f2937] placeholder:text-[#9ca3af] outline-none focus:border-[#1b3d29] transition"
                   />
                 </div>
@@ -1046,7 +1082,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
               </div>
 
               <div className="flex flex-wrap gap-2 pt-0.5">
-                {QUICK_BLOC_BUNDLES.filter((b) => blocTab === 'all' || b.category === blocTab).map((b) => (
+                {QUICK_BLOC_BUNDLES.filter((b) => (isIndian ? b.category === 'indian' : b.category === 'international')).map((b) => (
                   <button
                     key={b.id}
                     type="button"
@@ -1072,7 +1108,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                   value={pasteList}
                   onChange={(e) => setPasteList(e.target.value)}
                   rows={4}
-                  placeholder={"France\nGermany\nBrazil, India...\nObserver Delegation"}
+                  placeholder={isIndian ? "Prime Minister (Varanasi)\nLeader of Opposition\nMember for Wayanad\nMember for Baramati" : "Angola\nJapan\nUnited States\nFrance, Germany...\nObserver Delegation"}
                   className="w-full bg-transparent border-none text-xs font-mono text-[#1f2937] placeholder:text-[#9ca3af] outline-none resize-none leading-relaxed"
                 />
                 <div className="flex justify-end pt-1">

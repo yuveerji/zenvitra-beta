@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { ZenMunProvider, useZenMun } from '@/context/ZenMunContext';
 import { PreSessionSetupView } from './PreSessionSetupView';
 import { ZenMunChairConsole } from './ZenMunChairConsole';
@@ -15,20 +16,41 @@ import { TutorialEngine } from './TutorialEngine';
 
 interface ZenMunMasterDaisProps {
   initialView?: 'setup' | 'chair';
+  onExit?: () => void;
 }
 
-function DaisInner({ initialView = 'chair' }: ZenMunMasterDaisProps) {
-  const [view, setView] = useState<'setup' | 'chair'>(initialView);
+function DaisInner({ initialView = 'setup', onExit }: ZenMunMasterDaisProps) {
+  const router = useRouter();
+  const { session } = useZenMun();
+
+  // If initialView is requested as 'chair' but committee has no roster, start with 'setup' first
+  const [view, setView] = useState<'setup' | 'chair'>(() => {
+    if (initialView === 'chair') {
+      if (session && session.roster && session.roster.length > 0) {
+        return 'chair';
+      }
+      return 'setup';
+    }
+    return 'setup';
+  });
+
+  const handleBackToHub = () => {
+    if (onExit) {
+      onExit();
+    } else {
+      router.push('/dias');
+    }
+  };
 
   return (
     <>
       {view === 'setup' ? (
         <PreSessionSetupView
           onStartSession={() => setView('chair')}
-          onBack={() => setView('chair')}
+          onBack={handleBackToHub}
         />
       ) : (
-        <ZenMunChairConsole />
+        <ZenMunChairConsole onExit={handleBackToHub} />
       )}
 
       {/* Global Dais Modals & Overlays */}
@@ -44,7 +66,7 @@ function DaisInner({ initialView = 'chair' }: ZenMunMasterDaisProps) {
   );
 }
 
-export function ZenMunMasterDais({ initialView = 'chair' }: ZenMunMasterDaisProps) {
+export function ZenMunMasterDais({ initialView = 'setup', onExit }: ZenMunMasterDaisProps) {
   return (
     <Suspense
       fallback={
@@ -61,7 +83,7 @@ export function ZenMunMasterDais({ initialView = 'chair' }: ZenMunMasterDaisProp
       }
     >
       <ZenMunProvider>
-        <DaisInner initialView={initialView} />
+        <DaisInner initialView={initialView} onExit={onExit} />
       </ZenMunProvider>
     </Suspense>
   );

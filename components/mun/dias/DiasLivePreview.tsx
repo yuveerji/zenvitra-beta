@@ -8,13 +8,77 @@ import { DiasBadge } from './DiasBadge';
 export const DiasLivePreview: React.FC = () => {
   const [seconds, setSeconds] = useState(72);
   const [isRunning, setIsRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState<'gsl' | 'mod' | 'bill'>('gsl');
-  const [currentSpeaker, setCurrentSpeaker] = useState({
-    name: 'Hon. Delegate of Japan',
-    seat: 'JAPAN',
-    flag: '🇯🇵',
-    topic: 'Sustainable Maritime Navigation & Indo-Pacific Security',
-  });
+  const [activeTab, setActiveTab] = useState<'gsl' | 'mod' | 'parliament'>('gsl');
+
+  // Strict Portfolio State Separation
+  const isParliamentary = activeTab === 'parliament';
+
+  const internationalSpeakers = {
+    gsl: {
+      name: 'Hon. Delegate of Japan',
+      seat: 'JAPAN',
+      flag: '🇯🇵',
+      topic: 'Sustainable Maritime Navigation & Indo-Pacific Security',
+      header: 'SESSION LIVE • UN SECURITY COUNCIL / UNGA-01',
+      quorum: 'Quorum Confirmed: 15 Member States Present • 5 Permanent Members (P5)',
+      queue: [
+        { code: 'US', flag: '🇺🇸', name: 'United States of America', role: 'Permanent Member (P5) • #2', time: '01:30' },
+        { code: 'GB', flag: '🇬🇧', name: 'United Kingdom', role: 'Permanent Member (P5) • #3', time: '01:30' },
+        { code: 'IN', flag: '🇮🇳', name: 'Republic of India', role: 'Elected Member • #4', time: '01:30' },
+        { code: 'DE', flag: '🇩🇪', name: 'Federal Republic of Germany', role: 'Observer Delegation • #5', time: '01:30' },
+      ],
+      pendingMotion: {
+        title: 'Motion for Moderated Caucus on Indo-Pacific Corridors',
+        meta: 'Proposed by Hon. Delegate of France • Seconded by United States',
+        badge: 'Procedural',
+      },
+    },
+    mod: {
+      name: 'Hon. Representative of France',
+      seat: 'FRANCE',
+      flag: '🇫🇷',
+      topic: 'Moderated Caucus: AI Governance & Nuclear Command Safeguards',
+      header: 'SESSION LIVE • UN HUMAN RIGHTS COUNCIL / UNHRC',
+      quorum: 'Quorum Confirmed: 47 Member States Present • Simple Majority 24',
+      queue: [
+        { code: 'CA', flag: '🇨🇦', name: 'Canada', role: 'Member State • #2', time: '01:00' },
+        { code: 'BR', flag: '🇧🇷', name: 'Federative Republic of Brazil', role: 'Member State • #3', time: '01:00' },
+        { code: 'ZA', flag: '🇿🇦', name: 'Republic of South Africa', role: 'Member State • #4', time: '01:00' },
+        { code: 'AU', flag: '🇦🇺', name: 'Commonwealth of Australia', role: 'Member State • #5', time: '01:00' },
+      ],
+      pendingMotion: {
+        title: 'Motion for 10-Minute Unmoderated Caucus on Draft Resolution 1.1',
+        meta: 'Proposed by Hon. Representative of Germany • Seconded by Brazil',
+        badge: 'Caucus Motion',
+      },
+    },
+  };
+
+  const parliamentaryState = {
+    name: 'Hon. Member for Varanasi (Prime Minister / Leader of the House)',
+    seat: 'VARANASI',
+    flag: '🇮🇳',
+    topic: 'Delimitation of Constituencies, Federal Autonomy & Electoral Representation',
+    header: 'SESSION LIVE • LOK SABHA (HOUSE OF THE PEOPLE)',
+    quorum: 'Quorum Confirmed: 543 Members • 272 Required for Simple Majority',
+    queue: [
+      { code: 'OP', flag: '🇮🇳', name: 'Opposition Bench', role: 'Leader of Opposition • #2', time: '01:30' },
+      { code: 'UP', flag: '🇮🇳', name: 'Hon. Member for Wayanad', role: 'Kerala • #3', time: '01:30' },
+      { code: 'MH', flag: '🇮🇳', name: 'Hon. Member for Baramati', role: 'Maharashtra • #4', time: '01:30' },
+      { code: 'GJ', flag: '🇮🇳', name: 'Hon. Member for Gandhinagar (Home Minister)', role: 'Gujarat • #5', time: '01:30' },
+    ],
+    pendingMotion: {
+      title: 'Division Vote on Clause 4 (Electoral Reforms Bill, 2026)',
+      meta: 'Proposed by Opposition Bench • Supported by Member for Baramati',
+      badge: 'Recorded Division',
+    },
+  };
+
+  const currentState = isParliamentary
+    ? parliamentaryState
+    : activeTab === 'gsl'
+    ? internationalSpeakers.gsl
+    : internationalSpeakers.mod;
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -69,83 +133,76 @@ export const DiasLivePreview: React.FC = () => {
           <div className="w-2.5 h-2.5 rounded-full bg-[#22C55E] animate-pulse" />
           <div className="flex flex-col text-left">
             <span className="text-xs font-bold tracking-wider text-[#F4F2ED] uppercase font-mono">
-              SESSION LIVE • LOK SABHA / UNGA-01
+              {currentState.header}
             </span>
             <span className="text-[11px] text-[#9A9DA5]">
-              Quorum Confirmed: 48 Present, 14 Present & Voting
+              {currentState.quorum}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <DiasBadge variant="gold" size="sm" dot>
-            CHAIR CONSOLE PREVIEW
+          <DiasBadge variant={isParliamentary ? 'charcoal' : 'gold'} size="sm" dot>
+            {isParliamentary ? 'PARLIAMENTARY CODEX' : 'INTERNATIONAL UN CODEX'}
           </DiasBadge>
           <button
             onClick={() => daisAudio.toggle()}
             title="Toggle Procedural Audio"
-            className="p-1.5 rounded-lg bg-[#181B21] border border-[#2A2E39] text-[#C5A46D] hover:bg-[#20242C] transition-colors"
+            className="p-1.5 rounded-lg bg-[#181B21] border border-[#2A2E39] text-[#C5A46D] hover:bg-[#20242C] transition-colors cursor-pointer"
           >
             <Volume2 className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Mode Selector pills */}
+      {/* Mode Selector pills with Clear Separation */}
       <div className="flex items-center gap-2 pt-4 pb-4 overflow-x-auto text-xs no-scrollbar">
         <button
           onClick={() => {
             setActiveTab('gsl');
-            setCurrentSpeaker({
-              name: 'Hon. Delegate of Japan',
-              seat: 'JAPAN',
-              flag: '🇯🇵',
-              topic: 'Sustainable Maritime Navigation & Indo-Pacific Security',
-            });
+            setSeconds(90);
+            setIsRunning(false);
           }}
-          className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+          className={`px-3.5 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'gsl'
-              ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+              ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-sm'
               : 'bg-[#111318] text-[#9A9DA5] hover:text-[#F4F2ED] border border-[#232731]'
           }`}
         >
-          General Speakers' List
+          <span>🌐</span>
+          <span>General Speakers' List (UN)</span>
         </button>
+
         <button
           onClick={() => {
             setActiveTab('mod');
-            setCurrentSpeaker({
-              name: 'Hon. Representative of France',
-              seat: 'FRANCE',
-              flag: '🇫🇷',
-              topic: 'Moderated Caucus: AI Governance & Nuclear Command Systems',
-            });
+            setSeconds(60);
+            setIsRunning(false);
           }}
-          className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+          className={`px-3.5 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'mod'
-              ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+              ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-sm'
               : 'bg-[#111318] text-[#9A9DA5] hover:text-[#F4F2ED] border border-[#232731]'
           }`}
         >
-          Moderated Caucus
+          <span>⚡</span>
+          <span>Moderated Caucus (UN)</span>
         </button>
+
         <button
           onClick={() => {
-            setActiveTab('bill');
-            setCurrentSpeaker({
-              name: 'Treasury Bench • Hon. Minister of External Affairs',
-              seat: 'INDIA',
-              flag: '🇮🇳',
-              topic: 'Clause 4 Amendment: Maritime Economic Corridors Bill, 2026',
-            });
+            setActiveTab('parliament');
+            setSeconds(90);
+            setIsRunning(false);
           }}
-          className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
-            activeTab === 'bill'
-              ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+          className={`px-3.5 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+            activeTab === 'parliament'
+              ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-sm'
               : 'bg-[#111318] text-[#9A9DA5] hover:text-[#F4F2ED] border border-[#232731]'
           }`}
         >
-          Parliamentary Bill Debate
+          <span>🇮🇳</span>
+          <span>Parliamentary Debate (Lok Sabha)</span>
         </button>
       </div>
 
@@ -160,20 +217,20 @@ export const DiasLivePreview: React.FC = () => {
                 Floor Recognized
               </span>
               <span className="text-xs text-[#9A9DA5] font-mono">
-                Allocated: 90s
+                Allocated: {seconds > 60 ? '90s' : '60s'}
               </span>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-3xl shadow-inner">
-                {currentSpeaker.flag}
+              <div className="w-16 h-16 rounded-2xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-3xl shadow-inner shrink-0">
+                {currentState.flag}
               </div>
               <div className="text-left space-y-1">
                 <h3 className="text-lg sm:text-xl font-semibold text-[#F4F2ED]">
-                  {currentSpeaker.name}
+                  {currentState.name}
                 </h3>
                 <p className="text-xs sm:text-sm text-[#9A9DA5] line-clamp-1">
-                  {currentSpeaker.topic}
+                  {currentState.topic}
                 </p>
               </div>
             </div>
@@ -231,64 +288,62 @@ export const DiasLivePreview: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Live Speaker Queue & Raised Hands */}
+        {/* Right Column: Live Speaker Queue & Raised Hands (100% STRICT PORTFOLIO MATCH) */}
         <div className="lg:col-span-4 bg-[#111318] border border-[#232731] rounded-2xl p-5 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[#181B21]">
               <span className="text-xs font-semibold text-[#F4F2ED] tracking-wide uppercase flex items-center gap-2">
                 <Users className="w-3.5 h-3.5 text-[#C5A46D]" />
-                Speaking Queue (4)
+                Speaking Queue ({currentState.queue.length})
               </span>
               <span className="text-[11px] font-mono text-[#575B66]">Next Up</span>
             </div>
 
             <div className="space-y-2">
-              <div className="p-2.5 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-between text-left">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-md bg-[#C5A46D]/15 text-[#E6D1A5] text-[11px] font-bold flex items-center justify-center border border-[#C5A46D]/30">OP</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium text-[#F4F2ED]">Opposition Bench</span>
-                    <span className="text-[10px] text-[#9A9DA5]">Leader of Opposition • #2</span>
+              {currentState.queue.map((item, idx) => (
+                <div
+                  key={item.name + idx}
+                  className="p-2.5 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-between text-left"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-7 h-7 rounded-md bg-[#232731] text-sm flex items-center justify-center border border-[#2B2F37] shrink-0">
+                      {item.flag}
+                    </span>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-medium text-[#F4F2ED] truncate">
+                        {item.name}
+                      </span>
+                      <span className="text-[10px] text-[#9A9DA5] truncate">
+                        {item.role}
+                      </span>
+                    </div>
                   </div>
+                  <DiasBadge variant="charcoal" size="sm">
+                    {item.time}
+                  </DiasBadge>
                 </div>
-                <DiasBadge variant="charcoal" size="sm">01:30</DiasBadge>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-between text-left">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-md bg-[#232731] text-[#9A9DA5] text-[11px] font-bold flex items-center justify-center border border-[#2B2F37]">UP</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium text-[#F4F2ED]">Member for Varanasi</span>
-                    <span className="text-[10px] text-[#9A9DA5]">Uttar Pradesh • #3</span>
-                  </div>
-                </div>
-                <DiasBadge variant="charcoal" size="sm">01:30</DiasBadge>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-between text-left">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-md bg-[#232731] text-[#9A9DA5] text-[11px] font-bold flex items-center justify-center border border-[#2B2F37]">KL</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium text-[#F4F2ED]">Member for Wayanad</span>
-                    <span className="text-[10px] text-[#9A9DA5]">Kerala • #4</span>
-                  </div>
-                </div>
-                <DiasBadge variant="charcoal" size="sm">01:30</DiasBadge>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Quick Parliamentary Motion Bar */}
-          <div className="pt-4 border-t border-[#181B21] space-y-2">
-            <span className="text-[11px] font-mono text-[#9A9DA5] uppercase block text-left">
-              Pending Procedural Motion
-            </span>
-            <div className="p-2.5 rounded-xl bg-[#C5A46D]/10 border border-[#C5A46D]/20 text-left space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#E6D1A5]">Division Vote on Clause 4</span>
-                <span className="text-[10px] font-mono text-[#C5A46D]">Recorded</span>
+          {/* Pending Procedural Motion Section */}
+          <div className="pt-4 border-t border-[#181B21] space-y-2 text-left">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono tracking-wider text-[#9A9DA5] uppercase">
+                PENDING PROCEDURAL MOTION
+              </span>
+              <span className="text-[9px] font-mono font-bold text-[#E6D1A5] bg-[#C5A46D]/15 px-1.5 py-0.5 rounded">
+                {currentState.pendingMotion.badge}
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-[#08090B] border border-[#232731] space-y-1">
+              <div className="text-xs font-semibold text-[#F4F2ED]">
+                {currentState.pendingMotion.title}
               </div>
-              <p className="text-[11px] text-[#9A9DA5]">Proposed by Opposition Bench • Member for Baramati</p>
+              <div className="text-[10px] text-[#9A9DA5]">
+                {currentState.pendingMotion.meta}
+              </div>
             </div>
           </div>
         </div>

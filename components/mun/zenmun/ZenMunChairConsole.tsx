@@ -70,7 +70,11 @@ export function CommitteeEmblemDisplay({
   return <span className="text-2xl shrink-0">{emblem || '🏛️'}</span>;
 }
 
-export function ZenMunChairConsole() {
+interface ZenMunChairConsoleProps {
+  onExit?: () => void;
+}
+
+export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
   const {
     session,
     setSession,
@@ -846,6 +850,23 @@ export function ZenMunChairConsole() {
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span className="hidden sm:inline">Guide</span>
+          </button>
+
+          {/* Exit Live Dais to Hub */}
+          <button
+            type="button"
+            onClick={() => {
+              if (onExit) onExit();
+              else if (typeof window !== 'undefined') window.location.href = '/dias';
+            }}
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
+              isLight
+                ? 'bg-white border-[#D5CEBF] text-[#8C8273] hover:text-red-600 hover:border-red-300'
+                : 'bg-white/5 border-white/10 text-white/50 hover:text-red-400'
+            }`}
+            title="Exit Live Dais to Dias Hub"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
       </header>
