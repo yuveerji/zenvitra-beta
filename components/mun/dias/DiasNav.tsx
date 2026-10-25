@@ -123,11 +123,12 @@ export const DiasNav: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 [zoom:0.88] ${
           isScrolled
-            ? 'bg-[#08090B]/95 backdrop-blur-2xl border-b border-white/[0.08] py-3 shadow-[0_12px_40px_rgba(0,0,0,0.6)]'
-            : 'bg-transparent py-4 sm:py-5'
+            ? 'bg-[#08090B]/95 backdrop-blur-2xl border-b border-white/[0.08] py-2 sm:py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.6)]'
+            : 'bg-transparent py-2.5 sm:py-3.5'
         }`}
+        style={{ zoom: "88%" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Brand identity */}

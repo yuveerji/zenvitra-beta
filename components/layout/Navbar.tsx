@@ -387,10 +387,10 @@ export function Navbar({
         <div className="absolute inset-0 bg-[#030405]/92 backdrop-blur-2xl" />
         <div className="absolute bottom-0 left-0 h-[1px] w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-        {/* Navbar Container scaled to 80% so all controls fit cleanly in frame */}
+        {/* Navbar Container scaled to 88% so all controls fit cleanly in frame */}
         <nav 
-          className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 "
-          
+          className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 [zoom:0.88]"
+          style={{ zoom: '88%' }}
         >
 
           {/* LEFT: Brand Logo & Wordmark (with integrated Platform Drawer Toggle when hasPlatformSidebar=true) */}
@@ -753,7 +753,7 @@ export function Navbar({
           </div>
         </nav>
 
-        {/* Mobile Dropdown Drawer with reduced zoom so all three-lines menu options fit in frame */}
+        {/* Mobile Dropdown Drawer with 88% zoom so all three-lines menu options fit in frame */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -761,8 +761,8 @@ export function Navbar({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              
-              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain "
+              style={{ zoom: '88%' }}
+              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain [zoom:0.88]"
             >
               {/* Navigation Links Grid */}
               <div className="grid grid-cols-2 gap-2 font-display text-xs tracking-wider uppercase">
