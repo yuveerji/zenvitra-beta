@@ -47,6 +47,7 @@ const PUBLIC_PREFIXES = [
   '/zen-support',
   '/dias',
   '/mun',
+  '/chamber',
 ];
 
 const STATIC_EXTENSIONS = [
@@ -212,6 +213,7 @@ export async function middleware(request: NextRequest) {
       '/zen-support',
       '/dias',
       '/mun',
+      '/chamber',
     ];
 
     const isCountdownWhitelisted = COUNTDOWN_WHITELIST_PREFIXES.some(
