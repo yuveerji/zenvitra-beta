@@ -48,7 +48,7 @@ export default function VisionPage() {
 
       {/* Background Ambience */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:32px_32px] opacity-40 z-0" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-gradient-to-b from-sky-500/[0.05] to-transparent blur-[140px] pointer-events-none z-0" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[900px] h-[450px] bg-gradient-to-b from-sky-500/[0.05] to-transparent blur-[140px] pointer-events-none z-0" />
 
       {/* Main Content */}
       <main className="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-16 space-y-20 flex-1">

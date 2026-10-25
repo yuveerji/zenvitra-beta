@@ -862,11 +862,11 @@ export default function ZenFormPublicPage() {
       {ambientEffect === 'aurora' && (
         <>
           <div
-            className="fixed top-0 right-1/4 w-[550px] h-[550px] blur-[150px] pointer-events-none rounded-full z-0 opacity-70 animate-pulse"
+            className="fixed top-0 right-1/4 w-full max-w-[550px] h-[550px] blur-[150px] pointer-events-none rounded-full z-0 opacity-70 animate-pulse"
             style={{ backgroundColor: `${accentColor}25` }}
           />
           <div
-            className="fixed bottom-10 left-10 w-[450px] h-[450px] blur-[140px] pointer-events-none rounded-full z-0 opacity-50"
+            className="fixed bottom-10 left-10 w-full max-w-[450px] h-[450px] blur-[140px] pointer-events-none rounded-full z-0 opacity-50"
             style={{ backgroundColor: `${accentColor}15` }}
           />
         </>
@@ -1109,7 +1109,7 @@ export default function ZenFormPublicPage() {
               );
             })()}
 
-            <div className="p-6 sm:p-10 space-y-8">
+            <div className="p-4 sm:p-10 space-y-6 sm:space-y-8">
               {/* Form Title & Description Header (Page 1 vs Page 2+) */}
               {currentPageIndex === 0 ? (
                 <div className="space-y-4 border-b border-white/10 pb-6 relative">

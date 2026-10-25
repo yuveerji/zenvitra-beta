@@ -36,7 +36,7 @@ export function FinalTrailerScene({ onComplete }: FinalTrailerSceneProps) {
   return (
     <div className="relative w-full max-w-4xl mx-auto min-h-[500px] flex flex-col items-center justify-center text-center px-4 py-8 select-none">
       {/* Background ambient deep pulse */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/10 via-purple-500/10 to-transparent rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/10 via-purple-500/10 to-transparent rounded-full blur-[160px] pointer-events-none" />
 
       {/* Kinetic Text Stack Before Final Logo Reveal */}
       {phase < 7 ? (

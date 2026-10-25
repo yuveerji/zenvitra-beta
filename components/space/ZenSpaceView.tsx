@@ -1132,8 +1132,8 @@ export function ZenSpaceView({ username }: ZenSpaceViewProps) {
       )}
       {activeEffect === 'aurora' && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-[20%] left-1/4 w-[600px] h-[600px] rounded-full bg-cyan-600/10 blur-[130px] animate-pulse" />
-          <div className="absolute top-[30%] -right-[10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[130px] animate-pulse" />
+          <div className="absolute -top-[20%] left-1/4 w-full max-w-[600px] h-[600px] rounded-full bg-cyan-600/10 blur-[130px] animate-pulse" />
+          <div className="absolute top-[30%] -right-[10%] w-full max-w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[130px] animate-pulse" />
         </div>
       )}
       {activeEffect === 'geometry' && (

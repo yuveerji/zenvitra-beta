@@ -15,7 +15,7 @@ export function WelcomeScene({ onStart, onSkip, userName, roleTrack }: WelcomeSc
   return (
     <div className="relative w-full max-w-4xl mx-auto flex flex-col items-center justify-center text-center px-4 py-8 sm:py-16 select-none">
       {/* Background radial ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-cyan-500/10 via-emerald-500/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] h-[500px] bg-gradient-to-tr from-cyan-500/10 via-emerald-500/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
 
       {/* Role / Member Pill */}
       <motion.div

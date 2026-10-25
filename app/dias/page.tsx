@@ -137,7 +137,7 @@ export default function DiasLandingPage() {
       {/* ─── 1. HERO SECTION WITH HOMEPAGE BUTTON GLOW & ANIMATION ─── */}
       <section className="relative pt-32 sm:pt-40 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
         {/* Subtle radial diplomatic glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[#C5A46D]/12 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full max-w-[700px] h-[400px] bg-[#C5A46D]/12 rounded-full blur-[140px] pointer-events-none" />
 
         {/* Top diplomatic status pill */}
         <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#181B21]/90 border border-[#C5A46D]/30 text-[#E6D1A5] text-[11px] font-mono tracking-widest uppercase mb-8 shadow-[0_0_20px_rgba(197,164,109,0.15)]">

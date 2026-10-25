@@ -38,7 +38,7 @@ export default function IdentityOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-[#030405] text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white/[0.02] rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] h-[500px] bg-white/[0.02] rounded-full blur-[140px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-md p-8 rounded-3xl border border-white/10 bg-[#06070a]/90 backdrop-blur-2xl shadow-2xl space-y-6">
         <div className="text-center space-y-2">

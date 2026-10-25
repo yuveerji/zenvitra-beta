@@ -168,7 +168,7 @@ export function FullscreenChamberView({ isOpen, onClose }: FullscreenChamberView
         <DesktopModeAdvisory studioName="Chamber Dais Fullscreen Studio" storageKey="zen_chamber_fullscreen" />
         {/* Subtle architectural grid lines and ambient glow */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-40" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[250px] bg-amber-500/[0.03] blur-[140px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[250px] bg-amber-500/[0.03] blur-[140px] rounded-full pointer-events-none" />
 
         {/* ── TOP PROJECTION BAR ── */}
         <div className="relative z-10 flex items-center justify-between pb-6 border-b border-white/[0.08]">

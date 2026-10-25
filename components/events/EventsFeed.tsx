@@ -251,9 +251,9 @@ export function EventsFeed() {
       : (KNOWN_CITIES.find(c => c.value === selectedCity)?.name || selectedCity);
 
   return (
-    <div className="max-w-7xl mx-auto font-sans pb-20 space-y-10 text-white relative">
+    <div className="max-w-7xl mx-auto font-sans pb-20 space-y-10 text-white relative overflow-x-clip">
       {/* ── THEATRICAL STAGE AMBIENCE & OVERHEAD SPOTLIGHT ── */}
-      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[1200px] h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.18),rgba(167,139,250,0.08),transparent_70%)] blur-3xl pointer-events-none -z-10" />
+      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.18),rgba(167,139,250,0.08),transparent_70%)] blur-3xl pointer-events-none -z-10" />
       <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/90 via-teal-300/80 to-transparent shadow-[0_0_20px_rgba(6,182,212,0.8)] -z-10" />
 
       {/* Pending Secretariat Allotment Notification */}

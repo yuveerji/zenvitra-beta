@@ -189,8 +189,8 @@ export default function PreLoginPage() {
   return (
     <div className="min-h-screen bg-[#03060a] text-neutral-100 flex flex-col justify-between selection:bg-amber-400 selection:text-black relative overflow-hidden">
       {/* Background Ambience */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-b from-amber-500/10 via-cyan-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-purple-500/5 blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[550px] bg-gradient-to-b from-amber-500/10 via-cyan-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/2 right-0 w-full max-w-[400px] h-[400px] bg-purple-500/5 blur-3xl pointer-events-none -z-10" />
 
       {/* Header */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">

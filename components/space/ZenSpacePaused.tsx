@@ -136,9 +136,9 @@ export function ZenSpacePaused({ username = 'yuveer' }: ZenSpacePausedProps) {
     <div className="relative min-h-screen bg-[#040407] text-white overflow-hidden selection:bg-white/20 selection:text-white">
       {/* Background Cosmic Starfield & Ambient Glows */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-indigo-600/15 via-purple-600/10 to-transparent blur-[120px] rounded-full" />
-        <div className="absolute top-[40%] left-[-10%] w-[500px] h-[500px] bg-cyan-600/10 blur-[130px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-blue-600/10 blur-[140px] rounded-full" />
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[500px] bg-gradient-to-b from-indigo-600/15 via-purple-600/10 to-transparent blur-[120px] rounded-full" />
+        <div className="absolute top-[40%] left-[-10%] w-full max-w-[500px] h-[500px] bg-cyan-600/10 blur-[130px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-full max-w-[600px] h-[600px] bg-blue-600/10 blur-[140px] rounded-full" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
       </div>
 

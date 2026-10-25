@@ -107,9 +107,9 @@ export default function TeamPage() {
 
       <main className="relative pt-28 pb-24 overflow-hidden">
         {/* Ambient Atmospheric Glows */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-gradient-to-b from-amber-500/10 via-purple-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
-        <div className="absolute top-[800px] right-0 w-[600px] h-[600px] bg-cyan-500/5 blur-3xl pointer-events-none -z-10" />
-        <div className="absolute top-[1600px] left-0 w-[500px] h-[500px] bg-emerald-500/5 blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-full max-w-[1100px] h-[550px] bg-gradient-to-b from-amber-500/10 via-purple-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-[800px] right-0 w-full max-w-[600px] h-[600px] bg-cyan-500/5 blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-[1600px] left-0 w-full max-w-[500px] h-[500px] bg-emerald-500/5 blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
           

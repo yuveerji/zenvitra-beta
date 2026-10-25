@@ -265,8 +265,8 @@ export function PlanCheckoutClient() {
   return (
     <div className="min-h-screen bg-[#04060a] text-white font-sans selection:bg-cyan-500/20 selection:text-white flex flex-col relative overflow-hidden">
       {/* Ambient background glows */}
-      <div className="fixed top-0 left-1/4 w-[600px] h-[400px] bg-cyan-600/10 blur-[140px] pointer-events-none rounded-full" />
-      <div className="fixed bottom-0 right-1/4 w-[500px] h-[400px] bg-purple-600/10 blur-[140px] pointer-events-none rounded-full" />
+      <div className="fixed top-0 left-1/4 w-full max-w-[600px] h-[400px] bg-cyan-600/10 blur-[140px] pointer-events-none rounded-full" />
+      <div className="fixed bottom-0 right-1/4 w-full max-w-[500px] h-[400px] bg-purple-600/10 blur-[140px] pointer-events-none rounded-full" />
 
       {/* Embedded Global Navbar */}
       <Navbar />

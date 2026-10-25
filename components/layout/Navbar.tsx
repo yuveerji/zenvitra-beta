@@ -498,7 +498,7 @@ export function Navbar({
             {/* ZENVITRA Test Node Sandbox Launcher */}
             <Link
               href="/test-node"
-              className="p-1.5 sm:p-2 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+              className="hidden xs:flex p-1.5 sm:p-2 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition hover:scale-105 active:scale-95 items-center justify-center shrink-0"
               title="Launch ZENVITRA Test Node (Isolated Sandbox Orb)"
             >
               <Orbit className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 animate-spin" style={{ animationDuration: '14s' }} />

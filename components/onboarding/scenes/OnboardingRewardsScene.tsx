@@ -85,7 +85,7 @@ export function OnboardingRewardsScene({ onNext, userName, roleTrack }: Onboardi
   return (
     <div className="relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center px-4 py-6 sm:py-8 select-none">
       {/* Background radial ambient glow - Monochrome Brushed Silver */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-white/[0.03] rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[400px] bg-white/[0.03] rounded-full blur-[140px] pointer-events-none" />
 
       {/* Top Header Section */}
       <div className="text-center space-y-2 mb-6 sm:mb-8 max-w-3xl">

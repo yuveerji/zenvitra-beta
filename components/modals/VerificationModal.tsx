@@ -494,8 +494,8 @@ export function VerificationModal({ isOpen, onClose }: VerificationModalProps) {
 
           {/* Step Progress Stepper (Only when not showing existing verified certificate) */}
           {(!isAlreadyVerified || activeStep !== 6) && (
-            <div className="py-3 border-b border-white/5 shrink-0 overflow-x-auto">
-              <div className="flex items-center justify-between min-w-[500px] text-xs">
+            <div className="py-3 border-b border-white/5 shrink-0 overflow-x-auto no-scrollbar touch-scroll">
+              <div className="flex items-center justify-between min-w-[420px] sm:min-w-[500px] text-xs px-1">
                 {[
                   { step: 1, label: 'Cadre' },
                   { step: 2, label: 'Identity' },

@@ -8,7 +8,7 @@ export function ZenChatBrandStatement() {
     <section className="relative py-28 px-4 sm:px-6 lg:px-8 border-y border-white/10 bg-gradient-to-b from-[#02040a] via-[#060b19] to-[#02040a] overflow-hidden">
       {/* Subtle Central Glow */}
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none" 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] h-[300px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none" 
         aria-hidden="true" 
       />
 

@@ -304,13 +304,13 @@ export default function JoinCoreTeamPage() {
 
       {/* Background Ambient Grid */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:32px_32px] opacity-40 z-0" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-gradient-to-b from-white/[0.04] to-transparent blur-[130px] pointer-events-none z-0" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[900px] h-[400px] bg-gradient-to-b from-white/[0.04] to-transparent blur-[130px] pointer-events-none z-0" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-8 min-h-screen flex flex-col justify-between">
         {/* Core Body Container */}
         <main className="py-8 flex-1">
           {isSuccess ? (
-            <div className="max-w-2xl mx-auto rounded-[2.8rem] bg-[#07080b] border border-white/[0.1] p-10 sm:p-14 text-center space-y-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)]">
+            <div className="max-w-2xl mx-auto rounded-3xl sm:rounded-[2.8rem] bg-[#07080b] border border-white/[0.1] p-6 sm:p-14 text-center space-y-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)]">
               <div className="w-16 h-16 rounded-2xl bg-emerald-400/10 border border-emerald-400/35 mx-auto flex items-center justify-center text-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.15)]">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
@@ -471,7 +471,7 @@ export default function JoinCoreTeamPage() {
 
               {/* Right Column: Clean Multi-Step Form */}
               <div className="lg:col-span-7 w-full">
-                <div className="rounded-[2.8rem] bg-[#07080b] border border-white/[0.09] p-8 sm:p-12 lg:p-14 shadow-[0_25px_80px_rgba(0,0,0,0.95)]">
+                <div className="rounded-3xl sm:rounded-[2.8rem] bg-[#07080b] border border-white/[0.09] p-5 sm:p-12 lg:p-14 shadow-[0_25px_80px_rgba(0,0,0,0.95)]">
                   {/* Header Title & Steps */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-7 mb-9">
                     <div className="space-y-1">

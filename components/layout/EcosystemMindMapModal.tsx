@@ -560,7 +560,7 @@ export function EcosystemMindMapModal({ isOpen, onClose }: EcosystemMindMapModal
           {/* Ambient Background Auras */}
           <div className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-32 -right-32 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px]" />
-          <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[140px]" />
+          <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[140px]" />
 
           {/* Top Bar Header */}
           <div className="relative z-10 pb-6 mb-6 border-b border-white/10 space-y-4">

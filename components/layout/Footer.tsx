@@ -73,11 +73,11 @@ export function Footer() {
   };
 
   return (
-    <footer className="w-full border-t border-white/10 bg-[#040507] relative z-10 font-sans text-white selection:bg-cyan-500/30">
+    <footer className="w-full border-t border-white/10 bg-[#040507] relative z-10 font-sans text-white selection:bg-cyan-500/30 overflow-hidden">
       
       {/* Top Ambient Glow Lines */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-cyan-500/[0.02] blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[300px] bg-cyan-500/[0.02] blur-[150px] rounded-full pointer-events-none" />
 
       {/* ─── 1. TOP NEWSLETTER / DISPATCH BRIEFING BAR ─── */}
       <div className="border-b border-white/5 bg-gradient-to-r from-cyan-950/20 via-black/40 to-purple-950/20 backdrop-blur-xl relative overflow-hidden">

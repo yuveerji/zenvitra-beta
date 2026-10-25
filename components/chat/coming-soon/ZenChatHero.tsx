@@ -19,7 +19,7 @@ export function ZenChatHero({ onScrollToPreview, onScrollToInterest }: ZenChatHe
 
       {/* Atmospheric Ambient Radial Lighting (Cobalt & Deep Navy) */}
       <div 
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[900px] h-[400px] sm:h-[550px] bg-[radial-gradient(ellipse_at_center,_rgba(37,99,235,0.18)_0%,_rgba(15,23,42,0.08)_50%,_transparent_80%)] blur-3xl pointer-events-none"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] sm:w-full max-w-[900px] h-[400px] sm:h-[550px] bg-[radial-gradient(ellipse_at_center,_rgba(37,99,235,0.18)_0%,_rgba(15,23,42,0.08)_50%,_transparent_80%)] blur-3xl pointer-events-none"
         aria-hidden="true"
       />
       <div 

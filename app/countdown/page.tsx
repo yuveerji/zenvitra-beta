@@ -229,8 +229,8 @@ export default function CountdownPage() {
           }} 
         />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[550px] bg-gradient-to-b from-amber-500/[0.14] via-purple-600/[0.06] to-transparent blur-[140px]" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-amber-500/[0.06] rounded-full blur-[140px]" />
-        <div className="absolute bottom-1/4 -left-20 w-[450px] h-[450px] bg-indigo-500/[0.05] rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-0 w-full max-w-[500px] h-[500px] bg-amber-500/[0.06] rounded-full blur-[140px]" />
+        <div className="absolute bottom-1/4 -left-20 w-full max-w-[450px] h-[450px] bg-indigo-500/[0.05] rounded-full blur-[150px]" />
         
         {/* Interactive Cosmic Constellation Starfield */}
         <ConstellationCanvas className="absolute inset-0 opacity-45" />

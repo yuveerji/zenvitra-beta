@@ -82,7 +82,7 @@ export function EventJourneyScene({ onNext }: EventJourneySceneProps) {
   return (
     <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center px-4 py-6 sm:py-10 select-none">
       {/* Radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-blue-500/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[400px] bg-blue-500/10 rounded-full blur-[150px] pointer-events-none" />
 
       {/* Header */}
       <div className="text-center space-y-2 mb-8">

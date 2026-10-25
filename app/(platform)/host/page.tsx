@@ -379,7 +379,7 @@ function HostDashboardInner() {
 
         {/* ── 4. STAGE TIMERS & POMODORO FOCUS SUITE ── */}
         <section className="p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-[#060a14] via-[#080d1a] to-[#04060c] border border-cyan-500/25 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl space-y-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-full max-w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-white/[0.08] pb-6 relative z-10">
             <div className="space-y-2">

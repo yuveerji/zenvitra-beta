@@ -98,7 +98,7 @@ export function CategorySubscriptionsScene({
   return (
     <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center px-4 py-4 sm:py-6 select-none">
       {/* Background radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-cyan-500/10 via-amber-500/10 to-purple-500/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[400px] bg-gradient-to-tr from-cyan-500/10 via-amber-500/10 to-purple-500/10 rounded-full blur-[160px] pointer-events-none" />
 
       {/* Mandatory Notice if user skipped tour */}
       {isFromSkip && (

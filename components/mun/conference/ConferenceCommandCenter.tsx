@@ -460,7 +460,7 @@ export function ConferenceCommandCenter() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center p-4 sm:p-8 pt-28 sm:pt-32 relative overflow-hidden">
           {/* Ambient Lighting */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-amber-500/[0.04] blur-[140px] rounded-full pointer-events-none" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] h-[350px] bg-amber-500/[0.04] blur-[140px] rounded-full pointer-events-none" />
 
           <div className="w-full max-w-lg rounded-3xl bg-[#090a10] border border-amber-500/30 p-8 sm:p-10 shadow-[0_25px_80px_rgba(245,158,11,0.12)] text-center space-y-6 relative z-10">
             {/* Top Shield Icon */}

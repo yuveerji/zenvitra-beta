@@ -224,7 +224,7 @@ export function ZenCommsComingSoon({ appType }: ZenCommsComingSoonProps) {
   return (
     <div className="min-h-screen bg-[#030611] text-white selection:bg-blue-600/30 selection:text-white flex flex-col relative overflow-hidden font-sans">
       {/* Background Cyber Radial Glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[500px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[850px] h-[500px] bg-blue-600/10 rounded-full blur-[160px] pointer-events-none" />
       <div className="absolute top-1/3 -left-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-20 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(#1e293b_0.75px,transparent_0.75px)] [background-size:32px_32px] opacity-25 pointer-events-none" />

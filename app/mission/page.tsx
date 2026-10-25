@@ -237,11 +237,11 @@ export default function MissionPage() {
         {/* ─── 01. THE MANIFESTO (HERO) ─── */}
         <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-center text-center px-6 sm:px-12 pt-28 pb-20 overflow-hidden">
           {/* Ambient Lighting & Concentric Circular Geometry */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[900px] h-[700px] sm:h-[900px] bg-gradient-to-tr from-cyan-500/10 via-purple-500/5 to-amber-500/10 rounded-full blur-[160px] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] sm:w-full max-w-[900px] h-[700px] sm:h-[900px] bg-gradient-to-tr from-cyan-500/10 via-purple-500/5 to-amber-500/10 rounded-full blur-[160px] pointer-events-none" />
 
           {/* Concentric Decorative Rings */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] border border-white/5 rounded-full pointer-events-none animate-pulse" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[480px] h-[350px] sm:h-[480px] border border-cyan-500/10 rounded-full pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] sm:w-full max-w-[650px] h-[500px] sm:h-[650px] border border-white/5 rounded-full pointer-events-none animate-pulse" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-full max-w-[480px] h-[350px] sm:h-[480px] border border-cyan-500/10 rounded-full pointer-events-none" />
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-6 sm:space-y-8">
             {/* Top Brand Pill */}
@@ -750,7 +750,7 @@ export default function MissionPage() {
 
         {/* ─── 09. VISION & FINAL CALL TO ACTION ─── */}
         <section className="w-full max-w-6xl mx-auto px-6 sm:px-12 py-24 border-t border-white/10 text-center relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] h-[400px] bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
 
           <div className="relative z-10 max-w-3xl mx-auto space-y-6">
             <span className="text-xs font-mono text-cyan-400 uppercase font-bold tracking-widest">

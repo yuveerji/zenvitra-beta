@@ -48,8 +48,8 @@ export default function GlobalErrorPage({ error, reset }: ErrorProps) {
   return (
     <div className="min-h-screen bg-[#030405] text-white flex flex-col justify-between selection:bg-cyan-500 selection:text-black font-sans relative overflow-hidden">
       {/* Ambient background glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-rose-500/10 blur-[150px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-10 right-1/4 w-[400px] h-[250px] bg-cyan-500/10 blur-[140px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] h-[350px] bg-rose-500/10 blur-[150px] pointer-events-none rounded-full" />
+      <div className="absolute bottom-10 right-1/4 w-full max-w-[400px] h-[250px] bg-cyan-500/10 blur-[140px] pointer-events-none rounded-full" />
 
       {/* Top Protocol Header */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">

@@ -105,7 +105,7 @@ export default function PlanHubPage() {
       <main className="flex-1 pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
         {/* Header Hero */}
         <div className="text-center space-y-4 pt-6 sm:pt-10 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[250px] bg-purple-500/10 blur-[130px] rounded-full pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[550px] h-[250px] bg-purple-500/10 blur-[130px] rounded-full pointer-events-none" />
 
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono uppercase tracking-wider shadow-[0_0_20px_rgba(168,85,247,0.2)]">
             <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-pulse" />

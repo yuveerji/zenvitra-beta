@@ -144,7 +144,7 @@ export const DiasNav: React.FC = () => {
                   DIAS
                 </span>
               </div>
-              <span className="text-[9px] text-[#9A9DA5] tracking-widest font-mono uppercase">
+              <span className="text-[9px] text-[#9A9DA5] tracking-widest font-mono uppercase hidden sm:block">
                 Diplomatic Operating System &bull; Presidium V2.4
               </span>
             </div>

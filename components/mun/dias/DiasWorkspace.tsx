@@ -565,10 +565,11 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           <div className="h-5 w-px bg-[#232731] hidden sm:block" />
 
           {/* Live Session Status & Quorum Health */}
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1C3829]/60 text-[#86EFAC] border border-[#22C55E]/40 text-[11px] font-mono font-medium">
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-              LIVE IN SESSION
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-[#1C3829]/60 text-[#86EFAC] border border-[#22C55E]/40 text-[10px] sm:text-[11px] font-mono font-medium">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#22C55E] animate-pulse" />
+              <span className="hidden sm:inline">LIVE IN SESSION</span>
+              <span className="sm:hidden">LIVE</span>
             </span>
 
             {/* Realtime Connection Indicator */}
@@ -656,7 +657,8 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
             onClick={handleStrikeGavel}
             leftIcon={<Gavel className="w-3.5 h-3.5" />}
           >
-            Gavel [G]
+            <span className="hidden sm:inline">Gavel [G]</span>
+            <span className="sm:hidden">Gavel</span>
           </DiasButton>
         </div>
       </header>
@@ -1038,20 +1040,20 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
       />
 
       {/* ── Fixed Bottom Quick-Add Delegate Bar (Zero Scroll Required) ── */}
-          <footer className="h-14 bg-[#111318] border-t border-[#232731] px-4 flex items-center justify-between shrink-0 z-20">
-            <form onSubmit={handleAddToQueue} className="flex items-center gap-2 sm:gap-3 w-full">
+          <footer className="h-14 bg-[#111318] border-t border-[#232731] px-2 sm:px-4 flex items-center justify-between shrink-0 z-20">
+            <form onSubmit={handleAddToQueue} className="flex items-center gap-1.5 sm:gap-3 w-full">
               <span className="text-xs font-mono uppercase text-[#9A9DA5] hidden sm:inline whitespace-nowrap">
                 Quick Add:
               </span>
               <input
-                className="bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] text-xs text-[#F4F2ED] rounded-xl px-3 py-1.5 outline-none w-36 sm:w-44"
+                className="bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] text-xs text-[#F4F2ED] rounded-xl px-2.5 sm:px-3 py-1.5 outline-none w-24 xs:w-32 sm:w-44 shrink-0"
                 placeholder="Country / Bench"
                 value={newCountry}
                 onChange={(e) => setNewCountry(e.target.value)}
               />
               <input
-                className="bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] text-xs text-[#F4F2ED] rounded-xl px-3 py-1.5 outline-none flex-1"
-                placeholder="Delegate / Member Name (optional)"
+                className="bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] text-xs text-[#F4F2ED] rounded-xl px-2.5 sm:px-3 py-1.5 outline-none min-w-0 flex-1"
+                placeholder="Delegate (opt)"
                 value={newDelegateName}
                 onChange={(e) => setNewDelegateName(e.target.value)}
               />
@@ -1061,7 +1063,8 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                 size="sm"
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
               >
-                Add to Queue
+                <span className="hidden sm:inline">Add to Queue</span>
+                <span className="sm:hidden">Add</span>
               </DiasButton>
             </form>
           </footer>

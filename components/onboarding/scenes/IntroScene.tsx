@@ -116,8 +116,8 @@ export function IntroScene({ onNext }: IntroSceneProps) {
   return (
     <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center text-center px-4 py-8 sm:py-12 select-none">
       {/* Background glow effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-[400px] h-[300px] bg-purple-500/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[400px] bg-cyan-500/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-10 right-1/4 w-full max-w-[400px] h-[300px] bg-purple-500/10 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Chapter Index */}
       <motion.div

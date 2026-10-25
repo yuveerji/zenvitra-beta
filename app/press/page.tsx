@@ -91,8 +91,8 @@ function PressContent() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-20 space-y-8 text-left">
         {/* ─── MASTERPIECE HERO HEADER ─── */}
         <section className="relative rounded-3xl bg-gradient-to-b from-[#0c0f1c]/90 via-[#080a13]/95 to-[#05060b] border border-white/10 p-6 sm:p-10 overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-cyan-500/10 blur-[130px] pointer-events-none rounded-full" />
-          <div className="absolute bottom-0 left-0 w-[450px] h-[300px] bg-purple-500/10 blur-[130px] pointer-events-none rounded-full" />
+          <div className="absolute top-0 right-0 w-full max-w-[500px] h-[300px] bg-cyan-500/10 blur-[130px] pointer-events-none rounded-full" />
+          <div className="absolute bottom-0 left-0 w-full max-w-[450px] h-[300px] bg-purple-500/10 blur-[130px] pointer-events-none rounded-full" />
 
           <div className="relative z-10 space-y-6">
             {/* Top Badges */}

@@ -65,8 +65,8 @@ export function TestNodeScene({ onNext, userName }: TestNodeSceneProps) {
   return (
     <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center px-4 py-6 sm:py-8 select-none text-left">
       {/* Background radial atmosphere */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-cyan-500/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 w-[400px] h-[300px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[400px] bg-cyan-500/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/3 right-1/4 w-full max-w-[400px] h-[300px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Header */}
       <div className="text-center space-y-2 mb-6 max-w-2xl mx-auto">

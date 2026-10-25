@@ -375,8 +375,8 @@ export default function PreRegisterPage() {
     <div className="min-h-screen bg-[#020305] text-white flex flex-col justify-between selection:bg-amber-400 selection:text-black font-sans relative overflow-x-hidden">
       {/* Background Radiance & Micro-Grid */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:28px_28px] opacity-60 z-0" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[450px] bg-gradient-to-b from-amber-500/[0.08] via-rose-500/[0.03] to-transparent blur-[160px] pointer-events-none z-0" />
-      <div className="fixed bottom-0 right-0 w-[600px] h-[500px] bg-amber-500/[0.03] blur-[140px] pointer-events-none z-0" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[1100px] h-[450px] bg-gradient-to-b from-amber-500/[0.08] via-rose-500/[0.03] to-transparent blur-[160px] pointer-events-none z-0" />
+      <div className="fixed bottom-0 right-0 w-full max-w-[600px] h-[500px] bg-amber-500/[0.03] blur-[140px] pointer-events-none z-0" />
 
       {/* Top Header */}
       <header className="relative z-20 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/[0.07]">

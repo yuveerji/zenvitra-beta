@@ -665,10 +665,10 @@ export default function QuickSessionCreatorStudio({
     <div className="min-h-screen bg-[#05070d] text-white flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
       
       {/* Background Ambience & Cyber Grid */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[800px] h-[450px] bg-gradient-to-b from-amber-500/12 via-orange-500/5 to-transparent blur-3xl rounded-full" />
-        <div className="absolute top-1/3 right-10 w-[700px] h-[450px] bg-gradient-to-bl from-cyan-500/12 via-blue-500/5 to-transparent blur-3xl rounded-full" />
-        <div className="absolute bottom-0 left-1/3 w-[800px] h-[500px] bg-gradient-to-t from-emerald-500/8 via-purple-500/5 to-transparent blur-3xl rounded-full" />
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-full max-w-[800px] h-[450px] bg-gradient-to-b from-amber-500/12 via-orange-500/5 to-transparent blur-3xl rounded-full" />
+        <div className="absolute top-1/3 right-10 w-full max-w-[700px] h-[450px] bg-gradient-to-bl from-cyan-500/12 via-blue-500/5 to-transparent blur-3xl rounded-full" />
+        <div className="absolute bottom-0 left-1/3 w-full max-w-[800px] h-[500px] bg-gradient-to-t from-emerald-500/8 via-purple-500/5 to-transparent blur-3xl rounded-full" />
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff06_1px,transparent_1px)] [background-size:24px_24px] opacity-70" />
       </div>
 

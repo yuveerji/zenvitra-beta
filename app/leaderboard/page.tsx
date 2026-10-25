@@ -101,7 +101,7 @@ export default function LeaderboardPage() {
     <div className="min-h-screen bg-[#030407] text-white pt-24 pb-20 px-3 sm:px-6 lg:px-8 selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Background Lighting */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-gradient-to-b from-amber-600/10 via-cyan-600/5 to-transparent blur-3xl rounded-full" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[450px] bg-gradient-to-b from-amber-600/10 via-cyan-600/5 to-transparent blur-3xl rounded-full" />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-6 sm:space-y-8">

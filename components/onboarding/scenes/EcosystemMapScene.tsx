@@ -236,7 +236,7 @@ export function EcosystemMapScene({ onNext }: EcosystemMapSceneProps) {
           opacity: 0.14,
         }}
         transition={{ duration: 0.4 }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[550px] rounded-full blur-[170px] pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[720px] h-[550px] rounded-full blur-[170px] pointer-events-none"
       />
 
       {/* Header */}
@@ -282,7 +282,7 @@ export function EcosystemMapScene({ onNext }: EcosystemMapSceneProps) {
         {/* Concentric Orbit Rings */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] rounded-full border border-white/[0.05] pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] rounded-full border border-dashed border-white/[0.06] pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[470px] h-[470px] rounded-full border border-white/[0.04] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[470px] h-[470px] rounded-full border border-white/[0.04] pointer-events-none" />
 
         {/* SVG Radial Synaptic Spoke Lines from Center (50%, 50%) */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">

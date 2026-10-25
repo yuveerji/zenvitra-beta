@@ -689,8 +689,8 @@ export function PricingClient() {
       <main className="flex-1 pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-20">
         
         {/* ── SECTION 1: HERO & THE GOLDEN PRINCIPLE ── */}
-        <div className="text-center space-y-6 pt-6 sm:pt-12 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/10 blur-[140px] rounded-full pointer-events-none" />
+        <div className="text-center space-y-6 pt-6 sm:pt-12 relative overflow-x-clip">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] h-[300px] bg-cyan-500/10 blur-[140px] rounded-full pointer-events-none" />
 
           {/* Top Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono tracking-wider uppercase shadow-[0_0_20px_rgba(6,182,212,0.2)]">

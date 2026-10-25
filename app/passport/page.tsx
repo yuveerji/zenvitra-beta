@@ -150,7 +150,7 @@ export default function PassportPage() {
     <div className="min-h-screen bg-[#030407] text-white pt-24 pb-24 px-4 sm:px-6 lg:px-8 selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Background Gradients */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-cyan-600/10 via-purple-600/5 to-transparent blur-3xl rounded-full" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[500px] bg-gradient-to-b from-cyan-600/10 via-purple-600/5 to-transparent blur-3xl rounded-full" />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-6 sm:space-y-8">

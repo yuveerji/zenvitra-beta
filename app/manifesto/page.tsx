@@ -32,8 +32,8 @@ export default function ManifestoPage() {
       <Navbar />
 
       {/* Ambient background glow */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-white/[0.02] rounded-full blur-[180px] pointer-events-none" />
-      <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-[160px] pointer-events-none" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[900px] h-[600px] bg-white/[0.02] rounded-full blur-[180px] pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-full max-w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-[160px] pointer-events-none" />
       <div className="fixed inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_center,white_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
       {/* ── Main Manifesto Content ── */}

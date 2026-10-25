@@ -266,8 +266,8 @@ export default function DirectEventShowcasePage() {
 
         {/* ─── MASTERPIECE EVENT SHOWCASE HERO ─── */}
         <div className="relative rounded-3xl bg-gradient-to-b from-[#0c0f1c]/90 via-[#080a13]/95 to-[#05060b] border border-white/10 overflow-hidden shadow-2xl p-6 sm:p-10">
-          <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-cyan-500/10 blur-[130px] pointer-events-none rounded-full" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-purple-500/10 blur-[130px] pointer-events-none rounded-full" />
+          <div className="absolute top-0 right-0 w-full max-w-[500px] h-[300px] bg-cyan-500/10 blur-[130px] pointer-events-none rounded-full" />
+          <div className="absolute bottom-0 left-0 w-full max-w-[400px] h-[300px] bg-purple-500/10 blur-[130px] pointer-events-none rounded-full" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             {/* Left Content */}

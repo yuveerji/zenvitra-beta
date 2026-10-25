@@ -303,7 +303,7 @@ export default function ModelUnCvPage() {
     <div className="min-h-screen bg-[#030407] text-white pt-24 pb-28 px-4 sm:px-6 lg:px-8 selection:bg-amber-500/30 selection:text-amber-200 relative">
       {/* Background Cinematic Atmosphere */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1000px] h-[550px] bg-gradient-to-b from-amber-500/12 via-cyan-500/8 to-transparent blur-3xl rounded-full animate-glow-drift" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[550px] bg-gradient-to-b from-amber-500/12 via-cyan-500/8 to-transparent blur-3xl rounded-full animate-glow-drift" />
         <div className="absolute top-1/2 -left-48 w-96 h-96 bg-purple-500/10 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full pointer-events-none" />
       </div>

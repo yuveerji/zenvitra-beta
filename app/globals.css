@@ -669,8 +669,9 @@ img[src*="/assets/logo"],
    MOBILE SMOOTHNESS & TOUCH OPTIMIZATIONS (60FPS SCROLL ENGINE)
    ══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  * {
+  *, *::before, *::after {
     -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
   }
   
   /* Prevent heavy multi-layer GPU strain on mobile devices */
@@ -681,8 +682,41 @@ img[src*="/assets/logo"],
   
   /* Lock horizontal jitter and give momentum touch scrolling */
   html, body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden !important;
+    position: relative;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: none;
+  }
+
+  /* Prevent ambient blur elements & fixed overlays from stretching document canvas */
+  .pointer-events-none[class*="w-["],
+  .pointer-events-none[class*="blur-"],
+  .pointer-events-none[class*="blur["],
+  [class*="blur-"][class*="w-["],
+  [class*="blur["][class*="w-["] {
+    max-width: 100vw !important;
+  }
+
+  /* Ensure main semantic blocks never cause horizontal blowout */
+  main, section, article, header, footer {
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: clip;
+  }
+
+  /* Ensure tables and data grids scroll horizontally with touch momentum */
+  table, .table-container {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent awkward single-letter word collapsing on flex items */
+  h1, h2, h3, h4, h5, h6, p, span, a, button {
+    overflow-wrap: break-word;
+    word-break: normal;
   }
 }

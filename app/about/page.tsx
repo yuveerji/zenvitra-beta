@@ -178,7 +178,7 @@ export default function AboutUsPage() {
 
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:32px_32px] opacity-40 z-0" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-amber-500/[0.04] via-purple-500/[0.03] to-transparent blur-[140px] pointer-events-none z-0" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[900px] h-[500px] bg-gradient-to-b from-amber-500/[0.04] via-purple-500/[0.03] to-transparent blur-[140px] pointer-events-none z-0" />
 
       {/* Main Content */}
       <main className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 py-16 space-y-24 flex-1 text-left">

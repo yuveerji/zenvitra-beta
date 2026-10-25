@@ -121,7 +121,7 @@ function TestPilotEnclaveContent() {
   return (
     <div className="min-h-screen bg-[#030407] text-white flex flex-col justify-between items-center p-6 relative overflow-hidden font-sans selection:bg-cyan-500/30">
       {/* Background ambient lighting glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-cyan-500/20 via-emerald-500/15 to-purple-500/20 blur-[130px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[550px] h-[550px] bg-gradient-to-tr from-cyan-500/20 via-emerald-500/15 to-purple-500/20 blur-[130px] rounded-full pointer-events-none" />
 
       {/* Top Header */}
       <header className="w-full max-w-xl flex items-center justify-between z-10 pt-4">

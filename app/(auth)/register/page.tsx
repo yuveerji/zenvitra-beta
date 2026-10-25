@@ -359,7 +359,7 @@ export default function RegisterPage() {
         }}
       />
       <Navbar />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-purple-500/[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[350px] bg-purple-500/[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
 
       {/* Main Registration Showcase */}
       <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 flex-1 flex items-start pt-24 sm:pt-28">

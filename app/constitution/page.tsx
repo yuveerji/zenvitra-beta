@@ -164,8 +164,8 @@ export default function ConstitutionPage() {
       {/* Ambient background glows */}
       {!isLight && (
         <>
-          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-amber-500/[0.04] via-rose-500/[0.02] to-transparent blur-[160px] pointer-events-none z-0" />
-          <div className="fixed bottom-0 right-0 w-[700px] h-[700px] bg-cyan-500/[0.02] rounded-full blur-[180px] pointer-events-none z-0" />
+          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[600px] bg-gradient-to-b from-amber-500/[0.04] via-rose-500/[0.02] to-transparent blur-[160px] pointer-events-none z-0" />
+          <div className="fixed bottom-0 right-0 w-full max-w-[700px] h-[700px] bg-cyan-500/[0.02] rounded-full blur-[180px] pointer-events-none z-0" />
           <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:36px_36px] opacity-40 z-0" />
         </>
       )}

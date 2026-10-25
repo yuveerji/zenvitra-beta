@@ -214,11 +214,11 @@ export default function ZenFormsPublicResponsesPage() {
     >
       {/* Background Ambience */}
       <div
-        className="fixed top-0 right-1/4 w-[550px] h-[550px] blur-[160px] pointer-events-none rounded-full z-0 opacity-40 animate-pulse"
+        className="fixed top-0 right-1/4 w-full max-w-[550px] h-[550px] blur-[160px] pointer-events-none rounded-full z-0 opacity-40 animate-pulse"
         style={{ backgroundColor: `${accentColor}20` }}
       />
       <div
-        className="fixed bottom-10 left-10 w-[450px] h-[450px] blur-[150px] pointer-events-none rounded-full z-0 opacity-30"
+        className="fixed bottom-10 left-10 w-full max-w-[450px] h-[450px] blur-[150px] pointer-events-none rounded-full z-0 opacity-30"
         style={{ backgroundColor: `${accentColor}10` }}
       />
 
