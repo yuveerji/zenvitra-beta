@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, LayoutDashboard, Radio } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -152,11 +153,20 @@ export function FinalTrailerScene({ onComplete }: FinalTrailerSceneProps) {
           </p>
 
           {/* Final Action CTAs */}
-          <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="pt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3.5">
+            <Link
+              href="/what-is-zenvitra"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#C5A46D] via-[#DFBA73] to-[#C5A46D] hover:opacity-95 text-[#08090C] font-display font-black text-xs sm:text-sm tracking-wide shadow-[0_0_30px_rgba(197,164,109,0.35)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2.5 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-[#08090C]" />
+              <span>WHAT IS ZENVITRA? (READ CHARTER)</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+
             <button
               type="button"
               onClick={() => onComplete('/pulse')}
-              className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-black font-display font-black text-sm tracking-wide shadow-[0_0_40px_rgba(6,182,212,0.35)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 cursor-pointer group"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-black font-display font-black text-xs sm:text-sm tracking-wide shadow-[0_0_40px_rgba(6,182,212,0.35)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
             >
               <span>ENTER ZENVITRA</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -165,7 +175,7 @@ export function FinalTrailerScene({ onComplete }: FinalTrailerSceneProps) {
             <button
               type="button"
               onClick={() => onComplete('/dashboard')}
-              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/15 text-white font-mono text-xs tracking-wider uppercase transition cursor-pointer flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/15 text-white font-mono text-xs tracking-wider uppercase transition cursor-pointer flex items-center justify-center gap-2"
             >
               <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
               <span>EXPLORE DASHBOARD</span>

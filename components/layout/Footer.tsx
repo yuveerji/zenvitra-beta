@@ -465,6 +465,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/what-is-zenvitra" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5 text-[#C5A46D] font-medium">
+                  <span>What is ZENVITRA?</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/manifesto" className="hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-1.5">
                   <span>Youth Manifesto</span>
                 </Link>

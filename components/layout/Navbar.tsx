@@ -117,6 +117,7 @@ export function Navbar({
     { name: 'ZEN.PAYMENTS', href: '/payments', icon: CreditCard, tag: 'Financial Layer', desc: 'Unified Checkout, Invoices, Subscriptions & Payouts' },
     { name: 'Conference OS', href: '/mun/conference', icon: Layers, tag: 'Secretariat', desc: 'Secretariat Command Center & Liveboard' },
     { name: 'Impact Ledger', href: '/impact', icon: Heart, tag: 'Civic Escrow', desc: '10% Profit Endowment Distributed Every 6 Months with Video Proof' },
+    { name: 'What is ZENVITRA?', href: '/what-is-zenvitra', icon: Sparkles, tag: 'Charter', desc: 'By Youth. For Youth. The Youth Foundation, Digital Ecosystem & Manifesto.' },
     { name: 'Our Mission', href: '/mission', icon: Target, tag: 'Manifesto', desc: 'A Generation That Deserves to be Heard: By Youth. For Youth. Youth Comes First.' },
     { name: 'Privacy Policy', href: '/privacy', icon: Lock, tag: 'Legal', desc: 'Zero Behavioral Surveillance, Cryptographic Privacy & RLS Security' },
     { name: 'Terms of Service', href: '/terms', icon: Scale, tag: 'Legal', desc: 'Decentralized Civic Operating System Terms & Conditions' },
