@@ -210,6 +210,8 @@ export async function middleware(request: NextRequest) {
       '/api',
       '/support',
       '/zen-support',
+      '/dias',
+      '/mun',
     ];
 
     const isCountdownWhitelisted = COUNTDOWN_WHITELIST_PREFIXES.some(
