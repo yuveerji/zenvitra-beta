@@ -9,7 +9,6 @@ import {
   SubstantiveVoteSession,
   PointLedgerEntry,
   CommenterFeedback,
-  DEMO_DEFAULT_DELEGATES,
   ChairRole,
   ActiveDebateMode,
 } from '@/types/zenMun';
@@ -32,7 +31,7 @@ export function generateChairPassword(): string {
 
 export function createInitialZenMunSession(initialCode?: string): ZenMunSession {
   const validCode =
-    initialCode && initialCode.trim() && initialCode.trim().toUpperCase() !== 'PJL6KY'
+    initialCode && initialCode.trim().length >= 4
       ? initialCode.trim().toUpperCase()
       : generateSessionCode();
 
@@ -238,18 +237,18 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
   const [showChatDrawer, setShowChatDrawer] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState<'access' | 'motions' | 'voting' | 'points' | 'people'>('access');
 
-  // Load state from localStorage on client mount & sanitize any legacy seeded data
+  // Load state from localStorage on client mount & sanitize
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LS_ZENMUN_SESSION);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === 'object') {
-          // If stored session has no real roster, or is pre-session, or was a legacy unconfigured Lok Sabha seed: PURGE IT!
+          // If stored session has no real roster, or is pre-session, or has no configured committee: PURGE IT!
           const hasGenuineRoster = Array.isArray(parsed.roster) && parsed.roster.length > 0;
-          const isLegacyLokSabhaSeed = parsed.committeeName === 'Lok Sabha' && (!parsed.roster || parsed.roster.length === 0);
+          const isUnconfigured = !parsed.committeeName || parsed.committeeName.trim() === '';
 
-          if (!hasGenuineRoster || isLegacyLokSabhaSeed || parsed.sessionState === 'pre-session' || !parsed.committeeName) {
+          if (!hasGenuineRoster || isUnconfigured || parsed.sessionState === 'pre-session') {
             localStorage.removeItem(LS_ZENMUN_SESSION);
             localStorage.removeItem('zenvitra_dias_active_session');
             setSession(createInitialZenMunSession());
@@ -257,20 +256,14 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
             return;
           }
 
-          // Real user session: sanitize and restore
-          const isLegacySeededCode = parsed.sessionCode === 'PJL6KY' || !parsed.sessionCode;
-          const cleanCode = isLegacySeededCode ? generateSessionCode() : parsed.sessionCode.toUpperCase();
-          const cleanPassword = isLegacySeededCode && parsed.chairPassword === '4829'
-            ? generateChairPassword()
-            : (parsed.chairPassword || generateChairPassword());
+          // Real user session: restore with verified sessionCode and chairPassword
+          const cleanCode = typeof parsed.sessionCode === 'string' && parsed.sessionCode.trim().length >= 4
+            ? parsed.sessionCode.trim().toUpperCase()
+            : generateSessionCode();
+          const cleanPassword = parsed.chairPassword || generateChairPassword();
 
-          // Purge mock seeded points and feedbacks
-          const cleanPointsLedger = Array.isArray(parsed.pointsLedger)
-            ? parsed.pointsLedger.filter((p: any) => !p.id?.startsWith('pt-seed-'))
-            : [];
-          const cleanCommenterFeedbacks = Array.isArray(parsed.commenterFeedbacks)
-            ? parsed.commenterFeedbacks.filter((f: any) => !f.id?.startsWith('cf-seed-'))
-            : [];
+          const cleanPointsLedger = Array.isArray(parsed.pointsLedger) ? parsed.pointsLedger : [];
+          const cleanCommenterFeedbacks = Array.isArray(parsed.commenterFeedbacks) ? parsed.commenterFeedbacks : [];
 
           const sanitizedSession: ZenMunSession = {
             ...parsed,
@@ -1072,7 +1065,7 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
     return list.sort((a, b) => b.blendedScore - a.blendedScore || b.totalPoints - a.totalPoints);
   }, [session.roster, session.pointsLedger, session.commenterFeedbacks, session.settings.rankingBlend]);
 
-  // Dynamic Session Code Regeneration (Non-seeded)
+  // Dynamic Session Code Regeneration
   const regenerateSessionCode = useCallback(() => {
     const newCode = generateSessionCode();
     setSession((prev) => ({

@@ -68,9 +68,8 @@ export const DiasNav: React.FC = () => {
       if (munRaw) {
         const parsed = JSON.parse(munRaw);
         const hasGenuineRoster = Array.isArray(parsed?.roster) && parsed.roster.length > 0;
-        const isLegacySeed = parsed?.committeeName === 'Lok Sabha' && !hasGenuineRoster;
 
-        if (parsed?.committeeName && parsed?.sessionCode && hasGenuineRoster && !isLegacySeed && parsed?.sessionState === 'in-session') {
+        if (parsed?.committeeName && parsed?.sessionCode && hasGenuineRoster && parsed?.sessionState === 'in-session') {
           setActiveStoredSession({
             sessionCode: parsed.sessionCode,
             committeeName: parsed.committeeName,

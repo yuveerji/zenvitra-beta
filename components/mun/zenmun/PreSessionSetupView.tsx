@@ -593,7 +593,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
       : (emblem || '/assets/committees/un.svg');
 
     const cleanCode =
-      session.sessionCode && session.sessionCode !== 'PJL6KY'
+      session.sessionCode && session.sessionCode.trim().length >= 4
         ? session.sessionCode
         : generateSessionCode();
 

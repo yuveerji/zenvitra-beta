@@ -15,9 +15,9 @@ function ChairSessionInitializer() {
   const { session, setSession } = useZenMun();
 
   useEffect(() => {
-    // If a valid code was provided in the URL (and not the deprecated seeded placeholder)
-    if (rawCode && rawCode.toUpperCase() !== 'PJL6KY') {
-      const codeUpper = rawCode.toUpperCase();
+    // If a valid code was provided in the URL
+    if (rawCode && rawCode.trim().length >= 4) {
+      const codeUpper = rawCode.trim().toUpperCase();
       if (codeUpper !== session.sessionCode) {
         setSession((prev) => ({
           ...prev,
@@ -25,8 +25,8 @@ function ChairSessionInitializer() {
           chairName,
         }));
       }
-    } else if (!session.sessionCode || session.sessionCode === 'PJL6KY') {
-      // Non-seeded dynamic code generation
+    } else if (!session.sessionCode) {
+      // Dynamic session code generation
       const freshCode = generateSessionCode();
       setSession((prev) => ({
         ...prev,

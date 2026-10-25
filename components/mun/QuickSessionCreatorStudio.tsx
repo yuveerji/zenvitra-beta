@@ -549,7 +549,7 @@ export default function QuickSessionCreatorStudio({
     router.push('/committee');
   };
 
-  // 2. ⚡ START INSTANT SESSION (Auto-seeds missing items & immediately starts)
+  // 2. ⚡ START INSTANT SESSION (Auto-configures defaults & immediately starts)
   const handleStartInstantSession = () => {
     const finalName = committeeName.trim() || activePreset?.name || 'United Nations Security Council';
     const finalTopic = topic.trim() || activePreset?.topic || 'Non-Proliferation, Nuclear Safeguards & Maritime Security';
@@ -700,7 +700,7 @@ export default function QuickSessionCreatorStudio({
             type="button"
             onClick={handleStartInstantSession}
             className="flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:brightness-110 text-black font-sans font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.35)] active:scale-95 group"
-            title="Instant 1-Click Launch: Auto-seeds defaults if fields are empty and opens Dais Chamber"
+            title="Instant 1-Click Launch: Auto-configures standard template if fields are empty and opens Dais Chamber"
           >
             <Zap className="w-3.5 h-3.5 fill-black group-hover:scale-125 transition-transform" />
             <span>START INSTANT SESSION</span>
@@ -1555,7 +1555,7 @@ export default function QuickSessionCreatorStudio({
                   <span>START INSTANT SESSION</span>
                 </div>
                 <span className="text-[10px] font-mono font-medium opacity-80">
-                  Instant launch &bull; Auto-seeds standard matrix if empty
+                  Instant launch &bull; Auto-configures standard matrix if empty
                 </span>
               </button>
 

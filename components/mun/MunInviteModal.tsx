@@ -193,7 +193,7 @@ export function MunInviteModal() {
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
                   <div>
-                    <p className="text-xs font-bold text-white font-mono">ALLOTMENT ACCEPTED &amp; SEED RECORD MINIED</p>
+                    <p className="text-xs font-bold text-white font-mono">ALLOTMENT ACCEPTED &amp; RECORD REGISTERED</p>
                     <p className="text-[11px] text-emerald-300 font-mono">Your diplomatic passport is active in the chamber.</p>
                   </div>
                 </div>

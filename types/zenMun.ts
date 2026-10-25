@@ -1514,24 +1514,6 @@ export const QUICK_BLOC_BUNDLES: Array<{
   },
 ];
 
-export const DEMO_DEFAULT_DELEGATES: ZenDelegate[] = [
-  { id: 'del-bh', name: 'Bahrain', countryCode: 'bh', role: 'member', attendance: 'present' },
-  { id: 'del-cn', name: 'China', countryCode: 'cn', role: 'member', attendance: 'present', isP5: true },
-  { id: 'del-co', name: 'Colombia', countryCode: 'co', role: 'member', attendance: 'present' },
-  { id: 'del-dk', name: 'Denmark', countryCode: 'dk', role: 'member', attendance: 'present' },
-  { id: 'del-cd', name: 'DR Congo', countryCode: 'cd', role: 'member', attendance: 'present' },
-  { id: 'del-fr', name: 'France', countryCode: 'fr', role: 'member', attendance: 'present', isP5: true },
-  { id: 'del-gr', name: 'Greece', countryCode: 'gr', role: 'member', attendance: 'present' },
-  { id: 'del-lv', name: 'Latvia', countryCode: 'lv', role: 'member', attendance: 'present' },
-  { id: 'del-lr', name: 'Liberia', countryCode: 'lr', role: 'member', attendance: 'present' },
-  { id: 'del-pk', name: 'Pakistan', countryCode: 'pk', role: 'member', attendance: 'present' },
-  { id: 'del-pa', name: 'Panama', countryCode: 'pa', role: 'member', attendance: 'present' },
-  { id: 'del-ru', name: 'Russia', countryCode: 'ru', role: 'member', attendance: 'present', isP5: true },
-  { id: 'del-so', name: 'Somalia', countryCode: 'so', role: 'member', attendance: 'present' },
-  { id: 'del-gb', name: 'United Kingdom', countryCode: 'gb', role: 'member', attendance: 'present', isP5: true },
-  { id: 'del-us', name: 'United States', countryCode: 'us', role: 'member', attendance: 'present', isP5: true },
-];
-
 export interface TutorialStepDef {
   step: number;
   title: string;

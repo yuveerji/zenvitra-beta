@@ -89,7 +89,7 @@ export function QrCodeOverlay() {
               type="button"
               onClick={handleRotate}
               className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition border border-white/20 active:scale-95"
-              title="Generate a fresh unseeded code"
+              title="Generate a fresh session code"
             >
               <RefreshCw className={`w-4 h-4 ${rotated ? 'animate-spin' : ''}`} />
               <span>{rotated ? 'Generated!' : 'New Code'}</span>

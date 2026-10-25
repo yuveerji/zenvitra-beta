@@ -523,7 +523,7 @@ export function SettingsModal() {
                             setTimeout(() => setRotatedCode(false), 1500);
                           }}
                           className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold flex items-center gap-1 text-cyan-400 cursor-pointer transition active:scale-95 border border-white/10"
-                          title="Generate a brand new unseeded session code"
+                          title="Generate a brand new session code"
                         >
                           <RefreshCw className={`w-3.5 h-3.5 ${rotatedCode ? 'animate-spin' : ''}`} />
                           <span>{rotatedCode ? 'Generated!' : 'Rotate'}</span>
