@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useZenMun, ZenMunProvider } from '@/context/ZenMunContext';
-import { Sparkles, Mic, Clock, QrCode, Lock } from 'lucide-react';
+import { Sparkles, Mic, MicOff, Clock, QrCode, Lock } from 'lucide-react';
 import { HOST_FORMAT_PRESETS, HostSessionFormat } from '@/types/zenHost';
 import StageAmbientBackground from '@/components/host/StageAmbientBackground';
 
@@ -18,7 +18,11 @@ function PublicStageDisplayInner() {
   const formatPreset = HOST_FORMAT_PRESETS[formatParam] || HOST_FORMAT_PRESETS.general;
   const isVotingDisabled = searchParams?.get('voting') === 'false' || searchParams?.get('voting') === 'off' || searchParams?.get('voting') === 'disabled';
 
-  const activeDelegate = session.roster.find((d) => d.id === session.currentSpeakerId) || session.roster[0];
+  const activeQueue = session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue;
+  const activeSpeakerId = activeQueue.length > 0 ? (session.currentSpeakerId || activeQueue[0]) : null;
+  const activeDelegate = activeSpeakerId
+    ? session.roster.find((d) => d.id === activeSpeakerId)
+    : undefined;
 
   const formatTime = (totalSec: number) => {
     const mins = Math.floor(Math.max(0, totalSec) / 60);
@@ -79,14 +83,18 @@ function PublicStageDisplayInner() {
                 : 'border-white/20 ring-4 ring-white/5 bg-white/5'
             }`}
           >
-            {hasCountryCode ? (
-              <img
-                src={`https://flagcdn.com/w320/${activeDelegate!.countryCode.toLowerCase()}.png`}
-                alt={activeDelegate?.name || 'Performer'}
-                className="w-full h-full object-cover"
-              />
+            {activeDelegate ? (
+              hasCountryCode ? (
+                <img
+                  src={`https://flagcdn.com/w320/${activeDelegate.countryCode.toLowerCase()}.png`}
+                  alt={activeDelegate.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Mic className="w-20 h-20 text-amber-300 stroke-[1.5]" />
+              )
             ) : (
-              <Mic className="w-20 h-20 text-amber-300 stroke-[1.5]" />
+              <MicOff className="w-20 h-20 text-neutral-500 stroke-[1.5]" />
             )}
             {session.isTimerRunning && (
               <span className="absolute -inset-2 rounded-full border border-amber-400/40 animate-ping pointer-events-none" />
@@ -95,11 +103,11 @@ function PublicStageDisplayInner() {
 
           <div className="space-y-1.5">
             <h2 className="text-3xl sm:text-6xl font-black font-space text-white tracking-tight drop-shadow-xl">
-              {activeDelegate?.name || 'Stage Mic Live'}
+              {activeDelegate?.name || 'Floor is Open'}
             </h2>
             <div className="flex items-center justify-center gap-2">
               <span className="text-xs font-mono text-amber-400 uppercase tracking-[0.25em] font-bold">
-                {session.isTimerRunning ? 'NOW ON STAGE' : 'STAGE READY'}
+                {!activeDelegate ? 'AWAITING SPEAKER' : session.isTimerRunning ? 'NOW ON STAGE' : 'STAGE READY'}
               </span>
               {session.isTimerRunning && (
                 <div className="flex items-end gap-1 h-3 px-1">
@@ -124,7 +132,7 @@ function PublicStageDisplayInner() {
                 : 'text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.25)]'
             }`}
           >
-            {formatTime(session.remainingSeconds)}
+            {activeDelegate ? formatTime(session.remainingSeconds) : '--:--'}
           </div>
 
           {/* Progress Bar */}

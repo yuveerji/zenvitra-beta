@@ -264,6 +264,11 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
 
           const cleanPointsLedger = Array.isArray(parsed.pointsLedger) ? parsed.pointsLedger : [];
           const cleanCommenterFeedbacks = Array.isArray(parsed.commenterFeedbacks) ? parsed.commenterFeedbacks : [];
+          const cleanQueue = Array.isArray(parsed.speakerQueue) ? parsed.speakerQueue : [];
+          const cleanCaucusQueue = Array.isArray(parsed.caucusSpeakerQueue) ? parsed.caucusSpeakerQueue : [];
+          const isGslMode = parsed.activeMode === 'gsl';
+          const activeQ = isGslMode ? cleanQueue : cleanCaucusQueue;
+          const cleanCurrentSpeaker = activeQ.length > 0 ? (parsed.currentSpeakerId || activeQ[0]) : null;
 
           const sanitizedSession: ZenMunSession = {
             ...parsed,
@@ -272,7 +277,10 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
             pointsLedger: cleanPointsLedger,
             commenterFeedbacks: cleanCommenterFeedbacks,
             roster: parsed.roster,
-            speakerQueue: Array.isArray(parsed.speakerQueue) ? parsed.speakerQueue : [],
+            speakerQueue: cleanQueue,
+            caucusSpeakerQueue: cleanCaucusQueue,
+            currentSpeakerId: cleanCurrentSpeaker,
+            isTimerRunning: activeQ.length > 0 ? Boolean(parsed.isTimerRunning) : false,
             tutorial: {
               ...(parsed.tutorial || {}),
               welcomeModalOpen: false,
@@ -304,7 +312,13 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
         let stateChanged = false;
 
         // 1. GSL / Active Speaker Clock
-        if (updated.isTimerRunning && updated.remainingSeconds > 0) {
+        const activeQueue = updated.activeMode === 'gsl' ? updated.speakerQueue : updated.caucusSpeakerQueue;
+        if (activeQueue.length === 0 || !updated.currentSpeakerId) {
+          if (updated.isTimerRunning) {
+            updated = { ...updated, isTimerRunning: false };
+            stateChanged = true;
+          }
+        } else if (updated.isTimerRunning && updated.remainingSeconds > 0) {
           const nextSec = updated.remainingSeconds - 1;
           const nextSpoken = updated.totalSpokenSecondsCurrent + 1;
           updated = {
@@ -381,11 +395,23 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
 
   // Timer Handlers
   const toggleTimer = useCallback(() => {
-    setSession((prev) => ({ ...prev, isTimerRunning: !prev.isTimerRunning }));
+    setSession((prev) => {
+      const activeQueue = prev.activeMode === 'gsl' ? prev.speakerQueue : prev.caucusSpeakerQueue;
+      if (activeQueue.length === 0 || !prev.currentSpeakerId) {
+        return { ...prev, isTimerRunning: false };
+      }
+      return { ...prev, isTimerRunning: !prev.isTimerRunning };
+    });
   }, []);
 
   const startTimer = useCallback(() => {
-    setSession((prev) => ({ ...prev, isTimerRunning: true }));
+    setSession((prev) => {
+      const activeQueue = prev.activeMode === 'gsl' ? prev.speakerQueue : prev.caucusSpeakerQueue;
+      if (activeQueue.length === 0 || !prev.currentSpeakerId) {
+        return { ...prev, isTimerRunning: false };
+      }
+      return { ...prev, isTimerRunning: true };
+    });
   }, []);
 
   const pauseTimer = useCallback(() => {
@@ -496,12 +522,16 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
       const isGsl = prev.activeMode === 'gsl';
       const queue = isGsl ? [...prev.speakerQueue] : [...prev.caucusSpeakerQueue];
       queue.splice(index, 1);
-      const current = queue[0] || null;
+      const isEmpty = queue.length === 0;
+      const current = isEmpty ? null : (index === 0 ? (queue[0] || null) : (prev.currentSpeakerId || queue[0] || null));
       return {
         ...prev,
         speakerQueue: isGsl ? queue : prev.speakerQueue,
         caucusSpeakerQueue: !isGsl ? queue : prev.caucusSpeakerQueue,
         currentSpeakerId: current,
+        isTimerRunning: isEmpty ? false : prev.isTimerRunning,
+        remainingSeconds: isEmpty ? prev.speakingTimeSeconds : prev.remainingSeconds,
+        totalSpokenSecondsCurrent: isEmpty ? 0 : prev.totalSpokenSecondsCurrent,
       };
     });
   }, []);

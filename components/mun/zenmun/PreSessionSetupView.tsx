@@ -585,7 +585,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
     if (!isReadyToStart) return;
 
     const finalDelegates = delegations;
-    const firstQueue = finalDelegates.slice(0, 4).map((d) => d.id);
+    const firstQueue: string[] = []; // STRICT DATA INTEGRITY: queue starts completely empty
     const cleanAcronym = (acronym.trim() || committeeName.trim() || 'LOK SABHA').replace(/_/g, ' ');
     const isInd = Boolean(isIndian || cleanAcronym.toLowerCase().includes('lok'));
     const emblemToUse = isInd
@@ -618,7 +618,7 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
       isIndianCommittee: isInd,
       roster: finalDelegates,
       speakerQueue: firstQueue,
-      currentSpeakerId: firstQueue[0] || null,
+      currentSpeakerId: null,
       remainingSeconds: session.speakingTimeSeconds,
       isTimerRunning: false,
     };

@@ -18,6 +18,7 @@ import {
   Flame,
   Volume2,
   Mic,
+  MicOff,
   MessageSquare,
   Trophy,
   Settings,
@@ -201,10 +202,14 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
 
       if (e.code === 'Space') {
         e.preventDefault();
-        toggleTimer();
+        if (activeDelegate && activeQueue.length > 0) {
+          toggleTimer();
+        }
       } else if (e.key === 'n' || e.key === 'N') {
         e.preventDefault();
-        nextSpeaker();
+        if (activeDelegate && activeQueue.length > 0) {
+          nextSpeaker();
+        }
       } else if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
         resetTimer();
@@ -256,13 +261,15 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
     } catch {}
   }, [startTutorial, session.tutorial.isCompleted]);
 
-  const activeDelegate: ZenDelegate | undefined = session.roster.find(
-    (d) => d.id === session.currentSpeakerId
-  ) || session.roster[0];
+  const activeQueue = session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue;
+  const activeSpeakerId = activeQueue.length > 0 ? (session.currentSpeakerId || activeQueue[0]) : null;
+  const activeDelegate: ZenDelegate | undefined = activeSpeakerId
+    ? session.roster.find((d) => d.id === activeSpeakerId)
+    : undefined;
 
-  const nextQueuedDelegate: ZenDelegate | undefined = session.roster.find(
-    (d) => d.id === (session.activeMode === 'gsl' ? session.speakerQueue[1] : session.caucusSpeakerQueue[1])
-  );
+  const nextQueuedDelegate: ZenDelegate | undefined = activeQueue.length > 1
+    ? session.roster.find((d) => d.id === activeQueue[1])
+    : undefined;
 
   // Format MM:SS
   const formatTime = (totalSec: number) => {
@@ -1032,6 +1039,9 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                             ...(prev.activeMode === 'gsl'
                               ? { speakerQueue: [], currentSpeakerId: null }
                               : { caucusSpeakerQueue: [], currentSpeakerId: null }),
+                            isTimerRunning: false,
+                            remainingSeconds: prev.speakingTimeSeconds,
+                            totalSpokenSecondsCurrent: 0,
                           }));
                         }}
                         className="text-[9px] font-bold text-rose-300 hover:text-rose-200 cursor-pointer"
@@ -1262,83 +1272,142 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 </div>
               </>
             ) : (
-              <div className="py-4 text-xs font-bold text-neutral-400">
-                Add delegates to the queue to start speaking.
+              <div className="flex flex-col items-center justify-center text-center py-6 px-4 space-y-3">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner ${
+                  isLight ? 'bg-black/5 border border-black/10 text-[#C5A46D]' : 'bg-white/[0.04] border border-white/10 text-[#C5A46D]'
+                }`}>
+                  <MicOff className="w-8 h-8 stroke-[1.5]" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className={`text-xl sm:text-2xl font-black tracking-tight ${isLight ? 'text-[#0F172A]' : 'text-white'}`}>
+                    Floor is Open • Queue is Empty
+                  </h3>
+                  <p className={`text-xs max-w-sm mx-auto ${isLight ? 'text-[#64748B]' : 'text-neutral-400'}`}>
+                    No delegation is currently on the floor. Add delegates to the queue below to start timed debate.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('bottom-speaker-input');
+                      if (input) input.focus();
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-[#C5A46D] hover:bg-[#B3935B] text-[#08090C] font-bold text-xs flex items-center gap-1.5 cursor-pointer transition shadow-xs active:scale-95"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Recognize Speaker</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMotionsModal(true)}
+                    className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer transition border active:scale-95 ${
+                      isLight
+                        ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
+                        : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                    }`}
+                  >
+                    <span>Raise Motion [M]</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Digital Countdown Clock (Clean 64px, Clickable to Toggle) */}
+          {/* Digital Countdown Clock (Clean 64px, Clickable to Toggle when Active) */}
           <div
-            onClick={toggleTimer}
+            onClick={() => {
+              if (activeDelegate) {
+                toggleTimer();
+              } else {
+                const input = document.getElementById('bottom-speaker-input');
+                if (input) input.focus();
+              }
+            }}
             id="tutorial-target-clock"
-            className={`font-mono font-black text-6xl sm:text-7xl tracking-tight transition cursor-pointer select-none leading-none relative z-10 my-auto text-center ${
-              session.remainingSeconds === 0 && session.isTimerRunning
-                ? 'text-rose-600 animate-pulse'
+            className={`font-mono font-black text-6xl sm:text-7xl tracking-tight transition select-none leading-none relative z-10 my-auto text-center ${
+              !activeDelegate
+                ? isLight ? 'text-slate-300 cursor-not-allowed' : 'text-white/20 cursor-not-allowed'
+                : session.remainingSeconds === 0 && session.isTimerRunning
+                ? 'text-rose-600 animate-pulse cursor-pointer'
                 : isAmber
-                ? 'text-amber-500 animate-pulse'
+                ? 'text-amber-500 animate-pulse cursor-pointer'
                 : isLight
-                ? 'text-[#0F172A] hover:text-[#0F172A]'
-                : 'text-white hover:text-cyan-300'
+                ? 'text-[#0F172A] hover:text-[#0F172A] cursor-pointer'
+                : 'text-white hover:text-cyan-300 cursor-pointer'
             }`}
-            title="Click clock to Start / Pause [Space]"
+            title={activeDelegate ? "Click clock to Start / Pause [Space]" : "Floor is open • Add speaker to start clock"}
           >
-            {formatTime(session.remainingSeconds)}
+            {activeDelegate ? formatTime(session.remainingSeconds) : '--:--'}
           </div>
 
-          {/* Progress Bar & RTR Button */}
-          <div className="w-full max-w-md mx-auto space-y-1 relative z-10 shrink-0">
-            <div className={`flex items-center justify-between text-[11px] px-1 font-mono ${isLight ? 'text-[#6B655B]' : 'text-neutral-400'}`}>
-              <span>
-                {session.remainingSeconds === 0 && session.isTimerRunning ? (
-                  <span className="text-rose-600 font-bold">TIME EXPIRED</span>
-                ) : (
-                  <span>Slot: {session.speakingTimeSeconds}s</span>
-                )}
+          {/* Progress Bar & RTR Button (Visible when speaker recognized) */}
+          {activeDelegate ? (
+            <div className="w-full max-w-md mx-auto space-y-1 relative z-10 shrink-0">
+              <div className={`flex items-center justify-between text-[11px] px-1 font-mono ${isLight ? 'text-[#6B655B]' : 'text-neutral-400'}`}>
+                <span>
+                  {session.remainingSeconds === 0 && session.isTimerRunning ? (
+                    <span className="text-rose-600 font-bold">TIME EXPIRED</span>
+                  ) : (
+                    <span>Slot: {session.speakingTimeSeconds}s</span>
+                  )}
+                </span>
+
+                {/* Right to Reply */}
+                <button
+                  type="button"
+                  id="tutorial-target-rtr"
+                  onClick={() => openRtr(activeDelegate?.id)}
+                  className="px-2.5 py-0.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/30 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition active:scale-95"
+                  title="Right to Reply"
+                >
+                  <Reply className="w-3 h-3" />
+                  <span>RTR</span>
+                </button>
+              </div>
+
+              <div className={`h-2 w-full rounded-full overflow-hidden p-0.5 border ${
+                isLight ? 'bg-black/5 border-black/10' : 'bg-white/10 border-white/10'
+              }`}>
+                <div
+                  className={`h-full transition-all duration-300 rounded-full ${
+                    session.remainingSeconds === 0 && session.isTimerRunning
+                      ? 'bg-rose-500'
+                      : isAmber
+                      ? 'bg-gradient-to-r from-amber-500 to-rose-500'
+                      : 'bg-gradient-to-r from-emerald-600 to-teal-500'
+                  }`}
+                  style={{ width: `${progressRatio * 100}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="w-full max-w-md mx-auto py-1 text-center relative z-10 shrink-0">
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border ${
+                isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/5 text-neutral-400 border-white/10'
+              }`}>
+                <Clock className="w-3 h-3" />
+                <span>Floor Idle • Default Slot: {session.speakingTimeSeconds}s</span>
               </span>
-
-              {/* Right to Reply */}
-              <button
-                type="button"
-                id="tutorial-target-rtr"
-                onClick={() => openRtr(activeDelegate?.id)}
-                className="px-2.5 py-0.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/30 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition active:scale-95"
-                title="Right to Reply"
-              >
-                <Reply className="w-3 h-3" />
-                <span>RTR</span>
-              </button>
             </div>
-
-            <div className={`h-2 w-full rounded-full overflow-hidden p-0.5 border ${
-              isLight ? 'bg-black/5 border-black/10' : 'bg-white/10 border-white/10'
-            }`}>
-              <div
-                className={`h-full transition-all duration-300 rounded-full ${
-                  session.remainingSeconds === 0 && session.isTimerRunning
-                    ? 'bg-rose-500'
-                    : isAmber
-                    ? 'bg-gradient-to-r from-amber-500 to-rose-500'
-                    : 'bg-gradient-to-r from-emerald-600 to-teal-500'
-                }`}
-                style={{ width: `${progressRatio * 100}%` }}
-              />
-            </div>
-          </div>
+          )}
 
           {/* Primary Timer Controls (Ergonomic h-11 buttons on one plane) */}
           <div className="flex items-center justify-center gap-2.5 pt-1 relative z-10 shrink-0">
             {/* ↺ Reset */}
             <button
               type="button"
+              disabled={!activeDelegate}
               id="tutorial-target-reset-btn"
               onClick={resetTimer}
-              className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
-                isLight
-                  ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#64748B] hover:text-[#0F172A]'
-                  : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
+              className={`w-11 h-11 rounded-xl border flex items-center justify-center transition shadow-xs ${
+                !activeDelegate
+                  ? 'opacity-40 cursor-not-allowed bg-transparent border-white/5 text-neutral-500'
+                  : isLight
+                  ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#64748B] hover:text-[#0F172A] cursor-pointer active:scale-95'
+                  : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white cursor-pointer active:scale-95'
               }`}
-              title="Reset clock [R]"
+              title={activeDelegate ? "Reset clock [R]" : "No active speaker"}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -1346,16 +1415,26 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             {/* ▷ START / ⏸ PAUSE */}
             <button
               type="button"
+              disabled={!activeDelegate}
               id="tutorial-target-start-btn"
-              onClick={toggleTimer}
-              className={`w-48 h-11 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
-                session.isTimerRunning
-                  ? 'bg-[#8C6D1F] hover:bg-[#735A19] text-white shadow-amber-900/20'
-                  : 'bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-sm'
+              onClick={() => {
+                if (activeDelegate) toggleTimer();
+              }}
+              className={`w-48 h-11 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md flex items-center justify-center gap-2 ${
+                !activeDelegate
+                  ? 'bg-white/5 text-neutral-500 border border-white/10 cursor-not-allowed opacity-60'
+                  : session.isTimerRunning
+                  ? 'bg-[#8C6D1F] hover:bg-[#735A19] text-white shadow-amber-900/20 cursor-pointer active:scale-95'
+                  : 'bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-sm cursor-pointer active:scale-95'
               }`}
-              title="Start / Pause [Space]"
+              title={activeDelegate ? "Start / Pause [Space]" : "Recognize a speaker to start debate"}
             >
-              {session.isTimerRunning ? (
+              {!activeDelegate ? (
+                <>
+                  <MicOff className="w-4 h-4 opacity-60" />
+                  <span>Awaiting Speaker</span>
+                </>
+              ) : session.isTimerRunning ? (
                 <>
                   <Pause className="w-4 h-4 fill-current" />
                   <span>PAUSE [Space]</span>
@@ -1371,14 +1450,19 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             {/* ⏭ NEXT */}
             <button
               type="button"
+              disabled={!activeDelegate}
               id="tutorial-target-next-btn"
-              onClick={nextSpeaker}
-              className={`w-36 h-11 rounded-xl border font-bold text-xs uppercase tracking-wider transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
-                isLight
-                  ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]'
-                  : 'bg-[#0c1424] hover:bg-[#121f38] border-cyan-500/30 text-cyan-300'
+              onClick={() => {
+                if (activeDelegate) nextSpeaker();
+              }}
+              className={`w-36 h-11 rounded-xl border font-bold text-xs uppercase tracking-wider transition shadow-xs flex items-center justify-center gap-1.5 ${
+                !activeDelegate
+                  ? 'opacity-40 cursor-not-allowed bg-transparent border-white/5 text-neutral-500'
+                  : isLight
+                  ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A] cursor-pointer active:scale-95'
+                  : 'bg-[#0c1424] hover:bg-[#121f38] border-cyan-500/30 text-cyan-300 cursor-pointer active:scale-95'
               }`}
-              title="Next Speaker [N]"
+              title={activeDelegate ? "Next Speaker [N]" : "Queue is empty"}
             >
               <SkipForward className="w-4 h-4" />
               <span>NEXT [N]</span>
@@ -1388,14 +1472,19 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             <div className="relative">
               <button
                 type="button"
+                disabled={!activeDelegate}
                 id="tutorial-target-add-time"
-                onClick={() => setShowAddTimePopover(!showAddTimePopover)}
-                className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
-                  isLight
-                    ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A]'
-                    : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
+                onClick={() => {
+                  if (activeDelegate) setShowAddTimePopover(!showAddTimePopover);
+                }}
+                className={`w-11 h-11 rounded-xl border flex items-center justify-center transition shadow-xs ${
+                  !activeDelegate
+                    ? 'opacity-40 cursor-not-allowed bg-transparent border-white/5 text-neutral-500'
+                    : isLight
+                    ? 'bg-white hover:bg-[#F1F5F9] border-[#CBD5E1] text-[#0F172A] cursor-pointer active:scale-95'
+                    : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/30 text-cyan-400 cursor-pointer active:scale-95'
                 }`}
-                title="Add time to clock"
+                title={activeDelegate ? "Add time to clock" : "No active speaker"}
               >
                 <Clock className="w-4 h-4" />
               </button>
@@ -1542,6 +1631,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
         {/* Left: Quick-add speaker input */}
         <div className="relative flex-1 max-w-sm">
           <input
+            id="bottom-speaker-input"
             type="text"
             value={bottomInput}
             onChange={(e) => {
