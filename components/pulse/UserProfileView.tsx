@@ -51,6 +51,9 @@ import { SettingsModal } from '@/components/settings/SettingsModal';
 import { VerificationModal } from '@/components/modals/VerificationModal';
 import OrganizerKycModal from '@/components/events/OrganizerKycModal';
 import { compressAvatarImage } from '@/lib/imageUtils';
+import { PulseBadgeType } from '@/types/pulse';
+import { MASTER_BADGES, isFoundingMember } from '@/lib/badgeSystem';
+import { BadgeSelectorModal } from './BadgeSelectorModal';
 
 export function UserProfileView() {
   const router = useRouter();
@@ -163,6 +166,7 @@ export function UserProfileView() {
   const [activePostModal, setActivePostModal] = useState<PulsePost | null>(null);
   const [showModalPostSettings, setShowModalPostSettings] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
 
   // Organizer KYC & Tickets ledger state
   const [kycModalOpen, setKycModalOpen] = useState(false);
@@ -428,6 +432,15 @@ export function UserProfileView() {
   );
   const isVerifiedEffective = Boolean(profile.isVerified || (profile as any)?.is_verified || isFounderProfile);
 
+  const effectiveBadgeKey: PulseBadgeType = 
+    (profile?.badge as PulseBadgeType) || 
+    (isFounderProfile ? 'FOUNDER' : (isFoundingMember(displayHandle) ? 'FOUNDING MEMBER' : 'DELEGATE'));
+  const equippedBadgeMeta = MASTER_BADGES[effectiveBadgeKey] || MASTER_BADGES['DELEGATE'];
+
+  const handleEquipBadge = (newBadge: PulseBadgeType) => {
+    updateMyProfile({ badge: newBadge });
+  };
+
   const isProfessionalOrEventAccount = Boolean(
     profile.accountType === 'professional' ||
     profile.isSubscribedOrganizer ||
@@ -508,6 +521,18 @@ export function UserProfileView() {
                   )}
                 </button>
               )}
+
+              {/* ── Active Configurable Sovereign Badge ── */}
+              <button
+                type="button"
+                onClick={() => isOwnProfile && setShowBadgeModal(true)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-sans font-bold tracking-wide transition-all ${equippedBadgeMeta.colorClass} ${isOwnProfile ? 'cursor-pointer hover:scale-105 active:scale-95 hover:brightness-110 shadow-sm' : 'cursor-default'}`}
+                title={isOwnProfile ? "Click to configure your active badge (Equip any badge you have earned!)" : equippedBadgeMeta.description}
+              >
+                <span>{equippedBadgeMeta.icon}</span>
+                <span>{equippedBadgeMeta.label}</span>
+                {isOwnProfile && <Sparkles className="w-3 h-3 opacity-70 ml-0.5 text-indigo-300" />}
+              </button>
             </h1>
 
             {isOwnProfile ? (
@@ -2117,6 +2142,29 @@ export function UserProfileView() {
                 />
               </div>
 
+              {/* Active Display Badge Selector */}
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-between gap-3">
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <span className="text-xs font-bold text-white">Active Display Badge</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed truncate">
+                    Equipped: <span className="text-indigo-300 font-semibold">{equippedBadgeMeta.icon} {equippedBadgeMeta.label}</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setShowBadgeModal(true);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/25 text-xs font-semibold transition cursor-pointer shrink-0"
+                >
+                  Change Badge
+                </button>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs font-medium text-zinc-300 block">Role / Focus</label>
                 <input
@@ -2562,6 +2610,15 @@ export function UserProfileView() {
       <VerificationModal
         isOpen={showVerificationModal}
         onClose={() => setShowVerificationModal(false)}
+      />
+
+      {/* ─── CONFIGURE BADGE MODAL ─── */}
+      <BadgeSelectorModal
+        isOpen={showBadgeModal}
+        onClose={() => setShowBadgeModal(false)}
+        userProfile={profile}
+        currentBadge={effectiveBadgeKey}
+        onEquipBadge={handleEquipBadge}
       />
 
 

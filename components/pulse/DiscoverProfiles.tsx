@@ -34,7 +34,8 @@ import {
   Share2
 } from 'lucide-react';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
-import { PulseProfile, FluxVideo } from '@/types/pulse';
+import { PulseProfile, FluxVideo, PulseBadgeType } from '@/types/pulse';
+import { MASTER_BADGES, isFoundingMember } from '@/lib/badgeSystem';
 
 export function DiscoverProfiles() {
   const router = useRouter();
@@ -121,7 +122,7 @@ export function DiscoverProfiles() {
     loadSheetUsers();
   }, []);
 
-  const filterOptions = ['ALL', 'FLUX REELS', 'FOUNDER', 'DELEGATE', 'ORGANIZATION', 'WRITER', 'THINKER', 'CREATOR', 'RESEARCHER'];
+  const filterOptions = ['ALL', 'FOUNDING MEMBER', 'FLUX REELS', 'FOUNDER', 'DELEGATE', 'ORGANIZATION', 'WRITER', 'THINKER', 'CREATOR', 'RESEARCHER'];
 
   // Combined master directory of profiles
   const allKnownProfiles = useMemo(() => {
@@ -567,9 +568,16 @@ export function DiscoverProfiles() {
                           </div>
                         </div>
 
-                        <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-mono text-[9px] font-bold uppercase shrink-0">
-                          {p.badge || 'DELEGATE'}
-                        </span>
+                        {(() => {
+                          const bKey = (p.badge as PulseBadgeType) || (isFoundingMember(p.username) ? 'FOUNDING MEMBER' : 'DELEGATE');
+                          const meta = MASTER_BADGES[bKey] || MASTER_BADGES['DELEGATE'];
+                          return (
+                            <span className={`px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase shrink-0 flex items-center gap-1 ${meta.colorClass}`}>
+                              <span>{meta.icon}</span>
+                              <span>{meta.label}</span>
+                            </span>
+                          );
+                        })()}
                       </div>
 
                       <p className="text-xs text-neutral-300 leading-relaxed font-sans line-clamp-2 mt-3.5">

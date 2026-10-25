@@ -411,6 +411,18 @@ export interface ProfileAnalytics {
   activePassesIssued: number;
 }
 
+export type PulseBadgeType =
+  | 'FOUNDER'
+  | 'FOUNDING MEMBER'
+  | 'DELEGATE'
+  | 'DIPLOMAT'
+  | 'CREATOR'
+  | 'YOUTH LEADER'
+  | 'CHAMBER CHAIR'
+  | 'PRESS CORPS'
+  | 'ORGANIZATION'
+  | 'NODE';
+
 export interface PulseProfile {
   id: string;
   username: string;
@@ -420,7 +432,8 @@ export interface PulseProfile {
   coverImage?: string;
   isPrivate: boolean;
   isVerified: boolean;
-  badge: 'FOUNDER' | 'DELEGATE' | 'CREATOR' | 'YOUTH LEADER' | 'NODE' | 'ORGANIZATION';
+  badge: PulseBadgeType;
+  unlockedBadges?: PulseBadgeType[];
   accountType: 'personal' | 'professional';
   category?: string; // e.g. 'MUN Delegation', 'Youth NGO', 'Clean Energy Studio'
   isSubscribedOrganizer: boolean; // Has Event Section Subscription

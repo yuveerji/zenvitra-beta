@@ -37,7 +37,8 @@ import {
   BookOpen,
   Feather
 } from 'lucide-react';
-import { PulsePost } from '@/types/pulse';
+import { PulsePost, PulseBadgeType } from '@/types/pulse';
+import { MASTER_BADGES, isFoundingMember } from '@/lib/badgeSystem';
 import { useZenPulse } from '@/context/ZenPulsePlatformContext';
 import { useGlobalAudio } from '@/components/audio/GlobalAudioContext';
 import { ImageGrid } from './ImageGrid';
@@ -185,13 +186,26 @@ export function PostCard({ post }: PostCardProps) {
 
   // Determine author badge color
   const getBadge = () => {
-    if (post.authorUsername.includes('zen') || post.authorUsername.includes('admin')) {
+    const rawBadge = (post as any).authorBadge || (post as any).badge;
+    const authorUname = (post.authorUsername || '').toLowerCase().trim().replace(/^@/, '');
+    if (authorUname === 'yuveer' || authorUname === 'founder') {
+      return { text: '👑 FOUNDER', color: 'bg-amber-400/15 text-amber-300 border-amber-400/40' };
+    }
+    if (rawBadge && MASTER_BADGES[rawBadge as PulseBadgeType]) {
+      const meta = MASTER_BADGES[rawBadge as PulseBadgeType];
+      return { text: `${meta.icon} ${meta.label}`, color: meta.colorClass };
+    }
+    if (isFoundingMember(authorUname)) {
+      const meta = MASTER_BADGES['FOUNDING MEMBER'];
+      return { text: `${meta.icon} ${meta.label}`, color: meta.colorClass };
+    }
+    if (authorUname.includes('zen') || authorUname.includes('admin')) {
       return { text: 'SOVEREIGN CORE', color: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30' };
     }
-    if (post.authorUsername.includes('mun') || post.authorUsername.includes('writer') || post.authorUsername.includes('press')) {
+    if (authorUname.includes('mun') || authorUname.includes('writer') || authorUname.includes('press')) {
       return { text: 'VERIFIED WRITER', color: 'bg-violet-500/10 text-violet-300 border-violet-500/30' };
     }
-    return { text: 'VERIFIED NODE', color: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' };
+    return { text: '🏛️ DELEGATE', color: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30' };
   };
 
   const badge = getBadge();

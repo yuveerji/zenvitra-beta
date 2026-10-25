@@ -24,8 +24,10 @@ import {
   BountyTip,
   RationaleTag,
   PulsePostFormat,
-  PulseSourceItem
+  PulseSourceItem,
+  PulseBadgeType
 } from '@/types/pulse';
+import { isFoundingMember } from '@/lib/badgeSystem';
 import { auditFluxDispatch, auditPostDispatch } from '@/lib/fluxIntegrityGuard';
 import { broadcastActivitySync } from '@/lib/reactiveActivityHub';
 import { pushLiveNotification } from '@/lib/notificationStorage';
@@ -164,7 +166,7 @@ interface ZenPulseContextType {
   profiles: PulseProfile[];
   myProfile: PulseProfile;
   getProfileByUsername: (username: string) => PulseProfile | undefined;
-  updateMyProfile: (data: Partial<Pick<PulseProfile, 'name' | 'bio' | 'avatar' | 'website' | 'location' | 'isPrivate'>>) => void;
+  updateMyProfile: (data: Partial<Pick<PulseProfile, 'name' | 'bio' | 'avatar' | 'website' | 'location' | 'isPrivate' | 'badge'>>) => void;
   upgradeToProfessional: (category: string) => void;
   subscribeToOrganizerPro: () => void;
   addProfileHostedEvent: (eventData: Omit<ProfileHostedEvent, 'id' | 'registeredCount'>) => void;
@@ -599,6 +601,8 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       ? activeSub.planId 
       : (existing?.subscriptionPlan ?? 'FREE');
     const hasOrgAccess = isFounderUser || (activeSub ? ['org-pro', 'org-elite', 'org-enterprise', 'event-pro', 'event-elite'].includes(activeSub.planId) : Boolean(existing?.isSubscribedOrganizer));
+    const isFounding = isFoundingMember(activeUsername);
+    const defaultBadge: PulseBadgeType = isFounderUser ? 'FOUNDER' : (isFounding ? 'FOUNDING MEMBER' : (hasOrgAccess ? 'ORGANIZATION' : 'DELEGATE'));
 
     if (existing && (existing.username || existing.name)) {
       const cleanedHostedEvents = (existing.hostedEvents || []).filter((e: any) => !isSeededProfileEvent(e));
@@ -611,6 +615,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
         bio: profile?.bio || existing.bio || 'Sovereign Plenary Delegate on Zenvitra.',
         isVerified: isVerifiedFlag,
         isSubscribedOrganizer: hasOrgAccess,
+        badge: (existing?.badge || defaultBadge) as PulseBadgeType,
         subscriptionPlan: resolvedSubPlan as any,
         hostedEvents: cleanedHostedEvents,
       };
@@ -621,7 +626,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
       name: activeName,
       bio: profile?.bio || 'Sovereign Plenary Delegate on Zenvitra.',
       avatar: profile?.avatar_url || (profile as any)?.avatar || clientSessionUser?.avatar_url || clientSessionUser?.avatar || '',
-      badge: isFounderUser ? 'FOUNDER' : (hasOrgAccess ? 'ORGANIZATION' : 'DELEGATE'),
+      badge: defaultBadge,
       accountType: isFounderUser ? 'professional' : 'personal',
       isSubscribedOrganizer: hasOrgAccess,
       subscriptionPlan: resolvedSubPlan as any,
@@ -644,7 +649,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
     };
   }, [allProfiles, currentUserId, currentUserName, currentUserUsername, profile, clientSessionUser]);
 
-  const updateMyProfile = useCallback((data: Partial<Pick<PulseProfile, 'name' | 'bio' | 'avatar' | 'website' | 'location' | 'isPrivate'>>) => {
+  const updateMyProfile = useCallback((data: Partial<Pick<PulseProfile, 'name' | 'bio' | 'avatar' | 'website' | 'location' | 'isPrivate' | 'badge'>>) => {
     const activeUsername = currentUserUsername || myProfile.username;
     const exists = allProfiles.some((p) => (activeUsername && p.username === activeUsername) || p.id === currentUserId);
     let updated: PulseProfile[];
