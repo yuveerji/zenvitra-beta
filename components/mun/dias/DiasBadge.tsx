@@ -2,7 +2,7 @@ import React from 'react';
 
 export interface DiasBadgeProps {
   children: React.ReactNode;
-  variant?: 'gold' | 'charcoal' | 'emerald' | 'amber' | 'crimson' | 'muted';
+  variant?: 'gold' | 'indigo' | 'charcoal' | 'emerald' | 'amber' | 'crimson' | 'muted';
   size?: 'sm' | 'md';
   dot?: boolean;
   className?: string;
@@ -10,7 +10,7 @@ export interface DiasBadgeProps {
 
 export const DiasBadge: React.FC<DiasBadgeProps> = ({
   children,
-  variant = 'charcoal',
+  variant = 'indigo',
   size = 'md',
   dot = false,
   className = '',
@@ -21,7 +21,8 @@ export const DiasBadge: React.FC<DiasBadgeProps> = ({
   };
 
   const variantStyles = {
-    gold: 'bg-[#C5A46D]/15 text-[#E6D1A5] border border-[#C5A46D]/30',
+    gold: 'bg-indigo-950/50 text-indigo-200 border border-indigo-500/30',
+    indigo: 'bg-indigo-950/60 text-indigo-300 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]',
     charcoal: 'bg-[#181B21] text-[#F4F2ED] border border-[#2A2E39]',
     emerald: 'bg-[#1C3829]/50 text-[#86EFAC] border border-[#22C55E]/30',
     amber: 'bg-[#B87A24]/20 text-[#FCD34D] border border-[#F59E0B]/30',
@@ -30,7 +31,8 @@ export const DiasBadge: React.FC<DiasBadgeProps> = ({
   };
 
   const dotColors = {
-    gold: 'bg-[#C5A46D]',
+    gold: 'bg-indigo-400',
+    indigo: 'bg-indigo-400',
     charcoal: 'bg-[#9A9DA5]',
     emerald: 'bg-[#22C55E]',
     amber: 'bg-[#F59E0B]',

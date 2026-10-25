@@ -32,7 +32,7 @@ export const DiasEmptyState: React.FC<DiasEmptyStateProps> = ({
       className={`flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-2xl border border-dashed border-[#232731] bg-[#111318]/50 ${className}`}
     >
       {icon && (
-        <div className="w-12 h-12 rounded-2xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#C5A46D] mb-4 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#6366F1] mb-4 shadow-sm">
           {icon}
         </div>
       )}

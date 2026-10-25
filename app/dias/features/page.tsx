@@ -33,17 +33,17 @@ import { DiasCard } from '@/components/mun/dias/DiasCard';
 
 export default function DiasFeaturesPage() {
   return (
-    <div className="min-h-screen bg-[#08090B] text-[#F4F2ED] font-sans antialiased selection:bg-[#C5A46D]/30 selection:text-[#E6D1A5]">
+    <div className="min-h-screen bg-[#08090B] text-[#F4F2ED] font-sans antialiased selection:bg-[#6366F1]/30 selection:text-[#C7D2FE]">
       <DiasNav />
 
       <main className="pt-32 sm:pt-40 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-24">
         {/* Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <DiasBadge variant="gold" size="sm">
+          <DiasBadge variant="indigo" size="sm">
             PROCEDURAL ARCHITECTURE
           </DiasBadge>
           <h1 className="text-4xl sm:text-6xl font-serif text-[#F4F2ED] tracking-tight">
-            Engineered for <span className="italic text-[#C5A46D]">Diplomatic Excellence.</span>
+            Engineered for <span className="italic text-[#6366F1]">Diplomatic Excellence.</span>
           </h1>
           <p className="text-sm sm:text-base text-[#9A9DA5] leading-relaxed">
             Every procedural rule, timer calculation, voting threshold, and document lifecycle has been built from the ground up for authentic summits.
@@ -53,7 +53,7 @@ export default function DiasFeaturesPage() {
         {/* Feature Grid Section 1: Parliamentary Legislative Engine */}
         <section id="parliament" className="space-y-8 scroll-mt-28">
           <div className="flex items-center gap-3 border-b border-[#181B21] pb-4">
-            <Building2 className="w-6 h-6 text-[#C5A46D]" />
+            <Building2 className="w-6 h-6 text-[#6366F1]" />
             <h2 className="text-2xl sm:text-3xl font-serif text-[#F4F2ED]">
               Indian Parliamentary & Legislative Engine
             </h2>
@@ -86,7 +86,7 @@ export default function DiasFeaturesPage() {
         {/* Feature Grid Section 2: UN General Assembly & UNSC */}
         <section id="un" className="space-y-8 scroll-mt-28">
           <div className="flex items-center gap-3 border-b border-[#181B21] pb-4">
-            <Globe2 className="w-6 h-6 text-[#C5A46D]" />
+            <Globe2 className="w-6 h-6 text-[#6366F1]" />
             <h2 className="text-2xl sm:text-3xl font-serif text-[#F4F2ED]">
               United Nations Rules of Procedure
             </h2>
@@ -119,7 +119,7 @@ export default function DiasFeaturesPage() {
         {/* Feature Grid Section 3: Press Corps & Media */}
         <section id="press" className="space-y-8 scroll-mt-28">
           <div className="flex items-center gap-3 border-b border-[#181B21] pb-4">
-            <Newspaper className="w-6 h-6 text-[#C5A46D]" />
+            <Newspaper className="w-6 h-6 text-[#6366F1]" />
             <h2 className="text-2xl sm:text-3xl font-serif text-[#F4F2ED]">
               International Press Corps (IPC) Newsroom
             </h2>
@@ -152,7 +152,7 @@ export default function DiasFeaturesPage() {
         {/* Feature Grid Section 4: Crisis Directives */}
         <section id="crisis" className="space-y-8 scroll-mt-28">
           <div className="flex items-center gap-3 border-b border-[#181B21] pb-4">
-            <Flame className="w-6 h-6 text-[#C5A46D]" />
+            <Flame className="w-6 h-6 text-[#6366F1]" />
             <h2 className="text-2xl sm:text-3xl font-serif text-[#F4F2ED]">
               Cabinet & Crisis Simulation Terminal
             </h2>
@@ -189,7 +189,7 @@ export default function DiasFeaturesPage() {
           </h3>
           <div className="flex items-center justify-center gap-4">
             <Link href="/dias?dais=true">
-              <DiasButton variant="gold" size="md">
+              <DiasButton variant="indigo" size="md">
                 Launch Live Dais
               </DiasButton>
             </Link>

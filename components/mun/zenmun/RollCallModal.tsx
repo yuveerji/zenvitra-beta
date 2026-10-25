@@ -72,10 +72,10 @@ export function RollCallModal() {
         {/* Floating Phone Join Card (Zenvitra Mobile) */}
         <div className="w-full md:w-56 shrink-0 bg-[#0E131F] rounded-3xl p-5 border border-white/10 text-white shadow-2xl space-y-3.5 order-2 md:order-1 animate-in fade-in slide-in-from-left-4">
           <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#C5A46D] to-[#9E7D47] text-[#08090C] font-black flex items-center justify-center shadow-[0_0_15px_rgba(197,164,109,0.3)]">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-[#08090C] font-black flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)]">
               <Smartphone className="w-5 h-5 text-emerald-300" />
             </div>
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#C5A46D] bg-[#C5A46D]/15/10 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#6366F1] bg-[#6366F1]/15/10 px-2 py-0.5 rounded-full">
               Zenvitra Mobile
             </span>
           </div>
@@ -94,7 +94,7 @@ export function RollCallModal() {
               <button
                 type="button"
                 onClick={() => setPhoneJoinDecision('yes')}
-                className="py-2.5 rounded-xl bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] text-xs font-black transition shadow-xs cursor-pointer active:scale-95"
+                className="py-2.5 rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-[#08090C] text-xs font-black transition shadow-xs cursor-pointer active:scale-95"
               >
                 Yes
               </button>
@@ -113,7 +113,7 @@ export function RollCallModal() {
               </div>
               <div className="text-center space-y-0.5">
                 <span className="text-[10px] font-mono text-[#8c7860] uppercase">Chamber PIN</span>
-                <div className="text-base font-black font-mono tracking-widest text-[#C5A46D]">
+                <div className="text-base font-black font-mono tracking-widest text-[#6366F1]">
                   {session.sessionCode}
                 </div>
               </div>

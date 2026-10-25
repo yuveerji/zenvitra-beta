@@ -32,9 +32,9 @@ export const ChairConsoleSwitch: React.FC<ChairConsoleSwitchProps> = ({
 
   const content = (
     <div className="flex items-center gap-1.5">
-      <Gavel className="w-3.5 h-3.5 text-[#C5A46D]" />
+      <Gavel className="w-3.5 h-3.5 text-[#6366F1]" />
       <span className="hidden sm:inline">Switch to Chair Console</span>
-      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#C5A46D]/20 text-[#E6D1A5] font-bold">
+      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#6366F1]/20 text-[#C7D2FE] font-bold">
         {assignedRole}
       </span>
     </div>
@@ -44,7 +44,7 @@ export const ChairConsoleSwitch: React.FC<ChairConsoleSwitchProps> = ({
     return (
       <button
         onClick={onSwitch}
-        className={`px-3 py-1.5 rounded-xl bg-[#C5A46D]/15 hover:bg-[#C5A46D]/25 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 ${className}`}
+        className={`px-3 py-1.5 rounded-xl bg-[#6366F1]/15 hover:bg-[#6366F1]/25 border border-[#6366F1]/40 text-[#C7D2FE] text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 ${className}`}
         title={`Switch to Chair Console (${assignedRole} clearance)`}
       >
         {content}
@@ -55,7 +55,7 @@ export const ChairConsoleSwitch: React.FC<ChairConsoleSwitchProps> = ({
   return (
     <Link href={`/dias/${sessionCode}?role=chair`}>
       <button
-        className={`px-3 py-1.5 rounded-xl bg-[#C5A46D]/15 hover:bg-[#C5A46D]/25 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 ${className}`}
+        className={`px-3 py-1.5 rounded-xl bg-[#6366F1]/15 hover:bg-[#6366F1]/25 border border-[#6366F1]/40 text-[#C7D2FE] text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 ${className}`}
         title={`Switch to Chair Console (${assignedRole} clearance)`}
       >
         {content}

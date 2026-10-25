@@ -72,10 +72,10 @@ export function ZenMunMasterDais({ initialView = 'setup', onExit }: ZenMunMaster
       fallback={
         <div className="min-h-screen bg-[#08090C] flex items-center justify-center font-serif text-white">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#C5A46D] to-[#9E7D47] text-[#08090C] font-black flex items-center justify-center animate-pulse shadow-[0_0_20px_rgba(197,164,109,0.3)]">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-[#08090C] font-black flex items-center justify-center animate-pulse shadow-[0_0_20px_rgba(99,102,241,0.3)]">
               🏛️
             </div>
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#C5A46D]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#6366F1]">
               Connecting to Zenvitra Dais...
             </span>
           </div>

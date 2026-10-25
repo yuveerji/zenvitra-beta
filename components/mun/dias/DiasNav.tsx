@@ -132,7 +132,7 @@ export const DiasNav: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Brand identity */}
           <Link href="/dias" className="flex items-center gap-3 group shrink-0">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#181B21] to-[#111318] border border-[#C5A46D]/50 flex items-center justify-center text-[#C5A46D] shadow-[0_0_20px_rgba(197,164,109,0.3)] group-hover:border-[#C5A46D] group-hover:scale-105 transition-all">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#181B21] to-[#111318] border border-[#6366F1]/50 flex items-center justify-center text-[#6366F1] shadow-[0_0_20px_rgba(99,102,241,0.3)] group-hover:border-[#6366F1] group-hover:scale-105 transition-all">
               <Gavel className="w-4 h-4" />
             </div>
             <div className="flex flex-col text-left">
@@ -140,7 +140,7 @@ export const DiasNav: React.FC = () => {
                 <span className="text-sm font-bold tracking-[0.2em] text-[#F4F2ED] uppercase font-sans">
                   ZENVITRA
                 </span>
-                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#C5A46D]/20 text-[#E6D1A5] border border-[#C5A46D]/40 tracking-wider shadow-[0_0_12px_rgba(197,164,109,0.2)]">
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#6366F1]/20 text-[#A5B4FC] border border-[#6366F1]/40 tracking-wider shadow-[0_0_12px_rgba(99,102,241,0.2)]">
                   DIAS
                 </span>
               </div>
@@ -154,17 +154,17 @@ export const DiasNav: React.FC = () => {
           <nav className="hidden lg:flex items-center gap-7">
             <Link
               href="/dias/tour"
-              className="text-xs font-semibold uppercase tracking-wider text-[#C5A46D] hover:text-[#E6D1A5] transition-colors flex items-center gap-1.5 font-mono"
+              className="text-xs font-semibold uppercase tracking-wider text-[#6366F1] hover:text-[#A5B4FC] transition-colors flex items-center gap-1.5 font-mono"
             >
-              <Compass className="w-3.5 h-3.5 text-[#C5A46D]" />
+              <Compass className="w-3.5 h-3.5 text-[#6366F1]" />
               <span>Explore Tour</span>
             </Link>
             <button
               type="button"
               onClick={handleLaunchClick}
-              className="text-xs font-semibold uppercase tracking-wider text-[#9A9DA5] hover:text-[#C5A46D] transition-colors cursor-pointer flex items-center gap-1.5"
+              className="text-xs font-semibold uppercase tracking-wider text-[#9A9DA5] hover:text-[#6366F1] transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#C5A46D]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#6366F1]" />
               <span>Configure Committee</span>
             </button>
             <Link
@@ -206,10 +206,10 @@ export const DiasNav: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setResumeModalOpen(true)}
-                className="px-3 py-1.5 rounded-full bg-[#C5A46D]/15 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-mono font-bold flex items-center gap-2 hover:bg-[#C5A46D]/25 transition cursor-pointer shadow-[0_0_20px_rgba(197,164,109,0.2)] animate-pulse"
+                className="px-3 py-1.5 rounded-full bg-[#6366F1]/15 border border-[#6366F1]/40 text-[#A5B4FC] text-xs font-mono font-bold flex items-center gap-2 hover:bg-[#6366F1]/25 transition cursor-pointer shadow-[0_0_20px_rgba(99,102,241,0.2)] animate-pulse"
                 title="Click to resume in-progress chamber session"
               >
-                <span className="w-2 h-2 rounded-full bg-[#C5A46D]" />
+                <span className="w-2 h-2 rounded-full bg-[#6366F1]" />
                 <span>{activeStoredSession.committeeAcronym} ({activeStoredSession.sessionCode})</span>
               </button>
             )}
@@ -219,9 +219,9 @@ export const DiasNav: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#181B21]/90 border border-white/15 hover:border-[#C5A46D]/50 text-white flex items-center gap-2.5 transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_25px_rgba(197,164,109,0.15)]"
+                  className="px-3.5 py-1.5 rounded-full bg-[#181B21]/90 border border-white/15 hover:border-[#6366F1]/50 text-white flex items-center gap-2.5 transition-all duration-200 cursor-pointer shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_25px_rgba(99,102,241,0.15)]"
                 >
-                  <div className="w-6 h-6 rounded-full bg-[#C5A46D] text-black font-bold font-mono text-[11px] flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-[#6366F1] text-black font-bold font-mono text-[11px] flex items-center justify-center">
                     {displayName.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col text-left">
@@ -239,14 +239,14 @@ export const DiasNav: React.FC = () => {
                   <div className="absolute right-0 top-12 w-52 rounded-2xl bg-[#08090B] border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.9)] p-2 z-[100] text-left animate-in fade-in slide-in-from-top-2">
                     <div className="p-2 border-b border-white/10 mb-1">
                       <p className="text-xs font-bold text-white truncate">{displayName}</p>
-                      <p className="text-[10px] font-mono text-[#C5A46D]">Authenticated Diplomat</p>
+                      <p className="text-[10px] font-mono text-[#6366F1]">Authenticated Diplomat</p>
                     </div>
                     <Link
                       href="/profile"
                       onClick={() => setUserDropdownOpen(false)}
                       className="w-full px-3 py-2 rounded-xl hover:bg-white/[0.06] text-neutral-300 hover:text-white text-xs font-medium flex items-center gap-2 transition"
                     >
-                      <User className="w-3.5 h-3.5 text-[#C5A46D]" />
+                      <User className="w-3.5 h-3.5 text-[#6366F1]" />
                       <span>My Profile</span>
                     </Link>
                     <button
@@ -257,7 +257,7 @@ export const DiasNav: React.FC = () => {
                       }}
                       className="w-full px-3 py-2 rounded-xl hover:bg-white/[0.06] text-neutral-300 hover:text-white text-xs font-medium flex items-center gap-2 transition cursor-pointer text-left"
                     >
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-[#C5A46D]" />
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-[#6366F1]" />
                       <span>Configure Chamber</span>
                     </button>
                     <Link
@@ -265,7 +265,7 @@ export const DiasNav: React.FC = () => {
                       onClick={() => setUserDropdownOpen(false)}
                       className="w-full px-3 py-2 rounded-xl hover:bg-white/[0.06] text-neutral-300 hover:text-white text-xs font-medium flex items-center gap-2 transition"
                     >
-                      <Compass className="w-3.5 h-3.5 text-[#C5A46D]" />
+                      <Compass className="w-3.5 h-3.5 text-[#6366F1]" />
                       <span>Chamber Fleet</span>
                     </Link>
                     <button
@@ -292,7 +292,7 @@ export const DiasNav: React.FC = () => {
 
             {/* Launch Chamber Button with Homepage Glow */}
             <DiasButton
-              variant="gold"
+              variant="indigo"
               size="sm"
               onClick={handleLaunchClick}
               rightIcon={<ArrowRight className="w-3.5 h-3.5 ml-0.5 group-hover:translate-x-1 transition-transform" />}
@@ -303,12 +303,12 @@ export const DiasNav: React.FC = () => {
 
           {/* Mobile Hamburger Button */}
           <div className="flex md:hidden items-center gap-2">
-            <DiasButton variant="gold" size="sm" onClick={handleLaunchClick}>
+            <DiasButton variant="indigo" size="sm" onClick={handleLaunchClick}>
               {activeStoredSession ? 'Rejoin' : 'Setup'}
             </DiasButton>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl bg-[#181B21] border border-[#232731] text-[#F4F2ED] hover:text-[#C5A46D] transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-[#181B21] border border-[#232731] text-[#F4F2ED] hover:text-[#6366F1] transition-colors cursor-pointer"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -326,10 +326,10 @@ export const DiasNav: React.FC = () => {
                   setMobileMenuOpen(false);
                   setResumeModalOpen(true);
                 }}
-                className="w-full p-3 rounded-2xl bg-[#C5A46D]/15 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-mono font-bold flex items-center justify-between"
+                className="w-full p-3 rounded-2xl bg-[#6366F1]/15 border border-[#6366F1]/40 text-[#A5B4FC] text-xs font-mono font-bold flex items-center justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#C5A46D] animate-ping" />
+                  <span className="w-2 h-2 rounded-full bg-[#6366F1] animate-ping" />
                   <span>RESUME: {activeStoredSession.committeeAcronym}</span>
                 </div>
                 <span>{activeStoredSession.sessionCode} &rarr;</span>
@@ -340,9 +340,9 @@ export const DiasNav: React.FC = () => {
               <Link
                 href="/dias/tour"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 text-sm font-semibold text-[#C5A46D] hover:text-[#E6D1A5] py-1 font-mono"
+                className="flex items-center gap-2 text-sm font-semibold text-[#6366F1] hover:text-[#A5B4FC] py-1 font-mono"
               >
-                <Compass className="w-4 h-4 text-[#C5A46D]" />
+                <Compass className="w-4 h-4 text-[#6366F1]" />
                 <span>Explore Dias Tour</span>
               </Link>
               <button
@@ -351,42 +351,42 @@ export const DiasNav: React.FC = () => {
                   setMobileMenuOpen(false);
                   handleLaunchClick();
                 }}
-                className="block text-sm font-semibold text-[#F4F2ED] hover:text-[#C5A46D] py-1 cursor-pointer"
+                className="block text-sm font-semibold text-[#F4F2ED] hover:text-[#6366F1] py-1 cursor-pointer"
               >
                 ⚡ Configure New Committee
               </button>
               <Link
                 href="/dias#fleet"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#C5A46D] py-1"
+                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#6366F1] py-1"
               >
                 Chamber Fleet
               </Link>
               <Link
                 href="/dias#codex"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#C5A46D] py-1"
+                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#6366F1] py-1"
               >
                 Rules of Procedure
               </Link>
               <Link
                 href="/dias#gateways"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#C5A46D] py-1"
+                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#6366F1] py-1"
               >
                 Diplomatic Gateways
               </Link>
               <Link
                 href="/dias/features"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#C5A46D] py-1"
+                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#6366F1] py-1"
               >
                 Procedural Features
               </Link>
               <Link
                 href="/dias/how-it-works"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#C5A46D] py-1"
+                className="block text-sm font-medium text-[#F4F2ED] hover:text-[#6366F1] py-1"
               >
                 How It Works
               </Link>
@@ -397,7 +397,7 @@ export const DiasNav: React.FC = () => {
                 <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
                   <div>
                     <div className="text-xs font-bold text-white">{displayName}</div>
-                    <div className="text-[10px] font-mono text-[#C5A46D]">@{displayHandle}</div>
+                    <div className="text-[10px] font-mono text-[#6366F1]">@{displayHandle}</div>
                   </div>
                   <button
                     type="button"
@@ -418,7 +418,7 @@ export const DiasNav: React.FC = () => {
                 </Link>
               )}
               <DiasButton
-                variant="gold"
+                variant="indigo"
                 size="md"
                 className="w-full"
                 onClick={() => {

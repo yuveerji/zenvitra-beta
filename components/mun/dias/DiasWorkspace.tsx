@@ -471,7 +471,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
       <header className="h-14 bg-[#111318] border-b border-[#232731] px-4 sm:px-6 flex items-center justify-between shrink-0 z-30">
         <div className="flex items-center gap-3 sm:gap-4">
           <Link href="/dias" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-[#181B21] border border-[#C5A46D]/40 flex items-center justify-center text-[#C5A46D] group-hover:border-[#C5A46D] transition-colors shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-[#181B21] border border-[#6366F1]/40 flex items-center justify-center text-[#6366F1] group-hover:border-[#6366F1] transition-colors shadow-sm">
               <Gavel className="w-4 h-4" />
             </div>
             <div className="hidden sm:flex flex-col text-left">
@@ -531,7 +531,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           <span className="text-xs text-[#9A9DA5] font-mono uppercase hidden lg:inline">
             Join Code:
           </span>
-          <span className="px-2.5 py-1 rounded-lg bg-[#181B21] border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-mono font-bold tracking-wider">
+          <span className="px-2.5 py-1 rounded-lg bg-[#181B21] border border-[#6366F1]/40 text-[#C7D2FE] text-xs font-mono font-bold tracking-wider">
             ↗ {sessionCode}
           </span>
         </div>
@@ -544,16 +544,16 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
               className="px-3 py-1.5 rounded-xl bg-[#181B21] hover:bg-[#20242C] border border-[#2B2F37] text-[#9A9DA5] hover:text-[#F4F2ED] text-xs font-semibold transition-all flex items-center gap-1.5"
               title="Switch to Delegate Command Centre"
             >
-              <Users className="w-3.5 h-3.5 text-[#C5A46D]" />
+              <Users className="w-3.5 h-3.5 text-[#6366F1]" />
               <span className="hidden sm:inline">Delegate View</span>
             </button>
           )}
           <button
             onClick={() => setIsRoleModalOpen(true)}
-            className="p-2 rounded-xl bg-[#181B21] border border-[#2B2F37] hover:border-[#C5A46D]/40 text-[#9A9DA5] hover:text-[#E6D1A5] text-xs transition-colors flex items-center gap-1.5"
+            className="p-2 rounded-xl bg-[#181B21] border border-[#2B2F37] hover:border-[#6366F1]/40 text-[#9A9DA5] hover:text-[#C7D2FE] text-xs transition-colors flex items-center gap-1.5"
             title="Manage Committee Access & Roles (Secretariat Admin)"
           >
-            <Shield className="w-3.5 h-3.5 text-[#C5A46D]" />
+            <Shield className="w-3.5 h-3.5 text-[#6366F1]" />
             <span className="text-[11px] font-mono hidden xl:inline">Roles</span>
           </button>
 
@@ -565,7 +565,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
             title={soundEnabled ? 'Acoustic Sound Enabled' : 'Sound Muted'}
             className={`p-2 rounded-xl border text-xs flex items-center gap-1.5 transition-colors ${
               soundEnabled
-                ? 'bg-[#181B21] border-[#C5A46D]/40 text-[#C5A46D]'
+                ? 'bg-[#181B21] border-[#6366F1]/40 text-[#6366F1]'
                 : 'bg-[#111318] border-[#232731] text-[#575B66]'
             }`}
           >
@@ -574,7 +574,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           </button>
 
           <DiasButton
-            variant="gold"
+            variant="indigo"
             size="sm"
             onClick={handleStrikeGavel}
             leftIcon={<Gavel className="w-3.5 h-3.5" />}
@@ -592,7 +592,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           <div className="space-y-5">
             {/* Session Identity Card */}
             <div className="p-3.5 rounded-2xl bg-[#111318] border border-[#232731] space-y-1.5 text-left">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#C5A46D]">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#6366F1]">
                 CHAMBER AGENDA
               </span>
               <h3 className="text-xs font-semibold text-[#F4F2ED] leading-snug">
@@ -614,7 +614,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   onClick={() => setActiveMode('GSL')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     activeMode === 'GSL'
-                      ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+                      ? 'bg-[#6366F1] text-[#08090B] font-semibold shadow-sm'
                       : 'bg-transparent text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#111318]'
                   }`}
                 >
@@ -628,7 +628,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   onClick={() => setActiveMode('MOD_CAUCUS')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     activeMode === 'MOD_CAUCUS'
-                      ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+                      ? 'bg-[#6366F1] text-[#08090B] font-semibold shadow-sm'
                       : 'bg-transparent text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#111318]'
                   }`}
                 >
@@ -642,7 +642,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   onClick={() => setActiveMode('UNMOD_CAUCUS')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     activeMode === 'UNMOD_CAUCUS'
-                      ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+                      ? 'bg-[#6366F1] text-[#08090B] font-semibold shadow-sm'
                       : 'bg-transparent text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#111318]'
                   }`}
                 >
@@ -657,14 +657,14 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                     onClick={() => setActiveMode('PARLIAMENT_BILLS')}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                       activeMode === 'PARLIAMENT_BILLS'
-                        ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+                        ? 'bg-[#6366F1] text-[#08090B] font-semibold shadow-sm'
                         : 'bg-transparent text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#111318]'
                     }`}
                   >
                     <span className="flex items-center gap-2">
                       <Building2 className="w-3.5 h-3.5" /> Legislative Bills
                     </span>
-                    <DiasBadge variant="gold" size="sm">LS</DiasBadge>
+                    <DiasBadge variant="indigo" size="sm">LS</DiasBadge>
                   </button>
                 )}
 
@@ -672,7 +672,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   onClick={() => setActiveMode('VOTING')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     activeMode === 'VOTING'
-                      ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+                      ? 'bg-[#6366F1] text-[#08090B] font-semibold shadow-sm'
                       : 'bg-transparent text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#111318]'
                   }`}
                 >
@@ -686,7 +686,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   onClick={() => setActiveMode('PRESS')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     activeMode === 'PRESS'
-                      ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
+                      ? 'bg-[#6366F1] text-[#08090B] font-semibold shadow-sm'
                       : 'bg-transparent text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#111318]'
                   }`}
                 >
@@ -808,10 +808,10 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   </div>
                   <div className="text-left space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-[#C5A46D] uppercase">
+                      <span className="text-xs font-mono font-bold text-[#6366F1] uppercase">
                         FLOOR RECOGNIZED
                       </span>
-                      <DiasBadge variant="gold" size="sm">
+                      <DiasBadge variant="indigo" size="sm">
                         {activeMode}
                       </DiasBadge>
                     </div>
@@ -846,7 +846,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
               {/* Speech Controls & Yield Popover */}
               <div className="flex flex-wrap items-center justify-center gap-3 relative pb-2">
                 <DiasButton
-                  variant={isTimerRunning ? 'charcoal' : 'gold'}
+                  variant={isTimerRunning ? 'charcoal' : 'indigo'}
                   size="md"
                   onClick={toggleTimer}
                   leftIcon={
@@ -892,19 +892,19 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                     <div className="absolute bottom-12 right-0 w-52 bg-[#111318] border border-[#232731] rounded-2xl p-2 shadow-2xl z-50 space-y-1 text-left animate-in fade-in">
                       <button
                         onClick={() => handleYield('CHAIR')}
-                        className="w-full text-xs text-[#F4F2ED] hover:bg-[#181B21] hover:text-[#C5A46D] px-3 py-2 rounded-xl text-left transition-colors"
+                        className="w-full text-xs text-[#F4F2ED] hover:bg-[#181B21] hover:text-[#6366F1] px-3 py-2 rounded-xl text-left transition-colors"
                       >
                         Yield to Chair
                       </button>
                       <button
                         onClick={() => handleYield('DELEGATE')}
-                        className="w-full text-xs text-[#F4F2ED] hover:bg-[#181B21] hover:text-[#C5A46D] px-3 py-2 rounded-xl text-left transition-colors"
+                        className="w-full text-xs text-[#F4F2ED] hover:bg-[#181B21] hover:text-[#6366F1] px-3 py-2 rounded-xl text-left transition-colors"
                       >
                         Yield to Another Delegate
                       </button>
                       <button
                         onClick={() => handleYield('QUESTIONS')}
-                        className="w-full text-xs text-[#F4F2ED] hover:bg-[#181B21] hover:text-[#C5A46D] px-3 py-2 rounded-xl text-left transition-colors"
+                        className="w-full text-xs text-[#F4F2ED] hover:bg-[#181B21] hover:text-[#6366F1] px-3 py-2 rounded-xl text-left transition-colors"
                       >
                         Yield to Points of Information
                       </button>
@@ -917,7 +917,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
               <div className="space-y-2 pt-3 border-t border-[#181B21]">
                 <div className="flex items-center justify-between text-xs font-semibold text-[#F4F2ED] uppercase tracking-wider">
                   <span className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-[#C5A46D]" />
+                    <Users className="w-3.5 h-3.5 text-[#6366F1]" />
                     Upcoming Speakers ({queue.length})
                   </span>
                   <span className="text-[10px] font-mono text-[#575B66]">GSL Order</span>
@@ -968,20 +968,20 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                 Quick Add:
               </span>
               <input
-                className="bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] text-xs text-[#F4F2ED] rounded-xl px-2.5 sm:px-3 py-1.5 outline-none w-24 xs:w-32 sm:w-44 shrink-0"
+                className="bg-[#08090B] border border-[#232731] focus:border-[#6366F1] text-xs text-[#F4F2ED] rounded-xl px-2.5 sm:px-3 py-1.5 outline-none w-24 xs:w-32 sm:w-44 shrink-0"
                 placeholder="Country / Bench"
                 value={newCountry}
                 onChange={(e) => setNewCountry(e.target.value)}
               />
               <input
-                className="bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] text-xs text-[#F4F2ED] rounded-xl px-2.5 sm:px-3 py-1.5 outline-none min-w-0 flex-1"
+                className="bg-[#08090B] border border-[#232731] focus:border-[#6366F1] text-xs text-[#F4F2ED] rounded-xl px-2.5 sm:px-3 py-1.5 outline-none min-w-0 flex-1"
                 placeholder="Delegate (opt)"
                 value={newDelegateName}
                 onChange={(e) => setNewDelegateName(e.target.value)}
               />
               <DiasButton
                 type="submit"
-                variant="gold"
+                variant="indigo"
                 size="sm"
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
               >
@@ -999,7 +999,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
             <div className="space-y-3 text-left">
               <div className="flex items-center justify-between pb-1 border-b border-[#181B21]">
                 <span className="text-xs font-semibold text-[#F4F2ED] uppercase tracking-wider flex items-center gap-1.5">
-                  <Hand className="w-3.5 h-3.5 text-[#C5A46D]" />
+                  <Hand className="w-3.5 h-3.5 text-[#6366F1]" />
                   Raised Hands ({raisedHands.length})
                 </span>
                 <span className="text-[10px] font-mono text-[#575B66]">Chamber</span>
@@ -1017,7 +1017,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                       <span className="text-[#F4F2ED] font-medium">{country}</span>
                       <button
                         onClick={() => handleRecognizeHand(country)}
-                        className="text-[11px] font-semibold text-[#C5A46D] hover:underline"
+                        className="text-[11px] font-semibold text-[#6366F1] hover:underline"
                       >
                         + Recognize
                       </button>
@@ -1031,7 +1031,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
             <div className="space-y-3 text-left">
               <div className="flex items-center justify-between pb-1 border-b border-[#181B21]">
                 <span className="text-xs font-semibold text-[#F4F2ED] uppercase tracking-wider flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#C5A46D]" />
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-[#6366F1]" />
                   Motions Deck ({pendingMotions.length})
                 </span>
               </div>
@@ -1043,11 +1043,11 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                     className="p-3 rounded-xl bg-[#111318] border border-[#232731] space-y-2 text-left"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-[#E6D1A5]">
+                      <span className="text-xs font-semibold text-[#C7D2FE]">
                         {motion.type}
                       </span>
                       {motion.totalTimeMin > 0 && (
-                        <span className="text-[10px] font-mono text-[#C5A46D]">
+                        <span className="text-[10px] font-mono text-[#6366F1]">
                           {motion.totalTimeMin}m / {motion.speakerTimeSec}s
                         </span>
                       )}
@@ -1079,7 +1079,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                             setRemainingSec(motion.speakerTimeSec);
                           }
                         }}
-                        className="px-2.5 py-1 rounded bg-[#C5A46D] text-[#08090B] text-[10px] font-bold"
+                        className="px-2.5 py-1 rounded bg-[#6366F1] text-[#08090B] text-[10px] font-bold"
                       >
                         Pass Motion
                       </button>
@@ -1091,11 +1091,11 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
           </div>
 
           <div className="p-3 rounded-2xl bg-[#111318] border border-[#232731] text-center space-y-1">
-            <span className="text-[10px] font-mono uppercase text-[#C5A46D] block">
+            <span className="text-[10px] font-mono uppercase text-[#6366F1] block">
               DIAS HOTKEY
             </span>
             <p className="text-xs text-[#9A9DA5]">
-              Press <kbd className="px-1.5 py-0.5 rounded bg-[#181B21] border border-[#2A2E39] text-[#E6D1A5] font-mono">[G]</kbd> for instant Gavel
+              Press <kbd className="px-1.5 py-0.5 rounded bg-[#181B21] border border-[#2A2E39] text-[#C7D2FE] font-mono">[G]</kbd> for instant Gavel
             </p>
           </div>
         </aside>
@@ -1106,7 +1106,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
         <button
           onClick={() => setMobileDrawer(mobileDrawer === 'MODES' ? 'NONE' : 'MODES')}
           className={`flex items-center justify-center gap-1.5 font-medium transition-colors ${
-            mobileDrawer === 'MODES' ? 'text-[#C5A46D] bg-[#111318]' : 'text-[#9A9DA5]'
+            mobileDrawer === 'MODES' ? 'text-[#6366F1] bg-[#111318]' : 'text-[#9A9DA5]'
           }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" /> Modes
@@ -1114,7 +1114,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
         <button
           onClick={() => setMobileDrawer(mobileDrawer === 'QUEUE' ? 'NONE' : 'QUEUE')}
           className={`flex items-center justify-center gap-1.5 font-medium transition-colors border-x border-[#181B21] ${
-            mobileDrawer === 'QUEUE' ? 'text-[#C5A46D] bg-[#111318]' : 'text-[#9A9DA5]'
+            mobileDrawer === 'QUEUE' ? 'text-[#6366F1] bg-[#111318]' : 'text-[#9A9DA5]'
           }`}
         >
           <Users className="w-3.5 h-3.5" /> Queue ({queue.length})
@@ -1122,7 +1122,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
         <button
           onClick={() => setMobileDrawer(mobileDrawer === 'MOTIONS' ? 'NONE' : 'MOTIONS')}
           className={`flex items-center justify-center gap-1.5 font-medium transition-colors ${
-            mobileDrawer === 'MOTIONS' ? 'text-[#C5A46D] bg-[#111318]' : 'text-[#9A9DA5]'
+            mobileDrawer === 'MOTIONS' ? 'text-[#6366F1] bg-[#111318]' : 'text-[#9A9DA5]'
           }`}
         >
           <Hand className="w-3.5 h-3.5" /> Motions ({pendingMotions.length})
@@ -1163,7 +1163,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   }}
                   className={`p-3 rounded-xl border text-xs font-semibold ${
                     activeMode === 'GSL'
-                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      ? 'bg-[#6366F1] text-[#08090B] border-[#6366F1]'
                       : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
                   }`}
                 >
@@ -1176,7 +1176,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   }}
                   className={`p-3 rounded-xl border text-xs font-semibold ${
                     activeMode === 'MOD_CAUCUS'
-                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      ? 'bg-[#6366F1] text-[#08090B] border-[#6366F1]'
                       : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
                   }`}
                 >
@@ -1189,7 +1189,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   }}
                   className={`p-3 rounded-xl border text-xs font-semibold ${
                     activeMode === 'UNMOD_CAUCUS'
-                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      ? 'bg-[#6366F1] text-[#08090B] border-[#6366F1]'
                       : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
                   }`}
                 >
@@ -1203,7 +1203,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                     }}
                     className={`p-3 rounded-xl border text-xs font-semibold ${
                       activeMode === 'PARLIAMENT_BILLS'
-                        ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                        ? 'bg-[#6366F1] text-[#08090B] border-[#6366F1]'
                         : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
                     }`}
                   >
@@ -1217,7 +1217,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   }}
                   className={`p-3 rounded-xl border text-xs font-semibold ${
                     activeMode === 'VOTING'
-                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      ? 'bg-[#6366F1] text-[#08090B] border-[#6366F1]'
                       : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
                   }`}
                 >
@@ -1230,7 +1230,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                   }}
                   className={`p-3 rounded-xl border text-xs font-semibold ${
                     activeMode === 'PRESS'
-                      ? 'bg-[#C5A46D] text-[#08090B] border-[#C5A46D]'
+                      ? 'bg-[#6366F1] text-[#08090B] border-[#6366F1]'
                       : 'bg-[#181B21] text-[#F4F2ED] border-[#2A2E39]'
                   }`}
                 >
@@ -1280,7 +1280,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
             {/* Content for Motions */}
             {mobileDrawer === 'MOTIONS' && (
               <div className="space-y-3 text-left">
-                <span className="text-xs font-mono uppercase text-[#C5A46D] block">
+                <span className="text-xs font-mono uppercase text-[#6366F1] block">
                   Raised Hands ({raisedHands.length})
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -1290,12 +1290,12 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                       onClick={() => handleRecognizeHand(h)}
                       className="px-3 py-1.5 rounded-xl bg-[#181B21] border border-[#2A2E39] text-xs font-medium text-[#F4F2ED] flex items-center gap-1.5"
                     >
-                      <Hand className="w-3.5 h-3.5 text-[#C5A46D]" /> {h}
+                      <Hand className="w-3.5 h-3.5 text-[#6366F1]" /> {h}
                     </button>
                   ))}
                 </div>
 
-                <span className="text-xs font-mono uppercase text-[#C5A46D] block pt-2">
+                <span className="text-xs font-mono uppercase text-[#6366F1] block pt-2">
                   Pending Motions ({pendingMotions.length})
                 </span>
                 <div className="space-y-2">
@@ -1305,7 +1305,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
                       className="p-3 rounded-xl bg-[#08090B] border border-[#232731] space-y-1.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-[#E6D1A5]">{m.type}</span>
+                        <span className="text-xs font-semibold text-[#C7D2FE]">{m.type}</span>
                         <span className="text-[10px] text-[#9A9DA5]">By {m.proposedBy}</span>
                       </div>
                       <p className="text-xs text-[#F4F2ED]">{m.topic}</p>

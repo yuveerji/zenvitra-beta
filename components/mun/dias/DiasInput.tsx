@@ -48,7 +48,7 @@ export const DiasInput = React.forwardRef<HTMLInputElement, DiasInputProps>(
             } ${rightIcon ? 'pr-10' : ''} ${
               error
                 ? 'border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20'
-                : 'border-[#232731] focus:border-[#C5A46D] focus:ring-2 focus:ring-[#C5A46D]/15'
+                : 'border-[#232731] focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/15'
             } ${className}`}
             {...props}
           />

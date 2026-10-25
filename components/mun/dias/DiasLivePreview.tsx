@@ -125,7 +125,7 @@ export const DiasLivePreview: React.FC = () => {
   return (
     <div className="w-full bg-[#08090B] border border-[#232731] rounded-3xl p-4 sm:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.6)] relative overflow-hidden select-none">
       {/* Subtle background glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#C5A46D]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#6366F1]/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header bar of preview */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-[#181B21]">
@@ -142,13 +142,13 @@ export const DiasLivePreview: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <DiasBadge variant={isParliamentary ? 'charcoal' : 'gold'} size="sm" dot>
+          <DiasBadge variant={isParliamentary ? 'charcoal' : 'indigo'} size="sm" dot>
             {isParliamentary ? 'PARLIAMENTARY CODEX' : 'INTERNATIONAL UN CODEX'}
           </DiasBadge>
           <button
             onClick={() => daisAudio.toggle()}
             title="Toggle Procedural Audio"
-            className="p-1.5 rounded-lg bg-[#181B21] border border-[#2A2E39] text-[#C5A46D] hover:bg-[#20242C] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg bg-[#181B21] border border-[#2A2E39] text-[#6366F1] hover:bg-[#20242C] transition-colors cursor-pointer"
           >
             <Volume2 className="w-3.5 h-3.5" />
           </button>
@@ -165,7 +165,7 @@ export const DiasLivePreview: React.FC = () => {
           }}
           className={`px-3.5 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'gsl'
-              ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-sm'
+              ? 'bg-[#6366F1] text-[#08090B] font-bold shadow-sm'
               : 'bg-[#111318] text-[#9A9DA5] hover:text-[#F4F2ED] border border-[#232731]'
           }`}
         >
@@ -181,7 +181,7 @@ export const DiasLivePreview: React.FC = () => {
           }}
           className={`px-3.5 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'mod'
-              ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-sm'
+              ? 'bg-[#6366F1] text-[#08090B] font-bold shadow-sm'
               : 'bg-[#111318] text-[#9A9DA5] hover:text-[#F4F2ED] border border-[#232731]'
           }`}
         >
@@ -197,7 +197,7 @@ export const DiasLivePreview: React.FC = () => {
           }}
           className={`px-3.5 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'parliament'
-              ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-sm'
+              ? 'bg-[#6366F1] text-[#08090B] font-bold shadow-sm'
               : 'bg-[#111318] text-[#9A9DA5] hover:text-[#F4F2ED] border border-[#232731]'
           }`}
         >
@@ -212,8 +212,8 @@ export const DiasLivePreview: React.FC = () => {
         <div className="lg:col-span-8 bg-[#111318] border border-[#232731] rounded-2xl p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono tracking-widest text-[#C5A46D] uppercase flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#C5A46D] animate-ping" />
+              <span className="text-[11px] font-mono tracking-widest text-[#6366F1] uppercase flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#6366F1] animate-ping" />
                 Floor Recognized
               </span>
               <span className="text-xs text-[#9A9DA5] font-mono">
@@ -254,7 +254,7 @@ export const DiasLivePreview: React.FC = () => {
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
                   isRunning
                     ? 'bg-[#B87A24]/30 text-[#FCD34D] border border-[#F59E0B]/40 hover:bg-[#B87A24]/40'
-                    : 'bg-[#C5A46D] text-[#08090B] hover:bg-[#D4B57E] border border-[#E6D1A5]/60 shadow-[0_0_25px_rgba(197,164,109,0.3)] hover:shadow-[0_0_40px_rgba(197,164,109,0.5)]'
+                    : 'bg-[#6366F1] text-[#08090B] hover:bg-[#818CF8] border border-[#C7D2FE]/60 shadow-[0_0_25px_rgba(99,102,241,0.3)] hover:shadow-[0_0_40px_rgba(99,102,241,0.5)]'
                 }`}
               >
                 {isRunning ? (
@@ -280,9 +280,9 @@ export const DiasLivePreview: React.FC = () => {
             {/* Procedural Gavel Strike Button */}
             <button
               onClick={handleGavel}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#181B21] border border-[#C5A46D]/40 text-[#E6D1A5] hover:border-[#C5A46D] hover:bg-[#20242C] transition-all duration-300 text-xs font-bold group shadow-[0_0_20px_rgba(197,164,109,0.15)] hover:shadow-[0_0_30px_rgba(197,164,109,0.3)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#181B21] border border-[#6366F1]/40 text-[#C7D2FE] hover:border-[#6366F1] hover:bg-[#20242C] transition-all duration-300 text-xs font-bold group shadow-[0_0_20px_rgba(99,102,241,0.15)] hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
-              <Gavel className="w-3.5 h-3.5 text-[#C5A46D] group-hover:rotate-12 transition-transform" />
+              <Gavel className="w-3.5 h-3.5 text-[#6366F1] group-hover:rotate-12 transition-transform" />
               <span>Strike Gavel [G]</span>
             </button>
           </div>
@@ -293,7 +293,7 @@ export const DiasLivePreview: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[#181B21]">
               <span className="text-xs font-semibold text-[#F4F2ED] tracking-wide uppercase flex items-center gap-2">
-                <Users className="w-3.5 h-3.5 text-[#C5A46D]" />
+                <Users className="w-3.5 h-3.5 text-[#6366F1]" />
                 Speaking Queue ({currentState.queue.length})
               </span>
               <span className="text-[11px] font-mono text-[#575B66]">Next Up</span>
@@ -332,7 +332,7 @@ export const DiasLivePreview: React.FC = () => {
               <span className="text-[10px] font-mono tracking-wider text-[#9A9DA5] uppercase">
                 PENDING PROCEDURAL MOTION
               </span>
-              <span className="text-[9px] font-mono font-bold text-[#E6D1A5] bg-[#C5A46D]/15 px-1.5 py-0.5 rounded">
+              <span className="text-[9px] font-mono font-bold text-[#C7D2FE] bg-[#6366F1]/15 px-1.5 py-0.5 rounded">
                 {currentState.pendingMotion.badge}
               </span>
             </div>

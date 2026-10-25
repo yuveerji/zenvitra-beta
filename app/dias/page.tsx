@@ -127,7 +127,7 @@ export default function DiasLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090B] text-[#F4F2ED] selection:bg-[#C5A46D]/30 selection:text-[#E6D1A5] font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-[#08090B] text-[#F4F2ED] selection:bg-[#6366F1]/30 selection:text-[#C7D2FE] font-sans antialiased overflow-x-hidden">
       <Suspense fallback={null}>
         <SearchParamsWatcher onModeChange={setViewMode} />
       </Suspense>
@@ -137,17 +137,17 @@ export default function DiasLandingPage() {
       {/* ─── 1. HERO SECTION WITH HOMEPAGE BUTTON GLOW & ANIMATION ─── */}
       <section className="relative pt-32 sm:pt-40 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
         {/* Subtle radial diplomatic glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full max-w-[700px] h-[400px] bg-[#C5A46D]/12 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full max-w-[700px] h-[400px] bg-[#6366F1]/12 rounded-full blur-[140px] pointer-events-none" />
 
         {/* Top diplomatic status pill */}
-        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#181B21]/90 border border-[#C5A46D]/30 text-[#E6D1A5] text-[11px] font-mono tracking-widest uppercase mb-8 shadow-[0_0_20px_rgba(197,164,109,0.15)]">
-          <span className="w-2 h-2 rounded-full bg-[#C5A46D] animate-pulse shadow-[0_0_8px_#C5A46D]" />
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#181B21]/90 border border-[#6366F1]/30 text-[#C7D2FE] text-[11px] font-mono tracking-widest uppercase mb-8 shadow-[0_0_20px_rgba(99,102,241,0.15)]">
+          <span className="w-2 h-2 rounded-full bg-[#6366F1] animate-pulse shadow-[0_0_8px_#6366F1]" />
           <span>Diplomatic Operating System &bull; Presidium V2.4</span>
         </div>
 
         {/* Main Editorial Hero Headline */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-serif font-normal tracking-tight text-[#F4F2ED] max-w-5xl leading-[1.06] mb-6">
-          THE WORLD IS <span className="italic text-[#C5A46D]">IN SESSION.</span>
+          THE WORLD IS <span className="italic text-[#6366F1]">IN SESSION.</span>
         </h1>
 
         {/* Supporting Copy */}
@@ -160,9 +160,9 @@ export default function DiasLandingPage() {
           {/* Primary CTA: Explore Dias Tour */}
           <Link href="/dias/tour" className="w-full sm:w-auto">
             <DiasButton
-              variant="gold"
+              variant="indigo"
               size="lg"
-              className="w-full sm:w-auto shadow-[0_0_25px_rgba(197,164,109,0.3)]"
+              className="w-full sm:w-auto shadow-[0_0_25px_rgba(99,102,241,0.3)]"
               rightIcon={<Compass className="w-4 h-4 ml-1 group-hover:rotate-45 transition-transform" />}
             >
               Explore Dias Tour
@@ -203,10 +203,10 @@ export default function DiasLandingPage() {
 
         {/* ─── ACTIVE CHAMBER RADAR BANNER (Transferred from /committee) ─── */}
         {activeStoredSession && (
-          <div className="w-full max-w-5xl mb-12 p-6 sm:p-7 rounded-3xl bg-[#111318]/90 border border-[#C5A46D]/40 shadow-[0_0_40px_rgba(197,164,109,0.18)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 backdrop-blur-xl relative overflow-hidden text-left animate-in fade-in slide-in-from-top-3">
+          <div className="w-full max-w-5xl mb-12 p-6 sm:p-7 rounded-3xl bg-[#111318]/90 border border-[#6366F1]/40 shadow-[0_0_40px_rgba(99,102,241,0.18)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 backdrop-blur-xl relative overflow-hidden text-left animate-in fade-in slide-in-from-top-3">
             <div className="flex items-center gap-4 relative z-10">
-              <div className="w-13 h-13 rounded-2xl bg-[#C5A46D]/15 border border-[#C5A46D]/40 flex items-center justify-center text-[#C5A46D] shrink-0 shadow-md">
-                <Radio className="w-6 h-6 animate-pulse text-[#C5A46D]" />
+              <div className="w-13 h-13 rounded-2xl bg-[#6366F1]/15 border border-[#6366F1]/40 flex items-center justify-center text-[#6366F1] shrink-0 shadow-md">
+                <Radio className="w-6 h-6 animate-pulse text-[#6366F1]" />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -214,7 +214,7 @@ export default function DiasLandingPage() {
                     ACTIVE CHAMBER DETECTED
                   </span>
                   <span className="font-mono text-xs text-neutral-300">
-                    PIN: <strong className="text-[#E6D1A5] tracking-widest">{activeStoredSession.sessionCode}</strong>
+                    PIN: <strong className="text-[#C7D2FE] tracking-widest">{activeStoredSession.sessionCode}</strong>
                   </span>
                   <span className="px-2 py-0.5 rounded-full bg-black/40 text-neutral-300 font-mono text-[9px] font-bold uppercase border border-white/10">
                     MODE: {activeStoredSession.activeMode?.toUpperCase() || 'GSL'}
@@ -237,7 +237,7 @@ export default function DiasLandingPage() {
             <div className="flex items-center gap-3 shrink-0 relative z-10 w-full sm:w-auto">
               <Link href="/dias?dais=true" className="w-full sm:w-auto">
                 <DiasButton
-                  variant="gold"
+                  variant="indigo"
                   size="md"
                   className="w-full sm:w-auto"
                   rightIcon={<ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />}
@@ -258,7 +258,7 @@ export default function DiasLandingPage() {
       {/* ─── 2. FOUR DIPLOMATIC CHAMBER GATEWAYS (Transferred from /committee) ─── */}
       <section id="gateways" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-8">
         <div className="text-center space-y-2 max-w-xl mx-auto">
-          <DiasBadge variant="gold" size="sm">
+          <DiasBadge variant="indigo" size="sm">
             PRESIDIUM ACCESS
           </DiasBadge>
           <h2 className="text-3xl sm:text-4xl font-serif text-[#F4F2ED]">
@@ -271,13 +271,13 @@ export default function DiasLandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Gateway 1: Dais Command */}
-          <div className="p-6 rounded-3xl bg-[#111318] border border-[#C5A46D]/30 flex flex-col justify-between space-y-5 hover:border-[#C5A46D]/70 transition-all duration-300 shadow-[0_0_30px_rgba(0,0,0,0.5)] group">
+          <div className="p-6 rounded-3xl bg-[#111318] border border-[#6366F1]/30 flex flex-col justify-between space-y-5 hover:border-[#6366F1]/70 transition-all duration-300 shadow-[0_0_30px_rgba(0,0,0,0.5)] group">
             <div className="space-y-3 text-left">
-              <div className="w-12 h-12 rounded-2xl bg-[#C5A46D]/15 text-[#C5A46D] flex items-center justify-center border border-[#C5A46D]/30 shadow-xs">
-                <Gavel className="w-5 h-5 text-[#C5A46D]" />
+              <div className="w-12 h-12 rounded-2xl bg-[#6366F1]/15 text-[#6366F1] flex items-center justify-center border border-[#6366F1]/30 shadow-xs">
+                <Gavel className="w-5 h-5 text-[#6366F1]" />
               </div>
               <div>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#C5A46D]">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#6366F1]">
                   PRESIDIUM SUITE
                 </span>
                 <h3 className="text-lg font-bold font-serif text-white mt-0.5">Executive Dais Console</h3>
@@ -287,7 +287,7 @@ export default function DiasLandingPage() {
               </p>
             </div>
             <Link href="/dias?dais=true" className="w-full">
-              <DiasButton variant="gold" size="sm" className="w-full justify-center">
+              <DiasButton variant="indigo" size="sm" className="w-full justify-center">
                 Take the Gavel &rarr;
               </DiasButton>
             </Link>
@@ -339,7 +339,7 @@ export default function DiasLandingPage() {
                 value={joinCodeInput}
                 onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
                 placeholder="ROOM PIN..."
-                className="flex-1 px-3 py-2 rounded-full bg-black/60 border border-white/15 text-xs font-mono font-bold tracking-widest text-[#E6D1A5] placeholder-neutral-500 focus:outline-none focus:border-[#C5A46D]"
+                className="flex-1 px-3 py-2 rounded-full bg-black/60 border border-white/15 text-xs font-mono font-bold tracking-widest text-[#C7D2FE] placeholder-neutral-500 focus:outline-none focus:border-[#6366F1]"
               />
               <DiasButton type="submit" variant="amber-glass" size="sm">
                 Join
@@ -377,11 +377,11 @@ export default function DiasLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-5 space-y-5 text-left">
-              <DiasBadge variant="gold" size="sm">
+              <DiasBadge variant="indigo" size="sm">
                 THE PHILOSOPHY
               </DiasBadge>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif tracking-tight text-[#F4F2ED] leading-tight">
-                Diplomacy requires <span className="italic text-[#C5A46D]">precision</span>, not friction.
+                Diplomacy requires <span className="italic text-[#6366F1]">precision</span>, not friction.
               </h2>
               <p className="text-sm sm:text-base text-[#9A9DA5] leading-relaxed font-light">
                 For decades, parliamentary simulations have struggled with chaotic Google Sheets, miscounted votes, lost chits, desynchronized stopwatches, and fragmented paper resolutions.
@@ -389,7 +389,7 @@ export default function DiasLandingPage() {
               <p className="text-sm sm:text-base text-[#9A9DA5] leading-relaxed font-light">
                 ZENVITRA MUN DIAS unifies the entire lifecycle of a summit into a sovereign, zero-latency digital chamber. From roll call to the final division vote, every gavel strike is accounted for.
               </p>
-              <div className="pt-2 flex items-center gap-6 text-xs font-mono text-[#E6D1A5]">
+              <div className="pt-2 flex items-center gap-6 text-xs font-mono text-[#C7D2FE]">
                 <span>✓ 0ms Audio Latency</span>
                 <span>✓ Zero Seeded Accounts</span>
                 <span>✓ Instant Quorum Math</span>
@@ -398,7 +398,7 @@ export default function DiasLandingPage() {
 
             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
               <DiasCard variant="elevated" className="p-6 text-left space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#C5A46D]">
+                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#6366F1]">
                   <Clock className="w-5 h-5" />
                 </div>
                 <h3 className="text-base font-semibold text-[#F4F2ED]">
@@ -410,19 +410,19 @@ export default function DiasLandingPage() {
               </DiasCard>
 
               <DiasCard variant="elevated" className="p-6 text-left space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#C5A46D]">
+                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#6366F1]">
                   <Gavel className="w-5 h-5" />
                 </div>
                 <h3 className="text-base font-semibold text-[#F4F2ED]">
                   Acoustic Gavel Synthesis
                 </h3>
                 <p className="text-xs text-[#9A9DA5] leading-relaxed">
-                  Real physical wood-on-wood resonance modeled via Web Audio API. 3400Hz transient crack, 220Hz wood body, and desk punch at key <kbd className="px-1.5 py-0.5 rounded bg-[#181B21] border border-[#2A2E39] text-[#C5A46D] font-mono">[G]</kbd>.
+                  Real physical wood-on-wood resonance modeled via Web Audio API. 3400Hz transient crack, 220Hz wood body, and desk punch at key <kbd className="px-1.5 py-0.5 rounded bg-[#181B21] border border-[#2A2E39] text-[#6366F1] font-mono">[G]</kbd>.
                 </p>
               </DiasCard>
 
               <DiasCard variant="elevated" className="p-6 text-left space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#C5A46D]">
+                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#6366F1]">
                   <Scale className="w-5 h-5" />
                 </div>
                 <h3 className="text-base font-semibold text-[#F4F2ED]">
@@ -434,7 +434,7 @@ export default function DiasLandingPage() {
               </DiasCard>
 
               <DiasCard variant="elevated" className="p-6 text-left space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#C5A46D]">
+                <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-[#6366F1]">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <h3 className="text-base font-semibold text-[#F4F2ED]">
@@ -452,11 +452,11 @@ export default function DiasLandingPage() {
       {/* ─── 4. PLATFORM CAPABILITIES ─── */}
       <section id="capabilities" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-16">
         <div className="max-w-2xl mx-auto space-y-3">
-          <DiasBadge variant="gold" size="sm">
+          <DiasBadge variant="indigo" size="sm">
             CAPABILITIES
           </DiasBadge>
           <h2 className="text-3xl sm:text-5xl font-serif text-[#F4F2ED]">
-            Architected for <span className="italic text-[#C5A46D]">Every Committee.</span>
+            Architected for <span className="italic text-[#6366F1]">Every Committee.</span>
           </h2>
           <p className="text-sm text-[#9A9DA5]">
             Configurable modules tailored to traditional UN bodies, national parliaments, editorial press rooms, and cabinet war rooms.
@@ -467,7 +467,7 @@ export default function DiasLandingPage() {
           {/* Card 1: Indian Parliamentary System */}
           <DiasCard variant="elevated" isHoverable className="p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#C5A46D]/15 border border-[#C5A46D]/30 flex items-center justify-center text-[#C5A46D]">
+              <div className="w-10 h-10 rounded-xl bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#6366F1]">
                 <Building2 className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-semibold text-[#F4F2ED]">
@@ -477,7 +477,7 @@ export default function DiasLandingPage() {
                 Lok Sabha & Rajya Sabha simulations. Clause-by-clause bill editor, amendment proposals, question hour to ministers, and division voting tallies.
               </p>
             </div>
-            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#C5A46D]">
+            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#6366F1]">
               <span>Bills & Amendments</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -486,7 +486,7 @@ export default function DiasLandingPage() {
           {/* Card 2: United Nations General Assembly & UNSC */}
           <DiasCard variant="elevated" isHoverable className="p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#C5A46D]/15 border border-[#C5A46D]/30 flex items-center justify-center text-[#C5A46D]">
+              <div className="w-10 h-10 rounded-xl bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#6366F1]">
                 <Globe2 className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-semibold text-[#F4F2ED]">
@@ -496,7 +496,7 @@ export default function DiasLandingPage() {
                 Standard UN Rules of Procedure. General Speakers' List, moderated and unmoderated caucuses, P5 veto mechanisms, and working paper management.
               </p>
             </div>
-            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#C5A46D]">
+            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#6366F1]">
               <span>GSL & Moderated</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -505,7 +505,7 @@ export default function DiasLandingPage() {
           {/* Card 3: International Press Corps */}
           <DiasCard variant="elevated" isHoverable className="p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#C5A46D]/15 border border-[#C5A46D]/30 flex items-center justify-center text-[#C5A46D]">
+              <div className="w-10 h-10 rounded-xl bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#6366F1]">
                 <Newspaper className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-semibold text-[#F4F2ED]">
@@ -515,7 +515,7 @@ export default function DiasLandingPage() {
                 Dedicated newsroom wire desk. Draft press releases, submit articles for editorial review, manage embargoes, and broadcast breaking news bulletins.
               </p>
             </div>
-            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#C5A46D]">
+            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#6366F1]">
               <span>Editorial Desk</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -524,7 +524,7 @@ export default function DiasLandingPage() {
           {/* Card 4: Crisis & Cabinet Directives */}
           <DiasCard variant="elevated" isHoverable className="p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-[#C5A46D]/15 border border-[#C5A46D]/30 flex items-center justify-center text-[#C5A46D]">
+              <div className="w-10 h-10 rounded-xl bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#6366F1]">
                 <Flame className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-semibold text-[#F4F2ED]">
@@ -534,7 +534,7 @@ export default function DiasLandingPage() {
                 High-stakes war rooms. Confidential directives, troop deployments, diplomatic sanctions, situation report feeds, and private communications.
               </p>
             </div>
-            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#C5A46D]">
+            <div className="pt-4 border-t border-[#181B21] flex items-center justify-between text-xs font-mono text-[#6366F1]">
               <span>Crisis Directives</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -547,12 +547,12 @@ export default function DiasLandingPage() {
 
       {/* ─── 6. DIPLOMATIC CODEX & RULES OF PROCEDURE (Transferred from /committee) ─── */}
       <section id="codex" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-8">
-        <div className="p-7 sm:p-10 rounded-3xl bg-[#111318] border border-[#C5A46D]/30 shadow-2xl space-y-8">
+        <div className="p-7 sm:p-10 rounded-3xl bg-[#111318] border border-[#6366F1]/30 shadow-2xl space-y-8">
           <div className="space-y-1 border-b border-[#232731] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#C5A46D]" />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#C5A46D]">
+                <BookOpen className="w-4 h-4 text-[#6366F1]" />
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#6366F1]">
                   PARLIAMENTARY CODEX &bull; RULES OF PROCEDURE
                 </span>
               </div>
@@ -568,31 +568,31 @@ export default function DiasLandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
             {/* Column 1: Parliamentary Motions */}
             <div className="p-5 rounded-2xl bg-[#08090B] border border-[#232731] space-y-3">
-              <div className="flex items-center gap-2 text-[#C5A46D]">
+              <div className="flex items-center gap-2 text-[#6366F1]">
                 <Gavel className="w-4 h-4" />
                 <h4 className="text-xs font-bold uppercase tracking-wider font-mono">Procedural Motions</h4>
               </div>
               <ul className="space-y-2.5 text-xs text-neutral-300 leading-relaxed font-normal">
                 <li className="flex items-start gap-2">
-                  <span className="text-[#C5A46D] font-bold">&bull;</span>
+                  <span className="text-[#6366F1] font-bold">&bull;</span>
                   <div>
                     <strong className="text-white">Moderated Caucus:</strong> Topic, total time &amp; individual speaking slot. Simple majority.
                   </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#C5A46D] font-bold">&bull;</span>
+                  <span className="text-[#6366F1] font-bold">&bull;</span>
                   <div>
                     <strong className="text-white">Unmoderated Caucus:</strong> Informal floor consultation and resolution drafting. Simple majority.
                   </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#C5A46D] font-bold">&bull;</span>
+                  <span className="text-[#6366F1] font-bold">&bull;</span>
                   <div>
                     <strong className="text-white">Closure of Debate:</strong> Moves chamber directly into substantive resolution voting. 2/3 majority.
                   </div>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#C5A46D] font-bold">&bull;</span>
+                  <span className="text-[#6366F1] font-bold">&bull;</span>
                   <div>
                     <strong className="text-white">Division Bell (Lok Sabha):</strong> Electronic division recorded vote for legislative clauses.
                   </div>
@@ -675,11 +675,11 @@ export default function DiasLandingPage() {
       <section className="py-24 border-t border-[#181B21] bg-[#0A0C0F]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <DiasBadge variant="gold" size="sm">
+            <DiasBadge variant="indigo" size="sm">
               ROLE-BASED WORKSPACES
             </DiasBadge>
             <h2 className="text-3xl sm:text-5xl font-serif text-[#F4F2ED]">
-              Built for <span className="italic text-[#C5A46D]">Every Diplomatic Seat.</span>
+              Built for <span className="italic text-[#6366F1]">Every Diplomatic Seat.</span>
             </h2>
             <p className="text-sm text-[#9A9DA5]">
               Chairs, delegates, press correspondents, and secretariats each get dedicated, tailored workflows.
@@ -689,7 +689,7 @@ export default function DiasLandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
             {/* Role 1: Chairperson / Presiding Officer */}
             <div className="space-y-4 p-7 rounded-2xl bg-[#111318] border border-[#232731]">
-              <div className="text-xs font-mono uppercase tracking-widest text-[#C5A46D]">
+              <div className="text-xs font-mono uppercase tracking-widest text-[#6366F1]">
                 ROLE &bull; CHAIRPERSON / SPEAKER
               </div>
               <h3 className="text-xl font-semibold text-[#F4F2ED]">
@@ -698,22 +698,22 @@ export default function DiasLandingPage() {
               <p className="text-xs text-[#9A9DA5] leading-relaxed">
                 Full authority over the speaker queue, timer alerts, caucus transitions, and motions lifecycle. Open substantive voting, review amendments, and strike the gavel with instant audio confirmation.
               </p>
-              <ul className="space-y-2 text-xs text-[#E6D1A5] pt-2">
+              <ul className="space-y-2 text-xs text-[#C7D2FE] pt-2">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Realtime Queue Management &amp; Reordering
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Realtime Queue Management &amp; Reordering
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Voice &amp; Division Vote Tallying
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Voice &amp; Division Vote Tallying
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Roll Call Attendance &amp; Automatic Quorum
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Roll Call Attendance &amp; Automatic Quorum
                 </li>
               </ul>
             </div>
 
             {/* Role 2: Delegate / Member of Parliament */}
             <div className="space-y-4 p-7 rounded-2xl bg-[#111318] border border-[#232731]">
-              <div className="text-xs font-mono uppercase tracking-widest text-[#C5A46D]">
+              <div className="text-xs font-mono uppercase tracking-widest text-[#6366F1]">
                 ROLE &bull; DELEGATE / MEMBER
               </div>
               <h3 className="text-xl font-semibold text-[#F4F2ED]">
@@ -722,22 +722,22 @@ export default function DiasLandingPage() {
               <p className="text-xs text-[#9A9DA5] leading-relaxed">
                 Raise points of personal privilege, parliamentary inquiry, or order with one tap. Request recognition, yield remaining time to the chair or other delegates, and review submitted draft resolutions.
               </p>
-              <ul className="space-y-2 text-xs text-[#E6D1A5] pt-2">
+              <ul className="space-y-2 text-xs text-[#C7D2FE] pt-2">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Live Speaking Timer Synchronization
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Live Speaking Timer Synchronization
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Confidential Secret Ballot Submissions
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Confidential Secret Ballot Submissions
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Bilateral &amp; Multi-Party Diplomatic Chits
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Bilateral &amp; Multi-Party Diplomatic Chits
                 </li>
               </ul>
             </div>
 
             {/* Role 3: Secretariat & Administrators */}
             <div className="space-y-4 p-7 rounded-2xl bg-[#111318] border border-[#232731]">
-              <div className="text-xs font-mono uppercase tracking-widest text-[#C5A46D]">
+              <div className="text-xs font-mono uppercase tracking-widest text-[#6366F1]">
                 ROLE &bull; SECRETARIAT / ADMIN
               </div>
               <h3 className="text-xl font-semibold text-[#F4F2ED]">
@@ -746,15 +746,15 @@ export default function DiasLandingPage() {
               <p className="text-xs text-[#9A9DA5] leading-relaxed">
                 Monitor live committee health across all simultaneous chambers. Configure conference dates, assign dais staff, publish conference-wide announcements, and inspect immutable audit logs.
               </p>
-              <ul className="space-y-2 text-xs text-[#E6D1A5] pt-2">
+              <ul className="space-y-2 text-xs text-[#C7D2FE] pt-2">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Multi-Committee Control Deck
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Multi-Committee Control Deck
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Complete Procedural Audit Trails
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Complete Procedural Audit Trails
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D]" /> Conference Accreditation &amp; Verification
+                  <CheckCircle2 className="w-4 h-4 text-[#6366F1]" /> Conference Accreditation &amp; Verification
                 </li>
               </ul>
             </div>
@@ -766,25 +766,25 @@ export default function DiasLandingPage() {
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#111318] border border-[#232731] rounded-3xl p-8 sm:p-14 relative overflow-hidden text-left">
           <div className="max-w-2xl space-y-5">
-            <DiasBadge variant="gold" size="sm">
+            <DiasBadge variant="indigo" size="sm">
               SOVEREIGN SECURITY
             </DiasBadge>
             <h2 className="text-3xl sm:text-5xl font-serif text-[#F4F2ED]">
-              Protection for <span className="italic text-[#C5A46D]">High-Stakes Deliberations.</span>
+              Protection for <span className="italic text-[#6366F1]">High-Stakes Deliberations.</span>
             </h2>
             <p className="text-xs sm:text-sm text-[#9A9DA5] leading-relaxed">
               Every vote, speech, and document transfer is guarded by server-side authorization. Private and restricted sessions are cryptographically separated from public feeds.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
               <div className="flex items-start gap-3">
-                <Lock className="w-4 h-4 text-[#C5A46D] shrink-0 mt-0.5" />
+                <Lock className="w-4 h-4 text-[#6366F1] shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-semibold text-[#F4F2ED]">Zero Leakage Private Sessions</h4>
                   <p className="text-[11px] text-[#9A9DA5]">Restricted crisis and intelligence briefings are invisible in public APIs.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Vote className="w-4 h-4 text-[#C5A46D] shrink-0 mt-0.5" />
+                <Vote className="w-4 h-4 text-[#6366F1] shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-semibold text-[#F4F2ED]">Confidential Division Ballots</h4>
                   <p className="text-[11px] text-[#9A9DA5]">Voter IDs are stripped before tallies are emitted to the chamber.</p>
@@ -798,11 +798,11 @@ export default function DiasLandingPage() {
       {/* ─── 9. FINAL CTA: "THE FLOOR IS YOURS." WITH HOMEPAGE BUTTONS ─── */}
       <section className="py-28 border-t border-[#181B21] bg-gradient-to-b from-[#08090B] to-[#0A0C0F] text-center px-4">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#181B21] border border-[#C5A46D]/40 text-[#C5A46D] shadow-[0_0_30px_rgba(197,164,109,0.2)] mb-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#181B21] border border-[#6366F1]/40 text-[#6366F1] shadow-[0_0_30px_rgba(99,102,241,0.2)] mb-2">
             <Gavel className="w-7 h-7" />
           </div>
           <h2 className="text-4xl sm:text-6xl md:text-7xl font-serif text-[#F4F2ED] tracking-tight">
-            THE FLOOR <span className="italic text-[#C5A46D]">IS YOURS.</span>
+            THE FLOOR <span className="italic text-[#6366F1]">IS YOURS.</span>
           </h2>
           <p className="text-sm sm:text-base text-[#9A9DA5] max-w-xl mx-auto leading-relaxed">
             Experience the future of Model United Nations moderation. Launch a session or enter as a delegate in seconds.
@@ -810,7 +810,7 @@ export default function DiasLandingPage() {
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 font-display">
             <Link href="/dias?dais=true">
               <DiasButton
-                variant="gold"
+                variant="indigo"
                 size="lg"
                 rightIcon={<ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />}
               >

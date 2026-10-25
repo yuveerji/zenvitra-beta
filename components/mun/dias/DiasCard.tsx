@@ -30,11 +30,11 @@ export const DiasCard = React.forwardRef<HTMLDivElement, DiasCardProps>(
     };
 
     const hoverStyle = isHoverable
-      ? 'hover:border-[#C5A46D]/40 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.5)] cursor-pointer'
+      ? 'hover:border-[#6366F1]/40 hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgba(0,0,0,0.5)] cursor-pointer'
       : '';
 
     const goldBorder = hasGoldBorder
-      ? 'border-[#C5A46D]/30 shadow-[0_0_25px_rgba(197,164,109,0.08)]'
+      ? 'border-[#6366F1]/30 shadow-[0_0_25px_rgba(99,102,241,0.08)]'
       : '';
 
     return (

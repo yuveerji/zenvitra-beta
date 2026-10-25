@@ -386,7 +386,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
           <span className="text-[#2B2F37] hidden sm:inline">•</span>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-[#F4F2ED] tracking-wide">{committeeAcronym}</span>
-            <DiasBadge variant={isIndianCommittee ? 'gold' : 'charcoal'} size="sm">
+            <DiasBadge variant={isIndianCommittee ? 'indigo' : 'charcoal'} size="sm">
               {myDelegation.seat}
             </DiasBadge>
           </div>
@@ -401,7 +401,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
             }}
             className={`p-2 rounded-xl border transition-all text-xs flex items-center gap-1.5 ${
               soundEnabled
-                ? 'bg-[#181B21] border-[#C5A46D]/40 text-[#E6D1A5]'
+                ? 'bg-[#181B21] border-[#6366F1]/40 text-[#C7D2FE]'
                 : 'bg-[#111318] border-[#232731] text-[#575B66]'
             }`}
             title="Toggle procedural audio gavel"
@@ -451,12 +451,12 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                   onClick={() => setActiveSection(item.id as DelegateNavSection)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
                     isActive
-                      ? 'bg-[#C5A46D]/15 text-[#E6D1A5] border border-[#C5A46D]/30 font-semibold'
+                      ? 'bg-[#6366F1]/15 text-[#C7D2FE] border border-[#6366F1]/30 font-semibold'
                       : 'text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#111318]'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#C5A46D]' : 'text-[#575B66]'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#6366F1]' : 'text-[#575B66]'}`} />
                     <span>{item.label}</span>
                   </div>
                   {item.id === 'VOTING' && activeBallot.isOpen && !activeBallot.myVote && (
@@ -491,7 +491,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
               <div className="p-6 rounded-2xl bg-gradient-to-r from-[#181B21] to-[#111318] border border-[#232731] flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <DiasBadge variant="gold" size="sm">
+                    <DiasBadge variant="indigo" size="sm">
                       SESSION ACTIVE
                     </DiasBadge>
                     <span className="text-xs font-mono text-[#9A9DA5]">Passcode: {sessionCode}</span>
@@ -503,7 +503,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 <div className="flex flex-wrap items-center gap-3">
                   <DiasButton
                     onClick={() => setActiveSection('LIVE_FLOOR')}
-                    variant="gold"
+                    variant="indigo"
                     size="sm"
                     rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                   >
@@ -564,7 +564,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
 
                 <DiasCard variant="elevated" className="p-4 space-y-2">
                   <span className="text-[10px] font-mono uppercase text-[#9A9DA5]">Committee Mode</span>
-                  <div className="text-base font-semibold text-[#E6D1A5] font-mono">{activeMode}</div>
+                  <div className="text-base font-semibold text-[#C7D2FE] font-mono">{activeMode}</div>
                   <p className="text-[11px] text-[#9A9DA5]">
                     {isTimerRunning ? 'Clock actively ticking' : 'Chamber currently suspended or paused'}
                   </p>
@@ -575,12 +575,12 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
               <div className="p-6 rounded-2xl bg-[#111318] border border-[#232731] space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#181B21]">
                   <div className="flex items-center gap-2.5">
-                    <Radio className="w-4 h-4 text-[#C5A46D] animate-pulse" />
+                    <Radio className="w-4 h-4 text-[#6366F1] animate-pulse" />
                     <span className="text-xs font-semibold text-[#F4F2ED] uppercase tracking-wide">
                       Live Chamber Synchronization
                     </span>
                   </div>
-                  <span className="text-xs font-mono text-[#C5A46D]">Clock: {currentSpeaker ? formatClock(remainingSec) : '--:--'}</span>
+                  <span className="text-xs font-mono text-[#6366F1]">Clock: {currentSpeaker ? formatClock(remainingSec) : '--:--'}</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -589,7 +589,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                       {currentSpeaker ? currentSpeaker.flag : '🏛️'}
                     </div>
                     <div>
-                      <span className="text-[10px] font-mono uppercase text-[#C5A46D] font-bold block">
+                      <span className="text-[10px] font-mono uppercase text-[#6366F1] font-bold block">
                         FLOOR RECOGNIZED
                       </span>
                       <h3 className="text-sm font-semibold text-[#F4F2ED]">
@@ -604,7 +604,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                   <div className="flex items-center gap-2">
                     <DiasButton
                       onClick={handleToggleQueue}
-                      variant={isInQueue ? 'charcoal' : 'gold'}
+                      variant={isInQueue ? 'charcoal' : 'indigo'}
                       size="sm"
                     >
                       {isInQueue ? 'Leave Speakers Queue' : 'Join Speakers Queue'}
@@ -629,10 +629,10 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-[#C5A46D] uppercase">
+                      <span className="text-xs font-mono font-bold text-[#6366F1] uppercase">
                         CURRENT SPEAKER
                       </span>
-                      <DiasBadge variant="gold" size="sm">
+                      <DiasBadge variant="indigo" size="sm">
                         {activeMode}
                       </DiasBadge>
                     </div>
@@ -647,7 +647,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
 
                 <div className="text-right font-mono hidden sm:block">
                   <span className="text-xs text-[#575B66] block">Allocated Time</span>
-                  <span className="text-sm text-[#E6D1A5]">{currentSpeaker ? `${durationSec}s` : '--'}</span>
+                  <span className="text-sm text-[#C7D2FE]">{currentSpeaker ? `${durationSec}s` : '--'}</span>
                 </div>
               </div>
 
@@ -668,7 +668,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 <div className="flex items-center gap-3">
                   <DiasButton
                     onClick={handleToggleQueue}
-                    variant={isInQueue ? 'charcoal' : 'gold'}
+                    variant={isInQueue ? 'charcoal' : 'indigo'}
                     size="md"
                     leftIcon={<Users className="w-4 h-4" />}
                   >
@@ -710,7 +710,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 </div>
                 <DiasButton
                   onClick={() => setIsMotionModalOpen(true)}
-                  variant="gold"
+                  variant="indigo"
                   size="sm"
                   leftIcon={<Plus className="w-3.5 h-3.5" />}
                 >
@@ -726,7 +726,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <DiasBadge variant="gold" size="sm">
+                        <DiasBadge variant="indigo" size="sm">
                           {m.type}
                         </DiasBadge>
                         <span className="text-xs font-mono text-[#575B66]">
@@ -738,7 +738,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                     </div>
 
                     <div>
-                      <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-[#181B21] border border-[#2B2F37] text-[#E6D1A5]">
+                      <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-[#181B21] border border-[#2B2F37] text-[#C7D2FE]">
                         {m.status.replace(/_/g, ' ')}
                       </span>
                     </div>
@@ -759,11 +759,11 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
               </div>
 
               {activeBallot.isOpen ? (
-                <div className="p-6 rounded-2xl bg-[#111318] border border-[#C5A46D]/30 space-y-6 shadow-2xl">
+                <div className="p-6 rounded-2xl bg-[#111318] border border-[#6366F1]/30 space-y-6 shadow-2xl">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                      <span className="text-[10px] font-mono text-[#C5A46D] uppercase font-bold tracking-widest">
+                      <span className="text-[10px] font-mono text-[#6366F1] uppercase font-bold tracking-widest">
                         BALLOT OPEN ON FLOOR
                       </span>
                     </div>
@@ -843,7 +843,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 value={speechText}
                 onChange={(e) => setSpeechText(e.target.value)}
                 rows={12}
-                className="w-full p-4 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-2xl text-sm text-[#F4F2ED] leading-relaxed outline-none"
+                className="w-full p-4 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-2xl text-sm text-[#F4F2ED] leading-relaxed outline-none"
                 placeholder="Draft your floor speech here..."
               />
 
@@ -851,7 +851,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 <span>Pace Metric: 130 words per minute (diplomatic standard)</span>
                 <DiasButton
                   onClick={() => alert('Speech draft saved to local dossier.')}
-                  variant="gold"
+                  variant="indigo"
                   size="sm"
                 >
                   Save to Dossier
@@ -875,7 +875,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                       onClick={() => setChatChannel(ch)}
                       className={`px-3 py-1 rounded-lg text-xs font-mono transition-all ${
                         chatChannel === ch
-                          ? 'bg-[#C5A46D] text-[#08090B] font-bold'
+                          ? 'bg-[#6366F1] text-[#08090B] font-bold'
                           : 'text-[#9A9DA5] hover:text-white'
                       }`}
                     >
@@ -893,7 +893,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                     className="p-3 rounded-xl bg-[#111318] border border-[#232731] space-y-1"
                   >
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-semibold text-[#E6D1A5] font-mono">{msg.sender}</span>
+                      <span className="font-semibold text-[#C7D2FE] font-mono">{msg.sender}</span>
                       <span className="text-[#575B66]">{msg.timestamp}</span>
                     </div>
                     <p className="text-xs text-[#F4F2ED] leading-relaxed">{msg.text}</p>
@@ -908,9 +908,9 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder={`Send message to #${chatChannel.toLowerCase()}...`}
-                  className="flex-1 h-10 px-3 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="flex-1 h-10 px-3 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 />
-                <DiasButton type="submit" variant="gold" size="sm" rightIcon={<Send className="w-3.5 h-3.5" />}>
+                <DiasButton type="submit" variant="indigo" size="sm" rightIcon={<Send className="w-3.5 h-3.5" />}>
                   Send
                 </DiasButton>
               </form>
@@ -943,7 +943,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 <div className="pt-2">
                   <DiasButton
                     onClick={() => setActiveSection('LIVE_FLOOR')}
-                    variant="gold"
+                    variant="indigo"
                     size="sm"
                     rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                   >
@@ -962,7 +962,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
           <div className="bg-[#111318] border border-[#232731] rounded-2xl p-6 max-w-lg w-full text-left space-y-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-[#181B21]">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#C5A46D]/15 flex items-center justify-center text-[#C5A46D]">
+                <div className="w-8 h-8 rounded-lg bg-[#6366F1]/15 flex items-center justify-center text-[#6366F1]">
                   <Scale className="w-4 h-4" />
                 </div>
                 <div>
@@ -984,7 +984,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 <select
                   value={motionType}
                   onChange={(e) => setMotionType(e.target.value)}
-                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 >
                   {isIndianCommittee ? (
                     <>
@@ -1017,7 +1017,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                   value={motionTopic}
                   onChange={(e) => setMotionTopic(e.target.value)}
                   placeholder="e.g. Delimitation Impact on Federal Fiscal Shares"
-                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 />
               </div>
 
@@ -1030,7 +1030,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                     max="60"
                     value={motionTotalTime}
                     onChange={(e) => setMotionTotalTime(e.target.value)}
-                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                   />
                 </div>
                 <div>
@@ -1041,7 +1041,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                     max="180"
                     value={motionSpeakingTime}
                     onChange={(e) => setMotionSpeakingTime(e.target.value)}
-                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                   />
                 </div>
               </div>
@@ -1055,7 +1055,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                 >
                   Cancel
                 </DiasButton>
-                <DiasButton type="submit" variant="gold" size="sm">
+                <DiasButton type="submit" variant="indigo" size="sm">
                   Transmit Motion to Chair
                 </DiasButton>
               </div>

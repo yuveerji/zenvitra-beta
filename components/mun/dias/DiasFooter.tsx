@@ -10,14 +10,14 @@ export const DiasFooter: React.FC = () => {
           {/* Column 1: Brand & Identity */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#111318] border border-[#C5A46D]/40 flex items-center justify-center text-[#C5A46D]">
+              <div className="w-8 h-8 rounded-xl bg-[#111318] border border-[#6366F1]/40 flex items-center justify-center text-[#6366F1]">
                 <Gavel className="w-4 h-4" />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold tracking-[0.2em] text-[#F4F2ED] uppercase">
                   ZENVITRA
                 </span>
-                <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-[#C5A46D]/20 text-[#E6D1A5] border border-[#C5A46D]/30">
+                <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-[#6366F1]/20 text-[#C7D2FE] border border-[#6366F1]/30">
                   DIAS
                 </span>
               </div>
@@ -25,7 +25,7 @@ export const DiasFooter: React.FC = () => {
             <p className="text-xs text-[#717684] max-w-sm leading-relaxed">
               The premier digital operating system for diplomatic summits, parliamentary simulations, and Model United Nations live sessions worldwide. Engineered for zero latency, real-time procedural clarity, and sovereign data integrity.
             </p>
-            <div className="flex items-center gap-4 text-[11px] text-[#C5A46D] pt-2">
+            <div className="flex items-center gap-4 text-[11px] text-[#6366F1] pt-2">
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Zero Seeded Data Guarantee
@@ -45,8 +45,8 @@ export const DiasFooter: React.FC = () => {
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/dias/tour" className="hover:text-[#F4F2ED] text-[#E6D1A5] font-semibold transition-colors flex items-center gap-1">
-                  Explore Dias Tour <ArrowUpRight className="w-3 h-3 text-[#C5A46D]" />
+                <Link href="/dias/tour" className="hover:text-[#F4F2ED] text-[#C7D2FE] font-semibold transition-colors flex items-center gap-1">
+                  Explore Dias Tour <ArrowUpRight className="w-3 h-3 text-[#6366F1]" />
                 </Link>
               </li>
               <li>
@@ -150,7 +150,7 @@ export const DiasFooter: React.FC = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#575B66]">
           <p>© {new Date().getFullYear()} ZENVITRA SOVEREIGN PLATFORMS. BY YOUTH. FOR YOUTH. ALL RIGHTS RESERVED.</p>
           <div className="flex items-center gap-6">
-            <span className="font-mono text-[10px] text-[#C5A46D]/80">VERSION 2.4.0 — DIPLOMATIC RUNTIME</span>
+            <span className="font-mono text-[10px] text-[#6366F1]/80">VERSION 2.4.0 — DIPLOMATIC RUNTIME</span>
             <Link href="/" className="hover:text-[#F4F2ED] transition-colors">
               Zenvitra Ecosystem
             </Link>

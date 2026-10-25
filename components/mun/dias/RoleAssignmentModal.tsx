@@ -135,7 +135,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#181B21] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C5A46D]/15 border border-[#C5A46D]/30 flex items-center justify-center text-[#C5A46D]">
+            <div className="w-10 h-10 rounded-xl bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#6366F1]">
               <Shield className="w-5 h-5" />
             </div>
             <div>
@@ -166,7 +166,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
           {/* Section 1: Assign New Role */}
           <form onSubmit={handleAssignRole} className="p-4 rounded-xl bg-[#08090B] border border-[#181B21] space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase text-[#C5A46D] font-bold">
+              <span className="text-xs font-mono uppercase text-[#6366F1] font-bold">
                 Assign New Chair / Secretariat Clearance
               </span>
               <span className="text-[10px] text-[#575B66] font-mono">RBAC Law</span>
@@ -180,7 +180,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
                   value={targetUserId}
                   onChange={(e) => setTargetUserId(e.target.value)}
                   placeholder="e.g. user_id, email, or @handle"
-                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 />
               </div>
 
@@ -189,7 +189,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value as any)}
-                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 >
                   <option value="CHAIR">CHAIR (Full Dais Controls)</option>
                   <option value="VICE_CHAIR">VICE CHAIR (Queue & Timer Controls)</option>
@@ -206,7 +206,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="e.g. Appointed as Co-Chair by Secretariat"
-                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 />
               </div>
               <div>
@@ -217,7 +217,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
                   max="365"
                   value={expiresInDays}
                   onChange={(e) => setExpiresInDays(e.target.value)}
-                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-9 px-3 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 />
               </div>
             </div>
@@ -225,7 +225,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
             <div className="flex justify-end pt-1">
               <DiasButton
                 type="submit"
-                variant="gold"
+                variant="indigo"
                 size="sm"
                 isLoading={isSubmitting}
                 leftIcon={<Plus className="w-3.5 h-3.5" />}
@@ -239,7 +239,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between pb-1 border-b border-[#181B21]">
               <span className="text-xs font-semibold text-[#F4F2ED] uppercase tracking-wide flex items-center gap-2">
-                <Users className="w-3.5 h-3.5 text-[#C5A46D]" />
+                <Users className="w-3.5 h-3.5 text-[#6366F1]" />
                 Active Chair & Secretariat Assignments ({assignments.length})
               </span>
               <span className="text-[10px] font-mono text-[#575B66]">Immediate Revocation Enabled</span>
@@ -265,7 +265,7 @@ export const RoleAssignmentModal: React.FC<RoleAssignmentModalProps> = ({
                         <span className="text-xs font-bold text-[#F4F2ED] font-mono truncate">
                           {item.userId}
                         </span>
-                        <DiasBadge variant={['CHAIR', 'SUPER_ADMIN'].includes(item.role) ? 'gold' : 'charcoal'} size="sm">
+                        <DiasBadge variant={['CHAIR', 'SUPER_ADMIN'].includes(item.role) ? 'indigo' : 'charcoal'} size="sm">
                           {item.role}
                         </DiasBadge>
                       </div>

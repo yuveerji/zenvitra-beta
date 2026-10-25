@@ -205,7 +205,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
             onClick={() => setPerspective('chair')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               perspective === 'chair'
-                ? 'bg-[#C5A46D] text-black font-bold shadow-md'
+                ? 'bg-[#6366F1] text-black font-bold shadow-md'
                 : 'text-[#9A9DA5] hover:text-[#F4F2ED]'
             }`}
           >
@@ -218,7 +218,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
             onClick={() => setPerspective('delegate')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               perspective === 'delegate'
-                ? 'bg-[#C5A46D] text-black font-bold shadow-md'
+                ? 'bg-[#6366F1] text-black font-bold shadow-md'
                 : 'text-[#9A9DA5] hover:text-[#F4F2ED]'
             }`}
           >
@@ -231,7 +231,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
             onClick={() => setPerspective('projection')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               perspective === 'projection'
-                ? 'bg-[#C5A46D] text-black font-bold shadow-md'
+                ? 'bg-[#6366F1] text-black font-bold shadow-md'
                 : 'text-[#9A9DA5] hover:text-[#F4F2ED]'
             }`}
           >
@@ -245,7 +245,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
             onClick={() => setPerspective('parliament')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               perspective === 'parliament'
-                ? 'bg-[#C5A46D] text-black font-bold shadow-md'
+                ? 'bg-[#6366F1] text-black font-bold shadow-md'
                 : 'text-[#9A9DA5] hover:text-[#F4F2ED]'
             }`}
           >
@@ -265,7 +265,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
             }}
             className={`p-2 rounded-xl border text-xs flex items-center gap-1.5 transition-colors cursor-pointer ${
               soundEnabled
-                ? 'bg-[#181B21] border-[#C5A46D]/40 text-[#C5A46D]'
+                ? 'bg-[#181B21] border-[#6366F1]/40 text-[#6366F1]'
                 : 'bg-[#08090B] border-[#232731] text-[#575B66]'
             }`}
             title={soundEnabled ? 'Acoustic Sound Active' : 'Sound Muted'}
@@ -278,7 +278,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
 
           {/* Test Strike Gavel */}
           <DiasButton
-            variant="gold"
+            variant="indigo"
             size="sm"
             onClick={handleStrikeGavel}
             leftIcon={<Gavel className="w-3.5 h-3.5" />}
@@ -306,7 +306,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                     onClick={() => handleModeChange(m)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                       mode === m
-                        ? 'bg-[#C5A46D] text-black shadow-sm'
+                        ? 'bg-[#6366F1] text-black shadow-sm'
                         : 'bg-[#181B21] text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#20242C]'
                     }`}
                   >
@@ -341,13 +341,13 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                   <div className="p-6 rounded-3xl bg-[#111318] border border-[#232731] space-y-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-mono text-[#C5A46D] uppercase tracking-widest font-bold">
+                        <span className="text-[10px] font-mono text-[#6366F1] uppercase tracking-widest font-bold">
                           PROCEDURAL QUORUM DETERMINATION
                         </span>
                         <h3 className="text-xl font-bold text-white">Chamber Roll Call Ledger</h3>
                       </div>
                       <div className="text-right text-xs font-mono text-[#9A9DA5]">
-                        Threshold 2/3: <strong className="text-[#C5A46D]">{twoThirdsMajority} votes</strong>
+                        Threshold 2/3: <strong className="text-[#6366F1]">{twoThirdsMajority} votes</strong>
                       </div>
                     </div>
 
@@ -434,14 +434,14 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                   <div className="p-6 rounded-3xl bg-[#111318] border border-[#232731] space-y-6">
                     <div className="flex items-center justify-between pb-3 border-b border-[#232731]">
                       <div>
-                        <span className="text-[10px] font-mono text-[#C5A46D] uppercase tracking-widest font-bold">
+                        <span className="text-[10px] font-mono text-[#6366F1] uppercase tracking-widest font-bold">
                           SUBSTANTIVE DIVISION ON DRAFT RESOLUTION 1.1
                         </span>
                         <h3 className="text-xl font-bold text-white mt-1">
                           Draft Resolution on Maritime Security &amp; Non-Proliferation
                         </h3>
                       </div>
-                      <DiasBadge variant="gold" size="sm">
+                      <DiasBadge variant="indigo" size="sm">
                         2/3 Supermajority Required
                       </DiasBadge>
                     </div>
@@ -483,7 +483,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                           </span>
                         </div>
                         <DiasButton
-                          variant="gold"
+                          variant="indigo"
                           size="sm"
                           onClick={() => {
                             daisAudio.playTripleGavel();
@@ -503,7 +503,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                         <div className="text-4xl sm:text-5xl">{currentSpeaker.flag}</div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono text-[#C5A46D] uppercase tracking-widest font-bold">
+                            <span className="text-[10px] font-mono text-[#6366F1] uppercase tracking-widest font-bold">
                               NOW ON THE FLOOR
                             </span>
                             <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold">
@@ -528,7 +528,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                       <div className="flex items-baseline gap-2">
                         <span
                           className={`text-6xl sm:text-7xl font-mono font-black tracking-tight ${
-                            seconds <= 10 ? 'text-red-400 animate-pulse' : 'text-[#E6D1A5]'
+                            seconds <= 10 ? 'text-red-400 animate-pulse' : 'text-[#C7D2FE]'
                           }`}
                         >
                           {formatTime(seconds)}
@@ -546,7 +546,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                           className={`h-12 px-5 rounded-2xl font-bold text-xs uppercase font-mono tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
                             isRunning
                               ? 'bg-amber-400 text-black shadow-[0_0_20px_rgba(251,191,36,0.3)]'
-                              : 'bg-[#C5A46D] text-black shadow-[0_0_20px_rgba(197,164,109,0.3)]'
+                              : 'bg-[#6366F1] text-black shadow-[0_0_20px_rgba(99,102,241,0.3)]'
                           }`}
                         >
                           {isRunning ? <Pause className="w-4 h-4 fill-black" /> : <Play className="w-4 h-4 fill-black" />}
@@ -567,13 +567,13 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                     {/* Active Topic Banner */}
                     <div className="p-3.5 rounded-2xl bg-[#08090B]/60 border border-[#181B21] flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <SlidersHorizontal className="w-4 h-4 text-[#C5A46D]" />
+                        <SlidersHorizontal className="w-4 h-4 text-[#6366F1]" />
                         <span className="text-[#9A9DA5]">Agenda Topic:</span>
                         <span className="text-white font-medium">
                           Indo-Pacific Strategic Shipping &amp; Open Maritime Corridors
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono text-[#C5A46D] font-bold">UNSC #1024</span>
+                      <span className="text-[10px] font-mono text-[#6366F1] font-bold">UNSC #1024</span>
                     </div>
                   </div>
                 )}
@@ -584,12 +584,12 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                 <div className="p-5 rounded-3xl bg-[#111318] border border-[#232731] space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-[#232731]">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[#C5A46D]" />
+                      <Users className="w-4 h-4 text-[#6366F1]" />
                       <span className="text-xs font-bold text-white uppercase tracking-wider">
                         Speaking Order ({speakers.length})
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-[#C5A46D]">Live Sync</span>
+                    <span className="text-[10px] font-mono text-[#6366F1]">Live Sync</span>
                   </div>
 
                   <div className="space-y-2">
@@ -598,7 +598,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                         key={s.id}
                         className={`p-3 rounded-2xl border transition flex items-center justify-between text-xs ${
                           idx === activeSpeakerIndex
-                            ? 'bg-[#181B21] border-[#C5A46D]/60 shadow-[0_0_15px_rgba(197,164,109,0.15)]'
+                            ? 'bg-[#181B21] border-[#6366F1]/60 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
                             : 'bg-[#08090B] border-[#232731] text-[#9A9DA5]'
                         }`}
                       >
@@ -637,7 +637,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                       setSpeakers((prev) => [...prev, newCountry]);
                       daisAudio.playGavelStrike(0.5);
                     }}
-                    className="w-full py-2.5 rounded-xl border border-dashed border-[#232731] hover:border-[#C5A46D]/40 text-xs text-[#9A9DA5] hover:text-[#C5A46D] transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2.5 rounded-xl border border-dashed border-[#232731] hover:border-[#6366F1]/40 text-xs text-[#9A9DA5] hover:text-[#6366F1] transition flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Quick Add Delegate to Queue</span>
@@ -652,7 +652,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
         {perspective === 'delegate' && (
           <div className="flex flex-col items-center justify-center py-6">
             <div className="text-center space-y-2 mb-6">
-              <span className="text-[10px] font-mono text-[#C5A46D] uppercase tracking-widest font-bold">
+              <span className="text-[10px] font-mono text-[#6366F1] uppercase tracking-widest font-bold">
                 NO APP DOWNLOAD REQUIRED &bull; 3-SECOND ZERO-FRICTION JOIN
               </span>
               <h3 className="text-2xl font-bold text-white">The Delegate Floor Experience</h3>
@@ -675,19 +675,19 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                     <div className="text-[10px] text-emerald-400 font-mono">Present &amp; Voting</div>
                   </div>
                 </div>
-                <div className="px-2 py-0.5 rounded-full bg-[#181B21] border border-[#C5A46D]/30 text-[#E6D1A5] text-[10px] font-mono font-bold">
+                <div className="px-2 py-0.5 rounded-full bg-[#181B21] border border-[#6366F1]/30 text-[#C7D2FE] text-[10px] font-mono font-bold">
                   UNSC 1024
                 </div>
               </div>
 
               {/* Current Speaker Display */}
               <div className="p-4 rounded-2xl bg-[#111318] border border-[#232731] text-center space-y-2">
-                <span className="text-[10px] font-mono text-[#C5A46D] uppercase">CURRENT SPEAKER</span>
+                <span className="text-[10px] font-mono text-[#6366F1] uppercase">CURRENT SPEAKER</span>
                 <div className="text-2xl font-bold text-white flex items-center justify-center gap-2">
                   <span>{currentSpeaker.flag}</span>
                   <span>{currentSpeaker.country}</span>
                 </div>
-                <div className="text-3xl font-mono font-bold text-[#E6D1A5]">{formatTime(seconds)}</div>
+                <div className="text-3xl font-mono font-bold text-[#C7D2FE]">{formatTime(seconds)}</div>
                 <p className="text-[10px] text-[#9A9DA5]">Your Speaking Position: #{speakers.length} in queue</p>
               </div>
 
@@ -762,7 +762,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
         {perspective === 'projection' && (
           <div className="space-y-6">
             <div className="text-center space-y-1 pb-4 border-b border-[#181B21]">
-              <span className="text-[10px] font-mono text-[#C5A46D] uppercase tracking-widest font-bold">
+              <span className="text-[10px] font-mono text-[#6366F1] uppercase tracking-widest font-bold">
                 HIGH-CONTRAST DUAL-SCREEN AUDITORIUM PROJECTION
               </span>
               <h3 className="text-xl font-bold text-white">Chamber Podium Projector Display</h3>
@@ -771,11 +771,11 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-8 sm:p-12 rounded-3xl bg-[#030406] border-2 border-[#C5A46D]/30 shadow-[0_0_50px_rgba(197,164,109,0.15)] text-center space-y-8">
+            <div className="p-8 sm:p-12 rounded-3xl bg-[#030406] border-2 border-[#6366F1]/30 shadow-[0_0_50px_rgba(99,102,241,0.15)] text-center space-y-8">
               {/* Chamber Crest & Header */}
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#181B21] border border-[#C5A46D]/50 flex items-center justify-center text-[#C5A46D]">
+                  <div className="w-10 h-10 rounded-full bg-[#181B21] border border-[#6366F1]/50 flex items-center justify-center text-[#6366F1]">
                     <Gavel className="w-5 h-5" />
                   </div>
                   <div className="text-left">
@@ -786,21 +786,21 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="px-3 py-1 rounded-full bg-[#181B21] text-[#E6D1A5] text-xs font-mono font-bold border border-[#C5A46D]/40">
+                <div className="px-3 py-1 rounded-full bg-[#181B21] text-[#C7D2FE] text-xs font-mono font-bold border border-[#6366F1]/40">
                   CODE: UNSC-1024
                 </div>
               </div>
 
               {/* Giant Podium Stage Display */}
               <div className="space-y-4">
-                <span className="text-sm font-mono text-[#C5A46D] tracking-widest uppercase font-bold">
+                <span className="text-sm font-mono text-[#6366F1] tracking-widest uppercase font-bold">
                   FLOOR RECOGNITION
                 </span>
                 <div className="text-5xl sm:text-7xl font-serif text-white tracking-tight flex items-center justify-center gap-4">
                   <span>{currentSpeaker.flag}</span>
                   <span>{currentSpeaker.country}</span>
                 </div>
-                <div className="text-8xl sm:text-9xl font-mono font-black text-[#E6D1A5] tracking-tight">
+                <div className="text-8xl sm:text-9xl font-mono font-black text-[#C7D2FE] tracking-tight">
                   {formatTime(seconds)}
                 </div>
               </div>
@@ -826,7 +826,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
         {perspective === 'parliament' && (
           <div className="space-y-6">
             <div className="text-center space-y-1 pb-4 border-b border-[#181B21]">
-              <span className="text-[10px] font-mono text-[#C5A46D] uppercase tracking-widest font-bold">
+              <span className="text-[10px] font-mono text-[#6366F1] uppercase tracking-widest font-bold">
                 SOVEREIGN PARLIAMENTARY LEGISLATIVE SUITE
               </span>
               <h3 className="text-xl font-bold text-white">Lok Sabha &amp; AIPPM Parliamentary Mode</h3>
@@ -868,8 +868,8 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
 
               {/* Clause by Clause Division */}
               <div className="p-6 rounded-3xl bg-[#111318] border border-[#232731] space-y-4">
-                <div className="flex items-center gap-2 text-xs font-bold text-[#C5A46D] font-mono uppercase">
-                  <Building2 className="w-4 h-4 text-[#C5A46D]" />
+                <div className="flex items-center gap-2 text-xs font-bold text-[#6366F1] font-mono uppercase">
+                  <Building2 className="w-4 h-4 text-[#6366F1]" />
                   <span>LEGISLATIVE BILL DIVISION (AYES / NOES)</span>
                 </div>
 
@@ -885,7 +885,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
                     <span className="text-xs font-mono text-emerald-400 font-bold">AYES: 284</span>
                     <span className="text-xs font-mono text-red-400 font-bold">NOES: 112</span>
                     <DiasButton
-                      variant="gold"
+                      variant="indigo"
                       size="sm"
                       onClick={() => {
                         daisAudio.playGavelStrike(1.0);
@@ -911,7 +911,7 @@ export const DiasInteractiveTourSimulator: React.FC = () => {
         <div className="flex items-center gap-3">
           <a
             href="/dias?create=true"
-            className="px-4 py-2 rounded-xl bg-[#C5A46D] hover:bg-[#DFBA73] text-black text-xs font-mono font-bold transition flex items-center gap-1.5 shadow-sm"
+            className="px-4 py-2 rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-black text-xs font-mono font-bold transition flex items-center gap-1.5 shadow-sm"
           >
             <span>Launch Live Chamber</span>
             <ArrowRight className="w-3.5 h-3.5" />

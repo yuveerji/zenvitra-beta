@@ -49,9 +49,9 @@ export function ResumeSessionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-[#0D1017] text-[#F4F2ED] rounded-[28px] p-6 sm:p-7 shadow-[0_25px_90px_rgba(0,0,0,0.85)] border border-[#C5A46D]/30 overflow-hidden">
+      <div className="relative w-full max-w-md bg-[#0D1017] text-[#F4F2ED] rounded-[28px] p-6 sm:p-7 shadow-[0_25px_90px_rgba(0,0,0,0.85)] border border-[#6366F1]/30 overflow-hidden">
         {/* Subtle gold ambient glow */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-[#C5A46D]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-[#6366F1]/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Close X */}
         <button
@@ -65,11 +65,11 @@ export function ResumeSessionModal({
 
         {/* Top Header Pill */}
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-11 h-11 rounded-full bg-[#181B21] text-[#E6D1A5] border-2 border-[#C5A46D]/50 flex items-center justify-center font-mono font-bold text-sm shadow-[0_0_15px_rgba(197,164,109,0.2)] shrink-0">
+          <div className="w-11 h-11 rounded-full bg-[#181B21] text-[#C7D2FE] border-2 border-[#6366F1]/50 flex items-center justify-center font-mono font-bold text-sm shadow-[0_0_15px_rgba(99,102,241,0.2)] shrink-0">
             {acronym.slice(0, 2).toUpperCase()}
           </div>
           <div className="flex flex-col text-left">
-            <span className="text-[10px] font-mono font-bold text-[#C5A46D] uppercase tracking-widest">
+            <span className="text-[10px] font-mono font-bold text-[#6366F1] uppercase tracking-widest">
               YOUR SESSION IS STILL OPEN
             </span>
             <h3 className="text-xl font-bold font-serif text-[#F4F2ED] tracking-tight">
@@ -94,7 +94,7 @@ export function ResumeSessionModal({
                 className="w-full h-full object-contain"
               />
             ) : (
-              <Gavel className="w-6 h-6 text-[#C5A46D]" />
+              <Gavel className="w-6 h-6 text-[#6366F1]" />
             )}
           </div>
           <div className="flex-1 min-w-0 text-left">
@@ -104,8 +104,8 @@ export function ResumeSessionModal({
             <div className="text-xs text-neutral-400 font-medium truncate mt-0.5">
               {session.committeeName}
             </div>
-            <div className="text-[11px] text-[#C5A46D] font-mono flex items-center gap-1 mt-1 truncate">
-              <Gavel className="w-3 h-3 text-[#C5A46D]" />
+            <div className="text-[11px] text-[#6366F1] font-mono flex items-center gap-1 mt-1 truncate">
+              <Gavel className="w-3 h-3 text-[#6366F1]" />
               <span>Your role: <strong>Chair, as Chair</strong></span>
             </div>
           </div>
@@ -127,7 +127,7 @@ export function ResumeSessionModal({
             <span className="text-[9px] font-mono font-bold text-[#9A9DA5] uppercase tracking-widest">
               SESSION CODE
             </span>
-            <span className="font-mono text-2xl font-black text-[#E6D1A5] tracking-widest">
+            <span className="font-mono text-2xl font-black text-[#C7D2FE] tracking-widest">
               {session.sessionCode}
             </span>
           </div>
@@ -135,7 +135,7 @@ export function ResumeSessionModal({
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#181B21] border border-white/15 hover:border-[#C5A46D]/60 text-xs font-bold font-mono text-[#E6D1A5] transition cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#181B21] border border-white/15 hover:border-[#6366F1]/60 text-xs font-bold font-mono text-[#C7D2FE] transition cursor-pointer shadow-xs"
             title="Copy Session PIN"
           >
             {copied ? (
@@ -157,7 +157,7 @@ export function ResumeSessionModal({
           <button
             type="button"
             onClick={onRejoin}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#C5A46D] via-[#E6D1A5] to-[#C5A46D] text-black text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(197,164,109,0.35)] hover:shadow-[0_0_35px_rgba(197,164,109,0.5)] hover:scale-[1.01] active:scale-[0.99]"
+            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#6366F1] via-[#C7D2FE] to-[#6366F1] text-black text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(99,102,241,0.35)] hover:shadow-[0_0_35px_rgba(99,102,241,0.5)] hover:scale-[1.01] active:scale-[0.99]"
           >
             <RotateCcw className="w-4 h-4 text-black" />
             <span>Rejoin</span>

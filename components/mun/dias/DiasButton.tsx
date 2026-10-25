@@ -2,7 +2,7 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 export interface DiasButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'gold' | 'white' | 'charcoal' | 'amber-glass' | 'gold-glass' | 'outline' | 'ghost' | 'danger';
+  variant?: 'gold' | 'indigo' | 'white' | 'charcoal' | 'amber-glass' | 'gold-glass' | 'indigo-glass' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   pill?: boolean;
@@ -13,7 +13,7 @@ export interface DiasButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
   (
     {
-      variant = 'gold',
+      variant = 'indigo',
       size = 'md',
       isLoading = false,
       pill = true,
@@ -27,7 +27,7 @@ export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'group inline-flex items-center justify-center font-display uppercase tracking-wider select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A46D]/60 disabled:opacity-50 disabled:pointer-events-none cursor-pointer transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98]';
+      'group inline-flex items-center justify-center font-display uppercase tracking-wider select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 disabled:opacity-50 disabled:pointer-events-none cursor-pointer transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98]';
 
     const sizes = {
       sm: `text-[11px] px-4 py-2 gap-2 h-9 ${pill ? 'rounded-full' : 'rounded-xl'}`,
@@ -36,7 +36,8 @@ export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
     };
 
     const variants = {
-      gold: 'bg-[#C5A46D] hover:bg-[#D4B57E] text-[#08090B] font-bold border border-[#E6D1A5]/60 shadow-[0_0_30px_rgba(197,164,109,0.3)] hover:shadow-[0_0_55px_rgba(197,164,109,0.55)] btn-glow',
+      gold: 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold border border-indigo-400/50 shadow-[0_0_30px_rgba(99,102,241,0.35)] hover:shadow-[0_0_55px_rgba(99,102,241,0.6)] btn-glow',
+      indigo: 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold border border-indigo-400/50 shadow-[0_0_30px_rgba(99,102,241,0.35)] hover:shadow-[0_0_55px_rgba(99,102,241,0.6)] btn-glow',
       white:
         'bg-white hover:bg-neutral-100 text-black font-bold border border-white/60 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.35)] btn-glow',
       charcoal:
@@ -44,9 +45,11 @@ export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
       'amber-glass':
         'border border-amber-400/30 bg-amber-400/[0.06] text-amber-300 hover:bg-amber-400/15 hover:border-amber-400/60 backdrop-blur-sm shadow-[0_0_25px_rgba(251,191,36,0.1)] hover:shadow-[0_0_45px_rgba(251,191,36,0.25)] btn-glow',
       'gold-glass':
-        'border border-[#C5A46D]/40 bg-[#C5A46D]/[0.08] text-[#E6D1A5] hover:bg-[#C5A46D]/15 hover:border-[#C5A46D]/70 backdrop-blur-md shadow-[0_0_25px_rgba(197,164,109,0.15)] hover:shadow-[0_0_45px_rgba(197,164,109,0.3)]',
+        'border border-indigo-500/40 bg-indigo-500/[0.08] text-indigo-200 hover:bg-indigo-500/15 hover:border-indigo-500/70 backdrop-blur-md shadow-[0_0_25px_rgba(99,102,241,0.15)] hover:shadow-[0_0_45px_rgba(99,102,241,0.3)]',
+      'indigo-glass':
+        'border border-indigo-500/40 bg-indigo-500/[0.08] text-indigo-200 hover:bg-indigo-500/15 hover:border-indigo-500/70 backdrop-blur-md shadow-[0_0_25px_rgba(99,102,241,0.15)] hover:shadow-[0_0_45px_rgba(99,102,241,0.3)]',
       outline:
-        'border border-[#C5A46D]/50 bg-transparent text-[#E6D1A5] hover:border-[#C5A46D] hover:bg-[#C5A46D]/10 backdrop-blur-sm shadow-[0_0_20px_rgba(197,164,109,0.12)] hover:shadow-[0_0_35px_rgba(197,164,109,0.28)]',
+        'border border-indigo-500/50 bg-transparent text-indigo-200 hover:border-indigo-400 hover:bg-indigo-500/10 backdrop-blur-sm shadow-[0_0_20px_rgba(99,102,241,0.12)] hover:shadow-[0_0_35px_rgba(99,102,241,0.28)]',
       ghost:
         'bg-transparent hover:bg-white/[0.06] text-neutral-400 hover:text-[#F4F2ED] shadow-none hover:shadow-none',
       danger:

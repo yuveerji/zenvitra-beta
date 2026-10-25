@@ -83,17 +83,17 @@ export default function DiasHowItWorksPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#08090B] text-[#F4F2ED] font-sans antialiased selection:bg-[#C5A46D]/30 selection:text-[#E6D1A5]">
+    <div className="min-h-screen bg-[#08090B] text-[#F4F2ED] font-sans antialiased selection:bg-[#6366F1]/30 selection:text-[#C7D2FE]">
       <DiasNav />
 
       <main className="pt-32 sm:pt-40 pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-20">
         {/* Header */}
         <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <DiasBadge variant="gold" size="sm">
+          <DiasBadge variant="indigo" size="sm">
             WORKFLOW PROTOCOL
           </DiasBadge>
           <h1 className="text-4xl sm:text-6xl font-serif text-[#F4F2ED] tracking-tight">
-            How ZENVITRA <span className="italic text-[#C5A46D]">Operates.</span>
+            How ZENVITRA <span className="italic text-[#6366F1]">Operates.</span>
           </h1>
           <p className="text-sm sm:text-base text-[#9A9DA5] leading-relaxed">
             From the opening gavel strike to the final resolution vote, experience a smooth, mathematically verifiable diplomatic summit.
@@ -103,12 +103,12 @@ export default function DiasHowItWorksPage() {
         {/* Steps List */}
         <div className="space-y-8 relative">
           {/* Central connecting line for desktop */}
-          <div className="hidden md:block absolute left-8 top-10 bottom-10 w-px bg-gradient-to-b from-[#C5A46D]/40 via-[#232731] to-transparent pointer-events-none" />
+          <div className="hidden md:block absolute left-8 top-10 bottom-10 w-px bg-gradient-to-b from-[#6366F1]/40 via-[#232731] to-transparent pointer-events-none" />
 
           {steps.map((item, index) => (
             <div key={index} className="relative flex flex-col md:flex-row items-start gap-6 md:gap-10">
               {/* Step indicator node */}
-              <div className="w-16 h-16 rounded-2xl bg-[#111318] border border-[#C5A46D]/40 flex items-center justify-center font-mono font-bold text-lg text-[#C5A46D] shadow-[0_0_20px_rgba(197,164,109,0.15)] shrink-0 z-10">
+              <div className="w-16 h-16 rounded-2xl bg-[#111318] border border-[#6366F1]/40 flex items-center justify-center font-mono font-bold text-lg text-[#6366F1] shadow-[0_0_20px_rgba(99,102,241,0.15)] shrink-0 z-10">
                 {item.step}
               </div>
 
@@ -118,7 +118,7 @@ export default function DiasHowItWorksPage() {
                   <h3 className="text-xl sm:text-2xl font-serif font-semibold text-[#F4F2ED]">
                     {item.title}
                   </h3>
-                  <span className="text-xs font-mono text-[#C5A46D]">{item.subtitle}</span>
+                  <span className="text-xs font-mono text-[#6366F1]">{item.subtitle}</span>
                 </div>
                 <p className="text-xs sm:text-sm text-[#9A9DA5] leading-relaxed">
                   {item.description}
@@ -145,7 +145,7 @@ export default function DiasHowItWorksPage() {
           </p>
           <div className="flex items-center justify-center gap-4 pt-2">
             <Link href="/dias?dais=true">
-              <DiasButton variant="gold" size="md">
+              <DiasButton variant="indigo" size="md">
                 Launch Live Dais
               </DiasButton>
             </Link>

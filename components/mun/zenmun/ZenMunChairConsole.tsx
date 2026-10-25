@@ -376,7 +376,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => daisAudio.playDoubleGavel()}
               className={`p-2 rounded-xl border transition cursor-pointer ${
-                isLight ? 'bg-white border-[#CBD5E1] text-[#8C6D1F] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-amber-400'
+                isLight ? 'bg-white border-[#CBD5E1] text-indigo-400 hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-indigo-400'
               }`}
               title="Strike Gavel [G]"
             >
@@ -392,7 +392,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               }`}
               title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
             >
-              {isLight ? <Moon className="w-4 h-4 text-[#64748B]" /> : <Sun className="w-4 h-4 text-amber-300" />}
+              {isLight ? <Moon className="w-4 h-4 text-[#64748B]" /> : <Sun className="w-4 h-4 text-indigo-300" />}
             </button>
 
             {/* Scoreboard */}
@@ -400,7 +400,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => setShowScoreboardModal(true)}
               className={`p-2 rounded-xl border transition cursor-pointer ${
-                isLight ? 'bg-white border-[#CBD5E1] text-[#8C6D1F] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-amber-400'
+                isLight ? 'bg-white border-[#CBD5E1] text-indigo-400 hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-indigo-400'
               }`}
               title="Scoreboard"
             >
@@ -424,7 +424,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               type="button"
               onClick={() => setShowSupportModal(true)}
               className={`p-2 rounded-xl border transition cursor-pointer ${
-                isLight ? 'bg-white border-[#CBD5E1] text-[#C5A46D] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-[#C5A46D]'
+                isLight ? 'bg-white border-[#CBD5E1] text-[#6366F1] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-[#6366F1]'
               }`}
               title="Dais & Secretariat Support Hotline"
             >
@@ -448,7 +448,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               </div>
             </div>
 
-            <div className="text-3xl sm:text-4xl font-mono font-black tracking-widest text-[#C5A46D] py-1 select-all">
+            <div className="text-3xl sm:text-4xl font-mono font-black tracking-widest text-[#6366F1] py-1 select-all">
               {session.sessionCode}
             </div>
 
@@ -468,7 +468,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             <button
               type="button"
               onClick={() => setShowQrOverlay(true)}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] font-black text-xs tracking-tight transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 px-4 rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-[#08090C] font-black text-xs tracking-tight transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
             >
               <span>Present on screen ⤢</span>
             </button>
@@ -498,7 +498,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                   />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-lg font-black tracking-tight uppercase text-amber-300 truncate">
+                  <h3 className="text-lg font-black tracking-tight uppercase text-indigo-300 truncate">
                     {(session.committeeAcronym || session.committeeName || 'UNHRC').replace(/_/g, ' ')}
                   </h3>
                   <div className="text-xs text-slate-300 truncate">
@@ -528,7 +528,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               <div className="flex items-center gap-2 text-center">
                 <div className="px-2.5 py-1 rounded-xl bg-black/30 border border-white/10">
                   <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Present</div>
-                  <div className="text-xs font-black text-amber-300 font-mono">{quorum.present}</div>
+                  <div className="text-xs font-black text-indigo-300 font-mono">{quorum.present}</div>
                 </div>
                 <div className="px-2.5 py-1 rounded-xl bg-black/30 border border-white/10">
                   <div className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">2/3</div>
@@ -564,14 +564,14 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               <button
                 type="button"
                 onClick={() => setAllAttendance('present')}
-                className="py-2.5 rounded-xl bg-[#141A29] hover:bg-[#1C2438] border border-white/10 text-[#C5A46D] text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
+                className="py-2.5 rounded-xl bg-[#141A29] hover:bg-[#1C2438] border border-white/10 text-[#6366F1] text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
               >
                 ALL PRESENT
               </button>
               <button
                 type="button"
                 onClick={() => setAllAttendance('present_voting')}
-                className="py-2.5 rounded-xl bg-[#3D3A23] hover:bg-[#4D492B] border border-amber-500/25 text-amber-200 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
+                className="py-2.5 rounded-xl bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-500/25 text-indigo-200 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
               >
                 ALL P+V
               </button>
@@ -620,7 +620,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                         onClick={() => setDelegateAttendance(d.id, 'present')}
                         className={`px-2 h-6 rounded-full text-[10px] font-black cursor-pointer transition ${
                           d.attendance === 'present'
-                            ? 'bg-[#C5A46D] text-[#08090C] font-black shadow-xs'
+                            ? 'bg-[#6366F1] text-[#08090C] font-black shadow-xs'
                             : 'text-neutral-400 hover:text-white'
                         }`}
                       >
@@ -659,7 +659,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     },
                   }));
                 }}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#C5A46D] via-[#DFBA73] to-[#C5A46D] text-[#08090C] font-black text-xs uppercase tracking-wider cursor-pointer shadow-[0_0_25px_rgba(197,164,109,0.35)] active:scale-98 transition text-center flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#6366F1] via-[#818CF8] to-[#6366F1] text-[#08090C] font-black text-xs uppercase tracking-wider cursor-pointer shadow-[0_0_25px_rgba(99,102,241,0.35)] active:scale-98 transition text-center flex items-center justify-center gap-2"
               >
                 <span>MARK AT LEAST 1 DELEGATE PRESENT</span>
               </button>
@@ -752,7 +752,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => daisAudio.playDoubleGavel()}
             className={`px-2.5 py-1 rounded-xl font-bold text-xs border transition cursor-pointer flex items-center gap-1.5 active:scale-95 ${
-              isLight ? 'bg-[#0F172A] text-white hover:bg-[#1E293B] border-[#0F172A]' : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+              isLight ? 'bg-[#0F172A] text-white hover:bg-[#1E293B] border-[#0F172A]' : 'bg-indigo-600/10 text-indigo-300 border-indigo-500/30 hover:bg-indigo-600/20'
             }`}
             title="Strike Gavel [G]"
           >
@@ -797,7 +797,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             }`}
             title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
           >
-            {isLight ? <Moon className="w-4 h-4 text-[#64748B]" /> : <Sun className="w-4 h-4 text-amber-300" />}
+            {isLight ? <Moon className="w-4 h-4 text-[#64748B]" /> : <Sun className="w-4 h-4 text-indigo-300" />}
           </button>
 
           {/* Chat */}
@@ -817,7 +817,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => setShowScoreboardModal(true)}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
-              isLight ? 'bg-white border-[#CBD5E1] text-[#8C6D1F] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-amber-400'
+              isLight ? 'bg-white border-[#CBD5E1] text-indigo-400 hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-indigo-400'
             }`}
             title="Open Scoreboard"
           >
@@ -841,7 +841,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             type="button"
             onClick={() => setShowSupportModal(true)}
             className={`p-1.5 rounded-xl border transition cursor-pointer ${
-              isLight ? 'bg-white border-[#CBD5E1] text-[#C5A46D] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-[#C5A46D]'
+              isLight ? 'bg-white border-[#CBD5E1] text-[#6366F1] hover:bg-[#F1F5F9]' : 'bg-white/5 border-white/10 text-[#6366F1]'
             }`}
             title="Dais & Secretariat Support Hotline"
           >
@@ -855,11 +855,11 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition border ${
               isLight
                 ? 'bg-[#0F172A] text-white hover:bg-[#1E293B] border-[#0F172A]'
-                : 'bg-gradient-to-r from-[#C5A46D]/15 to-[#DFBA73]/15 text-[#E6D1A5] border-[#C5A46D]/30'
+                : 'bg-gradient-to-r from-[#6366F1]/15 to-[#818CF8]/15 text-[#C7D2FE] border-[#6366F1]/30'
             }`}
             title="Dais Protocol Guide & Tour [?]"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
             <span className="hidden sm:inline">Guide</span>
           </button>
 
@@ -908,7 +908,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                       size={20}
                     />
                   </div>
-                  <div className="text-xs font-black tracking-tight uppercase text-amber-300 truncate">
+                  <div className="text-xs font-black tracking-tight uppercase text-indigo-300 truncate">
                     {(session.committeeAcronym || session.committeeName || 'UNHRC').replace(/_/g, ' ')}
                   </div>
                 </div>
@@ -936,7 +936,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     <button
                       type="button"
                       onClick={handleTopicSave}
-                      className="p-1 text-[#C5A46D] hover:text-white cursor-pointer"
+                      className="p-1 text-[#6366F1] hover:text-white cursor-pointer"
                     >
                       <Check className="w-3 h-3" />
                     </button>
@@ -950,7 +950,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                         setTopicDraft(session.topic);
                         setIsEditingTopic(true);
                       }}
-                      className="text-amber-300 hover:text-white ml-1 shrink-0 p-0.5"
+                      className="text-indigo-300 hover:text-white ml-1 shrink-0 p-0.5"
                       title="Edit Topic"
                     >
                       <Edit2 className="w-2.5 h-2.5" />
@@ -965,7 +965,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               <div className="flex items-center gap-1 text-center text-[10px]">
                 <div className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
                   <span className="text-slate-400 font-semibold block text-[8px] uppercase">P</span>
-                  <span className="font-bold text-amber-300 font-mono">{quorum.present}</span>
+                  <span className="font-bold text-indigo-300 font-mono">{quorum.present}</span>
                 </div>
                 <div className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
                   <span className="text-slate-400 font-semibold block text-[8px] uppercase">2/3</span>
@@ -984,7 +984,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                   onChange={(e) => setNewSeatName(e.target.value)}
                   onKeyDown={handleAddSeatKeyDown}
                   placeholder="+ Add seat..."
-                  className="w-full px-2 py-1 rounded-lg bg-black/40 border border-white/15 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  className="w-full px-2 py-1 rounded-lg bg-black/40 border border-white/15 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400"
                 />
               </div>
             </div>
@@ -996,12 +996,12 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 onClick={() => setSidebarTab('queue')}
                 className={`flex-1 py-1.5 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
                   sidebarTab === 'queue'
-                    ? 'border-amber-400 text-amber-300 bg-white/5'
+                    ? 'border-indigo-400 text-indigo-300 bg-white/5'
                     : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
                 <span>Queue</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-black/40 text-amber-300 text-[10px] font-mono border border-amber-500/30">
+                <span className="px-1.5 py-0.2 rounded-full bg-black/40 text-indigo-300 text-[10px] font-mono border border-indigo-500/30">
                   {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).length}
                 </span>
               </button>
@@ -1011,7 +1011,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 onClick={() => setSidebarTab('roster')}
                 className={`flex-1 py-1.5 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
                   sidebarTab === 'roster'
-                    ? 'border-amber-400 text-amber-300 bg-white/5'
+                    ? 'border-indigo-400 text-indigo-300 bg-white/5'
                     : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
@@ -1070,7 +1070,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                           key={del.id}
                           className={`p-2 rounded-xl flex items-center justify-between gap-2 transition ${
                             isActive
-                              ? 'bg-[#C5A46D] text-[#08090C] border border-[#E6D1A5] shadow-[0_0_12px_rgba(197,164,109,0.4)]'
+                              ? 'bg-[#6366F1] text-[#08090C] border border-[#C7D2FE] shadow-[0_0_12px_rgba(99,102,241,0.4)]'
                               : 'bg-black/30 hover:bg-black/50 border border-white/5'
                           }`}
                         >
@@ -1084,7 +1084,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                               <span
                                 className={`absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-bold ${
                                   isActive && session.isTimerRunning
-                                    ? 'bg-amber-400 text-black'
+                                    ? 'bg-indigo-500 text-black'
                                     : 'bg-black/80 text-white'
                                 }`}
                               >
@@ -1094,7 +1094,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
 
                             <div className="min-w-0">
                               <div className="text-xs font-bold text-white truncate">{del.name}</div>
-                              <div className={`text-[9px] font-semibold leading-none ${isActive ? 'text-amber-300' : 'text-slate-400'}`}>
+                              <div className={`text-[9px] font-semibold leading-none ${isActive ? 'text-indigo-300' : 'text-slate-400'}`}>
                                 {isActive ? (session.isTimerRunning ? 'SPEAKING' : 'ON FLOOR') : `#${qIdx + 1}`}
                               </div>
                             </div>
@@ -1144,7 +1144,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                               />
                               <span className="text-xs font-medium text-white truncate">{d.name}</span>
                             </div>
-                            <span className="text-[9px] font-mono font-bold text-amber-300">
+                            <span className="text-[9px] font-mono font-bold text-indigo-300">
                               {inQueue ? 'Queued' : '+'}
                             </span>
                           </button>
@@ -1178,7 +1178,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 </>
               ) : (
                 <>
-                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  <Flame className="w-3.5 h-3.5 text-indigo-400" />
                   <span>{session.activeCaucusMotion?.typeName || 'Moderated Caucus'}</span>
                 </>
               )}
@@ -1207,7 +1207,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                   <div
                     className={`w-9 h-9 rounded-full overflow-hidden border-2 transition shadow-sm ${
                       isFirst
-                        ? 'border-[#C5A46D] ring-2 ring-[#C5A46D]/30 scale-105'
+                        ? 'border-[#6366F1] ring-2 ring-[#6366F1]/30 scale-105'
                         : 'border-black/20 opacity-70 hover:opacity-100'
                     }`}
                   >
@@ -1240,7 +1240,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 <div className="relative">
                   <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 transition-all duration-300 shadow-xl relative ${
                     session.isTimerRunning
-                      ? 'border-[#C5A46D] ring-4 ring-[#C5A46D]/30 scale-102'
+                      ? 'border-[#6366F1] ring-4 ring-[#6366F1]/30 scale-102'
                       : 'border-black/15 ring-2 ring-black/5'
                   }`}>
                     <img
@@ -1251,13 +1251,13 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                   </div>
 
                   {session.isTimerRunning && (
-                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#0E131F] border border-[#C5A46D]/40 shadow-sm flex items-center gap-1 z-10">
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#0E131F] border border-[#6366F1]/40 shadow-sm flex items-center gap-1 z-10">
                       <div className="flex items-end gap-0.5 h-2.5">
-                        <span className="w-0.5 bg-[#C5A46D] rounded-full animate-pulse h-1.5" />
-                        <span className="w-0.5 bg-[#E6D1A5] rounded-full animate-pulse h-2.5" />
-                        <span className="w-0.5 bg-[#C5A46D] rounded-full animate-pulse h-2" />
+                        <span className="w-0.5 bg-[#6366F1] rounded-full animate-pulse h-1.5" />
+                        <span className="w-0.5 bg-[#C7D2FE] rounded-full animate-pulse h-2.5" />
+                        <span className="w-0.5 bg-[#6366F1] rounded-full animate-pulse h-2" />
                       </div>
-                      <span className="text-[9px] font-mono font-black text-[#E6D1A5] tracking-wider">SPEAKING</span>
+                      <span className="text-[9px] font-mono font-black text-[#C7D2FE] tracking-wider">SPEAKING</span>
                     </div>
                   )}
                 </div>
@@ -1274,7 +1274,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             ) : (
               <div className="flex flex-col items-center justify-center text-center py-6 px-4 space-y-3">
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner ${
-                  isLight ? 'bg-black/5 border border-black/10 text-[#C5A46D]' : 'bg-white/[0.04] border border-white/10 text-[#C5A46D]'
+                  isLight ? 'bg-black/5 border border-black/10 text-[#6366F1]' : 'bg-white/[0.04] border border-white/10 text-[#6366F1]'
                 }`}>
                   <MicOff className="w-8 h-8 stroke-[1.5]" />
                 </div>
@@ -1293,7 +1293,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                       const input = document.getElementById('bottom-speaker-input');
                       if (input) input.focus();
                     }}
-                    className="px-3.5 py-1.5 rounded-xl bg-[#C5A46D] hover:bg-[#B3935B] text-[#08090C] font-bold text-xs flex items-center gap-1.5 cursor-pointer transition shadow-xs active:scale-95"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#6366F1] hover:bg-[#B3935B] text-[#08090C] font-bold text-xs flex items-center gap-1.5 cursor-pointer transition shadow-xs active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Recognize Speaker</span>
@@ -1331,7 +1331,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 : session.remainingSeconds === 0 && session.isTimerRunning
                 ? 'text-rose-600 animate-pulse cursor-pointer'
                 : isAmber
-                ? 'text-amber-500 animate-pulse cursor-pointer'
+                ? 'text-indigo-400 animate-pulse cursor-pointer'
                 : isLight
                 ? 'text-[#0F172A] hover:text-[#0F172A] cursor-pointer'
                 : 'text-white hover:text-cyan-300 cursor-pointer'
@@ -1375,7 +1375,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                       ? 'bg-rose-500'
                       : isAmber
                       ? 'bg-gradient-to-r from-amber-500 to-rose-500'
-                      : 'bg-gradient-to-r from-[#C5A46D] to-[#9E7D47]'
+                      : 'bg-gradient-to-r from-[#6366F1] to-[#4F46E5]'
                   }`}
                   style={{ width: `${progressRatio * 100}%` }}
                 />
@@ -1526,7 +1526,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
                 isLight
                   ? 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-800'
-                  : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-400'
+                  : 'bg-indigo-600/10 hover:bg-indigo-600/20 border-indigo-500/30 text-indigo-400'
               }`}
               title="Yield remaining speaking time [Y]"
             >
@@ -1539,8 +1539,8 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
               onClick={() => daisAudio.playDoubleGavel()}
               className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
                 isLight
-                  ? 'bg-[#0F172A] hover:bg-[#1E293B] border-[#0F172A] text-[#C5A46D]'
-                  : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
+                  ? 'bg-[#0F172A] hover:bg-[#1E293B] border-[#0F172A] text-[#6366F1]'
+                  : 'bg-indigo-600/20 hover:bg-indigo-600/30 border-indigo-500/40 text-indigo-300'
               }`}
               title="Rap Gavel [G]"
             >
@@ -1608,7 +1608,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                     type="button"
                     disabled={!yieldSelectedId}
                     onClick={() => yieldToDelegate(yieldSelectedId)}
-                    className="w-full py-2 rounded-lg bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] font-black text-xs uppercase cursor-pointer disabled:opacity-40 transition shadow-sm mt-1"
+                    className="w-full py-2 rounded-lg bg-[#6366F1] hover:bg-[#818CF8] text-[#08090C] font-black text-xs uppercase cursor-pointer disabled:opacity-40 transition shadow-sm mt-1"
                   >
                     Yield {formatTime(session.yieldRemainingSeconds)}
                   </button>
@@ -1652,7 +1652,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
             placeholder="Add to queue... (Type country and press Enter)"
             className={`w-full px-3 py-1.5 rounded-xl border text-xs font-medium focus:outline-none shadow-xs transition ${
               isLight
-                ? 'bg-white border-[#CBD5E1] text-[#0F172A] placeholder-[#8C857B] focus:border-[#C5A46D]'
+                ? 'bg-white border-[#CBD5E1] text-[#0F172A] placeholder-[#8C857B] focus:border-[#6366F1]'
                 : 'bg-white/5 border-white/10 text-white placeholder-neutral-500 focus:border-cyan-400'
             }`}
           />
@@ -1719,7 +1719,7 @@ export function ZenMunChairConsole({ onExit }: ZenMunChairConsoleProps = {}) {
                 className={`px-2 py-0.5 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
                   session.speakingTimeSeconds === s
                     ? isLight
-                      ? 'bg-[#C5A46D] text-[#08090C] font-black shadow-xs'
+                      ? 'bg-[#6366F1] text-[#08090C] font-black shadow-xs'
                       : 'bg-cyan-500 text-black shadow-xs'
                     : isLight
                     ? 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:bg-[#F1F5F9]'

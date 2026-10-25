@@ -88,7 +88,7 @@ function DiasSessionInner() {
           </div>
 
           <div className="space-y-2">
-            <DiasBadge variant="gold" size="sm">
+            <DiasBadge variant="indigo" size="sm">
               CHAIR CLEARANCE REQUIRED
             </DiasBadge>
             <h1 className="text-xl font-serif text-[#F4F2ED]">
@@ -107,7 +107,7 @@ function DiasSessionInner() {
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-[#9A9DA5]">Session Passcode:</span>
-              <span className="text-[#C5A46D] font-mono">{sessionId}</span>
+              <span className="text-[#6366F1] font-mono">{sessionId}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-[#9A9DA5]">Your Active Role:</span>
@@ -118,7 +118,7 @@ function DiasSessionInner() {
           <div className="pt-2 flex flex-col gap-3">
             <DiasButton
               onClick={() => setActiveRole('delegate')}
-              variant="gold"
+              variant="indigo"
               size="md"
               className="w-full justify-center"
               rightIcon={<ArrowRight className="w-4 h-4 ml-1" />}
@@ -154,7 +154,7 @@ export default function DiasSessionPage() {
   return (
     <Suspense
       fallback={
-        <div className="h-screen w-screen bg-[#08090B] flex items-center justify-center text-[#C5A46D] font-mono text-xs">
+        <div className="h-screen w-screen bg-[#08090B] flex items-center justify-center text-[#6366F1] font-mono text-xs">
           CONNECTING TO SOVEREIGN CHAMBER...
         </div>
       }

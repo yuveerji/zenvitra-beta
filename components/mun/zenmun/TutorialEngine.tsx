@@ -163,7 +163,7 @@ export function TutorialEngine() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-7 sm:gap-8 items-center pt-2">
             {/* Left Column: Greeting & Actions */}
             <div className="md:col-span-7 space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C5A46D]/15 text-[#C5A46D] text-[10px] font-mono font-bold tracking-wider uppercase">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#6366F1]/15 text-[#6366F1] text-[10px] font-mono font-bold tracking-wider uppercase">
                 <Gavel className="w-3 h-3" />
                 <span>Zenvitra Dais Protocol</span>
               </div>
@@ -186,7 +186,7 @@ export function TutorialEngine() {
                       tutorial: { ...prev.tutorial, welcomeModalOpen: false, isActive: true, currentStep: 1 },
                     }));
                   }}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#C5A46D] via-[#DFBA73] to-[#C5A46D] text-[#08090C] font-black text-sm tracking-tight transition shadow-lg shadow-[#C5A46D]/25 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#6366F1] via-[#818CF8] to-[#6366F1] text-[#08090C] font-black text-sm tracking-tight transition shadow-lg shadow-[#6366F1]/25 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
                 >
                   <span>Show me around</span>
                 </button>
@@ -231,7 +231,7 @@ export function TutorialEngine() {
                 />
                 {/* Play Button Overlay */}
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#C5A46D] to-[#9E7D47] text-[#08090C] font-black border-2 border-[#E6D1A5] flex items-center justify-center shadow-[0_0_20px_rgba(197,164,109,0.4)] group-hover:scale-110 transition">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6366F1] to-[#4F46E5] text-[#08090C] font-black border-2 border-[#C7D2FE] flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] group-hover:scale-110 transition">
                     <div className="w-0 h-0 border-y-6 border-y-transparent border-l-10 border-l-white ml-1" />
                   </div>
                 </div>
@@ -354,7 +354,7 @@ export function TutorialEngine() {
           {/* Top Bar: Step Counter & End Tutorial */}
           <div className="flex items-center justify-between border-b border-[#f0ece1] pb-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-extrabold text-[#C5A46D] tracking-wider uppercase bg-[#C5A46D]/15 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-mono font-extrabold text-[#6366F1] tracking-wider uppercase bg-[#6366F1]/15 px-2 py-0.5 rounded-md">
                 ZENVITRA DAIS
               </span>
               <span className="text-xs font-mono font-bold text-[#8c7860]">
@@ -415,7 +415,7 @@ export function TutorialEngine() {
                   nextTutorialStep();
                 }
               }}
-              className="px-5 py-2 rounded-xl bg-[#C5A46D] hover:bg-[#DFBA73] text-[#08090C] font-black text-xs transition cursor-pointer shadow-xs active:scale-95"
+              className="px-5 py-2 rounded-xl bg-[#6366F1] hover:bg-[#818CF8] text-[#08090C] font-black text-xs transition cursor-pointer shadow-xs active:scale-95"
             >
               {currentStep === 4 ? 'Skip' : isFinal ? 'Finish' : 'Next'}
             </button>

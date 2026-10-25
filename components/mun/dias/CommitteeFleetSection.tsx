@@ -315,14 +315,14 @@ export const CommitteeFleetSection: React.FC = () => {
     <section id="fleet" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
       {/* Active Stored Session Banner */}
       {storedSession && (
-        <div className="p-4 rounded-2xl bg-[#C5A46D]/10 border border-[#C5A46D]/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+        <div className="p-4 rounded-2xl bg-[#6366F1]/10 border border-[#6366F1]/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#C5A46D]/20 border border-[#C5A46D]/40 flex items-center justify-center text-[#E6D1A5]">
+            <div className="w-10 h-10 rounded-xl bg-[#6366F1]/20 border border-[#6366F1]/40 flex items-center justify-center text-[#C7D2FE]">
               <Radio className="w-5 h-5 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#C5A46D]/20 text-[#E6D1A5] font-bold">
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#6366F1]/20 text-[#C7D2FE] font-bold">
                   ACTIVE CHAMBER DETECTED
                 </span>
                 <span className="text-xs font-mono text-[#9A9DA5]">Code: {storedSession.sessionCode}</span>
@@ -332,7 +332,7 @@ export const CommitteeFleetSection: React.FC = () => {
             </div>
           </div>
           <Link href={`/dias/${storedSession.sessionCode}`}>
-            <DiasButton variant="gold" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+            <DiasButton variant="indigo" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
               Rejoin Session
             </DiasButton>
           </Link>
@@ -342,11 +342,11 @@ export const CommitteeFleetSection: React.FC = () => {
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#181B21]">
         <div className="space-y-2 text-left">
-          <DiasBadge variant="gold" size="sm">
+          <DiasBadge variant="indigo" size="sm">
             COMMITTEE FLEET & SUMMIT CHAMBERS
           </DiasBadge>
           <h2 className="text-3xl sm:text-4xl font-serif text-[#F4F2ED]">
-            Select Chamber or <span className="italic text-[#C5A46D]">Launch Live Dais.</span>
+            Select Chamber or <span className="italic text-[#6366F1]">Launch Live Dais.</span>
           </h2>
           <p className="text-sm text-[#9A9DA5] max-w-2xl font-light">
             Deploy full Indian Parliamentary procedures, UN Multilateral chambers, or Crisis Directives in one click. Fully synchronized with zero latency.
@@ -363,7 +363,7 @@ export const CommitteeFleetSection: React.FC = () => {
                 value={sessionCodeInput}
                 onChange={(e) => setSessionCodeInput(e.target.value)}
                 placeholder="Passcode / IF8RV5"
-                className="h-10 pl-9 pr-3 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs font-mono text-[#F4F2ED] uppercase tracking-wider outline-none w-44"
+                className="h-10 pl-9 pr-3 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs font-mono text-[#F4F2ED] uppercase tracking-wider outline-none w-44"
               />
             </div>
             <DiasButton type="submit" variant="charcoal" size="sm">
@@ -373,7 +373,7 @@ export const CommitteeFleetSection: React.FC = () => {
 
           <DiasButton
             onClick={() => setIsCustomCreatorOpen(true)}
-            variant="gold"
+            variant="indigo"
             size="sm"
             leftIcon={<Plus className="w-3.5 h-3.5" />}
           >
@@ -398,7 +398,7 @@ export const CommitteeFleetSection: React.FC = () => {
               onClick={() => setActiveCategory(tab.id as any)}
               className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
                 activeCategory === tab.id
-                  ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-[0_0_20px_rgba(197,164,109,0.3)]'
+                  ? 'bg-[#6366F1] text-[#08090B] font-bold shadow-[0_0_20px_rgba(99,102,241,0.3)]'
                   : 'text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-white/[0.06]'
               }`}
             >
@@ -415,7 +415,7 @@ export const CommitteeFleetSection: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, topic..."
-            className="w-full h-9 pl-9 pr-3 bg-[#111318] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none placeholder-[#575B66]"
+            className="w-full h-9 pl-9 pr-3 bg-[#111318] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none placeholder-[#575B66]"
           />
         </div>
       </div>
@@ -427,20 +427,20 @@ export const CommitteeFleetSection: React.FC = () => {
             key={preset.id}
             variant="elevated"
             isHoverable
-            className="p-6 flex flex-col justify-between text-left space-y-4 border border-[#181B21] hover:border-[#C5A46D]/40 transition-all duration-300"
+            className="p-6 flex flex-col justify-between text-left space-y-4 border border-[#181B21] hover:border-[#6366F1]/40 transition-all duration-300"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <span className="text-2xl">{preset.emblem}</span>
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#C5A46D] font-bold block">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#6366F1] font-bold block">
                       {preset.acronym}
                     </span>
                     <h3 className="text-sm font-semibold text-[#F4F2ED] line-clamp-1">{preset.name}</h3>
                   </div>
                 </div>
-                <DiasBadge variant={preset.isIndian ? 'gold' : 'charcoal'} size="sm">
+                <DiasBadge variant={preset.isIndian ? 'indigo' : 'charcoal'} size="sm">
                   {preset.category}
                 </DiasBadge>
               </div>
@@ -457,7 +457,7 @@ export const CommitteeFleetSection: React.FC = () => {
             <div className="pt-4 border-t border-[#181B21] space-y-3">
               <div className="flex items-center justify-between text-[11px] font-mono text-[#9A9DA5]">
                 <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-[#C5A46D]" />
+                  <Clock className="w-3.5 h-3.5 text-[#6366F1]" />
                   {preset.speakingTimeSeconds}s Speaking Time
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -469,7 +469,7 @@ export const CommitteeFleetSection: React.FC = () => {
               <div className="flex items-center gap-2">
                 <DiasButton
                   onClick={() => handleLaunchPreset(preset)}
-                  variant="gold"
+                  variant="indigo"
                   size="sm"
                   className="flex-1 justify-center"
                   leftIcon={<Play className="w-3.5 h-3.5" />}
@@ -493,7 +493,7 @@ export const CommitteeFleetSection: React.FC = () => {
           <div className="bg-[#111318] border border-[#232731] rounded-2xl p-6 max-w-lg w-full text-left space-y-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-[#181B21]">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#C5A46D]/15 flex items-center justify-center text-[#C5A46D]">
+                <div className="w-8 h-8 rounded-lg bg-[#6366F1]/15 flex items-center justify-center text-[#6366F1]">
                   <Gavel className="w-4 h-4" />
                 </div>
                 <div>
@@ -517,7 +517,7 @@ export const CommitteeFleetSection: React.FC = () => {
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="e.g. United Nations Security Council or Lok Sabha"
-                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 />
               </div>
 
@@ -528,7 +528,7 @@ export const CommitteeFleetSection: React.FC = () => {
                     value={customAcronym}
                     onChange={(e) => setCustomAcronym(e.target.value)}
                     placeholder="e.g. UNSC or LS"
-                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] uppercase outline-none"
+                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] uppercase outline-none"
                   />
                 </div>
                 <div>
@@ -539,7 +539,7 @@ export const CommitteeFleetSection: React.FC = () => {
                     max="300"
                     value={customSpeakingTime}
                     onChange={(e) => setCustomSpeakingTime(e.target.value)}
-                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                    className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                   />
                 </div>
               </div>
@@ -550,7 +550,7 @@ export const CommitteeFleetSection: React.FC = () => {
                   value={customTopic}
                   onChange={(e) => setCustomTopic(e.target.value)}
                   placeholder="e.g. Crisis Escalation in Eastern Mediterranean"
-                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#C5A46D] rounded-xl text-xs text-[#F4F2ED] outline-none"
+                  className="w-full h-10 px-3 bg-[#08090B] border border-[#232731] focus:border-[#6366F1] rounded-xl text-xs text-[#F4F2ED] outline-none"
                 />
               </div>
 
@@ -565,7 +565,7 @@ export const CommitteeFleetSection: React.FC = () => {
                   type="checkbox"
                   checked={customIsIndian}
                   onChange={(e) => setCustomIsIndian(e.target.checked)}
-                  className="w-4 h-4 accent-[#C5A46D] rounded cursor-pointer"
+                  className="w-4 h-4 accent-[#6366F1] rounded cursor-pointer"
                 />
               </div>
 
@@ -578,7 +578,7 @@ export const CommitteeFleetSection: React.FC = () => {
                 >
                   Cancel
                 </DiasButton>
-                <DiasButton type="submit" variant="gold" size="sm">
+                <DiasButton type="submit" variant="indigo" size="sm">
                   Launch Custom Chamber
                 </DiasButton>
               </div>
