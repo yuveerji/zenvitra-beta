@@ -46,6 +46,8 @@ import { AmendmentReviewDeck, AmendmentItem } from '../parliamentary/AmendmentRe
 import { QuestionHourDesk, ParliamentaryQuestion } from '../parliamentary/QuestionHourDesk';
 import { PressRoomWorkspace, PressStory } from '../press/PressRoomWorkspace';
 import { CrisisCommandCenter, CrisisDirectiveItem } from '../crisis/CrisisCommandCenter';
+import { RoleAssignmentModal } from './RoleAssignmentModal';
+import { Shield } from 'lucide-react';
 
 export type CommitteeMode =
   | 'GSL'
@@ -262,6 +264,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
 
   // ─── Mobile Drawer Bottom Sheet States ───
   const [mobileDrawer, setMobileDrawer] = useState<'NONE' | 'MODES' | 'QUEUE' | 'MOTIONS'>('NONE');
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
 
   // ─── Parliamentary State ───
   const [bills, setBills] = useState<any[]>([
@@ -622,6 +625,15 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
               <span className="hidden sm:inline">Delegate View</span>
             </button>
           )}
+          <button
+            onClick={() => setIsRoleModalOpen(true)}
+            className="p-2 rounded-xl bg-[#181B21] border border-[#2B2F37] hover:border-[#C5A46D]/40 text-[#9A9DA5] hover:text-[#E6D1A5] text-xs transition-colors flex items-center gap-1.5"
+            title="Manage Committee Access & Roles (Secretariat Admin)"
+          >
+            <Shield className="w-3.5 h-3.5 text-[#C5A46D]" />
+            <span className="text-[11px] font-mono hidden xl:inline">Roles</span>
+          </button>
+
           <button
             onClick={() => {
               const next = daisAudio.toggle();
@@ -1018,7 +1030,14 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
             </div>
           )}
 
-          {/* ── Fixed Bottom Quick-Add Delegate Bar (Zero Scroll Required) ── */}
+          {/* ── Access & Roles Management Modal ── */}
+      <RoleAssignmentModal
+        isOpen={isRoleModalOpen}
+        onClose={() => setIsRoleModalOpen(false)}
+        committeeName={committeeName}
+      />
+
+      {/* ── Fixed Bottom Quick-Add Delegate Bar (Zero Scroll Required) ── */}
           <footer className="h-14 bg-[#111318] border-t border-[#232731] px-4 flex items-center justify-between shrink-0 z-20">
             <form onSubmit={handleAddToQueue} className="flex items-center gap-2 sm:gap-3 w-full">
               <span className="text-xs font-mono uppercase text-[#9A9DA5] hidden sm:inline whitespace-nowrap">

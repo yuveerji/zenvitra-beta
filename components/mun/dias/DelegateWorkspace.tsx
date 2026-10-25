@@ -45,6 +45,7 @@ import { DiasRealtimeManager, DiasConnectionStatus } from '@/lib/mun/diasRealtim
 import { DiasButton } from './DiasButton';
 import { DiasBadge } from './DiasBadge';
 import { DiasCard } from './DiasCard';
+import { ChairConsoleSwitch } from './ChairConsoleSwitch';
 
 export type DelegateNavSection =
   | 'OVERVIEW'
@@ -491,23 +492,8 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
             {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
           </button>
 
-          {/* Quick Role Switcher (Switch to Chair Console) */}
-          {onSwitchToChair ? (
-            <button
-              onClick={onSwitchToChair}
-              className="px-3 py-1.5 rounded-xl bg-[#C5A46D]/15 hover:bg-[#C5A46D]/25 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-semibold transition-all flex items-center gap-1.5"
-            >
-              <Gavel className="w-3.5 h-3.5 text-[#C5A46D]" />
-              <span className="hidden sm:inline">Switch to Chair Console</span>
-            </button>
-          ) : (
-            <Link href={`/dias/${sessionCode}?role=chair`}>
-              <button className="px-3 py-1.5 rounded-xl bg-[#C5A46D]/15 hover:bg-[#C5A46D]/25 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-semibold transition-all flex items-center gap-1.5">
-                <Gavel className="w-3.5 h-3.5 text-[#C5A46D]" />
-                <span className="hidden sm:inline">Chair Console</span>
-              </button>
-            </Link>
-          )}
+          {/* Authorized Chair Console Switch (STRICT PERMISSION ONLY) */}
+          <ChairConsoleSwitch sessionCode={sessionCode} onSwitch={onSwitchToChair} />
 
           <Link href="/dias">
             <button className="p-2 rounded-xl bg-[#111318] border border-[#232731] text-[#9A9DA5] hover:text-[#F4F2ED] transition-colors">

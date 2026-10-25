@@ -1,5 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { jwtVerify } from 'jose';
+import {
+  CHAIR_PERMISSIONS,
+  getEffectiveUserChairPermissions,
+  logAuthAuditEvent,
+} from '@/lib/mun/permissions';
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET || 'zenvitra_sovereign_secret_key_development_32_bytes_min';
+const encodedKey = new TextEncoder().encode(JWT_SECRET);
+
+async function getCallerIdentity(req: NextRequest) {
+  let userId: string | null = null;
+  let userEmail: string | null = null;
+  let userRole: string | null = null;
+
+  const token = req.cookies.get('zenvitra_session_token')?.value;
+  if (token) {
+    try {
+      const { payload } = await jwtVerify(token, encodedKey, { algorithms: ['HS256'] });
+      if (payload) {
+        userId = (payload.userId || payload.id || payload.sub) as string;
+        userEmail = (payload.email || null) as string;
+        userRole = (payload.role || null) as string;
+      }
+    } catch {}
+  }
+
+  if (!userRole) {
+    userRole = req.cookies.get('zenvitra_clearance_role')?.value || null;
+  }
+
+  const authHeaderUserId = req.headers.get('x-zenvitra-user-id');
+  const authHeaderEmail = req.headers.get('x-zenvitra-email');
+  if (!userId && authHeaderUserId) userId = authHeaderUserId;
+  if (!userEmail && authHeaderEmail) userEmail = authHeaderEmail;
+
+  return { userId, userEmail, userRole };
+}
 
 export async function POST(
   req: NextRequest,
@@ -18,6 +56,30 @@ export async function POST(
 
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    }
+
+    // Authorization check for chair_console.control_timer
+    const caller = await getCallerIdentity(req);
+    const perms = await getEffectiveUserChairPermissions({
+      userId: caller.userId,
+      email: caller.userEmail,
+      platformRole: caller.userRole,
+      committeeId: session.committeeId,
+    });
+
+    if (!perms.permissions.includes(CHAIR_PERMISSIONS.CONTROL_TIMER)) {
+      await logAuthAuditEvent({
+        actorUserId: caller.userId || 'anonymous',
+        targetUserId: 'none',
+        action: 'ACCESS_DENIED',
+        committeeId: session.committeeId,
+        permission: CHAIR_PERMISSIONS.CONTROL_TIMER,
+        reason: 'Attempted to control timer without permission',
+      });
+      return NextResponse.json(
+        { error: 'Forbidden: Missing chair_console.control_timer permission' },
+        { status: 403 }
+      );
     }
 
     const now = BigInt(Date.now());
@@ -68,13 +130,13 @@ export async function POST(
       success: true,
       timer: {
         durationSec: updated.timerDurationSec,
-        anchorEpochMs: updated.timerAnchorEpochMs ? updated.timerAnchorEpochMs.toString() : null,
-        remainingAtMs: updated.timerRemainingAtMs.toString(),
+        remainingSec: Math.max(0, Math.round(Number(updated.timerRemainingAtMs) / 1000)),
         isRunning: updated.isTimerRunning,
+        anchorEpochMs: updated.timerAnchorEpochMs ? Number(updated.timerAnchorEpochMs) : null,
       },
     });
-  } catch (error: any) {
-    console.error('Error modifying MUN timer:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error) {
+    console.error('Timer route error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

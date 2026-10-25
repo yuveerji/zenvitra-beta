@@ -846,6 +846,7 @@ model MunConference {
 
   memberships     MunMembership[]
   committees      MunCommittee[]
+  roleAssignments MunRoleAssignment[]
 
   @@index([status, visibility])
   @@index([startDate])
@@ -887,6 +888,8 @@ model MunCommittee {
   bills           ParliamentaryBill[]
   publications    PressPublication[]
   directives      CrisisDirective[]
+  roleAssignments MunRoleAssignment[]
+  customPermissions MunCustomPermission[]
 
   @@index([conferenceId, code])
 }
@@ -1086,3 +1089,58 @@ model MunSessionAudit {
   @@index([sessionId, createdAt])
 }
 
+// ─── CHAIR CONSOLE RBAC & PERMISSION FRAMEWORK ───
+
+model MunRoleAssignment {
+  id           String         @id @default(cuid())
+  userId       String
+  conferenceId String?
+  committeeId  String?
+  role         String         // SUPER_ADMIN, SECRETARIAT_ADMIN, CHAIR, VICE_CHAIR, DELEGATE, PRESS, OBSERVER
+  status       String         @default("ACTIVE") // ACTIVE, REVOKED, EXPIRED
+  assignedBy   String?
+  assignedAt   DateTime       @default(now())
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  reason       String?
+
+  conference   MunConference? @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
+  committee    MunCommittee?  @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, committeeId, status])
+  @@index([conferenceId, role])
+  @@index([userId, role])
+}
+
+model MunCustomPermission {
+  id           String        @id @default(cuid())
+  userId       String
+  committeeId  String?
+  conferenceId String?
+  permission   String        // e.g. "chair_console.access", "chair_console.control_timer"
+  isGranted    Boolean       @default(true)
+  assignedBy   String?
+  createdAt    DateTime      @default(now())
+
+  committee    MunCommittee? @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, committeeId, permission])
+  @@index([userId, committeeId])
+}
+
+model MunAuthAuditLog {
+  id           String    @id @default(cuid())
+  actorUserId  String
+  targetUserId String
+  action       String    // ROLE_ASSIGNED, ROLE_REVOKED, PERMISSION_GRANTED, PERMISSION_REVOKED, ACCESS_DENIED, CHAIR_SWITCH_ACCESSED
+  role         String?
+  permission   String?
+  conferenceId String?
+  committeeId  String?
+  reason       String?
+  createdAt    DateTime  @default(now())
+
+  @@index([actorUserId])
+  @@index([targetUserId])
+  @@index([committeeId, createdAt])
+}
