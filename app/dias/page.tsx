@@ -39,10 +39,35 @@ import { DiasLivePreview } from '@/components/mun/dias/DiasLivePreview';
 import { CommitteeFleetSection } from '@/components/mun/dias/CommitteeFleetSection';
 import ZenMunMasterDais from '@/components/mun/zenmun/ZenMunMasterDais';
 
-function DiasContent() {
-  const router = useRouter();
+function SearchParamsWatcher({ onModeChange }: { onModeChange: (mode: 'dais' | 'setup' | 'normal') => void }) {
   const searchParams = useSearchParams();
+  useEffect(() => {
+    const isDais =
+      searchParams?.get('control') === 'true' ||
+      searchParams?.get('dais') === 'true' ||
+      Boolean(searchParams?.get('room'));
 
+    const isSetup =
+      searchParams?.get('create') === 'true' ||
+      searchParams?.get('new') === 'true' ||
+      searchParams?.get('setup') === 'true' ||
+      (Boolean(searchParams?.get('chamber')) && !isDais);
+
+    if (isDais) {
+      onModeChange('dais');
+    } else if (isSetup) {
+      onModeChange('setup');
+    } else {
+      onModeChange('normal');
+    }
+  }, [searchParams, onModeChange]);
+
+  return null;
+}
+
+export default function DiasLandingPage() {
+  const router = useRouter();
+  const [viewMode, setViewMode] = useState<'dais' | 'setup' | 'normal'>('normal');
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [activeStoredSession, setActiveStoredSession] = useState<{
     sessionCode: string;
@@ -85,23 +110,11 @@ function DiasContent() {
     } catch {}
   }, []);
 
-  // ── 1. CONDITIONAL DAIS & SETUP DISPATCH (Transferred from /committee) ──
-  const isDaisMode =
-    searchParams?.get('control') === 'true' ||
-    searchParams?.get('dais') === 'true' ||
-    Boolean(searchParams?.get('room'));
-
-  const isSetupMode =
-    searchParams?.get('create') === 'true' ||
-    searchParams?.get('new') === 'true' ||
-    searchParams?.get('setup') === 'true' ||
-    (Boolean(searchParams?.get('chamber')) && !isDaisMode);
-
-  if (isDaisMode) {
+  if (viewMode === 'dais') {
     return <ZenMunMasterDais initialView="chair" />;
   }
 
-  if (isSetupMode) {
+  if (viewMode === 'setup') {
     return <ZenMunMasterDais initialView="setup" />;
   }
 
@@ -115,6 +128,9 @@ function DiasContent() {
 
   return (
     <div className="min-h-screen bg-[#08090B] text-[#F4F2ED] selection:bg-[#C5A46D]/30 selection:text-[#E6D1A5] font-sans antialiased overflow-x-hidden">
+      <Suspense fallback={null}>
+        <SearchParamsWatcher onModeChange={setViewMode} />
+      </Suspense>
       {/* Navigation with dynamic auth state */}
       <DiasNav />
 
@@ -810,26 +826,5 @@ function DiasContent() {
       {/* ─── 10. PREMIUM FOOTER ─── */}
       <DiasFooter />
     </div>
-  );
-}
-
-export default function DiasLandingPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#08090B] text-white flex items-center justify-center font-mono text-xs">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#181B21] border border-[#C5A46D]/40 text-[#C5A46D] flex items-center justify-center animate-pulse">
-              <Gavel className="w-5 h-5 text-[#C5A46D]" />
-            </div>
-            <span className="text-xs font-mono uppercase tracking-widest text-[#E6D1A5]">
-              Connecting to Diplomatic Presidium...
-            </span>
-          </div>
-        </div>
-      }
-    >
-      <DiasContent />
-    </Suspense>
   );
 }
