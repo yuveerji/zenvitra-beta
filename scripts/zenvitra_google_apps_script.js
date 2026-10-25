@@ -656,13 +656,22 @@ function doPost(e) {
     var targetSheet = getOrCreateTabWithHeaders_(ss, targetTabName, expectedHeaders);
     var currentHeaders = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
 
-    // Dynamic column expansion for custom question keys
-    var ignoredKeys = { action: true, targetTab: true, sheetTab: true, tab: true, target: true, secret: true, webhookUrl: true, customSheetUrl: true, redirect: true };
+    // Dynamic column expansion for custom question keys with full question spaces
+    var ignoredKeys = { action: true, targetTab: true, sheetTab: true, tab: true, target: true, secret: true, webhookUrl: true, customSheetUrl: true, redirect: true, fields: true, data: true };
     var missingHeaders = [];
     for (var k in payload) {
       if (payload.hasOwnProperty(k) && !ignoredKeys[k]) {
         var pVal = payload[k];
-        if (pVal !== "" && pVal !== null && pVal !== undefined && typeof pVal !== "object") {
+        if (Array.isArray(pVal)) {
+          payload[k] = pVal.join(', ');
+          pVal = payload[k];
+        } else if (typeof pVal === "object" && pVal !== null) {
+          try {
+            payload[k] = JSON.stringify(pVal);
+            pVal = payload[k];
+          } catch (_) {}
+        }
+        if (pVal !== "" && pVal !== null && pVal !== undefined) {
           var found = false;
           var normK = normalize_(k);
           for (var h = 0; h < currentHeaders.length; h++) {
@@ -671,7 +680,7 @@ function doPost(e) {
               break;
             }
           }
-          if (!found && currentHeaders.length < 50) {
+          if (!found && currentHeaders.length < 100) {
             missingHeaders.push(k);
           }
         }

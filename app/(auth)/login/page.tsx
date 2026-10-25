@@ -871,7 +871,7 @@ function LoginForm() {
               )}
 
               {/* ── QUICK TEST PILOT NODE PREFILL & INSTANT LOGIN ── */}
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-[#0a1220] to-purple-950/40 border border-cyan-500/35 flex items-center justify-between gap-3 shadow-lg shadow-cyan-950/20">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-[#0a1220] to-purple-950/40 border border-cyan-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-cyan-950/20">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shrink-0">
                     <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
@@ -889,12 +889,12 @@ function LoginForm() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 self-stretch sm:self-auto">
                   <button
                     type="button"
                     onClick={handleQuickTestLogin}
                     disabled={loading}
-                    className="px-3.5 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 active:scale-95 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer disabled:opacity-50"
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 active:scale-95 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-1.5 shadow-md shadow-cyan-400/20 cursor-pointer disabled:opacity-50"
                   >
                     {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <span>1-Click Test</span>}
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -1134,7 +1134,7 @@ function LoginForm() {
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-2 shrink-0 self-stretch sm:self-auto">
                                   <span className="text-[10px] font-mono text-purple-400 group-hover:text-purple-300 transition">
                                     Log In &rarr;
                                   </span>

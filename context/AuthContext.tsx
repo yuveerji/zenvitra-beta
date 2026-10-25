@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { signOut as nextAuthSignOut } from 'next-auth/react';
+import { logoutAction } from '@/actions/auth';
 import { supabase } from '@/lib/supabase';
 import { UserProfile, OAuthProvider, UserRole, ConnectedAccount } from '@/types/auth';
 import { 
@@ -1126,157 +1127,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign Out
   const signOut = async (options?: { forceFullLogout?: boolean; redirectTo?: string }) => {
-    const savedOn = isSavedAccountsEnabled();
-    const currentCleanHandle = (profile?.username || (profile as any)?.handle || user?.email?.split('@')[0] || '').replace(/^@/, '').toLowerCase();
-    const currentId = profile?.id || user?.id;
-    const isCurrentTestNode = isTestNodeUser(profile) || isTestNodeUser(user);
-
-    // 1. If active user is Test Node, restore real user backup session if one was preserved
-    if (isCurrentTestNode) {
-      removeSavedSession('test');
-      removeSavedSession('zen_test_pilot_node');
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('zenvitra_test_tab_active');
-        sessionStorage.removeItem('zenvitra_test_node_session');
-      }
-      localStorage.removeItem('zenvitra_passport_level');
-      localStorage.removeItem('zenvitra_verified_student');
-      localStorage.removeItem('zenvitra_student_id_status');
-      localStorage.removeItem('zenvitra_gsheet_test_sync');
-      localStorage.removeItem('zenvitra_professional_account_enabled');
-      localStorage.removeItem('zenvitra_event_account_enabled');
-
-      const backup = typeof window !== 'undefined' ? localStorage.getItem('zenvitra_real_user_session_backup') : null;
-      if (backup && !options?.forceFullLogout) {
-        try {
-          const restoredProf = JSON.parse(backup);
-          if (restoredProf && restoredProf.id && !isTestNodeUser(restoredProf)) {
-            localStorage.removeItem('zenvitra_real_user_session_backup');
-            localStorage.setItem('zenvitra_session_user', backup);
-
-            setUser({ id: restoredProf.id, email: restoredProf.email });
-            setProfile(restoredProf);
-            setIsLoading(false);
-
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new Event('storage'));
-              window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
-            }
-            return { switchedTo: restoredProf, loggedOut: false };
-          }
-        } catch (_) {}
-      }
-      localStorage.removeItem('zenvitra_real_user_session_backup');
-    }
-
-    // 2. If saved accounts is TURNED ON (and not signing out a temporary Test Node):
-    if (savedOn && !options?.forceFullLogout && !isCurrentTestNode) {
-      // Ensure the signed-out account is safely preserved in saved accounts
-      if (profile && !isTestNodeUser(profile)) {
-        recordSavedSession(profile, true);
-      }
-
-      // Check if there is another saved account to transition to ("go to saved one")
-      const allSaved = getSavedSessions();
-      const otherSaved = allSaved.filter((acc) => {
-        const h = (acc.username || acc.handle || '').replace(/^@/, '').toLowerCase();
-        return h && h !== currentCleanHandle && acc.id !== currentId;
-      });
-
-      if (otherSaved.length > 0) {
-        // Automatically switch active session to next saved account
-        const nextAccount = otherSaved[0];
-        try {
-          localStorage.setItem('zenvitra_session_user', JSON.stringify(nextAccount));
-          localStorage.removeItem('zenvitra_demo_role');
-          localStorage.removeItem('zenvitra_pulse_user_v6');
-        } catch (_) {}
-
-        setUser({ id: nextAccount.id, email: nextAccount.email });
-        setProfile({
-          id: nextAccount.id,
-          username: nextAccount.username,
-          display_name: nextAccount.name || nextAccount.display_name,
-          email: nextAccount.email,
-          role: nextAccount.role || 'delegate',
-          avatar_url: nextAccount.avatar || nextAccount.avatar_url,
-          impact_score: 100,
-          followers_count: 0,
-          following_count: 0,
-          is_verified: false,
-          is_onboarded: true,
-          created_at: new Date().toISOString()
-        } as UserProfile);
-
-        if (typeof window !== 'undefined') {
-          try {
-            window.dispatchEvent(new Event('storage'));
-            window.dispatchEvent(new CustomEvent('zenvitra_auth_change'));
-          } catch (_) {}
-        }
-
-        return { switchedTo: nextAccount, loggedOut: false };
-      }
-    } else {
-      // 3. If saved accounts is NOT turned on or signing out test node:
-      // Remove current account from saved accounts list so it doesn't linger!
-      if (currentCleanHandle || currentId) {
-        removeSavedSession(currentCleanHandle || currentId);
-      }
-    }
-
-    // Standard complete logout
     try {
-      deactivateFounderSession();
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('zenvitra_test_tab_active');
-        sessionStorage.removeItem('zenvitra_test_node_session');
-      }
-      localStorage.removeItem('zenvitra_demo_role');
-      localStorage.removeItem('zenvitra_session_user');
-      localStorage.removeItem('zenvitra_pulse_user_v6');
-      localStorage.removeItem('zenvitra_founder_active_session');
-      localStorage.removeItem('zenvitra_admin_active_session');
-      localStorage.removeItem('zenvitra_active_account_id');
-      localStorage.removeItem('zenvitra_active_session_id');
-      localStorage.removeItem('zenvitra_professional_account_enabled');
-      localStorage.removeItem('zenvitra_event_account_enabled');
-      localStorage.removeItem('zenvitra_passport_level');
-      localStorage.removeItem('zenvitra_verified_student');
-      localStorage.removeItem('zenvitra_student_id_status');
-      localStorage.removeItem('zenvitra_gsheet_test_sync');
-      removeSavedSession('test');
-      removeSavedSession('zen_test_pilot_node');
-    } catch (_) {}
+      // 1. Invalidate server-side session cookie via server action
+      await logoutAction();
+    } catch (err) {
+      console.warn('[SERVER-LOGOUT-ERROR]', err);
+    }
 
-    // Expire cookies
-    if (typeof document !== 'undefined') {
+    // 2. Kill founder / admin session override tokens
+    deactivateFounderSession();
+
+    // 3. Clear all authentication localStorage & sessionStorage
+    if (typeof window !== 'undefined') {
       try {
-        document.cookie = 'zenvitra_session=; Max-Age=0; path=/;';
-        document.cookie = 'zenvitra_clearance=; Max-Age=0; path=/;';
-        document.cookie = 'next-auth.session-token=; Max-Age=0; path=/;';
-        document.cookie = '__Secure-next-auth.session-token=; Max-Age=0; path=/;';
-        document.cookie = 'authjs.session-token=; Max-Age=0; path=/;';
+        sessionStorage.clear();
+        localStorage.removeItem('zenvitra_session_user');
+        localStorage.removeItem('zenvitra_pulse_user_v6');
+        localStorage.removeItem('zenvitra_demo_role');
+        localStorage.removeItem('zenvitra_founder_active_session');
+        localStorage.removeItem('zenvitra_admin_active_session');
+        localStorage.removeItem('zenvitra_active_account_id');
+        localStorage.removeItem('zenvitra_active_session_id');
+        localStorage.removeItem('zenvitra_real_user_session_backup');
+        localStorage.removeItem('zenvitra_professional_account_enabled');
+        localStorage.removeItem('zenvitra_event_account_enabled');
+        localStorage.removeItem('zenvitra_passport_level');
+        localStorage.removeItem('zenvitra_verified_student');
+        localStorage.removeItem('zenvitra_student_id_status');
+        localStorage.removeItem('zenvitra_gsheet_test_sync');
+        removeSavedSession('test');
+        removeSavedSession('zen_test_pilot_node');
       } catch (_) {}
     }
 
+    // 4. Force expire all browser cookies
+    if (typeof document !== 'undefined') {
+      try {
+        document.cookie = 'zenvitra_session=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+        document.cookie = 'zenvitra_clearance=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+        document.cookie = 'next-auth.session-token=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+        document.cookie = '__Secure-next-auth.session-token=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+        document.cookie = 'authjs.session-token=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+      } catch (_) {}
+    }
+
+    // 5. Terminate Supabase & NextAuth client sessions
     try {
       await supabase.auth.signOut();
-    } catch {
-      // Ignore
-    }
+    } catch (_) {}
 
     try {
       await nextAuthSignOut({ redirect: false });
-    } catch {
-      // Ignore
-    }
+    } catch (_) {}
 
+    // 6. Reset React state
     setUser(null);
     setProfile(null);
     setSession(null);
     setConnectedAccounts([]);
 
+    // 7. Dispatch storage and auth change events
     if (typeof window !== 'undefined') {
       try {
         window.dispatchEvent(new Event('storage'));

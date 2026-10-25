@@ -56,11 +56,11 @@ export function checkIsProfessionalAccountEnabled(profile?: UserProfile | null):
   ) return true;
 
   const email = (profile.email || '').toLowerCase();
-  if (email.includes('founder') || email.includes('admin') || email.includes('org') || email.includes('pro')) return true;
+  if (email === 'founder@zenvitra.xyz' || email === 'founder@zenvitra.org' || email === 'admin@zenvitra.xyz') return true;
 
   const username = (profile.username || '').replace(/^@/, '').toLowerCase();
   if (username === 'test' || username === 'tester' || profile.id === 'zen_test_pilot_node') return true;
-  if (username === 'yuveer' || username === 'founder' || username.includes('org') || username.includes('pro')) return true;
+  if ((username === 'yuveer' || username === 'founder') && profile.id === 'zen_founder_root') return true;
 
   return false;
 }
@@ -108,11 +108,11 @@ export function checkIsEventAccountEnabled(profile?: UserProfile | null): boolea
   ) return true;
 
   const email = (profile.email || '').toLowerCase();
-  if (email.includes('founder') || email.includes('admin') || email.includes('mun') || email.includes('event')) return true;
+  if (email === 'founder@zenvitra.xyz' || email === 'founder@zenvitra.org' || email === 'admin@zenvitra.xyz') return true;
 
   const username = (profile.username || '').replace(/^@/, '').toLowerCase();
   if (username === 'test' || username === 'tester' || profile.id === 'zen_test_pilot_node') return true;
-  if (username === 'yuveer' || username === 'founder' || username.includes('mun') || username.includes('event') || username.includes('organizer')) return true;
+  if ((username === 'yuveer' || username === 'founder') && profile.id === 'zen_founder_root') return true;
 
   return false;
 }

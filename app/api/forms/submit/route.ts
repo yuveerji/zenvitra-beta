@@ -87,6 +87,36 @@ export async function POST(req: NextRequest) {
     // 1. Save structured submission for web responses viewer
     saveStructuredSubmission(formId, structuredSub);
 
+    // Dynamic mapping of all question spaces and human-readable field labels
+    const fieldMapping: Record<string, string> = {};
+    if (Array.isArray(body.fields)) {
+      body.fields.forEach((f: any) => {
+        if (f && f.id && f.label) {
+          fieldMapping[f.id] = f.label;
+        }
+      });
+    }
+
+    // Flatten answers and create human-readable question columns with spaces
+    const questionColumns: Record<string, any> = {};
+    for (const [key, val] of Object.entries(rawData)) {
+      let formattedVal = val;
+      if (Array.isArray(val)) {
+        formattedVal = val.join(', ');
+      } else if (typeof val === 'object' && val !== null) {
+        try {
+          formattedVal = JSON.stringify(val);
+        } catch {
+          formattedVal = String(val);
+        }
+      }
+      questionColumns[key] = formattedVal;
+      const humanLabel = fieldMapping[key];
+      if (humanLabel) {
+        questionColumns[humanLabel] = formattedVal;
+      }
+    }
+
     const ledgerEntry = {
       timestamp,
       action: 'add_row',
@@ -133,6 +163,7 @@ export async function POST(req: NextRequest) {
       discordHandle: rawData.step4_discord_handle || rawData.discordHandle || '',
       sovereignAccordAccepted: rawData.step4_accord_agreement || rawData.sovereignAccordAccepted || 'CONFIRMED',
       ...rawData,
+      ...questionColumns,
     };
 
     const sanitizedLedgerEntry = sanitizeForGoogleSheets(ledgerEntry);

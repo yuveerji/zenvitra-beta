@@ -799,6 +799,11 @@ export default function ZenFormPublicPage() {
             sheetTab: targetSheetTab,
             targetTab: targetSheetTab,
             webhookUrl: webhookUrl,
+            fields: Array.isArray(form.fields) ? form.fields.map((f: any) => ({
+              id: f.id,
+              label: f.label || f.title || f.placeholder || f.id,
+              type: f.type || 'text'
+            })) : [],
           }),
         });
       } catch (submitErr) {

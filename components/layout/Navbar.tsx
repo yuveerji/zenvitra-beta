@@ -314,12 +314,8 @@ export function Navbar({
     setUserDropdownOpen(false);
     setMobileMenuOpen(false);
     setLocalUserSession(null);
-    const res = await signOut();
-    if (res?.switchedTo) {
-      window.location.reload();
-    } else {
-      window.location.href = '/login';
-    }
+    await signOut({ forceFullLogout: true });
+    window.location.href = '/login';
   };
 
   const hasActiveSession = isAuthenticated || !!profile || !!localUserSession;
@@ -392,8 +388,8 @@ export function Navbar({
 
         {/* Navbar Container scaled to 80% so all controls fit cleanly in frame */}
         <nav 
-          className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 [zoom:0.88]"
-          style={{ zoom: '88%' }}
+          className="relative z-10 mx-auto flex h-16 sm:h-[68px] xl:h-[72px] w-full max-w-[1700px] items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10 "
+          
         >
 
           {/* LEFT: Brand Logo & Wordmark (with integrated Platform Drawer Toggle when hasPlatformSidebar=true) */}
@@ -520,13 +516,13 @@ export function Navbar({
                   <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
-            ) : (
+            ) : pathname === '/login' || pathname === '/register' ? null : (
               <Link
                 href="/login"
-                className="group relative inline-flex items-center gap-1.5 h-8 sm:h-8.5 px-3 sm:px-4 rounded-full bg-white hover:bg-neutral-200 text-black font-display font-bold text-[11px] sm:text-xs tracking-wider uppercase transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] active:scale-[0.98] whitespace-nowrap shrink-0 border border-white"
+                className="hidden xs:inline-flex group relative items-center gap-1.5 h-7 sm:h-8.5 px-2.5 sm:px-4 rounded-full bg-white hover:bg-neutral-200 text-black font-display font-bold text-[10px] sm:text-xs tracking-wider uppercase transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] active:scale-[0.98] whitespace-nowrap shrink-0 border border-white"
               >
                 <span>Sign In</span>
-                <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black group-hover:translate-x-0.5 transition-transform" />
               </Link>
             )}
 
@@ -764,8 +760,8 @@ export function Navbar({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              style={{ zoom: '88%' }}
-              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain [zoom:0.88]"
+              
+              className="lg:hidden border-b border-white/10 bg-[#060608]/98 backdrop-blur-3xl px-4 sm:px-6 py-5 space-y-4 text-left shadow-2xl max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain "
             >
               {/* Navigation Links Grid */}
               <div className="grid grid-cols-2 gap-2 font-display text-xs tracking-wider uppercase">

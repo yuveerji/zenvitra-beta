@@ -664,3 +664,25 @@ img[src*="/assets/logo"],
   mix-blend-mode: screen !important;
   background-color: transparent !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MOBILE SMOOTHNESS & TOUCH OPTIMIZATIONS (60FPS SCROLL ENGINE)
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent heavy multi-layer GPU strain on mobile devices */
+  .backdrop-blur-2xl, .backdrop-blur-xl {
+    -webkit-backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+  
+  /* Lock horizontal jitter and give momentum touch scrolling */
+  html, body {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: none;
+  }
+}

@@ -415,7 +415,13 @@ export function UserProfileView() {
     }
   };
 
-  const isFounderProfile = (displayHandle || '').toLowerCase().replace(/^@/, '') === 'yuveer' || (displayHandle || '').toLowerCase().replace(/^@/, '') === 'founder';
+  const isFounderProfile = Boolean(
+    (profile as any)?.role === 'FOUNDER' ||
+    (profile as any)?.id === 'zen_founder_root' ||
+    (profile as any)?.id === 'zen_user_yuveer' ||
+    (profile as any)?.email === 'founder@zenvitra.xyz' ||
+    (profile as any)?.email === 'founder@zenvitra.org'
+  );
   const isVerifiedEffective = Boolean(profile.isVerified || (profile as any)?.is_verified || isFounderProfile);
 
   const isProfessionalOrEventAccount = Boolean(

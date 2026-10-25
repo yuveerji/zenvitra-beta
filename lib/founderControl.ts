@@ -214,7 +214,9 @@ export function extractSafeIdentity(val: any): { identifier: string; role?: stri
   if (!val) return { identifier: '' };
   if (typeof val === 'string') return { identifier: val };
   if (typeof val === 'object') {
-    const identifier = val.username || val.email || val.handle || val.name || '';
+    // SECURITY: NEVER use val.name or val.display_name as a security identifier!
+    // Regular users named 'Yuveer', 'Aarush', or 'Khushi' must never be granted admin privileges based on display name.
+    const identifier = val.username || val.email || val.handle || '';
     const role = val.role || '';
     const id = val.id || '';
     return {
@@ -228,36 +230,57 @@ export function extractSafeIdentity(val: any): { identifier: string; role?: stri
 
 export function isYuveer(usernameOrEmail?: string | null | any): boolean {
   if (!usernameOrEmail) return false;
-  const { identifier } = extractSafeIdentity(usernameOrEmail);
+  // If a full user object was passed, perform strict verification
+  if (typeof usernameOrEmail === 'object' && usernameOrEmail !== null) {
+    const id = String(usernameOrEmail.id || '').toLowerCase().trim();
+    const email = String(usernameOrEmail.email || '').toLowerCase().trim();
+    const role = String(usernameOrEmail.role || '').toUpperCase().trim();
+    if (id === 'zen_founder_root' || id === 'zen_user_yuveer') return true;
+    if (email === 'founder@zenvitra.xyz' || email === 'founder@zenvitra.org' || email === 'founder@zenvitra.com' || email === 'yuveer@zenvitra.xyz') return true;
+    if (role === 'FOUNDER' && (usernameOrEmail.username === 'yuveer' || usernameOrEmail.username === 'founder')) return true;
+    return false;
+  }
+  const { identifier, id, role } = extractSafeIdentity(usernameOrEmail);
+  if (id === 'zen_founder_root' || id === 'zen_user_yuveer') return true;
   if (!identifier) return false;
   const clean = identifier.toLowerCase().trim().replace(/^@/, '');
   // Strict identity matching for Founder (Yuveer Chhatwani)
+  // Must match official verified email or root ID
   return (
-    clean === 'yuveer' ||
-    clean === 'founder' ||
+    clean === 'zen_founder_root' ||
+    clean === 'zen_user_yuveer' ||
     clean === 'founder@zenvitra.xyz' ||
     clean === 'founder@zenvitra.org' ||
     clean === 'founder@zenvitra.com' ||
     clean === 'yuveer@zenvitra.xyz' ||
     clean === 'yuveer@zenvitra.org' ||
     clean === 'yuveer@zenvitra.com' ||
-    clean === 'zen_founder_root' ||
-    clean === 'zen_user_yuveer'
+    ((clean === 'yuveer' || clean === 'founder') && (role?.toUpperCase() === 'FOUNDER' || (typeof window !== 'undefined' && localStorage.getItem('zenvitra_founder_active_session') === 'true')))
   );
 }
 
 export function isAarush(usernameOrEmail?: string | null | any): boolean {
   if (!usernameOrEmail) return false;
-  const { identifier } = extractSafeIdentity(usernameOrEmail);
+  if (typeof usernameOrEmail === 'object' && usernameOrEmail !== null) {
+    const id = String(usernameOrEmail.id || '').toLowerCase().trim();
+    const email = String(usernameOrEmail.email || '').toLowerCase().trim();
+    const role = String(usernameOrEmail.role || '').toUpperCase().trim();
+    if (id === 'zen_cofounder_aarush') return true;
+    if (email === 'aarush@zenvitra.xyz' || email === 'aarush@zenvitra.com' || email === 'aarush@zenvitra.org') return true;
+    if (role === 'CO_FOUNDER' && (usernameOrEmail.username === 'aarush')) return true;
+    return false;
+  }
+  const { identifier, id, role } = extractSafeIdentity(usernameOrEmail);
+  if (id === 'zen_cofounder_aarush') return true;
   if (!identifier) return false;
   const clean = identifier.toLowerCase().trim().replace(/^@/, '');
   return (
-    clean === 'aarush' ||
+    clean === 'zen_cofounder_aarush' ||
     clean === 'aarush@zenvitra.xyz' ||
     clean === 'aarush@zenvitra.com' ||
     clean === 'aarush@zenvitra.org' ||
-    clean === 'zen_cofounder_aarush' ||
-    clean === 'aarush-vijayivargiya-cofounder'
+    clean === 'aarush-vijayivargiya-cofounder' ||
+    (clean === 'aarush' && role?.toUpperCase() === 'CO_FOUNDER')
   );
 }
 
@@ -673,21 +696,32 @@ export function setCustomFounderKey(newKey: string): void {
 }
 
 export function isCoFounder(usernameOrEmail?: string | null | any, role?: string | null): boolean {
+  if (typeof usernameOrEmail === 'object' && usernameOrEmail !== null) {
+    const id = String(usernameOrEmail.id || '').toLowerCase().trim();
+    const email = String(usernameOrEmail.email || '').toLowerCase().trim();
+    const r = String(role || usernameOrEmail.role || '').toUpperCase().trim();
+    if (id === 'zen_cofounder_khushi' || id === 'zen_cofounder_aarush') return true;
+    if (email === 'khushi@zenvitra.xyz' || email === 'aarush@zenvitra.xyz') return true;
+    if ((r === 'CO_FOUNDER' || r === 'COFOUNDER') && (usernameOrEmail.username === 'khushi' || usernameOrEmail.username === 'aarush')) return true;
+    return false;
+  }
   const extracted = extractSafeIdentity(usernameOrEmail);
   const effectiveRole = role || extracted.role;
   const effectiveIdentifier = extracted.identifier;
+  const effectiveId = extracted.id;
 
+  if (effectiveId === 'zen_cofounder_khushi' || effectiveId === 'zen_cofounder_aarush') return true;
   if (!effectiveIdentifier && !effectiveRole) return false;
   const clean = effectiveIdentifier.toLowerCase().trim().replace(/^@/, '');
   const r = (effectiveRole || '').toUpperCase().trim();
-  if (r === 'CO_FOUNDER' || r === 'COFOUNDER') return true;
+  
+  if ((r === 'CO_FOUNDER' || r === 'COFOUNDER') && (clean === 'khushi' || clean === 'aarush')) return true;
   return (
     isAarush(clean) ||
-    clean === 'khushi' ||
+    clean === 'zen_cofounder_khushi' ||
     clean === 'khushi@zenvitra.xyz' ||
     clean === 'khushi@zenvitra.org' ||
     clean === 'khushi@zenvitra.com' ||
-    clean === 'zen_cofounder_khushi' ||
     clean === 'khushi-rb-cofounder' ||
     clean === 'cofounder-cto-partner' ||
     clean === 'cofounder-alliances'

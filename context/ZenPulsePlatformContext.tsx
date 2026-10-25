@@ -1623,7 +1623,7 @@ export function ZenPulsePlatformProvider({ initialSession, children }: { initial
 
   const getCivicClearance = useCallback((username: string): CivicClearance => {
     const clean = username.toLowerCase().trim().replace(/^@/, '');
-    const isFounder = clean === 'yuveer' || clean === 'founder';
+    const isFounder = (clean === 'yuveer' || clean === 'founder') && (clientSessionUser?.id === 'zen_founder_root' || clientSessionUser?.email === 'founder@zenvitra.xyz' || profile?.email === 'founder@zenvitra.xyz');
     
     // Dynamic calculation from user's actual activity
     const userPosts = allPosts.filter((p) => (p.authorUsername || '').toLowerCase().trim().replace(/^@/, '') === clean);

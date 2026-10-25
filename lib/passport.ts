@@ -319,12 +319,13 @@ export function createDefaultPassport(user: {
   institution?: string;
   role?: string;
   isVerified?: boolean;
+  email?: string;
 }): ZenPassport {
   const cleanUsername = (user.username || 'user').toLowerCase().replace(/^@/, '');
   const passportId = generatePassportId(cleanUsername, 2026);
   const now = new Date().toISOString();
 
-  const isFounder = cleanUsername === 'yuveer' || user.id === 'zen_user_yuveer';
+  const isFounder = user.id === 'zen_founder_root' || user.id === 'zen_user_yuveer' || (cleanUsername === 'yuveer' && user.email === 'founder@zenvitra.xyz');
   const isTestPilot = cleanUsername === 'test' || cleanUsername === 'tester' || user.id === 'zen_test_pilot_node';
   const verificationLevel: VerificationLevel = isFounder ? 3 : (isTestPilot ? 2 : (user.isVerified ? 2 : 1));
 
@@ -627,7 +628,7 @@ export function getOrCreateDefaultPassport(username: string, fullName?: string, 
     username: clean,
     fullName: defaultName,
     avatarUrl: effectiveAvatar,
-    role: clean === 'yuveer' ? 'FOUNDER' : (clean === 'test' ? 'DELEGATE' : 'DELEGATE'),
+    role: (clean === 'yuveer' && (fullName?.includes('Chhatwani') || fullName === 'Founder & Lead Architect')) ? 'FOUNDER' : 'DELEGATE',
     isVerified: true
   });
 
