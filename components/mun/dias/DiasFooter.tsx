@@ -45,7 +45,7 @@ export const DiasFooter: React.FC = () => {
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/host?dais=true" className="hover:text-[#F4F2ED] transition-colors flex items-center gap-1">
+                <Link href="/dias?dais=true" className="hover:text-[#F4F2ED] transition-colors flex items-center gap-1">
                   Live Dias Console <ArrowUpRight className="w-3 h-3 text-[#575B66]" />
                 </Link>
               </li>

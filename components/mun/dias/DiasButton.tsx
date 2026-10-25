@@ -2,9 +2,10 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 export interface DiasButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'gold' | 'charcoal' | 'outline' | 'ghost' | 'danger';
+  variant?: 'gold' | 'white' | 'charcoal' | 'amber-glass' | 'gold-glass' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
+  pill?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
@@ -15,6 +16,7 @@ export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
       variant = 'gold',
       size = 'md',
       isLoading = false,
+      pill = true,
       leftIcon,
       rightIcon,
       children,
@@ -25,24 +27,30 @@ export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-all duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A46D]/60 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]';
+      'group inline-flex items-center justify-center font-display uppercase tracking-wider select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A46D]/60 disabled:opacity-50 disabled:pointer-events-none cursor-pointer transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98]';
 
     const sizes = {
-      sm: 'text-xs px-3 py-1.5 rounded-lg gap-1.5 h-8',
-      md: 'text-sm px-4 py-2 rounded-xl gap-2 h-10',
-      lg: 'text-base px-6 py-3 rounded-2xl gap-2.5 h-12 tracking-wide',
+      sm: `text-[11px] px-4 py-2 gap-2 h-9 ${pill ? 'rounded-full' : 'rounded-xl'}`,
+      md: `text-xs sm:text-xs px-6 py-3 gap-2.5 h-11 ${pill ? 'rounded-full' : 'rounded-xl'}`,
+      lg: `text-xs sm:text-sm px-7 sm:px-8 py-3.5 sm:py-4 gap-3 h-13 tracking-wider ${pill ? 'rounded-full' : 'rounded-2xl'}`,
     };
 
     const variants = {
-      gold: 'bg-[#C5A46D] hover:bg-[#D4B57E] text-[#08090B] font-semibold shadow-[0_2px_14px_rgba(197,164,109,0.25)] hover:shadow-[0_4px_20px_rgba(197,164,109,0.35)] border border-[#E6D1A5]/40',
+      gold: 'bg-[#C5A46D] hover:bg-[#D4B57E] text-[#08090B] font-bold border border-[#E6D1A5]/60 shadow-[0_0_30px_rgba(197,164,109,0.3)] hover:shadow-[0_0_55px_rgba(197,164,109,0.55)] btn-glow',
+      white:
+        'bg-white hover:bg-neutral-100 text-black font-bold border border-white/60 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.35)] btn-glow',
       charcoal:
-        'bg-[#181B21] hover:bg-[#20242C] text-[#F4F2ED] border border-[#2A2E39] hover:border-[#C5A46D]/30 shadow-sm',
+        'border border-white/20 bg-white/[0.04] text-neutral-200 hover:text-white hover:bg-white/[0.08] hover:border-white/40 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_35px_rgba(255,255,255,0.12)]',
+      'amber-glass':
+        'border border-amber-400/30 bg-amber-400/[0.06] text-amber-300 hover:bg-amber-400/15 hover:border-amber-400/60 backdrop-blur-sm shadow-[0_0_25px_rgba(251,191,36,0.1)] hover:shadow-[0_0_45px_rgba(251,191,36,0.25)] btn-glow',
+      'gold-glass':
+        'border border-[#C5A46D]/40 bg-[#C5A46D]/[0.08] text-[#E6D1A5] hover:bg-[#C5A46D]/15 hover:border-[#C5A46D]/70 backdrop-blur-md shadow-[0_0_25px_rgba(197,164,109,0.15)] hover:shadow-[0_0_45px_rgba(197,164,109,0.3)]',
       outline:
-        'bg-transparent hover:bg-[#181B21]/60 text-[#F4F2ED] border border-[#C5A46D]/40 hover:border-[#C5A46D] text-[#C5A46D]',
+        'border border-[#C5A46D]/50 bg-transparent text-[#E6D1A5] hover:border-[#C5A46D] hover:bg-[#C5A46D]/10 backdrop-blur-sm shadow-[0_0_20px_rgba(197,164,109,0.12)] hover:shadow-[0_0_35px_rgba(197,164,109,0.28)]',
       ghost:
-        'bg-transparent hover:bg-[#181B21]/50 text-[#9A9DA5] hover:text-[#F4F2ED]',
+        'bg-transparent hover:bg-white/[0.06] text-neutral-400 hover:text-[#F4F2ED] shadow-none hover:shadow-none',
       danger:
-        'bg-[#822424]/20 hover:bg-[#822424]/30 text-[#F87171] border border-[#822424]/40 hover:border-[#F87171]/50',
+        'border border-red-500/40 bg-red-500/[0.08] text-red-300 hover:bg-red-500/20 hover:border-red-500/70 shadow-[0_0_25px_rgba(239,68,68,0.2)]',
     };
 
     return (

@@ -144,7 +144,7 @@ export default function DiasHowItWorksPage() {
             Test the chair controls, speaker timer, and procedural gavel without any setup.
           </p>
           <div className="flex items-center justify-center gap-4 pt-2">
-            <Link href="/host?dais=true">
+            <Link href="/dias?dais=true">
               <DiasButton variant="gold" size="md">
                 Launch Live Dais
               </DiasButton>

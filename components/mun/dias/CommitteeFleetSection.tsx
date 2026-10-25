@@ -25,6 +25,7 @@ import {
   Building2,
   Flame,
   CheckCircle2,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { DiasBadge } from './DiasBadge';
 import { DiasButton } from './DiasButton';
@@ -266,9 +267,12 @@ export const CommitteeFleetSection: React.FC = () => {
       topic: preset.topic,
       isIndianCommittee: preset.isIndian,
       speakingTimeSeconds: preset.speakingTimeSeconds,
+      remainingSeconds: preset.speakingTimeSeconds,
+      sessionState: 'setup',
     };
     if (typeof window !== 'undefined') {
       localStorage.setItem('zenvitra_dias_active_session', JSON.stringify(sessionData));
+      localStorage.setItem('zenvitra_zenmun_live_session_v1', JSON.stringify(sessionData));
     }
     router.push(`/dias/${sessionCode}`);
   };
@@ -287,17 +291,21 @@ export const CommitteeFleetSection: React.FC = () => {
 
     const acronym = (customAcronym.trim() || customName.slice(0, 4)).toUpperCase();
     const sessionCode = `${acronym.replace(/[^A-Z0-9]/g, '').slice(0, 4)}${Math.floor(100 + Math.random() * 900)}`;
+    const timeSec = parseInt(customSpeakingTime, 10) || 90;
     const sessionData = {
       sessionCode,
       committeeName: customName.trim(),
       committeeAcronym: acronym,
       topic: customTopic.trim() || 'General Diplomatic Deliberation',
       isIndianCommittee: customIsIndian,
-      speakingTimeSeconds: parseInt(customSpeakingTime, 10) || 90,
+      speakingTimeSeconds: timeSec,
+      remainingSeconds: timeSec,
+      sessionState: 'setup',
     };
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('zenvitra_dias_active_session', JSON.stringify(sessionData));
+      localStorage.setItem('zenvitra_zenmun_live_session_v1', JSON.stringify(sessionData));
     }
     setIsCustomCreatorOpen(false);
     router.push(`/dias/${sessionCode}`);
@@ -388,10 +396,10 @@ export const CommitteeFleetSection: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveCategory(tab.id as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
                 activeCategory === tab.id
-                  ? 'bg-[#C5A46D] text-[#08090B] font-semibold shadow-sm'
-                  : 'text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-[#181B21]'
+                  ? 'bg-[#C5A46D] text-[#08090B] font-bold shadow-[0_0_20px_rgba(197,164,109,0.3)]'
+                  : 'text-[#9A9DA5] hover:text-[#F4F2ED] hover:bg-white/[0.06]'
               }`}
             >
               {tab.label}
@@ -458,15 +466,22 @@ export const CommitteeFleetSection: React.FC = () => {
                 </span>
               </div>
 
-              <DiasButton
-                onClick={() => handleLaunchPreset(preset)}
-                variant="gold"
-                size="sm"
-                className="w-full justify-center"
-                leftIcon={<Play className="w-3.5 h-3.5" />}
-              >
-                Launch Live Dais Chamber
-              </DiasButton>
+              <div className="flex items-center gap-2">
+                <DiasButton
+                  onClick={() => handleLaunchPreset(preset)}
+                  variant="gold"
+                  size="sm"
+                  className="flex-1 justify-center"
+                  leftIcon={<Play className="w-3.5 h-3.5" />}
+                >
+                  Launch Chamber
+                </DiasButton>
+                <Link href={`/dias?create=true&chamber=${preset.id}`} title="Customize in Setup Studio">
+                  <DiasButton variant="charcoal" size="sm" className="px-3">
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                  </DiasButton>
+                </Link>
+              </div>
             </div>
           </DiasCard>
         ))}

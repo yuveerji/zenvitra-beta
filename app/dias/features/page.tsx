@@ -188,7 +188,7 @@ export default function DiasFeaturesPage() {
             Ready to experience the platform in action?
           </h3>
           <div className="flex items-center justify-center gap-4">
-            <Link href="/host?dais=true">
+            <Link href="/dias?dais=true">
               <DiasButton variant="gold" size="md">
                 Launch Live Dais
               </DiasButton>
