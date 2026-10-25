@@ -45,6 +45,8 @@ const PUBLIC_PREFIXES = [
   '/pre-login',
   '/support',
   '/zen-support',
+  '/dias',
+  '/mun',
 ];
 
 const STATIC_EXTENSIONS = [
