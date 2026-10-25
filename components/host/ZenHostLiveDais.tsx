@@ -456,9 +456,9 @@ export default function ZenHostLiveDais({
       <StageAmbientBackground theme="dais" />
 
       {/* ── 1. SOVEREIGN DAIS COMMAND HEADER ─────────────────────────────────── */}
-      <header className="border-b border-white/[0.08] bg-[#040711]/90 backdrop-blur-xl px-4 sm:px-6 py-3 sticky top-0 z-40 flex items-center justify-between gap-4">
+      <header className="border-b border-white/[0.08] bg-[#040711]/95 backdrop-blur-xl px-3 sm:px-6 py-2.5 sticky top-0 z-40 flex items-center justify-between gap-2 lg:gap-3 w-full max-w-full overflow-hidden">
         {/* Left: Brand & Format Selector */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
             <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-400">
@@ -478,61 +478,63 @@ export default function ZenHostLiveDais({
                 onBlur={() => setIsEditingTitle(false)}
                 onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
                 autoFocus
-                className="bg-black/70 border border-amber-400/50 rounded-lg px-2.5 py-1 text-sm font-bold font-space text-white focus:outline-none focus:ring-1 focus:ring-amber-400"
+                className="bg-black/70 border border-amber-400/50 rounded-lg px-2.5 py-1 text-sm font-bold font-space text-white focus:outline-none focus:ring-1 focus:ring-amber-400 max-w-[150px] sm:max-w-[200px]"
               />
             ) : (
               <button
                 type="button"
                 onClick={() => setIsEditingTitle(true)}
-                className="flex items-center gap-1.5 text-sm sm:text-base font-black font-space text-white hover:text-amber-300 transition group text-left tracking-tight"
+                className="flex items-center gap-1.5 text-sm sm:text-base font-black font-space text-white hover:text-amber-300 transition group text-left tracking-tight max-w-[130px] sm:max-w-[200px] truncate"
               >
-                <span>{title}</span>
-                <Edit2 className="w-3.5 h-3.5 text-neutral-500 group-hover:text-amber-400 opacity-60 transition" />
+                <span className="truncate">{title}</span>
+                <Edit2 className="w-3.5 h-3.5 text-neutral-500 group-hover:text-amber-400 opacity-60 transition shrink-0" />
               </button>
             )}
 
             {/* Format Badge */}
-            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider shrink-0">
               {formatPreset.badge}
             </span>
           </div>
         </div>
 
-        {/* Center: Format Selector Quick Dropdown */}
-        <div className="hidden lg:flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-xl p-1 backdrop-blur-md">
-          {(Object.keys(HOST_FORMAT_PRESETS) as HostSessionFormat[])
-            .filter((fmt) => fmt !== 'mun') // MUN has its own specialized chair dais
-            .map((fmtKey) => {
-              const preset = HOST_FORMAT_PRESETS[fmtKey];
-              const isSelected = format === fmtKey;
-              return (
-                <button
-                  key={fmtKey}
-                  type="button"
-                  onClick={() => {
-                    setFormat(fmtKey);
-                    setSpeakerDuration(preset.defaultTimer);
-                    setRemainingSeconds(preset.defaultTimer);
-                  }}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold font-space transition flex items-center gap-1.5 ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <span>{preset.name.split(' ')[0]}</span>
-                </button>
-              );
-            })}
+        {/* Center: Format Selector Quick Bar (Scrollable & Responsive) */}
+        <div className="hidden lg:flex items-center min-w-0 flex-1 max-w-xl mx-2 justify-center">
+          <div className="flex items-center gap-1 bg-black/60 border border-white/10 rounded-xl p-1 backdrop-blur-md overflow-x-auto no-scrollbar scrollbar-none scroll-smooth max-w-full">
+            {(Object.keys(HOST_FORMAT_PRESETS) as HostSessionFormat[])
+              .filter((fmt) => fmt !== 'mun') // MUN has its own specialized chair dais
+              .map((fmtKey) => {
+                const preset = HOST_FORMAT_PRESETS[fmtKey];
+                const isSelected = format === fmtKey;
+                return (
+                  <button
+                    key={fmtKey}
+                    type="button"
+                    onClick={() => {
+                      setFormat(fmtKey);
+                      setSpeakerDuration(preset.defaultTimer);
+                      setRemainingSeconds(preset.defaultTimer);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold font-space transition shrink-0 flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <span>{preset.name.split(' ')[0]}</span>
+                  </button>
+                );
+              })}
+          </div>
         </div>
 
         {/* Right: Room Code, Sound Toggle, Auditorium Display & Exit */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto z-10">
           {/* Room PIN with Copy */}
           <button
             type="button"
             onClick={handleCopyJoinLink}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-mono font-bold text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-mono font-bold text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)] shrink-0 cursor-pointer"
             title="Click to copy join link for attendees"
           >
             <Share2 className="w-3.5 h-3.5 text-amber-400" />
@@ -546,7 +548,7 @@ export default function ZenHostLiveDais({
           <button
             type="button"
             onClick={() => setSoundEnabled((prev) => !prev)}
-            className={`p-2 rounded-xl border transition ${
+            className={`p-2 rounded-xl border transition shrink-0 cursor-pointer ${
               soundEnabled
                 ? 'bg-white/[0.05] border-white/15 text-neutral-300 hover:text-white hover:border-amber-400/40'
                 : 'bg-red-950/40 border-red-500/40 text-red-400'
@@ -560,33 +562,33 @@ export default function ZenHostLiveDais({
           <button
             type="button"
             onClick={handleOpenAuditoriumDisplay}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 hover:bg-cyan-900/50 transition text-xs font-bold font-space text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 hover:bg-cyan-900/50 transition text-xs font-bold font-space text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.2)] shrink-0 cursor-pointer"
             title="Launch Fullscreen Projector / Public Stage Feed"
           >
             <Tv className="w-3.5 h-3.5" />
-            <span>Stage Display</span>
+            <span className="hidden xl:inline">Stage Display</span>
           </button>
 
           {/* Live Settings Modal (Configure Voting, Queue, Timers, Layout, Sounds) */}
           <button
             type="button"
             onClick={() => setIsSettingsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-bold font-space text-amber-300"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-amber-400/50 hover:bg-white/[0.08] transition text-xs font-bold font-space text-amber-300 shrink-0 cursor-pointer"
             title="Configure Live Stage Features & Toggles"
           >
             <Settings className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Settings</span>
+            <span className="hidden xl:inline">Settings</span>
           </button>
 
           {/* Modular Toggles / Studio Settings */}
           <button
             type="button"
             onClick={() => setIsCustomConfigModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] transition text-xs font-bold font-space text-cyan-300"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/15 hover:border-cyan-400/50 hover:bg-white/[0.08] transition text-xs font-bold font-space text-cyan-300 shrink-0 cursor-pointer"
             title="Configure Modular Event Toggles"
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Custom Studio</span>
+            <span className="hidden xl:inline">Custom Studio</span>
           </button>
 
           {/* Exit Dais */}
@@ -596,7 +598,7 @@ export default function ZenHostLiveDais({
               if (onExit) onExit();
               else router.push('/host');
             }}
-            className="p-2 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-red-950/40 hover:border-red-500/40 text-neutral-400 hover:text-red-300 transition"
+            className="p-2 rounded-xl bg-white/[0.04] border border-white/15 hover:bg-red-950/40 hover:border-red-500/40 text-neutral-400 hover:text-red-300 transition shrink-0 cursor-pointer"
             title="Exit Dais to Host Hub"
           >
             <X className="w-4 h-4" />
