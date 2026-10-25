@@ -116,87 +116,9 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   // ─── Speaker Stage & Queue (Committee-Aware Portfolios) ───
-  const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerQueueItem | null>(() =>
-    isIndianCommittee
-      ? {
-          id: 'spk_1',
-          country: 'Treasury Bench',
-          flag: '🇮🇳',
-          name: 'Hon. Minister of Parliamentary Affairs',
-          position: 1,
-        }
-      : {
-          id: 'spk_1',
-          country: 'United States',
-          flag: '🇺🇸',
-          name: 'Hon. Ambassador to the United Nations',
-          position: 1,
-        }
-  );
+  const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerQueueItem | null>(null);
 
-  const [queue, setQueue] = useState<SpeakerQueueItem[]>(() =>
-    isIndianCommittee
-      ? [
-          {
-            id: 'spk_2',
-            country: 'Opposition Leader',
-            flag: '🇮🇳',
-            name: 'Leader of Opposition (INC)',
-            position: 2,
-          },
-          {
-            id: 'spk_3',
-            country: 'Member for Varanasi',
-            flag: '🇮🇳',
-            name: 'Hon. Member for Varanasi (Uttar Pradesh)',
-            position: 3,
-          },
-          {
-            id: 'spk_4',
-            country: 'Member for Wayanad',
-            flag: '🇮🇳',
-            name: 'Hon. Member for Wayanad (Kerala)',
-            position: 4,
-          },
-          {
-            id: 'spk_5',
-            country: 'Minister of Finance',
-            flag: '🇮🇳',
-            name: 'Hon. Minister of Finance & Corporate Affairs',
-            position: 5,
-          },
-        ]
-      : [
-          {
-            id: 'spk_2',
-            country: 'United Kingdom',
-            flag: '🇬🇧',
-            name: 'Permanent Representative of UK',
-            position: 2,
-          },
-          {
-            id: 'spk_3',
-            country: 'France',
-            flag: '🇫🇷',
-            name: 'Permanent Representative of France',
-            position: 3,
-          },
-          {
-            id: 'spk_4',
-            country: 'Japan',
-            flag: '🇯🇵',
-            name: 'Permanent Representative of Japan',
-            position: 4,
-          },
-          {
-            id: 'spk_5',
-            country: 'Brazil',
-            flag: '🇧🇷',
-            name: 'Permanent Representative of Brazil',
-            position: 5,
-          },
-        ]
-  );
+  const [queue, setQueue] = useState<SpeakerQueueItem[]>([]);
 
   // ─── Quick Add Input ───
   const [newCountry, setNewCountry] = useState(() => (isIndianCommittee ? 'Member for Baramati' : 'Germany'));
@@ -909,15 +831,15 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
               {/* 64px Authoritative Digital Clock Display */}
               <div className="py-6 sm:py-10 text-center space-y-2">
                 <div
-                  aria-label={`Time remaining: ${formatClock(remainingSec)}`}
+                  aria-label={`Time remaining: ${currentSpeaker ? formatClock(remainingSec) : '--:--'}`}
                   className="font-mono text-6xl sm:text-7xl font-bold tracking-tight text-[#F4F2ED] select-none"
                 >
-                  {formatClock(remainingSec)}
+                  {currentSpeaker ? formatClock(remainingSec) : '--:--'}
                 </div>
                 <p className="text-[11px] text-[#575B66] font-mono tracking-widest uppercase">
-                  {isTimerRunning
-                    ? '• SPEECH RUNNING • 10S WARNING BELL ACTIVE'
-                    : 'SPEECH PAUSED • STRIKE GAVEL [G] TO CALL ORDER'}
+                  {currentSpeaker
+                    ? (isTimerRunning ? '• SPEECH RUNNING • 10S WARNING BELL ACTIVE' : 'SPEECH PAUSED • STRIKE GAVEL [G] TO CALL ORDER')
+                    : 'FLOOR IS OPEN • AWAITING NEXT SPEAKER RECOGNITION'}
                 </p>
               </div>
 

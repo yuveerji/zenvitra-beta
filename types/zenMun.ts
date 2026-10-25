@@ -1432,7 +1432,7 @@ export const QUICK_BLOC_BUNDLES: Array<{
     ],
   },
   {
-    id: 'unsc2026',
+    id: 'unsc_2026',
     category: 'international',
     name: 'UNSC 2026',
     icon: '🇺🇳',

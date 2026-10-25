@@ -586,8 +586,8 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
 
     const finalDelegates = delegations;
     const firstQueue: string[] = []; // STRICT DATA INTEGRITY: queue starts completely empty
-    const cleanAcronym = (acronym.trim() || committeeName.trim() || 'LOK SABHA').replace(/_/g, ' ');
-    const isInd = Boolean(isIndian || cleanAcronym.toLowerCase().includes('lok'));
+    const isInd = Boolean(isIndian || acronym.toLowerCase().includes('lok') || committeeName.toLowerCase().includes('lok'));
+    const cleanAcronym = (acronym.trim() || committeeName.trim() || (isInd ? 'PARLIAMENT' : 'UN COMMITTEE')).replace(/_/g, ' ');
     const emblemToUse = isInd
       ? '/assets/committees/emblem_of_india.svg'
       : (emblem || '/assets/committees/un.svg');
@@ -1151,8 +1151,8 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                   <span>Max 15 (Free) • Unlock Unlimited</span>
                 </button>
               ) : (
-                <span className="text-[10px] font-mono text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5 text-emerald-700" />
+                <span className="text-[10px] font-mono text-[#E6D1A5] bg-[#C5A46D]/15 border border-[#C5A46D]/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-[#C5A46D]" />
                   <span>PRO Unlimited</span>
                 </span>
               )}
@@ -1241,10 +1241,10 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                 onClick={handleLaunch}
                 className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#C5A46D] via-[#DFBA73] to-[#C5A46D] text-[#08090C] flex items-center justify-center gap-2.5 font-black text-sm tracking-wide uppercase transition shadow-[0_0_30px_rgba(197,164,109,0.35)] hover:shadow-[0_0_40px_rgba(197,164,109,0.5)] cursor-pointer active:scale-98"
               >
-                <Lock className="w-4 h-4 text-emerald-300" />
+                <Lock className="w-4 h-4 text-[#E6D1A5]" />
                 <div className="text-left">
                   <div className="text-xs font-bold text-white">Start session</div>
-                  <div className="text-[10px] text-emerald-200/80 font-normal">
+                  <div className="text-[10px] text-slate-300 font-normal">
                     Lock roster &amp; launch session
                   </div>
                 </div>
@@ -1384,8 +1384,8 @@ export function PreSessionSetupView({ onStartSession, onBack }: PreSessionSetupV
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="p-3 rounded-xl bg-[#C5A46D]/10 border border-[#C5A46D]/30 text-[11px] text-[#E6D1A5] flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#C5A46D] shrink-0" />
                   <span>You're ready! You can load a pre-configured sample chamber right now or configure your own.</span>
                 </div>
               </div>

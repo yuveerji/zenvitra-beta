@@ -122,93 +122,10 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
     flag: string;
     name: string;
     subtext?: string;
-  }>(() =>
-    isIndianCommittee
-      ? {
-          country: 'Treasury Bench',
-          flag: '🇮🇳',
-          name: 'Hon. Minister of External Affairs',
-          subtext: 'Clause 4 Amendment: Maritime Economic Corridors Bill, 2026',
-        }
-      : {
-          country: 'United States',
-          flag: '🇺🇸',
-          name: 'Hon. Ambassador to the United Nations',
-          subtext: 'General Speakers List • Agenda LAWS-01',
-        }
-  );
+  } | null>(null);
 
   // ─── Live Speaking Queue ───
-  const [queue, setQueue] = useState<any[]>(() =>
-    isIndianCommittee
-      ? [
-          {
-            id: 'q_1',
-            country: 'Opposition Bench',
-            name: 'Leader of Opposition (INC)',
-            flag: '🇮🇳',
-            code: 'OP',
-            position: 1,
-            timeSec: 90,
-          },
-          {
-            id: 'q_2',
-            country: 'Member for Varanasi',
-            name: 'Hon. Member for Varanasi (UP)',
-            flag: '🇮🇳',
-            code: 'UP',
-            position: 2,
-            timeSec: 90,
-          },
-          {
-            id: 'q_3',
-            country: 'Member for Wayanad',
-            name: 'Hon. Member for Wayanad (KL)',
-            flag: '🇮🇳',
-            code: 'KL',
-            position: 3,
-            timeSec: 90,
-          },
-          {
-            id: 'q_4',
-            country: 'Minister of Finance',
-            name: 'Hon. Minister of Finance',
-            flag: '🇮🇳',
-            code: 'FM',
-            position: 4,
-            timeSec: 90,
-          },
-        ]
-      : [
-          {
-            id: 'q_1',
-            country: 'United Kingdom',
-            name: 'Permanent Representative',
-            flag: '🇬🇧',
-            code: 'GB',
-            position: 1,
-            timeSec: 90,
-          },
-          {
-            id: 'q_2',
-            country: 'France',
-            name: 'Permanent Representative',
-            flag: '🇫🇷',
-            code: 'FR',
-            position: 2,
-            timeSec: 90,
-          },
-          {
-            id: 'q_3',
-            country: 'Japan',
-            name: 'Permanent Representative',
-            flag: '🇯🇵',
-            code: 'JP',
-            position: 3,
-            timeSec: 90,
-          },
-        ]
-  );
+  const [queue, setQueue] = useState<any[]>([]);
 
   const isInQueue = queue.some((item) => item.country === myDelegation.seat);
   const myQueuePosition = queue.findIndex((item) => item.country === myDelegation.seat) + 1;
@@ -248,9 +165,9 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
     };
   }, [sessionCode, soundEnabled]);
 
-  // Local timer tick fallback if running
+  // Local timer tick fallback if running with valid speaker
   useEffect(() => {
-    if (!isTimerRunning) return;
+    if (!isTimerRunning || !currentSpeaker) return;
     const interval = setInterval(() => {
       setRemainingSec((prev) => {
         if (prev <= 1) {
@@ -264,7 +181,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isTimerRunning, soundEnabled]);
+  }, [isTimerRunning, currentSpeaker, soundEnabled]);
 
   // ─── Queue Actions ───
   const handleToggleQueue = () => {
@@ -663,20 +580,24 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                       Live Chamber Synchronization
                     </span>
                   </div>
-                  <span className="text-xs font-mono text-[#C5A46D]">Clock: {formatClock(remainingSec)}</span>
+                  <span className="text-xs font-mono text-[#C5A46D]">Clock: {currentSpeaker ? formatClock(remainingSec) : '--:--'}</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-xl">
-                      {currentSpeaker.flag}
+                      {currentSpeaker ? currentSpeaker.flag : '🏛️'}
                     </div>
                     <div>
                       <span className="text-[10px] font-mono uppercase text-[#C5A46D] font-bold block">
                         FLOOR RECOGNIZED
                       </span>
-                      <h3 className="text-sm font-semibold text-[#F4F2ED]">{currentSpeaker.name}</h3>
-                      <p className="text-xs text-[#9A9DA5]">{currentSpeaker.subtext}</p>
+                      <h3 className="text-sm font-semibold text-[#F4F2ED]">
+                        {currentSpeaker ? currentSpeaker.name : 'Chamber Floor is Open'}
+                      </h3>
+                      <p className="text-xs text-[#9A9DA5]">
+                        {currentSpeaker ? currentSpeaker.subtext : 'No delegate currently on the floor'}
+                      </p>
                     </div>
                   </div>
 
@@ -704,7 +625,7 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
               <div className="p-6 rounded-2xl bg-[#111318] border border-[#232731] flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-center text-3xl shadow-inner">
-                    {currentSpeaker.flag}
+                    {currentSpeaker ? currentSpeaker.flag : '🏛️'}
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -715,26 +636,30 @@ export const DelegateWorkspace: React.FC<DelegateWorkspaceProps> = ({
                         {activeMode}
                       </DiasBadge>
                     </div>
-                    <h2 className="text-xl font-semibold text-[#F4F2ED]">{currentSpeaker.name}</h2>
-                    <p className="text-xs text-[#9A9DA5]">{currentSpeaker.subtext}</p>
+                    <h2 className="text-xl font-semibold text-[#F4F2ED]">
+                      {currentSpeaker ? currentSpeaker.name : 'Chamber Floor is Open'}
+                    </h2>
+                    <p className="text-xs text-[#9A9DA5]">
+                      {currentSpeaker ? currentSpeaker.subtext : 'No delegate currently on the floor'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="text-right font-mono hidden sm:block">
                   <span className="text-xs text-[#575B66] block">Allocated Time</span>
-                  <span className="text-sm text-[#E6D1A5]">{durationSec}s</span>
+                  <span className="text-sm text-[#E6D1A5]">{currentSpeaker ? `${durationSec}s` : '--'}</span>
                 </div>
               </div>
 
               {/* 64px Digital Clock */}
               <div className="py-12 text-center space-y-3">
                 <div className="font-mono text-7xl sm:text-8xl font-bold tracking-tight text-[#F4F2ED]">
-                  {formatClock(remainingSec)}
+                  {currentSpeaker ? formatClock(remainingSec) : '--:--'}
                 </div>
                 <p className="text-xs font-mono text-[#575B66] uppercase tracking-widest">
-                  {isTimerRunning
-                    ? '• SYNCHRONIZED TO CHAIR DAIS • 10S WARNING BELL ACTIVE'
-                    : 'SPEECH PAUSED BY CHAIR'}
+                  {currentSpeaker
+                    ? (isTimerRunning ? '• SYNCHRONIZED TO CHAIR DAIS • 10S WARNING BELL ACTIVE' : 'SPEECH PAUSED BY CHAIR')
+                    : 'FLOOR OPEN • NO ACTIVE SPEAKER RECOGNIZED'}
                 </p>
               </div>
 

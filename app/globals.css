@@ -36,8 +36,7 @@ html, body {
   overflow-x: hidden;
   position: relative;
   -webkit-overflow-scrolling: touch;
-  -webkit-user-select: none;
-  user-select: none;
+  scroll-behavior: smooth;
 }
 
 /* Allow text selection, copying, and typing in form inputs and contenteditables */

@@ -206,10 +206,10 @@ export const DiasNav: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setResumeModalOpen(true)}
-                className="px-3 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold flex items-center gap-2 hover:bg-emerald-900/60 transition cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.2)] animate-pulse"
+                className="px-3 py-1.5 rounded-full bg-[#C5A46D]/15 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-mono font-bold flex items-center gap-2 hover:bg-[#C5A46D]/25 transition cursor-pointer shadow-[0_0_20px_rgba(197,164,109,0.2)] animate-pulse"
                 title="Click to resume in-progress chamber session"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span className="w-2 h-2 rounded-full bg-[#C5A46D]" />
                 <span>{activeStoredSession.committeeAcronym} ({activeStoredSession.sessionCode})</span>
               </button>
             )}
@@ -265,7 +265,7 @@ export const DiasNav: React.FC = () => {
                       onClick={() => setUserDropdownOpen(false)}
                       className="w-full px-3 py-2 rounded-xl hover:bg-white/[0.06] text-neutral-300 hover:text-white text-xs font-medium flex items-center gap-2 transition"
                     >
-                      <Compass className="w-3.5 h-3.5 text-emerald-400" />
+                      <Compass className="w-3.5 h-3.5 text-[#C5A46D]" />
                       <span>Chamber Fleet</span>
                     </Link>
                     <button
@@ -326,10 +326,10 @@ export const DiasNav: React.FC = () => {
                   setMobileMenuOpen(false);
                   setResumeModalOpen(true);
                 }}
-                className="w-full p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold flex items-center justify-between"
+                className="w-full p-3 rounded-2xl bg-[#C5A46D]/15 border border-[#C5A46D]/40 text-[#E6D1A5] text-xs font-mono font-bold flex items-center justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="w-2 h-2 rounded-full bg-[#C5A46D] animate-ping" />
                   <span>RESUME: {activeStoredSession.committeeAcronym}</span>
                 </div>
                 <span>{activeStoredSession.sessionCode} &rarr;</span>

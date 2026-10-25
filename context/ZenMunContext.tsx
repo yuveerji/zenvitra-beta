@@ -696,12 +696,26 @@ export function ZenMunProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeSeat = useCallback((delegateId: string) => {
-    setSession((prev) => ({
-      ...prev,
-      roster: prev.roster.filter((d) => d.id !== delegateId),
-      speakerQueue: prev.speakerQueue.filter((id) => id !== delegateId),
-      currentSpeakerId: prev.currentSpeakerId === delegateId ? null : prev.currentSpeakerId,
-    }));
+    setSession((prev) => {
+      const nextRoster = prev.roster.filter((d) => d.id !== delegateId);
+      const nextSpeakerQueue = prev.speakerQueue.filter((id) => id !== delegateId);
+      const nextCaucusQueue = prev.caucusSpeakerQueue.filter((id) => id !== delegateId);
+      const activeQueue = prev.activeMode === 'gsl' ? nextSpeakerQueue : nextCaucusQueue;
+      const nextCurrentSpeakerId = prev.currentSpeakerId === delegateId
+        ? (activeQueue[0] || null)
+        : prev.currentSpeakerId;
+      const hasActiveSpeaker = Boolean(nextCurrentSpeakerId && activeQueue.length > 0);
+
+      return {
+        ...prev,
+        roster: nextRoster,
+        speakerQueue: nextSpeakerQueue,
+        caucusSpeakerQueue: nextCaucusQueue,
+        currentSpeakerId: nextCurrentSpeakerId,
+        isTimerRunning: hasActiveSpeaker ? prev.isTimerRunning : false,
+        remainingSeconds: hasActiveSpeaker ? prev.remainingSeconds : prev.speakingTimeSeconds,
+      };
+    });
   }, []);
 
   // Motions

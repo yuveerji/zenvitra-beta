@@ -36,10 +36,10 @@ function DiasSessionInner() {
   }, [initialRoleParam, canAccessChairConsole, isAuthLoading]);
 
   const [sessionMeta, setSessionMeta] = useState({
-    committeeName: 'Lok Sabha • Parliament of India',
-    committeeAcronym: 'LOK SABHA',
-    topic: 'Delimitation of Constituencies, Federalism & Democratic Governance',
-    isIndianCommittee: true,
+    committeeName: 'Diplomatic Chamber',
+    committeeAcronym: 'CHAMBER',
+    topic: 'Chamber Deliberation & Procedure',
+    isIndianCommittee: false,
   });
 
   useEffect(() => {
