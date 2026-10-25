@@ -1,5 +1,53 @@
 import { db } from '@/lib/db';
-import { isFounderOrCoFounder, isAdmin } from '@/lib/founderControl';
+
+/**
+ * Server-safe sovereign clearance matching without importing client modules
+ */
+function isServerFounderOrCoFounder(email?: string | null, role?: string | null): boolean {
+  if (!email && !role) return false;
+  const clean = (email || '').toLowerCase().trim().replace(/^@/, '');
+  const cleanRole = (role || '').toUpperCase().trim();
+
+  if (cleanRole === 'FOUNDER' || cleanRole === 'CO_FOUNDER' || cleanRole === 'COFOUNDER') {
+    return true;
+  }
+
+  const isFounderMatch =
+    clean === 'yuveer' ||
+    clean === 'founder' ||
+    clean === 'founder@zenvitra.xyz' ||
+    clean === 'founder@zenvitra.org' ||
+    clean === 'founder@zenvitra.com' ||
+    clean === 'yuveer@zenvitra.xyz' ||
+    clean === 'yuveer@zenvitra.org' ||
+    clean === 'yuveer@zenvitra.com' ||
+    clean === 'zen_founder_root' ||
+    clean === 'zen_user_yuveer';
+
+  const isCoFounderMatch =
+    clean === 'aarush' ||
+    clean === 'aarush@zenvitra.xyz' ||
+    clean === 'aarush@zenvitra.com' ||
+    clean === 'aarush@zenvitra.org' ||
+    clean === 'zen_cofounder_aarush' ||
+    clean === 'aarush-vijayivargiya-cofounder' ||
+    clean === 'khushi' ||
+    clean === 'khushi@zenvitra.xyz' ||
+    clean === 'khushi@zenvitra.org' ||
+    clean === 'khushi@zenvitra.com' ||
+    clean === 'zen_cofounder_khushi' ||
+    clean === 'khushi-rb-cofounder' ||
+    clean === 'cofounder-cto-partner' ||
+    clean === 'cofounder-alliances';
+
+  return isFounderMatch || isCoFounderMatch;
+}
+
+function isServerAdmin(email?: string | null, role?: string | null): boolean {
+  const cleanRole = (role || '').toUpperCase().trim();
+  if (cleanRole === 'ADMIN' || cleanRole === 'SUPER_ADMIN') return true;
+  return isServerFounderOrCoFounder(email, role);
+}
 
 /**
  * ─── 1. CENTRALIZED PERMISSION REGISTRY ───
@@ -116,7 +164,7 @@ export async function getEffectiveUserChairPermissions({
   }
 
   // 1. Sovereign Founder / Co-Founder Clearance (Zenvitra Sovereign Law)
-  if (isFounderOrCoFounder(email, platformRole)) {
+  if (isServerFounderOrCoFounder(email, platformRole)) {
     return {
       canAccessChairConsole: true,
       assignedRole: 'SUPER_ADMIN',
@@ -127,7 +175,7 @@ export async function getEffectiveUserChairPermissions({
   }
 
   // 2. Global Platform Admin Clearance
-  if (platformRole === 'ADMIN' || platformRole === 'SUPER_ADMIN' || isAdmin(email, platformRole)) {
+  if (platformRole === 'ADMIN' || platformRole === 'SUPER_ADMIN' || isServerAdmin(email, platformRole)) {
     return {
       canAccessChairConsole: true,
       assignedRole: 'SUPER_ADMIN',
