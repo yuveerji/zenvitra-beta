@@ -27,10 +27,13 @@ import {
   Sparkles,
   HelpCircle,
   LifeBuoy,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useZenMun } from '@/context/ZenMunContext';
 import { ZenDelegate } from '@/types/zenMun';
 import { DaisSupportHotlineModal } from '../support/DaisSupportHotlineModal';
+import { daisAudio } from '@/lib/daisAudio';
 
 export function CommitteeEmblemDisplay({
   emblem,
@@ -98,6 +101,7 @@ export function ZenMunChairConsole() {
     isSidebarCollapsed,
     toggleSidebar,
     setShowQrOverlay,
+    regenerateSessionCode,
     setShowRollCallModal,
     setShowMotionsModal,
     setShowDocumentsModal,
@@ -107,6 +111,34 @@ export function ZenMunChairConsole() {
     startTutorial,
     quorum,
   } = useZenMun();
+
+  // ── THEME STATE: Light Diplomatic Mode is DEFAULT as requested ──
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('zenvitra_dais_theme');
+        if (saved === 'dark' || saved === 'light') {
+          setTheme(saved);
+        } else {
+          setTheme('light');
+        }
+      } catch {}
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : 'light';
+    setTheme(next);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('zenvitra_dais_theme', next);
+      } catch {}
+    }
+  };
+
+  const isLight = theme === 'light';
 
   // Inline topic editing
   const [isEditingTopic, setIsEditingTopic] = useState(false);
@@ -141,6 +173,16 @@ export function ZenMunChairConsole() {
   const [rosterSearch, setRosterSearch] = useState('');
   const [rosterFilter, setRosterFilter] = useState<'all' | 'present' | 'present_voting' | 'absent'>('all');
 
+  // Audio chime at 10s and double gavel at 0s
+  useEffect(() => {
+    if (!session.isTimerRunning) return;
+    if (session.remainingSeconds === 10) {
+      daisAudio.playWarningBell();
+    } else if (session.remainingSeconds === 0) {
+      daisAudio.playTimeExpired();
+    }
+  }, [session.remainingSeconds, session.isTimerRunning]);
+
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -162,6 +204,9 @@ export function ZenMunChairConsole() {
       } else if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
         resetTimer();
+      } else if (e.key === 'g' || e.key === 'G') {
+        e.preventDefault();
+        daisAudio.playDoubleGavel();
       } else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         setShowMotionsModal(true);
@@ -197,7 +242,7 @@ export function ZenMunChairConsole() {
     startTutorial,
   ]);
 
-  // First-time Dais visit check -> automatically welcome chair with "Have you used Zenvitra Dais before?"
+  // First-time Dais visit check
   useEffect(() => {
     try {
       const seen = localStorage.getItem('zenvitra_has_seen_dais_tutorial_v1');
@@ -271,63 +316,105 @@ export function ZenMunChairConsole() {
 
   const isPreSession = session.sessionState === 'pre-session';
 
+  // ═════════════════════════════════════════════════════════════════
+  // VIEW 1: PRE-SESSION ROLL CALL (Matches Screenshot 1 Exactly)
+  // ═════════════════════════════════════════════════════════════════
   if (isPreSession) {
     return (
-      <div className="min-h-screen bg-[#030407] text-white font-sans antialiased flex flex-col select-none relative overflow-x-hidden">
-        {/* Ambient Top Glow */}
-        <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.2),rgba(255,255,255,0))]" />
-
+      <div className={`min-h-screen font-sans antialiased flex flex-col select-none relative overflow-x-hidden transition-colors duration-200 ${
+        isLight ? 'bg-[#F5F2EB] text-[#1E2520]' : 'bg-[#030407] text-white'
+      }`}>
         {/* Top Header */}
-        <header className="h-14 bg-[#070a12]/95 backdrop-blur-md border-b border-white/10 px-6 flex items-center justify-between z-40 relative">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-cyan-400">
-              {(session.committeeName || 'Lok Sabha').replace(/_/g, ' ')}: {session.topic}
-            </span>
+        <header className={`h-14 px-6 flex items-center justify-between z-40 relative border-b transition-colors ${
+          isLight ? 'bg-[#FAF7F2] border-[#E2DBD0] text-[#1E2520]' : 'bg-[#070a12]/95 border-white/10 text-white'
+        }`}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center p-1 border overflow-hidden shrink-0 ${
+              isLight ? 'bg-black/5 border-black/10' : 'bg-white/5 border-white/10'
+            }`}>
+              <CommitteeEmblemDisplay
+                emblem={session.emblemUrl}
+                acronym={session.committeeAcronym}
+                isIndian={session.isIndianCommittee}
+                size={24}
+              />
+            </div>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`text-sm font-bold tracking-tight truncate ${isLight ? 'text-[#1E2520]' : 'text-cyan-400'}`}>
+                {(session.committeeName || 'UN Human Rights Council').replace(/_/g, ' ')}: {session.topic}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setSession((prev) => ({
-                  ...prev,
-                  sessionState: 'in-session',
-                  tutorial: {
-                    ...prev.tutorial,
-                    welcomeModalOpen: false,
-                  },
-                }));
-              }}
-              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center gap-1.5"
-            >
-              <span>Go to Live Dais &rarr;</span>
-            </button>
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Session Code Badge */}
             <button
               type="button"
               onClick={() => setShowQrOverlay(true)}
-              className="px-3.5 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/40 text-cyan-300 font-mono font-black text-xs border border-cyan-500/30 flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className={`px-3 py-1.5 rounded-xl font-mono font-bold text-xs border flex items-center gap-1.5 transition cursor-pointer ${
+                isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
+              }`}
+              title="Present Room Code"
             >
               <span>↗</span>
               <span>{session.sessionCode}</span>
             </button>
+
+            {/* Gavel Strike Sound Button */}
+            <button
+              type="button"
+              onClick={() => daisAudio.playDoubleGavel()}
+              className={`p-2 rounded-xl border transition cursor-pointer ${
+                isLight ? 'bg-white border-[#D5CEBF] text-[#8C6D1F] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-amber-400'
+              }`}
+              title="Strike Gavel [G]"
+            >
+              <Gavel className="w-4 h-4" />
+            </button>
+
+            {/* Theme Toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`p-2 rounded-xl border transition cursor-pointer text-xs font-bold flex items-center gap-1 ${
+                isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-neutral-300'
+              }`}
+              title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            >
+              {isLight ? <Moon className="w-4 h-4 text-[#4A554E]" /> : <Sun className="w-4 h-4 text-amber-300" />}
+            </button>
+
+            {/* Scoreboard */}
             <button
               type="button"
               onClick={() => setShowScoreboardModal(true)}
-              className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-amber-400 border border-white/10 shadow-sm cursor-pointer"
+              className={`p-2 rounded-xl border transition cursor-pointer ${
+                isLight ? 'bg-white border-[#D5CEBF] text-[#8C6D1F] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-amber-400'
+              }`}
+              title="Scoreboard"
             >
               <Trophy className="w-4 h-4" />
             </button>
+
+            {/* Settings */}
             <button
               type="button"
               onClick={() => setShowSettingsModal(true)}
-              className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 hover:text-white border border-white/10 shadow-sm cursor-pointer"
+              className={`p-2 rounded-xl border transition cursor-pointer ${
+                isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-neutral-300'
+              }`}
+              title="Settings"
             >
               <Settings className="w-4 h-4" />
             </button>
+
+            {/* Hotline */}
             <button
               type="button"
               onClick={() => setShowSupportModal(true)}
-              className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-cyan-400 border border-white/10 shadow-sm cursor-pointer"
+              className={`p-2 rounded-xl border transition cursor-pointer ${
+                isLight ? 'bg-white border-[#D5CEBF] text-teal-700 hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-cyan-400'
+              }`}
               title="Dais & Secretariat Support Hotline"
             >
               <LifeBuoy className="w-4 h-4" />
@@ -335,47 +422,58 @@ export function ZenMunChairConsole() {
           </div>
         </header>
 
-        {/* Center Canvas: Matches Screenshot 2026-10-18 030241.png */}
+        {/* Center Canvas: Matches Screenshot 1 */}
         <main className="flex-1 flex items-center justify-center p-6 gap-6 flex-wrap">
-          {/* Left Card: Will delegates join on their phones? */}
-          <div className="p-6 rounded-3xl bg-[#080c16] border border-white/10 shadow-2xl max-w-xs w-full space-y-4 self-center text-white">
-            <div className="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center text-lg shadow-sm">
-              📱
+          {/* Left Card: Join on your phone */}
+          <div className="bg-[#FAF7F2] text-[#1E2520] border border-[#E0D9CD] rounded-3xl shadow-xl p-6 max-w-[270px] w-full text-center space-y-3.5 shrink-0">
+            <div className="space-y-0.5">
+              <div className="text-[10px] font-mono font-black tracking-widest text-[#78716C] uppercase">
+                JOIN ON YOUR PHONE
+              </div>
+              <div className="text-xs font-bold text-[#1E2520] font-mono">
+                zenvitra.xyz/host/join
+              </div>
             </div>
-            <div className="text-sm font-black text-white leading-snug">
-              Will delegates join on their phones?
+
+            <div className="text-3xl sm:text-4xl font-mono font-black tracking-widest text-[#183023] py-1 select-all">
+              {session.sessionCode}
             </div>
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setSession((p) => ({ ...p, settings: { ...p.settings, allowPhoneVoting: true } }))}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase transition cursor-pointer ${
-                  session.settings.allowPhoneVoting
-                    ? 'bg-gradient-to-r from-cyan-500 to-teal-400 text-black shadow-md shadow-cyan-500/20'
-                    : 'bg-white/[0.04] text-neutral-400 border border-white/10 hover:text-white'
-                }`}
-              >
-                Yes
-              </button>
-              <button
-                type="button"
-                onClick={() => setSession((p) => ({ ...p, settings: { ...p.settings, allowPhoneVoting: false } }))}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase transition cursor-pointer ${
-                  !session.settings.allowPhoneVoting
-                    ? 'bg-gradient-to-r from-cyan-500 to-teal-400 text-black shadow-md shadow-cyan-500/20'
-                    : 'bg-white/[0.04] text-neutral-400 border border-white/10 hover:text-white'
-                }`}
-              >
-                No
-              </button>
+
+            {/* Real QR Code */}
+            <div className="p-3 bg-white rounded-2xl border border-[#E0D9CD] shadow-sm inline-block mx-auto">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://zenvitra.xyz/host/join?code=${session.sessionCode}`)}`}
+                alt="Session QR Code"
+                className="w-36 h-36 object-contain"
+              />
             </div>
+
+            <p className="text-[11px] text-[#78716C] leading-snug px-1">
+              Scan the code, or go to the address and type the code.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setShowQrOverlay(true)}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#1B382B] hover:bg-[#152D22] text-white font-bold text-xs tracking-tight transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>Present on screen ⤢</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => regenerateSessionCode()}
+              className="text-[11px] font-semibold text-[#78716C] hover:text-[#1E2520] underline transition cursor-pointer"
+            >
+              Change
+            </button>
           </div>
 
-          {/* Right Card: Dark Obsidian Attendance Card */}
-          <div className="bg-[#080c16] text-white rounded-3xl p-6 sm:p-7 max-w-xl w-full border border-white/10 shadow-2xl space-y-5">
+          {/* Center Card: Deep Diplomatic Forest Slate Attendance Card */}
+          <div className="bg-[#183023] text-white rounded-3xl p-6 sm:p-7 max-w-xl w-full border border-[#234232] shadow-2xl space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center p-1.5 border border-white/10 overflow-hidden shrink-0">
                   <CommitteeEmblemDisplay
                     emblem={session.emblemUrl}
@@ -384,22 +482,22 @@ export function ZenMunChairConsole() {
                     size={38}
                   />
                 </div>
-                <div>
-                  <h3 className="text-lg font-black tracking-tight uppercase text-amber-300">
-                    {(session.committeeAcronym || session.committeeName || 'LOK SABHA').replace(/_/g, ' ')}
+                <div className="min-w-0">
+                  <h3 className="text-lg font-black tracking-tight uppercase text-amber-300 truncate">
+                    {(session.committeeAcronym || session.committeeName || 'UNHRC').replace(/_/g, ' ')}
                   </h3>
-                  <div className="text-xs text-neutral-400">
-                    {(session.committeeName || 'Lok Sabha').replace(/_/g, ' ')}
+                  <div className="text-xs text-emerald-200/80 truncate">
+                    {(session.committeeName || 'UN Human Rights Council').replace(/_/g, ' ')}
                   </div>
-                  <div className="text-xs text-neutral-300 flex items-center gap-1.5 mt-1">
-                    <span>Topic: {session.topic}</span>
+                  <div className="text-xs text-neutral-300 flex items-center gap-1.5 mt-1 truncate">
+                    <span className="truncate">Topic: {session.topic}</span>
                     <button
                       type="button"
                       onClick={() => {
                         setTopicDraft(session.topic);
                         setIsEditingTopic(!isEditingTopic);
                       }}
-                      className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-cyan-300 hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition border border-white/15 shadow-sm"
+                      className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-cyan-300 hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition border border-white/15 shadow-sm shrink-0"
                       title="Edit Topic / Agenda"
                     >
                       <Edit2 className="w-3 h-3" />
@@ -413,16 +511,16 @@ export function ZenMunChairConsole() {
             {/* Quorum and Add a Seat */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-center">
-                <div className="px-2.5 py-1 rounded-xl bg-white/[0.04] border border-white/10">
-                  <div className="text-[9px] uppercase tracking-wider text-neutral-400">Present</div>
+                <div className="px-2.5 py-1 rounded-xl bg-black/30 border border-white/10">
+                  <div className="text-[9px] uppercase tracking-wider text-emerald-200/60 font-semibold">Present</div>
                   <div className="text-xs font-black text-amber-300 font-mono">{quorum.present}</div>
                 </div>
-                <div className="px-2.5 py-1 rounded-xl bg-white/[0.04] border border-white/10">
-                  <div className="text-[9px] uppercase tracking-wider text-neutral-400">2/3</div>
+                <div className="px-2.5 py-1 rounded-xl bg-black/30 border border-white/10">
+                  <div className="text-[9px] uppercase tracking-wider text-emerald-200/60 font-semibold">2/3</div>
                   <div className="text-xs font-black text-cyan-300 font-mono">{quorum.twoThirds}</div>
                 </div>
-                <div className="px-2.5 py-1 rounded-xl bg-white/[0.04] border border-white/10">
-                  <div className="text-[9px] uppercase tracking-wider text-neutral-400">1/2+1</div>
+                <div className="px-2.5 py-1 rounded-xl bg-black/30 border border-white/10">
+                  <div className="text-[9px] uppercase tracking-wider text-emerald-200/60 font-semibold">1/2+1</div>
                   <div className="text-xs font-black text-cyan-300 font-mono">{quorum.simpleMajority}</div>
                 </div>
               </div>
@@ -434,31 +532,31 @@ export function ZenMunChairConsole() {
                   onChange={(e) => setNewSeatName(e.target.value)}
                   onKeyDown={handleAddSeatKeyDown}
                   placeholder="+ Add a seat"
-                  className="w-full px-3 py-1.5 rounded-xl bg-black/60 border border-white/15 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400/60"
+                  className="w-full px-3 py-1.5 rounded-xl bg-black/40 border border-white/15 text-xs text-white placeholder-emerald-200/40 focus:outline-none focus:border-cyan-400"
                 />
               </div>
             </div>
 
-            {/* Bulk Attendance Row */}
+            {/* Bulk Attendance Buttons */}
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setAllAttendance('absent')}
-                className="py-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-300 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
+                className="py-2.5 rounded-xl bg-[#3D2323] hover:bg-[#4D2B2B] border border-rose-500/25 text-rose-200 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
               >
                 CLEAR ALL
               </button>
               <button
                 type="button"
                 onClick={() => setAllAttendance('present')}
-                className="py-2.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 text-emerald-300 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
+                className="py-2.5 rounded-xl bg-[#234232] hover:bg-[#2C523F] border border-emerald-500/25 text-emerald-200 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
               >
                 ALL PRESENT
               </button>
               <button
                 type="button"
                 onClick={() => setAllAttendance('present_voting')}
-                className="py-2.5 rounded-xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/30 text-amber-300 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
+                className="py-2.5 rounded-xl bg-[#3D3A23] hover:bg-[#4D492B] border border-amber-500/25 text-amber-200 text-[11px] font-black uppercase tracking-wider cursor-pointer transition shadow-sm"
               >
                 ALL P+V
               </button>
@@ -469,7 +567,7 @@ export function ZenMunChairConsole() {
               {session.roster.map((d) => (
                 <div
                   key={d.id}
-                  className="p-2.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 flex items-center justify-between gap-3 transition"
+                  className="p-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex items-center justify-between gap-3 transition"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <img
@@ -483,20 +581,21 @@ export function ZenMunChairConsole() {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
-                      className="text-neutral-400 hover:text-white p-1 cursor-pointer"
+                      onClick={() => daisAudio.playGavelStrike(0.4)}
+                      className="text-emerald-200/60 hover:text-white p-1 cursor-pointer transition"
                       title="Audio check"
                     >
                       <Volume2 className="w-3.5 h-3.5" />
                     </button>
 
-                    <div className="inline-flex rounded-full bg-black/50 p-0.5 border border-white/10">
+                    <div className="inline-flex rounded-full bg-black/40 p-0.5 border border-white/10">
                       <button
                         type="button"
                         onClick={() => setDelegateAttendance(d.id, 'absent')}
                         className={`w-6 h-6 rounded-full text-[10px] font-black cursor-pointer transition ${
                           d.attendance === 'absent'
                             ? 'bg-rose-600 text-white shadow-xs'
-                            : 'text-neutral-500 hover:text-white'
+                            : 'text-neutral-400 hover:text-white'
                         }`}
                       >
                         A
@@ -507,7 +606,7 @@ export function ZenMunChairConsole() {
                         className={`px-2 h-6 rounded-full text-[10px] font-black cursor-pointer transition ${
                           d.attendance === 'present'
                             ? 'bg-emerald-600 text-white shadow-xs'
-                            : 'text-neutral-500 hover:text-white'
+                            : 'text-neutral-400 hover:text-white'
                         }`}
                       >
                         P
@@ -518,7 +617,7 @@ export function ZenMunChairConsole() {
                         className={`px-2 h-6 rounded-full text-[10px] font-black cursor-pointer transition ${
                           d.attendance === 'present_voting'
                             ? 'bg-amber-600 text-white shadow-xs'
-                            : 'text-neutral-500 hover:text-white'
+                            : 'text-neutral-400 hover:text-white'
                         }`}
                       >
                         PV
@@ -535,6 +634,7 @@ export function ZenMunChairConsole() {
                 type="button"
                 onClick={() => {
                   setAllAttendance('present');
+                  daisAudio.playDoubleGavel();
                   setSession((prev) => ({
                     ...prev,
                     sessionState: 'in-session',
@@ -544,14 +644,15 @@ export function ZenMunChairConsole() {
                     },
                   }));
                 }}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs uppercase tracking-wider cursor-pointer shadow-lg shadow-emerald-500/20 active:scale-98 transition text-center flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl bg-[#234232] hover:bg-[#2C523F] text-emerald-100 font-bold text-xs uppercase tracking-wider cursor-pointer shadow-lg active:scale-98 transition text-center flex items-center justify-center gap-2"
               >
-                <span>MARK ALL PRESENT &amp; START SESSION &rarr;</span>
+                <span>MARK AT LEAST 1 DELEGATE PRESENT</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => {
+                  daisAudio.playDoubleGavel();
                   setSession((prev) => ({
                     ...prev,
                     sessionState: 'in-session',
@@ -572,22 +673,27 @@ export function ZenMunChairConsole() {
     );
   }
 
+  // ═════════════════════════════════════════════════════════════════
+  // VIEW 2: LIVE IN-SESSION DAIS (100% Zero-Scroll Viewport Constrained)
+  // ═════════════════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen bg-[#030407] text-white font-sans antialiased flex flex-col select-none overflow-x-hidden relative">
-      {/* Ambient background glow */}
-      <div className="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.2),rgba(255,255,255,0))]" />
-      
+    <div className={`h-screen max-h-screen overflow-hidden font-sans antialiased flex flex-col select-none relative transition-colors duration-200 ${
+      isLight ? 'bg-[#F5F2EB] text-[#1E2520]' : 'bg-[#030407] text-white'
+    }`}>
       {/* ─────────────────────────────────────────────────────────────
-          1. TOP BAR (56px, Sovereign Obsidian Glass)
+          1. TOP BAR (52px, Diplomatic Porcelain or Obsidian Glass)
       ───────────────────────────────────────────────────────────── */}
-      <header className="h-14 bg-[#070a12]/95 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between z-40 shrink-0 relative">
-        
-        {/* Left: Navigation Tabs */}
+      <header className={`h-[52px] px-4 flex items-center justify-between z-40 shrink-0 relative border-b transition-colors ${
+        isLight ? 'bg-[#FAF7F2] border-[#E2DBD0] text-[#1E2520]' : 'bg-[#070a12]/95 border-white/10 text-white'
+      }`}>
+        {/* Left: Navigation Controls */}
         <div className="flex items-center gap-1.5" id="tutorial-target-nav">
           <button
             type="button"
             onClick={toggleSidebar}
-            className="p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer mr-1"
+            className={`p-2 rounded-xl transition cursor-pointer mr-1 ${
+              isLight ? 'text-[#4A554E] hover:text-[#18201B] hover:bg-black/5' : 'text-white/70 hover:text-white hover:bg-white/10'
+            }`}
             title="Toggle Sidebar"
           >
             {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
@@ -597,7 +703,9 @@ export function ZenMunChairConsole() {
             type="button"
             id="tutorial-target-rollcall-tab"
             onClick={() => setShowRollCallModal(true)}
-            className="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white/5 hover:bg-white/10 text-white/90 hover:text-white border border-white/10 shadow-xs cursor-pointer transition active:scale-95"
+            className={`px-3 py-1 rounded-xl font-bold text-xs border transition cursor-pointer active:scale-95 ${
+              isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+            }`}
           >
             Roll Call
           </button>
@@ -606,130 +714,170 @@ export function ZenMunChairConsole() {
             type="button"
             id="tutorial-target-motions-tab"
             onClick={() => setShowMotionsModal(true)}
-            className="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white/5 hover:bg-white/10 text-white/90 hover:text-white border border-white/10 shadow-xs cursor-pointer transition active:scale-95"
+            className={`px-3 py-1 rounded-xl font-bold text-xs border transition cursor-pointer active:scale-95 ${
+              isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+            }`}
           >
             Motions
           </button>
 
           <button
             type="button"
-            id="tutorial-target-documents-tab"
+            id="tutorial-target-docs-tab"
             onClick={() => setShowDocumentsModal(true)}
-            className="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white/5 hover:bg-white/10 text-white/90 hover:text-white border border-white/10 shadow-xs cursor-pointer transition active:scale-95"
+            className={`px-3 py-1 rounded-xl font-bold text-xs border transition cursor-pointer active:scale-95 ${
+              isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+            }`}
           >
             Documents
           </button>
-        </div>
 
-        {/* Right: Utility Cluster */}
-        <div className="flex items-center gap-2">
-          
-          {/* Moderator vs Commenter Role Switcher */}
+          {/* Gavel Strike Header Button */}
           <button
             type="button"
-            onClick={() => setChairRole(session.chairRole === 'moderator' ? 'commenter' : 'moderator')}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition cursor-pointer border ${
-              session.chairRole === 'moderator'
-                ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+            onClick={() => daisAudio.playDoubleGavel()}
+            className={`px-2.5 py-1 rounded-xl font-bold text-xs border transition cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+              isLight ? 'bg-[#1B382B] text-white hover:bg-[#152D22] border-[#1B382B]' : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
             }`}
-            title="Switch Dais Role"
+            title="Strike Gavel [G]"
           >
             <Gavel className="w-3.5 h-3.5" />
-            <span>{session.chairRole === 'moderator' ? 'Moderator' : 'Commenter'}</span>
+            <span className="hidden sm:inline">Gavel</span>
           </button>
+        </div>
 
-          {/* Session Code Chip */}
+        {/* Center: Live Quorum Status (Compact Pill) */}
+        <div className={`hidden md:flex items-center gap-2 px-3 py-0.5 rounded-full border text-[11px] font-mono ${
+          isLight ? 'bg-[#EDE8DE] border-[#DDD5C7] text-[#4A554E]' : 'bg-white/5 border-white/10 text-neutral-300'
+        }`}>
+          <span className="font-bold">Quorum:</span>
+          <span className={`font-black ${isLight ? 'text-[#162E23]' : 'text-cyan-400'}`}>{quorum.present} Present</span>
+          <span>•</span>
+          <span>2/3: {quorum.twoThirds}</span>
+          <span>•</span>
+          <span>1/2+1: {quorum.simpleMajority}</span>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1.5">
+          {/* Room Code Badge */}
           <button
             type="button"
-            id="tutorial-target-session-code"
             onClick={() => setShowQrOverlay(true)}
-            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-400 hover:text-cyan-300 font-mono font-black text-xs border border-white/10 flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition"
-            title="Project Room Code & QR"
+            className={`px-3 py-1 rounded-xl font-mono font-bold text-xs border flex items-center gap-1.5 transition cursor-pointer ${
+              isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]' : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
+            }`}
+            title="Project Room Code"
           >
             <span>↗</span>
             <span>{session.sessionCode}</span>
           </button>
 
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
+              isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#18201B] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-neutral-300 hover:text-white'
+            }`}
+            title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {isLight ? <Moon className="w-4 h-4 text-[#4A554E]" /> : <Sun className="w-4 h-4 text-amber-300" />}
+          </button>
+
           {/* Chat */}
           <button
             type="button"
-            id="tutorial-target-chat-btn"
             onClick={() => setShowChatDrawer(true)}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 shadow-xs cursor-pointer transition"
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
+              isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#18201B] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
+            }`}
             title="Open Chat"
           >
             <MessageSquare className="w-4 h-4" />
           </button>
 
-          {/* Scoreboard Trophy */}
+          {/* Scoreboard */}
           <button
             type="button"
-            id="tutorial-target-scoreboard-btn"
             onClick={() => setShowScoreboardModal(true)}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-amber-400 hover:text-amber-300 border border-white/10 shadow-xs cursor-pointer transition"
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
+              isLight ? 'bg-white border-[#D5CEBF] text-[#8C6D1F] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-amber-400'
+            }`}
             title="Open Scoreboard"
           >
             <Trophy className="w-4 h-4" />
           </button>
 
-          {/* Settings Gear */}
+          {/* Settings */}
           <button
             type="button"
-            id="tutorial-target-settings-btn"
             onClick={() => setShowSettingsModal(true)}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 shadow-xs cursor-pointer transition"
-            title="Open Settings"
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
+              isLight ? 'bg-white border-[#D5CEBF] text-[#4A554E] hover:text-[#18201B] hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
+            }`}
+            title="Settings"
           >
             <Settings className="w-4 h-4" />
           </button>
 
-          {/* Dais & Secretariat Support Hotline */}
+          {/* Hotline */}
           <button
             type="button"
             onClick={() => setShowSupportModal(true)}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-400 hover:text-cyan-300 border border-white/10 shadow-xs cursor-pointer transition"
+            className={`p-1.5 rounded-xl border transition cursor-pointer ${
+              isLight ? 'bg-white border-[#D5CEBF] text-teal-700 hover:bg-[#EAE4D7]' : 'bg-white/5 border-white/10 text-cyan-400'
+            }`}
             title="Dais & Secretariat Support Hotline"
           >
             <LifeBuoy className="w-4 h-4" />
           </button>
 
-          {/* Sovereign Protocol Guide & Hotkeys */}
+          {/* Tour Guide Button */}
           <button
             type="button"
             onClick={startTutorial}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-emerald-500/15 hover:from-amber-500/25 hover:to-emerald-500/25 text-amber-200 border border-amber-500/30 text-xs font-bold flex items-center gap-2 cursor-pointer transition shadow-xs active:scale-95"
-            title="Dais Protocol Guide & Interactive Tour [?]"
+            className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition border ${
+              isLight
+                ? 'bg-[#1B382B] text-white hover:bg-[#152D22] border-[#1B382B]'
+                : 'bg-gradient-to-r from-amber-500/15 to-emerald-500/15 text-amber-200 border-amber-500/30'
+            }`}
+            title="Dais Protocol Guide & Tour [?]"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden sm:inline">Dais Tour &amp; Guide</span>
+            <span className="hidden sm:inline">Guide</span>
           </button>
         </div>
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. MAIN SPLIT BODY (Collapsible Left Sidebar + Center Stage)
+          2. MAIN BODY (Sidebar + Center Stage, Fits 100% in viewport)
       ───────────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex overflow-hidden relative">
-
-        {/* ── LEFT COLLAPSIBLE SIDEBAR (#2D3F31, 300px) ── */}
+      <div className="flex-1 h-[calc(100vh-104px)] overflow-hidden flex relative">
+        {/* ── LEFT COLLAPSIBLE SIDEBAR (280px) ── */}
         {!isSidebarCollapsed && (
-          <aside id="tutorial-target-sidebar" className="w-[300px] bg-[#070a12]/95 backdrop-blur-md text-white border-r border-white/10 flex flex-col shrink-0 z-20">
-            
+          <aside
+            id="tutorial-target-sidebar"
+            className={`w-[280px] flex flex-col shrink-0 z-20 border-r transition-colors ${
+              isLight
+                ? 'bg-[#162E23] text-white border-[#1B382B]'
+                : 'bg-[#070a12]/95 text-white border-white/10'
+            }`}
+          >
             {/* Header: Emblem + Committee Name + Topic */}
-            <div className="p-4 border-b border-white/10 space-y-1.5">
+            <div className="p-3.5 border-b border-white/10 space-y-1">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center p-1 border border-white/10 overflow-hidden shrink-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center p-1 border border-white/10 overflow-hidden shrink-0">
                     <CommitteeEmblemDisplay
                       emblem={session.emblemUrl}
                       acronym={session.committeeAcronym}
                       isIndian={session.isIndianCommittee}
-                      size={24}
+                      size={20}
                     />
                   </div>
-                  <div className="text-sm font-black tracking-tight uppercase text-cyan-400 truncate">
-                    {(session.committeeAcronym || session.committeeName || 'LOK SABHA').replace(/_/g, ' ')}
+                  <div className="text-xs font-black tracking-tight uppercase text-amber-300 truncate">
+                    {(session.committeeAcronym || session.committeeName || 'UNHRC').replace(/_/g, ' ')}
                   </div>
                 </div>
                 <button
@@ -743,27 +891,26 @@ export function ZenMunChairConsole() {
               </div>
 
               {/* Inline Topic Editor */}
-              <div className="pt-1" id="tutorial-target-topic">
+              <div className="pt-0.5">
                 {isEditingTopic ? (
                   <div className="flex items-center gap-1">
                     <input
                       type="text"
                       value={topicDraft}
                       onChange={(e) => setTopicDraft(e.target.value)}
-                      className="w-full px-2 py-1 rounded-lg bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      className="w-full px-2 py-0.5 rounded bg-black/40 border border-white/20 text-xs text-white focus:outline-none"
                       autoFocus
                     />
                     <button
                       type="button"
                       onClick={handleTopicSave}
                       className="p-1 text-emerald-400 hover:text-white cursor-pointer"
-                      title="Save Topic"
                     >
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between text-xs text-neutral-400 font-medium group">
+                  <div className="flex items-center justify-between text-[11px] text-emerald-200/70 font-medium">
                     <span className="truncate">Topic: {session.topic}</span>
                     <button
                       type="button"
@@ -771,35 +918,33 @@ export function ZenMunChairConsole() {
                         setTopicDraft(session.topic);
                         setIsEditingTopic(true);
                       }}
-                      className="px-1.5 py-0.5 rounded-md bg-white/5 hover:bg-white/15 text-cyan-400 hover:text-cyan-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition border border-white/10 ml-1 shrink-0"
-                      title="Edit Topic / Agenda"
+                      className="text-amber-300 hover:text-white ml-1 shrink-0 p-0.5"
+                      title="Edit Topic"
                     >
                       <Edit2 className="w-2.5 h-2.5" />
-                      <span>Edit</span>
                     </button>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Quorum Gauges & +Add a Seat */}
-            <div className="p-3 bg-[#0a0f1d] border-b border-white/10 flex items-center justify-between gap-2" id="tutorial-target-quorum-gauges">
-              <div className="flex items-center gap-1.5 text-center">
-                <div className="px-2 py-1 rounded-lg bg-white/5 border border-white/10">
-                  <div className="text-[9px] uppercase tracking-wider text-neutral-400">Present</div>
-                  <div className="text-xs font-black text-cyan-400 font-mono">{quorum.present}</div>
+            {/* Quorum and Add a Seat */}
+            <div className="p-2.5 bg-black/30 border-b border-white/10 flex items-center justify-between gap-1.5">
+              <div className="flex items-center gap-1 text-center text-[10px]">
+                <div className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                  <span className="text-emerald-200/60 font-semibold block text-[8px] uppercase">P</span>
+                  <span className="font-bold text-amber-300 font-mono">{quorum.present}</span>
                 </div>
-                <div className="px-2 py-1 rounded-lg bg-white/5 border border-white/10">
-                  <div className="text-[9px] uppercase tracking-wider text-neutral-400">2/3</div>
-                  <div className="text-xs font-black text-white font-mono">{quorum.twoThirds}</div>
+                <div className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                  <span className="text-emerald-200/60 font-semibold block text-[8px] uppercase">2/3</span>
+                  <span className="font-bold text-white font-mono">{quorum.twoThirds}</span>
                 </div>
-                <div className="px-2 py-1 rounded-lg bg-white/5 border border-white/10">
-                  <div className="text-[9px] uppercase tracking-wider text-neutral-400">1/2+1</div>
-                  <div className="text-xs font-black text-white font-mono">{quorum.simpleMajority}</div>
+                <div className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                  <span className="text-emerald-200/60 font-semibold block text-[8px] uppercase">1/2</span>
+                  <span className="font-bold text-white font-mono">{quorum.simpleMajority}</span>
                 </div>
               </div>
 
-              {/* Add a seat input */}
               <div className="flex-1 min-w-0">
                 <input
                   type="text"
@@ -807,25 +952,24 @@ export function ZenMunChairConsole() {
                   onChange={(e) => setNewSeatName(e.target.value)}
                   onKeyDown={handleAddSeatKeyDown}
                   placeholder="+ Add seat..."
-                  className="w-full px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-white/30 focus:outline-none focus:border-cyan-400"
-                  title="Press Enter for Present, Shift+Enter for Observer"
+                  className="w-full px-2 py-1 rounded-lg bg-black/40 border border-white/15 text-xs text-white placeholder-emerald-200/40 focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
 
-            {/* Sidebar Tab Switcher: Queue vs Roster */}
-            <div className="flex border-b border-white/10 bg-[#060a14]">
+            {/* Tab Switcher: Queue vs Roster */}
+            <div className="flex border-b border-white/10 bg-black/20">
               <button
                 type="button"
                 onClick={() => setSidebarTab('queue')}
-                className={`flex-1 py-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
+                className={`flex-1 py-1.5 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
                   sidebarTab === 'queue'
-                    ? 'border-cyan-400 text-cyan-300 bg-white/[0.04]'
-                    : 'border-transparent text-neutral-400 hover:text-white'
+                    ? 'border-amber-400 text-amber-300 bg-white/5'
+                    : 'border-transparent text-emerald-200/60 hover:text-white'
                 }`}
               >
                 <span>Queue</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-300 text-[10px] font-mono border border-cyan-500/30">
+                <span className="px-1.5 py-0.2 rounded-full bg-black/40 text-amber-300 text-[10px] font-mono border border-amber-500/30">
                   {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).length}
                 </span>
               </button>
@@ -833,26 +977,25 @@ export function ZenMunChairConsole() {
               <button
                 type="button"
                 onClick={() => setSidebarTab('roster')}
-                className={`flex-1 py-2 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
+                className={`flex-1 py-1.5 text-center text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer border-b-2 ${
                   sidebarTab === 'roster'
-                    ? 'border-cyan-400 text-cyan-300 bg-white/[0.04]'
-                    : 'border-transparent text-neutral-400 hover:text-white'
+                    ? 'border-amber-400 text-amber-300 bg-white/5'
+                    : 'border-transparent text-emerald-200/60 hover:text-white'
                 }`}
               >
                 <span>Roster</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-neutral-300 text-[10px] font-mono border border-white/15">
+                <span className="px-1.5 py-0.2 rounded-full bg-black/40 text-neutral-300 text-[10px] font-mono border border-white/15">
                   {session.roster.length}
                 </span>
               </button>
             </div>
 
-            {/* Sidebar Content Body */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            {/* Sidebar Content */}
+            <div className="flex-1 overflow-y-auto p-2.5 space-y-2">
               {sidebarTab === 'queue' ? (
-                /* TAB 1: SPEAKER QUEUE */
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-200/60">
                       Speaking Order
                     </span>
                     {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).length > 0 && (
@@ -866,21 +1009,19 @@ export function ZenMunChairConsole() {
                               : { caucusSpeakerQueue: [], currentSpeakerId: null }),
                           }));
                         }}
-                        className="text-[10px] font-bold text-rose-400 hover:text-rose-300 cursor-pointer"
+                        className="text-[9px] font-bold text-rose-300 hover:text-rose-200 cursor-pointer"
                       >
-                        Clear Queue
+                        Clear
                       </button>
                     )}
                   </div>
 
                   {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).length === 0 ? (
-                    <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-2">
-                      <div className="w-8 h-8 mx-auto rounded-full bg-white/5 flex items-center justify-center text-neutral-400">
-                        <Mic className="w-4 h-4 opacity-50" />
-                      </div>
+                    <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center space-y-1">
+                      <Mic className="w-4 h-4 mx-auto text-emerald-200/40" />
                       <div className="text-xs font-bold text-neutral-300">Queue is empty</div>
-                      <p className="text-[11px] text-neutral-500">
-                        Switch to the Roster tab or type in the bottom bar to add speakers.
+                      <p className="text-[10px] text-emerald-200/50">
+                        Type in the bottom bar to add speakers.
                       </p>
                     </div>
                   ) : (
@@ -892,103 +1033,64 @@ export function ZenMunChairConsole() {
                       return (
                         <div
                           key={del.id}
-                          className={`p-2.5 rounded-2xl flex items-center justify-between gap-2 transition ${
+                          className={`p-2 rounded-xl flex items-center justify-between gap-2 transition ${
                             isActive
-                              ? 'bg-gradient-to-r from-cyan-500/15 to-transparent border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                              : 'bg-[#0d1424] hover:bg-[#121b30] border border-white/5'
+                              ? 'bg-[#1B382B] border border-emerald-400/40 shadow-sm'
+                              : 'bg-black/30 hover:bg-black/50 border border-white/5'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            {/* Flag with Order Badge */}
+                          <div className="flex items-center gap-2 min-w-0">
                             <div className="relative shrink-0">
                               <img
                                 src={`https://flagcdn.com/w80/${del.countryCode.toLowerCase()}.png`}
                                 alt=""
-                                className="w-6 h-6 rounded-full object-cover border border-white/20"
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
+                                className="w-5 h-5 rounded-full object-cover border border-white/20"
                               />
                               <span
-                                className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                                className={`absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center text-[8px] font-bold ${
                                   isActive && session.isTimerRunning
-                                    ? 'bg-cyan-400 text-black shadow-xs'
-                                    : 'bg-black/80 text-white border border-white/20'
+                                    ? 'bg-amber-400 text-black'
+                                    : 'bg-black/80 text-white'
                                 }`}
                               >
-                                {isActive && session.isTimerRunning ? <Mic className="w-2 h-2" /> : qIdx + 1}
+                                {qIdx + 1}
                               </span>
                             </div>
 
                             <div className="min-w-0">
                               <div className="text-xs font-bold text-white truncate">{del.name}</div>
-                              <div className={`text-[10px] font-semibold leading-none ${isActive ? 'text-cyan-400' : 'text-neutral-400'}`}>
-                                {isActive
-                                  ? session.isTimerRunning
-                                    ? 'SPEAKING NOW'
-                                    : 'ON THE FLOOR'
-                                  : `Position #${qIdx + 1}`}
+                              <div className={`text-[9px] font-semibold leading-none ${isActive ? 'text-amber-300' : 'text-emerald-200/60'}`}>
+                                {isActive ? (session.isTimerRunning ? 'SPEAKING' : 'ON FLOOR') : `#${qIdx + 1}`}
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => removeSpeakerFromQueue(qIdx)}
-                              className="text-white/40 hover:text-rose-400 p-1 cursor-pointer transition"
-                              title="Remove from queue"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeSpeakerFromQueue(qIdx)}
+                            className="text-white/40 hover:text-rose-400 p-0.5 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
                         </div>
                       );
                     })
                   )}
                 </div>
               ) : (
-                /* TAB 2: ROSTER WITH SEARCH & FILTER */
-                <div className="space-y-2.5">
-                  <div className="space-y-1.5">
-                    <input
-                      type="text"
-                      value={rosterSearch}
-                      onChange={(e) => setRosterSearch(e.target.value)}
-                      placeholder="Search delegations..."
-                      className="w-full px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400"
-                    />
-
-                    <div className="flex items-center gap-1 overflow-x-auto py-0.5">
-                      {(['all', 'present', 'present_voting', 'absent'] as const).map((f) => (
-                        <button
-                          key={f}
-                          type="button"
-                          onClick={() => setRosterFilter(f)}
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase transition cursor-pointer shrink-0 ${
-                            rosterFilter === f
-                              ? 'bg-cyan-500 text-black'
-                              : 'bg-white/5 text-neutral-400 hover:text-white'
-                          }`}
-                        >
-                          {f === 'present_voting' ? 'P+V' : f}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                /* Roster Tab */
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={rosterSearch}
+                    onChange={(e) => setRosterSearch(e.target.value)}
+                    placeholder="Search roster..."
+                    className="w-full px-2 py-1 rounded-lg bg-black/40 border border-white/10 text-xs text-white placeholder-emerald-200/40 focus:outline-none"
+                  />
 
                   <div className="space-y-1">
                     {session.roster
-                      .filter((d) => {
-                        const matchesSearch = d.name.toLowerCase().includes(rosterSearch.toLowerCase());
-                        const matchesFilter =
-                          rosterFilter === 'all'
-                            ? true
-                            : rosterFilter === 'present'
-                            ? d.attendance === 'present' || d.attendance === 'present_voting'
-                            : d.attendance === rosterFilter;
-                        return matchesSearch && matchesFilter;
-                      })
+                      .filter((d) => d.name.toLowerCase().includes(rosterSearch.toLowerCase()))
                       .map((d) => {
                         const inQueue = (session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).includes(d.id);
 
@@ -997,33 +1099,18 @@ export function ZenMunChairConsole() {
                             key={d.id}
                             type="button"
                             onClick={() => addSpeakerToQueue(d.id)}
-                            className="w-full p-2 rounded-xl bg-[#0d1424]/70 hover:bg-[#121b30] text-left flex items-center justify-between border border-white/5 transition cursor-pointer group"
+                            className="w-full p-1.5 rounded-lg bg-black/20 hover:bg-black/40 text-left flex items-center justify-between border border-white/5 transition cursor-pointer"
                           >
                             <div className="flex items-center gap-2 min-w-0">
                               <img
                                 src={`https://flagcdn.com/w80/${d.countryCode.toLowerCase()}.png`}
                                 alt=""
-                                className="w-5 h-5 rounded-full object-cover shrink-0 border border-white/10"
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
+                                className="w-4 h-4 rounded-full object-cover shrink-0"
                               />
-                              <div className="truncate">
-                                <span className="text-xs font-medium text-white/90 group-hover:text-white block truncate">{d.name}</span>
-                                <span className="text-[9px] font-mono text-neutral-500 uppercase">
-                                  {d.attendance === 'present_voting' ? 'Present & Voting' : d.attendance}
-                                </span>
-                              </div>
+                              <span className="text-xs font-medium text-white truncate">{d.name}</span>
                             </div>
-
-                            <span
-                              className={`text-[10px] font-mono font-bold transition px-1.5 py-0.5 rounded ${
-                                inQueue
-                                  ? 'text-cyan-400 bg-cyan-950/60 border border-cyan-500/30'
-                                  : 'text-neutral-400 opacity-0 group-hover:opacity-100 bg-white/5'
-                              }`}
-                            >
-                              {inQueue ? 'Queued' : '+ Add'}
+                            <span className="text-[9px] font-mono font-bold text-amber-300">
+                              {inQueue ? 'Queued' : '+'}
                             </span>
                           </button>
                         );
@@ -1035,543 +1122,370 @@ export function ZenMunChairConsole() {
           </aside>
         )}
 
-        {/* ── CENTER STAGE: GSL / CAUCUS RUNNER / COMMENTER DOCK ── */}
-        <main className="flex-1 flex flex-col justify-between overflow-y-auto relative p-6">
-          
-          {/* Subtle Centered UN Laurel Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] text-[35vw]">
+        {/* ── CENTER STAGE: GSL / CAUCUS RUNNER (Compact, Proportional, Zero Scroll) ── */}
+        <main className="flex-1 h-full overflow-hidden flex flex-col justify-between p-3 sm:p-5 relative select-none">
+          {/* Subtle Laurel Watermark */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] text-[25vw]">
             🏛️
           </div>
 
-          {/* IF ROLE IS COMMENTER: SHOW COMMENTER FEEDBACK DOCK */}
-          {session.chairRole === 'commenter' ? (
-            <div className="max-w-2xl w-full mx-auto my-auto space-y-6 z-10 animate-fade-in">
-              <div className="p-6 rounded-3xl bg-[#090d16] border border-white/15 shadow-2xl space-y-5">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold uppercase bg-white/10 px-2.5 py-1 rounded text-cyan-300 border border-white/10">
-                      {session.activeMode === 'gsl' ? 'GSL' : 'CAUCUS'}
-                    </span>
-                    {activeDelegate && (
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={`https://flagcdn.com/w80/${activeDelegate.countryCode.toLowerCase()}.png`}
-                          alt=""
-                          className="w-6 h-6 rounded-full object-cover border border-white/20"
-                        />
-                        <span className="text-base font-black text-white">{activeDelegate.name}</span>
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-xs font-mono font-bold uppercase text-amber-400 tracking-wider">
-                    NOW SPEAKING
-                  </span>
-                </div>
+          {/* Top Stage Header / Mode Banner */}
+          <div className="flex items-center justify-center gap-2 relative z-10 shrink-0">
+            <span className={`text-xs font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-full border shadow-xs flex items-center gap-1.5 ${
+              isLight
+                ? 'bg-white border-[#D5CEBF] text-[#1E2520]'
+                : 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300'
+            }`}>
+              {session.activeMode === 'gsl' ? (
+                <>
+                  <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                  <span>General Speaker&apos;s List</span>
+                </>
+              ) : (
+                <>
+                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{session.activeCaucusMotion?.typeName || 'Moderated Caucus'}</span>
+                </>
+              )}
+            </span>
 
-                <form onSubmit={handleSaveCommenterNote} className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
-                      Private Note (Exported to Scoreboard Ledger)
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={commenterNote}
-                      onChange={(e) => setCommenterNote(e.target.value)}
-                      placeholder="e.g. Strong framing, cited the 2019 protocol directly..."
-                      className="w-full p-3 rounded-xl bg-black/40 border border-white/10 text-xs font-medium text-white focus:outline-none focus:border-cyan-400 placeholder-white/30"
+            {session.activeMode !== 'gsl' && (
+              <button
+                type="button"
+                onClick={endCaucusAndReturnToGsl}
+                className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+              >
+                End Caucus
+              </button>
+            )}
+          </div>
+
+          {/* Horizontal Queued Avatars Strip (Compact 38px) */}
+          <div className="flex items-center justify-center gap-3 overflow-x-auto py-1 max-w-full relative z-10 shrink-0">
+            {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).map((delId, idx) => {
+              const d = session.roster.find((del) => del.id === delId);
+              if (!d) return null;
+              const isFirst = idx === 0;
+
+              return (
+                <div key={d.id} className="flex flex-col items-center gap-1 relative group shrink-0">
+                  <div
+                    className={`w-9 h-9 rounded-full overflow-hidden border-2 transition shadow-sm ${
+                      isFirst
+                        ? 'border-[#1B382B] ring-2 ring-[#1B382B]/20 scale-105'
+                        : 'border-black/20 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={`https://flagcdn.com/w80/${d.countryCode.toLowerCase()}.png`}
+                      alt={d.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className={`text-[10px] font-bold truncate max-w-[65px] ${isLight ? 'text-[#1E2520]' : 'text-white'}`}>
+                    {d.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeSpeakerFromQueue(idx)}
+                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[9px] opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                    title="Remove"
+                  >
+                    &times;
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Active Speaker Flag & Name (Refined 80px) */}
+          <div className="flex flex-col items-center space-y-1.5 relative z-10 shrink-0 my-auto">
+            {activeDelegate ? (
+              <>
+                <div className="relative">
+                  <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 transition-all duration-300 shadow-xl relative ${
+                    session.isTimerRunning
+                      ? 'border-[#1B382B] ring-4 ring-[#1B382B]/20 scale-102'
+                      : 'border-black/15 ring-2 ring-black/5'
+                  }`}>
+                    <img
+                      src={`https://flagcdn.com/w160/${activeDelegate.countryCode.toLowerCase()}.png`}
+                      alt={activeDelegate.name}
+                      className="w-full h-full object-cover"
                     />
                   </div>
 
-                  {/* 2x2 Slider Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-neutral-300">DIPLOMACY</span>
-                        <span className="text-cyan-400">{diplomacyRating}/10</span>
+                  {session.isTimerRunning && (
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-[#183023] border border-emerald-400/40 shadow-sm flex items-center gap-1 z-10">
+                      <div className="flex items-end gap-0.5 h-2.5">
+                        <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse h-1.5" />
+                        <span className="w-0.5 bg-emerald-300 rounded-full animate-pulse h-2.5" />
+                        <span className="w-0.5 bg-emerald-400 rounded-full animate-pulse h-2" />
                       </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={10}
-                        value={diplomacyRating}
-                        onChange={(e) => setDiplomacyRating(parseInt(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
-                      />
+                      <span className="text-[9px] font-mono font-black text-emerald-300 tracking-wider">SPEAKING</span>
                     </div>
-
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-neutral-300">PUBLIC SPEAKING</span>
-                        <span className="text-cyan-400">{publicSpeakingRating}/10</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={10}
-                        value={publicSpeakingRating}
-                        onChange={(e) => setPublicSpeakingRating(parseInt(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
-                      />
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-neutral-300">COLLABORATION</span>
-                        <span className="text-cyan-400">{collaborationRating}/10</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={10}
-                        value={collaborationRating}
-                        onChange={(e) => setCollaborationRating(parseInt(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
-                      />
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                      <div className="flex justify-between text-xs font-bold">
-                        <span className="text-neutral-300">CONTENT &amp; RESEARCH</span>
-                        <span className="text-cyan-400">{contentRating}/10</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={10}
-                        value={contentRating}
-                        onChange={(e) => setContentRating(parseInt(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2">
-                    {savedFeedbackAlert ? (
-                      <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                        <Check className="w-4 h-4" /> Note Saved to Ledger!
-                      </span>
-                    ) : <span />}
-                    <button
-                      type="submit"
-                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs uppercase cursor-pointer transition shadow-lg shadow-emerald-500/20 active:scale-95"
-                    >
-                      Save Feedback
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          ) : (
-            /* MODERATOR CENTER STAGE: GSL & TIMER */
-            <div className="max-w-3xl w-full mx-auto my-auto flex flex-col items-center justify-center text-center space-y-6 z-10">
-              
-              {/* Header Title / Active Mode */}
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-300 bg-cyan-950/40 px-3.5 py-1.5 rounded-full border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1.5">
-                  {session.activeMode === 'gsl' ? (
-                    <>
-                      <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>General Speaker's List</span>
-                    </>
-                  ) : (
-                    <>
-                      <Flame className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{session.activeCaucusMotion?.typeName || 'Caucus'}</span>
-                    </>
                   )}
-                </span>
+                </div>
 
-                {session.activeMode !== 'gsl' && (
-                  <button
-                    type="button"
-                    onClick={endCaucusAndReturnToGsl}
-                    className="text-xs font-bold text-rose-400 hover:underline cursor-pointer"
-                  >
-                    End Caucus &amp; Return to GSL
-                  </button>
-                )}
-              </div>
-
-              {/* DUAL CAUCUS TIMER CAPSULE (When in Moderated Caucus) */}
-              {session.activeMode === 'moderated_caucus' && session.activeCaucusMotion && (
-                <div className="w-full max-w-xl p-3.5 rounded-2xl bg-[#090e1c] border border-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.12)] flex items-center justify-between gap-4 animate-fade-in">
-                  <div className="flex items-center gap-3 min-w-0 text-left">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
-                      <Flame className="w-4 h-4 text-amber-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold truncate">
-                        CAUCUS &bull; BY {session.activeCaucusMotion.proposedByName.toUpperCase()}
-                      </div>
-                      <div className="text-xs font-black text-white truncate max-w-[280px]">
-                        {session.activeCaucusMotion.topic}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right">
-                      <div className="text-[9px] uppercase tracking-wider text-neutral-400 font-bold">Total Caucus Left</div>
-                      <div className="text-lg font-mono font-black text-amber-300">
-                        {formatTime(session.caucusRemainingTotalSeconds)}
-                      </div>
-                    </div>
+                <div className="text-center space-y-0.5 pt-1">
+                  <h3 className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-[#1E2520]' : 'text-white'}`}>
+                    {activeDelegate.name}
+                  </h3>
+                  <div className={`text-xs font-medium ${isLight ? 'text-[#6B655B]' : 'text-neutral-400'}`}>
+                    {session.activeMode === 'gsl' ? 'General Speakers List' : session.activeCaucusMotion?.topic || 'Moderated Caucus'}
                   </div>
                 </div>
+              </>
+            ) : (
+              <div className="py-4 text-xs font-bold text-neutral-400">
+                Add delegates to the queue to start speaking.
+              </div>
+            )}
+          </div>
+
+          {/* Digital Countdown Clock (Clean 64px, Clickable to Toggle) */}
+          <div
+            onClick={toggleTimer}
+            id="tutorial-target-clock"
+            className={`font-mono font-black text-6xl sm:text-7xl tracking-tight transition cursor-pointer select-none leading-none relative z-10 my-auto text-center ${
+              session.remainingSeconds === 0 && session.isTimerRunning
+                ? 'text-rose-600 animate-pulse'
+                : isAmber
+                ? 'text-amber-500 animate-pulse'
+                : isLight
+                ? 'text-[#1E2520] hover:text-[#162E23]'
+                : 'text-white hover:text-cyan-300'
+            }`}
+            title="Click clock to Start / Pause [Space]"
+          >
+            {formatTime(session.remainingSeconds)}
+          </div>
+
+          {/* Progress Bar & RTR Button */}
+          <div className="w-full max-w-md mx-auto space-y-1 relative z-10 shrink-0">
+            <div className={`flex items-center justify-between text-[11px] px-1 font-mono ${isLight ? 'text-[#6B655B]' : 'text-neutral-400'}`}>
+              <span>
+                {session.remainingSeconds === 0 && session.isTimerRunning ? (
+                  <span className="text-rose-600 font-bold">TIME EXPIRED</span>
+                ) : (
+                  <span>Slot: {session.speakingTimeSeconds}s</span>
+                )}
+              </span>
+
+              {/* Right to Reply */}
+              <button
+                type="button"
+                id="tutorial-target-rtr"
+                onClick={() => openRtr(activeDelegate?.id)}
+                className="px-2.5 py-0.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/30 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition active:scale-95"
+                title="Right to Reply"
+              >
+                <Reply className="w-3 h-3" />
+                <span>RTR</span>
+              </button>
+            </div>
+
+            <div className={`h-2 w-full rounded-full overflow-hidden p-0.5 border ${
+              isLight ? 'bg-black/5 border-black/10' : 'bg-white/10 border-white/10'
+            }`}>
+              <div
+                className={`h-full transition-all duration-300 rounded-full ${
+                  session.remainingSeconds === 0 && session.isTimerRunning
+                    ? 'bg-rose-500'
+                    : isAmber
+                    ? 'bg-gradient-to-r from-amber-500 to-rose-500'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-500'
+                }`}
+                style={{ width: `${progressRatio * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Primary Timer Controls (Ergonomic h-11 buttons on one plane) */}
+          <div className="flex items-center justify-center gap-2.5 pt-1 relative z-10 shrink-0">
+            {/* ↺ Reset */}
+            <button
+              type="button"
+              id="tutorial-target-reset-btn"
+              onClick={resetTimer}
+              className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
+                isLight
+                  ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#4A554E] hover:text-[#1E2520]'
+                  : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
+              }`}
+              title="Reset clock [R]"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+
+            {/* ▷ START / ⏸ PAUSE */}
+            <button
+              type="button"
+              id="tutorial-target-start-btn"
+              onClick={toggleTimer}
+              className={`w-48 h-11 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+                session.isTimerRunning
+                  ? 'bg-[#8C6D1F] hover:bg-[#735A19] text-white shadow-amber-900/20'
+                  : 'bg-[#1B382B] hover:bg-[#152D22] text-white shadow-[#1B382B]/25'
+              }`}
+              title="Start / Pause [Space]"
+            >
+              {session.isTimerRunning ? (
+                <>
+                  <Pause className="w-4 h-4 fill-current" />
+                  <span>PAUSE [Space]</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>START [Space]</span>
+                </>
               )}
+            </button>
 
-              {/* Horizontal Queued Avatars Strip */}
-              <div className="flex items-center justify-center gap-4 overflow-x-auto py-2 max-w-full">
-                {(session.activeMode === 'gsl' ? session.speakerQueue : session.caucusSpeakerQueue).map((delId, idx) => {
-                  const d = session.roster.find((del) => del.id === delId);
-                  if (!d) return null;
-                  const isFirst = idx === 0;
+            {/* ⏭ NEXT */}
+            <button
+              type="button"
+              id="tutorial-target-next-btn"
+              onClick={nextSpeaker}
+              className={`w-36 h-11 rounded-xl border font-bold text-xs uppercase tracking-wider transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
+                isLight
+                  ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]'
+                  : 'bg-[#0c1424] hover:bg-[#121f38] border-cyan-500/30 text-cyan-300'
+              }`}
+              title="Next Speaker [N]"
+            >
+              <SkipForward className="w-4 h-4" />
+              <span>NEXT [N]</span>
+            </button>
 
-                  return (
-                    <div key={d.id} className="flex flex-col items-center gap-1.5 relative group shrink-0">
-                      <div
-                        className={`w-13 h-13 rounded-full overflow-hidden border-2 transition shadow-lg ${
-                          isFirst
-                            ? 'border-cyan-400 ring-4 ring-cyan-400/20 scale-105 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
-                            : 'border-white/20 opacity-70 hover:opacity-100'
+            {/* 🕒+ Add Time */}
+            <div className="relative">
+              <button
+                type="button"
+                id="tutorial-target-add-time"
+                onClick={() => setShowAddTimePopover(!showAddTimePopover)}
+                className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
+                  isLight
+                    ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF] text-[#1E2520]'
+                    : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/30 text-cyan-400'
+                }`}
+                title="Add time to clock"
+              >
+                <Clock className="w-4 h-4" />
+              </button>
+
+              {/* Add Time Popover (Anchored Right Above Button) */}
+              {showAddTimePopover && (
+                <div className={`absolute bottom-14 right-0 z-50 p-3 rounded-2xl shadow-2xl border w-48 space-y-2 text-left backdrop-blur-xl ${
+                  isLight ? 'bg-[#FAF7F2] border-[#D5CEBF] text-[#1E2520]' : 'bg-[#0a0f1d] border-white/15 text-white'
+                }`}>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Add Time</div>
+                  <div className="grid grid-cols-3 gap-1">
+                    {[15, 30, 60].map((sec) => (
+                      <button
+                        key={sec}
+                        type="button"
+                        onClick={() => {
+                          addTimeToClock(sec);
+                          setShowAddTimePopover(false);
+                        }}
+                        className={`p-1.5 rounded-lg border text-xs font-bold text-center cursor-pointer transition ${
+                          isLight
+                            ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF]'
+                            : 'bg-white/5 hover:bg-white/15 border-white/10'
                         }`}
                       >
-                        <img
-                          src={`https://flagcdn.com/w80/${d.countryCode.toLowerCase()}.png`}
-                          alt={d.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <span className="text-[11px] font-bold text-white truncate max-w-[75px]">
-                        {d.name}
-                      </span>
-                      {isFirst && (
-                        <span className="text-[9px] font-mono text-cyan-300 font-bold uppercase tracking-wider">
-                          {session.isTimerRunning ? 'Speaking' : 'Ready'}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removeSpeakerFromQueue(idx)}
-                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition cursor-pointer"
-                        title="Remove"
-                      >
-                        &times;
+                        +{sec}s
                       </button>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Center Active Speaker Flag & Name */}
-              {activeDelegate ? (
-                <div className="flex flex-col items-center space-y-3 pt-2">
-                  <div className="relative">
-                    <div className={`w-36 h-36 rounded-full overflow-hidden border-4 transition-all duration-300 shadow-2xl relative ${
-                      session.isTimerRunning
-                        ? 'border-cyan-400 ring-8 ring-cyan-400/20 shadow-[0_0_60px_rgba(6,182,212,0.35)] scale-102'
-                        : 'border-white/20 ring-4 ring-white/5 shadow-[0_0_30px_rgba(0,0,0,0.5)]'
-                    }`}>
-                      <img
-                        src={`https://flagcdn.com/w160/${activeDelegate.countryCode.toLowerCase()}.png`}
-                        alt={activeDelegate.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    {/* Live Equalizer Audio Waveform Pill */}
-                    {session.isTimerRunning && (
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-black/90 border border-cyan-400/60 shadow-lg flex items-center gap-1.5 z-10">
-                        <div className="flex items-end gap-0.5 h-3">
-                          <span className="w-1 bg-cyan-400 rounded-full animate-pulse h-2" />
-                          <span className="w-1 bg-cyan-300 rounded-full animate-pulse h-3" />
-                          <span className="w-1 bg-cyan-400 rounded-full animate-pulse h-2.5" />
-                          <span className="w-1 bg-cyan-200 rounded-full animate-pulse h-1.5" />
-                        </div>
-                        <span className="text-[10px] font-mono font-black text-cyan-300 tracking-wider">SPEAKING</span>
-                      </div>
-                    )}
+                    ))}
                   </div>
-
-                  <div className="text-center space-y-0.5">
-                    <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight drop-shadow-md">
-                      {activeDelegate.name}
-                    </h3>
-                    <div className="text-xs font-medium text-neutral-400">
-                      {session.activeMode === 'gsl' ? 'General Speakers List' : session.activeCaucusMotion?.topic || 'Moderated Caucus'}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-8 text-sm font-bold text-neutral-400">
-                  Add delegates to the queue to start speaking.
                 </div>
               )}
-
-              {/* Countdown Clock (96px, Tabular, Clickable to Toggle, Amber <=10s) */}
-              <div
-                onClick={toggleTimer}
-                id="tutorial-target-clock"
-                className={`font-mono font-black text-7xl sm:text-8xl tracking-tight transition cursor-pointer hover:scale-102 select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] relative ${
-                  session.remainingSeconds === 0 && session.isTimerRunning
-                    ? 'text-rose-500 animate-pulse drop-shadow-[0_0_40px_rgba(244,63,94,0.6)]'
-                    : isAmber
-                    ? 'text-amber-400 animate-pulse drop-shadow-[0_0_40px_rgba(251,191,36,0.5)]'
-                    : 'text-white hover:text-cyan-300'
-                }`}
-                title="Click clock to Start / Pause [Space]"
-              >
-                {formatTime(session.remainingSeconds)}
-              </div>
-
-              {/* 6px Progress Bar & RTR Button on Right End */}
-              <div className="w-full max-w-lg space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-neutral-400 px-1 font-mono">
-                  <span>
-                    {session.remainingSeconds === 0 && session.isTimerRunning ? (
-                      <span className="text-rose-400 font-bold">TIME EXPIRED</span>
-                    ) : (
-                      <span>Slot: {session.speakingTimeSeconds}s</span>
-                    )}
-                  </span>
-
-                  {/* Right to Reply (RTR) Button */}
-                  <button
-                    type="button"
-                    id="tutorial-target-rtr"
-                    onClick={() => openRtr(activeDelegate?.id)}
-                    className="px-3 py-1 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-extrabold text-[11px] flex items-center gap-1.5 shadow-xs cursor-pointer transition active:scale-95"
-                    title="Right to Reply gives accused delegate a separate timer"
-                  >
-                    <Reply className="w-3 h-3" />
-                    <span>RTR</span>
-                  </button>
-                </div>
-
-                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/10">
-                  <div
-                    className={`h-full transition-all duration-300 rounded-full ${
-                      session.remainingSeconds === 0 && session.isTimerRunning
-                        ? 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.6)]'
-                        : isAmber
-                        ? 'bg-gradient-to-r from-amber-500 to-rose-500 shadow-[0_0_15px_rgba(251,191,36,0.5)]'
-                        : 'bg-gradient-to-r from-cyan-500 via-teal-400 to-amber-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]'
-                    }`}
-                    style={{ width: `${progressRatio * 100}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Primary Timer Control Row */}
-              <div className="flex items-center justify-center gap-3 pt-2">
-                
-                {/* ↺ Reset Button */}
-                <button
-                  type="button"
-                  id="tutorial-target-reset-btn"
-                  onClick={resetTimer}
-                  className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center cursor-pointer transition shadow-md active:scale-95"
-                  title="Reset clock to full time [R]"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-
-                {/* ▷ START / ⏸ PAUSE Button */}
-                <button
-                  type="button"
-                  id="tutorial-target-start-btn"
-                  onClick={toggleTimer}
-                  className={`w-56 h-12 rounded-2xl font-black text-sm tracking-wider uppercase transition shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
-                    session.isTimerRunning
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black shadow-amber-500/20'
-                      : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black shadow-emerald-500/20'
-                  }`}
-                  title="Start / Pause [Space]"
-                >
-                  {session.isTimerRunning ? (
-                    <>
-                      <Pause className="w-4 h-4 fill-current" />
-                      <span>PAUSE [Space]</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4 fill-current" />
-                      <span>START [Space]</span>
-                    </>
-                  )}
-                </button>
-
-                {/* ⏭ NEXT Button */}
-                <button
-                  type="button"
-                  id="tutorial-target-next-btn"
-                  onClick={nextSpeaker}
-                  className="w-44 h-12 rounded-2xl bg-[#0c1424] hover:bg-[#121f38] text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 font-black text-sm uppercase tracking-wider transition shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                  title="Next Speaker [N]"
-                >
-                  <SkipForward className="w-4 h-4" />
-                  <span>NEXT [N]</span>
-                </button>
-
-                {/* 🕒+ Add Time Button */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    id="tutorial-target-add-time"
-                    onClick={() => setShowAddTimePopover(!showAddTimePopover)}
-                    className="w-12 h-12 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 flex items-center justify-center cursor-pointer transition shadow-md active:scale-95"
-                    title="Add time to clock"
-                  >
-                    <Clock className="w-4 h-4" />
-                  </button>
-
-                  {/* Add Time Popover */}
-                  {showAddTimePopover && (
-                    <div className="absolute bottom-16 right-0 z-50 p-4 rounded-2xl bg-[#0a0f1d] shadow-2xl border border-white/15 w-52 space-y-3 animate-fade-in text-left backdrop-blur-xl">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Add Time</div>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {[15, 30, 60].map((sec) => (
-                          <button
-                            key={sec}
-                            type="button"
-                            onClick={() => {
-                              addTimeToClock(sec);
-                              setShowAddTimePopover(false);
-                            }}
-                            className="p-2 rounded-xl bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 border border-white/10 text-xs font-bold text-center cursor-pointer transition"
-                          >
-                            +{sec}s
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-1.5 pt-1">
-                        <input
-                          type="number"
-                          value={customAddSeconds}
-                          onChange={(e) => setCustomAddSeconds(parseInt(e.target.value) || 10)}
-                          className="w-16 px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            addTimeToClock(customAddSeconds);
-                            setShowAddTimePopover(false);
-                          }}
-                          className="flex-1 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black cursor-pointer transition"
-                        >
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* ↱ Yield Button */}
-                <button
-                  type="button"
-                  id="tutorial-target-yield-box"
-                  onClick={openYieldPopover}
-                  className="w-12 h-12 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 hover:text-amber-300 flex items-center justify-center cursor-pointer transition shadow-md active:scale-95"
-                  title="Yield remaining speaking time"
-                >
-                  <CornerUpRight className="w-4 h-4" />
-                </button>
-              </div>
             </div>
-          )}
 
-          {/* RIGHT TO REPLY SUB-TIMER MODAL */}
-          {session.rtrActive && (
-            <div className="fixed inset-0 z-70 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-              <div className="p-6 rounded-3xl bg-[#090d16] border border-rose-500/40 shadow-2xl max-w-sm w-full text-center space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div className="text-xs font-black uppercase text-rose-400 flex items-center gap-1.5">
-                    <Reply className="w-4 h-4" />
-                    <span>Right to Reply Active</span>
-                  </div>
-                  <button type="button" onClick={closeRtr} className="text-white/40 hover:text-white p-1 cursor-pointer">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+            {/* ↱ Yield */}
+            <button
+              type="button"
+              id="tutorial-target-yield-box"
+              onClick={openYieldPopover}
+              className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
+                isLight
+                  ? 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-800'
+                  : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-400'
+              }`}
+              title="Yield remaining speaking time [Y]"
+            >
+              <CornerUpRight className="w-4 h-4" />
+            </button>
 
-                <div className="text-sm font-bold text-white">
-                  {session.roster.find((d) => d.id === session.rtrDelegateId)?.name || 'Accused Delegate'}
-                </div>
+            {/* 🔨 Gavel Strike Button */}
+            <button
+              type="button"
+              onClick={() => daisAudio.playDoubleGavel()}
+              className={`w-11 h-11 rounded-xl border flex items-center justify-center cursor-pointer transition shadow-xs active:scale-95 ${
+                isLight
+                  ? 'bg-[#1B382B] hover:bg-[#152D22] border-[#1B382B] text-amber-300'
+                  : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
+              }`}
+              title="Rap Gavel [G]"
+            >
+              <Gavel className="w-4 h-4" />
+            </button>
+          </div>
 
-                <div className="text-6xl font-mono font-black text-rose-400 drop-shadow-[0_0_25px_rgba(244,63,94,0.4)]">
-                  {formatTime(session.rtrRemainingSeconds)}
-                </div>
-
-                <div className="flex items-center justify-center gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={toggleRtrTimer}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 text-white font-black text-xs cursor-pointer shadow-lg shadow-rose-500/20"
-                  >
-                    {session.rtrIsRunning ? 'Pause' : 'Start'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={closeRtr}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer transition border border-white/10"
-                  >
-                    Finish RTR
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* FLOATING DRAGGABLE YIELD POPOVER */}
+          {/* Floating Yield Popover (Anchored Right Above Controls) */}
           {session.yieldPopoverOpen && (
-            <div className="absolute top-12 right-12 z-50 w-80 bg-[#0a0f1d] rounded-3xl border border-white/15 shadow-2xl overflow-hidden animate-fade-in text-left backdrop-blur-xl">
-              <div className="p-3.5 bg-[#0e1628] text-white flex items-center justify-between border-b border-white/10">
-                <span className="text-xs font-black tracking-wider uppercase text-amber-400 flex items-center gap-1.5">
-                  <span>⋮⋮</span>
+            <div className={`absolute bottom-16 right-4 sm:right-12 z-50 w-72 rounded-2xl border shadow-2xl overflow-hidden text-left backdrop-blur-xl ${
+              isLight ? 'bg-[#FAF7F2] border-[#D5CEBF] text-[#1E2520]' : 'bg-[#0a0f1d] border-white/15 text-white'
+            }`}>
+              <div className={`p-3 flex items-center justify-between border-b ${
+                isLight ? 'bg-[#EDE8DE] border-[#DDD5C7]' : 'bg-black/40 border-white/10'
+              }`}>
+                <span className="text-xs font-black tracking-wider uppercase text-amber-700 flex items-center gap-1">
                   <span>• YIELD</span>
                 </span>
-                <button type="button" onClick={closeYieldPopover} className="text-white/60 hover:text-white p-0.5 cursor-pointer">
+                <button type="button" onClick={closeYieldPopover} className="p-0.5 cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="p-4 space-y-4">
-                <div className="text-xs font-semibold text-white">
+              <div className="p-3 space-y-3">
+                <div className="text-xs font-semibold">
                   <strong>{activeDelegate?.name || 'Delegate'}</strong> yields •{' '}
-                  <span className="text-amber-400 font-bold font-mono">
+                  <span className="font-bold font-mono text-amber-600">
                     {formatTime(session.yieldRemainingSeconds)} left
                   </span>
                 </div>
 
-                {/* Option 1: Next speaker gets time combined */}
                 {nextQueuedDelegate && (
                   <button
                     type="button"
                     onClick={yieldToNextSpeaker}
-                    className="w-full p-3 rounded-2xl bg-white/5 hover:bg-white/10 text-left border border-white/10 transition cursor-pointer space-y-0.5 shadow-xs"
+                    className={`w-full p-2.5 rounded-xl border text-left transition cursor-pointer ${
+                      isLight ? 'bg-white hover:bg-[#EAE4D7] border-[#D5CEBF]' : 'bg-white/5 hover:bg-white/10 border-white/10'
+                    }`}
                   >
-                    <div className="text-xs font-bold text-white">
-                      {nextQueuedDelegate.name} (Next speaker)
-                    </div>
-                    <div className="text-[11px] text-neutral-400">
-                      Gets their time plus {formatTime(session.yieldRemainingSeconds)}
+                    <div className="text-xs font-bold">{nextQueuedDelegate.name} (Next)</div>
+                    <div className="text-[10px] text-neutral-500">
+                      Gets their slot + {formatTime(session.yieldRemainingSeconds)}
                     </div>
                   </button>
                 )}
 
-                {/* Option 2: Another delegation */}
-                <div className="space-y-1.5 pt-1 border-t border-white/10">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Another delegation</label>
+                <div className="space-y-1 pt-1 border-t border-black/10">
                   <select
                     value={yieldSelectedId}
                     onChange={(e) => setYieldSelectedId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-black/40 border border-white/15 text-xs font-semibold text-white focus:outline-none focus:border-cyan-400"
+                    className={`w-full p-2 rounded-lg border text-xs font-semibold focus:outline-none ${
+                      isLight ? 'bg-white border-[#D5CEBF]' : 'bg-black/40 border-white/15 text-white'
+                    }`}
                   >
-                    <option value="" className="bg-[#0a0f1d] text-white">Select country...</option>
+                    <option value="">Select country...</option>
                     {session.roster
                       .filter((d) => d.id !== activeDelegate?.id)
                       .map((d) => (
-                        <option key={d.id} value={d.id} className="bg-[#0a0f1d] text-white">
+                        <option key={d.id} value={d.id}>
                           {d.name}
                         </option>
                       ))}
@@ -1580,7 +1494,7 @@ export function ZenMunChairConsole() {
                     type="button"
                     disabled={!yieldSelectedId}
                     onClick={() => yieldToDelegate(yieldSelectedId)}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-black text-xs uppercase cursor-pointer disabled:opacity-40 transition shadow-md mt-1"
+                    className="w-full py-2 rounded-lg bg-[#1B382B] hover:bg-[#152D22] text-white font-bold text-xs uppercase cursor-pointer disabled:opacity-40 transition shadow-sm mt-1"
                   >
                     Yield {formatTime(session.yieldRemainingSeconds)}
                   </button>
@@ -1592,12 +1506,16 @@ export function ZenMunChairConsole() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. BOTTOM BAR (56px, Sovereign Obsidian Glass)
+          3. BOTTOM BAR (52px, Quick-Add + Shortcuts + TIME presets)
       ───────────────────────────────────────────────────────────── */}
-      <footer id="tutorial-target-bottom-bar" className="h-14 bg-[#070a12]/95 backdrop-blur-md border-t border-white/10 px-4 flex items-center justify-between gap-4 z-30 shrink-0 relative">
-        
-        {/* Left: Add to speakers list input */}
-        <div className="relative flex-1 max-w-md">
+      <footer
+        id="tutorial-target-bottom-bar"
+        className={`h-[52px] px-4 flex items-center justify-between gap-4 z-30 shrink-0 relative border-t transition-colors ${
+          isLight ? 'bg-[#FAF7F2] border-[#E2DBD0] text-[#1E2520]' : 'bg-[#070a12]/95 border-white/10 text-white'
+        }`}
+      >
+        {/* Left: Quick-add speaker input */}
+        <div className="relative flex-1 max-w-sm">
           <input
             type="text"
             value={bottomInput}
@@ -1616,12 +1534,18 @@ export function ZenMunChairConsole() {
                 }
               }
             }}
-            placeholder="Quick-add to queue... (Type country and press Enter)"
-            className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 shadow-xs"
+            placeholder="Add to queue... (Type country and press Enter)"
+            className={`w-full px-3 py-1.5 rounded-xl border text-xs font-medium focus:outline-none shadow-xs transition ${
+              isLight
+                ? 'bg-white border-[#D5CEBF] text-[#1E2520] placeholder-[#8C857B] focus:border-[#1B382B]'
+                : 'bg-white/5 border-white/10 text-white placeholder-neutral-500 focus:border-cyan-400'
+            }`}
           />
 
           {bottomDropdown && bottomInput.trim() && filteredBottomDelegates.length > 0 && (
-            <div className="absolute bottom-14 left-0 right-0 bg-[#0a0f1d] rounded-2xl shadow-2xl border border-white/15 max-h-48 overflow-y-auto z-50">
+            <div className={`absolute bottom-12 left-0 right-0 rounded-2xl shadow-2xl border max-h-48 overflow-y-auto z-50 ${
+              isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520]' : 'bg-[#0a0f1d] border-white/15 text-white'
+            }`}>
               {filteredBottomDelegates.map((d) => (
                 <button
                   key={d.id}
@@ -1631,12 +1555,14 @@ export function ZenMunChairConsole() {
                     setBottomInput('');
                     setBottomDropdown(false);
                   }}
-                  className="w-full px-4 py-2.5 text-left hover:bg-white/10 flex items-center gap-2 border-b border-white/5 last:border-none cursor-pointer text-xs font-bold text-white transition"
+                  className={`w-full px-3 py-2 text-left flex items-center gap-2 border-b last:border-none cursor-pointer text-xs font-bold transition ${
+                    isLight ? 'hover:bg-[#EAE4D7] border-black/5' : 'hover:bg-white/10 border-white/5'
+                  }`}
                 >
                   <img
                     src={`https://flagcdn.com/w40/${d.countryCode.toLowerCase()}.png`}
                     alt=""
-                    className="w-4 h-4 rounded-full object-cover border border-white/10"
+                    className="w-4 h-4 rounded-full object-cover border border-black/10"
                   />
                   <span>{d.name}</span>
                 </button>
@@ -1645,46 +1571,44 @@ export function ZenMunChairConsole() {
           )}
         </div>
 
-        {/* Center: Command Shortcuts Legend (Hidden on small screens) */}
-        <div className="hidden xl:flex items-center gap-3 text-[10px] text-neutral-400 font-mono">
-          <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">Space</kbd> Play/Pause
-          </span>
-          <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">N</kbd> Next
-          </span>
-          <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">R</kbd> Reset
-          </span>
-          <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">M</kbd> Motions
-          </span>
-          <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">C</kbd> Roll Call
-          </span>
-          <span className="text-white/20">•</span>
-          <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/15 text-neutral-300">Y</kbd> Yield
-          </span>
+        {/* Center: Command Shortcuts Legend */}
+        <div className={`hidden lg:flex items-center gap-2 text-[10px] font-mono ${
+          isLight ? 'text-[#7A746A]' : 'text-neutral-400'
+        }`}>
+          <span><kbd className="px-1 py-0.5 rounded border bg-black/5">Space</kbd> Play</span>
+          <span>•</span>
+          <span><kbd className="px-1 py-0.5 rounded border bg-black/5">N</kbd> Next</span>
+          <span>•</span>
+          <span><kbd className="px-1 py-0.5 rounded border bg-black/5">R</kbd> Reset</span>
+          <span>•</span>
+          <span><kbd className="px-1 py-0.5 rounded border bg-black/5">G</kbd> Gavel</span>
+          <span>•</span>
+          <span><kbd className="px-1 py-0.5 rounded border bg-black/5">M</kbd> Motions</span>
+          <span>•</span>
+          <span><kbd className="px-1 py-0.5 rounded border bg-black/5">C</kbd> Roll Call</span>
+          <span>•</span>
+          <span><kbd className="px-1 py-0.5 rounded border bg-black/5">Y</kbd> Yield</span>
         </div>
 
-        {/* Right: TIME presets selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">TIME</span>
+        {/* Right: TIME presets */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? 'text-[#7A746A]' : 'text-neutral-400'}`}>
+            TIME
+          </span>
           <div className="flex items-center gap-1">
             {[45, 60, 75, 90].map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => setSpeakingSlotTime(s)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
+                className={`px-2 py-0.5 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
                   session.speakingTimeSeconds === s
-                    ? 'bg-cyan-500 text-black shadow-xs'
-                    : 'bg-white/5 hover:bg-white/10 text-white/90 border border-white/10'
+                    ? isLight
+                      ? 'bg-[#1B382B] text-white shadow-xs'
+                      : 'bg-cyan-500 text-black shadow-xs'
+                    : isLight
+                    ? 'bg-white border border-[#D5CEBF] text-[#1E2520] hover:bg-[#EAE4D7]'
+                    : 'bg-white/5 border border-white/10 text-white/90'
                 }`}
               >
                 {s}s
@@ -1696,14 +1620,16 @@ export function ZenMunChairConsole() {
               max={300}
               value={session.speakingTimeSeconds}
               onChange={(e) => setSpeakingSlotTime(Math.max(10, parseInt(e.target.value) || 90))}
-              className="w-14 px-1.5 py-1 rounded-lg bg-white/5 border border-white/10 font-mono text-center font-bold text-xs text-white focus:outline-none focus:border-cyan-400"
+              className={`w-12 px-1 py-0.5 rounded-lg font-mono text-center font-bold text-xs focus:outline-none border ${
+                isLight ? 'bg-white border-[#D5CEBF] text-[#1E2520]' : 'bg-white/5 border-white/10 text-white'
+              }`}
               title="Custom seconds"
             />
           </div>
         </div>
       </footer>
 
-      {/* Dais Support & Secretariat Hotline Modal */}
+      {/* Hotline Modal */}
       <DaisSupportHotlineModal
         isOpen={showSupportModal}
         onClose={() => setShowSupportModal(false)}

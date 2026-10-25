@@ -28,6 +28,17 @@ interface TargetRect {
 export function TutorialEngine() {
   const { session, setSession, nextTutorialStep, prevTutorialStep, endTutorial } = useZenMun();
   const { isActive, currentStep, welcomeModalOpen } = session.tutorial;
+  // Lock body scroll when welcome modal or interactive tour is active
+  useEffect(() => {
+    if (welcomeModalOpen || isActive) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [welcomeModalOpen, isActive]);
+
 
   const [targetRects, setTargetRects] = useState<TargetRect[]>([]);
   const [activeTab, setActiveTab] = useState<'tour' | 'hotkeys'>('tour');
@@ -120,11 +131,11 @@ export function TutorialEngine() {
     return (
       <div className="fixed inset-0 z-[9999] bg-[#14261b]/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in select-none">
         <div className="w-full max-w-2xl bg-white rounded-[32px] border border-[#ded8cb] shadow-[0_20px_70px_rgba(0,0,0,0.35)] p-6 sm:p-8 text-[#1f2937] relative overflow-visible">
-          {/* Zenny the Diplomatic Envoy Mascot perched on top */}
+          {/* Zeno the Sovereign Envoy Mascot perched on top */}
           <div className="absolute -top-16 left-8 sm:left-12 pointer-events-none z-20">
             <img
-              src="/assets/mascot_gavin_welcome.png"
-              alt="Zenny the Diplomatic Envoy"
+              src="/assets/zeno-welcome.png"
+              alt="Zeno the Sovereign Envoy"
               className="w-28 h-28 object-contain drop-shadow-xl"
             />
           </div>
@@ -162,7 +173,7 @@ export function TutorialEngine() {
               </h2>
 
               <p className="text-xs sm:text-sm text-[#57534e] leading-relaxed font-normal">
-                Zenny has a short interactive tour ready. He lights up each quarter of the chamber, letting you test gavel controls, speaker queues, and motions as you go. Prefer to watch first? The dais guide runs a full committee session, from roll call to the final vote.
+                Zeno has a short interactive tour ready. He lights up each quarter of the chamber, letting you test gavel controls, speaker queues, and motions as you go. Prefer to watch first? The dais guide runs a full committee session, from roll call to the final vote.
               </p>
 
               <div className="pt-2 space-y-2.5">
@@ -328,14 +339,14 @@ export function TutorialEngine() {
         />
       ))}
 
-      {/* Floating Zenvitra Step Card with Zenny Mascot */}
+      {/* Floating Zenvitra Step Card with Zeno Mascot */}
       <div className="fixed top-24 right-8 sm:right-16 max-w-md w-full pointer-events-auto z-[95] animate-in fade-in slide-in-from-top-4">
         <div className="bg-white rounded-[26px] border border-[#ded8cb] shadow-[0_20px_60px_rgba(0,0,0,0.35)] p-6 space-y-4 text-[#1f2937] relative overflow-visible">
-          {/* Zenny Pointer Mascot perched on top of card */}
+          {/* Zeno Pointer Mascot perched on top of card */}
           <div className="absolute -top-14 left-8 pointer-events-none z-20">
             <img
-              src="/assets/mascot_gavin_pointer.png"
-              alt="Zenny Dais Guide"
+              src="/assets/zeno.png"
+              alt="Zeno Dais Guide"
               className="w-20 h-20 object-contain drop-shadow-md"
             />
           </div>
