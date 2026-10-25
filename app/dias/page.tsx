@@ -31,6 +31,7 @@ import { DiasButton } from '@/components/mun/dias/DiasButton';
 import { DiasBadge } from '@/components/mun/dias/DiasBadge';
 import { DiasCard } from '@/components/mun/dias/DiasCard';
 import { DiasLivePreview } from '@/components/mun/dias/DiasLivePreview';
+import { CommitteeFleetSection } from '@/components/mun/dias/CommitteeFleetSection';
 
 export default function DiasLandingPage() {
   return (
@@ -253,6 +254,9 @@ export default function DiasLandingPage() {
           </DiasCard>
         </div>
       </section>
+
+      {/* ─── 4. COMMITTEE FLEET & PRESET CHAMBERS ─── */}
+      <CommitteeFleetSection />
 
       {/* ─── 5. BUILT FOR EVERY ROLE ─── */}
       <section className="py-24 border-t border-[#181B21] bg-[#0A0C0F]">

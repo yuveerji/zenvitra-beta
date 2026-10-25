@@ -245,10 +245,10 @@ export const DiasLivePreview: React.FC = () => {
             <div className="space-y-2">
               <div className="p-2.5 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-between text-left">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-sm">🇬🇧</span>
+                  <span className="w-6 h-6 rounded-md bg-[#C5A46D]/15 text-[#E6D1A5] text-[11px] font-bold flex items-center justify-center border border-[#C5A46D]/30">OP</span>
                   <div className="flex flex-col">
-                    <span className="text-xs font-medium text-[#F4F2ED]">United Kingdom</span>
-                    <span className="text-[10px] text-[#9A9DA5]">GSL • #2</span>
+                    <span className="text-xs font-medium text-[#F4F2ED]">Opposition Bench</span>
+                    <span className="text-[10px] text-[#9A9DA5]">Leader of Opposition • #2</span>
                   </div>
                 </div>
                 <DiasBadge variant="charcoal" size="sm">01:30</DiasBadge>
@@ -256,10 +256,10 @@ export const DiasLivePreview: React.FC = () => {
 
               <div className="p-2.5 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-between text-left">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-sm">🇧🇷</span>
+                  <span className="w-6 h-6 rounded-md bg-[#232731] text-[#9A9DA5] text-[11px] font-bold flex items-center justify-center border border-[#2B2F37]">UP</span>
                   <div className="flex flex-col">
-                    <span className="text-xs font-medium text-[#F4F2ED]">Brazil</span>
-                    <span className="text-[10px] text-[#9A9DA5]">GSL • #3</span>
+                    <span className="text-xs font-medium text-[#F4F2ED]">Member for Varanasi</span>
+                    <span className="text-[10px] text-[#9A9DA5]">Uttar Pradesh • #3</span>
                   </div>
                 </div>
                 <DiasBadge variant="charcoal" size="sm">01:30</DiasBadge>
@@ -267,10 +267,10 @@ export const DiasLivePreview: React.FC = () => {
 
               <div className="p-2.5 rounded-xl bg-[#181B21] border border-[#2A2E39] flex items-center justify-between text-left">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-sm">🇿🇦</span>
+                  <span className="w-6 h-6 rounded-md bg-[#232731] text-[#9A9DA5] text-[11px] font-bold flex items-center justify-center border border-[#2B2F37]">KL</span>
                   <div className="flex flex-col">
-                    <span className="text-xs font-medium text-[#F4F2ED]">South Africa</span>
-                    <span className="text-[10px] text-[#9A9DA5]">GSL • #4</span>
+                    <span className="text-xs font-medium text-[#F4F2ED]">Member for Wayanad</span>
+                    <span className="text-[10px] text-[#9A9DA5]">Kerala • #4</span>
                   </div>
                 </div>
                 <DiasBadge variant="charcoal" size="sm">01:30</DiasBadge>
@@ -285,10 +285,10 @@ export const DiasLivePreview: React.FC = () => {
             </span>
             <div className="p-2.5 rounded-xl bg-[#C5A46D]/10 border border-[#C5A46D]/20 text-left space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#E6D1A5]">Motion for Unmoderated Caucus</span>
-                <span className="text-[10px] font-mono text-[#C5A46D]">15 Mins</span>
+                <span className="text-xs font-semibold text-[#E6D1A5]">Division Vote on Clause 4</span>
+                <span className="text-[10px] font-mono text-[#C5A46D]">Recorded</span>
               </div>
-              <p className="text-[11px] text-[#9A9DA5]">Proposed by Delegation of Germany</p>
+              <p className="text-[11px] text-[#9A9DA5]">Proposed by Opposition Bench • Member for Baramati</p>
             </div>
           </div>
         </div>

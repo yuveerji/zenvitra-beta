@@ -80,6 +80,7 @@ export interface DiasWorkspaceProps {
   committeeAcronym?: string;
   topic?: string;
   isIndianCommittee?: boolean;
+  onSwitchToDelegate?: () => void;
 }
 
 export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
@@ -88,6 +89,7 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
   committeeAcronym = 'LOK SABHA',
   topic = 'Delimitation of Constituencies, Federalism & Democratic Governance',
   isIndianCommittee = true,
+  onSwitchToDelegate,
 }) => {
   // ─── Realtime Manager Ref & Connection Status ───
   const [connectionStatus, setConnectionStatus] = useState<DiasConnectionStatus>('CONNECTING');
@@ -111,70 +113,152 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
   const [remainingSec, setRemainingSec] = useState(90);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  // ─── Speaker Stage & Queue ───
-  const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerQueueItem | null>({
-    id: 'spk_1',
-    country: 'Treasury Bench',
-    flag: '🇮🇳',
-    name: 'Hon. Minister of Parliamentary Affairs',
-    position: 1,
-  });
+  // ─── Speaker Stage & Queue (Committee-Aware Portfolios) ───
+  const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerQueueItem | null>(() =>
+    isIndianCommittee
+      ? {
+          id: 'spk_1',
+          country: 'Treasury Bench',
+          flag: '🇮🇳',
+          name: 'Hon. Minister of Parliamentary Affairs',
+          position: 1,
+        }
+      : {
+          id: 'spk_1',
+          country: 'United States',
+          flag: '🇺🇸',
+          name: 'Hon. Ambassador to the United Nations',
+          position: 1,
+        }
+  );
 
-  const [queue, setQueue] = useState<SpeakerQueueItem[]>([
-    {
-      id: 'spk_2',
-      country: 'Opposition Leader',
-      flag: '🇮🇳',
-      name: 'Leader of Opposition (INC)',
-      position: 2,
-    },
-    {
-      id: 'spk_3',
-      country: 'United Kingdom',
-      flag: '🇬🇧',
-      name: 'Hon. Representative of UK',
-      position: 3,
-    },
-    {
-      id: 'spk_4',
-      country: 'France',
-      flag: '🇫🇷',
-      name: 'Hon. Representative of France',
-      position: 4,
-    },
-  ]);
+  const [queue, setQueue] = useState<SpeakerQueueItem[]>(() =>
+    isIndianCommittee
+      ? [
+          {
+            id: 'spk_2',
+            country: 'Opposition Leader',
+            flag: '🇮🇳',
+            name: 'Leader of Opposition (INC)',
+            position: 2,
+          },
+          {
+            id: 'spk_3',
+            country: 'Member for Varanasi',
+            flag: '🇮🇳',
+            name: 'Hon. Member for Varanasi (Uttar Pradesh)',
+            position: 3,
+          },
+          {
+            id: 'spk_4',
+            country: 'Member for Wayanad',
+            flag: '🇮🇳',
+            name: 'Hon. Member for Wayanad (Kerala)',
+            position: 4,
+          },
+          {
+            id: 'spk_5',
+            country: 'Minister of Finance',
+            flag: '🇮🇳',
+            name: 'Hon. Minister of Finance & Corporate Affairs',
+            position: 5,
+          },
+        ]
+      : [
+          {
+            id: 'spk_2',
+            country: 'United Kingdom',
+            flag: '🇬🇧',
+            name: 'Permanent Representative of UK',
+            position: 2,
+          },
+          {
+            id: 'spk_3',
+            country: 'France',
+            flag: '🇫🇷',
+            name: 'Permanent Representative of France',
+            position: 3,
+          },
+          {
+            id: 'spk_4',
+            country: 'Japan',
+            flag: '🇯🇵',
+            name: 'Permanent Representative of Japan',
+            position: 4,
+          },
+          {
+            id: 'spk_5',
+            country: 'Brazil',
+            flag: '🇧🇷',
+            name: 'Permanent Representative of Brazil',
+            position: 5,
+          },
+        ]
+  );
 
   // ─── Quick Add Input ───
-  const [newCountry, setNewCountry] = useState('Germany');
+  const [newCountry, setNewCountry] = useState(() => (isIndianCommittee ? 'Member for Baramati' : 'Germany'));
   const [newDelegateName, setNewDelegateName] = useState('');
 
   // ─── Raised Hands & Pending Motions ───
-  const [raisedHands, setRaisedHands] = useState<string[]>([
-    'Germany',
-    'South Africa',
-    'Brazil',
-  ]);
+  const [raisedHands, setRaisedHands] = useState<string[]>(() =>
+    isIndianCommittee
+      ? ['Member for Varanasi', 'Minister of Finance', 'Member for Hyderabad']
+      : ['Germany', 'South Africa', 'Brazil']
+  );
 
-  const [pendingMotions, setPendingMotions] = useState<ProceduralMotion[]>([
-    {
-      id: 'mot_1',
-      type: 'Moderated Caucus',
-      topic: 'Fiscal Transfers & State Reorganization',
-      proposedBy: 'Germany',
-      totalTimeMin: 15,
-      speakerTimeSec: 60,
-      status: 'PENDING',
-    },
-    {
-      id: 'mot_2',
-      type: 'Point of Order',
-      topic: 'Breach of Rule 377 on floor recognition',
-      proposedBy: 'Opposition Leader',
-      totalTimeMin: 0,
-      speakerTimeSec: 0,
-      status: 'PENDING',
-    },
-  ]);
+  const [pendingMotions, setPendingMotions] = useState<ProceduralMotion[]>(() =>
+    isIndianCommittee
+      ? [
+          {
+            id: 'mot_1',
+            type: 'Calling Attention Notice (Rule 197)',
+            topic: 'Maritime Corridors & Coastal Security',
+            proposedBy: 'Opposition Leader',
+            totalTimeMin: 15,
+            speakerTimeSec: 90,
+            status: 'PENDING',
+          },
+          {
+            id: 'mot_2',
+            type: 'Division Vote on Clause 4',
+            topic: 'Incorporation of Federal Fiscal Guarantee',
+            proposedBy: 'Treasury Bench',
+            totalTimeMin: 10,
+            speakerTimeSec: 60,
+            status: 'PENDING',
+          },
+          {
+            id: 'mot_3',
+            type: 'Short Duration Discussion (Rule 193)',
+            topic: 'Agricultural Price Stabilization & MSP Formula',
+            proposedBy: 'Member for Wayanad',
+            totalTimeMin: 30,
+            speakerTimeSec: 120,
+            status: 'PENDING',
+          },
+        ]
+      : [
+          {
+            id: 'mot_1',
+            type: 'Moderated Caucus',
+            topic: 'Autonomous Weapons Verification Protocols',
+            proposedBy: 'United Kingdom',
+            totalTimeMin: 15,
+            speakerTimeSec: 60,
+            status: 'PENDING',
+          },
+          {
+            id: 'mot_2',
+            type: 'Unmoderated Caucus',
+            topic: 'Draft Resolution Merging & Consolidation',
+            proposedBy: 'France',
+            totalTimeMin: 20,
+            speakerTimeSec: 0,
+            status: 'PENDING',
+          },
+        ]
+  );
 
   // ─── Mobile Drawer Bottom Sheet States ───
   const [mobileDrawer, setMobileDrawer] = useState<'NONE' | 'MODES' | 'QUEUE' | 'MOTIONS'>('NONE');
@@ -528,6 +612,16 @@ export const DiasWorkspace: React.FC<DiasWorkspaceProps> = ({
 
         {/* Right Actions: Audio Toggle & Gavel */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {onSwitchToDelegate && (
+            <button
+              onClick={onSwitchToDelegate}
+              className="px-3 py-1.5 rounded-xl bg-[#181B21] hover:bg-[#20242C] border border-[#2B2F37] text-[#9A9DA5] hover:text-[#F4F2ED] text-xs font-semibold transition-all flex items-center gap-1.5"
+              title="Switch to Delegate Command Centre"
+            >
+              <Users className="w-3.5 h-3.5 text-[#C5A46D]" />
+              <span className="hidden sm:inline">Delegate View</span>
+            </button>
+          )}
           <button
             onClick={() => {
               const next = daisAudio.toggle();

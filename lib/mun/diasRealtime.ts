@@ -15,6 +15,9 @@ export interface DiasRealtimeCallbacks {
   onModeSync?: (mode: string) => void;
   onMotionSync?: (motions: any[]) => void;
   onGavelStrike?: (intensity?: number) => void;
+  onChatSync?: (message: any) => void;
+  onBallotSync?: (ballot: any) => void;
+  onFloorRequest?: (req: any) => void;
   onStatusChange?: (status: DiasConnectionStatus) => void;
 }
 
@@ -77,6 +80,21 @@ export class DiasRealtimeManager {
             this.callbacks.onGavelStrike(payload?.intensity || 1.0);
           }
         })
+        .on('broadcast', { event: 'CHAT_SYNC' }, ({ payload }) => {
+          if (this.callbacks.onChatSync && payload?.message) {
+            this.callbacks.onChatSync(payload.message);
+          }
+        })
+        .on('broadcast', { event: 'BALLOT_SYNC' }, ({ payload }) => {
+          if (this.callbacks.onBallotSync && payload?.ballot) {
+            this.callbacks.onBallotSync(payload.ballot);
+          }
+        })
+        .on('broadcast', { event: 'FLOOR_REQUEST' }, ({ payload }) => {
+          if (this.callbacks.onFloorRequest && payload?.request) {
+            this.callbacks.onFloorRequest(payload.request);
+          }
+        })
         .subscribe((subStatus) => {
           if (subStatus === 'SUBSCRIBED') {
             this.setStatus('CONNECTED');
@@ -101,7 +119,7 @@ export class DiasRealtimeManager {
     return this.status;
   }
 
-  // ─── Broadcasters (Chair Actions) ───
+  // ─── Broadcasters (Chair & Delegate Actions) ───
 
   public broadcastTimer(durationSec: number, remainingSec: number, isRunning: boolean) {
     if (!this.channel || this.status !== 'CONNECTED') return;
@@ -183,6 +201,45 @@ export class DiasRealtimeManager {
       });
     } catch (e) {
       console.warn('Gavel broadcast failed:', e);
+    }
+  }
+
+  public broadcastChat(message: any) {
+    if (!this.channel || this.status !== 'CONNECTED') return;
+    try {
+      this.channel.send({
+        type: 'broadcast',
+        event: 'CHAT_SYNC',
+        payload: { message },
+      });
+    } catch (e) {
+      console.warn('Chat broadcast failed:', e);
+    }
+  }
+
+  public broadcastBallot(ballot: any) {
+    if (!this.channel || this.status !== 'CONNECTED') return;
+    try {
+      this.channel.send({
+        type: 'broadcast',
+        event: 'BALLOT_SYNC',
+        payload: { ballot },
+      });
+    } catch (e) {
+      console.warn('Ballot broadcast failed:', e);
+    }
+  }
+
+  public broadcastFloorRequest(request: any) {
+    if (!this.channel || this.status !== 'CONNECTED') return;
+    try {
+      this.channel.send({
+        type: 'broadcast',
+        event: 'FLOOR_REQUEST',
+        payload: { request },
+      });
+    } catch (e) {
+      console.warn('Floor request broadcast failed:', e);
     }
   }
 

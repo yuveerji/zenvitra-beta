@@ -86,6 +86,7 @@ export function Navbar({
 
   const primaryNavLinks = [
     { name: 'About', href: '/about', icon: Sparkles },
+    { name: 'Dias', href: '/dias', icon: Gavel },
     { name: 'Constitution', href: '/constitution', icon: Scale },
     { name: 'Discussions', href: '/discussions', icon: Radio },
     { name: 'Summits', href: '/events', icon: Calendar },
@@ -96,6 +97,7 @@ export function Navbar({
   const secondaryNavLinks = [
     { name: 'About Zenvitra', href: '/about', icon: Sparkles, tag: 'Genesis', desc: 'The Foundational Architecture, 4 Chambers & Sovereign Mission' },
     { name: 'ZEN.APPS', href: '/apps', icon: Orbit, tag: 'Mind Map', desc: 'Interactive 360° Circular Ecosystem Mind Map & 7 Radial Clusters' },
+    { name: 'ZENVITRA MUN DIAS', href: '/dias', icon: Gavel, tag: 'Summit OS', desc: 'Live Diplomatic Floor, Procedural Gavel & Parliamentary Control' },
     { name: 'Model UN CV', href: '/cv', icon: Award, tag: 'Dossier', desc: 'Sovereign Diplomatic MUN CV, Verified Accreditations & Track Record' },
     { name: "Who's Core Team", href: '/team', icon: Users, tag: 'Leadership', desc: "Who's Your Core Team? Sovereign Leadership, Co-Founders & Architects" },
     { name: 'ZEN.PASSPORT', href: '/passport', icon: ShieldCheck, tag: 'Identity', desc: 'Permanent Sovereign Identity, Verified Credentials & QR Terminal' },
