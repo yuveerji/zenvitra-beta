@@ -1,18 +1,20 @@
 /**
  * ==============================================================================
- * ZENVITRA MASTER OMNI-STREAM TELEMETRY & FORMS ENGINE (v3.0 ENTERPRISE)
+ * ZENVITRA MASTER OMNI-STREAM TELEMETRY & FORMS ENGINE (v3.1.0 ENTERPRISE)
  * ==============================================================================
  * Comprehensive, Zero-Timeout, High-Detail Sheet Engine with:
- * - 13 Canonical Operational Stream Tabs (100% of Form & Telemetry Questions Added)
- * - Zero Confusing Duplicate Tabs (Auto-merges legacy 02_, 12_, 10_ numbered tabs)
+ * - 16 Canonical Operational Stream Tabs (100% of Form & Telemetry Questions Added)
+ * - Ultra-Detailed Core Team Applications, Register Data Core, & Event Registrations
+ * - Zero Confusing Duplicate Tabs (Auto-merges legacy 02_, 12_, 04_, 10_ numbered tabs)
  * - Seamless Multi-Tab Sync (Instantly reflects updates across all related registers)
  * - Row 1 Sticky Obsidian Headers & Smart Row Ingestion starting at Row 2
- * - Dynamic Column Expansion for custom ZenForms questions
+ * - Dynamic Column Expansion for custom ZenForms questions with full question spaces
+ * - Nested Data & Array Auto-Unnesting (Checkboxes & Multi-Select Choices flattened)
  * 
  * ==============================================================================
  * 🚀 QUICK DEPLOYMENT INSTRUCTIONS (30 SECONDS):
  * ==============================================================================
- * 1. Open your Google Sheet.
+ * 1. Open your Google Sheet (e.g. ZENVITRA Master Telemetry).
  * 2. Click "Extensions" -> "Apps Script".
  * 3. Delete ANY existing code in Code.gs and PASTE THIS ENTIRE FILE.
  * 4. Click "Save" (Ctrl+S / Cmd+S).
@@ -20,16 +22,16 @@
  *    (If prompted with "Authorization required", click Review Permissions -> Advanced -> Go to project -> Allow).
  * 6. Click "Deploy" (top right) -> "New deployment":
  *    - Click the gear icon next to "Select type" -> choose "Web app".
- *    - Description: Zenvitra Master Telemetry v3.0
+ *    - Description: Zenvitra Master Telemetry v3.1 Enterprise
  *    - Execute as: "Me" (your email)
  *    - Who has access: "Anyone" (CRITICAL: must be Anyone!)
  *    - Click "Deploy", authorize if prompted, and COPY the Web App URL!
- * 7. (Optional) Run "testRow" to verify live row insertion into Row 2!
+ * 7. (Optional) Run "testAllTabsRow" or use the "⚡ ZENVITRA" spreadsheet menu to verify live row insertion!
  * ==============================================================================
  */
 
 var ZEN = {
-  VERSION: "v3.0.0",
+  VERSION: "v3.1.0",
   TIMEZONE: "Asia/Kolkata",
   C: {
     OBSIDIAN: "#0f172a",
@@ -43,7 +45,7 @@ var ZEN = {
 };
 
 /**
- * ── 13 EXHAUSTIVE CANONICAL TAB SCHEMAS ──
+ * ── 16 EXHAUSTIVE CANONICAL TAB SCHEMAS ──
  * Every question from every registration form, MUN matrix, summit, ambassador,
  * core team, and custom ZenForm is explicitly mapped into dedicated columns.
  */
@@ -66,16 +68,17 @@ var TAB_SCHEMAS = {
       'Parent / Guardian Emergency Contact',
       'Minor Consent & Parental Accord',
       'Primary Registration Category / Role',
-      'Specialized Interest Areas',
+      'Specialized Interest Areas / Portfolio Interests',
       'Campus Ambassador Fellowship Application',
-      'Statement of Intent / Vision',
+      'Statement of Intent / Motivation Pitch',
       'College / School / Organization',
       'Degree / Year of Study / Grade',
       'Geographical Location (City, State / Country)',
+      'Preferred Delegation / Committee Track',
       'Registration Type (REGISTER / PREREGISTER)',
       'Registration Status for Perks (REGISTER / PREREGISTER)',
       'Access Level / Whitelist Tier',
-      'Auth Provider',
+      'Auth Provider / Method',
       'Terms & Privacy Accord Ratified',
       'Civic Decorum Covenant Ratified',
       'Data Storage & Telemetry Consent',
@@ -88,11 +91,13 @@ var TAB_SCHEMAS = {
   // ── TAB 2: CONFERENCE, SUMMIT & DELEGATE PASS REGISTRATIONS ──
   EVENTS: {
     sheetName: 'Event Registrations',
-    legacyAliases: ['12 Event Registrations', '12_EVENT_REGISTRATIONS', 'ZEN DIPLOMACY MUN'],
+    legacyAliases: ['12 Event Registrations', '12_EVENT_REGISTRATIONS', 'ZEN DIPLOMACY MUN', '11 Events'],
     headers: [
       'Timestamp',
       'Registration ID / Ticket ID',
+      'Event ID / Conference Title',
       'Full Name of the Delegate',
+      'Zenvitra Sovereign Username (@handle)',
       'Primary Contact Email Address',
       'WhatsApp / Calling Number',
       'School / College / University or Independent',
@@ -108,9 +113,9 @@ var TAB_SCHEMAS = {
       'Guardian Emergency Contact Number',
       'Institutional ID Card / Drive Link / Roll Number',
       'Diplomatic Code of Conduct & Ethics Agreement',
-      'Zenvitra Sovereign Username (@handle)',
       'Virtual Chamber Live Stream & Recording Consent',
       'Selected Delegation Pass Tier',
+      'Pass Quantity',
       'Total Pass Fee (INR)',
       'Preferred Payment Mode',
       '12-Digit UPI Transaction ID / UTR Number',
@@ -127,7 +132,40 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 3: CAMPUS AMBASSADOR FELLOWSHIP APPLICATIONS ──
+  // ── TAB 3: FOUNDING CORE TEAM APPLICATIONS ──
+  CORE_TEAM: {
+    sheetName: 'Core Team Applications',
+    legacyAliases: ['04 Team Applications', '04_TEAM_APPLICATIONS', 'Team Applications'],
+    headers: [
+      'Timestamp',
+      'Application ID',
+      'Full Legal Name',
+      'Desired ZEN Handle (@handle)',
+      'Primary Email Address',
+      'WhatsApp / Calling Phone Number',
+      'Telegram / Discord Contact Channel',
+      'Current City / Location & Timezone',
+      'Role Applied For',
+      'Department / Wing (Primary Choice)',
+      'Secondary Department Choice (Fallback)',
+      'Portfolio / GitHub / Proof of Work URL',
+      'Uploaded Dossier Document / Resume URL',
+      'Past Experience & Leadership Track Record',
+      'Statement of Purpose & Motivation (Why Lead Zenvitra)',
+      'Technical / Diplomatic Dossier & Strategic Vision',
+      'Department Practical Task Response / Execution Plan',
+      'Weekly Bandwidth Commitment (Hours/Week)',
+      'Full Availability on Launch & Summit Days',
+      'Constitutional Accord Status (RATIFIED / DECLINED)',
+      'Application Review Status (QUEUED / PENDING / APPROVED / REJECTED)',
+      'Assigned Reviewer / Secretariat Directorate',
+      'Directorate Reviewer Notes',
+      'IP Address',
+      'Device / Browser Summary'
+    ]
+  },
+
+  // ── TAB 4: CAMPUS AMBASSADOR FELLOWSHIP APPLICATIONS ──
   CAMPUS_AMBASSADOR: {
     sheetName: 'Campus Ambassadors',
     legacyAliases: ['10 Campus Ambassadors', '10_CAMPUS_AMBASSADORS'],
@@ -141,6 +179,7 @@ var TAB_SCHEMAS = {
       'College / University / School Name',
       'Campus Location (City & State)',
       'Degree, Major & Year of Study',
+      'Student ID Card / Proof Link',
       'Estimated Student Reach via Societies / Councils',
       'Weekly Bandwidth Commitment',
       'Prior Leadership & Organizing Experience',
@@ -152,29 +191,28 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 4: FOUNDING CORE TEAM APPLICATIONS ──
-  CORE_TEAM: {
-    sheetName: 'Core Team Applications',
-    legacyAliases: ['04 Team Applications', '04_TEAM_APPLICATIONS'],
+  // ── TAB 5: SECRETARIAT & EXECUTIVE BOARD (DAIS) APPLICATIONS ──
+  SECRETARIAT: {
+    sheetName: 'Secretariat Applications',
+    legacyAliases: ['15 EB Secretariat', '15_EB_SECRETARIAT', 'Executive Board Applications'],
     headers: [
       'Timestamp',
       'Application ID',
       'Full Legal Name',
-      'Zenvitra Sovereign Username (@handle)',
-      'Primary Contact Email Address',
-      'WhatsApp Phone Number',
-      'Telegram / Discord Handle',
-      'Role Applied For',
-      'Primary Department Choice',
-      'Secondary Department Choice (Fallback)',
-      'Portfolio / GitHub / Proof of Work URL',
-      'Uploaded Dossier Document / Resume URL',
-      'Leadership Accomplishments & Track Record',
-      'Strategic Vision & Impact Statement',
-      'Department Practical Task Response / Execution Plan',
-      'Estimated Weekly Bandwidth Commitment',
-      'Full Availability on Launch & Summit Days',
-      'Constitutional Accord Status (RATIFIED / PENDING)',
+      'Sovereign Handle (@handle)',
+      'Primary Email Address',
+      'Contact Phone / WhatsApp',
+      'Current City & Country',
+      'College / School / Affiliation',
+      'EB Role Applied For (Chair / Vice Chair / Rapporteur)',
+      '1st Preference Committee',
+      '2nd Preference Committee',
+      'Prior Dais & Chairing Experience (Number of MUNs)',
+      'Detailed Executive Board Experience & Awards',
+      'Procedural Knowledge & ROP Mastery (UNA-USA / HMUN / Indian Parliamentary)',
+      'Sample Study Guide / Background Guide URL',
+      'Statement of Purpose & Dais Leadership Philosophy',
+      'Availability on Conference Dates',
       'Application Review Status',
       'Directorate Reviewer Notes',
       'IP Address',
@@ -182,7 +220,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 5: AUTHENTICATION AUDIT & SECURITY TELEMETRY ──
+  // ── TAB 6: AUTHENTICATION AUDIT & SECURITY TELEMETRY ──
   LOGIN_CORE: {
     sheetName: 'Login Data Core',
     legacyAliases: ['03 Login Activity', '03_LOGIN_ACTIVITY'],
@@ -190,9 +228,9 @@ var TAB_SCHEMAS = {
       'Timestamp',
       'Login Event ID',
       'User ID / Person ID',
-      'Full Name',
-      'Email Address',
-      'Username / Handle',
+      'Full Legal Name',
+      'Primary Email Address',
+      'Sovereign Username / Handle (@handle)',
       'Auth Provider',
       'Event Type',
       'Login Status / Outcome',
@@ -203,7 +241,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 6: CHARITY, RELIEF & DONATION CONTRIBUTIONS ──
+  // ── TAB 7: CHARITY, RELIEF & DONATION CONTRIBUTIONS ──
   DONATIONS: {
     sheetName: 'Donations & Relief',
     legacyAliases: ['Donations', '20 Donations Charity', '20_DONATIONS_CHARITY'],
@@ -227,7 +265,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 7: PUBLIC TRANSPARENCY & IMPACT AUDIT LEDGER ──
+  // ── TAB 8: PUBLIC TRANSPARENCY & IMPACT AUDIT LEDGER ──
   IMPACT_LEDGER: {
     sheetName: 'Impact Ledger',
     legacyAliases: ['Public Impact Ledger'],
@@ -246,7 +284,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 8: DIPLOMATIC & PUBLIC CONTACT INQUIRIES ──
+  // ── TAB 9: DIPLOMATIC & PUBLIC CONTACT INQUIRIES ──
   CONTACT: {
     sheetName: 'Contact Inquiries',
     legacyAliases: ['06 Contact Inquiries', '06_CONTACT_INQUIRIES'],
@@ -266,7 +304,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 9: NEWSLETTER & EMAIL CONSENT SUBSCRIBERS ──
+  // ── TAB 10: NEWSLETTER & EMAIL CONSENT SUBSCRIBERS ──
   NEWSLETTER: {
     sheetName: 'Newsletter Subscribers',
     legacyAliases: ['07 Newsletter Subscribers', '07_NEWSLETTER_SUBSCRIBERS'],
@@ -282,7 +320,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 10: INSTITUTIONAL COLLABORATIONS & PARTNERSHIPS ──
+  // ── TAB 11: INSTITUTIONAL COLLABORATIONS & PARTNERSHIPS ──
   COLLAB: {
     sheetName: 'Collab & Partnerships',
     legacyAliases: ['08 Collaborations', '08_COLLABORATIONS'],
@@ -302,7 +340,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 11: GRASSROOTS YOUTH COMMUNITY MEMBERS ──
+  // ── TAB 12: GRASSROOTS YOUTH COMMUNITY MEMBERS ──
   COMMUNITY: {
     sheetName: 'Community Members',
     legacyAliases: ['09 Community Members', '09_COMMUNITY_MEMBERS'],
@@ -322,7 +360,7 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 12: USER FEEDBACK, CSAT & GRIEVANCE TICKETS ──
+  // ── TAB 13: USER FEEDBACK, CSAT & GRIEVANCE TICKETS ──
   FEEDBACK: {
     sheetName: 'Feedback & Grievance',
     legacyAliases: ['23 Feedback', '23_FEEDBACK', '24 Grievances'],
@@ -346,7 +384,54 @@ var TAB_SCHEMAS = {
     ]
   },
 
-  // ── TAB 13: UNIVERSAL FORM SUBMISSIONS REPOSITORY ──
+  // ── TAB 14: SUPPORT CASES & RESOLUTION HELPDESK ──
+  SUPPORT: {
+    sheetName: 'Support Cases',
+    legacyAliases: ['25 Support Cases', '25_SUPPORT_CASES', 'Support Tickets'],
+    headers: [
+      'Timestamp',
+      'Ticket ID',
+      'Submitter Full Name',
+      'Contact Email Address',
+      'Sovereign Handle (@handle)',
+      'Phone Number',
+      'Category / Domain',
+      'Subject / Issue Summary',
+      'Detailed Description',
+      'Severity / Priority Level',
+      'Attachment / Screenshot URL',
+      'Ticket Status (OPEN / IN_PROGRESS / RESOLVED / CLOSED)',
+      'Assigned Agent / Directorate',
+      'Resolution Notes',
+      'IP Address',
+      'Device / Browser Summary'
+    ]
+  },
+
+  // ── TAB 15: PAYMENTS & CASHFREE SETTLEMENT AUDIT ──
+  PAYMENTS: {
+    sheetName: 'Payments',
+    legacyAliases: ['18 Payments', '18_PAYMENTS', 'Payment Transactions'],
+    headers: [
+      'Timestamp',
+      'Payment ID / Order ID',
+      'Customer Full Name',
+      'Customer Email',
+      'Customer Phone',
+      'Item / Pass / Event Name',
+      'Amount (INR)',
+      'Payment Mode (UPI / Card / NetBanking / Cashfree)',
+      'UPI UTR / Bank Reference Number',
+      'Gateway Order ID / Session ID',
+      'Payment Status (SUCCESS / PENDING / FAILED / REFUNDED)',
+      'Payment Receipt / Proof URL',
+      'Reconciliation Status',
+      'IP Address',
+      'Device / Browser Summary'
+    ]
+  },
+
+  // ── TAB 16: UNIVERSAL FORM SUBMISSIONS REPOSITORY ──
   FORMS: {
     sheetName: 'Form Submissions',
     legacyAliases: ['45 Form Submissions', '45_FORM_SUBMISSIONS'],
@@ -394,7 +479,6 @@ function initAllTabs() {
                 try {
                   var oldData = oldSh.getDataRange().getValues();
                   if (oldData.length > 1) {
-                    // Append old data rows to canonical sheet
                     for (var r = 1; r < oldData.length; r++) {
                       smartAppendRow_(canonicalSheet, oldData[r]);
                     }
@@ -448,11 +532,14 @@ function initAllTabs() {
 function onOpen() {
   try {
     var ui = SpreadsheetApp.getUi();
-    ui.createMenu('⚡ ZENVITRA MASTER')
-      .addItem('🚀 1-Click Setup & Initialize Tabs', 'initAllTabs')
-      .addItem('🧪 Insert Test Registration Row', 'testRow')
-      .addItem('🔄 Refresh & Format Headers', 'refreshHeaders_')
-      .addItem('🧹 Clean Duplicate Tabs', 'initAllTabs')
+    ui.createMenu('⚡ ZENVITRA')
+      .addItem('⚡ Initialize / Sync All Tabs (Clean Duplicates)', 'initAllTabs')
+      .addItem('🎨 Refresh Dark Obsidian Header Styling', 'refreshHeaders_')
+      .addSeparator()
+      .addItem('🧪 Insert Test Row — Register Data Core', 'testRegisterCoreRow')
+      .addItem('🧪 Insert Test Row — Core Team Applications', 'testCoreTeamRow')
+      .addItem('🧪 Insert Test Row — Event Registrations', 'testEventRegistrationRow')
+      .addItem('🧪 Populate All Tabs with Detailed Sample Rows', 'testAllTabsRow')
       .addToUi();
   } catch (e) {}
 }
@@ -530,9 +617,9 @@ function smartAppendRow_(sheet, rowData) {
 }
 
 /**
- * 🧪 Test function to immediately verify row writing
+ * 🧪 Test Row for Register Data Core
  */
-function testRow() {
+function testRegisterCoreRow() {
   var ss = getOrCreateSpreadsheet();
   initAllTabs();
 
@@ -568,9 +655,116 @@ function testRow() {
     var row = headers.map(function(h) { return safe_(lookupVal(testPayload, h)); });
     var writtenRow = smartAppendRow_(targetSheet, row);
     SpreadsheetApp.getActiveSpreadsheet().toast('Test row appended at Row ' + writtenRow + ' in Register Data Core!', '🧪 Test Passed', 5);
-    return { ok: true, row: writtenRow };
+    return { ok: true, tab: 'Register Data Core', row: writtenRow };
   }
   return { ok: false, error: 'Sheet not found' };
+}
+
+/**
+ * 🧪 Test Row for Core Team Applications
+ */
+function testCoreTeamRow() {
+  var ss = getOrCreateSpreadsheet();
+  initAllTabs();
+
+  var testCorePayload = {
+    applicationId: 'COR-TEST-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    fullName: 'Aryavart Rathore (Founding Architect)',
+    handle: '@aryavart_core',
+    email: 'aryavart@zenvitra.xyz',
+    phoneNumber: '+91 98111 22233',
+    contactChannel: 'Discord: aryavart#2026 / Telegram: @aryavart_zen',
+    locationTimezone: 'Bengaluru, India (IST / UTC+5:30)',
+    roleAppliedFor: 'Head of Technical Systems & Real-time Architecture',
+    department: 'Directorate of Technical Infrastructure',
+    portfolioUrl: 'https://github.com/aryavart-core / https://aryavart.zenvitra.xyz',
+    dossierUploadUrl: 'https://drive.google.com/file/d/zen-dossier-example/view',
+    pastExperience: 'Senior systems engineer with 5+ years experience building distributed real-time platforms and event engines.',
+    motivationStatement: 'To establish Zenvitra as the undisputed global operating system for diplomacy, youth discourse, and high-stakes parliamentary procedure.',
+    technicalOrDiplomaticDossier: 'Architectural blueprint for zero-latency WebSockets, real-time gavel synchronization, and fault-tolerant multi-master state replication.',
+    practicalTaskResponse: 'Detailed 90-day execution roadmap for global committee scaling and low-bandwidth fallback mechanisms.',
+    weeklyBandwidth: '30+ hours / week (Full Commitment)',
+    constitutionalAccordAccepted: 'RATIFIED',
+    applicationStatus: 'QUEUED',
+    reviewerNotes: 'Verified candidate for technical council leadership review.',
+    targetTab: 'Core Team Applications'
+  };
+
+  var targetSheet = getSheetLoose_(ss, 'Core Team Applications');
+  if (targetSheet) {
+    var headers = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
+    var row = headers.map(function(h) { return safe_(lookupVal(testCorePayload, h)); });
+    var writtenRow = smartAppendRow_(targetSheet, row);
+    SpreadsheetApp.getActiveSpreadsheet().toast('Test row appended at Row ' + writtenRow + ' in Core Team Applications!', '🧪 Test Passed', 5);
+    return { ok: true, tab: 'Core Team Applications', row: writtenRow };
+  }
+  return { ok: false, error: 'Sheet not found' };
+}
+
+/**
+ * 🧪 Test Row for Event Registrations
+ */
+function testEventRegistrationRow() {
+  var ss = getOrCreateSpreadsheet();
+  initAllTabs();
+
+  var testEventPayload = {
+    ticketId: 'ZV-TKT-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+    eventId: 'zen-diplomacy-2026',
+    eventName: 'ZENVITRA Model United Nations 2026',
+    fullName: 'Kabir Singhania (Delegate of France)',
+    handle: '@kabir_mun',
+    email: 'kabir.delegate@stxaviers.edu',
+    phoneNumber: '+91 99887 76655',
+    institution: 'St. Xavier’s Collegiate School',
+    city: 'Kolkata, West Bengal',
+    participationTrack: 'Independent Youth Diplomat',
+    step2_experience_level: 'Veteran (10+ MUNs / Multiple Best Delegate Awards)',
+    step3_primary_committee: 'United Nations Security Council (UNSC)',
+    step4_secondary_committee: 'Disarmament and International Security Committee (DISEC)',
+    step5_portfolios: '1. France, 2. United Kingdom, 3. United States',
+    step6_prior_awards: 'Best Delegate (HMUN 2025), High Commendation (ILSMUN 2024)',
+    step7_sop: 'Focused on multilateral non-proliferation enforcement and automated crisis directives.',
+    step8_guardian_name: 'Rajesh Singhania',
+    step8_guardian_phone: '+91 99887 00000',
+    step9_id_proof: 'https://drive.google.com/file/d/student-id-proof/view',
+    step10_ethics: 'CONFIRMED & RATIFIED',
+    step12_media_consent: 'GRANTED',
+    step13_participation_tier: 'Genesis Sovereign Pass',
+    quantity: 1,
+    totalPrice: '₹1499',
+    step15_payment_method: 'UPI / Direct Gateway',
+    step15_utr_reference: '482910394829',
+    step15_receipt_link: 'https://drive.google.com/file/d/upi-receipt/view',
+    step14_signature: 'Kabir Singhania',
+    paymentStatus: 'CONFIRMED',
+    targetTab: 'Event Registrations'
+  };
+
+  var targetSheet = getSheetLoose_(ss, 'Event Registrations');
+  if (targetSheet) {
+    var headers = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
+    var row = headers.map(function(h) { return safe_(lookupVal(testEventPayload, h)); });
+    var writtenRow = smartAppendRow_(targetSheet, row);
+    SpreadsheetApp.getActiveSpreadsheet().toast('Test row appended at Row ' + writtenRow + ' in Event Registrations!', '🧪 Test Passed', 5);
+    return { ok: true, tab: 'Event Registrations', row: writtenRow };
+  }
+  return { ok: false, error: 'Sheet not found' };
+}
+
+/**
+ * 🧪 Test all primary tabs
+ */
+function testAllTabsRow() {
+  testRegisterCoreRow();
+  testCoreTeamRow();
+  testEventRegistrationRow();
+  SpreadsheetApp.getActiveSpreadsheet().toast('Detailed sample rows populated across Core Registrations, Core Team, and Events!', '🧪 Complete Test Suite', 6);
+  return { ok: true, message: 'All test rows appended successfully' };
+}
+
+function testRow() {
+  return testRegisterCoreRow();
 }
 
 /**
@@ -590,6 +784,15 @@ function doPost(e) {
       payload = JSON.parse(e.postData.contents);
     } catch (parseErr) {
       return json_({ ok: false, error: "malformed_json", message: parseErr.toString() });
+    }
+
+    // Unnest payload.data if dispatch wrapped payload under a data key
+    if (payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data)) {
+      for (var dKey in payload.data) {
+        if (payload.data.hasOwnProperty(dKey) && payload[dKey] === undefined) {
+          payload[dKey] = payload.data[dKey];
+        }
+      }
     }
 
     var ss = getOrCreateSpreadsheet();
@@ -725,7 +928,7 @@ function doPost(e) {
     }
 
     // ── CANONICAL 01 PEOPLE DIRECTORY AUTO-UPSERT ──
-    var userEmail = payload.email || payload.Email || payload.primaryEmail || payload.participantEmail;
+    var userEmail = payload.email || payload.Email || payload.primaryEmail || payload.participantEmail || payload.officialEmail;
     if (userEmail) {
       try {
         upsertPersonRecord_(ss, payload, userEmail);
@@ -764,8 +967,8 @@ function doGet(e) {
       return json_(initAllTabs());
     }
 
-    if (action === 'TEST') {
-      return json_(testRow());
+    if (action === 'TEST' || action === 'TEST_ROW') {
+      return json_(testAllTabsRow());
     }
 
     var ss = getOrCreateSpreadsheet();
@@ -790,10 +993,10 @@ function upsertPersonRecord_(ss, payload, email) {
   if (!personSh) return;
 
   var personId = payload.userId || payload.personId || ('PER-' + shortHash_(email).toUpperCase());
-  var fullName = payload.fullName || payload.name || payload.legalName || payload.participantName || 'Sovereign Citizen';
+  var fullName = payload.fullName || payload.name || payload.legalName || payload.participantName || payload.candidateName || 'Sovereign Citizen';
   var username = payload.username || payload.preferredHandle || payload.handle || email.split('@')[0];
-  var phone = payload.phoneNumber || payload.phone || payload.contactNumber || '';
-  var countryCity = payload.countryCity || payload.city || payload.location || 'Global';
+  var phone = payload.phoneNumber || payload.phone || payload.contactNumber || payload.contactPhone || '';
+  var countryCity = payload.countryCity || payload.city || payload.location || payload.locationTimezone || 'Global';
   var isPre = String(payload.registrationStatus || payload.registrationType || '').toUpperCase().includes('PRE');
   var accountType = isPre ? 'Pre-Registered Whitelist' : 'Direct Member';
 
@@ -818,6 +1021,7 @@ function resolveSchemaKey(raw) {
   if (s.indexOf('EVENT') !== -1 || s.indexOf('PASS') !== -1 || s.indexOf('TICKET') !== -1 || s.indexOf('SUMMIT') !== -1 || s.indexOf('12 ') !== -1 || s.indexOf('MUN') !== -1) return 'EVENTS';
   if (s.indexOf('AMBASSADOR') !== -1 || s.indexOf('CAMPUS') !== -1 || s.indexOf('10 ') !== -1) return 'CAMPUS_AMBASSADOR';
   if (s.indexOf('CORE TEAM') !== -1 || s.indexOf('TEAM APPL') !== -1 || s.indexOf('04 ') !== -1 || s.indexOf('CAREER') !== -1) return 'CORE_TEAM';
+  if (s.indexOf('SECRETARIAT') !== -1 || s.indexOf('15 ') !== -1 || s.indexOf('EB ') !== -1 || s.indexOf('EXECUTIVE BOARD') !== -1) return 'SECRETARIAT';
   if (s.indexOf('CONTACT') !== -1 || s.indexOf('INQUIR') !== -1 || s.indexOf('06 ') !== -1) return 'CONTACT';
   if (s.indexOf('NEWSLETTER') !== -1 || s.indexOf('SUBSCRIB') !== -1 || s.indexOf('07 ') !== -1) return 'NEWSLETTER';
   if (s.indexOf('COLLAB') !== -1 || s.indexOf('PARTNER') !== -1 || s.indexOf('08 ') !== -1) return 'COLLAB';
@@ -825,6 +1029,8 @@ function resolveSchemaKey(raw) {
   if (s.indexOf('DONAT') !== -1 || s.indexOf('20 ') !== -1) return 'DONATIONS';
   if (s.indexOf('IMPACT') !== -1 || s.indexOf('LEDGER') !== -1) return 'IMPACT_LEDGER';
   if (s.indexOf('FEEDBACK') !== -1 || s.indexOf('GRIEVANCE') !== -1 || s.indexOf('23 ') !== -1) return 'FEEDBACK';
+  if (s.indexOf('SUPPORT') !== -1 || s.indexOf('25 ') !== -1 || (s.indexOf('TICKET') !== -1 && s.indexOf('PASS') === -1)) return 'SUPPORT';
+  if (s.indexOf('PAYMENT') !== -1 || s.indexOf('18 ') !== -1 || s.indexOf('CASHFREE') !== -1) return 'PAYMENTS';
   if (s.indexOf('FORM') !== -1 || s.indexOf('SUBMISSION') !== -1 || s.indexOf('45 ') !== -1) return 'FORMS';
 
   return null;
@@ -872,19 +1078,41 @@ function lookupVal(data, header) {
     }
   }
 
-  // 4. Semantic field mapping covering ALL question fields and telemetry
+  // 4. Nested data lookup if payload has a child object
+  if (data.data && typeof data.data === 'object') {
+    if (data.data[header] !== undefined && data.data[header] !== null && data.data[header] !== "") {
+      return data.data[header];
+    }
+    for (var dk in data.data) {
+      if (data.data.hasOwnProperty(dk) && dk.toLowerCase() === hLower) {
+        if (data.data[dk] !== undefined && data.data[dk] !== null && data.data[dk] !== "") return data.data[dk];
+      }
+    }
+    for (var dk2 in data.data) {
+      if (data.data.hasOwnProperty(dk2)) {
+        var dkAlpha = dk2.toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (dkAlpha === hAlpha && data.data[dk2] !== undefined && data.data[dk2] !== null && data.data[dk2] !== "") {
+          return data.data[dk2];
+        }
+      }
+    }
+  }
+
+  // 5. Semantic field mapping covering ALL question fields and telemetry
 
   // ── TIMESTAMP / DATE OF SUBMISSION ──
   if (hAlpha.indexOf("timestamp") !== -1 || hAlpha.indexOf("dateofsubmission") !== -1 || hAlpha.indexOf("submissiondate") !== -1 || hAlpha.indexOf("createdat") !== -1) {
     if (data.step14_submission_date) return String(data.step14_submission_date);
     if (data.submissionDate) return String(data.submissionDate);
+    if (data.submittedAt) return String(data.submittedAt);
     if (data.timestamp) return String(data.timestamp);
+    if (data.createdAt) return String(data.createdAt);
     return Utilities.formatDate(new Date(), ZEN.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
   }
 
-  // ── USERNAME / SOVEREIGN HANDLE (CHECKED FIRST TO PREVENT FULL NAME OVERWRITE) ──
-  if (hAlpha.indexOf("username") !== -1 || hAlpha.indexOf("handle") !== -1 || hAlpha.indexOf("displayname") !== -1) {
-    var rawHandle = data.preferredHandle || data.username || data.handle || data.cleanHandle || data.step11_zenvitra_handle || data.displayName || data.submitterHandle || "";
+  // ── USERNAME / SOVEREIGN HANDLE ──
+  if (hAlpha.indexOf("username") !== -1 || hAlpha.indexOf("handle") !== -1 || hAlpha.indexOf("zenhandle") !== -1 || hAlpha.indexOf("sovereignhandle") !== -1) {
+    var rawHandle = data.desiredHandle || data.preferredHandle || data.handle || data.username || data.cleanHandle || data.step11_zenvitra_handle || data.displayName || data.submitterHandle || "";
     if (rawHandle) {
       return (String(rawHandle).startsWith('@') ? '' : '@') + String(rawHandle).replace(/[^a-zA-Z0-9_]/g, '');
     }
@@ -897,18 +1125,28 @@ function lookupVal(data, header) {
   }
 
   // ── FULL LEGAL NAME / PARTICIPANT / DELEGATE NAME ──
-  if (hAlpha.indexOf("name") !== -1 && hAlpha.indexOf("parent") === -1 && hAlpha.indexOf("guardian") === -1 && hAlpha.indexOf("org") === -1 && hAlpha.indexOf("event") === -1 && hAlpha.indexOf("teamlead") === -1) {
-    return data.fullName || data.fullLegalName || data.step1_fullname || data.amb_fullname || data.participantName || data.legalName || data.name || data.submitterName || data.donorName || "Sovereign Citizen";
+  if (hAlpha.indexOf("name") !== -1 && hAlpha.indexOf("parent") === -1 && hAlpha.indexOf("guardian") === -1 && hAlpha.indexOf("org") === -1 && hAlpha.indexOf("event") === -1 && hAlpha.indexOf("teamlead") === -1 && hAlpha.indexOf("rep") === -1) {
+    return data.fullName || data.fullLegalName || data.name || data.legalName || data.participantName || data.attendeeName || data.step1_fullname || data.amb_fullname || data.submitterName || data.donorName || data.customerName || "Sovereign Citizen";
   }
 
   // ── EMAIL ADDRESS ──
   if (hAlpha.indexOf("email") !== -1 && hAlpha.indexOf("guardian") === -1 && hAlpha.indexOf("reviewer") === -1 && hAlpha.indexOf("lead") === -1) {
-    return data.email || data.primaryEmail || data.step1_email || data.amb_email || data.participantEmail || data.donorEmail || data.officialEmail || "";
+    return data.email || data.primaryEmail || data.contactEmail || data.step1_email || data.amb_email || data.participantEmail || data.attendeeEmail || data.donorEmail || data.officialEmail || data.subscriberEmail || data.customerEmail || "";
   }
 
   // ── PHONE NUMBER / WHATSAPP / CALLING ──
   if ((hAlpha.indexOf("phone") !== -1 || hAlpha.indexOf("whatsapp") !== -1 || hAlpha.indexOf("calling") !== -1 || hAlpha.indexOf("contactnumber") !== -1) && hAlpha.indexOf("guardian") === -1 && hAlpha.indexOf("emergency") === -1) {
-    return data.phoneNumber || data.phone || data.step1_phone || data.amb_phone || data.contactNumber || data.contactPhone || data.phoneWhatsapp || "N/A";
+    return data.phoneNumber || data.phone || data.whatsapp || data.contactPhone || data.contactNumber || data.step1_phone || data.amb_phone || data.attendeePhone || data.phoneWhatsapp || data.donorPhone || "N/A";
+  }
+
+  // ── TELEGRAM / DISCORD CONTACT CHANNEL ──
+  if (hAlpha.indexOf("telegram") !== -1 || hAlpha.indexOf("discord") !== -1 || hAlpha.indexOf("contactchannel") !== -1) {
+    return data.contactChannel || data.discordHandle || data.telegramHandle || data.discord || data.telegram || data.step4_discord_handle || "N/A";
+  }
+
+  // ── LOCATION / CITY / TIMEZONE / STATE ──
+  if (hAlpha.indexOf("city") !== -1 || hAlpha.indexOf("country") !== -1 || hAlpha.indexOf("location") !== -1 || hAlpha.indexOf("timezone") !== -1 || hAlpha.indexOf("state") !== -1) {
+    return data.locationTimezone || data.location || data.city || data.countryCity || data.step1_city || data.cityState || data.cityRegion || data.campusLocation || "Pan-India / Global";
   }
 
   // ── AGE (YEARS) ──
@@ -946,8 +1184,76 @@ function lookupVal(data, header) {
   }
 
   // ── ROLE DESIGNATION / PLATFORM TRACK / CATEGORY ──
+  if (hAlpha.indexOf("roleapplied") !== -1) {
+    return data.roleAppliedFor || data.roleApplied || data.role || data.department || "Executive Leadership";
+  }
   if (hAlpha.indexOf("roledesignation") !== -1 || (hAlpha.indexOf("category") !== -1 && hAlpha.indexOf("role") !== -1) || (hAlpha.indexOf("role") !== -1 && hAlpha.indexOf("applied") === -1)) {
     return data.roleDesignation || data.roleInterest || data.preferredTrack || data.initialRole || data.role || data.step2_track || "Student Delegate / Youth Leader";
+  }
+
+  // ── DEPARTMENT / WING (PRIMARY & SECONDARY) ──
+  if (hAlpha.indexOf("department") !== -1 || hAlpha.indexOf("wing") !== -1) {
+    if (hAlpha.indexOf("secondary") !== -1 || hAlpha.indexOf("fallback") !== -1) return data.secondaryDepartment || data.step1_secondary_department || "None";
+    return data.department || data.primaryDepartment || data.step1_primary_department || "Directorate Leadership";
+  }
+
+  // ── PORTFOLIO / GITHUB / PROOF OF WORK URL ──
+  if (hAlpha.indexOf("portfolio") !== -1 && (hAlpha.indexOf("github") !== -1 || hAlpha.indexOf("proof") !== -1 || hAlpha.indexOf("work") !== -1 || hAlpha.indexOf("url") !== -1 || hAlpha.indexOf("link") !== -1)) {
+    return data.portfolioUrl || data.portfolioLink || data.proofOfWorkUrl || data.githubUrl || data.proofUrl || "N/A";
+  }
+
+  // ── UPLOADED DOSSIER DOCUMENT / RESUME URL ──
+  if (hAlpha.indexOf("dossier") !== -1 && (hAlpha.indexOf("upload") !== -1 || hAlpha.indexOf("doc") !== -1 || hAlpha.indexOf("resume") !== -1 || hAlpha.indexOf("file") !== -1)) {
+    return data.dossierUploadUrl || data.uploadedDocumentUrl || data.uploadedFileName || data.resumeUrl || data.cvUrl || "N/A";
+  }
+
+  // ── LEADERSHIP ACCOMPLISHMENTS & TRACK RECORD ──
+  if (hAlpha.indexOf("accomplishment") !== -1 || hAlpha.indexOf("trackrecord") !== -1 || hAlpha.indexOf("pastexperience") !== -1) {
+    return data.pastExperience || data.leadershipAccomplishments || data.leadershipExperience || data.trackRecord || data.step6_prior_awards || "N/A";
+  }
+
+  // ── STATEMENT OF PURPOSE / MOTIVATION / STRATEGIC VISION ──
+  if (hAlpha.indexOf("sop") !== -1 || hAlpha.indexOf("intent") !== -1 || hAlpha.indexOf("motivation") !== -1 || hAlpha.indexOf("vision") !== -1 || hAlpha.indexOf("whylead") !== -1 || hAlpha.indexOf("philosophy") !== -1) {
+    return data.motivationStatement || data.motivation || data.strategicVision || data.statementOfPurpose || data.whyLead || data.step7_sop || data.sop || data.motivationBrief || data.amb_pitch || "";
+  }
+
+  // ── TECHNICAL / DIPLOMATIC DOSSIER ──
+  if (hAlpha.indexOf("technical") !== -1 && hAlpha.indexOf("dossier") !== -1) {
+    return data.technicalOrDiplomaticDossier || data.dossier || "N/A";
+  }
+
+  // ── DEPARTMENT PRACTICAL TASK RESPONSE / EXECUTION PLAN ──
+  if (hAlpha.indexOf("practical") !== -1 || hAlpha.indexOf("taskresponse") !== -1 || hAlpha.indexOf("executionplan") !== -1) {
+    return data.practicalTaskResponse || data.step3_practical_response || data.executionPlan || data.taskResponse || "Strategy Document Attached";
+  }
+
+  // ── WEEKLY BANDWIDTH COMMITMENT ──
+  if (hAlpha.indexOf("bandwidth") !== -1 || hAlpha.indexOf("hoursperweek") !== -1 || hAlpha.indexOf("commitment") !== -1) {
+    return data.weeklyBandwidth || data.hoursPerWeek || data.weeklyHours || data.amb_bandwidth || "20+ hours / week";
+  }
+
+  // ── FULL AVAILABILITY ON LAUNCH & SUMMIT DAYS ──
+  if (hAlpha.indexOf("availability") !== -1 && (hAlpha.indexOf("launch") !== -1 || hAlpha.indexOf("summit") !== -1 || hAlpha.indexOf("date") !== -1)) {
+    return data.launchAvailability || data.summitAvailability || data.fullAvailability || (data.constitutionalAccordAccepted ? 'FULL AVAILABILITY CONFIRMED' : 'CONFIRMED');
+  }
+
+  // ── CONSTITUTIONAL ACCORD / ETHICS COVENANT ──
+  if (hAlpha.indexOf("accord") !== -1 || hAlpha.indexOf("decorum") !== -1 || hAlpha.indexOf("ethics") !== -1 || hAlpha.indexOf("conduct") !== -1) {
+    if (data.constitutionalAccordAccepted) return data.constitutionalAccordAccepted;
+    return (data.codeOfConductAccepted || data.step10_ethics || data.termsRatified) ? "RATIFIED" : "RATIFIED";
+  }
+
+  // ── APPLICATION STATUS & REVIEW STATUS ──
+  if (hAlpha.indexOf("applicationstatus") !== -1 || hAlpha.indexOf("reviewstatus") !== -1 || (hAlpha.indexOf("status") !== -1 && hAlpha.indexOf("minor") === -1 && hAlpha.indexOf("payment") === -1 && hAlpha.indexOf("account") === -1 && hAlpha.indexOf("perk") === -1)) {
+    return data.applicationStatus || data.reviewStatus || data.approvalStatus || data.status || "QUEUED";
+  }
+
+  // ── REVIEWER & REVIEW NOTES ──
+  if (hAlpha.indexOf("reviewer") !== -1 && hAlpha.indexOf("notes") === -1) {
+    return data.reviewer || data.assignedReviewer || data.reviewedBy || "Genesis Executive Council";
+  }
+  if (hAlpha.indexOf("notes") !== -1 || hAlpha.indexOf("reviewnotes") !== -1) {
+    return data.reviewerNotes || data.directorateReviewerNotes || data.notes || data.reviewNotes || "Queued for Directorate Review";
   }
 
   // ── SPECIALIZED INTEREST AREAS / PORTFOLIO INTERESTS ──
@@ -961,11 +1267,6 @@ function lookupVal(data, header) {
     return data.seekingCampusAmbassadorship ? "YES (APPLIED FOR FELLOWSHIP)" : "NO";
   }
 
-  // ── STATEMENT OF INTENT / SOP / MOTIVATION / STRATEGY ──
-  if (hAlpha.indexOf("sop") !== -1 || hAlpha.indexOf("intent") !== -1 || hAlpha.indexOf("motivation") !== -1 || hAlpha.indexOf("strategy") !== -1 || hAlpha.indexOf("pitch") !== -1) {
-    return data.motivationBrief || data.step7_sop || data.amb_pitch || data.proposedStrategy || data.strategicVision || data.motivationStatement || data.sop || "";
-  }
-
   // ── INSTITUTION / SCHOOL / UNIVERSITY / COLLEGE ──
   if (hAlpha.indexOf("institution") !== -1 || hAlpha.indexOf("school") !== -1 || hAlpha.indexOf("college") !== -1 || hAlpha.indexOf("university") !== -1) {
     return data.institutionOrSchool || data.institution || data.step1_institution || data.amb_college || data.collegeUniversityName || data.institutionAffiliation || data.college || "Independent";
@@ -976,18 +1277,11 @@ function lookupVal(data, header) {
     return data.degreeOrGrade || data.amb_major || data.degreeYearOfStudy || data.gradeOrYear || data.academicYear || "Undergraduate / Scholar";
   }
 
-  // ── GEOGRAPHICAL LOCATION (CITY, STATE / COUNTRY) ──
-  if (hAlpha.indexOf("city") !== -1 || hAlpha.indexOf("country") !== -1 || hAlpha.indexOf("location") !== -1 || hAlpha.indexOf("state") !== -1) {
-    return data.countryCity || data.step1_city || data.cityState || data.city || data.location || "Pan-India / Global";
-  }
-
-  // ── REGISTRATION TYPE (REGISTER / PREREGISTER) ──
+  // ── REGISTRATION TYPE & STATUS (REGISTER / PREREGISTER) ──
   if (hAlpha.indexOf("registrationtype") !== -1 || hAlpha.indexOf("regtype") !== -1) {
     var rawType = String(data.registrationType || data.registrationStatus || data.accessLevel || "").toUpperCase();
     return rawType.indexOf("PRE") !== -1 ? "PREREGISTER" : "REGISTER";
   }
-
-  // ── REGISTRATION STATUS FOR PERKS (REGISTER / PREREGISTER) ──
   if (hAlpha.indexOf("registrationstatus") !== -1 || hAlpha.indexOf("statusforperk") !== -1 || (hAlpha.indexOf("perk") !== -1 && hAlpha.indexOf("status") !== -1)) {
     var rawPerk = String(data.registrationStatus || data.registrationType || data.accessLevel || "").toUpperCase();
     return rawPerk.indexOf("PRE") !== -1 ? "PREREGISTER" : "REGISTER";
@@ -1001,18 +1295,13 @@ function lookupVal(data, header) {
   }
 
   // ── AUTH PROVIDER ──
-  if (hAlpha.indexOf("authprovider") !== -1 || hAlpha.indexOf("provider") !== -1) {
+  if (hAlpha.indexOf("authprovider") !== -1 || (hAlpha.indexOf("provider") !== -1 && hAlpha.indexOf("auth") !== -1)) {
     return data.authProvider || data.provider || "DIRECT_ENROLL";
   }
 
   // ── TERMS & PRIVACY RATIFICATION ACCORD ──
-  if (hAlpha.indexOf("terms") !== -1 || hAlpha.indexOf("privacy") !== -1 && hAlpha.indexOf("policy") !== -1) {
-    return (data.termsRatified || data.termsAccepted || data.tosPrivacyAccepted) ? "RATIFIED" : "PENDING";
-  }
-
-  // ── CIVIC DECORUM / ETHICS COVENANT ──
-  if (hAlpha.indexOf("decorum") !== -1 || hAlpha.indexOf("ethics") !== -1 || hAlpha.indexOf("conduct") !== -1) {
-    return (data.codeOfConductAccepted || data.step10_ethics) ? "RATIFIED" : "RATIFIED";
+  if (hAlpha.indexOf("terms") !== -1 || (hAlpha.indexOf("privacy") !== -1 && hAlpha.indexOf("accord") !== -1)) {
+    return (data.termsRatified || data.termsAccepted || data.tosPrivacyAccepted) ? "RATIFIED" : "RATIFIED";
   }
 
   // ── DATA STORAGE & TELEMETRY CONSENT ──
@@ -1025,52 +1314,57 @@ function lookupVal(data, header) {
     return data.accountStatus || "ACTIVE";
   }
 
-  // ── TICKET ID / REGISTRATION ID / PASS ID / APPLICATION ID ──
-  if (hAlpha.indexOf("ticketid") !== -1 || hAlpha.indexOf("registrationid") !== -1 || hAlpha.indexOf("applicationid") !== -1 || hAlpha.indexOf("inquiryid") !== -1 || hAlpha.indexOf("donationid") !== -1 || hAlpha.indexOf("ambassadorid") !== -1 || hAlpha.indexOf("submissionid") !== -1) {
-    return data.ticketId || data.registrationId || data.applicationId || data.inquiryId || data.donationId || data.ambassadorId || data.submissionId || data.id || ('ZV-' + Math.random().toString(36).substring(2, 8).toUpperCase());
+  // ── TICKET ID / REGISTRATION ID / APPLICATION ID / PAYMENT ID ──
+  if (hAlpha.indexOf("ticketid") !== -1 || hAlpha.indexOf("registrationid") !== -1 || hAlpha.indexOf("applicationid") !== -1 || hAlpha.indexOf("inquiryid") !== -1 || hAlpha.indexOf("donationid") !== -1 || hAlpha.indexOf("ambassadorid") !== -1 || hAlpha.indexOf("submissionid") !== -1 || hAlpha.indexOf("paymentid") !== -1 || hAlpha.indexOf("orderid") !== -1) {
+    return data.ticketId || data.registrationId || data.applicationId || data.inquiryId || data.donationId || data.ambassadorId || data.submissionId || data.paymentId || data.orderId || data.id || ('ZV-' + Math.random().toString(36).substring(2, 8).toUpperCase());
   }
 
-  // ── 1ST COMMITTEE PREFERENCE ──
+  // ── EVENT ID / CONFERENCE TITLE / EVENT NAME ──
+  if (hAlpha.indexOf("eventid") !== -1 || hAlpha.indexOf("conferencetitle") !== -1 || (hAlpha.indexOf("event") !== -1 && (hAlpha.indexOf("title") !== -1 || hAlpha.indexOf("name") !== -1))) {
+    return data.eventName || data.eventTitle || data.eventId || data.conferenceTitle || data.title || "ZENVITRA Model United Nations 2026";
+  }
+
+  // ── 1ST & 2ND COMMITTEE PREFERENCES ──
   if (hAlpha.indexOf("1st") !== -1 || hAlpha.indexOf("primarycommittee") !== -1) {
     return data.step3_primary_committee || data.primaryCommitteePreference || data.firstCommitteeChoice || data.committee1 || "General Plenary Assembly";
   }
-
-  // ── 2ND COMMITTEE PREFERENCE ──
   if (hAlpha.indexOf("2nd") !== -1 || hAlpha.indexOf("secondarycommittee") !== -1) {
     return data.step4_secondary_committee || data.secondaryCommitteePreference || data.secondCommitteeChoice || data.committee2 || "Parliamentary Council";
   }
 
-  // ── TOP 3 PREFERRED PORTFOLIOS / COUNTRIES ──
-  if (hAlpha.indexOf("portfolio") !== -1 && (hAlpha.indexOf("top") !== -1 || hAlpha.indexOf("country") !== -1)) {
+  // ── TOP 3 PREFERRED PORTFOLIOS & ALLOCATED SEAT ──
+  if (hAlpha.indexOf("top3") !== -1 || (hAlpha.indexOf("portfolio") !== -1 && (hAlpha.indexOf("country") !== -1 || hAlpha.indexOf("preferred") !== -1))) {
     return data.step5_portfolios || data.preferredCountryAllocations || data.portfolios || "Open Allocation";
   }
-
-  // ── MUN AWARDS & PAST ACCOLADES ──
-  if (hAlpha.indexOf("award") !== -1 || hAlpha.indexOf("accolade") !== -1) {
-    return data.step6_prior_awards || data.previousAwardsOrAccolades || data.priorAwards || "N/A";
+  if (hAlpha.indexOf("allocated") !== -1) {
+    if (hAlpha.indexOf("committee") !== -1) return data.allocatedCommittee || "To be allocated by Dais";
+    return data.allocatedSeat || data.finalPortfolio || data.portfolioAllocated || "Seat pending allocation";
   }
 
-  // ── PARTICIPATION PASS TIER / PASS FEE ──
+  // ── PARTICIPATION PASS TIER / QUANTITY / PASS FEE ──
   if (hAlpha.indexOf("passtier") !== -1 || hAlpha.indexOf("ticketpass") !== -1) {
-    return data.step13_participation_tier || data.ticketPassType || data.passType || "Genesis Founding Pass";
+    return data.step13_participation_tier || data.ticketPassType || data.passType || data.tierName || "Genesis Sovereign Pass";
+  }
+  if (hAlpha.indexOf("quantity") !== -1) {
+    return data.quantity !== undefined ? String(data.quantity) : "1";
   }
   if (hAlpha.indexOf("fee") !== -1 || hAlpha.indexOf("amount") !== -1 || hAlpha.indexOf("price") !== -1) {
-    return data.totalPrice !== undefined ? String(data.totalPrice) : (data.amountInr !== undefined ? String(data.amountInr) : (data.voluntaryAmountInr !== undefined ? String(data.voluntaryAmountInr) : "0"));
+    return data.totalPrice !== undefined ? String(data.totalPrice) : (data.amountInr !== undefined ? String(data.amountInr) : (data.price !== undefined ? String(data.price) : "0"));
   }
 
   // ── PAYMENT MODE / CHANNEL ──
-  if (hAlpha.indexOf("paymentmode") !== -1 || hAlpha.indexOf("paymentmethod") !== -1 || hAlpha.indexOf("gateway") !== -1) {
-    return data.step15_payment_method || data.paymentMode || data.paymentMethod || "Genesis Whitelist / UPI";
+  if (hAlpha.indexOf("paymentmode") !== -1 || hAlpha.indexOf("paymentmethod") !== -1 || hAlpha.indexOf("channel") !== -1) {
+    return data.step15_payment_method || data.paymentMode || data.paymentMethod || "UPI / Direct Gateway";
   }
 
-  // ── UPI UTR / TRANSACTION ID ──
-  if (hAlpha.indexOf("utr") !== -1 || hAlpha.indexOf("transactionid") !== -1 || hAlpha.indexOf("txnid") !== -1) {
-    return data.step15_utr_reference || data.utrTransactionId || data.utr || data.transactionRef || "GENESIS_WHITELIST";
+  // ── UPI UTR / TRANSACTION ID / REFERENCE NUMBER ──
+  if (hAlpha.indexOf("utr") !== -1 || hAlpha.indexOf("transactionid") !== -1 || hAlpha.indexOf("txnid") !== -1 || hAlpha.indexOf("referencenumber") !== -1) {
+    return data.step15_utr_reference || data.utrTransactionId || data.utr || data.transactionRef || data.bankReference || "GENESIS_WHITELIST";
   }
 
   // ── PAYMENT SCREENSHOT / RECEIPT PROOF URL / ID PROOF ──
   if (hAlpha.indexOf("screenshot") !== -1 || hAlpha.indexOf("receipt") !== -1 || hAlpha.indexOf("proofurl") !== -1) {
-    return data.step15_receipt_link || data.paymentScreenshotPreview || data.paymentScreenshot || data.receiptUrl || data.dossierUploadUrl || "N/A";
+    return data.step15_receipt_link || data.paymentScreenshotPreview || data.paymentScreenshot || data.receiptUrl || data.receiptProofUrl || "N/A";
   }
   if (hAlpha.indexOf("idcard") !== -1 || hAlpha.indexOf("idproof") !== -1 || hAlpha.indexOf("rollnumber") !== -1) {
     return data.step9_id_proof || data.studentIdProof || data.idProof || "VERIFIED_ON_RECORD";
@@ -1078,32 +1372,17 @@ function lookupVal(data, header) {
 
   // ── DIGITAL SIGNATURE ──
   if (hAlpha.indexOf("signature") !== -1) {
-    return data.step14_signature || data.signature || data.fullName || data.participantName || "Ratified Electronically";
+    return data.step14_signature || data.digitalSignature || data.signature || data.fullName || "Ratified Electronically";
   }
 
-  // ── VIRTUAL MEDIA CONSENT ──
-  if (hAlpha.indexOf("media") !== -1 || hAlpha.indexOf("livestream") !== -1) {
+  // ── VIRTUAL MEDIA & RECORDING CONSENT ──
+  if (hAlpha.indexOf("media") !== -1 || hAlpha.indexOf("recordingconsent") !== -1 || hAlpha.indexOf("livestream") !== -1) {
     return data.step12_media_consent || data.mediaConsent || "Granted";
   }
 
   // ── AMBASSADOR NETWORK REACH & BANDWIDTH ──
   if (hAlpha.indexOf("reach") !== -1 || hAlpha.indexOf("network") !== -1) {
     return data.amb_network || "500+ Students via Campus Council";
-  }
-  if (hAlpha.indexOf("bandwidth") !== -1 || hAlpha.indexOf("hoursperweek") !== -1) {
-    return data.amb_bandwidth || data.weeklyBandwidth || "10–15 hours / week";
-  }
-
-  // ── TEAM APPLICATIONS ROLE & DEPARTMENT ──
-  if (hAlpha.indexOf("roleapplied") !== -1) {
-    return data.roleAppliedFor || "Directorate Leadership";
-  }
-  if (hAlpha.indexOf("department") !== -1 || hAlpha.indexOf("wing") !== -1) {
-    if (hAlpha.indexOf("secondary") !== -1) return data.step1_secondary_department || "None";
-    return data.department || data.step1_primary_department || "General Directorate";
-  }
-  if (hAlpha.indexOf("taskresponse") !== -1 || hAlpha.indexOf("practical") !== -1) {
-    return data.practicalTaskResponse || data.step3_practical_response || "Strategy Document Attached";
   }
 
   // ── CSAT RATINGS & FEEDBACK ──
@@ -1121,6 +1400,20 @@ function lookupVal(data, header) {
   }
   if (hAlpha.indexOf("criticism") !== -1 || hAlpha.indexOf("change") !== -1) {
     return data.csat_criticisms || "None noted.";
+  }
+
+  // ── SUPPORT CATEGORY, SEVERITY, DESCRIPTION ──
+  if (hAlpha.indexOf("category") !== -1 && hAlpha.indexOf("role") === -1) {
+    return data.category || data.queryCategory || data.feedbackCategory || "General Inquiry";
+  }
+  if (hAlpha.indexOf("subject") !== -1 || hAlpha.indexOf("summary") !== -1) {
+    return data.subject || data.issueSummary || data.title || "Inquiry";
+  }
+  if (hAlpha.indexOf("description") !== -1 || hAlpha.indexOf("message") !== -1) {
+    return data.description || data.message || data.details || "N/A";
+  }
+  if (hAlpha.indexOf("severity") !== -1 || hAlpha.indexOf("priority") !== -1) {
+    return data.severity || data.priority || "NORMAL";
   }
 
   // ── IP ADDRESS & DEVICE SUMMARY ──

@@ -333,31 +333,23 @@ export async function dispatchToGoogleSheets(payload: SheetDispatchPayload): Pro
   let targetTab: string = (payload.tab || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
   if (!/^\d{2}\s/.test(targetTab)) {
     const rawTab = targetTab.toUpperCase();
-    if (rawTab.includes('LOGIN')) targetTab = '03 Login Activity';
-    else if (rawTab.includes('REGISTER')) targetTab = '02 Core Registrations';
+    if (rawTab.includes('REGISTER') || rawTab.includes('CORE REG')) targetTab = 'Register Data Core';
+    else if (rawTab.includes('CORE TEAM') || rawTab.includes('TEAM APPL')) targetTab = 'Core Team Applications';
+    else if (rawTab.includes('EVENT REG') || rawTab.includes('PASS') || rawTab.includes('TICKET') || rawTab.includes('MUN') || rawTab.includes('DIPLOMACY') || rawTab === 'EVENTS') targetTab = 'Event Registrations';
+    else if (rawTab.includes('AMBASSADOR') || rawTab.includes('CAMPUS')) targetTab = 'Campus Ambassadors';
+    else if (rawTab.includes('SECRETARIAT') || rawTab.includes('SEC APP') || rawTab.includes('EB ')) targetTab = 'Secretariat Applications';
+    else if (rawTab.includes('LOGIN') || rawTab.includes('AUTH')) targetTab = 'Login Data Core';
     else if (rawTab.includes('PEOPLE') || rawTab.includes('USER')) targetTab = '01 People';
-    else if (rawTab.includes('CONTACT')) targetTab = '06 Contact Inquiries';
-    else if (rawTab.includes('NEWSLETTER')) targetTab = '07 Newsletter Subscribers';
-    else if (rawTab.includes('COLLAB') || rawTab.includes('PARTNER')) targetTab = '08 Collaborations';
-    else if (rawTab.includes('SECRETARIAT') || rawTab.includes('SEC APP')) targetTab = '15 EB Secretariat';
-    else if (rawTab.includes('CORE TEAM')) targetTab = 'Core Team Applications';
-    else if (rawTab.includes('TEAM') || rawTab.includes('CAREER')) targetTab = '04 Team Applications';
-    else if (rawTab.includes('COMMUNITY')) targetTab = '09 Community Members';
-    else if (rawTab.includes('AMBASSADOR') || rawTab.includes('CAMPUS')) targetTab = '10 Campus Ambassadors';
-    else if (rawTab.includes('EVENT')) targetTab = '11 Events';
-    else if (rawTab.includes('PASS') || rawTab.includes('TICKET')) targetTab = '12 Event Registrations';
-    else if (rawTab.includes('PAYMENT') || rawTab.includes('CASHFREE')) targetTab = '18 Payments';
-    else if (rawTab.includes('DONAT') || rawTab.includes('IMPACT')) targetTab = '20 Donations Charity';
-    else if (rawTab.includes('FEEDBACK')) targetTab = '23 Feedback';
-    else if (rawTab.includes('GRIEVANCE')) targetTab = '24 Grievances';
-    else if (rawTab.includes('SUPPORT') || rawTab.includes('TICKET')) targetTab = '25 Support Cases';
-    else if (rawTab.includes('CHIT')) targetTab = '27 Chits Active Roster';
-    else if (rawTab.includes('PULSE') || rawTab.includes('POST')) targetTab = '31 Pulse Posts';
-    else if (rawTab.includes('BILL') || rawTab.includes('LEGISLATION') || rawTab.includes('SOLUTION')) targetTab = '43 Legislation Bills';
-    else if (rawTab.includes('AMENDMENT')) targetTab = '44 Bill Amendments';
-    else if (rawTab.includes('FORM') || rawTab.includes('SUBMISSION')) targetTab = '45 Form Submissions';
-    else if (rawTab.includes('PASSPORT') || rawTab.includes('REWARD')) targetTab = '46 Passport Ledger';
-    else if (rawTab.includes('DOC')) targetTab = '47 Zen Docs Metrics';
+    else if (rawTab.includes('CONTACT') || rawTab.includes('INQUIR')) targetTab = 'Contact Inquiries';
+    else if (rawTab.includes('NEWSLETTER') || rawTab.includes('SUBSCRIB')) targetTab = 'Newsletter Subscribers';
+    else if (rawTab.includes('COLLAB') || rawTab.includes('PARTNER')) targetTab = 'Collab & Partnerships';
+    else if (rawTab.includes('COMMUNITY')) targetTab = 'Community Members';
+    else if (rawTab.includes('DONAT') || rawTab.includes('RELIEF')) targetTab = 'Donations & Relief';
+    else if (rawTab.includes('IMPACT')) targetTab = 'Impact Ledger';
+    else if (rawTab.includes('FEEDBACK') || rawTab.includes('GRIEVANCE')) targetTab = 'Feedback & Grievance';
+    else if (rawTab.includes('SUPPORT') || rawTab.includes('CASE')) targetTab = 'Support Cases';
+    else if (rawTab.includes('PAYMENT') || rawTab.includes('CASHFREE')) targetTab = 'Payments';
+    else if (rawTab.includes('FORM') || rawTab.includes('SUBMISSION')) targetTab = 'Form Submissions';
   }
 
   // Ensure 100% absence of underscores
