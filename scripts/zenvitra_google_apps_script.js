@@ -59,6 +59,7 @@ var TAB_SCHEMAS = {
       'Timestamp',
       'User ID / Person ID',
       'Full Legal Name',
+      'Handle',
       'Preferred Sovereign Handle (@handle)',
       'Primary Email Address',
       'Contact Phone Number',
@@ -626,7 +627,8 @@ function testRegisterCoreRow() {
   var testPayload = {
     userId: 'TEST_' + Math.random().toString(36).substring(2, 8).toUpperCase(),
     fullName: 'Yuveer Sovereign (Test Delegate)',
-    preferredHandle: 'yuveer_founder',
+    handle: '@yuveer_founder',
+    preferredHandle: '@yuveer_founder',
     email: 'test_founder@zenvitra.xyz',
     phoneNumber: '+91 98765 00000',
     age: 20,

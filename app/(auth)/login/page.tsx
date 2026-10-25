@@ -882,13 +882,13 @@ function LoginForm() {
                   </div>
                   <div className="min-w-0 text-left">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-white font-mono">Test Account</span>
+                      <span className="text-xs font-bold text-white font-mono">Test Pilot Access</span>
                       <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase tracking-wider">
-                        All Features Unlocked
+                        Sandbox Mode
                       </span>
                     </div>
-                    <p className="text-[11px] font-mono text-neutral-300 truncate mt-0.5">
-                      User: <strong className="text-cyan-300 font-bold">test</strong> &bull; Pass: <strong className="text-cyan-300 font-bold">test1234</strong>
+                    <p className="text-[11px] font-mono text-neutral-400 truncate mt-0.5">
+                      Instant guest access with all features unlocked
                     </p>
                   </div>
                 </div>

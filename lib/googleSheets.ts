@@ -163,6 +163,8 @@ export interface RegisterRecord {
   fullName: string;
   email: string;
   username?: string;
+  handle?: string;
+  preferredHandle?: string;
   roleDesignation: string;
   accessLevel: string;
   authProvider: string;
@@ -465,6 +467,8 @@ export async function syncToGoogleSheet(payload: any) {
       fullName: payload.name || payload.username || 'User',
       email: payload.email,
       username: payload.username,
+      handle: payload.username ? (payload.username.startsWith('@') ? payload.username : `@${payload.username}`) : (payload.handle || ''),
+      preferredHandle: payload.preferredHandle || (payload.username ? `@${payload.username.replace(/^@/, '')}` : ''),
       roleDesignation: payload.role || payload.initialRole || 'USER',
       accessLevel: payload.accessLevel || 'Member',
       authProvider: payload.provider || 'CREDENTIALS',
