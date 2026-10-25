@@ -659,10 +659,7 @@ export function isFounderSessionActive(): boolean {
         userId === 'zen_cofounder_khushi' ||
         userId === 'khushi-rb-cofounder' ||
         userId === 'cofounder-cto-partner' ||
-        userId === 'cofounder-alliances' ||
-        userRole === 'FOUNDER' ||
-        userRole === 'CO_FOUNDER' ||
-        userRole === 'COFOUNDER';
+        userId === 'cofounder-alliances';
 
       if (!isAuthorizedUser) {
         // Active session belongs to an unauthorized non-founder user! Cleanse lingering founder session keys immediately.
@@ -729,13 +726,22 @@ export function isFounder(usernameOrEmail?: string | null | any, role?: string |
   const extracted = extractSafeIdentity(usernameOrEmail);
   const effectiveRole = role || extracted.role;
   const effectiveIdentifier = extracted.identifier;
+  const effectiveId = extracted.id;
 
-  const r = (effectiveRole || '').toUpperCase().trim();
-  if (r === 'FOUNDER') return true;
+  if (effectiveId === 'zen_founder_root') return true;
+
   // If a specific username or email is checked, it MUST match the strict Founder identity
   if (effectiveIdentifier) {
-    return isYuveer(effectiveIdentifier);
+    const isAuthenticFounder = isYuveer(effectiveIdentifier);
+    if (!isAuthenticFounder) return false;
+    return true;
   }
+
+  const r = (effectiveRole || '').toUpperCase().trim();
+  if (r === 'FOUNDER' && typeof window !== 'undefined') {
+    return isFounderSessionActive();
+  }
+
   // If no username/email was passed, check the verified active founder session
   if (typeof window !== 'undefined') {
     return isFounderSessionActive();
@@ -764,22 +770,17 @@ export function isFounderOrCoFounder(
   const r = (effectiveRole || '').toUpperCase().trim();
   const cleanId = (effectiveId || '').toLowerCase().trim();
 
-  // 1. Role check
-  if (r === 'FOUNDER' || r === 'CO_FOUNDER' || r === 'COFOUNDER') {
-    return true;
-  }
-
-  // 2. Founder identity check
+  // 1. Founder identity check
   if (isFounder(clean, r) || (cleanId && isFounder(cleanId, r))) {
     return true;
   }
 
-  // 3. Co-Founder identity check
+  // 2. Co-Founder identity check (Khushi & Aarush)
   if (isCoFounder(clean, r) || (cleanId && isCoFounder(cleanId, r))) {
     return true;
   }
 
-  // 4. Session check fallback
+  // 3. Session check fallback
   if (typeof window !== 'undefined' && isFounderSessionActive()) {
     return true;
   }

@@ -415,12 +415,16 @@ export function UserProfileView() {
     }
   };
 
+  const profileCleanUsername = (profile?.username || displayHandle || '').toLowerCase().trim().replace(/^@/, '');
+  const profileCleanEmail = ((profile as any)?.email || '').toLowerCase().trim();
+  const profileCleanId = ((profile as any)?.id || '').toLowerCase().trim();
+
   const isFounderProfile = Boolean(
-    (profile as any)?.role === 'FOUNDER' ||
-    (profile as any)?.id === 'zen_founder_root' ||
-    (profile as any)?.id === 'zen_user_yuveer' ||
-    (profile as any)?.email === 'founder@zenvitra.xyz' ||
-    (profile as any)?.email === 'founder@zenvitra.org'
+    profileCleanId === 'zen_founder_root' ||
+    (
+      (profileCleanEmail === 'founder@zenvitra.xyz' || profileCleanEmail === 'founder@zenvitra.org') &&
+      (profileCleanUsername === 'yuveer' || profileCleanUsername === 'founder' || !profileCleanUsername)
+    )
   );
   const isVerifiedEffective = Boolean(profile.isVerified || (profile as any)?.is_verified || isFounderProfile);
 

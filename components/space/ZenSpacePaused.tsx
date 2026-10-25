@@ -99,12 +99,14 @@ export function ZenSpacePaused({ username = 'yuveer' }: ZenSpacePausedProps) {
   };
 
   // Determine if viewer is founder/admin who can bypass
-  const currentUsername = (profile?.username || user?.username || '').toLowerCase();
+  const currentUsername = (profile?.username || user?.username || '').toLowerCase().trim().replace(/^@/, '');
+  const cleanEmail = (user?.email || profile?.email || '').toLowerCase().trim();
   const isFounder = 
-    currentUsername === 'yuveer' || 
+    (currentUsername === 'yuveer' && (cleanEmail === 'founder@zenvitra.xyz' || cleanEmail === 'founder@zenvitra.org' || user?.id === 'zen_founder_root')) ||
+    cleanEmail === 'founder@zenvitra.xyz' ||
+    cleanEmail === 'founder@zenvitra.org' ||
     profile?.role === 'core_team' || 
-    profile?.role === 'admin' ||
-    user?.email?.toLowerCase().includes('yuveer');
+    profile?.role === 'admin';
 
   // If founder bypass mode is active, render the live space view with a top banner
   if (bypassActive) {

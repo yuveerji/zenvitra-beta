@@ -91,7 +91,7 @@ export function DiscoverProfiles() {
                 name: row.fullName || uname,
                 bio: row.role ? `${row.role} • Sovereign Delegate` : 'Verified Zenvitra Community Delegate.',
                 avatar: row.avatar || '',
-                badge: (row.role?.toUpperCase().includes('ADMIN') || row.accessLevel === 'Admin') ? 'FOUNDER' : 'DELEGATE',
+                badge: ((uname === 'yuveer' || row.email?.toLowerCase() === 'founder@zenvitra.xyz') && (row.role?.toUpperCase().includes('FOUNDER'))) ? 'FOUNDER' : 'DELEGATE',
                 accountType: 'personal',
                 isVerified: true,
                 isPrivate: false,

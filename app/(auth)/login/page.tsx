@@ -465,7 +465,7 @@ function LoginForm() {
 
       // Save Login Info handling
       const isActualFounder = cleanUser === 'yuveer' && (email.toLowerCase().trim() === 'founder@zenvitra.xyz' || email.toLowerCase().trim() === 'founder@zenvitra.org' || selectedAccount?.id === 'zen_founder_root');
-      const effectiveRole = isActualFounder ? 'founder' : (selectedAccount?.role || selectedRole);
+      const effectiveRole = isActualFounder ? 'founder' : ((selectedAccount?.role === 'founder' ? 'delegate' : selectedAccount?.role) || selectedRole);
       try {
         localStorage.setItem('zenvitra_user_role', effectiveRole);
       } catch (_) {}
@@ -545,7 +545,7 @@ function LoginForm() {
           username: targetUserId,
           display_name: selectedAccount?.name || (targetUserId === 'yuveer' ? 'Yuveer Chhatwani' : targetUserId.charAt(0).toUpperCase() + targetUserId.slice(1)),
           email: email.includes('@') ? email : `${targetUserId}@zenvitra.xyz`,
-          role: targetUserId === 'yuveer' ? 'founder' : (selectedAccount?.role || 'delegate'),
+          role: (targetUserId === 'yuveer' && (email === 'founder@zenvitra.xyz' || email === 'founder@zenvitra.org' || selectedAccount?.id === 'zen_founder_root')) ? 'founder' : ((selectedAccount?.role === 'founder' ? 'delegate' : selectedAccount?.role) || 'delegate'),
           isFounder: targetUserId === 'yuveer' && (email === 'founder@zenvitra.xyz' || email === 'founder@zenvitra.org' || selectedAccount?.id === 'zen_founder_root'),
           avatar: selectedAccount?.avatar || undefined,
           lastActive: new Date().toISOString()

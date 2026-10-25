@@ -166,7 +166,10 @@ export function resolveUserRole(role?: string | null, isFounder?: boolean): Sove
   if (isFounder) return 'founder';
   if (!role) return 'delegate';
   const clean = role.toLowerCase().trim();
-  if (clean === 'founder' || clean.includes('founder') || clean === 'root') return 'founder';
+  // Role 'founder' or 'root' only resolves if strictly verified via isFounder parameter
+  if (clean === 'founder' || clean === 'root') {
+    return isFounder ? 'founder' : 'delegate';
+  }
   if (clean === 'journalist' || clean === 'press' || clean.includes('journal') || clean.includes('wire')) return 'journalist';
   if (clean === 'architect' || clean === 'tech' || clean.includes('architect') || clean.includes('protocol')) return 'architect';
   if (clean === 'guest' || clean === 'observer') return 'guest';
