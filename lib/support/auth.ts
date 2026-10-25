@@ -32,21 +32,22 @@ export async function getSupportActor(): Promise<SupportActor | null> {
       } catch {}
     }
 
-    // Founder check
+    // Founder check (strictly verified official email or root ID only)
     const cleanEmail = String(user.email || "").toLowerCase().trim();
     const cleanUsername = String(user.username || "").toLowerCase().trim();
+    const cleanId = String(id || user.id || "").toLowerCase().trim();
     if (
       cleanEmail === "founder@zenvitra.xyz" ||
       cleanEmail === "founder@zenvitra.org" ||
-      cleanUsername === "yuveer" ||
-      cleanUsername === "founder"
+      cleanEmail === "yuveer@zenvitra.xyz" ||
+      cleanId === "zen_founder_root"
     ) {
       role = "FOUNDER";
     } else if (
       cleanEmail === "aarush@zenvitra.xyz" ||
-      cleanUsername === "aarush" ||
       cleanEmail === "khushi@zenvitra.xyz" ||
-      cleanUsername === "khushi"
+      cleanId === "zen_cofounder_aarush" ||
+      cleanId === "zen_cofounder_khushi"
     ) {
       role = "CO_FOUNDER";
     }

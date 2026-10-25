@@ -13,25 +13,20 @@ function isServerFounderOrCoFounder(email?: string | null, role?: string | null)
   }
 
   const isFounderMatch =
-    clean === 'yuveer' ||
-    clean === 'founder' ||
     clean === 'founder@zenvitra.xyz' ||
     clean === 'founder@zenvitra.org' ||
     clean === 'founder@zenvitra.com' ||
     clean === 'yuveer@zenvitra.xyz' ||
     clean === 'yuveer@zenvitra.org' ||
     clean === 'yuveer@zenvitra.com' ||
-    clean === 'zen_founder_root' ||
-    clean === 'zen_user_yuveer';
+    clean === 'zen_founder_root';
 
   const isCoFounderMatch =
-    clean === 'aarush' ||
     clean === 'aarush@zenvitra.xyz' ||
     clean === 'aarush@zenvitra.com' ||
     clean === 'aarush@zenvitra.org' ||
     clean === 'zen_cofounder_aarush' ||
     clean === 'aarush-vijayivargiya-cofounder' ||
-    clean === 'khushi' ||
     clean === 'khushi@zenvitra.xyz' ||
     clean === 'khushi@zenvitra.org' ||
     clean === 'khushi@zenvitra.com' ||

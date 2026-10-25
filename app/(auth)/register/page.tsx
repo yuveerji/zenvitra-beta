@@ -362,7 +362,7 @@ export default function RegisterPage() {
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[350px] bg-purple-500/[0.03] blur-[150px] rounded-full pointer-events-none z-0" />
 
       {/* Main Registration Showcase */}
-      <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 flex-1 flex items-start pt-24 sm:pt-28">
+      <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 flex-1 flex items-start pt-20 sm:pt-28">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           
           {/* Left Column: Sovereign Identity Minting Overview */}
@@ -471,7 +471,7 @@ export default function RegisterPage() {
             {/* Ambient Background Aura Effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-emerald-500/20 rounded-[2.8rem] blur-2xl opacity-40 pointer-events-none" />
 
-            <div className="rounded-[2.5rem] bg-[#07080b]/95 border border-white/15 p-6 sm:p-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)] backdrop-blur-3xl relative overflow-hidden text-left space-y-6">
+            <div className="rounded-3xl sm:rounded-[2.5rem] bg-[#07080b]/95 border border-white/15 p-4 sm:p-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)] backdrop-blur-3xl relative overflow-hidden text-left space-y-6">
               
               {/* Top Step Progress Bar */}
               <div className="space-y-2">
@@ -623,7 +623,10 @@ export default function RegisterPage() {
                           onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                           placeholder="mayalin"
                           required
-                          className="w-full pl-10 pr-28 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          className="w-full pl-10 pr-28 py-3 sm:py-2.5 min-h-[44px] rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
                         />
                         <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
                           <UsernameAvailabilityButton username={handle} />
@@ -641,7 +644,10 @@ export default function RegisterPage() {
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="maya@summit.org"
                           required
-                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition shadow-inner"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          className="w-full pl-10 pr-4 py-3 sm:py-2.5 min-h-[44px] rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition shadow-inner"
                         />
                       </div>
                     </div>
@@ -662,7 +668,8 @@ export default function RegisterPage() {
                           onChange={(e) => setAge(e.target.value)}
                           placeholder="e.g. 17"
                           required
-                          className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
+                          inputMode="numeric"
+                          className="w-full pl-10 pr-4 py-3 sm:py-2.5 min-h-[44px] rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
                         />
                       </div>
                     </div>
@@ -801,7 +808,7 @@ export default function RegisterPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-black/80 border border-white/10 font-mono text-base sm:text-lg text-emerald-300 font-bold tracking-widest">
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-black/80 border border-white/10 font-mono text-sm sm:text-lg text-emerald-300 font-bold tracking-wider sm:tracking-widest">
                       <span>{sovereignKey}</span>
                       <button
                         type="button"

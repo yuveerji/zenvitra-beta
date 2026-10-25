@@ -235,21 +235,20 @@ export function isYuveer(usernameOrEmail?: string | null | any): boolean {
     const id = String(usernameOrEmail.id || '').toLowerCase().trim();
     const email = String(usernameOrEmail.email || '').toLowerCase().trim();
     const role = String(usernameOrEmail.role || '').toUpperCase().trim();
-    if (id === 'zen_founder_root' || id === 'zen_user_yuveer') return true;
+    if (id === 'zen_founder_root') return true;
     if (email === 'founder@zenvitra.xyz' || email === 'founder@zenvitra.org' || email === 'founder@zenvitra.com' || email === 'yuveer@zenvitra.xyz') return true;
     if (role === 'FOUNDER' && (usernameOrEmail.username === 'yuveer' || usernameOrEmail.username === 'founder')) return true;
     return false;
   }
   const { identifier, id, role } = extractSafeIdentity(usernameOrEmail);
-  if (id === 'zen_founder_root' || id === 'zen_user_yuveer') return true;
+  if (id === 'zen_founder_root') return true;
   if (!identifier) return false;
   const clean = identifier.toLowerCase().trim().replace(/^@/, '');
   // Strict identity matching for Founder (Yuveer Chhatwani)
   // Must match official verified email or root ID
   return (
     clean === 'zen_founder_root' ||
-    clean === 'zen_user_yuveer' ||
-    clean === 'founder@zenvitra.xyz' ||
+        clean === 'founder@zenvitra.xyz' ||
     clean === 'founder@zenvitra.org' ||
     clean === 'founder@zenvitra.com' ||
     clean === 'yuveer@zenvitra.xyz' ||
@@ -650,13 +649,11 @@ export function isFounderSessionActive(): boolean {
         isYuveer(userHandle) ||
         isYuveer(userEmail) ||
         userId === 'zen_founder_root' ||
-        userId === 'zen_user_yuveer' ||
-        isAarush(userHandle) ||
+                isAarush(userHandle) ||
         isAarush(userEmail) ||
         userId === 'zen_cofounder_aarush' ||
         userId === 'aarush-vijayivargiya-cofounder' ||
-        userHandle === 'khushi' ||
-        userEmail === 'khushi@zenvitra.xyz' ||
+                userEmail === 'khushi@zenvitra.xyz' ||
         userEmail === 'khushi@zenvitra.org' ||
         userEmail === 'khushi@zenvitra.com' ||
         userId === 'zen_cofounder_khushi' ||

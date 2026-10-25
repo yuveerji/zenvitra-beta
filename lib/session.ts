@@ -84,13 +84,26 @@ export async function createSession(user: {
  */
 export async function deleteSession(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: new Date(0),
-    sameSite: 'lax',
-    path: '/',
-  });
+  const sessionCookieNames = [
+    SESSION_COOKIE_NAME,
+    'authjs.session-token',
+    '__Secure-authjs.session-token',
+    'next-auth.session-token',
+    '__Secure-next-auth.session-token',
+    'zenvitra_session',
+    'zenvitra_clearance',
+  ];
+  for (const name of sessionCookieNames) {
+    try {
+      cookieStore.set(name, '', {
+        httpOnly: name.includes('token'),
+        secure: process.env.NODE_ENV === 'production',
+        expires: new Date(0),
+        sameSite: 'lax',
+        path: '/',
+      });
+    } catch (_) {}
+  }
 }
 
 /**

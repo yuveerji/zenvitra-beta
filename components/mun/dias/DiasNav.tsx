@@ -270,9 +270,9 @@ export const DiasNav: React.FC = () => {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         setUserDropdownOpen(false);
-                        if (signOut) signOut();
+                        if (signOut) { await signOut({ forceFullLogout: true }); window.location.replace('/login'); }
                       }}
                       className="w-full px-3 py-2 rounded-xl hover:bg-red-500/10 text-red-400 text-xs font-medium flex items-center gap-2 transition cursor-pointer text-left"
                     >
@@ -401,9 +401,9 @@ export const DiasNav: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       setMobileMenuOpen(false);
-                      if (signOut) signOut();
+                      if (signOut) { await signOut({ forceFullLogout: true }); window.location.replace('/login'); }
                     }}
                     className="text-xs text-red-400 font-medium cursor-pointer"
                   >

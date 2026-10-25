@@ -73,11 +73,11 @@ export function LegalGateModal({ isOpen, type, onComplete, onClose, isMinor }: L
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="max-w-2xl w-full bg-[#07080b] border border-white/10 rounded-[2rem] overflow-hidden flex flex-col max-h-[85vh] shadow-2xl relative">
         
         {/* Modal Header */}
-        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+        <div className="p-4 sm:p-6 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
               isMinor 
@@ -317,7 +317,7 @@ export function LegalGateModal({ isOpen, type, onComplete, onClose, isMinor }: L
         </div>
 
         {/* Modal Footer */}
-        <div className="p-6 flex items-center justify-between bg-black/40">
+        <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-black/40">
           <div className="flex items-center gap-2">
             {hasScrolledToBottom ? (
               <span className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-400">

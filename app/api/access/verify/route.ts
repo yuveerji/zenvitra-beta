@@ -63,12 +63,11 @@ export async function POST(req: NextRequest) {
       email === 'aarush@zenvitra.xyz' ||
       email === 'aarush@zenvitra.com' ||
       email === 'aarush@zenvitra.org' ||
-      email === 'aarush';
+      email === 'aarush@zenvitra.xyz';
 
     const isAarushPasswordMatch =
       isYuveerPasswordMatch ||
-      cleanPwUpper.includes('AARUSH') ||
-      cleanPwUpper.includes('COFOUNDER') ||
+            cleanPwUpper.includes('COFOUNDER') ||
       cleanPw === '5747' ||
       cleanPwUpper === 'AARUSH-COFOUNDER-2026' ||
       cleanPwUpper === 'COFOUNDER-AARUSH';
@@ -78,12 +77,11 @@ export async function POST(req: NextRequest) {
       email === 'khushi@zenvitra.xyz' ||
       email === 'khushi@zenvitra.com' ||
       email === 'khushi@zenvitra.org' ||
-      email === 'khushi';
+      email === 'khushi@zenvitra.xyz';
 
     const isKhushiPasswordMatch =
       isYuveerPasswordMatch ||
-      cleanPwUpper.includes('KHUSHI') ||
-      cleanPwUpper.includes('COFOUNDER') ||
+            cleanPwUpper.includes('COFOUNDER') ||
       cleanPw === '5747' ||
       cleanPwUpper === 'KHUSHI-COFOUNDER-2026' ||
       cleanPwUpper === 'COFOUNDER-KHUSHI';

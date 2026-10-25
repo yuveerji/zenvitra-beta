@@ -62,8 +62,8 @@ export default function PostRegisterPersonaModal() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-300">
-      <div className="relative w-full max-w-xl p-8 rounded-3xl border border-white/20 bg-[#06070a] shadow-2xl space-y-6 font-sans">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in duration-300">
+      <div className="relative w-full max-w-xl p-5 sm:p-8 rounded-3xl border border-white/20 bg-[#06070a] shadow-2xl space-y-6 font-sans">
         
         {/* Prominent Dismiss Button (X) */}
         <button

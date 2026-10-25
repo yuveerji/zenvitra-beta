@@ -62,10 +62,9 @@ const providers: Provider[] = [
         clean === 'aarush@zenvitra.xyz' ||
         clean === 'aarush@zenvitra.com' ||
         clean === 'aarush@zenvitra.org' ||
-        clean === 'aarush' ||
-        clean === 'khushi@zenvitra.xyz' ||
+                clean === 'khushi@zenvitra.xyz' ||
         clean === 'khushi@zenvitra.com' ||
-        clean === 'khushi';
+        clean === 'khushi@zenvitra.xyz';
 
       if (isCoFounder) {
         const isAarush = clean.includes('aarush');
@@ -74,8 +73,8 @@ const providers: Provider[] = [
           isFounderPassword ||
           cleanPw === '5747' ||
           cleanPwUpper.includes('COFOUNDER') ||
-          (isAarush && (cleanPwUpper.includes('AARUSH') || cleanPwUpper === 'AARUSH-COFOUNDER-2026' || cleanPwUpper === 'COFOUNDER-AARUSH')) ||
-          (isKhushi && (cleanPwUpper.includes('KHUSHI') || cleanPwUpper === 'KHUSHI-COFOUNDER-2026' || cleanPwUpper === 'COFOUNDER-KHUSHI'));
+          (isAarush && (cleanPwUpper === 'AARUSH-COFOUNDER-2026' || cleanPwUpper === 'COFOUNDER-AARUSH')) ||
+          (isKhushi && (cleanPwUpper === 'KHUSHI-COFOUNDER-2026' || cleanPwUpper === 'COFOUNDER-KHUSHI'));
 
         if (password && isCoFounderMatch) {
           return {

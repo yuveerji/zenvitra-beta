@@ -213,6 +213,10 @@ function LoginForm() {
   // Instant redirect if user is already logged in (ONLY if not in middle of 2FA verification!)
   useEffect(() => {
     if (is2FAStep) return;
+    if (typeof window !== 'undefined' && sessionStorage.getItem('zenvitra_just_signed_out') === 'true') {
+      sessionStorage.removeItem('zenvitra_just_signed_out');
+      return;
+    }
     try {
       const stored = typeof window !== 'undefined' ? localStorage.getItem('zenvitra_session_user') : null;
       let isValidSession = Boolean(isAuthenticated || profile);
@@ -587,7 +591,7 @@ function LoginForm() {
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[350px] bg-amber-400/[0.03] blur-[140px] rounded-full pointer-events-none z-0" />
 
       {/* Main Authentication Showcase */}
-      <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 flex-1 flex items-start pt-24 sm:pt-28">
+      <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 flex-1 flex items-start pt-20 sm:pt-28">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           
           {/* Left Column: Holographic Sovereign Ecosystem Showcase */}
@@ -726,7 +730,7 @@ function LoginForm() {
             <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-amber-500/20 rounded-[2.8rem] blur-2xl opacity-40 pointer-events-none" />
 
             {/* Main Interactive Form Card */}
-            <div className="rounded-[2.5rem] bg-[#07080b]/95 border border-white/15 p-6 sm:p-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)] backdrop-blur-3xl relative overflow-hidden text-left space-y-6">
+            <div className="rounded-3xl sm:rounded-[2.5rem] bg-[#07080b]/95 border border-white/15 p-4 sm:p-8 shadow-[0_30px_90px_rgba(0,0,0,0.95)] backdrop-blur-3xl relative overflow-hidden text-left space-y-6">
               
               {/* Header Title with Cyber Enclave Pill */}
               <div className="space-y-1">
@@ -1222,7 +1226,10 @@ function LoginForm() {
                             placeholder="Username or email (e.g. yuveer)"
                             disabled={loading}
                             required
-                            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
+                            className="w-full pl-10 pr-4 py-3.5 sm:py-3 min-h-[44px] rounded-2xl bg-white/[0.04] border border-white/10 focus:border-cyan-400/80 focus:ring-2 focus:ring-cyan-500/20 text-sm text-white placeholder:text-neutral-600 focus:outline-none transition font-mono shadow-inner"
                           />
                         </div>
                       </div>
@@ -1277,7 +1284,7 @@ function LoginForm() {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-white via-neutral-100 to-white hover:from-cyan-100 hover:via-white hover:to-cyan-100 text-black font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_rgba(6,182,212,0.35)] active:scale-[0.98] disabled:opacity-50"
+                        className="w-full py-3.5 min-h-[44px] rounded-2xl bg-gradient-to-r from-[#C5A46D] to-[#9E7D47] hover:from-[#d4b37d] hover:to-[#b08c52] text-[#08090C] font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_25px_rgba(197,164,109,0.25)] hover:shadow-[0_0_35px_rgba(197,164,109,0.4)] active:scale-[0.98] disabled:opacity-50"
                       >
                         {loading ? (
                           <>
@@ -1371,7 +1378,9 @@ function LoginForm() {
                         autoFocus
                         disabled={loading}
                         required
-                        className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-center font-mono text-base tracking-widest text-emerald-300 focus:outline-none focus:border-emerald-500/50"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        className="w-full px-4 py-3.5 sm:py-3 min-h-[44px] rounded-2xl bg-white/[0.04] border border-white/10 text-center font-mono text-base tracking-widest text-emerald-300 focus:outline-none focus:border-emerald-500/50"
                       />
                     </div>
 

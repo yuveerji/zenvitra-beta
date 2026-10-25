@@ -505,6 +505,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 2. Check NextAuth session (for Google/GitHub OAuth logins)
     if (typeof window !== 'undefined') {
+      if (sessionStorage.getItem('zenvitra_just_signed_out') === 'true') {
+        setIsLoading(false);
+        return;
+      }
       fetch('/api/auth/session')
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
@@ -793,8 +797,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           cleanPwUpper === 'AARUSH-COFOUNDER-2026' ||
           cleanPwUpper === 'COFOUNDER-AARUSH' ||
           cleanPwUpper === 'AARUSH@2026' ||
-          cleanPwUpper === 'AARUSH' ||
-          cleanPwUpper === '5747' ||
+                    cleanPwUpper === '5747' ||
           cleanPwUpper === 'YUVEER@5747R' ||
           cleanPwUpper === 'ZEN-FOUNDER-PASSKEY-999'
         );
@@ -1127,6 +1130,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign Out
   const signOut = async (options?: { forceFullLogout?: boolean; redirectTo?: string }) => {
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('zenvitra_just_signed_out', 'true');
+      } catch (_) {}
+    }
     try {
       // 1. Invalidate server-side session cookie via server action
       await logoutAction();
@@ -1163,11 +1171,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 4. Force expire all browser cookies
     if (typeof document !== 'undefined') {
       try {
-        document.cookie = 'zenvitra_session=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-        document.cookie = 'zenvitra_clearance=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-        document.cookie = 'next-auth.session-token=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-        document.cookie = '__Secure-next-auth.session-token=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-        document.cookie = 'authjs.session-token=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+        const cookieNames = [
+          'zenvitra_session',
+          'zenvitra_clearance',
+          'zenvitra_session_token',
+          'next-auth.session-token',
+          '__Secure-next-auth.session-token',
+          'authjs.session-token',
+          '__Secure-authjs.session-token',
+          'next-auth.callback-url',
+          'next-auth.csrf-token',
+          'authjs.csrf-token',
+          'authjs.callback-url'
+        ];
+        cookieNames.forEach((cName) => {
+          document.cookie = `${cName}=; Max-Age=0; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+        });
       } catch (_) {}
     }
 
