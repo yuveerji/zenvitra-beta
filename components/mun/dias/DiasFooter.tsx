@@ -45,6 +45,11 @@ export const DiasFooter: React.FC = () => {
             </h4>
             <ul className="space-y-2">
               <li>
+                <Link href="/dias/tour" className="hover:text-[#F4F2ED] text-[#E6D1A5] font-semibold transition-colors flex items-center gap-1">
+                  Explore Dias Tour <ArrowUpRight className="w-3 h-3 text-[#C5A46D]" />
+                </Link>
+              </li>
+              <li>
                 <Link href="/dias?dais=true" className="hover:text-[#F4F2ED] transition-colors flex items-center gap-1">
                   Live Dias Console <ArrowUpRight className="w-3 h-3 text-[#575B66]" />
                 </Link>

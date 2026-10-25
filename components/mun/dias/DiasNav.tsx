@@ -152,6 +152,13 @@ export const DiasNav: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-7">
+            <Link
+              href="/dias/tour"
+              className="text-xs font-semibold uppercase tracking-wider text-[#C5A46D] hover:text-[#E6D1A5] transition-colors flex items-center gap-1.5 font-mono"
+            >
+              <Compass className="w-3.5 h-3.5 text-[#C5A46D]" />
+              <span>Explore Tour</span>
+            </Link>
             <button
               type="button"
               onClick={handleLaunchClick}
@@ -330,13 +337,21 @@ export const DiasNav: React.FC = () => {
             )}
 
             <div className="space-y-3 pb-4 border-b border-[#181B21]">
+              <Link
+                href="/dias/tour"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 text-sm font-semibold text-[#C5A46D] hover:text-[#E6D1A5] py-1 font-mono"
+              >
+                <Compass className="w-4 h-4 text-[#C5A46D]" />
+                <span>Explore Dias Tour</span>
+              </Link>
               <button
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
                   handleLaunchClick();
                 }}
-                className="block text-sm font-semibold text-[#C5A46D] hover:text-[#E6D1A5] py-1 cursor-pointer"
+                className="block text-sm font-semibold text-[#F4F2ED] hover:text-[#C5A46D] py-1 cursor-pointer"
               >
                 ⚡ Configure New Committee
               </button>

@@ -157,10 +157,22 @@ export default function DiasLandingPage() {
 
         {/* Homepage-Style Action CTAs */}
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-16 w-full sm:w-auto font-display">
-          {/* Primary CTA: Enter Dias */}
-          <Link href="/dias?dais=true" className="w-full sm:w-auto">
+          {/* Primary CTA: Explore Dias Tour */}
+          <Link href="/dias/tour" className="w-full sm:w-auto">
             <DiasButton
               variant="gold"
+              size="lg"
+              className="w-full sm:w-auto shadow-[0_0_25px_rgba(197,164,109,0.3)]"
+              rightIcon={<Compass className="w-4 h-4 ml-1 group-hover:rotate-45 transition-transform" />}
+            >
+              Explore Dias Tour
+            </DiasButton>
+          </Link>
+
+          {/* Secondary CTA: Enter Dias */}
+          <Link href="/dias?dais=true" className="w-full sm:w-auto">
+            <DiasButton
+              variant="white"
               size="lg"
               className="w-full sm:w-auto"
               rightIcon={<ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />}
@@ -169,10 +181,10 @@ export default function DiasLandingPage() {
             </DiasButton>
           </Link>
 
-          {/* Secondary CTA: Setup Studio */}
+          {/* Tertiary CTA: Setup Studio */}
           <Link href="/dias?create=true" className="w-full sm:w-auto">
             <DiasButton
-              variant="white"
+              variant="charcoal"
               size="lg"
               className="w-full sm:w-auto"
               rightIcon={<Sparkles className="w-4 h-4 ml-1 text-amber-500 group-hover:rotate-12 transition-transform" />}
@@ -181,10 +193,10 @@ export default function DiasLandingPage() {
             </DiasButton>
           </Link>
 
-          {/* Tertiary CTA: Gateways */}
+          {/* Quaternary CTA: Gateways */}
           <a href="#gateways" className="w-full sm:w-auto">
-            <DiasButton variant="charcoal" size="lg" className="w-full sm:w-auto">
-              Presidium Gateways
+            <DiasButton variant="charcoal" size="lg" className="w-full sm:w-auto text-[#9A9DA5]">
+              Gateways
             </DiasButton>
           </a>
         </div>
