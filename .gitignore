@@ -15,4 +15,6 @@ public/uploads/
 *.pem
 *.key
 github_deploy_key*
+scratch/
+*.bak_*
 

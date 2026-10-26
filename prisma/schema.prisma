@@ -1144,3 +1144,108 @@ model MunAuthAuditLog {
   @@index([targetUserId])
   @@index([committeeId, createdAt])
 }
+
+// ==========================================
+// ZEN EVENTS: PASS CAPACITY & INVENTORY ENGINE
+// ==========================================
+
+model Event {
+  id                 String                @id @default(cuid())
+  name               String
+  slug               String                @unique
+  capacityMode       String                @default("SHARED") // SHARED, SEPARATE
+  venueCapacity      Int
+  operationalReserve Int                   @default(0)
+  soldCount          Int                   @default(0)
+  heldCount          Int                   @default(0)
+  waitlistEnabled    Boolean               @default(false)
+  allowAdminIncrease Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  passTypes          PassType[]
+  pricingPhases      PricingPhase[]
+  reservations       CapacityReservation[]
+  auditLogs          CapacityAuditLog[]
+
+  @@index([slug])
+}
+
+model PassType {
+  id                 String                @id @default(cuid())
+  eventId            String
+  event              Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name               String
+  code               String
+  description        String?
+  capacity           Int?
+  reservedAllocation Int                   @default(0)
+  soldCount          Int                   @default(0)
+  heldCount          Int                   @default(0)
+  isActive           Boolean               @default(true)
+  maxPerOrder        Int                   @default(10)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  reservations       CapacityReservation[]
+
+  @@unique([eventId, code])
+  @@index([eventId, isActive])
+}
+
+model PricingPhase {
+  id           String                @id @default(cuid())
+  eventId      String
+  event        Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name         String
+  startsAt     DateTime?
+  endsAt       DateTime?
+  capacity     Int?
+  soldCount    Int                   @default(0)
+  heldCount    Int                   @default(0)
+  isActive     Boolean               @default(true)
+  reservations CapacityReservation[]
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@index([eventId, isActive])
+}
+
+model CapacityReservation {
+  id             String        @id @default(cuid())
+  eventId        String
+  event          Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  passTypeId     String
+  passType       PassType      @relation(fields: [passTypeId], references: [id], onDelete: Restrict)
+  pricingPhaseId String?
+  pricingPhase   PricingPhase? @relation(fields: [pricingPhaseId], references: [id], onDelete: SetNull)
+  quantity       Int
+  status         String        @default("HELD") // HELD, CONFIRMED, CANCELLED, EXPIRED
+  buyerId        String?
+  checkoutRef    String?       @unique
+  expiresAt      DateTime?
+  confirmedAt    DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([eventId, status, expiresAt])
+  @@index([passTypeId, status])
+  @@index([pricingPhaseId, status])
+}
+
+model CapacityAuditLog {
+  id         String   @id @default(cuid())
+  eventId    String
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  actorId    String
+  action     String   // EVENT_CAPACITY_UPDATED, PASS_CAPACITY_UPDATED, RESERVATION_CREATED, etc.
+  entityType String
+  entityId   String
+  beforeData String?
+  afterData  String?
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([eventId, createdAt])
+  @@index([actorId, createdAt])
+}
+

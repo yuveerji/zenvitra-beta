@@ -596,6 +596,16 @@ export const DistrictHostCommandCenter: React.FC<DistrictHostCommandCenterProps>
               <span>Attendee Inquiries</span>
             </Link>
 
+            {/* Pass Capacity & Venue Quota Management */}
+            <Link
+              href={`/admin/events/${event.id}/capacity`}
+              className="px-3.5 py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
+              title="Manage Live Pass Capacity & Venue Quotas"
+            >
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Pass Capacity</span>
+            </Link>
+
             {/* Public Page Link */}
             <Link
               href={`/events/${event.id}`}
