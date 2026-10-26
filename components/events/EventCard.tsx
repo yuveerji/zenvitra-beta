@@ -69,9 +69,10 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
     }
   };
 
-  const eventDate = new Date(event.date);
-  const month = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  const day = eventDate.getDate();
+  const isDateTBA = event.isDateComingSoon || event.date === 'TBA' || isNaN(new Date(event.date).getTime());
+  const eventDate = isDateTBA ? null : new Date(event.date);
+  const month = eventDate ? eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase() : 'TBA';
+  const day = eventDate ? eventDate.getDate() : '⏳';
 
   const goingCount = event.attendees.filter((a: EventAttendee) => a.status === 'going').length;
 

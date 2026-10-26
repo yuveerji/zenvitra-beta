@@ -80,6 +80,10 @@ export function EventDetail() {
   useEffect(() => {
     if (!event) return;
     const targetDate = new Date(event.date).getTime();
+    if (isNaN(targetDate)) {
+      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      return;
+    }
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -142,8 +146,10 @@ export function EventDetail() {
     }
   };
 
-  const eventDate = new Date(event.date);
-  const fullDate = eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const isValidDate = Boolean(event.date && event.date !== 'TBA' && !isNaN(new Date(event.date).getTime()));
+  const fullDate = isValidDate 
+    ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : (event.dateTbaText || 'Dates Coming Soon / To Be Announced');
   const goingAttendees = event.attendees.filter((a) => a.status === 'going');
 
   const handleShare = () => {

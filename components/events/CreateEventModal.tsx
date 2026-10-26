@@ -130,6 +130,8 @@ export function CreateEventModal({
   const [category, setCategory] = useState<EventCategory>(initialCategory || 'SUMMIT');
   const [date, setDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [isDateComingSoon, setIsDateComingSoon] = useState(false);
+  const [dateTbaText, setDateTbaText] = useState('Dates Coming Soon / TBA');
   const [startTime, setStartTime] = useState('09:30');
   const [endTime, setEndTime] = useState('18:00');
   const [timezone, setTimezone] = useState('IST (UTC+5:30)');
@@ -526,9 +528,9 @@ export function CreateEventModal({
       setToastMessage('Please enter a convening title.');
       return;
     }
-    if (!date) {
+    if (!isDateComingSoon && !date) {
       setActiveTab('LOGISTICS');
-      setToastMessage('Please select a convening date.');
+      setToastMessage('Please select a convening date or enable Dates Coming Soon Mode.');
       return;
     }
     if (!isVirtual && !location.trim()) {
@@ -591,14 +593,19 @@ export function CreateEventModal({
 
     const timeWindow = `${startTime} - ${endTime} ${timezone}`;
 
+    const finalEventDate = isDateComingSoon ? (date || 'TBA') : date;
+    const finalEventEndDate = isDateComingSoon ? (endDate || date || 'TBA') : (endDate || date);
+
     const createdId = createEvent({
       title: title.trim(),
-      description: description.trim() || tagline.trim() || `${title.trim()} — Official Convening on ZENVITRA`,
+      description: description.trim() || `${title.trim()} — Official Convening on ZENVITRA`,
       coverImage: finalCover,
       type,
       category,
-      date,
-      endDate: endDate || date,
+      date: finalEventDate,
+      endDate: finalEventEndDate,
+      isDateComingSoon,
+      dateTbaText: isDateComingSoon ? (dateTbaText.trim() || 'Dates Coming Soon / TBA') : undefined,
       time: timeWindow,
       location: finalLocation,
       city: finalCity,
@@ -1037,15 +1044,18 @@ export function CreateEventModal({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono font-semibold text-neutral-300">
-                    CONVENING TAGLINE / MISSION SUBTITLE
-                  </label>
-                  <input
-                    type="text"
-                    value={tagline}
-                    onChange={(e) => setTagline(e.target.value)}
-                    placeholder="e.g. Simulating multilateral crisis diplomacy and legislative leadership for the 21st century"
-                    className="w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50"
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono font-semibold text-neutral-300">
+                      CONVENING DESCRIPTION &amp; OVERVIEW
+                    </label>
+                    <span className="text-[10px] font-mono text-cyan-400">Context, Mission &amp; Agendas</span>
+                  </div>
+                  <textarea
+                    rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe the convening, its vision, committee agendas, rules of procedure, and key summit highlights..."
+                    className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50 resize-y leading-relaxed font-sans"
                   />
                 </div>
               </div>
@@ -1085,7 +1095,7 @@ export function CreateEventModal({
               </div>
 
               {/* Convening Dates: Start Date & End Date */}
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-cyan-400" />
@@ -1093,81 +1103,173 @@ export function CreateEventModal({
                       CONVENING DATES &amp; TIMELINE
                     </span>
                   </div>
-                  {date && (
+                  {isDateComingSoon ? (
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
+                      ⏳ DATES COMING SOON / TBA
+                    </span>
+                  ) : date ? (
                     <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-bold">
                       {!endDate || date === endDate ? '1-Day Convening' : `${Math.max(1, Math.round((new Date(endDate).getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)) + 1)} Days Assembly`}
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-mono text-neutral-300 font-semibold">
-                      START DATE *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={date}
-                      onChange={(e) => handleStartDateChange(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-mono text-neutral-300 font-semibold">
-                      END DATE *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      min={date || undefined}
-                      value={endDate || date}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
-                    />
-                    <p className="text-[10px] font-mono text-neutral-500">
-                      Auto-synced with Start Date for single-day events; choose later date for multi-day summits.
+                {/* Coming Soon Mode Toggle inside Date Section */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsDateComingSoon(false)}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                      !isDateComingSoon
+                        ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.15)] ring-1 ring-cyan-500/30'
+                        : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-cyan-400" />
+                      <span className="text-xs font-bold font-mono text-white">Specific Dates</span>
+                    </div>
+                    <p className="text-[10px] font-sans text-neutral-400 mt-1">
+                      Confirmed calendar start &amp; end dates.
                     </p>
-                  </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsDateComingSoon(true)}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                      isDateComingSoon
+                        ? 'bg-amber-500/15 border-amber-500/50 text-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.2)] ring-1 ring-amber-500/30'
+                        : 'bg-white/[0.02] border-white/10 text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="text-xs font-bold font-mono text-amber-300">Coming Soon Mode</span>
+                    </div>
+                    <p className="text-[10px] font-sans text-neutral-400 mt-1">
+                      Dates TBA. Publish your summit before dates lock.
+                    </p>
+                  </button>
                 </div>
 
-                {/* Time Window & Timezone */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-mono text-neutral-400">START TIME</label>
-                    <input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
-                    />
+                {/* Date Inputs or Coming Soon Panel */}
+                {isDateComingSoon ? (
+                  <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/25 space-y-3">
+                    <div className="space-y-1">
+                      <label className="block text-[11px] font-mono text-amber-300 font-semibold">
+                        TIMEFRAME ANNOUNCEMENT / TEASER BADGE
+                      </label>
+                      <input
+                        type="text"
+                        value={dateTbaText}
+                        onChange={(e) => setDateTbaText(e.target.value)}
+                        placeholder="e.g. Dates Announcing Soon • Coming Fall 2026 • Tentative: November"
+                        className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-amber-500/30 text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                      />
+                      <p className="text-[10px] font-mono text-neutral-400 mt-0.5">
+                        Will be displayed as the event's convening timeline while exact calendar dates are in progress.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-white/5">
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-mono text-neutral-400">
+                          TENTATIVE START DATE (OPTIONAL)
+                        </label>
+                        <input
+                          type="date"
+                          value={date}
+                          onChange={(e) => handleStartDateChange(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-mono text-neutral-400">
+                          TENTATIVE END DATE (OPTIONAL)
+                        </label>
+                        <input
+                          type="date"
+                          min={date || undefined}
+                          value={endDate || date}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-mono text-neutral-400">CONCLUDING TIME</label>
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-mono text-neutral-400">TIMEZONE</label>
-                    <select
-                      value={timezone}
-                      onChange={(e) => setTimezone(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
-                    >
-                      <option value="IST (UTC+5:30)">IST (UTC+5:30)</option>
-                      <option value="GMT / UTC">GMT / UTC</option>
-                      <option value="CET (UTC+1)">CET (UTC+1)</option>
-                      <option value="EST (UTC-5)">EST (UTC-5)</option>
-                      <option value="PST (UTC-8)">PST (UTC-8)</option>
-                      <option value="SGT (UTC+8)">SGT (UTC+8)</option>
-                    </select>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-mono text-neutral-300 font-semibold">
+                          START DATE *
+                        </label>
+                        <input
+                          type="date"
+                          required={!isDateComingSoon}
+                          value={date}
+                          onChange={(e) => handleStartDateChange(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-mono text-neutral-300 font-semibold">
+                          END DATE *
+                        </label>
+                        <input
+                          type="date"
+                          required={!isDateComingSoon}
+                          min={date || undefined}
+                          value={endDate || date}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+                        />
+                        <p className="text-[10px] font-mono text-neutral-500">
+                          Auto-synced with Start Date for single-day events; choose later date for multi-day summits.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Time Window & Timezone */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-mono text-neutral-400">START TIME</label>
+                        <input
+                          type="time"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-mono text-neutral-400">CONCLUDING TIME</label>
+                        <input
+                          type="time"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-mono text-neutral-400">TIMEZONE</label>
+                        <select
+                          value={timezone}
+                          onChange={(e) => setTimezone(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/15 text-xs font-mono text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer"
+                        >
+                          <option value="IST (UTC+5:30)">IST (UTC+5:30)</option>
+                          <option value="GMT / UTC">GMT / UTC</option>
+                          <option value="CET (UTC+1)">CET (UTC+1)</option>
+                          <option value="EST (UTC-5)">EST (UTC-5)</option>
+                          <option value="PST (UTC-8)">PST (UTC-8)</option>
+                          <option value="SGT (UTC+8)">SGT (UTC+8)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Event Launch & Visibility Status: Live Now vs Coming Soon (Teaser / Priority Waitlist) */}

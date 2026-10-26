@@ -128,6 +128,8 @@ export interface ZenEvent {
   
   // Coming Soon & Phased Sales
   isComingSoon?: boolean;
+  isDateComingSoon?: boolean;
+  dateTbaText?: string;
   comingSoonAnnouncement?: string;
   comingSoonReleaseDate?: string;
   tagline?: string;
