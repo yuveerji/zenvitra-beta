@@ -24,7 +24,9 @@ export async function POST(req: Request) {
       institution,
       phoneNumber,
       countryCity,
-      registrationType
+      registrationType,
+      bio,
+      startingBio
     } = body;
 
     if (!username || !email || !password) {
@@ -67,6 +69,9 @@ export async function POST(req: Request) {
     if (institution) bioParts.push(`[INSTITUTION: ${institution}]`);
     if (registrationType) bioParts.push(`[TYPE: ${registrationType}]`);
 
+    const userStartingBio = (startingBio || bio || '').trim();
+    const finalBio = userStartingBio || (bioParts.length > 0 ? bioParts.join(' ') : null);
+
     const newUser = await db.user.create({
       data: {
         name: name || 'Sovereign Node',
@@ -74,7 +79,7 @@ export async function POST(req: Request) {
         email: cleanEmail,
         password: hashedPassword,
         role: assignedRole,
-        bio: bioParts.length > 0 ? bioParts.join(' ') : null,
+        bio: finalBio,
       },
     });
 

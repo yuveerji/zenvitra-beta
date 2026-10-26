@@ -17,6 +17,16 @@ export default function PostRegisterPersonaModal() {
     const shouldShow = sessionStorage.getItem('zenvitra_show_persona_modal');
     if (shouldShow === 'true') {
       setIsOpen(true);
+      try {
+        const storedBio = localStorage.getItem('zenvitra_starting_bio');
+        if (storedBio) {
+          setBioInput(storedBio);
+        }
+        const storedRole = localStorage.getItem('zenvitra_user_role');
+        if (storedRole === 'delegate') setSelectedPersona('CREATOR');
+        else if (storedRole === 'journalist') setSelectedPersona('RESEARCHER');
+        else if (storedRole === 'architect') setSelectedPersona('ARCHITECT');
+      } catch (_) {}
     }
   }, []);
 

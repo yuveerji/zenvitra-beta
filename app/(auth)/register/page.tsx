@@ -113,7 +113,15 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
-  const [track, setTrack] = useState('delegate');
+  const [track, setTrack] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const storedRole = localStorage.getItem('zenvitra_user_role');
+        if (storedRole) return storedRole;
+      } catch (_) {}
+    }
+    return 'delegate';
+  });
   const [institution, setInstitution] = useState('');
   const [delegationPreference, setDelegationPreference] = useState('India');
   const [password, setPassword] = useState('');
@@ -283,6 +291,7 @@ export default function RegisterPage() {
             email: email.trim().toLowerCase(),
             password: password,
             initialRole: selectedTrackObj?.title || track,
+            startingBio: typeof window !== 'undefined' ? (localStorage.getItem('zenvitra_starting_bio') || undefined) : undefined,
             age: age ? Number(age) : undefined,
             isMinor: isMinorUser,
             parentName: parentName.trim() || undefined,

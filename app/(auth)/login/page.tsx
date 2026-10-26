@@ -34,7 +34,8 @@ import {
   Copy,
   X,
   Plus,
-  Briefcase
+  Briefcase,
+  RotateCcw
 } from 'lucide-react';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
 import { Navbar } from '@/components/layout/Navbar';
@@ -82,6 +83,12 @@ interface SavedAccount {
   lastLoginSuccess?: boolean;
   lastActive?: string;
 }
+
+export const PILLAR_DEFAULT_BIOS: Record<'delegate' | 'journalist' | 'architect', string> = {
+  delegate: 'Diplomatic delegate engaging in parliamentary procedure, multilateral summits, and resolution drafting across ZENVITRA chambers.',
+  journalist: 'Investigative press correspondent reporting on parliamentary summits, wire dispatches, and civic research across ZENVITRA Press.',
+  architect: 'Civic protocol engineer governing smart assemblies, open-source civic tools, and public treasury audits across ZENVITRA.',
+};
 
 const SOVEREIGN_PILLARS: SovereignPillar[] = [
   {
@@ -248,7 +255,7 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // Active Sovereign Persona Selection
+  // Active Sovereign Persona Selection & Connected Configurable Starting Bio
   const [selectedRole, setSelectedRole] = useState<'delegate' | 'journalist' | 'architect'>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -259,11 +266,72 @@ function LoginForm() {
     return 'delegate';
   });
 
-  useEffect(() => {
+  const [startingBio, setStartingBio] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const storedBio = localStorage.getItem('zenvitra_starting_bio');
+        if (storedBio && storedBio.trim()) return storedBio;
+        const storedRole = localStorage.getItem('zenvitra_user_role');
+        const role = (storedRole === 'journalist' || storedRole === 'architect' || storedRole === 'delegate') ? storedRole : 'delegate';
+        return PILLAR_DEFAULT_BIOS[role];
+      } catch (_) {}
+    }
+    return PILLAR_DEFAULT_BIOS.delegate;
+  });
+
+  const [isBioCustomized, setIsBioCustomized] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('zenvitra_starting_bio_customized') === 'true';
+      } catch (_) {}
+    }
+    return false;
+  });
+
+  const [bioSavedPulse, setBioSavedPulse] = useState(false);
+
+  // Synchronize pillar selection with starting bio template
+  const handleSelectPillar = (roleId: 'delegate' | 'journalist' | 'architect') => {
+    setSelectedRole(roleId);
     try {
-      localStorage.setItem('zenvitra_user_role', selectedRole);
+      localStorage.setItem('zenvitra_user_role', roleId);
     } catch (_) {}
-  }, [selectedRole]);
+
+    // Check if the current bio matches any default template or hasn't been custom typed
+    const isMatchingAnyDefault = Object.values(PILLAR_DEFAULT_BIOS).includes(startingBio);
+    if (!isBioCustomized || isMatchingAnyDefault) {
+      const template = PILLAR_DEFAULT_BIOS[roleId];
+      setStartingBio(template);
+      setIsBioCustomized(false);
+      try {
+        localStorage.setItem('zenvitra_starting_bio', template);
+        localStorage.removeItem('zenvitra_starting_bio_customized');
+      } catch (_) {}
+    }
+  };
+
+  const handleBioChange = (text: string) => {
+    setStartingBio(text);
+    setIsBioCustomized(true);
+    setBioSavedPulse(true);
+    setTimeout(() => setBioSavedPulse(false), 2000);
+    try {
+      localStorage.setItem('zenvitra_starting_bio', text);
+      localStorage.setItem('zenvitra_starting_bio_customized', 'true');
+    } catch (_) {}
+  };
+
+  const handleResetBioToDefault = () => {
+    const template = PILLAR_DEFAULT_BIOS[selectedRole];
+    setStartingBio(template);
+    setIsBioCustomized(false);
+    setBioSavedPulse(true);
+    setTimeout(() => setBioSavedPulse(false), 2000);
+    try {
+      localStorage.setItem('zenvitra_starting_bio', template);
+      localStorage.removeItem('zenvitra_starting_bio_customized');
+    } catch (_) {}
+  };
   
   // Saved Accounts & Login Info State
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
@@ -468,6 +536,12 @@ function LoginForm() {
       const effectiveRole = isActualFounder ? 'founder' : ((selectedAccount?.role === 'founder' ? 'delegate' : selectedAccount?.role) || selectedRole);
       try {
         localStorage.setItem('zenvitra_user_role', effectiveRole);
+        localStorage.setItem('zenvitra_starting_bio', startingBio);
+        fetch('/api/user/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bio: startingBio }),
+        }).catch(() => {});
       } catch (_) {}
 
       if (saveLoginInfo) {
@@ -655,7 +729,7 @@ function LoginForm() {
                     <InteractiveGlowCard
                       key={p.id}
                       spotlightColor={p.spotlightColor}
-                      onClick={() => setSelectedRole(p.id as any)}
+                      onClick={() => handleSelectPillar(p.id as any)}
                       className={`${p.accentBorder} ${
                         isSelected 
                           ? 'ring-2 ring-white/30 bg-white/[0.06] border-white/30 shadow-[0_0_25px_rgba(255,255,255,0.08)]' 
@@ -697,6 +771,87 @@ function LoginForm() {
                     </InteractiveGlowCard>
                   );
                 })}
+              </div>
+
+              {/* Connected Configurable Starting Bio Card */}
+              <div className="rounded-2xl p-4 bg-gradient-to-b from-white/[0.05] via-[#08090d] to-[#040507] border border-white/15 space-y-3 shadow-xl backdrop-blur-md">
+                <div className="flex items-start justify-between gap-2 flex-wrap sm:flex-nowrap">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`p-2 rounded-xl border text-xs shrink-0 transition-colors ${
+                      selectedRole === 'delegate'
+                        ? 'bg-amber-500/15 border-amber-500/30 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                        : selectedRole === 'journalist'
+                        ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                        : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                    }`}>
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold text-white uppercase font-mono tracking-wider">
+                          Connected Starting Bio
+                        </span>
+                        <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                          selectedRole === 'delegate'
+                            ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
+                            : selectedRole === 'journalist'
+                            ? 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10'
+                            : 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
+                        }`}>
+                          {selectedRole.toUpperCase()} TEMPLATE
+                        </span>
+                        {isBioCustomized && (
+                          <span className="text-[9px] font-mono font-bold text-purple-300 bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 rounded-full">
+                            CUSTOMIZED
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-neutral-400 leading-tight mt-0.5">
+                        Connected to your pillar. Configurable here and applied as your initial profile manifesto.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                    {isBioCustomized && (
+                      <button
+                        type="button"
+                        onClick={handleResetBioToDefault}
+                        className="text-[10px] font-mono text-neutral-300 hover:text-white px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors flex items-center gap-1 cursor-pointer"
+                        title="Reset to pillar standard manifesto template"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset Default</span>
+                      </button>
+                    )}
+                    <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span>{bioSavedPulse ? 'Saved!' : 'Ready'}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="relative">
+                    <textarea
+                      rows={3}
+                      value={startingBio}
+                      onChange={(e) => handleBioChange(e.target.value)}
+                      placeholder="Customize your starting bio and diplomatic manifesto..."
+                      className="w-full text-xs font-mono text-neutral-200 bg-black/60 border border-white/15 rounded-xl p-3 focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/40 placeholder:text-neutral-600 transition resize-none leading-relaxed shadow-inner"
+                      maxLength={320}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 px-1">
+                    <span className="flex items-center gap-1.5 text-neutral-400">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>Directly configurable • Auto-persists to your session</span>
+                    </span>
+                    <span className={startingBio.length > 280 ? 'text-amber-400' : 'text-neutral-500'}>
+                      {startingBio.length}/320
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -784,7 +939,7 @@ function LoginForm() {
                       <button
                         key={r.id}
                         type="button"
-                        onClick={() => setSelectedRole(r.id as any)}
+                        onClick={() => handleSelectPillar(r.id as any)}
                         className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 text-xs font-sans font-semibold ${
                           isSel
                             ? `${r.activeBg} shadow-md ring-1 ring-white/20`
