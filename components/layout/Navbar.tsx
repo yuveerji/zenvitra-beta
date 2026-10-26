@@ -43,6 +43,7 @@ import {
   Target,
   ShieldAlert,
   Lock,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { SocialMindMapModal } from '@/components/home/SocialMindMapModal';
@@ -52,6 +53,7 @@ import { EcosystemMindMapModal } from './EcosystemMindMapModal';
 import { SecurityShieldModal } from '@/components/security/SecurityShieldModal';
 import { SwitchAccountModal } from '@/components/pulse/SwitchAccountModal';
 import { NotificationBell } from '@/components/navigation/NotificationBell';
+import { SearchProfileBar } from '@/components/navigation/SearchProfileBar';
 import { AdminOmniModal } from '@/components/founder/AdminOmniModal';
 import { FounderOmniModal } from '@/components/founder/FounderOmniModal';
 import { 
@@ -134,6 +136,7 @@ export function Navbar({
   const [founderOmniModalOpen, setFounderOmniModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [ecosystemDropdownOpen, setEcosystemDropdownOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -490,6 +493,21 @@ export function Navbar({
 
           {/* RIGHT: Actions & Authentication */}
           <div className="flex items-center gap-2 sm:gap-2.5 xl:gap-3 shrink-0 ml-auto">
+
+            {/* Global Search Profile Bar (Desktop / Tablet) */}
+            <div className="hidden sm:block">
+              <SearchProfileBar className="w-36 sm:w-44 md:w-52 lg:w-60 focus-within:w-56 md:focus-within:w-64 xl:focus-within:w-72" />
+            </div>
+
+            {/* Mobile Search Profile Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              className="sm:hidden p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition cursor-pointer"
+              title="Search Profiles (@handle)"
+            >
+              <Search className="w-3.5 h-3.5" />
+            </button>
 
             {/* 1. @zenvitra Social Hover Menu (Tablet & Desktop) */}
             <div className="hidden sm:block">

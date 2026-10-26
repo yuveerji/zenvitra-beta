@@ -41,6 +41,7 @@ import { getRoleConfig } from '@/lib/roleExperience';
 import { FluxReelsFeed } from './FluxReelsFeed';
 import { UserProfileView } from './UserProfileView';
 import { DiscoverProfiles } from './DiscoverProfiles';
+import { SearchProfileBar } from '@/components/navigation/SearchProfileBar';
 import { PostComposer } from './PostComposer';
 import { FluxComposer } from './FluxComposer';
 import { ZenSparkCard } from './ZenSparkCard';
@@ -895,26 +896,21 @@ export function ZenPulseCore() {
                 })}
               </div>
 
-              {/* ZEN.SEARCH Ecosystem Bar */}
-              <div className="relative min-w-[200px] sm:w-64">
-                <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search dispatches & tags..."
-                  className="w-full pl-9 pr-7 py-2 rounded-xl bg-white/[0.05] border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400/60 font-sans transition"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
+              {/* Search Profile & Delegate Bar */}
+              <SearchProfileBar
+                className="min-w-[200px] sm:w-64"
+                placeholder="Search profiles (@handle)..."
+                onSelectProfile={(u) => {
+                  setSelectedProfileUsername(u);
+                  setNavTab('profile');
+                  if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', 'profile');
+                    url.searchParams.set('user', u);
+                    window.history.pushState({}, '', url.toString());
+                  }
+                }}
+              />
             </div>
 
             {/* Quick Action Triggers */}
