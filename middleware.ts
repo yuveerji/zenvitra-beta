@@ -251,7 +251,7 @@ export async function middleware(request: NextRequest) {
   const isFounderPath = pathname.startsWith('/zen-vault-root') || pathname.startsWith('/founder');
   const isAdminCorePath = (
     pathname.startsWith('/core-team-panel') ||
-    pathname.startsWith('/admin') ||
+    (pathname.startsWith('/admin') && !pathname.startsWith('/admin/events')) ||
     pathname.startsWith('/admin-access') ||
     pathname.startsWith('/enclave') ||
     pathname.startsWith('/enclave-access')
