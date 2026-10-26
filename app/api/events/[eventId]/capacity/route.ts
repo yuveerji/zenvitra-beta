@@ -12,11 +12,41 @@ type Context = { params: Promise<{ eventId: string }> };
 export async function GET(_request: Request, { params }: Context) {
   try {
     const { eventId } = await params;
-    const event = await prisma.event.findFirst({
+    let event = await prisma.event.findFirst({
       where: { OR: [{ id: eventId }, { slug: eventId }] },
       include: { passTypes: { orderBy: { createdAt: "asc" } } },
     });
-    if (!event) throw new CapacityError("EVENT_NOT_FOUND", "Event was not found.", 404);
+
+    if (!event) {
+      // Auto-initialize capacity record for this event with 0 booked passes
+      const formattedTitle = decodeURIComponent(eventId)
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+      event = await prisma.event.create({
+        data: {
+          id: eventId,
+          name: formattedTitle,
+          slug: eventId.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+          venueCapacity: 500,
+          operationalReserve: 25,
+          soldCount: 0,
+          heldCount: 0,
+          capacityMode: "SHARED",
+          waitlistEnabled: true,
+          allowAdminIncrease: true,
+          passTypes: {
+            create: [
+              { name: "Delegate Pass", code: "DELEGATE", capacity: 300, reservedAllocation: 0, maxPerOrder: 5, soldCount: 0, heldCount: 0 },
+              { name: "Observer Pass", code: "OBSERVER", capacity: 150, reservedAllocation: 0, maxPerOrder: 5, soldCount: 0, heldCount: 0 },
+              { name: "VIP Executive Pass", code: "VIP", capacity: 50, reservedAllocation: 5, maxPerOrder: 2, soldCount: 0, heldCount: 0 },
+            ],
+          },
+        },
+        include: { passTypes: { orderBy: { createdAt: "asc" } } },
+      });
+    }
+
     return NextResponse.json(capacitySnapshot(event, event.passTypes, event.capacityMode));
   } catch (error) {
     return apiError(error);
