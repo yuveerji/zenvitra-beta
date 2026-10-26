@@ -102,7 +102,7 @@ export default function DiasTourPage() {
 
         {/* Subtitle */}
         <p className="text-base sm:text-lg md:text-xl text-[#9A9DA5] max-w-3xl font-light leading-relaxed mb-10">
-          Inspired by gavelling.com/sessions, elevated for ZENVITRA. Explore every procedural dimension before your conference gavels in: Chair Dais Cockpit, Delegate Mobile Floor, Auditorium Stage Projection, Indian Parliamentary Bill Engine, and Crisis War Room.
+          Engineered for modern multilateral summits. Explore every procedural dimension before your conference gavels in: Chair Dais Cockpit, Delegate Mobile Floor, Auditorium Stage Projection, Indian Parliamentary Bill Engine, and Crisis War Room.
         </p>
 
         {/* Interactive CTA Bar */}
@@ -258,7 +258,7 @@ export default function DiasTourPage() {
         </div>
       </section>
 
-      {/* ─── 4. THREE-WAY COMPARISON (ZENVITRA DIAS VS GAVELLING VS LEGACY MUN TOOLS) ─── */}
+      {/* ─── 4. DIRECT COMPARISON (ZENVITRA DIAS VS LEGACY MUN TOOLS) ─── */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-3 max-w-3xl mx-auto">
           <DiasBadge variant="indigo" size="sm">
@@ -285,7 +285,6 @@ export default function DiasTourPage() {
                       <span>ZENVITRA MUN DIAS</span>
                     </div>
                   </th>
-                  <th className="p-4 sm:p-5 font-mono text-xs text-[#9A9DA5]">Gavelling.com</th>
                   <th className="p-4 sm:p-5 font-mono text-xs text-[#9A9DA5]">Legacy MUN Spreadsheets</th>
                 </tr>
               </thead>
@@ -295,7 +294,6 @@ export default function DiasTourPage() {
                   <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-[#6366F1]/5 border-x border-[#6366F1]/20 flex items-center gap-1.5">
                     <Check className="w-4 h-4 text-emerald-400" /> WebSocket Cloud Engine
                   </td>
-                  <td className="p-4 sm:p-5 text-[#F4F2ED]">Yes (Session Code)</td>
                   <td className="p-4 sm:p-5 text-red-400">Manual Refresh / None</td>
                 </tr>
 
@@ -304,7 +302,6 @@ export default function DiasTourPage() {
                   <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-[#6366F1]/5 border-x border-[#6366F1]/20 flex items-center gap-1.5">
                     <Check className="w-4 h-4 text-emerald-400" /> Multi-Layer Walnut Impulse
                   </td>
-                  <td className="p-4 sm:p-5 text-[#9A9DA5]">Basic Beeps</td>
                   <td className="p-4 sm:p-5 text-red-400">Physical Wooden Gavel Only</td>
                 </tr>
 
@@ -313,7 +310,6 @@ export default function DiasTourPage() {
                   <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-[#6366F1]/5 border-x border-[#6366F1]/20 flex items-center gap-1.5">
                     <Check className="w-4 h-4 text-emerald-400" /> Dedicated 543-Seat LS Engine
                   </td>
-                  <td className="p-4 sm:p-5 text-red-400">UN Rules Only</td>
                   <td className="p-4 sm:p-5 text-red-400">None</td>
                 </tr>
 
@@ -322,7 +318,6 @@ export default function DiasTourPage() {
                   <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-[#6366F1]/5 border-x border-[#6366F1]/20 flex items-center gap-1.5">
                     <Check className="w-4 h-4 text-emerald-400" /> Native High-Contrast Mode
                   </td>
-                  <td className="p-4 sm:p-5 text-[#F4F2ED]">Basic Projector View</td>
                   <td className="p-4 sm:p-5 text-red-400">Awkward Screen Mirroring</td>
                 </tr>
 
@@ -331,7 +326,6 @@ export default function DiasTourPage() {
                   <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-[#6366F1]/5 border-x border-[#6366F1]/20 flex items-center gap-1.5">
                     <Check className="w-4 h-4 text-emerald-400" /> Breaking Wire + Directives
                   </td>
-                  <td className="p-4 sm:p-5 text-red-400">Standard Rules Only</td>
                   <td className="p-4 sm:p-5 text-red-400">None</td>
                 </tr>
 
@@ -340,7 +334,6 @@ export default function DiasTourPage() {
                   <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-[#6366F1]/5 border-x border-[#6366F1]/20 flex items-center gap-1.5">
                     <Check className="w-4 h-4 text-emerald-400" /> Automatic Credential Issuance
                   </td>
-                  <td className="p-4 sm:p-5 text-[#9A9DA5]">Profile Only</td>
                   <td className="p-4 sm:p-5 text-red-400">Paper Certificates</td>
                 </tr>
               </tbody>
