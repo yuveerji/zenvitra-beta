@@ -185,6 +185,29 @@ export function ArticleEditor() {
   const contentInitializedRef = useRef(false);
 
   const bodyImageInputRef = useRef<HTMLInputElement>(null);
+  const savedRangeRef = useRef<Range | null>(null);
+
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    }
+  };
+
+  const insertInlineFigure = (url: string, caption?: string) => {
+    editorRef.current?.focus();
+    const sel = window.getSelection();
+    if (savedRangeRef.current && sel) {
+      sel.removeAllRanges();
+      sel.addRange(savedRangeRef.current);
+    }
+
+    const safeCaption = caption ? caption.trim() : '';
+    const figureHtml = `<figure class="zen-inline-image my-6 text-center select-none" contenteditable="false"><img src="${url}" alt="${safeCaption}" class="max-w-full rounded-2xl mx-auto border border-white/15 shadow-xl object-cover" style="max-height: 520px;" />${safeCaption ? `<figcaption class="text-xs font-mono text-neutral-400 mt-2 text-center">${safeCaption}</figcaption>` : ''}</figure><p><br></p>`;
+
+    document.execCommand('insertHTML', false, figureHtml);
+    updateStats();
+  };
 
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -207,7 +230,53 @@ export function ArticleEditor() {
       const reader = new FileReader();
       reader.onload = (loadEvt) => {
         if (loadEvt.target?.result) {
-          execCmd('insertImage', loadEvt.target.result as string);
+          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+          insertInlineFigure(loadEvt.target.result as string, cleanName);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleInsertImageUrl = () => {
+    saveSelection();
+    const url = prompt('Enter image URL to insert between paragraphs:');
+    if (!url || !url.trim()) return;
+    const caption = prompt('Optional image caption:');
+    insertInlineFigure(url.trim(), caption || undefined);
+  };
+
+  const handleEditorPaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (loadEvt) => {
+            if (loadEvt.target?.result) {
+              insertInlineFigure(loadEvt.target.result as string, 'Pasted Figure');
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+        return;
+      }
+    }
+  };
+
+  const handleEditorDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+      e.preventDefault();
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (loadEvt) => {
+        if (loadEvt.target?.result) {
+          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+          insertInlineFigure(loadEvt.target.result as string, cleanName);
         }
       };
       reader.readAsDataURL(file);
@@ -758,13 +827,25 @@ export function ArticleEditor() {
 
             <button
               type="button"
+              onMouseDown={saveSelection}
               onClick={() => {
+                saveSelection();
                 bodyImageInputRef.current?.click();
               }}
-              className="p-2 rounded-xl hover:bg-white/10 text-neutral-300 hover:text-white cursor-pointer"
-              title="Upload Image"
+              className="p-2 rounded-xl hover:bg-white/10 text-neutral-300 hover:text-white cursor-pointer flex items-center gap-1"
+              title="Upload & Insert Photo Between Paragraphs"
             >
-              <ImageIcon className="w-3.5 h-3.5" />
+              <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+            </button>
+
+            <button
+              type="button"
+              onMouseDown={saveSelection}
+              onClick={handleInsertImageUrl}
+              className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-[11px] font-mono cursor-pointer flex items-center gap-1"
+              title="Insert Image by URL"
+            >
+              <span>+ Image URL</span>
             </button>
 
             {/* Stats Right */}
@@ -788,6 +869,10 @@ export function ArticleEditor() {
               ref={editorRef}
               contentEditable
               onInput={updateStats}
+              onKeyUp={saveSelection}
+              onMouseUp={saveSelection}
+              onPaste={handleEditorPaste}
+              onDrop={handleEditorDrop}
               data-placeholder="Begin drafting your dispatch, investigation, or manifesto..."
               className="zen-editor text-base font-sans text-neutral-200 leading-relaxed focus:outline-none min-h-[380px]"
             />

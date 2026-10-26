@@ -30,6 +30,7 @@ import { NewsStory, NewsCategory } from '@/types/news';
 import { isSubscribedToCategory, toggleCategorySubscription } from '@/lib/categorySubscriptionService';
 import { useAuth } from '@/context/AuthContext';
 import { SignInPromptModal } from '@/components/auth/SignInPromptModal';
+import { InlineContentRenderer } from '@/components/common/InlineContentRenderer';
 
 /* ─────────── ZERO SEEDED DATA (CLEAN LIVE PLATFORM) ─────────── */
 
@@ -473,13 +474,14 @@ export default function ZenNewsPage() {
               )}
 
               {/* WHAT HAPPENED SECTION */}
-              <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1.5">
-                <span className="text-[10px] font-mono text-purple-300 uppercase tracking-widest font-bold">
+              <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                <span className="text-[10px] font-mono text-purple-300 uppercase tracking-widest font-bold block pb-1 border-b border-white/[0.08]">
                   WHAT HAPPENED (PRIMARY DISPATCH)
                 </span>
-                <p className="font-sans text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
-                  {activeStory.whatHappened || (activeStory as any).content || activeStory.summary}
-                </p>
+                <InlineContentRenderer
+                  content={activeStory.whatHappened || (activeStory as any).content || activeStory.summary}
+                  className="text-xs sm:text-sm text-neutral-200"
+                />
               </div>
 
               {/* DEVELOPING STORY TIMELINE */}

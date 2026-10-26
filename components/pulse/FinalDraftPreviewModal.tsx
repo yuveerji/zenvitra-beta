@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { PulsePostFormat } from '@/types/pulse';
 import { MASTER_BADGES, isFoundingMember } from '@/lib/badgeSystem';
+import { InlineContentRenderer } from '@/components/common/InlineContentRenderer';
 
 interface FinalDraftPreviewModalProps {
   isOpen: boolean;
@@ -262,8 +263,8 @@ export function FinalDraftPreviewModal({
           )}
 
           {/* Article / Dispatch Body Text */}
-          <div className="text-sm leading-relaxed text-neutral-200 whitespace-pre-wrap font-sans">
-            {content.trim() || <span className="text-neutral-500 italic">No text content entered...</span>}
+          <div className="text-sm leading-relaxed text-neutral-200 font-sans">
+            <InlineContentRenderer content={content} />
           </div>
 
           {/* Attached Audio/Song */}

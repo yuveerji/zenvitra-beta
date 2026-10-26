@@ -19,6 +19,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { PressCategory } from '@/types/press';
+import { InlineContentRenderer } from '@/components/common/InlineContentRenderer';
 
 interface PressDraftPreviewModalProps {
   isOpen: boolean;
@@ -203,16 +204,7 @@ export function PressDraftPreviewModal({
             <span>Article Body Text</span>
           </div>
 
-          {content.includes('<') && content.includes('>') ? (
-            <div 
-              className="text-sm font-sans leading-relaxed text-neutral-200 prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: content }}
-            />
-          ) : (
-            <div className="text-sm font-sans leading-relaxed text-neutral-200 whitespace-pre-wrap">
-              {content || 'No body text provided.'}
-            </div>
-          )}
+          <InlineContentRenderer content={content} className="text-sm" />
         </div>
 
         {/* Citations & Sources */}

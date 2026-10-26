@@ -215,6 +215,85 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
 
   // Creative Post Format (Micro Dispatch, Blog / Essay, Poetry & Verses, Treaty)
   const [postFormat, setPostFormat] = useState<PulsePostFormat>('dispatch');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inlineImageFileInputRef = useRef<HTMLInputElement>(null);
+
+  const insertInlineImageAtCursor = (imageUrl: string, caption?: string) => {
+    const textarea = textareaRef.current;
+    const safeCaption = caption?.trim() || 'Visual Figure';
+    const markdownImage = `\n\n![${safeCaption}](${imageUrl})\n\n`;
+
+    if (textarea) {
+      const start = textarea.selectionStart ?? content.length;
+      const end = textarea.selectionEnd ?? content.length;
+      const before = content.substring(0, start);
+      const after = content.substring(end);
+      const updated = `${before}${markdownImage}${after}`;
+      setContent(updated);
+
+      setTimeout(() => {
+        textarea.focus();
+        const nextPos = start + markdownImage.length;
+        textarea.setSelectionRange(nextPos, nextPos);
+      }, 50);
+    } else {
+      setContent((prev) => `${prev}${markdownImage}`);
+    }
+  };
+
+  const handleInlineImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WEBP, or SVG).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (loadEvt) => {
+      if (typeof loadEvt.target?.result === 'string') {
+        const cleanName = file.name.replace(/\.[^/.]+$/, '');
+        insertInlineImageAtCursor(loadEvt.target.result, cleanName);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleTextareaPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (loadEvt) => {
+            if (typeof loadEvt.target?.result === 'string') {
+              insertInlineImageAtCursor(loadEvt.target.result, 'Pasted Visual');
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+        return;
+      }
+    }
+  };
+
+  const handleTextareaDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+      e.preventDefault();
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (loadEvt) => {
+        if (typeof loadEvt.target?.result === 'string') {
+          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+          insertInlineImageAtCursor(loadEvt.target.result, cleanName);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const [showFinalDraftModal, setShowFinalDraftModal] = useState(false);
 
   const moveImage = (fromIdx: number, toIdx: number) => {
@@ -1681,7 +1760,10 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                     {/* Content Textarea */}
                     <div className="space-y-2">
                       <textarea
+                        ref={textareaRef}
                         value={content}
+                        onPaste={handleTextareaPaste}
+                        onDrop={handleTextareaDrop}
                         onChange={(e) => setContent(e.target.value.slice(0, charLimit))}
                         placeholder={
                           postFormat === 'poetry'
@@ -1740,6 +1822,22 @@ export function PostComposer({ onFinished, onClose }: PostComposerProps) {
                       {/* Emojis Quick Picker Row */}
                       <div className="flex items-center justify-between pt-1 border-t border-white/[0.06] relative">
                         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+                          <button
+                            type="button"
+                            onClick={() => inlineImageFileInputRef.current?.click()}
+                            className="px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5 cursor-pointer transition shrink-0 mr-1"
+                            title="Insert image anywhere at cursor position between paragraphs"
+                          >
+                            <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
+                            <span>+ Insert Photo in Text</span>
+                          </button>
+                          <input
+                            ref={inlineImageFileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleInlineImageUpload}
+                          />
                           <button
                             type="button"
                             onClick={() => setShowUniversalEmojiPicker(!showUniversalEmojiPicker)}

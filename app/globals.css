@@ -719,3 +719,27 @@ img[src*="/assets/logo"],
     word-break: normal;
   }
 }
+
+/* Inline Article, Blog, and Dispatch Content Images */
+.zen-article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  margin: 1.5rem auto;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s ease;
+}
+
+.zen-article-content figure {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.zen-article-content figcaption {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: #a1a1aa;
+  margin-top: 0.5rem;
+}

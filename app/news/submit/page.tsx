@@ -122,6 +122,92 @@ export default function SubmitNewsWirePage() {
   const [galleryImages, setGalleryImages] = useState<string[]>([PRESET_COVERS[0].url]);
   const [showFinalDraftModal, setShowFinalDraftModal] = useState(false);
   const multiFileInputRef = useRef<HTMLInputElement>(null);
+  const whatHappenedTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const inlineNewsImageFileInputRef = useRef<HTMLInputElement>(null);
+
+  const insertInlineImageIntoNews = (imageUrl: string, caption?: string) => {
+    const textarea = whatHappenedTextareaRef.current;
+    const safeCaption = caption?.trim() || 'Dispatch Figure';
+    const markdownImage = `\n\n![${safeCaption}](${imageUrl})\n\n`;
+
+    if (textarea) {
+      const start = textarea.selectionStart ?? whatHappened.length;
+      const end = textarea.selectionEnd ?? whatHappened.length;
+      const before = whatHappened.substring(0, start);
+      const after = whatHappened.substring(end);
+      const updated = `${before}${markdownImage}${after}`;
+      setWhatHappened(updated);
+
+      setTimeout(() => {
+        textarea.focus();
+        const nextPos = start + markdownImage.length;
+        textarea.setSelectionRange(nextPos, nextPos);
+      }, 50);
+    } else {
+      setWhatHappened((prev) => `${prev}${markdownImage}`);
+    }
+  };
+
+  const handleInlineNewsImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WEBP, or SVG).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (loadEvt) => {
+      if (typeof loadEvt.target?.result === 'string') {
+        const cleanName = file.name.replace(/\.[^/.]+$/, '');
+        insertInlineImageIntoNews(loadEvt.target.result, cleanName);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleInsertNewsImageUrl = () => {
+    const url = prompt('Enter image URL to insert between paragraphs:');
+    if (!url || !url.trim()) return;
+    const caption = prompt('Optional image caption:');
+    insertInlineImageIntoNews(url.trim(), caption || undefined);
+  };
+
+  const handleNewsTextareaPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (loadEvt) => {
+            if (typeof loadEvt.target?.result === 'string') {
+              insertInlineImageIntoNews(loadEvt.target.result, 'Pasted Figure');
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+        return;
+      }
+    }
+  };
+
+  const handleNewsTextareaDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+      e.preventDefault();
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (loadEvt) => {
+        if (typeof loadEvt.target?.result === 'string') {
+          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+          insertInlineImageIntoNews(loadEvt.target.result, cleanName);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const movePhoto = (fromIdx: number, toIdx: number) => {
     if (toIdx < 0 || toIdx >= galleryImages.length) return;
@@ -1305,14 +1391,45 @@ export default function SubmitNewsWirePage() {
                 />
               </div>
 
-              <div>
-                <span className="text-xs text-neutral-400 mb-1.5 block">Full Dispatch Body / What Happened * (Markdown supported)</span>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs text-neutral-400 block">Full Dispatch Body / What Happened *</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => inlineNewsImageFileInputRef.current?.click()}
+                      className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer transition"
+                      title="Insert photo anywhere at cursor position between text"
+                    >
+                      <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>+ Insert Photo in Text</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleInsertNewsImageUrl}
+                      className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-mono cursor-pointer transition"
+                      title="Insert photo by direct URL"
+                    >
+                      <span>+ Photo URL</span>
+                    </button>
+                    <input
+                      ref={inlineNewsImageFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleInlineNewsImageUpload}
+                    />
+                  </div>
+                </div>
                 <textarea
+                  ref={whatHappenedTextareaRef}
                   required
                   rows={8}
                   value={whatHappened}
                   onChange={(e) => setWhatHappened(e.target.value)}
-                  placeholder="Comprehensive dispatch narrative, context, quotes, diplomatic outcomes, and verifiable details..."
+                  onPaste={handleNewsTextareaPaste}
+                  onDrop={handleNewsTextareaDrop}
+                  placeholder="Comprehensive dispatch narrative, context, quotes, diplomatic outcomes, and verifiable details... (You can also drag & drop or paste photos directly between paragraphs)"
                   className="w-full bg-black/60 border border-white/15 rounded-xl px-4 py-3 text-white text-sm placeholder:text-neutral-600 focus:border-rose-500/50 focus:outline-none transition leading-relaxed font-sans"
                 />
               </div>

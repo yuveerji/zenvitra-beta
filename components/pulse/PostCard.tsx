@@ -44,6 +44,7 @@ import { useGlobalAudio } from '@/components/audio/GlobalAudioContext';
 import { ImageGrid } from './ImageGrid';
 import { getStoryFontStyle } from '@/lib/storyFonts';
 import { ShareToChatModal } from './ShareToChatModal';
+import { InlineContentRenderer } from '@/components/common/InlineContentRenderer';
 
 interface PostCardProps {
   post: PulsePost;
@@ -360,19 +361,21 @@ export function PostCard({ post }: PostCardProps) {
 
             {/* Content Body */}
             {post.postFormat === 'poetry' ? (
-              <p 
-                className="text-[14px] sm:text-[15px] text-neutral-100 whitespace-pre-wrap break-words selection:bg-cyan-500/30 font-serif italic leading-loose py-2 pl-3.5 border-l-2 border-purple-500/30 bg-purple-500/[0.03] rounded-r-xl"
-                style={getStoryFontStyle(post.fontStyle)}
+              <div 
+                className="py-2 pl-3.5 border-l-2 border-purple-500/30 bg-purple-500/[0.03] rounded-r-xl"
               >
-                {post.content}
-              </p>
+                <InlineContentRenderer
+                  content={post.content}
+                  className="font-serif italic leading-loose text-[14px] sm:text-[15px]"
+                  style={getStoryFontStyle(post.fontStyle)}
+                />
+              </div>
             ) : (
-              <p 
-                className="text-[14px] sm:text-[15px] text-neutral-100 leading-relaxed whitespace-pre-wrap break-words selection:bg-cyan-500/30 font-sans"
+              <InlineContentRenderer
+                content={post.content}
+                className="leading-relaxed text-[14px] sm:text-[15px]"
                 style={getStoryFontStyle(post.fontStyle)}
-              >
-                {post.content}
-              </p>
+              />
             )}
 
             {/* AI Executive Summary Card */}
