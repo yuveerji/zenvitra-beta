@@ -743,3 +743,61 @@ img[src*="/assets/logo"],
   color: #a1a1aa;
   margin-top: 0.5rem;
 }
+
+
+/* ═══════════════════════════════════════
+   DIAS LIGHT MODE THEME ENGINE
+   ═══════════════════════════════════════ */
+.dias-theme-light {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.dias-theme-light .bg-\[\#08090B\] {
+  background-color: #f8fafc !important;
+}
+
+.dias-theme-light .bg-\[\#0A0C0F\] {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.dias-theme-light .bg-\[\#111318\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dias-theme-light .bg-\[\#181B21\] {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+.dias-theme-light .text-\[\#F4F2ED\],
+.dias-theme-light .text-white {
+  color: #0f172a !important;
+}
+
+.dias-theme-light .text-\[\#9A9DA5\],
+.dias-theme-light .text-neutral-400,
+.dias-theme-light .text-neutral-300 {
+  color: #475569 !important;
+}
+
+.dias-theme-light .border-\[\#181B21\],
+.dias-theme-light .border-\[\#232731\],
+.dias-theme-light .border-\[\#2A2E39\],
+.dias-theme-light .border-white\/10,
+.dias-theme-light .border-white\/15 {
+  border-color: #e2e8f0 !important;
+}
+
+.dias-theme-light input {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.dias-theme-light input::placeholder {
+  color: #94a3b8 !important;
+}

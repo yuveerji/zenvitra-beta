@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import { useDiasTheme } from '@/context/DiasThemeContext';
 
 export interface DiasButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'gold' | 'indigo' | 'white' | 'charcoal' | 'amber-glass' | 'gold-glass' | 'indigo-glass' | 'outline' | 'ghost' | 'danger';
@@ -26,16 +29,18 @@ export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
     },
     ref
   ) => {
+    const { isLight } = useDiasTheme();
+
     const baseStyles =
       'group inline-flex items-center justify-center font-display uppercase tracking-wider select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 disabled:opacity-50 disabled:pointer-events-none cursor-pointer transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98]';
 
     const sizes = {
-      sm: `text-[11px] px-4 py-2 gap-2 h-9 ${pill ? 'rounded-full' : 'rounded-xl'}`,
-      md: `text-xs sm:text-xs px-6 py-3 gap-2.5 h-11 ${pill ? 'rounded-full' : 'rounded-xl'}`,
-      lg: `text-xs sm:text-sm px-7 sm:px-8 py-3.5 sm:py-4 gap-3 h-13 tracking-wider ${pill ? 'rounded-full' : 'rounded-2xl'}`,
+      sm: `text-[11px] px-3.5 sm:px-4 py-1.5 sm:py-2 gap-1.5 sm:gap-2 h-8 sm:h-9 ${pill ? 'rounded-full' : 'rounded-xl'}`,
+      md: `text-xs px-5 sm:px-6 py-2.5 sm:py-3 gap-2 sm:gap-2.5 h-10 sm:h-11 ${pill ? 'rounded-full' : 'rounded-xl'}`,
+      lg: `text-xs sm:text-sm px-6 sm:px-8 py-3.5 sm:py-4 gap-2.5 sm:gap-3 h-12 sm:h-13 tracking-wider ${pill ? 'rounded-full' : 'rounded-2xl'}`,
     };
 
-    const variants = {
+    const darkVariants = {
       gold: 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold border border-indigo-400/50 shadow-[0_0_30px_rgba(99,102,241,0.35)] hover:shadow-[0_0_55px_rgba(99,102,241,0.6)] btn-glow',
       indigo: 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold border border-indigo-400/50 shadow-[0_0_30px_rgba(99,102,241,0.35)] hover:shadow-[0_0_55px_rgba(99,102,241,0.6)] btn-glow',
       white:
@@ -55,6 +60,29 @@ export const DiasButton = React.forwardRef<HTMLButtonElement, DiasButtonProps>(
       danger:
         'border border-red-500/40 bg-red-500/[0.08] text-red-300 hover:bg-red-500/20 hover:border-red-500/70 shadow-[0_0_25px_rgba(239,68,68,0.2)]',
     };
+
+    const lightVariants = {
+      gold: 'bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold border border-indigo-500/40 shadow-md hover:shadow-lg',
+      indigo: 'bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold border border-indigo-500/40 shadow-md hover:shadow-lg',
+      white:
+        'bg-slate-900 hover:bg-slate-800 text-white font-bold border border-slate-800 shadow-md hover:shadow-lg',
+      charcoal:
+        'border border-slate-300 bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-400 shadow-xs',
+      'amber-glass':
+        'border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:border-amber-400 shadow-xs',
+      'gold-glass':
+        'border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 shadow-xs',
+      'indigo-glass':
+        'border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 shadow-xs',
+      outline:
+        'border border-indigo-300 bg-transparent text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 shadow-xs',
+      ghost:
+        'bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 shadow-none hover:shadow-none',
+      danger:
+        'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-300 shadow-xs',
+    };
+
+    const variants = isLight ? lightVariants : darkVariants;
 
     return (
       <button

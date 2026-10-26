@@ -31,6 +31,7 @@ import {
   Scroll,
 } from 'lucide-react';
 import { DiasNav } from '@/components/mun/dias/DiasNav';
+import { DiasThemeProvider } from '@/context/DiasThemeContext';
 import { DiasFooter } from '@/components/mun/dias/DiasFooter';
 import { DiasButton } from '@/components/mun/dias/DiasButton';
 import { DiasBadge } from '@/components/mun/dias/DiasBadge';
@@ -65,7 +66,7 @@ function SearchParamsWatcher({ onModeChange }: { onModeChange: (mode: 'dais' | '
   return null;
 }
 
-export default function DiasLandingPage() {
+function DiasLandingContent() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'dais' | 'setup' | 'normal'>('normal');
   const [joinCodeInput, setJoinCodeInput] = useState('');
@@ -838,5 +839,13 @@ export default function DiasLandingPage() {
       {/* ─── 10. PREMIUM FOOTER ─── */}
       <DiasFooter />
     </div>
+  );
+}
+
+export default function DiasLandingPage() {
+  return (
+    <DiasThemeProvider>
+      <DiasLandingContent />
+    </DiasThemeProvider>
   );
 }
