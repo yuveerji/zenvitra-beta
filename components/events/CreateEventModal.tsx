@@ -96,11 +96,29 @@ interface CustomQuestion {
   required: boolean;
 }
 
-export function CreateEventModal() {
+export interface CreateEventModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+  initialCategory?: EventCategory;
+}
+
+export function CreateEventModal({
+  isOpen = true,
+  onClose,
+  initialCategory,
+}: CreateEventModalProps = {}) {
   const router = useRouter();
   const { profile } = useAuth();
   const { createEvent, setActiveView, events, currentUserUsername, currentUserId } = useZenEvents();
   const { setShowPassWalletModal } = useZenPass();
+
+  const handleModalClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      setActiveView('list');
+    }
+  };
 
   // Active Studio Stepper Tab
   const [activeTab, setActiveTab] = useState<StudioTab>('LOGISTICS');
@@ -109,7 +127,7 @@ export function CreateEventModal() {
   const [title, setTitle] = useState('');
   const [tagline, setTagline] = useState('');
   const [type, setType] = useState<EventType>('physical');
-  const [category, setCategory] = useState<EventCategory>('SUMMIT');
+  const [category, setCategory] = useState<EventCategory>(initialCategory || 'SUMMIT');
   const [date, setDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [startTime, setStartTime] = useState('09:30');
@@ -651,9 +669,11 @@ export function CreateEventModal() {
     } else if (formTiming === 'CREATE_NOW_TEMPLATE') {
       router.push(`/forms?originEventId=${createdId}&eventTitle=${encodeURIComponent(title.trim())}`);
     } else {
-      setActiveView('list');
+      handleModalClose();
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
@@ -915,7 +935,7 @@ export function CreateEventModal() {
           </div>
           <button
             type="button"
-            onClick={() => setActiveView('list')}
+            onClick={handleModalClose}
             className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -2822,7 +2842,7 @@ Day 2:
             <div className="flex items-center gap-2.5 ml-auto">
               <button
                 type="button"
-                onClick={() => setActiveView('list')}
+                onClick={handleModalClose}
                 className="px-4 py-2.5 rounded-2xl border border-white/10 font-mono text-xs text-neutral-400 hover:text-white hover:bg-white/5 transition cursor-pointer"
               >
                 Cancel

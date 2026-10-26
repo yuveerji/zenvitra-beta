@@ -48,6 +48,7 @@ import { InteractiveWordModal } from '@/components/home/InteractiveWordModal';
 import { InteractiveWordHover, InteractiveWordGroup } from '@/components/home/InteractiveWordHover';
 import { EcosystemMindMapModal } from '@/components/home/EcosystemMindMapModal';
 import { ListConferenceModal } from '@/components/events/ListConferenceModal';
+import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { FeaturedEvents } from '@/components/home/FeaturedEvents';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { AnimatedSection, StaggerChildren, StaggerItem } from '@/components/ui/AnimatedSection';
@@ -72,6 +73,7 @@ export default function HomeClient({ session }: HomeClientProps) {
   const [hasSavedSession, setHasSavedSession] = useState(false);
   const { escrowMandateActive } = useProtocolControls();
   const [isListConferenceOpen, setIsListConferenceOpen] = useState(false);
+  const [isEventSetupOpen, setIsEventSetupOpen] = useState(false);
 
   useEffect(() => {
     const checkSession = () => {
@@ -471,6 +473,16 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                   <span>Join Core Team</span>
                 </Link>
+
+                {/* 4. Event Setup Studio CTA */}
+                <button
+                  type="button"
+                  onClick={() => setIsEventSetupOpen(true)}
+                  className="px-6 sm:px-7 py-3.5 sm:py-4 rounded-full border border-cyan-400/40 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400/70 transition-all duration-300 flex items-center gap-2 backdrop-blur-md btn-glow shadow-[0_0_25px_rgba(6,182,212,0.18)] cursor-pointer text-xs font-bold hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Event Setup</span>
+                </button>
               </div>
             </AnimatedSection>
           </div>
@@ -751,10 +763,10 @@ export default function HomeClient({ session }: HomeClientProps) {
               <div className="space-y-2">
                 <span className="font-mono text-[10px] tracking-[0.3em] text-cyan-300 uppercase font-bold flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  CONFERENCE &amp; ASSEMBLY HOSTING &bull; OPEN TO EVERYONE
+                  EVENT SETUP &amp; HOSTING STUDIO &bull; OPEN TO EVERYONE
                 </span>
                 <h2 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight uppercase leading-tight">
-                  LIST YOUR CONFERENCE <span className="font-serif italic font-normal text-cyan-300 text-3xl sm:text-5xl tracking-normal">Or Summit.</span>
+                  EVENT SETUP STUDIO <span className="font-serif italic font-normal text-cyan-300 text-3xl sm:text-5xl tracking-normal">Or Conference.</span>
                 </h2>
               </div>
               <p className="text-xs text-neutral-400 max-w-md font-light leading-relaxed font-sans">
@@ -769,11 +781,11 @@ export default function HomeClient({ session }: HomeClientProps) {
               <div className="lg:col-span-8 space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-mono text-[11px] font-bold uppercase tracking-wider">
                   <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
-                  <span>Modern Conference & MUN Engine • Open Access</span>
+                  <span>Modern Event & MUN Setup Engine • Open Access</span>
                 </div>
 
                 <h3 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight leading-tight">
-                  Organizing a Model UN or Youth Summit? <span className="font-serif italic font-normal text-cyan-200">List It in Seconds.</span>
+                  Organizing an Event, Summit, or Model UN? <span className="font-serif italic font-normal text-cyan-200">Launch Event Setup in Seconds.</span>
                 </h3>
 
                 <p className="text-xs sm:text-sm text-neutral-400 font-sans font-light leading-relaxed max-w-2xl">
@@ -802,7 +814,7 @@ export default function HomeClient({ session }: HomeClientProps) {
                   100% Free Hosting for Free Events
                 </span>
                 <div className="text-xl sm:text-2xl font-display font-bold text-white">
-                  Publish Your Event
+                  Event Setup Studio
                 </div>
                 <p className="text-[11px] text-neutral-400 font-mono leading-tight">
                   Reach delegates, sell passes, and run smooth on-ground check-ins.
@@ -810,10 +822,11 @@ export default function HomeClient({ session }: HomeClientProps) {
                 <div className="pt-2 space-y-2">
                   <button
                     type="button"
-                    onClick={() => setIsListConferenceOpen(true)}
+                    onClick={() => setIsEventSetupOpen(true)}
                     className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-neutral-200 text-black font-mono text-xs font-extrabold uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95"
                   >
-                    <span>List Your Conference Now</span>
+                    <Sparkles className="w-4 h-4 fill-black" />
+                    <span>Launch Event Setup Now</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
@@ -858,10 +871,10 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <span className="text-[11px] font-mono text-neutral-400">Automated Allotments</span>
                   <button
                     type="button"
-                    onClick={() => setIsListConferenceOpen(true)}
+                    onClick={() => setIsEventSetupOpen(true)}
                     className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 group cursor-pointer"
                   >
-                    <span>List MUN</span>
+                    <span>Setup MUN / Summit</span>
                     <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -895,10 +908,10 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <span className="text-[11px] font-mono text-neutral-400">Real-Time Turnout</span>
                   <button
                     type="button"
-                    onClick={() => setIsListConferenceOpen(true)}
+                    onClick={() => setIsEventSetupOpen(true)}
                     className="text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 group cursor-pointer"
                   >
-                    <span>Deploy Gate</span>
+                    <span>Setup Gate Entry</span>
                     <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -932,10 +945,10 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <span className="text-[11px] font-mono text-neutral-400">Direct Payouts</span>
                   <button
                     type="button"
-                    onClick={() => setIsListConferenceOpen(true)}
+                    onClick={() => setIsEventSetupOpen(true)}
                     className="text-xs font-mono text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 group cursor-pointer"
                   >
-                    <span>Start Listing</span>
+                    <span>Setup Event Passes</span>
                     <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -1373,6 +1386,12 @@ export default function HomeClient({ session }: HomeClientProps) {
 
         {/* 9. High-Fi Detailed Sovereign Footer */}
         <Footer />
+
+        {/* Event Setup Studio Modal */}
+        <CreateEventModal
+          isOpen={isEventSetupOpen}
+          onClose={() => setIsEventSetupOpen(false)}
+        />
 
         {/* List Your Conference / Event Modal */}
         <ListConferenceModal

@@ -24,7 +24,7 @@ import {
 import { useMun } from '@/context/MunContext';
 import { MunConferenceStatus } from '@/types/mun';
 import { computeConferenceStatus } from '@/lib/conferenceStatusHelper';
-import { CreateMunConferenceModal } from './CreateMunConferenceModal';
+import { CreateEventModal } from '@/components/events/CreateEventModal';
 
 interface MunSelectorBarProps {
   onOpenHistory?: () => void;
@@ -377,10 +377,11 @@ export function MunSelectorBar({ onOpenHistory, onOpenSummary, onOpenInstantEven
         </div>
       </div>
 
-      {/* Host New Conference Modal */}
-      <CreateMunConferenceModal
+      {/* Host New Event / Conference Setup Studio */}
+      <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        initialCategory="MUN"
       />
     </>
   );

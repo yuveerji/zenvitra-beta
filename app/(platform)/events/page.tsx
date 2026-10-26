@@ -37,6 +37,8 @@ function EventsViewSwitcher() {
   useEffect(() => {
     if (searchParams.get('view') === 'dashboard') {
       setActiveView('dashboard');
+    } else if (searchParams.get('create') === 'true' || searchParams.get('view') === 'create') {
+      setActiveView('create');
     }
   }, [searchParams, setActiveView]);
 

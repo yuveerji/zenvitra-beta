@@ -97,6 +97,7 @@ export function Navbar({
   ];
 
   const secondaryNavLinks = [
+    { name: 'Event Setup Studio', href: '/events?create=true', icon: Calendar, tag: 'Studio', desc: 'Deploy Diplomatic Summits, Passes, Agendas & Custom Registration Forms' },
     { name: 'About Zenvitra', href: '/about', icon: Sparkles, tag: 'Genesis', desc: 'The Foundational Architecture, 4 Chambers & Sovereign Mission' },
     { name: 'ZEN.APPS', href: '/apps', icon: Orbit, tag: 'Mind Map', desc: 'Interactive 360° Circular Ecosystem Mind Map & 7 Radial Clusters' },
     { name: 'ZENVITRA MUN DIAS', href: '/dias', icon: Gavel, tag: 'Summit OS', desc: 'Live Diplomatic Floor, Procedural Gavel & Parliamentary Control' },

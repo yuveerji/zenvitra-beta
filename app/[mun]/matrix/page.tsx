@@ -39,7 +39,7 @@ import {
 } from '@/lib/matrixPortfoliosData';
 import { MunCommittee } from '@/types/mun';
 import { RegistrationPlan } from '@/types/events';
-import { CreateMunConferenceModal } from '@/components/mun/CreateMunConferenceModal';
+import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { EventPlansPaymentLinksModal } from '@/components/payments/EventPlansPaymentLinksModal';
 import { ZenPassBookingModal } from '@/components/events/ZenPassBookingModal';
 import { useAuth } from '@/context/AuthContext';
@@ -991,10 +991,11 @@ export default function DynamicMunMatrixPage() {
         </div>
       )}
 
-      {/* Host New Event Modal */}
-      <CreateMunConferenceModal
+      {/* Host New Event Setup Studio */}
+      <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        initialCategory="MUN"
       />
 
       {/* Registration Plans & Cashfree Payment Links Modal */}

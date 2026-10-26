@@ -69,7 +69,7 @@ import { ChamberMatrixModal } from './ChamberMatrixModal';
 import { CommitteeMatrixChatModal } from './CommitteeMatrixChatModal';
 import { useMatrixChat } from '@/context/MatrixChatContext';
 import { CommitteeSummaryPaperModal } from './CommitteeSummaryPaperModal';
-import { CreateMunConferenceModal } from './CreateMunConferenceModal';
+import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { computeConferenceStatus } from '@/lib/conferenceStatusHelper';
 import { LokSabhaDraftModal, UnDocsDraftModal } from '@/components/docs/modals';
 import { ActiveEmergencyBroadcastBanner } from './ActiveEmergencyBroadcastBanner';
@@ -371,9 +371,10 @@ export function CommitteeChamber() {
           isOpen={showCreateEventModal}
           onClose={() => setShowCreateEventModal(false)}
         />
-        <CreateMunConferenceModal
+        <CreateEventModal
           isOpen={showHostMunModal}
           onClose={() => setShowHostMunModal(false)}
+          initialCategory="MUN"
         />
         <ChamberDayHistoryModal
           isOpen={showDayHistoryModal}

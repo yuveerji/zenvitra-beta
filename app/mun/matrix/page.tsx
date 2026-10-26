@@ -38,7 +38,7 @@ import {
   generatePortfoliosForCommittee 
 } from '@/lib/matrixPortfoliosData';
 import { MunCommittee } from '@/types/mun';
-import { CreateMunConferenceModal } from '@/components/mun/CreateMunConferenceModal';
+import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { EventPlansPaymentLinksModal } from '@/components/payments/EventPlansPaymentLinksModal';
 import { ZenPassBookingModal } from '@/components/events/ZenPassBookingModal';
 import { ZenEvent, EventStatus, EventType } from '@/types/events';
@@ -1037,14 +1037,11 @@ export default function CanonicalMunMatrixPage() {
         </div>
       )}
 
-      {/* Create MUN Conference Modal */}
-      <CreateMunConferenceModal
+      {/* Create Event / Conference Setup Studio */}
+      <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onConferenceCreated={(confId) => {
-          setActiveConferenceId(confId);
-          setIsCreateModalOpen(false);
-        }}
+        initialCategory="MUN"
       />
 
       {/* Plans & Cashfree Links Modal */}

@@ -80,7 +80,7 @@ import { EventPlansPaymentLinksModal } from '@/components/payments/EventPlansPay
 import { EmergencyProtocolBroadcastModal } from '@/components/mun/EmergencyProtocolBroadcastModal';
 import { ActiveEmergencyBroadcastBanner } from '@/components/mun/ActiveEmergencyBroadcastBanner';
 import { computeConferenceStatus } from '@/lib/conferenceStatusHelper';
-import { CreateMunConferenceModal } from '@/components/mun/CreateMunConferenceModal';
+import { CreateEventModal } from '@/components/events/CreateEventModal';
 import { MunNotStartedView } from '@/components/mun/MunNotStartedView';
 import { MunSecDaisSupportDesk } from '@/components/mun/support/MunSecDaisSupportDesk';
 
@@ -681,9 +681,10 @@ export function ConferenceCommandCenter() {
         </main>
 
 
-        <CreateMunConferenceModal
+        <CreateEventModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
+          initialCategory="MUN"
         />
         <Footer />
       </div>
@@ -1971,10 +1972,11 @@ export function ConferenceCommandCenter() {
         />
       )}
 
-      {/* Host / Create MUN Conference Modal */}
-      <CreateMunConferenceModal
+      {/* Host / Create MUN Conference Setup Studio */}
+      <CreateEventModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        initialCategory="MUN"
       />
 
       <Footer />
