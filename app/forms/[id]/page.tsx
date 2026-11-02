@@ -401,6 +401,12 @@ export default function ZenFormPublicPage() {
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  const isZenithForm = Boolean(
+    idOrSlug?.toLowerCase().includes('zenith') ||
+    form?.id?.toLowerCase().includes('zenith') ||
+    form?.slug?.toLowerCase().includes('zenith')
+  );
+
   // Group fields into pages by section_break
   const sections = React.useMemo<FormSection[]>(() => {
     if (!form) return [];
@@ -939,13 +945,38 @@ export default function ZenFormPublicPage() {
 
       {/* ── Top Header Bar ── */}
       <div className="max-w-4xl lg:max-w-5xl mx-auto w-full flex items-center justify-between py-4 border-b border-white/10 relative z-10 px-2 sm:px-0">
-        <Link
-          href="/forms"
-          className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>All ZenForms Hub</span>
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.href = isZenithForm ? '/events/zenith-mun-2026' : '/forms';
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition cursor-pointer group shadow-sm"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform text-amber-400" />
+            <span>Back</span>
+          </button>
+
+          {isZenithForm ? (
+            <Link
+              href="/events/zenith-mun-2026"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-amber-400/80 hover:text-amber-300 transition"
+            >
+              <span>• Zenith MUN 2026</span>
+            </Link>
+          ) : (
+            <Link
+              href="/forms"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-white transition"
+            >
+              <span>• All ZenForms Hub</span>
+            </Link>
+          )}
+        </div>
 
         <div className="flex items-center gap-2">
           <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-cyan-400 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
@@ -954,7 +985,7 @@ export default function ZenFormPublicPage() {
           </span>
 
           <Link
-            href="/mun/matrix"
+            href={isZenithForm ? '/events/zenith-mun-2026/mun/matrix' : '/mun/matrix'}
             target="_blank"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-mono text-cyan-300 hover:text-white transition"
             title="Open Live Matrix Ledger"
@@ -1415,15 +1446,182 @@ export default function ZenFormPublicPage() {
                       );
                     }
 
+                    if (field.id === 'scorecard_notice' || field.label?.toLowerCase().includes('scorecard')) {
+                      return (
+                        <div
+                          key={field.id}
+                          className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-500/[0.08] via-[#080d18] to-cyan-950/20 border border-amber-500/30 space-y-6 shadow-2xl relative overflow-hidden text-left"
+                        >
+                          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-[110px] pointer-events-none" />
+
+                          {/* Top Header */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                            <div className="space-y-1">
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider border border-amber-500/40 bg-amber-500/15 text-amber-300">
+                                <Award className="w-3.5 h-3.5 text-amber-400" />
+                                <span>OFFICIAL EVALUATION FRAMEWORK & RECRUITMENT PILLARS</span>
+                              </div>
+                              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight" style={{ fontFamily: displayFont }}>
+                                {field.label || '🏛️ ZENITH SELECTION SCORECARD (100%)'}
+                              </h3>
+                            </div>
+                            <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-neutral-400 font-mono text-xs font-semibold">
+                              Objective 100% Scorecard
+                            </span>
+                          </div>
+
+                          {/* Philosophy note */}
+                          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-light">
+                            Don&apos;t select people purely on the basis of MUN count or impressive answers. ZENITH evaluates every applicant using an objective, consistent <strong className="text-white font-medium">100% evaluation scorecard</strong>:
+                          </p>
+
+                          {/* Scorecard Parameters Grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {[
+                              {
+                                title: 'Relevant Experience',
+                                weight: '15%',
+                                pct: 15,
+                                color: 'text-amber-400',
+                                bar: 'bg-amber-400',
+                                desc: 'Past participation, Secretariat, Executive Board, or external leadership.'
+                              },
+                              {
+                                title: 'Skills & Department Suitability',
+                                weight: '20%',
+                                pct: 20,
+                                color: 'text-cyan-400',
+                                bar: 'bg-cyan-400',
+                                desc: 'Practical department answers, tools, design/code/writing proficiency.'
+                              },
+                              {
+                                title: 'Motivation & Vision',
+                                weight: '15%',
+                                pct: 15,
+                                color: 'text-purple-400',
+                                bar: 'bg-purple-400',
+                                desc: 'Dedicated drive, vision beyond designations, unique contribution to ZENITH.'
+                              },
+                              {
+                                title: 'Situational Judgement',
+                                weight: '20%',
+                                pct: 20,
+                                color: 'text-emerald-400',
+                                bar: 'bg-emerald-400',
+                                desc: 'Handling teammate bottlenecks, urgent deadlines, and unforeseen obstacles.'
+                              },
+                              {
+                                title: 'Commitment & Reliability',
+                                weight: '20%',
+                                pct: 20,
+                                color: 'text-rose-400',
+                                bar: 'bg-rose-400',
+                                desc: 'Realistic time dedication, academic balance, and high sprint reliability.'
+                              },
+                              {
+                                title: 'Communication',
+                                weight: '10%',
+                                pct: 10,
+                                color: 'text-sky-400',
+                                bar: 'bg-sky-400',
+                                desc: 'Articulate writing, clarity, diplomacy, and attention to detail.'
+                              }
+                            ].map((param) => (
+                              <div
+                                key={param.title}
+                                className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition flex flex-col justify-between space-y-2 group"
+                              >
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="font-bold text-xs text-white group-hover:text-amber-200 transition">
+                                      {param.title}
+                                    </span>
+                                    <span className={`font-mono text-xs font-black px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 ${param.color}`}>
+                                      {param.weight}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-neutral-400 leading-relaxed font-sans">
+                                    {param.desc}
+                                  </p>
+                                </div>
+
+                                <div className="pt-2">
+                                  <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full ${param.bar}`}
+                                      style={{ width: `${param.pct * 4}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* 3 Recruitment Pillars */}
+                          <div className="space-y-3 pt-2 border-t border-white/10">
+                            <span className="text-xs font-mono text-amber-300 uppercase tracking-wider font-bold block">
+                              THREE RECRUITMENT PILLARS:
+                            </span>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
+                                <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold">
+                                  <span>01.</span>
+                                  <span>Mandatory Track Questions</span>
+                                </div>
+                                <p className="text-[11px] text-neutral-300 leading-relaxed">
+                                  Department-specific practical questions are mandatory for every applicant.
+                                </p>
+                              </div>
+
+                              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
+                                <div className="flex items-center gap-2 text-purple-400 font-mono text-xs font-bold">
+                                  <span>02.</span>
+                                  <span>Verifiable Work Samples</span>
+                                </div>
+                                <p className="text-[11px] text-neutral-300 leading-relaxed">
+                                  Actual work samples, designs, portfolios, and code repos are evaluated wherever relevant.
+                                </p>
+                              </div>
+
+                              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
+                                <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold">
+                                  <span>03.</span>
+                                  <span>Practical Assessment</span>
+                                </div>
+                                <p className="text-[11px] text-neutral-300 leading-relaxed">
+                                  Shortlisted candidates are invited for a short interview or practical assignment instead of selecting solely from written forms.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Core Principle Banner */}
+                          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-black to-cyan-500/20 border border-amber-500/40 flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0">
+                              <Sparkles className="w-5 h-5" />
+                            </div>
+                            <div className="text-xs font-mono">
+                              <span className="text-amber-400 font-bold uppercase tracking-wider block text-[10px]">
+                                CORE RECRUITMENT PRINCIPLE:
+                              </span>
+                              <span className="text-white font-medium">
+                                ZENITH selects people who can get work done, not simply people who have held impressive titles before.
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
                       <div key={field.id} className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
                         <h3 className="text-lg sm:text-xl font-bold text-white" style={{ fontFamily: displayFont }}>
                           {field.label}
                         </h3>
                         {field.description && (
-                          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                          <div className="text-xs sm:text-sm text-neutral-300 leading-relaxed whitespace-pre-line space-y-2">
                             {field.description}
-                          </p>
+                          </div>
                         )}
                       </div>
                     );
@@ -3157,12 +3355,27 @@ export default function ZenFormPublicPage() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    {/* Back Button for Multi-page sections */}
-                    {sections.length > 1 && currentPageIndex > 0 && (
+                    {/* Back Button for Multi-page sections or Return to Event */}
+                    {sections.length > 1 && currentPageIndex > 0 ? (
                       <button
                         type="button"
                         onClick={handlePrevPage}
                         className="px-6 py-3.5 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer border border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Back</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (typeof window !== 'undefined' && window.history.length > 1) {
+                            window.history.back();
+                          } else {
+                            window.location.href = isZenithForm ? '/events/zenith-mun-2026' : '/forms';
+                          }
+                        }}
+                        className="px-6 py-3.5 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer border border-white/20 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white font-mono"
                       >
                         <ArrowLeft className="w-4 h-4" />
                         <span>Back</span>

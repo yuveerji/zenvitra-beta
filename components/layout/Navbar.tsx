@@ -105,7 +105,7 @@ export function Navbar({
     { name: 'ZEN.LEADERBOARD', href: '/leaderboard', icon: Trophy, tag: 'Rankings', desc: 'Verified Activity Leaderboards, Seasons, Merits & Recognition' },
     { name: 'ZEN.FORMS', href: '/forms', icon: FileText, tag: 'Studio', desc: 'Sovereign Form Studio, Shareable Templates & Direct Ledger Exports' },
     { name: 'ZEN.SPACE', href: '/space', icon: Globe, tag: 'Paused • Nov 25', desc: 'Paused Until Nov 25 — Something Special Coming Soon' },
-    { name: 'Country Matrix', href: '/mun/matrix', icon: Layers, tag: 'Allocations', desc: 'Interactive Portfolios, Allotment Ledgers & Country Matrices' },
+    { name: 'Country Matrix', href: '/events/zenith-mun-2026/mun/matrix', icon: Layers, tag: 'Allocations', desc: 'Interactive Portfolios, Allotment Ledgers & Country Matrices' },
     { name: 'ZEN.CALL', href: '/call', icon: Video, tag: 'Encrypted AV', desc: 'Sovereign High-Fidelity Diplomatic Audio & Video Chambers' },
     { name: 'ZEN.MEET', href: '/meet', icon: Calendar, tag: 'Meetings', desc: 'Sovereign Meeting Scheduler, Virtual Stages & Waiting Rooms' },
     { name: 'ZEN.LEGISLATE', href: '/legislate', icon: Scale, tag: 'Lok Sabha', desc: 'Parliamentary Bill Drafting, Official Dispatches & Chamber Motions' },

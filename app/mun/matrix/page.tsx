@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import {
   ArrowLeft,
   Calendar,
@@ -27,7 +27,8 @@ import {
   CreditCard,
   Ticket,
   IndianRupee,
-  AlertCircle
+  AlertCircle,
+  Crown
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -45,8 +46,12 @@ import { ZenEvent, EventStatus, EventType } from '@/types/events';
 import { useAuth } from '@/context/AuthContext';
 import { isFounder, isAdmin } from '@/lib/founderControl';
 
-export default function CanonicalMunMatrixPage() {
+export default function CanonicalMunMatrixPage({ forcedMunId }: { forcedMunId?: string } = {}) {
   const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
+  const targetMunParam = forcedMunId || (params?.id as string | undefined);
+
   const {
     conferences,
     activeConference,
@@ -108,19 +113,61 @@ export default function CanonicalMunMatrixPage() {
     return conferences.filter((c) => !isSeededMun(c));
   }, [conferences]);
 
-  // If valid conferences exist but none is active, set the first valid one as active
+  // Target conference matching from URL parameter (e.g., /events/zenith-mun-2026/mun/matrix)
+  const targetConference = useMemo(() => {
+    if (!targetMunParam) return null;
+    const clean = targetMunParam.toLowerCase().trim();
+    return conferences.find((c) => {
+      const id = String(c.id).toLowerCase();
+      const slug = String(c.slug || '').toLowerCase();
+      const name = String(c.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return (
+        id === clean ||
+        slug === clean ||
+        name.includes(clean) ||
+        (clean.includes('zenith') && (id.includes('zenith') || name.includes('zenith')))
+      );
+    }) || null;
+  }, [conferences, targetMunParam]);
+
+  // Set active conference
   useEffect(() => {
-    if (validConferences.length > 0 && (!activeConference || isSeededMun(activeConference))) {
+    if (targetConference) {
+      if (!activeConference || activeConference.id !== targetConference.id) {
+        setActiveConferenceId(targetConference.id);
+      }
+    } else if (validConferences.length > 0 && (!activeConference || isSeededMun(activeConference))) {
       setActiveConferenceId(validConferences[0].id);
     }
-  }, [validConferences, activeConference, setActiveConferenceId]);
+  }, [targetConference, validConferences, activeConference, setActiveConferenceId]);
 
   const currentConference = useMemo(() => {
+    if (targetConference) {
+      return targetConference;
+    }
     if (activeConference && !isSeededMun(activeConference)) {
       return activeConference;
     }
     return validConferences.length > 0 ? validConferences[0] : undefined;
-  }, [activeConference, validConferences]);
+  }, [targetConference, activeConference, validConferences]);
+
+  // If visited via canonical /mun/matrix, replace URL to /events/[mun-name]/mun/matrix
+  useEffect(() => {
+    if (pathname === '/mun/matrix' && currentConference) {
+      const slug = currentConference.slug || currentConference.id;
+      if (slug) {
+        router.replace(`/events/${slug}/mun/matrix`);
+      }
+    }
+  }, [pathname, currentConference, router]);
+
+  const isZenithMun = useMemo(() => {
+    if (!currentConference) return false;
+    const id = String(currentConference.id).toLowerCase();
+    const name = String(currentConference.name || '').toLowerCase();
+    const tagline = String(currentConference.tagline || '').toLowerCase();
+    return id.includes('zenith') || name.includes('zenith') || tagline.includes('a new zen begins');
+  }, [currentConference]);
 
   // Compute live conference status dynamically from dates
   const statusInfo = computeConferenceStatus(currentConference);
@@ -396,6 +443,8 @@ export default function CanonicalMunMatrixPage() {
               onClick={() => {
                 if (typeof window !== 'undefined' && window.history.length > 1) {
                   window.history.back();
+                } else if (currentConference) {
+                  window.location.href = `/events/${currentConference.slug || currentConference.id}`;
                 } else {
                   window.location.href = '/events';
                 }
@@ -405,6 +454,25 @@ export default function CanonicalMunMatrixPage() {
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               <span>Back</span>
             </button>
+
+            {currentConference && (
+              <Link
+                href={`/events/${currentConference.slug || currentConference.id}`}
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-neutral-300 hover:text-white transition p-2 rounded-xl bg-white/5 border border-white/10"
+              >
+                <span>Summit Portal</span>
+              </Link>
+            )}
+
+            {isZenithMun && (
+              <Link
+                href="/forms/zenith-secretariat-2026"
+                className="inline-flex items-center gap-1.5 text-xs font-mono text-amber-400 hover:text-amber-300 transition p-2 rounded-xl bg-amber-500/10 border border-amber-500/20"
+              >
+                <Crown className="w-4 h-4" />
+                <span>Secretariat Application</span>
+              </Link>
+            )}
 
             <span className="text-neutral-600 hidden sm:inline">&bull;</span>
 
@@ -540,19 +608,62 @@ export default function CanonicalMunMatrixPage() {
                   </span>
 
                   <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 font-mono text-xs">
-                    Hosted Conference Ledger &bull; /mun/matrix
+                    Hosted Summit Ledger &bull; /events/{currentConference.slug || currentConference.id}/mun/matrix
                   </span>
                 </div>
 
-                {/* Conference Title & Tagline */}
-                <div className="space-y-1.5">
-                  <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-white tracking-tight">
-                    {currentConference.name}
-                  </h1>
-                  <p className="text-neutral-400 text-sm sm:text-base font-light">
-                    {currentConference.tagline || 'Live Public Country Matrix & Delegate Allotment Ledger'}
-                  </p>
-                </div>
+                {/* Formatted Title & Description */}
+                {isZenithMun ? (
+                  <div className="space-y-4 pt-1">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wider uppercase border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>A NEW ZEN BEGINS.</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono tracking-wider uppercase border border-white/15 bg-white/5 text-neutral-300">
+                        <span>PRESENTED BY ZENVITRA | BY YOUTH. FOR YOUTH.</span>
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight uppercase">
+                        {currentConference.name}
+                      </h1>
+                      <p className="text-neutral-300 text-sm sm:text-base leading-relaxed max-w-3xl">
+                        Convenes in the historic royal city of <strong className="text-white font-semibold">Udaipur, Rajasthan</strong> for an uncompromised offline multilateral summit.
+                      </p>
+                    </div>
+
+                    {/* Feature badges */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-mono">
+                      <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-neutral-300 flex items-center gap-1.5">
+                        <Award className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Synchronous Debate Chambers</span>
+                      </span>
+                      <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-neutral-300 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Crisis War Rooms</span>
+                      </span>
+                      <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-neutral-300 flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-purple-400" />
+                        <span>Acoustic Procedural Gavels</span>
+                      </span>
+                      <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-neutral-300 flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Nationwide Youth Delegates</span>
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-white tracking-tight">
+                      {currentConference.name}
+                    </h1>
+                    <p className="text-neutral-400 text-sm sm:text-base font-light whitespace-pre-line">
+                      {currentConference.tagline || 'Live Public Country Matrix & Delegate Allotment Ledger'}
+                    </p>
+                  </div>
+                )}
 
                 {/* Event Metadata (Dates, Venue, Host) */}
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-2 text-xs font-mono text-neutral-300">

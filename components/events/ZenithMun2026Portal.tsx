@@ -30,7 +30,8 @@ import {
   Radio,
   FileCheck2,
   SlidersHorizontal,
-  ChevronRight
+  ChevronRight,
+  Grid
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -194,6 +195,14 @@ export function ZenithMun2026Portal() {
               <Crown className="w-4 h-4 fill-black" />
               <span>Apply for Secretariat</span>
               <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            <Link
+              href="/events/zenith-mun-2026/mun/matrix"
+              className="px-6 py-3.5 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-white border border-cyan-500/30 font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              <Grid className="w-4 h-4 text-cyan-400" />
+              <span>Country Matrix</span>
             </Link>
 
             <a
