@@ -11,7 +11,7 @@
  * 4. Click "Deploy" > "New deployment".
  * 5. Select type: "Web app".
  * 6. Execute as: "Me", Who has access: "Anyone".
- * 7. Click Deploy, copy the "Web app URL", and set it in Zenvitra or environment.
+ * 7. Click Deploy, copy the "Web app URL", and set it in your .env as ZENITH_GOOGLE_SHEETS_WEBHOOK_URL.
  */
 
 var SHEET_NAME = 'Secretariat Responses';

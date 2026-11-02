@@ -20,7 +20,7 @@ This script receives every submission from [`https://zenvitra.xyz/forms/zenith-s
    - **Execute as**: `Me`
    - **Who has access**: `Anyone`
 6. Click **Deploy** and copy the **Web app URL** (e.g., `https://script.google.com/macros/s/.../exec`).
-7. Paste this URL into your `.env` as `GOOGLE_SHEETS_WEBHOOK_URL` or directly into the form configuration.
+7. Paste this URL into your `.env` as `ZENITH_GOOGLE_SHEETS_WEBHOOK_URL` (dedicated for Zenith MUN) or `GOOGLE_SHEETS_WEBHOOK_URL`.
 
 ---
 

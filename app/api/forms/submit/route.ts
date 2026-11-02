@@ -172,7 +172,8 @@ export async function POST(req: NextRequest) {
     appendToLocalLedger(sanitizedLedgerEntry);
 
     // 3. Forward to Google Sheets webhook
-    const targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
+    const isZenithForm = Boolean(formId?.toLowerCase().includes('zenith') || formSlug?.toLowerCase().includes('zenith'));
+    const targetWebhook = body.webhookUrl || (isZenithForm && process.env.ZENITH_GOOGLE_SHEETS_WEBHOOK_URL ? process.env.ZENITH_GOOGLE_SHEETS_WEBHOOK_URL : (process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec'));
     if (targetWebhook && typeof targetWebhook === 'string' && targetWebhook.startsWith('http')) {
       try {
         await fetch(targetWebhook, {
