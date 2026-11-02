@@ -8,6 +8,7 @@ import {
 } from '@/types/forms';
 import { ZEN_DIPLOMACY_2026_FORM_TEMPLATE } from '@/lib/forms/ZenDiplomacyFormTemplate';
 import { ZEN_SECRETARIAT_2026_FORM_TEMPLATE } from '@/lib/forms/ZenSecretariatFormTemplate';
+import { ZENITH_SECRETARIAT_2026_FORM_TEMPLATE } from '@/lib/forms/ZenithSecretariatFormTemplate';
 
 const LS_FORMS_KEY = 'zenvitra_public_forms_v1';
 const LS_SUBMISSIONS_KEY = 'zenvitra_form_submissions_v1';
@@ -15,7 +16,8 @@ const LS_ZENFORMS_SHEETS_KEY = 'zenvitra_forms_sheets_config_v1';
 
 export const DEFAULT_ZEN_FORMS: ZenForm[] = [
   ZEN_DIPLOMACY_2026_FORM_TEMPLATE,
-  ZEN_SECRETARIAT_2026_FORM_TEMPLATE
+  ZEN_SECRETARIAT_2026_FORM_TEMPLATE,
+  ZENITH_SECRETARIAT_2026_FORM_TEMPLATE
 ];
 
 export function getPublicForms(): ZenForm[] {
@@ -47,6 +49,9 @@ export function getPublicForms(): ZenForm[] {
     const hasSecretariat = cleaned.some(
       (f) => f.id === 'zen-secretariat-2026-application' || f.slug === 'zen-secretariat-2026' || f.id === 'secretariat'
     );
+    const hasZenithSec = cleaned.some(
+      (f) => f.id === 'zenith-mun-2026-secretariat-application' || f.slug === 'zenith-secretariat-2026' || f.slug === 'zenith-mun-2026-secretariat'
+    );
 
     const merged = [...cleaned];
     if (!hasDiplomacy) {
@@ -54,6 +59,9 @@ export function getPublicForms(): ZenForm[] {
     }
     if (!hasSecretariat) {
       merged.unshift(ZEN_SECRETARIAT_2026_FORM_TEMPLATE);
+    }
+    if (!hasZenithSec) {
+      merged.unshift(ZENITH_SECRETARIAT_2026_FORM_TEMPLATE);
     }
 
     return merged;
@@ -104,6 +112,14 @@ export function getZenFormById(idOrSlug: string): ZenForm | null {
   ) {
     return ZEN_SECRETARIAT_2026_FORM_TEMPLATE;
   }
+  if (
+    clean === 'zenith-secretariat-2026' ||
+    clean === 'zenith-mun-2026-secretariat' ||
+    clean === 'zenith-mun-2026-secretariat-application' ||
+    clean === 'zenith-secretariat'
+  ) {
+    return ZENITH_SECRETARIAT_2026_FORM_TEMPLATE;
+  }
 
   return null;
 }
@@ -115,6 +131,8 @@ export function resetZenFormToDefault(idOrSlug: string): ZenForm | null {
     defaultForm = ZEN_DIPLOMACY_2026_FORM_TEMPLATE;
   } else if (clean === 'zen-secretariat-2026' || clean === 'zen-secretariat-2026-application' || clean === 'secretariat') {
     defaultForm = ZEN_SECRETARIAT_2026_FORM_TEMPLATE;
+  } else if (clean === 'zenith-secretariat-2026' || clean === 'zenith-mun-2026-secretariat' || clean === 'zenith-mun-2026-secretariat-application' || clean === 'zenith-secretariat') {
+    defaultForm = ZENITH_SECRETARIAT_2026_FORM_TEMPLATE;
   }
   if (defaultForm) {
     return saveZenForm(defaultForm);

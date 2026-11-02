@@ -1,6 +1,7 @@
 import { ZenForm, ZenFormTemplate, ZenFormField } from '@/types/forms';
 import { ZEN_DIPLOMACY_2026_FORM_TEMPLATE } from '@/lib/forms/ZenDiplomacyFormTemplate';
 import { ZEN_SECRETARIAT_2026_FORM_TEMPLATE } from '@/lib/forms/ZenSecretariatFormTemplate';
+import { ZENITH_SECRETARIAT_2026_FORM_TEMPLATE } from '@/lib/forms/ZenithSecretariatFormTemplate';
 
 const LS_COMMUNITY_TEMPLATES_KEY = 'zenvitra_community_templates_v1';
 
@@ -385,6 +386,21 @@ export const OFFICIAL_TEMPLATES: ZenFormTemplate[] = [
     accentColor: '#a855f7',
     previewImage: '/assets/forms/template-gala.svg',
     form: ZEN_SECRETARIAT_2026_FORM_TEMPLATE
+  },
+  {
+    id: 'tmpl_zenith_secretariat_2026',
+    title: 'ZENITH MODEL UNITED NATIONS 2026 — Secretariat Application',
+    slug: 'zenith-secretariat-2026',
+    description: 'A NEW ZEN BEGINS. Official Secretariat & Executive Board Application for Zenith MUN 2026 in Udaipur. 20 comprehensive questions across 6 sections with PDF resume upload and digital ratification.',
+    category: 'EXECUTIVE_BOARD',
+    theme: 'amber',
+    tags: ['Zenith MUN', 'Udaipur', 'Secretariat', 'Executive Board', 'Offline MUN'],
+    author: 'Zenith Secretariat',
+    authorHandle: 'zenith_secretariat',
+    featured: true,
+    accentColor: '#f59e0b',
+    previewImage: '/assets/forms/template-mun.svg',
+    form: ZENITH_SECRETARIAT_2026_FORM_TEMPLATE
   },
   HACKATHON_SPRINT_TEMPLATE,
   CAMPUS_AMBASSADOR_TEMPLATE,

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { ZENITH_MUN_2026_EVENT } from '@/lib/events/zenithMun2026';
 import {
   ZenEvent, EventAttendee, EventType, EventCategory,
   EventStatus, EventView, EventFilter, RsvpStatus,
@@ -182,6 +183,11 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
         const startDateStr = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
         const endDateStr = item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : startDateStr;
 
+        const isZenith = item.slug === 'zenith-mun-2026';
+        const isDateComingSoon = Boolean(isZenith || item.isDateComingSoon);
+        const isComingSoon = Boolean(isZenith || item.isComingSoon);
+        const dateTbaText = isZenith ? 'Dates Coming Soon / TBA' : item.dateTbaText;
+
         return {
           id: item.slug || item.id,
           slug: item.slug,
@@ -190,9 +196,9 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
           type: (item.format as EventType) || 'physical',
           location: item.venue || 'Main Assembly Venue',
           city: item.city || 'New Delhi',
-          date: startDateStr,
-          endDate: endDateStr,
-          time: '09:00 AM',
+          date: isDateComingSoon ? 'TBA' : startDateStr,
+          endDate: isDateComingSoon ? 'TBA' : endDateStr,
+          time: item.time || '09:00 AM - 06:00 PM IST',
           category: (item.category as EventCategory) || 'MUN',
           ticketPrice: item.ticketPrice || (plans.length > 0 ? plans[0].price : 0),
           plans,
@@ -203,8 +209,12 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
           organizerId: item.userId || item.organizerEmail || 'organizer_host',
           organizerName: item.organizerName || 'Conference Secretariat',
           organizerUsername: item.organizerHandle || 'secretariat',
-          tags: ['conference', 'event', (item.category || 'mun').toLowerCase()],
-          status: computeStatus(startDateStr, endDateStr),
+          tags: ['conference', 'event', (item.category || 'mun').toLowerCase(), ...(item.city ? [item.city.toLowerCase()] : [])],
+          status: computeStatus(startDateStr, endDateStr, undefined, isComingSoon),
+          isComingSoon,
+          isDateComingSoon,
+          dateTbaText,
+          formId: isZenith ? 'zenith-secretariat-2026' : item.formId,
           createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
         };
       };
@@ -213,11 +223,14 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
         try {
           const s = localStorage.getItem(LS_EVENTS);
           const parsed = safeParse(s, []);
-          const realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id) : [];
-          if (realEvents.length > 0) {
-            setAllEvents(realEvents);
+          let realEvents = Array.isArray(parsed) ? parsed.filter((e: any) => e && e.id) : [];
+          if (!realEvents.some((e: any) => e.slug === 'zenith-mun-2026' || e.id === 'zenith-mun-2026')) {
+            realEvents = [ZENITH_MUN_2026_EVENT, ...realEvents];
           }
-        } catch {}
+          setAllEvents(realEvents);
+        } catch {
+          setAllEvents([ZENITH_MUN_2026_EVENT]);
+        }
       };
 
       // 1. Fetch server database events FIRST
@@ -240,6 +253,9 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
 
             // Populate allEvents state from server-first map
             const map = new Map<string, ZenEvent>();
+            if (!serverEvents.some((e) => e.slug === 'zenith-mun-2026' || e.id === 'zenith-mun-2026')) {
+              map.set('zenith-mun-2026', ZENITH_MUN_2026_EVENT);
+            }
             serverEvents.forEach((evt) => {
               map.set(evt.slug || evt.id, evt);
             });
@@ -426,7 +442,7 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
   }, [allEvents, activeFilter, activeCategory, searchQuery, selectedCity, userLocation, maxDistanceKm, currentUserId]);
 
   const getEventById = useCallback(
-    (id: string) => allEvents.find((e) => e.id === id),
+    (id: string) => allEvents.find((e) => e.id === id || e.slug === id) || (id === 'zenith-mun-2026' ? ZENITH_MUN_2026_EVENT : undefined),
     [allEvents],
   );
 

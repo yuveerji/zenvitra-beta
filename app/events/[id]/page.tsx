@@ -25,6 +25,7 @@ import { useZenPass } from '@/context/ZenPassContext';
 import { ZenPassBookingModal } from '@/components/events/ZenPassBookingModal';
 import { RecruitmentOpenBanner } from '@/components/events/RecruitmentOpenBanner';
 import { EventTeamShowcase } from '@/components/events/EventTeamShowcase';
+import { ZenithMun2026Portal } from '@/components/events/ZenithMun2026Portal';
 import { EventRecruitmentShowcase } from '@/components/events/EventRecruitmentShowcase';
 import { EventSupportDesk } from '@/components/events/EventSupportDesk';
 
@@ -41,7 +42,7 @@ export default function DynamicEventPublicPage() {
   const [config, setConfig] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'recruit' | 'support'>('overview');
 
-  // If this is our official MUN event, immediately redirect to /zen-diplomacy
+  // If this is our official MUN event or Zenith MUN, route appropriately
   useEffect(() => {
     if (
       idOrSlug === 'zen-diplomacy' ||
@@ -49,8 +50,18 @@ export default function DynamicEventPublicPage() {
       idOrSlug.toLowerCase().includes('diplomacy')
     ) {
       router.replace('/zen-diplomacy');
+    } else if (
+      idOrSlug === 'zenith-mun-2026' ||
+      idOrSlug === 'zenith-mun' ||
+      idOrSlug === 'zenith'
+    ) {
+      router.replace('/events/zenith-mun-2026');
     }
   }, [idOrSlug, router]);
+
+  if (idOrSlug === 'zenith-mun-2026' || idOrSlug === 'zenith-mun' || idOrSlug === 'zenith') {
+    return <ZenithMun2026Portal />;
+  }
 
   // Find the event by ID or slug
   const event = events.find((e) => e.id === idOrSlug || e.slug === idOrSlug) || getEventById(idOrSlug);
@@ -93,7 +104,8 @@ export default function DynamicEventPublicPage() {
     );
   }
 
-  const eventDate = new Date(event.date);
+  const isDateTba = Boolean(event.isDateComingSoon || !event.date || event.date === 'TBA' || isNaN(new Date(event.date).getTime()));
+  const eventDate = isDateTba ? null : new Date(event.date);
   const myPasses = getPassesForEvent(event.id);
   const myPass = myPasses[0];
 
@@ -251,7 +263,11 @@ export default function DynamicEventPublicPage() {
                       <Calendar className="w-3 h-3 text-cyan-400" />
                       Date &amp; Time
                     </span>
-                    <p className="text-white font-bold text-sm">{eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    <p className="text-white font-bold text-sm">
+                      {isDateTba
+                        ? (event.dateTbaText || 'Dates Coming Soon / TBA')
+                        : eventDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
                     <p className="text-neutral-400 text-[11px] flex items-center gap-1">
                       <Clock className="w-3 h-3 text-neutral-500" />
                       <span>{event.time}</span>

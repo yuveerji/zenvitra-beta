@@ -181,6 +181,120 @@ export function FeaturedEvents() {
 
         </div>
       </SpotlightCard>
+
+      {/* ── FLAGSHIP CARD: ZENITH MUN 2026 (UDAIPUR OFFLINE SUMMIT) ── */}
+      <SpotlightCard className="p-0 rounded-3xl border border-amber-500/30 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(245,158,11,0.12)] bg-[#0c0906]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-stretch">
+          
+          {/* Left: Graphic Banner Area */}
+          <div className="lg:col-span-5 relative overflow-hidden bg-gradient-to-br from-[#1a1205] via-[#2a1a08] to-[#0c0906] p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-amber-500/20 min-h-[260px] sm:min-h-[320px]">
+            {/* Ambient gold glow */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="space-y-3 relative z-10">
+              <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[10px] font-bold tracking-widest uppercase inline-flex items-center gap-2 shadow-sm">
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                <span>UDAIPUR OFFLINE CONVENING</span>
+              </span>
+
+              <div className="pt-2">
+                <span className="text-[11px] font-mono tracking-widest text-amber-400/80 uppercase block">
+                  A NEW ZEN BEGINS.
+                </span>
+                <h3 className="text-3xl sm:text-4xl font-display font-black text-white tracking-tight uppercase leading-tight mt-1">
+                  ZENITH <span className="text-amber-400">MUN 2026</span>
+                </h3>
+              </div>
+            </div>
+
+            <div className="space-y-3 relative z-10 pt-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-amber-500/30 text-amber-200 text-xs font-mono">
+                <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>Udaipur, Rajasthan, India</span>
+              </div>
+              <p className="text-[11px] font-mono text-neutral-400">
+                PRESENTED BY ZENVITRA | BY YOUTH. FOR YOUTH.
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Event Information & Actions */}
+          <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold uppercase inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  SECRETARIAT APPLICATIONS LIVE NOW
+                </span>
+                <span className="text-neutral-400">
+                  Format: <strong className="text-white">In-Person Offline</strong>
+                </span>
+              </div>
+
+              <div>
+                <h4 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight leading-tight uppercase">
+                  Flagship In-Person Conference in the City of Lakes
+                </h4>
+                <p className="text-xs sm:text-sm text-neutral-300 font-sans font-light leading-relaxed mt-2">
+                  Building a high-impact diplomatic summit uniting delegates across international law, crisis simulations, and parliamentary governance. We are looking for committed, responsible, and driven youth leaders to helm the secretariat.
+                </p>
+              </div>
+
+              {/* Event Metadata Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
+                <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-0.5">
+                  <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">Dates</span>
+                  <p className="font-bold text-amber-300 truncate">Dates Coming Soon / TBA</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-0.5">
+                  <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">Location</span>
+                  <p className="font-bold text-white truncate">Udaipur, Rajasthan</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-0.5 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">Governance</span>
+                  <p className="font-bold text-amber-400 truncate">ZENVITRA Youth</p>
+                </div>
+              </div>
+
+              {/* Application Callout */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs font-sans text-amber-200/90 leading-relaxed">
+                <strong className="text-amber-300 font-mono block mb-1">🏛️ 20-Question Secretariat Intake Open:</strong>
+                Complete the official application across 6 specialized sections including Experience, Department Preferences, Situational Judgement, and CV Upload.
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 font-mono text-xs text-neutral-400">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Phase: <strong className="text-amber-300">Secretariat Selection</strong></span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                <Link
+                  href="/forms/zenith-secretariat-2026"
+                  className="justify-center px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-center shadow-sm"
+                  title="Apply for ZENITH MUN 2026 Secretariat"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Apply for Secretariat (20 Qs)</span>
+                </Link>
+
+                <Link href="/events/zenith-mun-2026" className="w-full sm:w-auto">
+                  <button
+                    type="button"
+                    className="w-full justify-center px-5 py-2.5 rounded-xl bg-amber-400 text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-amber-300 transition flex items-center gap-1.5 cursor-pointer shadow-md text-center"
+                  >
+                    <span>View Summit Details</span>
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </SpotlightCard>
     </section>
   );
 }
