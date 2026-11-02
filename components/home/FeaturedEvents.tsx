@@ -236,7 +236,7 @@ export function FeaturedEvents() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
                 <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-0.5">
                   <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">Dates</span>
-                  <p className="font-bold text-amber-300 truncate">Dates Coming Soon / TBA</p>
+                  <p className="font-bold text-amber-300 truncate">Summer 2027</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-0.5">
                   <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">Location</span>

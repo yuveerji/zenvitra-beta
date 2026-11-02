@@ -186,7 +186,7 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
         const isZenith = item.slug === 'zenith-mun-2026';
         const isDateComingSoon = Boolean(isZenith || item.isDateComingSoon);
         const isComingSoon = Boolean(isZenith || item.isComingSoon);
-        const dateTbaText = isZenith ? 'Dates Coming Soon / TBA' : item.dateTbaText;
+        const dateTbaText = isZenith ? 'Summer 2027' : item.dateTbaText;
 
         return {
           id: item.slug || item.id,

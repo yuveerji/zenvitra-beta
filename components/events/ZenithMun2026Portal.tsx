@@ -82,7 +82,7 @@ export function ZenithMun2026Portal() {
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-mono text-[10px] font-bold uppercase tracking-wider">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span>OFFLINE SUMMIT • UDAIPUR</span>
+              <span>OFFLINE SUMMIT • UDAIPUR • SUMMER 2027</span>
             </span>
 
             <button
@@ -153,8 +153,8 @@ export function ZenithMun2026Portal() {
                 <Calendar className="w-3.5 h-3.5 text-cyan-400" />
                 Convening Timeline
               </span>
-              <p className="font-bold text-amber-300 text-sm">Dates Coming Soon</p>
-              <p className="text-[11px] text-neutral-400">To Be Announced (Late 2026)</p>
+              <p className="font-bold text-amber-300 text-sm">Summer 2027</p>
+              <p className="text-[11px] text-neutral-400">Dates Announcing Soon (Udaipur)</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
@@ -220,7 +220,7 @@ export function ZenithMun2026Portal() {
           {[
             { id: 'overview', label: 'Summit Overview & Vision', icon: Sparkles },
             { id: 'secretariat', label: 'Secretariat Application (20 Qs)', icon: Crown },
-            { id: 'committees', label: 'Chambers & Committees', icon: Scale },
+            { id: 'committees', label: 'Committees (Coming Soon)', icon: Scale },
             { id: 'venue', label: 'Host City: Udaipur', icon: MapPin },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -730,71 +730,98 @@ export function ZenithMun2026Portal() {
           </div>
         )}
 
-        {/* ── TAB 3: CHAMBERS & COMMITTEES ── */}
+        {/* ── TAB 3: CHAMBERS & COMMITTEES (COMING SOON) ── */}
         {activeTab === 'committees' && (
           <div className="space-y-6">
-            <div className="p-6 sm:p-8 rounded-3xl bg-[#080b12] border border-white/10 space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-2xl sm:text-3xl font-display font-black text-white uppercase tracking-tight">
-                  Provisional Diplomatic Chambers
-                </h2>
-                <p className="text-xs text-neutral-400">
-                  Agendas will be officially revealed once the Academic Affairs directorate locks primary study guides.
-                </p>
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#080b12] border border-amber-500/20 space-y-6 text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider">
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>CHAMBERS &amp; AGENDAS &bull; COMING SOON</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-display font-black text-white uppercase tracking-tight">
+                    Committees &amp; Chambers Revealing Soon
+                  </h2>
+                  <p className="text-xs text-neutral-400 max-w-2xl leading-relaxed">
+                    The official committee matrices, study guides, and Executive Board appointments for <strong className="text-white">Summer 2027 in Udaipur</strong> are currently in progress. Agendas will be locked in direct collaboration with the incoming Secretariat and Academic Affairs Directorate.
+                  </p>
+                </div>
+
+                <div className="px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-300 font-mono text-xs font-bold text-center shrink-0">
+                  <span>SUMMER 2027 &bull; UDAIPUR</span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans text-xs">
-                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-2">
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold">
-                      MULTILATERAL PLENARY
+                      TRACK 01 &bull; MULTILATERAL
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-500">UN4MUN</span>
+                    <span className="text-[10px] font-mono text-amber-400 font-bold">REVEALING SOON</span>
                   </div>
-                  <h4 className="text-base font-bold text-white">United Nations General Assembly (UNGA)</h4>
+                  <h4 className="text-base font-bold text-white">Multilateral Diplomatic Plenary (UNGA / ECOSOC)</h4>
                   <p className="text-neutral-400 leading-relaxed font-light">
-                    Sovereign deliberation on international cyber warfare frameworks, AI governance treaties, and equitable access to digital public infrastructure.
+                    Large-chamber multilateral diplomacy focusing on global treaties, sustainable development, and digital sovereignty under classical rules of procedure.
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-2">
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 font-mono text-[10px] font-bold">
-                      P5 VETO COUNCIL
+                      TRACK 02 &bull; SECURITY &amp; CRISIS
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-500">15 NATIONS</span>
+                    <span className="text-[10px] font-mono text-amber-400 font-bold">REVEALING SOON</span>
                   </div>
-                  <h4 className="text-base font-bold text-white">United Nations Security Council (UNSC)</h4>
+                  <h4 className="text-base font-bold text-white">Security Council &amp; Continuous Crisis War Room</h4>
                   <p className="text-neutral-400 leading-relaxed font-light">
-                    High-stakes negotiations on de-escalation in critical maritime straits, peacekeeper mandate enforcement, and non-proliferation protocols.
+                    Fast-paced geopolitical crisis simulation reacting dynamically to intelligence communiques, emergency directives, and live international press updates.
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-2">
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold">
-                      INDIAN LEGISLATIVE
+                      TRACK 03 &bull; PARLIAMENTARY
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-500">PARLIAMENTARY RoP</span>
+                    <span className="text-[10px] font-mono text-amber-400 font-bold">REVEALING SOON</span>
                   </div>
-                  <h4 className="text-base font-bold text-white">Lok Sabha / All India Youth Assembly</h4>
+                  <h4 className="text-base font-bold text-white">Indian Legislative / All India Youth Assembly</h4>
                   <p className="text-neutral-400 leading-relaxed font-light">
-                    National legislative simulation debating youth economic resilience, education reform, and federal data sovereignty with Question Hour protocols.
+                    Dedicated simulation of Indian parliamentary procedure, Question Hour, legislative bills, and national policy debates with Lok Sabha seating protocols.
                   </p>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-2">
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono text-[10px] font-bold">
-                      CONTINUOUS CRISIS
+                      TRACK 04 &bull; SPECIALISED
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-500">RAPID DIRECTIVES</span>
+                    <span className="text-[10px] font-mono text-amber-400 font-bold">REVEALING SOON</span>
                   </div>
-                  <h4 className="text-base font-bold text-white">Historic Crisis Committee (HCC) &amp; IPC Wire</h4>
+                  <h4 className="text-base font-bold text-white">Specialised Directorate &amp; International Press Corps</h4>
                   <p className="text-neutral-400 leading-relaxed font-light">
-                    Real-time geopolitical war room reacting to simulated intelligence communiques, covert directives, and investigative press wire disclosures.
+                    Investigative journalism, live press conferences, photographic framing, and editorial wire reporting examining committee proceedings in real time.
                   </p>
                 </div>
+              </div>
+
+              {/* Callout Box */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-sans">
+                <div className="space-y-1">
+                  <strong className="text-amber-300 font-mono block">Propose a Committee Agenda or Lead an Executive Board:</strong>
+                  <p className="text-neutral-300 leading-relaxed">
+                    Have an idea for a committee topic or want to chair a council? State your vision in your Secretariat Application (Question 16).
+                  </p>
+                </div>
+
+                <Link
+                  href="/forms/zenith-secretariat-2026"
+                  className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono font-bold text-xs uppercase tracking-wider transition shrink-0 text-center"
+                >
+                  Apply Now &rarr;
+                </Link>
               </div>
             </div>
           </div>
