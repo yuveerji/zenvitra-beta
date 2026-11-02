@@ -99,6 +99,19 @@ export function ZenithMun2026Portal() {
         {/* ── HERO BANNER: ROYAL UDAIPUR SUMMIT ── */}
         <div className="relative rounded-3xl sm:rounded-[2.5rem] bg-gradient-to-b from-white/[0.04] via-[#090c14] to-[#04060a] border border-amber-500/30 p-6 sm:p-10 lg:p-12 overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.8),0_0_50px_rgba(245,158,11,0.1)] space-y-8">
           
+          {/* Official Zenith MUN 2026 Poster Artwork */}
+          <div className="w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-amber-500/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative group">
+            <img
+              src="/images/events/zenith-mun-2026-poster.png"
+              alt="ZENITH MODEL UNITED NATIONS 2026 Official Banner"
+              className="w-full h-auto object-cover max-h-[420px] transition-transform duration-500 group-hover:scale-[1.01]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-3 right-4 font-mono text-[10px] text-amber-300/80 bg-black/70 px-2.5 py-1 rounded-full border border-amber-500/30">
+              OFFICIAL SUMMIT POSTER &bull; UDAIPUR
+            </div>
+          </div>
+
           {/* Subtle Graphic Accents */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-amber-500/15 via-transparent to-transparent rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -125,7 +138,7 @@ export function ZenithMun2026Portal() {
           </div>
 
           {/* Metadata Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 font-mono text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 font-mono text-xs">
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider block flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-amber-400" />
@@ -146,6 +159,15 @@ export function ZenithMun2026Portal() {
 
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider block flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                Summit Itinerary
+              </span>
+              <p className="font-bold text-amber-300 text-sm">Itinerary Coming Soon</p>
+              <p className="text-[11px] text-neutral-400">Detailed schedule revealing soon</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
+              <span className="text-[10px] text-neutral-400 uppercase tracking-wider block flex items-center gap-1.5">
                 <Briefcase className="w-3.5 h-3.5 text-purple-400" />
                 Recruitment Status
               </span>
@@ -153,7 +175,7 @@ export function ZenithMun2026Portal() {
               <p className="text-[11px] text-neutral-400">20 Questions • 6 Sections</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
+            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1 col-span-2 sm:col-span-1">
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider block flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-emerald-400" />
                 Format &amp; Protocol

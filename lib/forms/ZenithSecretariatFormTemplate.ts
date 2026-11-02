@@ -28,6 +28,7 @@ export const ZENITH_SECRETARIAT_2026_FORM_TEMPLATE: ZenForm = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   customStyle: {
+    coverImageUrl: '/images/events/zenith-mun-2026-poster.png',
     displayFont: 'Clash Display',
     bodyFont: 'Space Grotesk',
     accentColor: '#f59e0b',

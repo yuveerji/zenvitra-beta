@@ -187,34 +187,26 @@ export function FeaturedEvents() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-stretch">
           
           {/* Left: Graphic Banner Area */}
-          <div className="lg:col-span-5 relative overflow-hidden bg-gradient-to-br from-[#1a1205] via-[#2a1a08] to-[#0c0906] p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-amber-500/20 min-h-[260px] sm:min-h-[320px]">
-            {/* Ambient gold glow */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="lg:col-span-5 relative overflow-hidden bg-black flex items-center justify-center min-h-[260px] sm:min-h-[320px] border-b lg:border-b-0 lg:border-r border-amber-500/20">
+            <img 
+              src="/images/events/zenith-mun-2026-poster.png" 
+              alt="ZENITH MODEL UNITED NATIONS 2026 Official Poster"
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-black/40 via-transparent to-[#0c0906] pointer-events-none" />
             
-            <div className="space-y-3 relative z-10">
-              <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[10px] font-bold tracking-widest uppercase inline-flex items-center gap-2 shadow-sm">
+            <div className="absolute top-4 left-4 z-10">
+              <span className="px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/50 text-amber-300 font-mono text-[10px] font-bold tracking-widest uppercase inline-flex items-center gap-2 shadow-lg">
                 <Crown className="w-3.5 h-3.5 text-amber-400" />
                 <span>UDAIPUR OFFLINE CONVENING</span>
               </span>
-
-              <div className="pt-2">
-                <span className="text-[11px] font-mono tracking-widest text-amber-400/80 uppercase block">
-                  A NEW ZEN BEGINS.
-                </span>
-                <h3 className="text-3xl sm:text-4xl font-display font-black text-white tracking-tight uppercase leading-tight mt-1">
-                  ZENITH <span className="text-amber-400">MUN 2026</span>
-                </h3>
-              </div>
             </div>
 
-            <div className="space-y-3 relative z-10 pt-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-amber-500/30 text-amber-200 text-xs font-mono">
+            <div className="absolute bottom-4 left-4 z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/70 backdrop-blur-md border border-amber-500/30 text-amber-200 text-xs font-mono">
                 <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>Udaipur, Rajasthan, India</span>
               </div>
-              <p className="text-[11px] font-mono text-neutral-400">
-                PRESENTED BY ZENVITRA | BY YOUTH. FOR YOUTH.
-              </p>
             </div>
           </div>
 

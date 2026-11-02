@@ -141,6 +141,8 @@ export interface ZenEvent {
   schedule?: Array<{ id: string; time: string; title: string; day?: string; location?: string }>;
   itineraryTiming?: 'NOW' | 'AFTER';
   itineraryText?: string;
+  isItineraryComingSoon?: boolean;
+  itineraryTbaText?: string;
   secretariatContact?: { name?: string; email?: string; phone?: string; role?: string };
   dressCode?: string;
   perks?: string[];
