@@ -579,7 +579,52 @@ export default function ZenFormPublicPage() {
     }
   };
 
+  const isFieldVisible = (field: ZenFormField, data: Record<string, any>): boolean => {
+    if (!field.conditional) return true;
+
+    const targetFieldIds = field.conditional.fieldIds || (field.conditional.fieldId ? [field.conditional.fieldId] : []);
+    if (targetFieldIds.length === 0) return true;
+
+    const targetValues: string[] = [];
+    for (const fid of targetFieldIds) {
+      const val = data[fid];
+      if (val !== undefined && val !== null && val !== '') {
+        if (Array.isArray(val)) {
+          targetValues.push(...val.map((v) => String(v).toLowerCase()));
+        } else {
+          targetValues.push(String(val).toLowerCase());
+        }
+      }
+    }
+
+    if (targetValues.length === 0) return false;
+
+    if (field.conditional.operator === 'not_empty') {
+      return targetValues.length > 0;
+    }
+
+    const ruleVals = Array.isArray(field.conditional.value)
+      ? field.conditional.value
+      : field.conditional.value !== undefined ? [field.conditional.value] : [];
+
+    if (ruleVals.length === 0) return true;
+
+    if (field.conditional.operator === 'equals') {
+      return ruleVals.some((ruleV) => {
+        const rLower = String(ruleV).toLowerCase();
+        return targetValues.some((t) => t === rLower);
+      });
+    }
+
+    // Default: 'includes' or 'in'
+    return ruleVals.some((ruleV) => {
+      const rLower = String(ruleV).toLowerCase();
+      return targetValues.some((t) => t.includes(rLower) || rLower.includes(t));
+    });
+  };
+
   const validateSingleField = (field: ZenFormField, val: any): string | null => {
+    if (!isFieldVisible(field, formData)) return null;
     if (['title_desc', 'image_block', 'video_block', 'section_break'].includes(field.type)) return null;
 
     const isEmail = field.type === 'email' || 
@@ -1074,7 +1119,7 @@ export default function ZenFormPublicPage() {
             {(() => {
               if (form.settings?.showProgressBar === false) return null;
               const nonContent = form.fields.filter(
-                (f) => !['title_desc', 'image_block', 'video_block', 'section_break'].includes(f.type)
+                (f) => !['title_desc', 'image_block', 'video_block', 'section_break'].includes(f.type) && isFieldVisible(f, formData)
               );
               const done = nonContent.filter((f) => {
                 const v = formData[f.id];
@@ -1307,6 +1352,8 @@ export default function ZenFormPublicPage() {
               {/* Fields List for Current Section / Page */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {(sections[currentPageIndex]?.fields || []).map((field) => {
+                  if (!isFieldVisible(field, formData)) return null;
+
                   // 1. Title & Description Block
                   if (field.type === 'title_desc') {
                     if (field.id === 'step15_payment_instruction' || field.label?.toLowerCase().includes('upi payment')) {

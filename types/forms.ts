@@ -89,6 +89,13 @@ export interface ZenMatrixConfig {
   liveBadgeText?: string;
 }
 
+export interface ZenFormConditionalRule {
+  fieldId?: string;
+  fieldIds?: string[];
+  operator?: 'equals' | 'includes' | 'not_empty' | 'in';
+  value?: string | string[];
+}
+
 export interface ZenFormField {
   id: string;
   label: string;
@@ -98,6 +105,7 @@ export interface ZenFormField {
   required?: boolean;
   options?: string[];
   defaultValue?: string;
+  conditional?: ZenFormConditionalRule;
   hasOtherOption?: boolean;
   mediaUrl?: string;
   mediaCaption?: string;

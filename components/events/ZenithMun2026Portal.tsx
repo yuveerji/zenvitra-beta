@@ -392,13 +392,13 @@ export function ZenithMun2026Portal() {
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider mb-2">
                     <Crown className="w-3.5 h-3.5" />
-                    <span>OFFICIAL APPLICATION SPECIFICATION</span>
+                    <span>OFFICIAL APPLICATION &amp; EVALUATION FRAMEWORK</span>
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-display font-black text-white uppercase tracking-tight">
-                    Secretariat Application Form Questions
+                    Secretariat Intake, Scorecard &amp; Departmental Questions
                   </h2>
                   <p className="text-xs text-neutral-400 mt-1">
-                    Below is the complete 20-question syllabus across all 6 sections. You can apply directly through the live form interface.
+                    Below is the complete evaluation rubric, the 100% selection scorecard, and department-specific practical assessment questions.
                   </p>
                 </div>
 
@@ -409,6 +409,210 @@ export function ZenithMun2026Portal() {
                   <span>Launch Live Form</span>
                   <ExternalLink className="w-4 h-4" />
                 </Link>
+              </div>
+
+              {/* ── 1. OFFICIAL SELECTION SCORECARD (100% EVALUATION RUBRIC) ── */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-500/10 via-black to-[#0a0d17] border border-amber-500/30 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/20 pb-4">
+                  <div>
+                    <span className="text-[10px] font-mono tracking-widest text-amber-400 uppercase font-bold block">
+                      RECRUITMENT PRINCIPLE
+                    </span>
+                    <h3 className="text-lg sm:text-xl font-display font-bold text-white tracking-tight uppercase">
+                      The ZENITH Selection Scorecard (100% Merit)
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-[11px] font-bold">
+                    Execution &gt; Designations
+                  </span>
+                </div>
+
+                <p className="text-xs text-neutral-300 font-sans leading-relaxed">
+                  We don&apos;t select people purely on the basis of MUN count or impressive past titles. Every candidate is evaluated through a consistent 100-point rubric:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs">
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
+                    <div>
+                      <span className="text-neutral-400 block text-[11px]">Relevant Experience</span>
+                      <strong className="text-white text-xs">Prior conferences &amp; initiatives</strong>
+                    </div>
+                    <span className="text-base font-bold text-amber-300">15%</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+                    <div>
+                      <span className="text-amber-200 block text-[11px]">Skills &amp; Dept Suitability</span>
+                      <strong className="text-white text-xs">Technical / creative alignment</strong>
+                    </div>
+                    <span className="text-base font-bold text-amber-400">20%</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
+                    <div>
+                      <span className="text-neutral-400 block text-[11px]">Motivation &amp; Vision</span>
+                      <strong className="text-white text-xs">Specific contributions to Zenith</strong>
+                    </div>
+                    <span className="text-base font-bold text-amber-300">15%</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+                    <div>
+                      <span className="text-amber-200 block text-[11px]">Situational Judgement</span>
+                      <strong className="text-white text-xs">Crisis &amp; teammate dynamics</strong>
+                    </div>
+                    <span className="text-base font-bold text-amber-400">20%</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+                    <div>
+                      <span className="text-amber-200 block text-[11px]">Commitment &amp; Reliability</span>
+                      <strong className="text-white text-xs">Time balance &amp; academic sync</strong>
+                    </div>
+                    <span className="text-base font-bold text-amber-400">20%</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
+                    <div>
+                      <span className="text-neutral-400 block text-[11px]">Communication</span>
+                      <strong className="text-white text-xs">Clarity, tone &amp; professionalism</strong>
+                    </div>
+                    <span className="text-base font-bold text-amber-300">10%</span>
+                  </div>
+                </div>
+
+                {/* 3 Pillars Banner */}
+                <div className="p-4 rounded-2xl bg-black/40 border border-amber-500/20 space-y-2 text-xs font-sans">
+                  <span className="font-mono text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                    Three Recruitment Decisions Every Applicant Should Know:
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 text-neutral-300">
+                    <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+                      <strong className="text-white block font-mono text-[11px]">1. Mandatory Dept Qs</strong>
+                      <p className="text-[11px] leading-relaxed">
+                        Department-specific execution questions appear dynamically and are required for every candidate.
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+                      <strong className="text-white block font-mono text-[11px]">2. Tangible Work Samples</strong>
+                      <p className="text-[11px] leading-relaxed">
+                        Actual portfolios, code repos, writing samples, or design creatives are required wherever relevant.
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+                      <strong className="text-white block font-mono text-[11px]">3. Practical Round</strong>
+                      <p className="text-[11px] leading-relaxed">
+                        Shortlisted candidates advance to a brief interview or practical task rather than selection solely on paper.
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] font-mono text-amber-300/90 pt-1 italic">
+                    &ldquo;ZENITH selects people who can get work done, not simply people who have held impressive titles before.&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              {/* ── 2. DEPARTMENT-SPECIFIC QUESTIONS BREAKDOWN ── */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pt-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-lg font-bold font-display text-white uppercase tracking-tight">
+                    Department-Specific Question Tracks (Appearing Conditionally)
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+                  {/* Track 1 */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                    <span className="text-amber-400 font-bold block uppercase tracking-wider text-xs">
+                      1. Delegate Affairs &amp; Outreach
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
+                      <li>How would you attract and engage potential delegates?</li>
+                      <li>How would you handle a delegate dissatisfied with registration?</li>
+                      <li>How would you build outreach beyond your immediate MUN network?</li>
+                      <li>How would you track and follow up on registrations?</li>
+                    </ul>
+                  </div>
+
+                  {/* Track 2 */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                    <span className="text-cyan-400 font-bold block uppercase tracking-wider text-xs">
+                      2. Public Relations &amp; Marketing
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
+                      <li>How to create awareness among students who never attended MUN?</li>
+                      <li>Suggest a campaign idea to increase registrations.</li>
+                      <li>How would you handle negative feedback or public criticism?</li>
+                      <li>What makes an MUN&apos;s social media presence effective?</li>
+                    </ul>
+                  </div>
+
+                  {/* Track 3 */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                    <span className="text-purple-400 font-bold block uppercase tracking-wider text-xs">
+                      3. Design &amp; Creative
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
+                      <li>Which design tools do you use?</li>
+                      <li>Share links to three relevant samples of your work.</li>
+                      <li>How to maintain visual consistency across all conference creatives?</li>
+                      <li>How would you approach a last-minute creative requirement?</li>
+                    </ul>
+                  </div>
+
+                  {/* Track 4 */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                    <span className="text-emerald-400 font-bold block uppercase tracking-wider text-xs">
+                      4. Media &amp; Communications
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
+                      <li>How comfortable are you with formal writing and proofreading?</li>
+                      <li>Draft a short announcement introducing ZENITH MUN 2026.</li>
+                      <li>How to ensure official communications remain consistent and accurate?</li>
+                      <li>How to handle an urgent correction to a published announcement?</li>
+                    </ul>
+                  </div>
+
+                  {/* Track 5 */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                    <span className="text-blue-400 font-bold block uppercase tracking-wider text-xs">
+                      5. Technical &amp; Website
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
+                      <li>Mention programming languages, platforms and tools you know.</li>
+                      <li>Share links to projects or websites you have worked on.</li>
+                      <li>Troubleshooting a website issue during live registration.</li>
+                      <li>Ensuring information displayed on website remains accurate.</li>
+                    </ul>
+                  </div>
+
+                  {/* Track 6 */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                    <span className="text-rose-400 font-bold block uppercase tracking-wider text-xs">
+                      6. Events &amp; Conference Operations
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
+                      <li>How would you plan and coordinate a large offline conference in Udaipur?</li>
+                      <li>What would you include in a conference-day contingency plan?</li>
+                      <li>Coordination between Executive Board, delegates and Secretariat.</li>
+                      <li>Handling unexpected technical or stage disruptions.</li>
+                    </ul>
+                  </div>
+
+                  {/* Track 7 */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2 md:col-span-2">
+                    <span className="text-amber-300 font-bold block uppercase tracking-wider text-xs">
+                      7. Research &amp; Content
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
+                      <li>How would you research and verify information before publication?</li>
+                      <li>What makes a good committee background guide?</li>
+                      <li>How would you ensure research material is unbiased and comprehensive?</li>
+                      <li>Share a short writing or research sample.</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-6 font-mono text-xs">
