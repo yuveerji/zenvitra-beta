@@ -172,17 +172,45 @@ export async function POST(req: NextRequest) {
     appendToLocalLedger(sanitizedLedgerEntry);
 
     // 3. Forward to Google Sheets webhook
-    const isZenithForm = Boolean(formId?.toLowerCase().includes('zenith') || formSlug?.toLowerCase().includes('zenith'));
-    const targetWebhook = body.webhookUrl || (isZenithForm
-      ? (process.env.ZENITH_GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbyWc4Pxyibs6oh8EWd2xIMjLSOmkhxACuvB3WAVcO1MxRMeRtWJSnJmXliJ0KmrdqIq/exec')
-      : (process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec'));
+    const isZenithForm = Boolean(
+      formId?.toLowerCase().includes('zenith') ||
+      formSlug?.toLowerCase().includes('zenith') ||
+      formId?.toLowerCase().includes('secretariat') ||
+      formSlug?.toLowerCase().includes('secretariat')
+    );
+
+    const zenithDefaultWebhook = 'https://script.google.com/macros/s/AKfycbyWc4Pxyibs6oh8EWd2xIMjLSOmkhxACuvB3WAVcO1MxRMeRtWJSnJmXliJ0KmrdqIq/exec';
+    const legacyDefaultWebhook = 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
+
+    let targetWebhook: string;
+    if (isZenithForm) {
+      targetWebhook = process.env.ZENITH_GOOGLE_SHEETS_WEBHOOK_URL || zenithDefaultWebhook;
+      if (body.webhookUrl && body.webhookUrl !== legacyDefaultWebhook && body.webhookUrl.startsWith('http')) {
+        targetWebhook = body.webhookUrl;
+      }
+    } else {
+      targetWebhook = body.webhookUrl || process.env.GOOGLE_SHEETS_WEBHOOK_URL || legacyDefaultWebhook;
+    }
+
     if (targetWebhook && typeof targetWebhook === 'string' && targetWebhook.startsWith('http')) {
       try {
-        await fetch(targetWebhook, {
+        const webhookPayload = {
+          submittedAt: timestamp,
+          submissionId: subId,
+          ticketId: sanitizedLedgerEntry.ticketId || subId,
+          data: {
+            ...sanitizedLedgerEntry,
+            ticketId: sanitizedLedgerEntry.ticketId || subId,
+          }
+        };
+
+        const sheetRes = await fetch(targetWebhook, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(sanitizedLedgerEntry),
+          body: JSON.stringify(webhookPayload),
         });
+        const sheetJson = await sheetRes.json().catch(() => null);
+        console.log('[SHEETS-SYNC-RESULT]', sheetJson);
       } catch (webhookErr: any) {
         console.warn('[SHEETS-ZENFORMS-WEBHOOK-WARN]', webhookErr?.message);
       }

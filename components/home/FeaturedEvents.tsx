@@ -14,13 +14,16 @@ import {
   Clock, 
   ExternalLink,
   Flame,
-  ArrowUpRight
+  ArrowUpRight,
+  CheckCircle2
 } from 'lucide-react';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { ZenDiplomacyCover } from '@/components/mun/ZenDiplomacyCover';
+import { ZenithApplicationStatusModal } from '@/components/events/ZenithApplicationStatusModal';
 
 export function FeaturedEvents() {
   const targetDate = useMemo(() => new Date('2026-10-24T09:00:00+05:30').getTime(), []);
+  const [showStatusModal, setShowStatusModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
     days: 0,
     hours: 0,
@@ -269,6 +272,16 @@ export function FeaturedEvents() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowStatusModal(true)}
+                  className="justify-center px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-display font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer text-center shadow-sm"
+                  title="Check Your Secretariat Application Status"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>See Your Status</span>
+                </button>
+
                 <Link
                   href="/forms/zenith-secretariat-2026"
                   className="justify-center px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-center shadow-sm"
@@ -293,6 +306,11 @@ export function FeaturedEvents() {
 
         </div>
       </SpotlightCard>
+
+      <ZenithApplicationStatusModal
+        isOpen={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+      />
     </section>
   );
 }

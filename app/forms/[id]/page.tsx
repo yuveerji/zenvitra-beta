@@ -63,6 +63,7 @@ import {
 import { getZenFormById, recordZenFormSubmission } from '@/lib/formsStorage';
 import { registerDelegate } from '@/lib/zenDiplomacyService';
 import { ZenForm, ZenFormTheme, ZenFormField } from '@/types/forms';
+import { ZenithApplicationStatusModal } from '@/components/events/ZenithApplicationStatusModal';
 import { useAuth } from '@/context/AuthContext';
 import { getFontCssFamily, CARD_BORDER_RADIUS_MAP } from '@/lib/formsThemes';
 
@@ -400,6 +401,7 @@ export default function ZenFormPublicPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   const isZenithForm = Boolean(
     idOrSlug?.toLowerCase().includes('zenith') ||
@@ -822,7 +824,15 @@ export default function ZenFormPublicPage() {
       }
 
       // 4. Single authoritative server-side dispatch to Ledger and Google Sheets webhook
-      const webhookUrl = form.googleSheetsConfig?.webhookUrl || 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
+      const zenithDefaultWebhook = 'https://script.google.com/macros/s/AKfycbyWc4Pxyibs6oh8EWd2xIMjLSOmkhxACuvB3WAVcO1MxRMeRtWJSnJmXliJ0KmrdqIq/exec';
+      const legacyDefaultWebhook = 'https://script.google.com/macros/s/AKfycbxRZ_ZUCZmxgTiZ2zHc9GaPWvioPyST9iLUBLdeqI7UM--3MWSiXyUcnh1vFW1d6exH/exec';
+
+      const configuredWebhook = form.googleSheetsConfig?.webhookUrl;
+      const isConfiguredWebhookValid = configuredWebhook && configuredWebhook !== legacyDefaultWebhook && configuredWebhook.startsWith('http');
+
+      const webhookUrl = isConfiguredWebhookValid 
+        ? configuredWebhook 
+        : ((isSecForm || isZenithForm) ? zenithDefaultWebhook : legacyDefaultWebhook);
       
       let committeeTab = '';
       if (!isSecForm && isMunForm) {
@@ -984,15 +994,27 @@ export default function ZenFormPublicPage() {
             <span>Sovereign Ledger Protected</span>
           </span>
 
-          <Link
-            href={isZenithForm ? '/events/zenith-mun-2026/mun/matrix' : '/mun/matrix'}
-            target="_blank"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-mono text-cyan-300 hover:text-white transition"
-            title="Open Live Matrix Ledger"
-          >
-            <Grid className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Live Dais Matrix</span>
-          </Link>
+          {isZenithForm ? (
+            <button
+              type="button"
+              onClick={() => setShowStatusModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-mono text-amber-300 hover:text-white transition cursor-pointer"
+              title="Check Your Application Status"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
+              <span>See Your Status</span>
+            </button>
+          ) : (
+            <Link
+              href="/mun/matrix"
+              target="_blank"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-mono text-cyan-300 hover:text-white transition"
+              title="Open Live Matrix Ledger"
+            >
+              <Grid className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Live Dais Matrix</span>
+            </Link>
+          )}
 
           <button
             type="button"
@@ -1076,6 +1098,16 @@ export default function ZenFormPublicPage() {
             )}
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+              {isZenithForm && (
+                <button
+                  type="button"
+                  onClick={() => setShowStatusModal(true)}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                  <span>See Your Status</span>
+                </button>
+              )}
               {(form.settings?.showSubmitAnotherLink ?? true) && (
                 <button
                   type="button"
@@ -3418,6 +3450,14 @@ export default function ZenFormPublicPage() {
       <div className="max-w-4xl lg:max-w-5xl mx-auto w-full text-center py-6 text-[11px] font-mono text-neutral-500 border-t border-white/10 relative z-10 px-2 sm:px-0">
         <span>Powered by <strong className="text-neutral-300">ZenForms</strong> • The Official Event & Intake System</span>
       </div>
+
+      {isZenithForm && (
+        <ZenithApplicationStatusModal
+          isOpen={showStatusModal}
+          onClose={() => setShowStatusModal(false)}
+          initialQuery={submittedSubId || ''}
+        />
+      )}
 
     </div>
   );
