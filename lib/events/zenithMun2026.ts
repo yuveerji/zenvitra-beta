@@ -46,25 +46,26 @@ export const ZENITH_MUN_2026_EVENT: ZenEvent = {
       price: 0,
       description: 'Official application for leadership departments in the Zenith MUN 2026 Secretariat.',
       perks: [
-        'Executive Board Clearance',
-        'Official Accreditation & Lanyard',
-        'Direct Committee Leadership',
-        'Secretariat Gala & Dinner Access',
-        'Verified Diplomatic Dossier & Certificate'
+        'Eligibility for ₹5,000 Best Secretariat Member Award',
+        'Official Secretariat Appointment Certificate & Merchandise',
+        'Merit-Based Letter of Recommendation (LOR) & LOA',
+        'Zenith Hall of Fame & Merit Registry Induction',
+        'Verified Diplomatic Leadership Dossier on Zenvitra'
       ],
       status: 'active'
     },
     {
       id: 'zenith_delegate_pass',
-      name: 'Delegate Pass (Offline Attendance — Udaipur)',
+      name: 'Delegate Pass (Offline In-Person Convening)',
       price: 0,
-      description: 'In-person delegate admission to Zenith MUN 2026 committee chambers in Udaipur. Registration opening soon.',
+      description: 'In-person delegate admission to Zenith MUN 2026 committee chambers. Registration opening soon.',
       perks: [
-        '2-Day Committee Chamber Access',
-        'Acoustic Dais Gavel Synthesis',
-        'Official Delegate Kit & Placard',
-        'Working Lunch & High Tea',
-        'Permanent ZENVITRA Diplomatic Passport Record'
+        'Official Delegate Kit (Merchandise, Stationery, Notepad & ID Card)',
+        'Digitally Verifiable Certificate on Zenvitra',
+        'Organiser-Arranged Accommodation (Subject to Outstation Eligibility)',
+        'Working Lunch, High-Tea Refreshments & Dedicated Hospitality Desk',
+        'Eligibility for Flagship Gavels & Committee Excellence Awards',
+        'Comprehensive Background Guides, Study Dossiers & Official Photo Archive'
       ],
       status: 'coming_soon'
     }
