@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { pipeline } from 'stream/promises';
+import { Readable } from 'stream';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // Allow up to 5 minutes for large multi-hundred megabyte/1GB uploads
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'forms');
 
@@ -21,10 +24,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
     }
 
-    // 25MB limit
-    const MAX_SIZE = 25 * 1024 * 1024;
+    // 1GB limit (1024 MB = 1,073,741,824 bytes)
+    const MAX_SIZE = 1024 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ success: false, error: 'File size exceeds 25MB limit' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'File size exceeds 1GB limit' }, { status: 400 });
     }
 
     // Allowed mime types (PDF, images, docs)
@@ -62,13 +65,22 @@ export async function POST(req: NextRequest) {
     const savedFileName = `doc_${Date.now()}_${randomSuffix}.${ext}`;
     const destinationPath = path.join(UPLOAD_DIR, savedFileName);
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(destinationPath, buffer);
+    // High performance stream pipeline: streams chunks directly to disk without loading 1GB into Node heap
+    if (typeof file.stream === 'function') {
+      const fileStream = Readable.fromWeb(file.stream() as any);
+      const writeStream = fs.createWriteStream(destinationPath);
+      await pipeline(fileStream, writeStream);
+    } else {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      fs.writeFileSync(destinationPath, buffer);
+    }
 
     const fileUrl = `https://zenvitra.xyz/uploads/forms/${savedFileName}`;
     const relativeUrl = `/uploads/forms/${savedFileName}`;
-    const fileSizeFormatted = file.size > 1024 * 1024
-      ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+    const fileSizeFormatted = file.size >= 1024 * 1024 * 1024
+      ? `${(file.size / (1024 * 1024 * 1024)).toFixed(2)} GB`
+      : file.size >= 1024 * 1024
+      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
       : `${(file.size / 1024).toFixed(1)} KB`;
 
     return NextResponse.json({

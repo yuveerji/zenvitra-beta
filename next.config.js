@@ -5,6 +5,7 @@ const nextConfig = {
   poweredByHeader: false,
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion', '@tabler/icons-react', 'qrcode'],
+    middlewareClientMaxBodySize: '1024mb',
   },
   turbopack: {},
   images: {

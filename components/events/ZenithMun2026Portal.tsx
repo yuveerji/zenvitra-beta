@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Crown, 
@@ -52,6 +52,15 @@ export function ZenithMun2026Portal() {
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('check_status') === 'true' || params.get('status') === 'true') {
+        setShowStatusModal(true);
+      }
+    }
+  }, []);
 
   const handleShare = () => {
     if (typeof window !== 'undefined') {

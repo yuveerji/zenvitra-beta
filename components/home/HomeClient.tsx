@@ -49,6 +49,7 @@ import { InteractiveWordHover, InteractiveWordGroup } from '@/components/home/In
 import { EcosystemMindMapModal } from '@/components/home/EcosystemMindMapModal';
 import { ListConferenceModal } from '@/components/events/ListConferenceModal';
 import { CreateEventModal } from '@/components/events/CreateEventModal';
+import { ZenithApplicationStatusModal } from '@/components/events/ZenithApplicationStatusModal';
 import { FeaturedEvents } from '@/components/home/FeaturedEvents';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 import { AnimatedSection, StaggerChildren, StaggerItem } from '@/components/ui/AnimatedSection';
@@ -74,6 +75,7 @@ export default function HomeClient({ session }: HomeClientProps) {
   const { escrowMandateActive } = useProtocolControls();
   const [isListConferenceOpen, setIsListConferenceOpen] = useState(false);
   const [isEventSetupOpen, setIsEventSetupOpen] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   useEffect(() => {
     const checkSession = () => {
@@ -465,7 +467,18 @@ export default function HomeClient({ session }: HomeClientProps) {
                   <ArrowRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
                 </Link>
 
-                {/* 3. Join Core Team Tertiary CTA */}
+                {/* 3. See Your Status Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowStatusModal(true)}
+                  className="group px-6 sm:px-7 py-3.5 sm:py-4 rounded-full border border-amber-400/40 bg-amber-400/[0.06] hover:bg-amber-400/15 hover:border-amber-400/70 text-amber-300 hover:text-white transition-all duration-300 flex items-center gap-2 backdrop-blur-sm btn-glow shadow-[0_0_20px_rgba(251,191,36,0.1)] cursor-pointer text-xs font-mono font-bold hover:scale-[1.02] active:scale-[0.98]"
+                  title="Check Your Application Status"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span>See Your Status</span>
+                </button>
+
+                {/* 4. Join Core Team Tertiary CTA */}
                 <Link
                   href="/join-core-team"
                   className="px-6 sm:px-7 py-3.5 sm:py-4 rounded-full border border-amber-400/30 bg-amber-400/[0.04] text-amber-300 hover:bg-amber-400/10 hover:border-amber-400/50 transition-all duration-300 flex items-center gap-2 backdrop-blur-sm btn-glow shadow-[0_0_20px_rgba(251,191,36,0.08)] cursor-pointer text-xs hover:scale-[1.02] active:scale-[0.98]"
@@ -1397,6 +1410,12 @@ export default function HomeClient({ session }: HomeClientProps) {
         <ListConferenceModal
           isOpen={isListConferenceOpen}
           onClose={() => setIsListConferenceOpen(false)}
+        />
+
+        {/* Application Status Checker Modal */}
+        <ZenithApplicationStatusModal
+          isOpen={showStatusModal}
+          onClose={() => setShowStatusModal(false)}
         />
       </div>
     </div>

@@ -698,10 +698,10 @@ export const ZENITH_SECRETARIAT_2026_FORM_TEMPLATE: ZenForm = {
       id: 'q22_resume_upload',
       label: 'Resume / CV Upload (PDF) *',
       type: 'file_upload',
-      description: 'Attach your PDF document (Maximum file size: 10MB)',
+      description: 'Attach your PDF document (Maximum file size: 1GB)',
       required: true,
       fileTypes: ['.pdf', 'application/pdf'],
-      maxFileSizeMb: 10
+      maxFileSizeMb: 1024
     },
     {
       id: 'q23_portfolio_links',

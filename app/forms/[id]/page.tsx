@@ -406,8 +406,11 @@ export default function ZenFormPublicPage() {
 
   const isZenithForm = Boolean(
     idOrSlug?.toLowerCase().includes('zenith') ||
+    idOrSlug?.toLowerCase().includes('secretariat') ||
     form?.id?.toLowerCase().includes('zenith') ||
-    form?.slug?.toLowerCase().includes('zenith')
+    form?.id?.toLowerCase().includes('secretariat') ||
+    form?.slug?.toLowerCase().includes('zenith') ||
+    form?.slug?.toLowerCase().includes('secretariat')
   );
 
   // Group fields into pages by section_break
@@ -812,7 +815,7 @@ export default function ZenFormPublicPage() {
         };
         reader.readAsDataURL(file);
       } else {
-        alert('File size exceeds 4MB. Please upload a file smaller than 4MB, or provide a Google Drive / LinkedIn link.');
+        alert('Upload failed: ' + (err?.message || 'File size exceeds allowed limit (1GB). Please select a file smaller than 1GB.'));
       }
     } finally {
       setUploadingFiles((prev) => ({ ...prev, [fieldId]: false }));
@@ -2309,7 +2312,7 @@ export default function ZenFormPublicPage() {
                                 Click or drag & drop document here
                               </span>
                               <span className="text-[11px] font-mono text-neutral-400 max-w-sm leading-relaxed">
-                                Upload PDF, JPG, PNG, or WEBP document (Max {field.maxFileSizeMb ?? 10} MB)
+                                Upload PDF, JPG, PNG, or WEBP document (Max {field.maxFileSizeMb ? (field.maxFileSizeMb >= 1024 ? `${(field.maxFileSizeMb / 1024).toFixed(0)} GB` : `${field.maxFileSizeMb} MB`) : '1 GB'})
                               </span>
                               <input
                                 type="file"

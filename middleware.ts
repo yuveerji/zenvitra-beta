@@ -303,8 +303,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except static files
+     * Match all request paths except static files and direct large-stream upload routes
      */
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|icons).*)',
+    '/((?!_next/static|_next/image|api/forms/upload|uploads|favicon.ico|manifest.json|icons).*)',
   ],
 };
