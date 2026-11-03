@@ -630,7 +630,7 @@ export default function CanonicalMunMatrixPage({ forcedMunId }: { forcedMunId?: 
                         {currentConference.name}
                       </h1>
                       <p className="text-neutral-300 text-sm sm:text-base leading-relaxed max-w-3xl">
-                        Convenes in the historic royal city of <strong className="text-white font-semibold">Udaipur, Rajasthan</strong> for an uncompromised offline multilateral summit.
+                        Convenes for an uncompromised offline multilateral summit. Official summit venue and location revealing soon.
                       </p>
                     </div>
 

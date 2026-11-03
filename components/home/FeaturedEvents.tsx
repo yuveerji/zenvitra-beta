@@ -198,14 +198,14 @@ export function FeaturedEvents() {
             <div className="absolute top-4 left-4 z-10">
               <span className="px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/50 text-amber-300 font-mono text-[10px] font-bold tracking-widest uppercase inline-flex items-center gap-2 shadow-lg">
                 <Crown className="w-3.5 h-3.5 text-amber-400" />
-                <span>UDAIPUR OFFLINE CONVENING</span>
+                <span>OFFLINE CONVENING • COMING SOON</span>
               </span>
             </div>
 
             <div className="absolute bottom-4 left-4 z-10">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/70 backdrop-blur-md border border-amber-500/30 text-amber-200 text-xs font-mono">
                 <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>Udaipur, Rajasthan, India</span>
+                <span>Location Coming Soon</span>
               </div>
             </div>
           </div>
@@ -246,7 +246,7 @@ export function FeaturedEvents() {
                 </div>
                 <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-0.5">
                   <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">Location</span>
-                  <p className="font-bold text-white truncate">Udaipur, Rajasthan</p>
+                  <p className="font-bold text-amber-300 truncate">Coming Soon</p>
                 </div>
                 <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-0.5 col-span-2 sm:col-span-1">
                   <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">Governance</span>

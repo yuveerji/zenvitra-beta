@@ -144,9 +144,9 @@ export function ZenithMun2026Portal() {
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1">
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider block flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                Venue &amp; City
+                Summit Location
               </span>
-              <p className="font-bold text-white text-sm">Udaipur, Rajasthan</p>
+              <p className="font-bold text-amber-300 text-sm">Coming Soon</p>
               <p className="text-[11px] text-neutral-400">Offline In-Person Assembly</p>
             </div>
 
@@ -174,7 +174,7 @@ export function ZenithMun2026Portal() {
                 Recruitment Status
               </span>
               <p className="font-bold text-emerald-400 text-sm">Secretariat Form Live</p>
-              <p className="text-[11px] text-neutral-400">20 Questions • 6 Sections</p>
+              <p className="text-[11px] text-neutral-400">7 Leadership Tracks • Scorecard</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1 col-span-2 sm:col-span-1">
@@ -216,8 +216,8 @@ export function ZenithMun2026Portal() {
               onClick={() => setActiveTab('secretariat')}
               className="px-6 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/15 font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer"
             >
-              <FileText className="w-4 h-4 text-amber-400" />
-              <span>Review Form Questions</span>
+              <Crown className="w-4 h-4 text-amber-400" />
+              <span>Secretariat Overview</span>
             </a>
 
             <a
@@ -234,9 +234,9 @@ export function ZenithMun2026Portal() {
         <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto scrollbar-none font-sans">
           {[
             { id: 'overview', label: 'Summit Overview & Vision', icon: Sparkles },
-            { id: 'secretariat', label: 'Secretariat Application (20 Qs)', icon: Crown },
+            { id: 'secretariat', label: 'Secretariat Application', icon: Crown },
             { id: 'committees', label: 'Committees (Coming Soon)', icon: Scale },
-            { id: 'venue', label: 'Host City: Udaipur', icon: MapPin },
+            { id: 'venue', label: 'Location (Coming Soon)', icon: MapPin },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -373,32 +373,24 @@ export function ZenithMun2026Portal() {
 
                   <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2 text-xs font-mono">
                     <span className="text-[10px] text-neutral-400 uppercase tracking-widest block font-bold">
-                      Form Structure (6 Sections &bull; 20 Questions):
+                      Application Highlights:
                     </span>
                     <ul className="space-y-1.5 text-[11px] text-neutral-300">
                       <li className="flex items-center gap-2">
                         <span className="text-amber-400 font-bold">&bull;</span>
-                        <span>Sec 1: Personal &amp; Academic Information (Q1-6)</span>
+                        <span>7 Specialized Operational Wings &amp; Leadership Tracks</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="text-amber-400 font-bold">&bull;</span>
-                        <span>Sec 2: Experience, Prior MUNs &amp; Skills (Q7-10)</span>
+                        <span>100% Objective Selection Scorecard Evaluation</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="text-amber-400 font-bold">&bull;</span>
-                        <span>Sec 3: 1st &amp; 2nd Dept Preferences &amp; Tools (Q11-13)</span>
+                        <span>Practical Assessments &amp; Work Sample Verification</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="text-amber-400 font-bold">&bull;</span>
-                        <span>Sec 4: Motivation, Ethos &amp; Contributions (Q14-16)</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-amber-400 font-bold">&bull;</span>
-                        <span>Sec 5: Situational Scenarios &amp; Dedication (Q17-20)</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <span className="text-amber-400 font-bold">&bull;</span>
-                        <span>Sec 6: Resume / CV PDF Upload &amp; Declaration</span>
+                        <span>Direct Online Submission via Official ZenForms</span>
                       </li>
                     </ul>
                   </div>
@@ -432,10 +424,10 @@ export function ZenithMun2026Portal() {
                     <span>OFFICIAL APPLICATION &amp; EVALUATION FRAMEWORK</span>
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-display font-black text-white uppercase tracking-tight">
-                    Secretariat Intake, Scorecard &amp; Departmental Questions
+                    Secretariat Intake &amp; Evaluation Scorecard
                   </h2>
                   <p className="text-xs text-neutral-400 mt-1">
-                    Below is the complete evaluation rubric, the 100% selection scorecard, and department-specific practical assessment questions.
+                    Below is the official 100% evaluation rubric and merit framework for the ZENITH MUN 2026 Secretariat.
                   </p>
                 </div>
 
@@ -549,192 +541,23 @@ export function ZenithMun2026Portal() {
                 </div>
               </div>
 
-              {/* ── 2. DEPARTMENT-SPECIFIC QUESTIONS BREAKDOWN ── */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 pt-2">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  <h3 className="text-lg font-bold font-display text-white uppercase tracking-tight">
-                    Department-Specific Question Tracks (Appearing Conditionally)
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
-                  {/* Track 1 */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
-                    <span className="text-amber-400 font-bold block uppercase tracking-wider text-xs">
-                      1. Delegate Affairs &amp; Outreach
-                    </span>
-                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
-                      <li>How would you attract and engage potential delegates?</li>
-                      <li>How would you handle a delegate dissatisfied with registration?</li>
-                      <li>How would you build outreach beyond your immediate MUN network?</li>
-                      <li>How would you track and follow up on registrations?</li>
-                    </ul>
-                  </div>
-
-                  {/* Track 2 */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
-                    <span className="text-cyan-400 font-bold block uppercase tracking-wider text-xs">
-                      2. Public Relations &amp; Marketing
-                    </span>
-                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
-                      <li>How to create awareness among students who never attended MUN?</li>
-                      <li>Suggest a campaign idea to increase registrations.</li>
-                      <li>How would you handle negative feedback or public criticism?</li>
-                      <li>What makes an MUN&apos;s social media presence effective?</li>
-                    </ul>
-                  </div>
-
-                  {/* Track 3 */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
-                    <span className="text-purple-400 font-bold block uppercase tracking-wider text-xs">
-                      3. Design &amp; Creative
-                    </span>
-                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
-                      <li>Which design tools do you use?</li>
-                      <li>Share links to three relevant samples of your work.</li>
-                      <li>How to maintain visual consistency across all conference creatives?</li>
-                      <li>How would you approach a last-minute creative requirement?</li>
-                    </ul>
-                  </div>
-
-                  {/* Track 4 */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
-                    <span className="text-emerald-400 font-bold block uppercase tracking-wider text-xs">
-                      4. Media &amp; Communications
-                    </span>
-                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
-                      <li>How comfortable are you with formal writing and proofreading?</li>
-                      <li>Draft a short announcement introducing ZENITH MUN 2026.</li>
-                      <li>How to ensure official communications remain consistent and accurate?</li>
-                      <li>How to handle an urgent correction to a published announcement?</li>
-                    </ul>
-                  </div>
-
-                  {/* Track 5 */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
-                    <span className="text-blue-400 font-bold block uppercase tracking-wider text-xs">
-                      5. Technical &amp; Website
-                    </span>
-                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
-                      <li>Mention programming languages, platforms and tools you know.</li>
-                      <li>Share links to projects or websites you have worked on.</li>
-                      <li>Troubleshooting a website issue during live registration.</li>
-                      <li>Ensuring information displayed on website remains accurate.</li>
-                    </ul>
-                  </div>
-
-                  {/* Track 6 */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
-                    <span className="text-rose-400 font-bold block uppercase tracking-wider text-xs">
-                      6. Events &amp; Conference Operations
-                    </span>
-                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
-                      <li>How would you plan and coordinate a large offline conference in Udaipur?</li>
-                      <li>What would you include in a conference-day contingency plan?</li>
-                      <li>Coordination between Executive Board, delegates and Secretariat.</li>
-                      <li>Handling unexpected technical or stage disruptions.</li>
-                    </ul>
-                  </div>
-
-                  {/* Track 7 */}
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2 md:col-span-2">
-                    <span className="text-amber-300 font-bold block uppercase tracking-wider text-xs">
-                      7. Research &amp; Content
-                    </span>
-                    <ul className="list-disc list-inside space-y-1 text-neutral-300 text-[11px] leading-relaxed">
-                      <li>How would you research and verify information before publication?</li>
-                      <li>What makes a good committee background guide?</li>
-                      <li>How would you ensure research material is unbiased and comprehensive?</li>
-                      <li>Share a short writing or research sample.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6 font-mono text-xs">
-                {/* SECTION 1 */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                  <span className="text-amber-400 font-bold block uppercase tracking-wider text-xs">
-                    SECTION 1 — PERSONAL INFORMATION
+              {/* ── 2. ONLINE APPLICATION CTA ── */}
+              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-amber-500/10 via-black to-cyan-500/5 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-6 text-left">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest block">
+                    ONLINE APPLICATION PORTAL
                   </span>
-                  <ol className="list-decimal list-inside space-y-2 text-neutral-300 leading-relaxed">
-                    <li><strong className="text-white">Full Name</strong> (Required legal identity)</li>
-                    <li><strong className="text-white">Age</strong> (Candidate age)</li>
-                    <li><strong className="text-white">City, State and Country</strong> (Location details)</li>
-                    <li><strong className="text-white">Email Address</strong> (Primary correspondence)</li>
-                    <li><strong className="text-white">WhatsApp / Contact Number</strong> (Emergency &amp; rapid updates)</li>
-                    <li><strong className="text-white">School / College / Institution and Current Academic Year</strong></li>
-                  </ol>
+                  <h4 className="text-lg font-bold font-display text-white tracking-tight uppercase">
+                    Ready to Build ZENITH MUN 2026?
+                  </h4>
+                  <p className="text-xs text-neutral-300 leading-relaxed max-w-xl">
+                    Submit your credentials, select department preferences, and attach your CV via our official 20-question online application portal.
+                  </p>
                 </div>
 
-                {/* SECTION 2 */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                  <span className="text-cyan-400 font-bold block uppercase tracking-wider text-xs">
-                    SECTION 2 — EXPERIENCE &amp; BACKGROUND
-                  </span>
-                  <ol start={7} className="list-decimal list-inside space-y-2 text-neutral-300 leading-relaxed">
-                    <li><strong className="text-white">Have you participated in any MUN conferences?</strong> Mention the number of conferences and your notable experiences.</li>
-                    <li><strong className="text-white">Have you previously served in an MUN Secretariat, Executive Board or Organising Committee?</strong> Mention your roles and responsibilities.</li>
-                    <li><strong className="text-white">Have you held any leadership positions or been involved in organising events, projects or initiatives outside MUNs?</strong> Elaborate briefly.</li>
-                    <li><strong className="text-white">What are your strongest skills?</strong> Mention at least three relevant skills.</li>
-                  </ol>
-                </div>
-
-                {/* SECTION 3 */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                  <span className="text-purple-400 font-bold block uppercase tracking-wider text-xs">
-                    SECTION 3 — DEPARTMENT PREFERENCES
-                  </span>
-                  <ol start={11} className="list-decimal list-inside space-y-2 text-neutral-300 leading-relaxed">
-                    <li><strong className="text-white">Which department(s) would you prefer to work in?</strong> Mention your first and second preferences.</li>
-                    <li><strong className="text-white">Why have you chosen these departments, and what makes you suitable for them?</strong></li>
-                    <li><strong className="text-white">What relevant tools, software, technical abilities or creative skills do you possess?</strong></li>
-                  </ol>
-                </div>
-
-                {/* SECTION 4 */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                  <span className="text-emerald-400 font-bold block uppercase tracking-wider text-xs">
-                    SECTION 4 — MOTIVATION &amp; VISION
-                  </span>
-                  <ol start={14} className="list-decimal list-inside space-y-2 text-neutral-300 leading-relaxed">
-                    <li><strong className="text-white">Why do you want to become a part of the ZENITH MUN 2026 Secretariat?</strong></li>
-                    <li><strong className="text-white">What does being a Secretariat member mean to you beyond holding a designation?</strong></li>
-                    <li><strong className="text-white">What is one specific contribution or idea you would like to bring to ZENITH MUN 2026?</strong></li>
-                  </ol>
-                </div>
-
-                {/* SECTION 5 */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                  <span className="text-rose-400 font-bold block uppercase tracking-wider text-xs">
-                    SECTION 5 — SITUATIONAL JUDGEMENT &amp; COMMITMENT
-                  </span>
-                  <ol start={17} className="list-decimal list-inside space-y-2 text-neutral-300 leading-relaxed">
-                    <li><strong className="text-white">If a team member repeatedly fails to complete assigned responsibilities, how would you handle the situation?</strong></li>
-                    <li><strong className="text-white">If you are assigned an important task with a tight deadline and encounter unexpected difficulties, what would you do?</strong></li>
-                    <li><strong className="text-white">How much time can you realistically dedicate to ZENITH MUN, and how will you balance your responsibilities with academics and other commitments?</strong></li>
-                    <li><strong className="text-white">Why should the selection committee choose you over other applicants?</strong></li>
-                  </ol>
-                </div>
-
-                {/* SECTION 6 */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
-                  <span className="text-amber-400 font-bold block uppercase tracking-wider text-xs">
-                    SECTION 6 — RESUME / CURRICULUM VITAE &amp; DECLARATION
-                  </span>
-                  <div className="space-y-2 text-neutral-300 leading-relaxed">
-                    <p><strong className="text-white">Resume Upload — Mandatory (PDF):</strong> Attach academic background, MUN experience, leadership roles, skills, and portfolio.</p>
-                    <p><strong className="text-white">Portfolio / LinkedIn / Work Samples:</strong> Optional URL link.</p>
-                    <p><strong className="text-white">Final Declaration:</strong> Confirmation of truthfulness, Applicant Name, Date, and Digital Signature confirmation.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 flex justify-center">
                 <Link
                   href="/forms/zenith-secretariat-2026"
-                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-display font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center gap-2 cursor-pointer"
+                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] shadow-[0_0_25px_rgba(245,158,11,0.3)] flex items-center gap-2 cursor-pointer shrink-0"
                 >
                   <Crown className="w-4 h-4 fill-black" />
                   <span>Fill Out Application Online</span>
@@ -842,20 +665,20 @@ export function ZenithMun2026Portal() {
           </div>
         )}
 
-        {/* ── TAB 4: HOST CITY UDAIPUR ── */}
+        {/* ── TAB 4: SUMMIT VENUE & LOCATION (COMING SOON) ── */}
         {activeTab === 'venue' && (
           <div className="space-y-6">
             <div className="p-6 sm:p-8 rounded-3xl bg-[#080b12] border border-white/10 space-y-6 text-left">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider">
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>THE VENICE OF THE EAST</span>
+                  <span>LOCATION COMING SOON</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-display font-black text-white uppercase tracking-tight">
-                  Udaipur: A Sovereign Heritage Backdrop
+                  Summit Location &amp; Venue (Coming Soon)
                 </h2>
                 <p className="text-sm text-neutral-300 font-light leading-relaxed max-w-3xl">
-                  Renowned globally for its historic palaces, serene lakes, and architectural majesty, Udaipur provides the ideal environment for intellectual reflection, high-level diplomacy, and student leadership.
+                  The official offline summit coordinates, debate chambers, and delegate accommodations are currently being finalized. Full venue details, transit directions, and verified student lodging advisories will be unveiled soon.
                 </p>
               </div>
 
@@ -863,19 +686,19 @@ export function ZenithMun2026Portal() {
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
                   <span className="text-amber-400 font-bold block uppercase">Historic Heritage</span>
                   <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                    Debate surrounded by centuries of cultural grandeur, creating an unforgettable summit memory.
+                    Uncompromising in-person multilateral chambers set in a regal, historic setting.
                   </p>
                 </div>
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
                   <span className="text-cyan-400 font-bold block uppercase">Seamless Connectivity</span>
                   <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                    Direct rail, road, and airport connectivity (Maharana Pratap Airport) from all major Indian metropolitan hubs.
+                    Accessible via direct rail, road, and flight connections from all major metropolitan hubs.
                   </p>
                 </div>
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
                   <span className="text-emerald-400 font-bold block uppercase">Youth Assembly Hub</span>
                   <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                    A vibrant student hospitality network with vetted accommodations, security, and transport coordination.
+                    Vetted delegate hospitality network, security protocols, and curated transport coordination.
                   </p>
                 </div>
               </div>
