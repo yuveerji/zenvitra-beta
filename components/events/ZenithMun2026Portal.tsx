@@ -210,14 +210,6 @@ export function ZenithMun2026Portal() {
               <span>Registration Opening Soon</span>
             </div>
 
-            <Link
-              href="/events/zenith-mun-2026/mun/matrix"
-              className="px-6 py-3.5 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-white border border-cyan-500/30 font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-sm"
-            >
-              <Grid className="w-4 h-4 text-cyan-400" />
-              <span>Country Matrix</span>
-            </Link>
-
             <a
               href="#secretariat-info"
               onClick={() => setActiveTab('secretariat')}
@@ -233,7 +225,7 @@ export function ZenithMun2026Portal() {
               className="px-6 py-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-white border border-amber-500/30 font-mono text-xs font-semibold transition flex items-center gap-2 cursor-pointer"
             >
               <Gift className="w-4 h-4 text-amber-400" />
-              <span>Perks &amp; Awards</span>
+              <span>Secretariat Perks</span>
             </button>
 
             <a
@@ -251,7 +243,7 @@ export function ZenithMun2026Portal() {
           {[
             { id: 'overview', label: 'Summit Overview & Vision', icon: Sparkles },
             { id: 'secretariat', label: 'Secretariat Application', icon: Crown },
-            { id: 'perks', label: 'Perks & Hospitality', icon: Gift },
+            { id: 'perks', label: 'Secretariat Perks & Awards', icon: Gift },
             { id: 'committees', label: 'Committees (Coming Soon)', icon: Scale },
             { id: 'venue', label: 'Location (Coming Soon)', icon: MapPin },
           ].map((tab) => {
@@ -618,7 +610,7 @@ export function ZenithMun2026Portal() {
           </div>
         )}
 
-        {/* ── TAB 3: DELEGATE PERKS, HOSPITALITY & AWARDS FRAMEWORK ── */}
+        {/* ── TAB 3: SECRETARIAT PERKS, HOSPITALITY & AWARDS FRAMEWORK ── */}
         {activeTab === 'perks' && (
           <div className="space-y-8 text-left">
             <div className="p-6 sm:p-10 rounded-3xl bg-[#080b12] border border-amber-500/25 space-y-8">
@@ -629,26 +621,26 @@ export function ZenithMun2026Portal() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold uppercase tracking-wider">
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>PREMIER EDITION &bull; POWERED BY ZENVITRA.XYZ</span>
+                      <span>OFFICIAL SECRETARIAT INCENTIVES &bull; POWERED BY ZENVITRA.XYZ</span>
                     </span>
                     <span className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold uppercase">
-                      OFFLINE SUMMIT
+                      LEADERSHIP DIRECTORATE
                     </span>
                   </div>
 
                   <h2 className="text-2xl sm:text-4xl font-display font-black text-white uppercase tracking-tight">
-                    Delegate Perks, Hospitality &amp; Recognition Framework
+                    Secretariat Perks, Honors &amp; Leadership Recognition
                   </h2>
 
                   <p className="text-xs sm:text-sm text-neutral-300 font-light max-w-3xl leading-relaxed">
-                    Zenith MUN 2026 delivers far more than standard committee sessions. We have architected a premier conference experience that honors delegates, chairs, and organizers with uncompromised hospitality, verified merit, and lifelong career incentives.
+                    Building ZENITH MUN 2026 takes committed, responsible, and driven youth leaders. The individuals architecting this conference deserve tangible recognition, executive hospitality, and career-defining incentives. Explore the complete benefits and awards framework structured exclusively for the Secretariat and Executive Board.
                   </p>
                 </div>
 
                 {/* Three Pillars Badge */}
                 <div className="p-4 rounded-2xl bg-black/60 border border-amber-500/30 shrink-0 space-y-1 text-center font-mono">
                   <span className="text-[10px] text-neutral-400 uppercase tracking-widest block font-bold">
-                    ZENITH MUN TRIAD
+                    ZENITH LEADERSHIP TRIAD
                   </span>
                   <div className="flex items-center gap-2 text-xs font-bold text-amber-300 justify-center">
                     <span>Hospitality</span>
@@ -660,60 +652,60 @@ export function ZenithMun2026Portal() {
                 </div>
               </div>
 
-              {/* ── 1. THREE-TIER BENEFIT STRUCTURE ── */}
+              {/* ── 1. THREE-TIER BENEFIT STRUCTURE (SECRETARIAT FOCUSED) ── */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-amber-400" />
                   <h3 className="text-lg font-bold font-display text-white uppercase tracking-tight">
-                    The 3-Tier Benefit Architecture
+                    Secretariat &amp; Executive Board Benefit Tiers
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 font-sans">
-                  {/* Tier 1: Standard Delegate */}
+                  {/* Tier 1: General Secretariat */}
                   <div className="p-5 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4 flex flex-col justify-between">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold uppercase">
-                          TIER 01 &bull; ALL DELEGATES
+                          TIER 01 &bull; ALL MEMBERS
                         </span>
-                        <Ticket className="w-4 h-4 text-cyan-400" />
+                        <Crown className="w-4 h-4 text-cyan-400" />
                       </div>
                       <h4 className="text-base font-bold font-display text-white uppercase">
-                        Standard Delegate
+                        General Secretariat
                       </h4>
                       <p className="text-xs text-neutral-300 leading-relaxed">
-                        Included with every confirmed conference pass, ensuring full academic immersion.
+                        Conferred upon every inducted Secretariat member across our 7 specialized operating departments.
                       </p>
                       <ul className="space-y-2 text-xs text-neutral-300 font-mono pt-2">
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                          <span>Digitally verifiable certificate on Zenvitra</span>
+                          <span>Official Secretariat Appointment Certificate</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                          <span>Official Delegate Kit (merch, notepad, lanyard)</span>
+                          <span>Official Secretariat Executive Kit &amp; Lanyard</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                          <span>Comprehensive Background Guides &amp; dossiers</span>
+                          <span>Verified leadership designation on Zenvitra Passport</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                          <span>High-res official conference photo archive</span>
+                          <span>Official Letter of Appreciation (LOA)</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                          <span>Full award eligibility &amp; dais recognition</span>
+                          <span>Public profile recognition on conference portal</span>
                         </li>
                       </ul>
                     </div>
                     <div className="pt-3 border-t border-white/5 text-[11px] font-mono text-neutral-400">
-                      Standard admission package
+                      Standard Secretariat induction
                     </div>
                   </div>
 
-                  {/* Tier 2: Outstation Delegate */}
+                  {/* Tier 2: Outstation Hospitality */}
                   <div className="p-5 rounded-3xl bg-amber-500/5 border border-amber-500/30 space-y-4 flex flex-col justify-between shadow-lg">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -723,10 +715,10 @@ export function ZenithMun2026Portal() {
                         <Hotel className="w-4 h-4 text-amber-400" />
                       </div>
                       <h4 className="text-base font-bold font-display text-white uppercase">
-                        Outstation Hospitality
+                        Outstation Secretariat &amp; EB
                       </h4>
                       <p className="text-xs text-neutral-300 leading-relaxed">
-                        Curated assistance for travelling delegates arriving from outside the host region.
+                        Dedicated hospitality arrangements for organizers and chairs traveling to the summit city.
                       </p>
                       <ul className="space-y-2 text-xs text-neutral-300 font-mono pt-2">
                         <li className="flex items-start gap-2">
@@ -735,33 +727,33 @@ export function ZenithMun2026Portal() {
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                          <span>Dedicated on-ground hospitality concierge</span>
+                          <span>Dedicated on-ground logistical concierge</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                          <span>Conference working lunch &amp; high-tea refreshments</span>
+                          <span>Summit working meals &amp; high-tea refreshments</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                          <span>Emergency safety assistance &amp; local transit guidance</span>
+                          <span>Emergency safety assistance &amp; transit guidance</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                          <span>All Standard Delegate benefits included</span>
+                          <span>All General Secretariat benefits included</span>
                         </li>
                       </ul>
                     </div>
                     <div className="pt-3 border-t border-amber-500/20 text-[11px] font-mono text-amber-300/80">
-                      *Travel tickets borne by delegates
+                      *Travel tickets borne by members
                     </div>
                   </div>
 
-                  {/* Tier 3: Excellence & Leadership */}
+                  {/* Tier 3: Excellence & Merit */}
                   <div className="p-5 rounded-3xl bg-purple-500/5 border border-purple-500/30 space-y-4 flex flex-col justify-between shadow-lg">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-mono text-[10px] font-bold uppercase">
-                          TIER 03 &bull; MERIT RECOGNITION
+                          TIER 03 &bull; MERIT HONORS
                         </span>
                         <Trophy className="w-4 h-4 text-purple-400" />
                       </div>
@@ -769,7 +761,7 @@ export function ZenithMun2026Portal() {
                         Excellence &amp; Leadership
                       </h4>
                       <p className="text-xs text-neutral-300 leading-relaxed">
-                        Prestigious merit-based credentials honoring extraordinary performance.
+                        Prestigious merit-based recognition honoring extraordinary dedication and operational execution.
                       </p>
                       <ul className="space-y-2 text-xs text-neutral-300 font-mono pt-2">
                         <li className="flex items-start gap-2">
@@ -782,15 +774,15 @@ export function ZenithMun2026Portal() {
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
-                          <span>Official Letters of Appreciation (LOA)</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
                           <span>Permanent induction into <strong>Zenith Hall of Fame</strong></span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
-                          <span>Zenith Fellowship &amp; Ambassador privileges</span>
+                          <span>Best Department Award &amp; Team Trophy</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                          <span>Zenith Fellowship &amp; National Ambassador pathway</span>
                         </li>
                       </ul>
                     </div>
@@ -860,12 +852,12 @@ export function ZenithMun2026Portal() {
                 </div>
               </div>
 
-              {/* ── 3. FULL DELEGATE PERKS GRID ── */}
+              {/* ── 3. FULL SECRETARIAT PERKS GRID (9 CORE PROVISIONS) ── */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Gift className="w-4 h-4 text-cyan-400" />
                   <h3 className="text-lg font-bold font-display text-white uppercase tracking-tight">
-                    Comprehensive Delegate Perks &amp; Provisions
+                    Comprehensive Secretariat Perks &amp; Provisions
                   </h3>
                 </div>
 
@@ -873,80 +865,80 @@ export function ZenithMun2026Portal() {
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-amber-400 font-bold">
                       <Hotel className="w-4 h-4" />
-                      <span>Accommodation Assistance</span>
+                      <span>Outstation Accommodation</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Arranged or provided by the organisers for eligible outstation delegates, subject to eligibility criteria and advance availability.
+                      Arranged or provided by the organisers for eligible outstation Secretariat members and chairs, subject to eligibility criteria and availability.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-cyan-400 font-bold">
                       <Gift className="w-4 h-4" />
-                      <span>Official Delegate Kit</span>
+                      <span>Executive Secretariat Kit</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Custom conference merchandise, executive stationery, summit notepad, official conference ID card, and procedural folder.
+                      Official conference apparel, executive stationery, summit notepad, official Secretariat lanyard, badge &amp; leadership dossier.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-emerald-400 font-bold">
                       <FileCheck2 className="w-4 h-4" />
-                      <span>Digital Verifiable Certificate</span>
+                      <span>Official Appointment Certificate</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Official digitally authenticated certificate with cryptographic verification ID accessible permanently on Zenvitra.
+                      Legally recognized Secretariat appointment certificate authenticated digitally with permanent cryptographic verification ID on Zenvitra.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-purple-400 font-bold">
-                      <Award className="w-4 h-4" />
-                      <span>Committee Recognition</span>
+                      <Coins className="w-4 h-4" />
+                      <span>₹5,000 Cash Prize Eligibility</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Prestigious conference gavels, trophies, and certificates of excellence for outstanding committee performance.
+                      Direct eligibility for the flagship Best Secretariat Member cash award, evaluated on dedication, execution, and team coordination.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-rose-400 font-bold">
-                      <Users className="w-4 h-4" />
-                      <span>Networking Access</span>
+                      <Award className="w-4 h-4" />
+                      <span>Merit-Based LORs</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      High-level interaction channels across delegates, faculty advisors, Executive Board dignitaries, and institutions nationwide.
+                      Tailored Letters of Recommendation issued by authorized leadership for university admissions, internships, and corporate placements.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-amber-300 font-bold">
-                      <BookOpen className="w-4 h-4" />
-                      <span>Conference Resources</span>
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Letters of Appreciation (LOA)</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Exhaustive committee background guides, research dossiers, procedural handbooks, and UN treaty references.
+                      Formal recognition of organizational contribution, crisis handling, and dedicated service to the successful execution of the summit.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-cyan-300 font-bold">
-                      <Sparkles className="w-4 h-4" />
-                      <span>Official Photography</span>
+                      <Hotel className="w-4 h-4" />
+                      <span>Summit Catering &amp; Hospitality</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Dedicated photojournalism team capturing formal committee proceedings, press moments, and awards gala ceremonies.
+                      Complimentary working lunches, high-tea refreshments, and dedicated hospitality coordination during conference operational hours.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
                     <div className="flex items-center gap-2 text-emerald-300 font-bold">
                       <Globe2 className="w-4 h-4" />
-                      <span>Zenvitra Platform Access</span>
+                      <span>Zenith Hall of Fame</span>
                     </div>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Real-time resolution authoring, online portfolio matrix, digital chits, and verified civic passport privileges.
+                      Permanent induction into the online Zenith Merit Registry, highlighting your designated role and leadership impact for posterity.
                     </p>
                   </div>
 
@@ -956,13 +948,13 @@ export function ZenithMun2026Portal() {
                       <span>Travel Support Notice</span>
                     </div>
                     <p className="text-neutral-400 text-[11px] font-sans leading-relaxed">
-                      Travel tickets to and from the summit city are to be directly booked and borne by attending delegates.
+                      Travel tickets to and from the summit city are to be directly booked and borne by attending Secretariat members and chairs.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* ── 4. COMMITTEE & DELEGATE AWARDS LIST ── */}
+              {/* ── 4. SECRETARIAT & LEADERSHIP RECOGNITION ROSTER ── */}
               <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-3">
                   <div className="space-y-0.5">
@@ -970,7 +962,7 @@ export function ZenithMun2026Portal() {
                       HONORS &amp; DISTINCTIONS
                     </span>
                     <h3 className="text-lg font-bold font-display text-white uppercase tracking-tight">
-                      Official Conference Awards Roster
+                      Official Secretariat &amp; Leadership Honors Roster
                     </h3>
                   </div>
                   <Trophy className="w-5 h-5 text-amber-400" />
@@ -978,18 +970,18 @@ export function ZenithMun2026Portal() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 font-mono text-xs">
                   {[
-                    { name: 'Best Delegate', badge: 'Flagship Gavel', color: 'text-amber-400 border-amber-500/30' },
-                    { name: 'High Commendation', badge: 'Silver Honor', color: 'text-cyan-300 border-cyan-500/30' },
-                    { name: 'Special Mention', badge: 'Bronze Citation', color: 'text-neutral-300 border-white/20' },
-                    { name: 'Best Position Paper', badge: 'Academic Research', color: 'text-purple-300 border-purple-500/30' },
-                    { name: 'Best Researcher', badge: 'Analytical Depth', color: 'text-emerald-300 border-emerald-500/30' },
-                    { name: 'Best Negotiator', badge: 'Consensus Building', color: 'text-rose-300 border-rose-500/30' },
-                    { name: 'Outstanding Delegate', badge: 'Leadership', color: 'text-amber-300 border-amber-500/30' },
-                    { name: 'Best Executive Board', badge: 'Dais Excellence', color: 'text-blue-300 border-blue-500/30' },
-                    { name: 'Best IP Reporter', badge: 'Press Directorate', color: 'text-orange-300 border-orange-500/30' },
                     { name: 'Best Secretariat Member', badge: '₹5,000 Cash Prize', color: 'text-amber-400 border-amber-400/50 bg-amber-400/10' },
-                    { name: 'Best Department Award', badge: 'Team Trophy', color: 'text-cyan-400 border-cyan-400/40' },
-                    { name: 'Outstanding Institution', badge: 'Delegation Trophy', color: 'text-emerald-400 border-emerald-400/40' },
+                    { name: 'Best Department Award', badge: 'Team Trophy', color: 'text-cyan-400 border-cyan-400/40 bg-cyan-400/5' },
+                    { name: 'Outstanding Secretariat Member', badge: 'Operational Excellence', color: 'text-amber-300 border-amber-500/30' },
+                    { name: 'Excellence in Leadership', badge: 'Strategic Impact', color: 'text-purple-300 border-purple-500/30' },
+                    { name: 'Best Executive Board Member', badge: 'Dais Excellence', color: 'text-blue-300 border-blue-500/30' },
+                    { name: 'Outstanding Crisis Director', badge: 'War Room Mastery', color: 'text-rose-300 border-rose-500/30' },
+                    { name: 'Best Tech & Web Innovation', badge: 'Digital Systems', color: 'text-emerald-300 border-emerald-500/30' },
+                    { name: 'Best Outreach & PR Lead', badge: 'National Growth', color: 'text-cyan-300 border-cyan-500/30' },
+                    { name: 'Best Creative & Visual Design', badge: 'Brand Identity', color: 'text-orange-300 border-orange-500/30' },
+                    { name: 'Best Research Director', badge: 'Academic Rigor', color: 'text-amber-300 border-amber-500/30' },
+                    { name: 'Outstanding Institution Trophy', badge: 'Delegation Support', color: 'text-emerald-400 border-emerald-400/40' },
+                    { name: "Convenor's Special Commendation", badge: 'Distinguished Service', color: 'text-white border-white/20' },
                   ].map((award, i) => (
                     <div key={i} className={`p-3 rounded-xl bg-white/[0.02] border ${award.color} space-y-1`}>
                       <span className="text-[10px] text-neutral-400 block uppercase">{award.badge}</span>
@@ -999,17 +991,17 @@ export function ZenithMun2026Portal() {
                 </div>
               </div>
 
-              {/* ── 5. LOR & LOA FRAMEWORK ── */}
+              {/* ── 5. LOR & LOA FRAMEWORK (SECRETARIAT FOCUSED) ── */}
               <div className="p-6 rounded-3xl bg-gradient-to-br from-[#0c1424] via-[#080d1a] to-[#0a101d] border border-cyan-500/30 space-y-5">
                 <div className="space-y-1">
                   <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold uppercase tracking-wider">
-                    CAREER &amp; ACADEMIC VALUE
+                    CAREER &amp; ACADEMIC ACCREDITATION
                   </div>
                   <h3 className="text-lg sm:text-xl font-display font-bold text-white uppercase tracking-tight">
-                    Letter of Appreciation (LOA) &amp; Letter of Recommendation (LOR)
+                    Secretariat Letter of Appreciation (LOA) &amp; Letter of Recommendation (LOR)
                   </h3>
                   <p className="text-xs text-neutral-300 font-light leading-relaxed max-w-3xl">
-                    One of Zenith&apos;s most valuable incentives. LORs and LOAs are strictly merit-based and issued by authorized leadership signatories who can genuinely attest to the recipient&apos;s competence, work ethic, and contributions.
+                    One of Zenith&apos;s strongest incentives for student organizers. LORs and LOAs are strictly merit-based and issued by authorized leadership signatories who can genuinely attest to the recipient&apos;s organizational competence, execution speed, and leadership character.
                   </p>
                 </div>
 
@@ -1017,28 +1009,28 @@ export function ZenithMun2026Portal() {
                   <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2">
                     <span className="text-cyan-400 font-bold block uppercase text-[11px]">Letter of Appreciation (LOA)</span>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Conferred for outstanding contribution, active participation, and disciplined commitment to the conference proceedings.
+                      Conferred for disciplined execution, team dependability, and outstanding contribution to the conference operations.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-black/40 border border-amber-500/30 space-y-2">
                     <span className="text-amber-400 font-bold block uppercase text-[11px]">Letter of Recommendation (LOR)</span>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Individual evaluation of exceptional leadership, analytical rigor, and verified organizational or diplomatic excellence.
+                      Individual evaluation of exceptional leadership, crisis handling, and verified management achievements for higher education and careers.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2">
                     <span className="text-purple-400 font-bold block uppercase text-[11px]">Special Recognition Letter</span>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Awarded for exceptional personal initiative, crisis resolution, or unprecedented diplomatic contributions.
+                      Awarded for breakthrough initiative, unprecedented problem-solving, or exceptional departmental turnaround during the summit.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2">
-                    <span className="text-emerald-400 font-bold block uppercase text-[11px]">Secretariat Appreciation</span>
+                    <span className="text-emerald-400 font-bold block uppercase text-[11px]">Executive Board LOR</span>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Formal attestation of organizational leadership, team coordination, and verifiable project execution.
+                      Formal attestation of committee moderation, rules-of-procedure mastery, and diplomatic leadership for EB chairs.
                     </p>
                   </div>
                 </div>
@@ -1046,89 +1038,66 @@ export function ZenithMun2026Portal() {
                 <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-mono text-amber-300/90 flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <span>
-                    <strong>Authenticity Protocol:</strong> Zenith LORs are issued by authorized signatories and verifiable through a digital credential hash. They are never granted as automatic attendance certificates.
+                    <strong>Authenticity Protocol:</strong> Zenith LORs are issued by authorized signatories and verifiable through a digital credential hash on Zenvitra. They are never granted as automatic participation handouts.
                   </span>
                 </div>
               </div>
 
-              {/* ── 6. EXECUTIVE BOARD & SECRETARIAT SPECIAL PACKAGES ── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Executive Board Perks */}
-                <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
-                  <div className="flex items-center gap-2 border-b border-white/10 pb-3">
-                    <Crown className="w-5 h-5 text-amber-400" />
-                    <div>
-                      <h4 className="text-base font-bold font-display text-white uppercase tracking-tight">
-                        Executive Board (EB) Benefits Package
-                      </h4>
-                      <span className="text-[10px] font-mono text-neutral-400">Chairs, Vice Chairs &amp; Directors</span>
-                    </div>
+              {/* ── 6. DEPARTMENTAL TRACKS OVERVIEW ── */}
+              <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
+                <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                  <Briefcase className="w-5 h-5 text-amber-400" />
+                  <div>
+                    <h4 className="text-base font-bold font-display text-white uppercase tracking-tight">
+                      The 7 Secretariat Operating Departments
+                    </h4>
+                    <span className="text-[10px] font-mono text-neutral-400">Apply for your primary and secondary preferences</span>
                   </div>
-                  <ul className="space-y-2 text-xs font-mono text-neutral-300">
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-400">&bull;</span>
-                      <span>Complimentary accommodation for eligible outstation EB members</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-400">&bull;</span>
-                      <span>Official EB appointment letter &amp; Certificate of Excellence</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-400">&bull;</span>
-                      <span>Official EB executive merchandise &amp; dais dossier</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-400">&bull;</span>
-                      <span>Professional profile feature across official Zenith &amp; Zenvitra channels</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-400">&bull;</span>
-                      <span>Letters of Recommendation for exceptional committee conduct</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-amber-400">&bull;</span>
-                      <span>Dedicated dais hospitality &amp; working meals during conference hours</span>
-                    </li>
-                  </ul>
                 </div>
 
-                {/* Secretariat Perks */}
-                <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/10 space-y-4">
-                  <div className="flex items-center gap-2 border-b border-white/10 pb-3">
-                    <Briefcase className="w-5 h-5 text-cyan-400" />
-                    <div>
-                      <h4 className="text-base font-bold font-display text-white uppercase tracking-tight">
-                        Secretariat Team Benefits Package
-                      </h4>
-                      <span className="text-[10px] font-mono text-neutral-400">The Builders of ZENITH MUN 2026</span>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 font-mono text-xs">
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <strong className="text-amber-400 block uppercase">1. Delegate Affairs &amp; Outreach</strong>
+                    <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
+                      Liaison with nationwide school &amp; university delegations, inquiry management, and registration tracking.
+                    </p>
                   </div>
-                  <ul className="space-y-2 text-xs font-mono text-neutral-300">
-                    <li className="flex items-start gap-2">
-                      <span className="text-cyan-400">&bull;</span>
-                      <span><strong>Eligibility for the ₹5,000 Best Secretariat Member Award</strong></span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-cyan-400">&bull;</span>
-                      <span>Official Secretariat appointment certificate &amp; custom merchandise</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-cyan-400">&bull;</span>
-                      <span>Letter of Appreciation (LOA) &amp; merit-based LORs for university/job applications</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-cyan-400">&bull;</span>
-                      <span>Verified leadership experience recognition on conference portal</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-cyan-400">&bull;</span>
-                      <span>Permanent induction into the Zenith Merit Registry &amp; Hall of Fame</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-cyan-400">&bull;</span>
-                      <span>Direct pathway into the Zenith Fellowship and national student directorate</span>
-                    </li>
-                  </ul>
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <strong className="text-cyan-400 block uppercase">2. Public Relations &amp; Marketing</strong>
+                    <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
+                      National awareness campaigns, strategic institutional partnerships, and high-impact social presence.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <strong className="text-purple-400 block uppercase">3. Design &amp; Creative</strong>
+                    <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
+                      Brand identity, social creatives, visual style guides, merchandise production, and stage design.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <strong className="text-emerald-400 block uppercase">4. Media &amp; Communications</strong>
+                    <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
+                      Formal press releases, official announcements, International Press Corps supervision, and photography.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <strong className="text-blue-400 block uppercase">5. Technical &amp; Website</strong>
+                    <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
+                      Zenvitra platform integrations, registration systems, digital ledger, and conference IT infrastructure.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                    <strong className="text-rose-400 block uppercase">6. Events &amp; Conference Operations</strong>
+                    <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
+                      In-person venue coordination, dais protocol, accommodation logistics, hospitality desks &amp; safety.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1 sm:col-span-2 lg:col-span-3">
+                    <strong className="text-amber-300 block uppercase">7. Research &amp; Content</strong>
+                    <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
+                      Authoring committee background guides, policy research, rules of procedure handbooks, and resolution vetting.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1147,37 +1116,37 @@ export function ZenithMun2026Portal() {
                   <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
                     <strong className="text-amber-400 block uppercase">Zenith Hall of Fame</strong>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Permanent online tribute honoring exceptional delegates, chairs, and organizers for posterity.
+                      Permanent online tribute honoring exceptional Secretariat members, chairs, and organizers for posterity.
                     </p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
                     <strong className="text-cyan-400 block uppercase">Zenith Merit Registry</strong>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Immutable digital archive recording every award winner, citation, and verified achievement.
+                      Immutable digital archive recording every award winner, leadership citation, and verified achievement.
                     </p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
                     <strong className="text-purple-400 block uppercase">Zenith Ambassador Programme</strong>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Leadership representation channel empowering outstanding alumni to represent Zenith nationally.
+                      Leadership representation channel empowering outstanding organizers to represent Zenith across institutions.
                     </p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
-                    <strong className="text-emerald-400 block uppercase">Zenvitra Premium Privileges</strong>
+                    <strong className="text-emerald-400 block uppercase">Zenvitra Platform Privileges</strong>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Special platform privileges across civic tools, resolution templates, and portfolio publishing.
+                      Special platform privileges across civic tools, resolution templates, and verified diplomatic CV profiles.
                     </p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
                     <strong className="text-rose-400 block uppercase">Zenith Fellowship</strong>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Prestigious recognition and policy mentorship for top student researchers and leaders.
+                      Prestigious recognition and policy mentorship for top student organizers, researchers, and convenors.
                     </p>
                   </div>
                   <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
                     <strong className="text-amber-300 block uppercase">Outstanding Institution Trophy</strong>
                     <p className="text-neutral-300 text-[11px] font-sans leading-relaxed">
-                      Awarded to the school, university, or delegation achieving the highest cumulative score.
+                      Honor bestowed on the school, university, or delegation achieving the highest cumulative score.
                     </p>
                   </div>
                 </div>

@@ -275,7 +275,7 @@ export function FeaturedEvents() {
                   title="Apply for ZENITH MUN 2026 Secretariat"
                 >
                   <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>Apply for Secretariat (20 Qs)</span>
+                  <span>Apply for Secretariat</span>
                 </Link>
 
                 <Link href="/events/zenith-mun-2026" className="w-full sm:w-auto">
