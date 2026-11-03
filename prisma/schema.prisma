@@ -1249,3 +1249,123 @@ model CapacityAuditLog {
   @@index([actorId, createdAt])
 }
 
+
+
+// ─── ZENITH MAIL STUDIO (EMAIL BUILDER & CAMPAIGN ENGINE) ───
+
+model EmailTemplate {
+  id           String          @id @default(cuid())
+  name         String
+  category     String
+  subject      String
+  preheader    String?
+  design       String          @default("{\"version\":1,\"background\":\"#FFFFFF\",\"width\":600,\"blocks\":[]}")
+  htmlSnapshot String?
+  createdBy    String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  campaigns    EmailCampaign[]
+
+  @@index([category])
+}
+
+model EmailCampaign {
+  id           String            @id @default(cuid())
+  name         String
+  templateId   String?
+  template     EmailTemplate?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  status       String            @default("draft")
+  subject      String
+  preheader    String?
+  design       String?
+  targetFilter String?
+  scheduledAt  DateTime?
+  createdBy    String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  deliveries   EmailDelivery[]
+  attachments  EmailAttachment[]
+
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model EmailRecipient {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  firstName         String?
+  applicationId     String?
+  designation       String?
+  department        String?
+  committee         String?
+  appointmentStatus String?  @default("confirmed")
+  appointmentUrl    String?
+  certificateUrl    String?
+  benefitsUrl       String?
+  audienceType      String   @default("delegate")
+  isActive          Boolean  @default(true)
+  metadata          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([audienceType, department])
+  @@index([email])
+}
+
+model EmailDelivery {
+  id             String        @id @default(cuid())
+  campaignId     String?
+  campaign       EmailCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  recipientEmail String
+  recipientName  String?
+  providerId     String?
+  status         String        @default("queued")
+  errorDetails   String?
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  openedAt       DateTime?
+  clickedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  events         EmailEvent[]
+
+  @@index([campaignId])
+  @@index([recipientEmail])
+  @@index([status])
+}
+
+model EmailEvent {
+  id         String         @id @default(cuid())
+  deliveryId String
+  delivery   EmailDelivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  eventType  String
+  eventData  String?
+  occurredAt DateTime       @default(now())
+
+  @@index([deliveryId])
+  @@index([eventType])
+}
+
+model EmailAttachment {
+  id          String         @id @default(cuid())
+  campaignId  String?
+  campaign    EmailCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  storagePath String
+  filename    String
+  contentType String         @default("application/pdf")
+  fileSize    Int?
+  isPrivate   Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+
+  @@index([campaignId])
+}
+
+model EmailSuppression {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}

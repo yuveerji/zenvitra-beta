@@ -236,20 +236,40 @@ export function ZenithApplicationStatusModal({
             {result && (
               <div className="space-y-4 animate-fade-in">
                 {/* Status Banner */}
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-black to-amber-500/10 border border-amber-500/40 space-y-2">
+                <div 
+                  className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-black to-amber-500/10 border space-y-2"
+                  style={{ borderColor: result.themeColor ? `${result.themeColor}60` : 'rgba(245,158,11,0.4)' }}
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300 font-bold flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
+                    <span 
+                      className="text-[10px] font-mono uppercase tracking-wider font-bold flex items-center gap-1.5"
+                      style={{ color: result.themeColor || '#fbbf24' }}
+                    >
+                      <Clock className="w-3.5 h-3.5 animate-spin-slow" />
                       <span>{result.statusLabel || 'Under Evaluation'}</span>
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-bold">
-                      STAGE 1 ACTIVE
+                    <span 
+                      className="px-2.5 py-0.5 rounded-full border text-[10px] font-mono font-bold"
+                      style={{ 
+                        backgroundColor: result.themeColor ? `${result.themeColor}20` : 'rgba(245,158,11,0.2)',
+                        color: result.themeColor || '#fbbf24',
+                        borderColor: result.themeColor ? `${result.themeColor}40` : 'rgba(245,158,11,0.3)'
+                      }}
+                    >
+                      {result.scorecardStage || 'STAGE 1 ACTIVE'}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-white font-sans">
-                    {result.fullName}
-                  </h3>
-                  <p className="text-xs text-neutral-300 leading-relaxed">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-bold text-white font-sans">
+                      {result.fullName}
+                    </h3>
+                    {result.totalScore && (
+                      <span className="font-mono text-xs font-bold text-amber-300 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">
+                        Score: {result.totalScore} / 100
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-neutral-300 leading-relaxed whitespace-pre-line">
                     {result.notes}
                   </p>
                 </div>
