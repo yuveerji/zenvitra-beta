@@ -95,10 +95,26 @@ function createZenithSecretariatGoogleForm() {
   
   var pMotivation = form.addPageBreakItem().setTitle("SECTION 4 — MOTIVATION & VISION");
 
+  var ALL_DEPARTMENTS = [
+    "Delegate Affairs & Outreach",
+    "Public Relations & Marketing",
+    "Design & Creative",
+    "Media & Communications",
+    "Technical & Website",
+    "Events & Conference Operations",
+    "Research & Content"
+  ];
+
+  function getSecondaryDeptChoices_(primaryDept) {
+    return ALL_DEPARTMENTS.filter(function(d) {
+      return d !== primaryDept;
+    });
+  }
+
   // Now create the Department Choice Item on Section 3 with conditional routing!
   var deptChoiceItem = form.addListItem();
   deptChoiceItem.setTitle("11. Which department would you prefer to work in? (First Preference)")
-    .setHelpText("Select your primary department. The form will dynamically direct you to that department's practical questions.")
+    .setHelpText("Select your primary department. The form will dynamically direct you to that department's practical questions. Your first and second preferences must be different.")
     .setRequired(true);
 
   deptChoiceItem.setChoices([
@@ -110,19 +126,6 @@ function createZenithSecretariatGoogleForm() {
     deptChoiceItem.createChoice("Events & Conference Operations", pEvents),
     deptChoiceItem.createChoice("Research & Content", pResearch)
   ]);
-
-  var dept2ChoiceItem = form.addListItem();
-  dept2ChoiceItem.setTitle("11b. Second Department Preference")
-    .setChoiceValues([
-      "Delegate Affairs & Outreach",
-      "Public Relations & Marketing",
-      "Design & Creative",
-      "Media & Communications",
-      "Technical & Website",
-      "Events & Conference Operations",
-      "Research & Content"
-    ])
-    .setRequired(true);
 
   form.addParagraphTextItem()
     .setTitle("12. Why have you chosen these departments, and what makes you suitable for them?")
@@ -136,6 +139,11 @@ function createZenithSecretariatGoogleForm() {
   // 1. Delegate Affairs & Outreach Track
   // ──────────────────────────────────────────────────────────────
   pDelegate.setGoToPage(pMotivation);
+  form.addListItem()
+    .setTitle("11b. Second Department Preference")
+    .setHelpText("Select your fallback department. Excludes your First Preference (Delegate Affairs & Outreach).")
+    .setChoiceValues(getSecondaryDeptChoices_("Delegate Affairs & Outreach"))
+    .setRequired(true);
   form.addParagraphTextItem().setTitle("Delegate Affairs: How would you attract and engage potential delegates?").setRequired(true);
   form.addParagraphTextItem().setTitle("Delegate Affairs: How would you handle a delegate who is dissatisfied with the registration process?").setRequired(true);
   form.addParagraphTextItem().setTitle("Delegate Affairs: How would you build outreach beyond your immediate MUN network?").setRequired(true);
@@ -145,6 +153,11 @@ function createZenithSecretariatGoogleForm() {
   // 2. PR & Marketing Track
   // ──────────────────────────────────────────────────────────────
   pPR.setGoToPage(pMotivation);
+  form.addListItem()
+    .setTitle("11b. Second Department Preference")
+    .setHelpText("Select your fallback department. Excludes your First Preference (Public Relations & Marketing).")
+    .setChoiceValues(getSecondaryDeptChoices_("Public Relations & Marketing"))
+    .setRequired(true);
   form.addParagraphTextItem().setTitle("PR & Marketing: How would you create awareness about ZENITH among students who have never attended an MUN?").setRequired(true);
   form.addParagraphTextItem().setTitle("PR & Marketing: Suggest a campaign idea to increase registrations.").setRequired(true);
   form.addParagraphTextItem().setTitle("PR & Marketing: How would you handle negative feedback or public criticism?").setRequired(true);
@@ -154,6 +167,11 @@ function createZenithSecretariatGoogleForm() {
   // 3. Design & Creative Track
   // ──────────────────────────────────────────────────────────────
   pDesign.setGoToPage(pMotivation);
+  form.addListItem()
+    .setTitle("11b. Second Department Preference")
+    .setHelpText("Select your fallback department. Excludes your First Preference (Design & Creative).")
+    .setChoiceValues(getSecondaryDeptChoices_("Design & Creative"))
+    .setRequired(true);
   form.addTextItem().setTitle("Design & Creative: Which design tools do you use? (e.g. Figma, Photoshop, Illustrator, Premiere)").setRequired(true);
   form.addParagraphTextItem().setTitle("Design & Creative: Share links to three relevant samples of your work (Drive, Behance, Figma portfolio).").setRequired(true);
   form.addParagraphTextItem().setTitle("Design & Creative: How would you maintain visual consistency across all conference creatives?").setRequired(true);
@@ -163,6 +181,11 @@ function createZenithSecretariatGoogleForm() {
   // 4. Media & Communications Track
   // ──────────────────────────────────────────────────────────────
   pMedia.setGoToPage(pMotivation);
+  form.addListItem()
+    .setTitle("11b. Second Department Preference")
+    .setHelpText("Select your fallback department. Excludes your First Preference (Media & Communications).")
+    .setChoiceValues(getSecondaryDeptChoices_("Media & Communications"))
+    .setRequired(true);
   form.addParagraphTextItem().setTitle("Media & Comms: How comfortable are you with formal writing and proofreading?").setRequired(true);
   form.addParagraphTextItem().setTitle("Media & Comms: Draft a short announcement introducing ZENITH MUN 2026 (100-150 words).").setRequired(true);
   form.addParagraphTextItem().setTitle("Media & Comms: How would you ensure official communications remain consistent and accurate?").setRequired(true);
@@ -172,6 +195,11 @@ function createZenithSecretariatGoogleForm() {
   // 5. Technical & Website Track
   // ──────────────────────────────────────────────────────────────
   pTech.setGoToPage(pMotivation);
+  form.addListItem()
+    .setTitle("11b. Second Department Preference")
+    .setHelpText("Select your fallback department. Excludes your First Preference (Technical & Website).")
+    .setChoiceValues(getSecondaryDeptChoices_("Technical & Website"))
+    .setRequired(true);
   form.addParagraphTextItem().setTitle("Technical: Mention the programming languages, platforms and tools you know (Next.js, TS, Tailwind, Python, etc.)").setRequired(true);
   form.addParagraphTextItem().setTitle("Technical: Share links to projects, GitHub repos, or websites you have worked on.").setRequired(true);
   form.addParagraphTextItem().setTitle("Technical: How would you approach troubleshooting a website issue during live registration?").setRequired(true);
@@ -181,6 +209,11 @@ function createZenithSecretariatGoogleForm() {
   // 6. Events & Conference Operations Track
   // ──────────────────────────────────────────────────────────────
   pEvents.setGoToPage(pMotivation);
+  form.addListItem()
+    .setTitle("11b. Second Department Preference")
+    .setHelpText("Select your fallback department. Excludes your First Preference (Events & Conference Operations).")
+    .setChoiceValues(getSecondaryDeptChoices_("Events & Conference Operations"))
+    .setRequired(true);
   form.addParagraphTextItem().setTitle("Events Operations: How would you plan and coordinate a large offline conference in Udaipur?").setRequired(true);
   form.addParagraphTextItem().setTitle("Events Operations: What would you include in a conference-day contingency plan?").setRequired(true);
   form.addParagraphTextItem().setTitle("Events Operations: How would you coordinate between the Executive Board, delegates and Secretariat?").setRequired(true);
@@ -190,6 +223,11 @@ function createZenithSecretariatGoogleForm() {
   // 7. Research & Content Track
   // ──────────────────────────────────────────────────────────────
   pResearch.setGoToPage(pMotivation);
+  form.addListItem()
+    .setTitle("11b. Second Department Preference")
+    .setHelpText("Select your fallback department. Excludes your First Preference (Research & Content).")
+    .setChoiceValues(getSecondaryDeptChoices_("Research & Content"))
+    .setRequired(true);
   form.addParagraphTextItem().setTitle("Research & Content: How would you research and verify information before publication?").setRequired(true);
   form.addParagraphTextItem().setTitle("Research & Content: What makes a good committee background guide?").setRequired(true);
   form.addParagraphTextItem().setTitle("Research & Content: How would you ensure research material is unbiased and comprehensive?").setRequired(true);

@@ -669,11 +669,85 @@ export default function ZenFormPublicPage() {
       }
     }
 
+    // Mutual exclusion validation for department & sector preferences
+    if (field.id === 'q11_primary_dept' || field.id === 'q11_secondary_dept') {
+      const p1 = field.id === 'q11_primary_dept' ? val : formData['q11_primary_dept'];
+      const p2 = field.id === 'q11_secondary_dept' ? val : formData['q11_secondary_dept'];
+      if (p1 && p2 && String(p1).trim().toLowerCase() === String(p2).trim().toLowerCase()) {
+        return 'First and second department preferences cannot be the same. Please choose different departments.';
+      }
+    }
+
+    if (field.id === 'step1_primary_sector' || field.id === 'step1_secondary_sector') {
+      const s1 = field.id === 'step1_primary_sector' ? val : formData['step1_primary_sector'];
+      const s2 = field.id === 'step1_secondary_sector' ? val : formData['step1_secondary_sector'];
+      if (s1 && s2 && String(s1).trim().toLowerCase() === String(s2).trim().toLowerCase()) {
+        return 'Primary and secondary sectors cannot be the same.';
+      }
+    }
+
+    if (field.id === 'step3_primary_committee' || field.id === 'step4_secondary_committee') {
+      const c1 = field.id === 'step3_primary_committee' ? val : formData['step3_primary_committee'];
+      const c2 = field.id === 'step4_secondary_committee' ? val : formData['step4_secondary_committee'];
+      if (c1 && c2 && String(c1).trim().toLowerCase() === String(c2).trim().toLowerCase()) {
+        return 'First and second committee choices cannot be the same.';
+      }
+    }
+
+    return null;
+  };
+
+  // Helper to get excluded option for mutually exclusive preference fields
+  const getExcludedPreferenceOption = (fieldId: string): { counterpartId: string; excludedValue: string | null; label: string } | null => {
+    if (fieldId === 'q11_primary_dept') {
+      return { counterpartId: 'q11_secondary_dept', excludedValue: formData['q11_secondary_dept'] || null, label: 'Second Department Preference' };
+    }
+    if (fieldId === 'q11_secondary_dept') {
+      return { counterpartId: 'q11_primary_dept', excludedValue: formData['q11_primary_dept'] || null, label: 'First Department Preference' };
+    }
+    if (fieldId === 'step1_primary_sector' || fieldId === 'step1_preferred_department') {
+      return { counterpartId: 'step1_secondary_sector', excludedValue: formData['step1_secondary_sector'] || formData['step1_secondary_department'] || null, label: 'Secondary Sector' };
+    }
+    if (fieldId === 'step1_secondary_sector' || fieldId === 'step1_secondary_department') {
+      return { counterpartId: 'step1_primary_sector', excludedValue: formData['step1_primary_sector'] || formData['step1_preferred_department'] || null, label: 'Primary Sector' };
+    }
+    if (fieldId === 'step3_primary_committee') {
+      return { counterpartId: 'step4_secondary_committee', excludedValue: formData['step4_secondary_committee'] || null, label: 'Secondary Committee' };
+    }
+    if (fieldId === 'step4_secondary_committee') {
+      return { counterpartId: 'step3_primary_committee', excludedValue: formData['step3_primary_committee'] || null, label: 'Primary Committee' };
+    }
     return null;
   };
 
   const handleInputChange = (fieldId: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [fieldId]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [fieldId]: value };
+
+      // Mutual exclusion: if selecting a department/option that matches counterpart preference, clear counterpart
+      if (value && typeof value === 'string' && value.trim() !== '') {
+        const valLower = value.trim().toLowerCase();
+        if (fieldId === 'q11_primary_dept' && next['q11_secondary_dept']?.trim().toLowerCase() === valLower) {
+          next['q11_secondary_dept'] = '';
+        } else if (fieldId === 'q11_secondary_dept' && next['q11_primary_dept']?.trim().toLowerCase() === valLower) {
+          next['q11_primary_dept'] = '';
+        } else if ((fieldId === 'step1_primary_sector' || fieldId === 'step1_preferred_department') && 
+                   (next['step1_secondary_sector']?.trim().toLowerCase() === valLower || next['step1_secondary_department']?.trim().toLowerCase() === valLower)) {
+          next['step1_secondary_sector'] = '';
+          next['step1_secondary_department'] = '';
+        } else if ((fieldId === 'step1_secondary_sector' || fieldId === 'step1_secondary_department') && 
+                   (next['step1_primary_sector']?.trim().toLowerCase() === valLower || next['step1_preferred_department']?.trim().toLowerCase() === valLower)) {
+          next['step1_primary_sector'] = '';
+          next['step1_preferred_department'] = '';
+        } else if (fieldId === 'step3_primary_committee' && next['step4_secondary_committee']?.trim().toLowerCase() === valLower) {
+          next['step4_secondary_committee'] = '';
+        } else if (fieldId === 'step4_secondary_committee' && next['step3_primary_committee']?.trim().toLowerCase() === valLower) {
+          next['step3_primary_committee'] = '';
+        }
+      }
+
+      return next;
+    });
     setValidationError(null);
 
     const targetField = form?.fields.find((f) => f.id === fieldId);
@@ -2411,19 +2485,40 @@ export default function ZenFormPublicPage() {
                             </div>
                           </div>
                         ) : (
-                          <select
-                            value={formData[field.id] || ''}
-                            onChange={(e) => handleInputChange(field.id, e.target.value)}
-                            onBlur={() => handleFieldBlur(field.id)}
-                            className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer font-sans"
-                          >
-                            <option value="" disabled>Select an option...</option>
-                            {(field.options || []).map((opt) => (
-                              <option key={opt} value={opt} className="bg-[#0e111a] text-white">
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
+                          (() => {
+                            const preferencePair = getExcludedPreferenceOption(field.id);
+                            const excludedVal = preferencePair?.excludedValue;
+                            const filteredOptions = (field.options || []).filter((opt) => {
+                              if (!excludedVal) return true;
+                              return opt.trim().toLowerCase() !== excludedVal.trim().toLowerCase();
+                            });
+
+                            return (
+                              <div className="space-y-1.5">
+                                <select
+                                  value={formData[field.id] || ''}
+                                  onChange={(e) => handleInputChange(field.id, e.target.value)}
+                                  onBlur={() => handleFieldBlur(field.id)}
+                                  className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-amber-400/80 text-white text-xs sm:text-sm focus:outline-none transition cursor-pointer font-sans"
+                                >
+                                  <option value="" disabled>Select an option...</option>
+                                  {filteredOptions.map((opt) => (
+                                    <option key={opt} value={opt} className="bg-[#0e111a] text-white">
+                                      {opt}
+                                    </option>
+                                  ))}
+                                </select>
+                                {excludedVal && (
+                                  <p className="text-[11px] font-mono text-amber-400/80 flex items-center gap-1.5 pt-0.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                                    <span>
+                                      Excluding &quot;{excludedVal}&quot; (selected in {preferencePair?.label})
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })()
                         )
                       )}
 
