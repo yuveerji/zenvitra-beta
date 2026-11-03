@@ -183,10 +183,12 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
         const startDateStr = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
         const endDateStr = item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : startDateStr;
 
-        const isZenith = item.slug === 'zenith-mun-2026';
+        const isZenith = item.slug === 'zenith-mun-2026' || item.id === 'zenith-mun-2026';
         const isDateComingSoon = Boolean(isZenith || item.isDateComingSoon);
         const isComingSoon = Boolean(isZenith || item.isComingSoon);
-        const dateTbaText = isZenith ? 'Summer 2027' : item.dateTbaText;
+        const dateTbaText = isZenith ? 'Summer 2027' : (item.dateTbaText || 'Summer 2027');
+        const isLocationComingSoon = Boolean(isZenith || item.isLocationComingSoon || item.venue === 'Coming Soon' || item.venue?.toLowerCase().includes('heritage'));
+        const isItineraryComingSoon = Boolean(isZenith || item.isItineraryComingSoon || item.itineraryTiming === 'AFTER');
 
         return {
           id: item.slug || item.id,
@@ -194,15 +196,15 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
           title: item.title,
           description: item.description || 'Sovereign diplomatic conference & committee session',
           type: (item.format as EventType) || 'physical',
-          location: item.venue || 'Main Assembly Venue',
-          city: item.city || 'New Delhi',
+          location: isLocationComingSoon ? 'Coming Soon' : (item.venue || 'Main Assembly Venue'),
+          city: isLocationComingSoon ? 'Coming Soon' : (item.city || 'Coming Soon'),
           date: isDateComingSoon ? 'TBA' : startDateStr,
           endDate: isDateComingSoon ? 'TBA' : endDateStr,
-          time: item.time || '09:00 AM - 06:00 PM IST',
+          time: isItineraryComingSoon ? 'Itinerary Coming Soon' : (item.time || '09:00 AM - 06:00 PM IST'),
           category: (item.category as EventCategory) || 'MUN',
           ticketPrice: item.ticketPrice || (plans.length > 0 ? plans[0].price : 0),
           plans,
-          coverImage: item.coverImage,
+          coverImage: isZenith ? (item.coverImage || '/images/events/zenith-mun-2026-poster.png') : item.coverImage,
           verified: Boolean(item.verified || item.status === 'VERIFIED'),
           verificationStatus: item.status || 'VERIFIED',
           attendees: [],
@@ -214,6 +216,8 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
           isComingSoon,
           isDateComingSoon,
           dateTbaText,
+          isLocationComingSoon,
+          isItineraryComingSoon,
           formId: isZenith ? 'zenith-secretariat-2026' : item.formId,
           createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
         };
@@ -507,7 +511,25 @@ export function ZenEventsPlatformProvider({ children }: { children: React.ReactN
   }, [allEvents, currentUserId, currentUserName, currentUserUsername, saveEvents]);
 
   const updateEvent = useCallback((id: string, data: Partial<ZenEvent>) => {
-    saveEvents(allEvents.map((e) => e.id === id ? { ...e, ...data } : e));
+    saveEvents(allEvents.map((e) => (e.id === id || e.slug === id) ? { ...e, ...data } : e));
+    fetch(`/api/events/list/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        venue: data.location,
+        city: data.city,
+        title: data.title,
+        description: data.description,
+        time: data.time,
+        startDate: data.date,
+        endDate: data.endDate,
+        coverImage: data.coverImage,
+        format: data.type,
+        ticketPrice: data.ticketPrice,
+        tierPlansJson: data.plans ? JSON.stringify(data.plans) : undefined,
+        status: data.status,
+      }),
+    }).catch(() => {});
   }, [allEvents, saveEvents]);
 
   const cancelEvent = useCallback((id: string, reason = 'Convening cancelled by Secretariat/Organizer', autoRefund = true): {

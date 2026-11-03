@@ -130,6 +130,8 @@ export interface ZenEvent {
   isComingSoon?: boolean;
   isDateComingSoon?: boolean;
   dateTbaText?: string;
+  isLocationComingSoon?: boolean;
+  locationTbaText?: string;
   comingSoonAnnouncement?: string;
   comingSoonReleaseDate?: string;
   tagline?: string;

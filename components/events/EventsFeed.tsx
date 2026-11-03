@@ -806,10 +806,10 @@ export function EventsFeed() {
                 onClick={() => {
                   window.location.href = `/events/${event.slug || event.id}`;
                 }}
-                className="w-56 sm:w-64 shrink-0 snap-start group cursor-pointer space-y-2.5"
+                className="w-80 sm:w-96 md:w-[420px] shrink-0 snap-start group cursor-pointer space-y-2.5"
               >
-                {/* 1:1 Rounded Artwork Card */}
-                <div className="aspect-[1/1] w-full rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 relative shadow-lg group-hover:border-purple-400/50 group-hover:-translate-y-1 transition-all duration-300">
+                {/* Poster Aspect Ratio Artwork Card */}
+                <div className="aspect-[1024/434] w-full rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 relative shadow-lg group-hover:border-purple-400/50 group-hover:-translate-y-1 transition-all duration-300">
                   {event.coverImage ? (
                     <img
                       src={event.coverImage}
@@ -852,13 +852,25 @@ export function EventsFeed() {
                 <div className="space-y-1">
                   <p className="text-[11px] font-mono text-cyan-400 flex items-center gap-1 truncate">
                     <MapPin className="w-3 h-3 text-cyan-400 shrink-0" />
-                    <span className="truncate">{event.type === 'virtual' ? 'Virtual Digital Chamber' : event.location}</span>
+                    <span className="truncate">
+                      {(event.isComingSoon || event.isLocationComingSoon || event.location === 'Coming Soon' || event.id === 'zenith-mun-2026' || event.slug === 'zenith-mun-2026')
+                        ? 'Coming Soon'
+                        : event.type === 'virtual'
+                        ? 'Virtual Digital Chamber'
+                        : event.location}
+                    </span>
                   </p>
                   <h3 className="font-sans font-bold text-sm text-white group-hover:text-purple-300 transition-colors truncate">
                     {event.title}
                   </h3>
                   <p className="text-[11px] font-mono text-neutral-400 truncate">
-                    {event.date} &bull; {event.time}
+                    {(event.isDateComingSoon || event.date === 'TBA' || event.id === 'zenith-mun-2026' || event.slug === 'zenith-mun-2026')
+                      ? (event.dateTbaText || 'Summer 2027')
+                      : event.date}
+                    {' '}&bull;{' '}
+                    {(event.isItineraryComingSoon || event.itineraryTiming === 'AFTER' || event.id === 'zenith-mun-2026' || event.slug === 'zenith-mun-2026')
+                      ? 'Itinerary Coming Soon'
+                      : event.time}
                   </p>
                 </div>
               </div>

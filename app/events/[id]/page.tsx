@@ -270,7 +270,7 @@ export default function DynamicEventPublicPage() {
                     </p>
                     <p className="text-neutral-400 text-[11px] flex items-center gap-1">
                       <Clock className="w-3 h-3 text-neutral-500" />
-                      <span>{event.time}</span>
+                      <span>{event.isItineraryComingSoon ? (event.itineraryTbaText || 'Itinerary Coming Soon') : event.time}</span>
                     </p>
                   </div>
 
@@ -280,7 +280,9 @@ export default function DynamicEventPublicPage() {
                       Location / Host
                     </span>
                     <p className="text-white font-bold text-sm truncate">{event.location}</p>
-                    <p className="text-neutral-400 text-[11px]">{event.city}</p>
+                    {event.city && event.city !== event.location && event.location !== 'Coming Soon' && (
+                      <p className="text-neutral-400 text-[11px]">{event.city}</p>
+                    )}
                   </div>
 
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">

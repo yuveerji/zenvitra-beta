@@ -30,25 +30,70 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { status, verifiedBy } = body;
+
+    const existing = await db.conferenceListing.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }]
+      }
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Listing not found' }, { status: 404 });
+    }
+
+    const {
+      status,
+      verifiedBy,
+      venue,
+      city,
+      title,
+      description,
+      startDate,
+      endDate,
+      coverImage,
+      format,
+      ticketPrice,
+      tierPlansJson,
+      committeesJson,
+    } = body;
 
     const isVerifying = status === 'VERIFIED';
 
+    const updateData: any = {};
+    if (status !== undefined) {
+      updateData.status = status;
+      updateData.verified = isVerifying;
+      updateData.verifiedAt = isVerifying ? new Date() : existing.verifiedAt;
+      if (verifiedBy) updateData.verifiedBy = verifiedBy;
+    }
+    if (venue !== undefined) updateData.venue = venue;
+    if (city !== undefined) updateData.city = city;
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (coverImage !== undefined) updateData.coverImage = coverImage;
+    if (format !== undefined) updateData.format = format;
+    if (ticketPrice !== undefined) updateData.ticketPrice = Number(ticketPrice) || 0;
+    if (tierPlansJson !== undefined) {
+      updateData.tierPlansJson = typeof tierPlansJson === 'string' ? tierPlansJson : JSON.stringify(tierPlansJson);
+    }
+    if (committeesJson !== undefined) {
+      updateData.committeesJson = typeof committeesJson === 'string' ? committeesJson : JSON.stringify(committeesJson);
+    }
+    if (startDate && !isNaN(Date.parse(startDate))) {
+      updateData.startDate = new Date(startDate);
+    }
+    if (endDate && !isNaN(Date.parse(endDate))) {
+      updateData.endDate = new Date(endDate);
+    }
+
     const updated = await db.conferenceListing.update({
-      where: { id },
-      data: {
-        status: status || 'VERIFIED',
-        verified: isVerifying,
-        verifiedAt: isVerifying ? new Date() : null,
-        verifiedBy: verifiedBy || (isVerifying ? 'ZENVITRA Secretariat' : null)
-      }
+      where: { id: existing.id },
+      data: updateData
     });
 
     return NextResponse.json({
       success: true,
-      message: isVerifying 
-        ? 'Conference verified and approved! It is now live across the platform.'
-        : `Conference listing updated to ${status}`,
+      message: 'Conference listing updated successfully',
       listing: updated
     });
   } catch (error: any) {
@@ -63,8 +108,18 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const existing = await db.conferenceListing.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }]
+      }
+    });
+
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Listing not found' }, { status: 404 });
+    }
+
     await db.conferenceListing.delete({
-      where: { id }
+      where: { id: existing.id }
     });
 
     return NextResponse.json({ success: true, message: 'Listing deleted' });

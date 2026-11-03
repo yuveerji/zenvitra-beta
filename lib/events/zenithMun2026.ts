@@ -16,6 +16,8 @@ export const ZENITH_MUN_2026_EVENT: ZenEvent = {
   ticketPrice: 0,
   isComingSoon: true,
   isDateComingSoon: true,
+  isLocationComingSoon: true,
+  locationTbaText: 'Host Location Coming Soon',
   dateTbaText: 'Summer 2027 (Dates Coming Soon)',
   isItineraryComingSoon: true,
   itineraryTiming: 'AFTER',
