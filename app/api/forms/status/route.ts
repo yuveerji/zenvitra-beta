@@ -157,7 +157,53 @@ export async function GET(req: NextRequest) {
       } catch (_) {}
     }
 
+    const webhookUrl =
+      process.env.ZENITH_GOOGLE_SHEETS_WEBHOOK_URL ||
+      process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
+      'https://script.google.com/macros/s/AKfycbyWc4Pxyibs6oh8EWd2xIMjLSOmkhxACuvB3WAVcO1MxRMeRtWJSnJmXliJ0KmrdqIq/exec';
+
     if (matchedSubmissions.length === 0) {
+      // Direct live lookup from Google Sheets Webhook
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        const sheetRes = await fetch(
+          `${webhookUrl}?query=${encodeURIComponent(query)}`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timeout);
+        if (sheetRes.ok) {
+          const sheetData = await sheetRes.json();
+          if (sheetData && sheetData.found) {
+            const statusDetails = getStatusDetails(sheetData.status || 'SUBMITTED');
+            return NextResponse.json({
+              success: true,
+              found: true,
+              application: {
+                id: sheetData.ticketId,
+                ticketId: sheetData.ticketId,
+                submittedAt: sheetData.submittedAt || new Date().toISOString(),
+                fullName: sheetData.fullName || 'Secretariat Applicant',
+                email: sheetData.email || '',
+                phone: '',
+                location: '',
+                institution: '',
+                primaryDept: sheetData.primaryDept || 'General Secretariat',
+                secondaryDept: '',
+                status: statusDetails.statusKey,
+                statusLabel: statusDetails.statusLabel,
+                themeColor: statusDetails.themeColor,
+                scorecardActive: true,
+                scorecardStage: statusDetails.stage,
+                totalScore: sheetData.totalScore || '',
+                reviewerNotes: sheetData.reviewerNotes || '',
+                notes: sheetData.reviewerNotes ? `${statusDetails.notes}\n\nReviewer Feedback: "${sheetData.reviewerNotes}"` : statusDetails.notes
+              }
+            });
+          }
+        }
+      } catch (_) {}
+
       return NextResponse.json({
         success: true,
         found: false,
@@ -186,11 +232,6 @@ export async function GET(req: NextRequest) {
     let sheetLiveStatus: string | null = null;
     let sheetNotes: string | null = null;
     let sheetTotalScore: string | null = null;
-
-    const webhookUrl =
-      process.env.ZENITH_GOOGLE_SHEETS_WEBHOOK_URL ||
-      process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
-      'https://script.google.com/macros/s/AKfycbyWc4Pxyibs6oh8EWd2xIMjLSOmkhxACuvB3WAVcO1MxRMeRtWJSnJmXliJ0KmrdqIq/exec';
 
     if (webhookUrl && webhookUrl.includes('script.google.com')) {
       try {
