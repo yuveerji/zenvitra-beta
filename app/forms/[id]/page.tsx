@@ -1076,15 +1076,6 @@ export default function ZenFormPublicPage() {
             )}
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/mun/matrix"
-                target="_blank"
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 font-mono text-xs transition flex items-center justify-center gap-2 border border-cyan-500/30 shadow-sm"
-              >
-                <Grid className="w-3.5 h-3.5 text-cyan-400" />
-                <span>View Live Dais Matrix</span>
-              </Link>
-
               {(form.settings?.showSubmitAnotherLink ?? true) && (
                 <button
                   type="button"
@@ -1099,14 +1090,14 @@ export default function ZenFormPublicPage() {
                 </button>
               )}
               <Link
-                href="/forms"
+                href={isZenithForm ? '/events/zenith-mun-2026' : '/forms'}
                 className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-mono text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md"
                 style={{
                   backgroundColor: accentColor,
                   color: accentTextColor,
                 }}
               >
-                <span>Return to ZenForms Hub</span>
+                <span>{isZenithForm ? 'Return to Zenith MUN Summit' : 'Return to ZenForms Hub'}</span>
               </Link>
             </div>
           </div>

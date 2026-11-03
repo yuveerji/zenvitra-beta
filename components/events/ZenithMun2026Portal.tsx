@@ -44,12 +44,14 @@ import {
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
+import { ZenithApplicationStatusModal } from './ZenithApplicationStatusModal';
 
 export function ZenithMun2026Portal() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'secretariat' | 'perks' | 'committees' | 'venue'>('overview');
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   const handleShare = () => {
     if (typeof window !== 'undefined') {
@@ -204,6 +206,15 @@ export function ZenithMun2026Portal() {
               <span>Apply for Secretariat</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
+
+            <button
+              type="button"
+              onClick={() => setShowStatusModal(true)}
+              className="px-7 py-3.5 rounded-2xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 border border-amber-400/40 hover:border-amber-400/60 font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] shadow-[0_0_20px_rgba(245,158,11,0.15)] flex items-center gap-2 cursor-pointer"
+            >
+              <CheckCircle2 className="w-4 h-4 text-amber-400" />
+              <span>See Your Status</span>
+            </button>
 
             <div className="px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-neutral-300 font-mono text-xs font-semibold flex items-center gap-2 select-none">
               <Clock className="w-4 h-4 text-amber-400" />
@@ -440,13 +451,24 @@ export function ZenithMun2026Portal() {
                   </p>
                 </div>
 
-                <Link
-                  href="/forms/zenith-secretariat-2026"
-                  className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer shrink-0"
-                >
-                  <span>Launch Live Form</span>
-                  <ExternalLink className="w-4 h-4" />
-                </Link>
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowStatusModal(true)}
+                    className="px-5 py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-display font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                    <span>See Your Status</span>
+                  </button>
+
+                  <Link
+                    href="/forms/zenith-secretariat-2026"
+                    className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-display font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Launch Live Form</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                </div>
               </div>
 
               {/* ── FLAGSHIP RECOGNITION CALLOUT: ₹5,000 CASH PRIZE ── */}
@@ -1317,6 +1339,11 @@ export function ZenithMun2026Portal() {
         )}
 
       </main>
+
+      <ZenithApplicationStatusModal
+        isOpen={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+      />
 
       <Footer />
     </div>
