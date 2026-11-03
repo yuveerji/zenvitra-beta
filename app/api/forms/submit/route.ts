@@ -213,6 +213,8 @@ export async function POST(req: NextRequest) {
       statementOfPurpose: rawData.step3_sop || rawData.statementOfPurpose || '',
       practicalTaskResponse: rawData.step3_practical_response || rawData.practicalTaskResponse || '',
       portfolioUrl: rawData.step3_portfolio_url || rawData.portfolioUrl || '',
+      resumeUrl: rawData.q22_resume_upload || rawData.resumeUrl || rawData.resume_url || rawData.cv || '',
+      q22_resume_upload: rawData.q22_resume_upload || rawData.resumeUrl || rawData.resume_url || rawData.cv || '',
       discordHandle: rawData.step4_discord_handle || rawData.discordHandle || '',
       sovereignAccordAccepted: rawData.step4_accord_agreement || rawData.sovereignAccordAccepted || 'CONFIRMED',
       ...rawData,

@@ -39,6 +39,8 @@ var CONFIG = {
   AUDIT_LOG_TAB_NAME: 'System - Webhook Logs',
   ZENVITRA_SYNC_URL: 'https://zenvitra.xyz/api/forms/status/update',
   ZENVITRA_SYNC_SECRET: 'zenith_secretariat_secure_sync_2026',
+  GDRIVE_FOLDER_NAME: '🏛️ ZENITH MUN 2026 — Secretariat CVs & Resumes',
+  GDRIVE_FOLDER_ID: '', // Optional: Leave empty to auto-create, or paste an existing Google Drive Folder ID
   SEND_CONFIRMATION_EMAIL: false, // Set to true if Google Apps Script should also send HTML confirmation emails
   REPLY_TO_EMAIL: 'yuveerji@gmail.com',
   TICKET_PREFIX: 'ZEN26-SEC-'
@@ -225,6 +227,9 @@ function onOpen() {
   ui.createMenu('🏛️ ZENITH MUN')
     .addItem('📊 Open / Build Executive Dashboard', 'buildExecutiveDashboard')
     .addItem('⚙️ Initialize / Repair All Tabs (Safe)', 'setupAllDepartmentTabs')
+    .addItem('📂 Open Secretariat CVs Folder in Drive', 'openCvDriveFolder')
+    .addItem('📥 Backfill Existing CVs to Google Drive', 'backfillAllExistingCvsToDrive')
+    .addSeparator()
     .addItem('🎨 Reformat Tab Header Styles', 'formatAllTabStyles')
     .addItem('🔄 Resync All Department Tabs with Master', 'syncAllTabsWithMaster')
     .addSeparator()
@@ -321,6 +326,20 @@ function buildExecutiveDashboard() {
   sub.setFontSize(9);
   sub.setFontFamily('Roboto');
   sub.setHorizontalAlignment('center');
+
+  // Google Drive CVs Folder Link Banner
+  dash.getRange('A4:H4').merge();
+  var driveLinkCell = dash.getRange('A4');
+  var cvFolder = getOrCreateCvFolder_();
+  var folderUrl = cvFolder ? cvFolder.getUrl() : 'https://drive.google.com';
+  driveLinkCell.setFormula('=HYPERLINK("' + folderUrl + '", "📂 OPEN ALL APPLICANT RESUMES & CVS IN GOOGLE DRIVE ↗")');
+  driveLinkCell.setBackground('#0f172a');
+  driveLinkCell.setFontColor('#38bdf8');
+  driveLinkCell.setFontSize(9);
+  driveLinkCell.setFontWeight('bold');
+  driveLinkCell.setFontFamily('Roboto');
+  driveLinkCell.setHorizontalAlignment('center');
+  driveLinkCell.setVerticalAlignment('middle');
 
   // Summary KPI Cards (Row 5 to 7)
   var kpis = [
@@ -525,6 +544,173 @@ function applyStatusConditionalFormatting_(sheet) {
 }
 
 /**
+ * ══════════════════════════════════════════════════════════════════════════════
+ * GOOGLE DRIVE CV & RESUME UPLOAD ENGINE
+ * ══════════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Returns or creates the dedicated Google Drive folder for Secretariat CVs
+ */
+function getOrCreateCvFolder_() {
+  try {
+    if (CONFIG.GDRIVE_FOLDER_ID && String(CONFIG.GDRIVE_FOLDER_ID).trim() !== '') {
+      return DriveApp.getFolderById(CONFIG.GDRIVE_FOLDER_ID.trim());
+    }
+    var folderName = CONFIG.GDRIVE_FOLDER_NAME || '🏛️ ZENITH MUN 2026 — Secretariat CVs & Resumes';
+    var folders = DriveApp.getFoldersByName(folderName);
+    if (folders.hasNext()) {
+      return folders.next();
+    }
+    var newFolder = DriveApp.createFolder(folderName);
+    try {
+      newFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (e) {}
+    return newFolder;
+  } catch (err) {
+    Logger.log('[GET-CV-FOLDER-ERR] ' + err.toString());
+    return null;
+  }
+}
+
+/**
+ * Uploads applicant CV/Resume into creator's Google Drive folder
+ * Accepts: Hosted web URLs (https://zenvitra.xyz/uploads/forms/...), Data URIs, or direct blobs
+ * Returns: Google Drive File View URL (or original URL if upload fails)
+ */
+function saveCvToGoogleDrive_(resumeRaw, ticketId, candidateName) {
+  if (!resumeRaw || typeof resumeRaw !== 'string' || resumeRaw.trim() === '') {
+    return '';
+  }
+  var trimmed = resumeRaw.trim();
+
+  // If already a Google Drive link, return it as-is
+  if (trimmed.indexOf('drive.google.com') !== -1) {
+    return trimmed;
+  }
+
+  try {
+    var folder = getOrCreateCvFolder_();
+    if (!folder) return trimmed;
+
+    var sanitizedName = (candidateName || 'Applicant').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
+    var cleanTicket = (ticketId || 'TICKET').replace(/[^a-zA-Z0-9_-]/g, '').trim();
+    var fileName = '[' + cleanTicket + '] ' + sanitizedName + ' - Resume.pdf';
+
+    // Case 1: Base64 Data URI
+    if (trimmed.indexOf('data:') === 0 && trimmed.indexOf(';base64,') !== -1) {
+      var parts = trimmed.split(';base64,');
+      var contentType = parts[0].replace('data:', '') || 'application/pdf';
+      var decodedBytes = Utilities.base64Decode(parts[1]);
+      var blob = Utilities.newBlob(decodedBytes, contentType, fileName);
+      var driveFile = folder.createFile(blob);
+      try {
+        driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      } catch (e) {}
+      return driveFile.getUrl();
+    }
+
+    // Case 2: Hosted Web URL (e.g. https://zenvitra.xyz/uploads/forms/...)
+    if (trimmed.indexOf('http://') === 0 || trimmed.indexOf('https://') === 0) {
+      var response = UrlFetchApp.fetch(trimmed, {
+        muteHttpExceptions: true,
+        followRedirects: true
+      });
+
+      if (response.getResponseCode() === 200) {
+        var blob = response.getBlob();
+        blob.setName(fileName);
+        var driveFile = folder.createFile(blob);
+        try {
+          driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (e) {}
+        return driveFile.getUrl();
+      }
+    }
+  } catch (err) {
+    Logger.log('[SAVE-CV-TO-DRIVE-ERR] ' + err.toString());
+  }
+
+  return trimmed;
+}
+
+/**
+ * Menu action: Show modal with direct link to Google Drive folder
+ */
+function openCvDriveFolder() {
+  var folder = getOrCreateCvFolder_();
+  if (folder) {
+    var url = folder.getUrl();
+    var html = '<div style="font-family:Arial,sans-serif;padding:20px;text-align:center;background:#0f172a;color:#fff;border-radius:12px;">' +
+      '<h2 style="color:#fbbf24;margin-top:0;">📂 Secretariat CVs Folder</h2>' +
+      '<p style="color:#94a3b8;font-size:13px;line-height:1.5;">Every applicant\'s CV and Resume is automatically saved directly into this dedicated folder in your Google Drive:</p>' +
+      '<p style="margin:25px 0;"><a href="' + url + '" target="_blank" style="background:#f59e0b;color:#000;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;font-size:14px;box-shadow:0 4px 15px rgba(245,158,11,0.3);">Open in Google Drive ↗</a></p>' +
+      '<p style="color:#64748b;font-size:11px;word-break:break-all;">' + url + '</p>' +
+      '</div>';
+    var userInterface = HtmlService.createHtmlOutput(html).setWidth(480).setHeight(240);
+    SpreadsheetApp.getUi().showModalDialog(userInterface, 'Secretariat CVs & Applications Folder');
+  } else {
+    SpreadsheetApp.getUi().alert('Could not access or create the Google Drive folder. Please check your Drive permissions.');
+  }
+}
+
+/**
+ * Menu action: Backfill all existing applicant CV links to Google Drive
+ */
+function backfillAllExistingCvsToDrive() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var masterSheet = ss.getSheetByName(CONFIG.MASTER_TAB_NAME);
+  if (!masterSheet) {
+    SpreadsheetApp.getUi().alert('Master tab not found.');
+    return;
+  }
+
+  var lastRow = masterSheet.getLastRow();
+  if (lastRow <= 1) {
+    SpreadsheetApp.getUi().alert('No applicant rows found to backfill.');
+    return;
+  }
+
+  var folder = getOrCreateCvFolder_();
+  if (!folder) {
+    SpreadsheetApp.getUi().alert('Could not access Google Drive folder.');
+    return;
+  }
+
+  var dataRange = masterSheet.getRange(2, 1, lastRow - 1, COL_INDEX.NOTES);
+  var values = dataRange.getValues();
+  var updatedCount = 0;
+
+  for (var i = 0; i < values.length; i++) {
+    var rowNum = i + 2;
+    var ticketId = values[i][COL_INDEX.TICKET_ID - 1];
+    var candidateName = values[i][COL_INDEX.FULL_NAME - 1];
+    var resumeUrl = values[i][COL_INDEX.RESUME_LINK - 1];
+
+    if (resumeUrl && typeof resumeUrl === 'string' && resumeUrl.indexOf('drive.google.com') === -1 && resumeUrl.indexOf('http') === 0) {
+      var driveUrl = saveCvToGoogleDrive_(resumeUrl, ticketId, candidateName);
+      if (driveUrl && driveUrl.indexOf('drive.google.com') !== -1) {
+        masterSheet.getRange(rowNum, COL_INDEX.RESUME_LINK).setValue(driveUrl);
+        updatedCount++;
+
+        // Also update matching row in department tabs
+        for (var deptKey in DEPARTMENTS) {
+          var dSheet = ss.getSheetByName(DEPARTMENTS[deptKey].tabName);
+          if (dSheet) {
+            var dRow = findRowByTicketOrEmail_(dSheet, ticketId, null);
+            if (dRow > 1) {
+              dSheet.getRange(dRow, COL_INDEX.RESUME_LINK).setValue(driveUrl);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  SpreadsheetApp.getUi().alert('✅ Successfully saved ' + updatedCount + ' existing CVs into your Google Drive folder:\n' + folder.getName());
+}
+
+/**
  * Handle incoming POST submissions with LockService and idempotency
  */
 function doPost(e) {
@@ -594,6 +780,10 @@ function doPost(e) {
       firstNonEmpty_([data.q13_tools_and_abilities, ''])
     ];
 
+    // Upload CV directly into Creator's Google Drive folder
+    var rawResumeUrl = firstNonEmpty_([data.q22_resume_upload, data.resumeUrl, data.resume_url, '']);
+    var driveResumeUrl = saveCvToGoogleDrive_(rawResumeUrl, ticketId, candidateFullName);
+
     var postRowData = [
       firstNonEmpty_([data.q14_why_zenith, data.motivation, '']),
       firstNonEmpty_([data.q15_secretariat_meaning, '']),
@@ -602,7 +792,7 @@ function doPost(e) {
       firstNonEmpty_([data.q18_tight_deadline_difficulties, '']),
       firstNonEmpty_([data.q19_time_dedication_and_balance, '']),
       firstNonEmpty_([data.q20_why_choose_you, '']),
-      firstNonEmpty_([data.q22_resume_upload, data.resumeUrl, data.resume_url, '']),
+      driveResumeUrl, // AB: Uploaded & Saved to Creator's Google Drive Folder
       firstNonEmpty_([data.q23_portfolio_links, data.portfolioUrl, data.portfolio_url, '']),
       firstNonEmpty_([data.decl_signature_confirmation, data.signature, 'CONFIRMED']),
       '', // AE: Experience (15)
