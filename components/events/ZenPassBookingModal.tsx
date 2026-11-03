@@ -51,7 +51,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
     perks: ['Floor debate access', 'Official Delegate Kit', 'Verified Certificate'],
     availableCount: event.capacity || 50,
     maxCapacity: event.capacity || 50,
-    badgeText: event.ticketPrice && event.ticketPrice > 0 ? `₹${event.ticketPrice}` : 'FREE PASS',
+    badgeText: event.ticketPrice && event.ticketPrice > 0 ? `₹${event.ticketPrice}` : (event.isComingSoon ? 'COMING SOON' : 'FREE PASS'),
     isPopular: true
   };
 
@@ -66,7 +66,7 @@ export function ZenPassBookingModal({ isOpen, onClose, event, onSuccess }: ZenPa
         perks: p.perks || ['Floor debate access', 'Official Delegate Kit', 'Verified Certificate'],
         availableCount: p.capacity || 50,
         maxCapacity: p.capacity || 50,
-        badgeText: p.badge || (p.price > 0 ? `₹${p.price}` : 'FREE PASS'),
+        badgeText: p.badge || (p.price > 0 ? `₹${p.price}` : (event.isComingSoon ? 'COMING SOON' : 'FREE PASS')),
         isPopular: p.isPopular,
       }))
     : [fallbackTier];

@@ -249,7 +249,7 @@ export function EventCard({ event, onOpenModal }: EventCardProps) {
                 <span className="truncate">{event.location}</span>
               </span>
               <span className="flex items-center gap-1 font-space font-bold text-amber-300 text-sm">
-                <span>{event.ticketPrice ? `₹${event.ticketPrice}` : 'Free / Pass'}</span>
+                <span>{(event.isComingSoon || event.status === 'coming_soon' || event.id === 'zenith-mun-2026' || event.slug === 'zenith-mun-2026') ? 'Coming Soon' : (event.ticketPrice ? `₹${event.ticketPrice}` : 'Free / Pass')}</span>
               </span>
             </div>
 

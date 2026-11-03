@@ -59,6 +59,7 @@ export const ZENITH_MUN_2026_EVENT: ZenEvent = {
     {
       id: 'zenith_delegate_pass',
       name: 'Delegate Pass (Offline In-Person Convening)',
+      badge: 'COMING SOON',
       price: 0,
       description: 'In-person delegate admission to Zenith MUN 2026 committee chambers. Registration opening soon.',
       perks: [

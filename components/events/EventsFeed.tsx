@@ -740,7 +740,7 @@ export function EventsFeed() {
                   {/* Price Tag Bottom Right */}
                   <div className="absolute bottom-2.5 right-2.5">
                     <span className="px-2 py-0.5 rounded-md bg-amber-500/20 backdrop-blur-md border border-amber-400/40 text-[11px] font-mono font-bold text-amber-300">
-                      {event.ticketPrice ? `₹${event.ticketPrice}` : 'Free Pass'}
+                      {(event.isComingSoon || event.status === 'coming_soon' || event.id === 'zenith-mun-2026' || event.slug === 'zenith-mun-2026') ? 'Coming Soon' : (event.ticketPrice ? `₹${event.ticketPrice}` : 'Free Pass')}
                     </span>
                   </div>
                 </div>
@@ -843,7 +843,7 @@ export function EventsFeed() {
                   {/* Price Tag Bottom Right */}
                   <div className="absolute bottom-2.5 right-2.5">
                     <span className="px-2 py-0.5 rounded-md bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-mono font-bold text-white">
-                      {event.ticketPrice ? `₹${event.ticketPrice}` : 'Free Entry'}
+                      {(event.isComingSoon || event.status === 'coming_soon' || event.id === 'zenith-mun-2026' || event.slug === 'zenith-mun-2026') ? 'Coming Soon' : (event.ticketPrice ? `₹${event.ticketPrice}` : 'Free Entry')}
                     </span>
                   </div>
                 </div>
@@ -932,7 +932,7 @@ export function EventsFeed() {
                     ONLINE CHAMBER
                   </span>
                   <span className="text-xs font-mono text-amber-300 font-bold">
-                    {event.ticketPrice ? `₹${event.ticketPrice}` : 'Free Entry'}
+                    {(event.isComingSoon || event.status === 'coming_soon') ? 'Coming Soon' : (event.ticketPrice ? `₹${event.ticketPrice}` : 'Free Entry')}
                   </span>
                 </div>
                 <div>
