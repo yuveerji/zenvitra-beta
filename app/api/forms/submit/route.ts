@@ -42,6 +42,51 @@ function saveStructuredSubmission(formId: string, submission: any) {
   }
 }
 
+function extractAndSaveBase64(val: string, prefix = 'doc'): string {
+  if (typeof val !== 'string' || !val.startsWith('data:')) return val;
+  try {
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'forms');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    const match = val.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) return val;
+    const mime = match[1];
+    const base64Data = match[2];
+    let ext = 'bin';
+    if (mime.includes('pdf')) ext = 'pdf';
+    else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg';
+    else if (mime.includes('png')) ext = 'png';
+    else if (mime.includes('webp')) ext = 'webp';
+
+    const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+    const filePath = path.join(uploadDir, fileName);
+    fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+    return `https://zenvitra.xyz/uploads/forms/${fileName}`;
+  } catch (e) {
+    console.warn('[BASE64-PERSIST-ERR]', e);
+    return val.length > 500 ? '[Document Attached]' : val;
+  }
+}
+
+function sanitizeForGoogleSheetsPayload(obj: Record<string, any>): Record<string, any> {
+  const clean: Record<string, any> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === 'string') {
+      if (v.startsWith('data:') && v.length > 200) {
+        clean[k] = '[File Attached]';
+      } else if (v.length > 4000) {
+        clean[k] = v.substring(0, 3995) + '...';
+      } else {
+        clean[k] = v;
+      }
+    } else {
+      clean[k] = v;
+    }
+  }
+  return clean;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -60,7 +105,15 @@ export async function POST(req: NextRequest) {
     const isSec = formId?.toLowerCase().includes('secretariat') || formSlug?.toLowerCase().includes('secretariat');
     const isMun = formId?.toLowerCase().includes('diplomacy') || formId?.toLowerCase().includes('mun') || formSlug?.toLowerCase().includes('diplomacy');
 
-    const rawData = data || {};
+    const rawData = { ...(data || {}) };
+
+    // Automatically convert any heavy base64 uploads into persistent file URLs
+    for (const [k, v] of Object.entries(rawData)) {
+      if (typeof v === 'string' && v.startsWith('data:')) {
+        rawData[k] = extractAndSaveBase64(v, k);
+      }
+    }
+
     let committeeTab = '';
     if (isMun) {
       const commChoice = String(rawData.step3_primary_committee || rawData.firstCommitteeChoice || '').toUpperCase();
@@ -80,7 +133,7 @@ export async function POST(req: NextRequest) {
       id: subId,
       formId,
       submittedAt: timestamp,
-      data: data || {},
+      data: rawData,
       submitterHandle: submitterHandle || 'anonymous',
     };
 
@@ -194,14 +247,16 @@ export async function POST(req: NextRequest) {
 
     if (targetWebhook && typeof targetWebhook === 'string' && targetWebhook.startsWith('http')) {
       try {
+        const cleanPayloadData = sanitizeForGoogleSheetsPayload({
+          ...sanitizedLedgerEntry,
+          ticketId: sanitizedLedgerEntry.ticketId || subId,
+        });
+
         const webhookPayload = {
           submittedAt: timestamp,
           submissionId: subId,
           ticketId: sanitizedLedgerEntry.ticketId || subId,
-          data: {
-            ...sanitizedLedgerEntry,
-            ticketId: sanitizedLedgerEntry.ticketId || subId,
-          }
+          data: cleanPayloadData
         };
 
         const sheetRes = await fetch(targetWebhook, {

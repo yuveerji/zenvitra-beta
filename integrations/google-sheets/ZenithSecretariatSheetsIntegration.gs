@@ -602,8 +602,8 @@ function doPost(e) {
       firstNonEmpty_([data.q18_tight_deadline_difficulties, '']),
       firstNonEmpty_([data.q19_time_dedication_and_balance, '']),
       firstNonEmpty_([data.q20_why_choose_you, '']),
-      firstNonEmpty_([data.q22_resume_upload, data.resumeUrl, '']),
-      firstNonEmpty_([data.q23_portfolio_links, data.portfolioUrl, '']),
+      firstNonEmpty_([data.q22_resume_upload, data.resumeUrl, data.resume_url, '']),
+      firstNonEmpty_([data.q23_portfolio_links, data.portfolioUrl, data.portfolio_url, '']),
       firstNonEmpty_([data.decl_signature_confirmation, data.signature, 'CONFIRMED']),
       '', // AE: Experience (15)
       '', // AF: Suitability (20)
@@ -615,6 +615,20 @@ function doPost(e) {
       'SUBMITTED', // AL: Evaluation Status
       ''  // AM: Reviewer Notes
     ];
+
+    // Cell guard: Google Sheets throws exception if any cell exceeds 50,000 characters
+    function safeCellText_(val) {
+      if (val === null || val === undefined) return '';
+      var s = String(val);
+      if (s.indexOf('data:') === 0 && s.length > 200) {
+        return '[Document Attached — Stored in Sovereign Vault]';
+      }
+      return s.length > 4000 ? s.substring(0, 3995) + '...' : s;
+    }
+
+    baseRowData = baseRowData.map(safeCellText_);
+    primaryPracticalAnswers = primaryPracticalAnswers.map(safeCellText_);
+    postRowData = postRowData.map(safeCellText_);
 
     // 1. Append to Master Tab
     var masterRowIndex = masterSheet.getLastRow() + 1;

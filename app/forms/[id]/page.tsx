@@ -402,6 +402,7 @@ export default function ZenFormPublicPage() {
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
 
   const isZenithForm = Boolean(
     idOrSlug?.toLowerCase().includes('zenith') ||
@@ -782,6 +783,40 @@ export default function ZenFormPublicPage() {
       ? currentList.filter((item) => item !== option)
       : [...currentList, option];
     handleInputChange(fieldId, nextList);
+  };
+
+  const handleFileUpload = async (fieldId: string, file: File) => {
+    setUploadingFiles((prev) => ({ ...prev, [fieldId]: true }));
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const res = await fetch('/api/forms/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+      const json = await res.json();
+      if (json.success && json.url) {
+        handleInputChange(fieldId, json.url);
+        handleInputChange(`${fieldId}_name`, json.fileName || file.name);
+        handleInputChange(`${fieldId}_size`, json.sizeFormatted || '');
+      } else {
+        throw new Error(json.error || 'Upload failed');
+      }
+    } catch (err: any) {
+      console.warn('Direct upload error, falling back to base64 if small:', err?.message);
+      if (file.size < 4 * 1024 * 1024) {
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          handleInputChange(fieldId, re.target?.result as string);
+          handleInputChange(`${fieldId}_name`, file.name);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert('File size exceeds 4MB. Please upload a file smaller than 4MB, or provide a Google Drive / LinkedIn link.');
+      }
+    } finally {
+      setUploadingFiles((prev) => ({ ...prev, [fieldId]: false }));
+    }
   };
 
   const handleNextPage = () => {
@@ -2191,18 +2226,25 @@ export default function ZenFormPublicPage() {
                       {/* 12. File Upload / Image Upload */}
                       {field.type === 'file_upload' && (
                         <div className="pt-2 space-y-3">
-                          {formData[field.id] ? (
+                          {uploadingFiles[field.id] ? (
+                            <div className="p-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 text-center space-y-2.5">
+                              <Loader2 className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
+                              <div className="text-xs font-mono text-white font-bold">Uploading document to sovereign vault...</div>
+                              <div className="text-[10px] font-mono text-neutral-400">Processing file securely and generating persistent cloud URL</div>
+                            </div>
+                          ) : formData[field.id] ? (
                             <div className="p-4 sm:p-5 rounded-2xl bg-black/60 border border-emerald-500/40 space-y-3 shadow-lg">
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
                                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                                  <span>Payment Proof / Receipt Attached</span>
+                                  <span>Document / Resume Successfully Attached</span>
                                 </div>
                                 <button
                                   type="button"
                                   onClick={() => {
                                     handleInputChange(field.id, '');
                                     handleInputChange(`${field.id}_name`, '');
+                                    handleInputChange(`${field.id}_size`, '');
                                   }}
                                   className="text-[11px] font-mono text-rose-400 hover:text-rose-300 underline cursor-pointer"
                                 >
@@ -2210,35 +2252,49 @@ export default function ZenFormPublicPage() {
                                 </button>
                               </div>
 
-                              {/* Live Image Preview if image or data URL */}
-                              {typeof formData[field.id] === 'string' && (formData[field.id].startsWith('data:image') || formData[field.id].startsWith('http') || formData[field.id].startsWith('blob:')) && (
+                              <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-2 text-xs font-mono">
+                                <div className="flex items-center gap-2 truncate">
+                                  <FileText className="w-4 h-4 text-amber-400 shrink-0" />
+                                  <span className="text-white truncate">{formData[`${field.id}_name`] || 'Attached Document'}</span>
+                                  {formData[`${field.id}_size`] && (
+                                    <span className="text-neutral-500 text-[10px]">({formData[`${field.id}_size`]})</span>
+                                  )}
+                                </div>
+                                {typeof formData[field.id] === 'string' && formData[field.id].startsWith('http') && (
+                                  <a
+                                    href={formData[field.id]}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-amber-400 hover:underline flex items-center gap-1 shrink-0 text-[11px]"
+                                  >
+                                    <span>Inspect</span>
+                                    <ExternalLink className="w-3 h-3" />
+                                  </a>
+                                )}
+                              </div>
+
+                              {/* Live Image Preview if image */}
+                              {typeof formData[field.id] === 'string' && (formData[field.id].startsWith('data:image') || formData[field.id].match(/\.(jpeg|jpg|png|webp)($|\?)/i)) && (
                                 <div className="max-h-64 w-full rounded-xl overflow-hidden border border-white/10 bg-black/80 flex items-center justify-center p-2">
                                   <img
                                     src={formData[field.id]}
-                                    alt="Payment Screenshot Preview"
+                                    alt="Uploaded Document Preview"
                                     className="max-h-60 w-auto object-contain rounded-lg shadow-md"
                                   />
                                 </div>
                               )}
 
                               <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 px-1">
-                                <span className="truncate max-w-xs">{formData[`${field.id}_name`] || 'Screenshot Attached'}</span>
+                                <span className="text-emerald-400 text-[10px]">✓ Ready for submission</span>
                                 <label className="text-amber-400 hover:text-amber-300 underline cursor-pointer">
-                                  Change Screenshot
+                                  Replace File
                                   <input
                                     type="file"
                                     accept="image/*,application/pdf"
                                     className="hidden"
                                     onChange={(e) => {
                                       const file = e.target.files?.[0];
-                                      if (file) {
-                                        const reader = new FileReader();
-                                        reader.onload = (re) => {
-                                          handleInputChange(field.id, re.target?.result as string);
-                                          handleInputChange(`${field.id}_name`, file.name);
-                                        };
-                                        reader.readAsDataURL(file);
-                                      }
+                                      if (file) handleFileUpload(field.id, file);
                                     }}
                                   />
                                 </label>
@@ -2250,10 +2306,10 @@ export default function ZenFormPublicPage() {
                                 <UploadCloud className="w-6 h-6" />
                               </div>
                               <span className="text-sm font-semibold text-white group-hover:text-amber-300 transition">
-                                Click or drag & drop payment screenshot here
+                                Click or drag & drop document here
                               </span>
                               <span className="text-[11px] font-mono text-neutral-400 max-w-sm leading-relaxed">
-                                Upload JPG, PNG, or WEBP screenshot of your completed transaction receipt (Max {field.maxFileSizeMb ?? 10} MB)
+                                Upload PDF, JPG, PNG, or WEBP document (Max {field.maxFileSizeMb ?? 10} MB)
                               </span>
                               <input
                                 type="file"
@@ -2261,14 +2317,7 @@ export default function ZenFormPublicPage() {
                                 className="hidden"
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (re) => {
-                                      handleInputChange(field.id, re.target?.result as string);
-                                      handleInputChange(`${field.id}_name`, file.name);
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
+                                  if (file) handleFileUpload(field.id, file);
                                 }}
                               />
                             </label>
