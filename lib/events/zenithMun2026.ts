@@ -20,7 +20,7 @@ export const ZENITH_MUN_2026_EVENT: ZenEvent = {
   isItineraryComingSoon: true,
   itineraryTiming: 'AFTER',
   itineraryTbaText: 'Detailed Conference Itinerary & Session Flow Coming Soon',
-  comingSoonAnnouncement: 'A NEW ZEN BEGINS. Offline Summit in Udaipur, Rajasthan • Summer 2027. Secretariat Applications Now Open!',
+  comingSoonAnnouncement: 'A NEW ZEN BEGINS. Offline Summit in Udaipur, Rajasthan • Summer 2027. Registration Opening Soon • Secretariat Applications Now Open!',
   comingSoonReleaseDate: '2027-05-01',
   status: 'coming_soon',
   verified: true,
@@ -58,7 +58,7 @@ export const ZENITH_MUN_2026_EVENT: ZenEvent = {
       id: 'zenith_delegate_pass',
       name: 'Delegate Pass (Offline Attendance — Udaipur)',
       price: 0,
-      description: 'In-person delegate admission to Zenith MUN 2026 committee chambers in Udaipur. Early bird drop announcing soon.',
+      description: 'In-person delegate admission to Zenith MUN 2026 committee chambers in Udaipur. Registration opening soon.',
       perks: [
         '2-Day Committee Chamber Access',
         'Acoustic Dais Gavel Synthesis',

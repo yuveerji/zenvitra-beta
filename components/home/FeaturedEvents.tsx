@@ -83,7 +83,7 @@ export function FeaturedEvents() {
               <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
                 <span className="px-2.5 py-0.5 rounded-full bg-[#e2f952]/15 border border-[#e2f952]/30 text-[#e2f952] font-bold uppercase inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#e2f952] animate-pulse" />
-                  DEL REGISTRATIONS GO LIVE: 1ST OCTOBER 2026
+                  REGISTRATION OPENING SOON
                 </span>
                 <span className="text-neutral-400">
                   Organizer ID: <strong className="text-white">yuveer</strong>
@@ -214,10 +214,16 @@ export function FeaturedEvents() {
           <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold uppercase inline-flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  SECRETARIAT APPLICATIONS LIVE NOW
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold uppercase inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    SECRETARIAT APPLICATIONS LIVE
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-bold uppercase inline-flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    REGISTRATION OPENING SOON
+                  </span>
+                </div>
                 <span className="text-neutral-400">
                   Format: <strong className="text-white">In-Person Offline</strong>
                 </span>
@@ -259,7 +265,7 @@ export function FeaturedEvents() {
             <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 font-mono text-xs text-neutral-400">
                 <Clock className="w-3.5 h-3.5 text-amber-400" />
-                <span>Phase: <strong className="text-amber-300">Secretariat Selection</strong></span>
+                <span>Status: <strong className="text-amber-300">Registration Opening Soon</strong></span>
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">

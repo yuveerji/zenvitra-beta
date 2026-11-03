@@ -691,13 +691,17 @@ export default function CanonicalMunMatrixPage({ forcedMunId }: { forcedMunId?: 
                     <div className="flex items-center gap-2">
                       <Ticket className="w-4 h-4 text-purple-400" />
                       <h3 className="text-sm font-bold font-mono text-purple-300 uppercase tracking-wider">
-                        {currentConference.plans.length === 1
+                        {isZenithMun || Boolean((currentConference as any).isComingSoon)
+                          ? 'Delegate Registration (Opening Soon)'
+                          : currentConference.plans.length === 1
                           ? 'Conference Delegate Registration'
                           : `Delegate Registration Passes & Tiers (${currentConference.plans.length} Tiers)`}
                       </h3>
                     </div>
                     <p className="text-xs text-neutral-400">
-                      Choose your preferred delegate tier to lock committee floor credentials and admission.
+                      {isZenithMun || Boolean((currentConference as any).isComingSoon)
+                        ? 'Delegate registration and pass booking for Zenith MUN 2026 is opening soon. Secretariat applications are live now.'
+                        : 'Choose your preferred delegate tier to lock committee floor credentials and admission.'}
                     </p>
                   </div>
 
@@ -705,9 +709,9 @@ export default function CanonicalMunMatrixPage({ forcedMunId }: { forcedMunId?: 
                     <button
                       type="button"
                       onClick={() => setIsBookingModalOpen(true)}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-black font-bold text-xs transition shadow-lg shadow-cyan-500/20 active:scale-95 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-bold text-xs transition shadow-lg shadow-amber-500/20 active:scale-95 cursor-pointer"
                     >
-                      Register / Get Pass
+                      {isZenithMun || Boolean((currentConference as any).isComingSoon) ? 'Registration Opening Soon' : 'Register / Get Pass'}
                     </button>
                     <button
                       type="button"

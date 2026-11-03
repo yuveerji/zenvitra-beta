@@ -31,7 +31,8 @@ import {
   FileCheck2,
   SlidersHorizontal,
   ChevronRight,
-  Grid
+  Grid,
+  Ticket
 } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -83,7 +84,7 @@ export function ZenithMun2026Portal() {
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-mono text-[10px] font-bold uppercase tracking-wider">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span>OFFLINE SUMMIT • UDAIPUR • SUMMER 2027</span>
+              <span>OFFLINE SUMMIT • UDAIPUR • REGISTRATION OPENING SOON</span>
             </span>
 
             <button
@@ -178,11 +179,11 @@ export function ZenithMun2026Portal() {
 
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-1 col-span-2 sm:col-span-1">
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider block flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-emerald-400" />
-                Format &amp; Protocol
+                <Ticket className="w-3.5 h-3.5 text-amber-400" />
+                Delegate Admission
               </span>
-              <p className="font-bold text-white text-sm">In-Person Delegate Plenary</p>
-              <p className="text-[11px] text-neutral-400">UN4MUN &amp; Classical RoP</p>
+              <p className="font-bold text-amber-300 text-sm">Registration Opening Soon</p>
+              <p className="text-[11px] text-neutral-400">Delegate Passes &amp; Tiers</p>
             </div>
           </div>
 
@@ -196,6 +197,11 @@ export function ZenithMun2026Portal() {
               <span>Apply for Secretariat</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
+
+            <div className="px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-neutral-300 font-mono text-xs font-semibold flex items-center gap-2 select-none">
+              <Clock className="w-4 h-4 text-amber-400" />
+              <span>Registration Opening Soon</span>
+            </div>
 
             <Link
               href="/events/zenith-mun-2026/mun/matrix"
@@ -311,7 +317,7 @@ export function ZenithMun2026Portal() {
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-amber-400" />
                     <span className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
-                      Dates Announcement Priority Waitlist
+                      Registration Opening Soon &bull; Priority Waitlist
                     </span>
                   </div>
                   <p className="text-xs text-neutral-300 leading-relaxed">
