@@ -189,7 +189,8 @@ export async function GET(req: NextRequest) {
 
     const webhookUrl =
       process.env.ZENITH_GOOGLE_SHEETS_WEBHOOK_URL ||
-      process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+      process.env.GOOGLE_SHEETS_WEBHOOK_URL ||
+      'https://script.google.com/macros/s/AKfycbyWc4Pxyibs6oh8EWd2xIMjLSOmkhxACuvB3WAVcO1MxRMeRtWJSnJmXliJ0KmrdqIq/exec';
 
     if (webhookUrl && webhookUrl.includes('script.google.com')) {
       try {
