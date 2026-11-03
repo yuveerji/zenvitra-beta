@@ -292,7 +292,9 @@ function buildExecutiveDashboard() {
   }
 
   dash.clear();
-  dash.setGridlines(true);
+  try {
+    dash.setHiddenGridlines(false);
+  } catch (e) {}
 
   try {
     dash.setTabColor('#f59e0b'); // Gold
