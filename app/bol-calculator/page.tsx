@@ -83,6 +83,7 @@ type EventData = {
   complimentary: number;
   refunds: number;
   processingRate: number;
+  cashfreeFeeBorneByOrganizer: boolean; // whether fee is given to cashfree by organizer or not
   contingencyRate: number;
   foodMode: FoodMode;
   foodCost: number;
@@ -107,6 +108,7 @@ const initialData: EventData = {
   complimentary: 0,
   refunds: 0,
   processingRate: 0,
+  cashfreeFeeBorneByOrganizer: true,
   contingencyRate: 0,
   foodMode: "buffet",
   foodCost: 0,
@@ -492,7 +494,10 @@ export default function BOLCalculator() {
   const cateringCost =
     foodPerPerson * totalAttendance + number(data.foodFixedCost);
 
-  const ticketProcessing = (ticketRevenue * number(data.processingRate)) / 100;
+  // Cashfree Processing Fee: only deducted from event budget if fee is given to Cashfree by organizer
+  const ticketProcessing = data.cashfreeFeeBorneByOrganizer
+    ? (ticketRevenue * number(data.processingRate)) / 100
+    : 0;
 
   const subtotalExpenses = baseExpenses + cateringCost + ticketProcessing;
 
@@ -514,8 +519,12 @@ export default function BOLCalculator() {
   const revenuePerAttendee =
     totalAttendance > 0 ? totalRevenue / totalAttendance : 0;
 
+  const effectiveProcessingRate = data.cashfreeFeeBorneByOrganizer
+    ? number(data.processingRate)
+    : 0;
+
   const contributionPerTicket =
-    averageTicketPrice * (1 - number(data.processingRate) / 100) - foodPerPerson;
+    averageTicketPrice * (1 - effectiveProcessingRate / 100) - foodPerPerson;
 
   const fixedCosts = baseExpenses + number(data.foodFixedCost) + contingency;
 
@@ -666,6 +675,7 @@ export default function BOLCalculator() {
       ...data.expenses.map((item) => [item.name, item.amount]),
       ["Catering & Food", cateringCost],
       ["Payment Gateway Processing", ticketProcessing],
+      ["Cashfree Fee Borne by Organizer", data.cashfreeFeeBorneByOrganizer ? "YES (Deducted)" : "NO (Free / By Customer)"],
       ["Contingency Reserve", contingency],
       ["TOTAL PROJECTED EXPENDITURE", totalExpenses],
       ["", ""],
@@ -702,6 +712,7 @@ export default function BOLCalculator() {
       `Date: ${data.eventDate || "TBD"}\n` +
       `Planned Attendance: ${totalAttendance}\n` +
       `Set Stall Price: ${money(data.stallDefaultPrice)} (${data.stallCapacity} stalls)\n` +
+      `Cashfree PG Fee: ${data.cashfreeFeeBorneByOrganizer ? `${data.processingRate}% (${money(ticketProcessing)})` : "Not given to Cashfree (Zero deduction)"}\n` +
       `---------------------------\n` +
       `Total Revenue: ${money(totalRevenue)}\n` +
       `Total Expenses: ${money(totalExpenses)}\n` +
@@ -1058,15 +1069,65 @@ export default function BOLCalculator() {
               onChange={(v) => update({ refunds: number(v) })}
             />
 
-            <InputField
-              label="Payment Processing Fee (%)"
-              value={data.processingRate}
-              suffix="%"
-              placeholder="0"
-              step="0.1"
-              helper="Cashfree/PG fee"
-              onChange={(v) => update({ processingRate: number(v) })}
-            />
+            <div className="space-y-2">
+              <InputField
+                label="Payment Processing Fee (%)"
+                value={data.processingRate}
+                suffix="%"
+                placeholder="0"
+                step="0.1"
+                helper="Cashfree/PG fee"
+                quickIncrements={[1.75, 2.0]}
+                onChange={(v) => update({ processingRate: number(v) })}
+              />
+
+              {/* Button: Fee given to Cashfree or not */}
+              <button
+                type="button"
+                onClick={() =>
+                  update({
+                    cashfreeFeeBorneByOrganizer: !data.cashfreeFeeBorneByOrganizer,
+                  })
+                }
+                className={`w-full py-2 px-3 rounded-xl font-mono text-[11px] font-bold transition-all duration-200 flex items-center justify-between cursor-pointer border focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+                  data.cashfreeFeeBorneByOrganizer
+                    ? "bg-cyan-500/15 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/25 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                    : "bg-white/[0.03] border-white/10 text-slate-400 hover:bg-white/[0.08] hover:text-white"
+                }`}
+                title="Toggle whether Cashfree fee is given to Cashfree (deducted from budget) or not"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      data.cashfreeFeeBorneByOrganizer
+                        ? "bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                        : "bg-slate-600"
+                    }`}
+                  />
+                  <span className="text-left leading-tight">
+                    Fee Given to Cashfree:
+                  </span>
+                </div>
+
+                <span
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-black uppercase tracking-wider ${
+                    data.cashfreeFeeBorneByOrganizer
+                      ? "bg-cyan-400/20 text-cyan-200 border border-cyan-400/40"
+                      : "bg-white/10 text-slate-300 border border-white/10"
+                  }`}
+                >
+                  {data.cashfreeFeeBorneByOrganizer
+                    ? "YES (Deducted)"
+                    : "NO (Free / By Customer)"}
+                </span>
+              </button>
+
+              <p className="text-[10px] font-mono text-slate-500 px-0.5">
+                {data.cashfreeFeeBorneByOrganizer
+                  ? `• ${data.processingRate}% fee deducted from gross revenue (${money(ticketProcessing)})`
+                  : "• Fee NOT given to Cashfree (Zero deduction from budget)"}
+              </p>
+            </div>
 
             <InputField
               label="Contingency Reserve (%)"
@@ -1199,7 +1260,13 @@ export default function BOLCalculator() {
                 {[
                   { label: "Base Operational Expenses", amount: baseExpenses, note: `${data.expenses.length} line items` },
                   { label: "Catering & Refreshments", amount: cateringCost, note: `Model: ${data.foodMode}` },
-                  { label: "Payment Gateway Processing", amount: ticketProcessing, note: `${data.processingRate}% of ticket volume` },
+                  {
+                    label: "Payment Gateway Processing",
+                    amount: ticketProcessing,
+                    note: data.cashfreeFeeBorneByOrganizer
+                      ? `${data.processingRate}% fee given to Cashfree (${money(ticketProcessing)})`
+                      : "Fee not given to Cashfree (Paid by customer / Waived)",
+                  },
                   { label: "Contingency Safety Reserve", amount: contingency, note: `${data.contingencyRate}% buffer applied` },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 text-sm">
