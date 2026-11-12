@@ -36,6 +36,9 @@ import {
   Maximize2,
   HelpCircle,
   Zap,
+  Tag,
+  Grid,
+  RefreshCw,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -84,6 +87,8 @@ type EventData = {
   foodMode: FoodMode;
   foodCost: number;
   foodFixedCost: number;
+  stallDefaultPrice: number; // Set price per stall
+  stallCapacity: number;     // Total stall count / inventory
   tickets: TicketTier[];
   expenses: LineItem[];
   vendors: Vendor[];
@@ -106,6 +111,8 @@ const initialData: EventData = {
   foodMode: "buffet",
   foodCost: 0,
   foodFixedCost: 0,
+  stallDefaultPrice: 0,
+  stallCapacity: 0,
 
   tickets: [
     { id: "tier_early", name: "Early Bird Delegate", price: 0, quantity: 0 },
@@ -396,7 +403,6 @@ export default function BOLCalculator() {
   // Load from localStorage or clean initialize
   useEffect(() => {
     try {
-      // Check v2 store; if legacy v1 had old non-zero seeded data, migrate to clean zero state
       const savedV2 = localStorage.getItem("udc-bol-calculator-v2");
       if (savedV2) {
         setData({ ...initialData, ...JSON.parse(savedV2) });
@@ -404,7 +410,6 @@ export default function BOLCalculator() {
         const savedV1 = localStorage.getItem("udc-bol-calculator-v1");
         if (savedV1) {
           const parsed = JSON.parse(savedV1);
-          // If legacy data had seeded mock values, reset clean to 0
           if (parsed.capacity === 150 && parsed.expectedAttendance === 120) {
             setData(initialData);
             localStorage.setItem("udc-bol-calculator-v2", JSON.stringify(initialData));
@@ -446,10 +451,17 @@ export default function BOLCalculator() {
     paidTickets + number(data.complimentary)
   );
 
-  const vendorFees = data.vendors.reduce(
+  // Stall booking fees: If itemized stalls exist, sum their individual fees.
+  // Otherwise, use (stallCapacity * stallDefaultPrice) for quick baseline modeling.
+  const itemizedVendorFees = data.vendors.reduce(
     (sum, vendor) => sum + number(vendor.fee),
     0
   );
+
+  const vendorFees =
+    data.vendors.length > 0
+      ? itemizedVendorFees
+      : number(data.stallCapacity) * number(data.stallDefaultPrice);
 
   const vendorCommission = data.vendors.reduce(
     (sum, vendor) =>
@@ -609,6 +621,27 @@ export default function BOLCalculator() {
     });
   };
 
+  // ── QUICK STALL BATCH OPERATIONS ──
+
+  const applySetPriceToAllStalls = () => {
+    if (data.vendors.length === 0) return;
+    update({
+      vendors: data.vendors.map((v) => ({ ...v, fee: data.stallDefaultPrice })),
+    });
+  };
+
+  const generateStallsFromSetPrice = () => {
+    const count = Math.max(1, number(data.stallCapacity));
+    const newStalls: Vendor[] = Array.from({ length: count }, (_, i) => ({
+      id: uid(),
+      name: `Stall #${i + 1}`,
+      fee: number(data.stallDefaultPrice),
+      commission: 0,
+      expectedSales: 0,
+    }));
+    update({ vendors: newStalls });
+  };
+
   // ── EXPORT & RESET HANDLERS ──
 
   const exportCSV = () => {
@@ -619,6 +652,8 @@ export default function BOLCalculator() {
       ["Event Date", data.eventDate || "TBD"],
       ["Operating Capacity", data.capacity],
       ["Expected Attendance", totalAttendance],
+      ["Set Price Per Stall", data.stallDefaultPrice],
+      ["Planned Stall Inventory", data.stallCapacity],
       ["", ""],
       ["REVENUE STREAM", "AMOUNT (INR)"],
       ["Ticket Sales Revenue", ticketRevenue],
@@ -666,6 +701,7 @@ export default function BOLCalculator() {
       `Event: ${data.eventName || "BOL! Event"}\n` +
       `Date: ${data.eventDate || "TBD"}\n` +
       `Planned Attendance: ${totalAttendance}\n` +
+      `Set Stall Price: ${money(data.stallDefaultPrice)} (${data.stallCapacity} stalls)\n` +
       `---------------------------\n` +
       `Total Revenue: ${money(totalRevenue)}\n` +
       `Total Expenses: ${money(totalExpenses)}\n` +
@@ -688,7 +724,12 @@ export default function BOLCalculator() {
     { id: "overview", label: "Executive Overview", icon: BarChart3, count: null },
     { id: "tickets", label: "Ticketing & Tiers", icon: Ticket, count: data.tickets.length },
     { id: "food", label: "Food & Catering", icon: Utensils, count: null },
-    { id: "vendors", label: "Stalls & Vendors", icon: Store, count: data.vendors.length },
+    {
+      id: "vendors",
+      label: "Stalls & Vendors",
+      icon: Store,
+      count: data.vendors.length > 0 ? data.vendors.length : data.stallCapacity > 0 ? data.stallCapacity : null,
+    },
     { id: "expenses", label: "Expenditures", icon: Receipt, count: data.expenses.length },
     { id: "sponsors", label: "Sponsorships", icon: Handshake, count: data.sponsors.length },
     { id: "scenarios", label: "Scenario Modeler", icon: Sliders, count: scenarios.length },
@@ -712,16 +753,6 @@ export default function BOLCalculator() {
 
   // Zero-State flag: all numbers are zero
   const isZeroState = totalRevenue === 0 && totalExpenses === 0;
-
-  // Breakeven percentage towards target
-  const breakevenProgress =
-    breakEvenTickets && breakEvenTickets > 0
-      ? Math.min(100, Math.round((paidTickets / breakEvenTickets) * 100))
-      : 0;
-
-  // Capacity fill percentage
-  const capacityPercent =
-    data.capacity > 0 ? Math.min(100, Math.round((totalAttendance / data.capacity) * 100)) : 0;
 
   return (
     <div className="min-h-screen bg-[#030712] text-white flex flex-col justify-between font-sans selection:bg-cyan-500/20">
@@ -808,7 +839,7 @@ export default function BOLCalculator() {
                   Reset All Data to 0?
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                  This will reset every ticket price, quantity, expense, vendor, and parameter to completely clean 0s. All local browser storage will be reset to an authentic baseline.
+                  This will reset every ticket price, quantity, stall price, expense, vendor, and parameter to completely clean 0s. All local browser storage will be reset to an authentic baseline.
                 </p>
               </div>
               <div className="flex items-center gap-3 pt-2">
@@ -889,7 +920,7 @@ export default function BOLCalculator() {
                   Ready to Model BOL! 2026 Event Finances?
                 </h3>
                 <p className="text-xs text-slate-300 max-w-2xl font-sans leading-relaxed">
-                  Start by entering pass pricing in <strong className="text-white">Ticketing</strong> or your expected venue overhead in <strong className="text-white">Expenditures</strong>. The break-even solver will dynamically calculate the exact registrations required.
+                  Start by entering pass pricing in <strong className="text-white">Ticketing</strong>, stall rates in <strong className="text-white">Stalls & Vendors</strong>, or your expected venue overhead in <strong className="text-white">Expenditures</strong>. The break-even solver will dynamically calculate the exact registrations required.
                 </p>
               </div>
 
@@ -902,6 +933,14 @@ export default function BOLCalculator() {
                 >
                   <Ticket className="w-3.5 h-3.5" />
                   <span>Configure Tickets</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("vendors")}
+                  className="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+                >
+                  <Store className="w-3.5 h-3.5" />
+                  <span>Set Stall Price</span>
                 </button>
                 <button
                   type="button"
@@ -1115,7 +1154,16 @@ export default function BOLCalculator() {
               <div className="space-y-3.5">
                 {[
                   { label: "Ticket Sales Revenue", amount: ticketRevenue, note: `${paidTickets} paid tickets` },
-                  { label: "Stall Booking Fees (Fixed)", amount: vendorFees, note: `${data.vendors.length} active stalls` },
+                  {
+                    label: "Stall Booking Fees (Fixed)",
+                    amount: vendorFees,
+                    note:
+                      data.vendors.length > 0
+                        ? `${data.vendors.length} itemized stalls`
+                        : data.stallCapacity > 0
+                        ? `${data.stallCapacity} stalls @ ${money(data.stallDefaultPrice)} set price`
+                        : "No stalls configured",
+                  },
                   { label: "Stall Sales Commission", amount: vendorCommission, note: "Based on projected sales" },
                   { label: "Corporate Cash Sponsorships", amount: sponsorCash, note: `${data.sponsors.length} sponsors` },
                 ].map((item) => (
@@ -1241,7 +1289,7 @@ export default function BOLCalculator() {
                 <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 space-y-2 text-xs text-slate-300 leading-relaxed font-sans">
                   {totalRevenue === 0 && totalExpenses === 0 ? (
                     <p className="text-slate-400 font-mono text-center py-2">
-                      ⚡ Clean Zero State: Add your ticket pricing and estimated operational overheads in the tabs above to calculate your break-even requirements.
+                      ⚡ Clean Zero State: Add your ticket pricing, stall rates, and estimated operational overheads in the tabs above to calculate your break-even requirements.
                     </p>
                   ) : netProfit >= 0 ? (
                     <div className="space-y-1">
@@ -1260,7 +1308,7 @@ export default function BOLCalculator() {
                         <span>Projected Operating Deficit</span>
                       </p>
                       <p className="text-slate-400">
-                        Current assumptions show an operational deficit of {money(Math.abs(netProfit))}. Consider increasing ticket volume, seeking additional sponsorships, or switching to the stall-only catering model.
+                        Current assumptions show an operational deficit of {money(Math.abs(netProfit))}. Consider increasing ticket volume, setting a higher stall booking price, seeking additional sponsorships, or switching to the stall-only catering model.
                       </p>
                     </div>
                   )}
@@ -1500,9 +1548,15 @@ export default function BOLCalculator() {
         {activeTab === "vendors" && (
           <SectionCard
             title="Commercial Stalls & Vendor Concessions"
-            subtitle="Track fixed stall space rental fees and revenue-sharing sales commissions."
+            subtitle="Configure your standardized price per stall, total stall inventory, and itemized vendor contracts."
             icon={Store}
-            badge={`${data.vendors.length} STALLS`}
+            badge={
+              data.vendors.length > 0
+                ? `${data.vendors.length} ITEMIZED STALLS`
+                : data.stallCapacity > 0
+                ? `${data.stallCapacity} STALL INVENTORY`
+                : "STALLS"
+            }
             action={
               <button
                 type="button"
@@ -1513,7 +1567,7 @@ export default function BOLCalculator() {
                       {
                         id: uid(),
                         name: `Vendor Stall #${data.vendors.length + 1}`,
-                        fee: 0,
+                        fee: number(data.stallDefaultPrice),
                         commission: 0,
                         expectedSales: 0,
                       },
@@ -1527,98 +1581,197 @@ export default function BOLCalculator() {
               </button>
             }
           >
-            <div className="space-y-4">
-              {data.vendors.length === 0 ? (
-                <div className="p-8 text-center rounded-2xl border border-dashed border-white/10 text-slate-500 text-xs font-mono">
-                  No commercial vendor stalls added yet. Click &quot;Add Vendor Stall&quot; to configure booking fees and revenue shares.
+            <div className="space-y-6">
+
+              {/* ── SET PRICE PER STALL & INVENTORY CONTROL COCKPIT ── */}
+              <div className="p-5 sm:p-6 rounded-2xl border border-cyan-500/25 bg-gradient-to-r from-cyan-950/20 via-[#0a1122] to-blue-950/20 backdrop-blur-md space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-cyan-400" />
+                    <h3 className="text-sm font-bold font-mono uppercase text-white tracking-wider">
+                      Standard Stall Rate & Inventory Controls
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Set a universal baseline price per stall or manage individual stalls below
+                  </span>
                 </div>
-              ) : (
-                data.vendors.map((vendor, idx) => {
-                  const commRev = (number(vendor.expectedSales) * number(vendor.commission)) / 100;
-                  const stallTotal = number(vendor.fee) + commRev;
-                  return (
-                    <div
-                      key={vendor.id}
-                      className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-all space-y-3"
-                    >
-                      <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                        <span className="font-mono text-xs font-bold text-slate-300 select-none">
-                          STALL #{idx + 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            update({ vendors: data.vendors.filter((x) => x.id !== vendor.id) })
-                          }
-                          className="text-xs text-rose-400 hover:text-rose-300 font-mono transition cursor-pointer flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Remove</span>
-                        </button>
-                      </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                        <InputField
-                          label="Vendor / Business Name"
-                          type="text"
-                          value={vendor.name}
-                          placeholder="e.g. Café Concession"
-                          onChange={(v) => updateVendor(vendor.id, { name: v })}
-                        />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <InputField
+                    label="Set Price per Stall"
+                    prefix="₹"
+                    value={data.stallDefaultPrice}
+                    placeholder="0"
+                    helper="Standard fixed rental fee"
+                    quickIncrements={[2500, 5000, 10000]}
+                    onChange={(v) => update({ stallDefaultPrice: number(v) })}
+                  />
 
-                        <InputField
-                          label="Fixed Space Booking Fee"
-                          prefix="₹"
-                          value={vendor.fee}
-                          placeholder="0"
-                          quickIncrements={[2000, 5000]}
-                          onChange={(v) => updateVendor(vendor.id, { fee: number(v) })}
-                        />
+                  <InputField
+                    label="Total Stall Inventory / Capacity"
+                    value={data.stallCapacity}
+                    placeholder="0"
+                    helper="Total available stall plots"
+                    quickIncrements={[5, 10, 20]}
+                    onChange={(v) => update({ stallCapacity: number(v) })}
+                  />
 
-                        <InputField
-                          label="Estimated Total Sales"
-                          prefix="₹"
-                          value={vendor.expectedSales}
-                          placeholder="0"
-                          quickIncrements={[10000, 25000]}
-                          onChange={(v) => updateVendor(vendor.id, { expectedSales: number(v) })}
-                        />
-
-                        <InputField
-                          label="UDC Commission Cut (%)"
-                          suffix="%"
-                          value={vendor.commission}
-                          placeholder="0"
-                          step="1"
-                          quickIncrements={[5, 10, 15]}
-                          onChange={(v) => updateVendor(vendor.id, { commission: number(v) })}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 text-xs font-mono text-slate-400">
-                        <span>Expected Commission: <strong className="text-cyan-300">{money(commRev)}</strong></span>
-                        <span>Total Stall Yield: <strong className="text-emerald-400">{money(stallTotal)}</strong></span>
-                      </div>
+                  {/* Summary / Total Capacity Yield */}
+                  <div className="space-y-1.5 text-left">
+                    <span className="text-xs font-mono font-medium text-slate-300 tracking-wide select-none block">
+                      Projected Baseline Stall Yield
+                    </span>
+                    <div className="rounded-xl border border-white/10 bg-[#060913] px-3.5 py-2.5 flex items-center justify-between">
+                      <span className="text-xs font-mono text-slate-400">
+                        {data.stallCapacity} stalls × {money(data.stallDefaultPrice)}:
+                      </span>
+                      <strong className="text-base font-mono font-bold text-emerald-400">
+                        {money(number(data.stallCapacity) * number(data.stallDefaultPrice))}
+                      </strong>
                     </div>
-                  );
-                })
-              )}
+                  </div>
+                </div>
 
-              {/* Vendor Totals Strip */}
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3.5 font-mono text-xs">
-                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
-                  <span className="text-slate-400 uppercase text-[10px] select-none">Total Booking Fees</span>
-                  <p className="text-xl font-bold text-white">{money(vendorFees)}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
-                  <span className="text-slate-400 uppercase text-[10px] select-none">Total Commissions</span>
-                  <p className="text-xl font-bold text-cyan-400">{money(vendorCommission)}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
-                  <span className="text-slate-400 uppercase text-[10px] select-none">Net Commercial Inflow</span>
-                  <p className="text-xl font-bold text-emerald-400">{money(totalVendorRevenue)}</p>
+                {/* Batch Action Buttons */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={generateStallsFromSetPrice}
+                    disabled={data.stallCapacity <= 0}
+                    className="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none"
+                    title="Generate all stalls populated with this set price"
+                  >
+                    <Grid className="w-3.5 h-3.5" />
+                    <span>Generate {data.stallCapacity || 0} Stalls at Set Price</span>
+                  </button>
+
+                  {data.vendors.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={applySetPriceToAllStalls}
+                      className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
+                      title="Update all existing stalls to the current set price per stall"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Apply {money(data.stallDefaultPrice)} to All {data.vendors.length} Stalls</span>
+                    </button>
+                  )}
                 </div>
               </div>
+
+              {/* ── ITEMIZED STALLS LIST ── */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-mono font-bold uppercase text-slate-300 tracking-wider">
+                    Itemized Vendor Stalls ({data.vendors.length})
+                  </h4>
+                  {data.vendors.length === 0 && data.stallCapacity > 0 && (
+                    <span className="text-[11px] font-mono text-cyan-400">
+                      Currently using bulk estimate ({data.stallCapacity} stalls @ {money(data.stallDefaultPrice)})
+                    </span>
+                  )}
+                </div>
+
+                {data.vendors.length === 0 ? (
+                  <div className="p-8 text-center rounded-2xl border border-dashed border-white/10 text-slate-500 text-xs font-mono space-y-2">
+                    <p>No individual vendor stalls itemized yet.</p>
+                    <p className="text-slate-400">
+                      You can either use the <strong className="text-cyan-400">Set Price per Stall</strong> and <strong className="text-cyan-400">Total Stall Inventory</strong> above for a rapid bulk forecast, or click <strong className="text-white">&quot;Add Vendor Stall&quot;</strong> to contract specific brands.
+                    </p>
+                  </div>
+                ) : (
+                  data.vendors.map((vendor, idx) => {
+                    const commRev = (number(vendor.expectedSales) * number(vendor.commission)) / 100;
+                    const stallTotal = number(vendor.fee) + commRev;
+                    return (
+                      <div
+                        key={vendor.id}
+                        className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-all space-y-3"
+                      >
+                        <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                          <span className="font-mono text-xs font-bold text-slate-300 select-none">
+                            STALL #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              update({ vendors: data.vendors.filter((x) => x.id !== vendor.id) })
+                            }
+                            className="text-xs text-rose-400 hover:text-rose-300 font-mono transition cursor-pointer flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Remove</span>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                          <InputField
+                            label="Vendor / Business Name"
+                            type="text"
+                            value={vendor.name}
+                            placeholder="e.g. Café Concession"
+                            onChange={(v) => updateVendor(vendor.id, { name: v })}
+                          />
+
+                          <InputField
+                            label="Fixed Space Booking Fee"
+                            prefix="₹"
+                            value={vendor.fee}
+                            placeholder="0"
+                            quickIncrements={[2500, 5000]}
+                            onChange={(v) => updateVendor(vendor.id, { fee: number(v) })}
+                          />
+
+                          <InputField
+                            label="Estimated Total Sales"
+                            prefix="₹"
+                            value={vendor.expectedSales}
+                            placeholder="0"
+                            quickIncrements={[10000, 25000]}
+                            onChange={(v) => updateVendor(vendor.id, { expectedSales: number(v) })}
+                          />
+
+                          <InputField
+                            label="UDC Commission Cut (%)"
+                            suffix="%"
+                            value={vendor.commission}
+                            placeholder="0"
+                            step="1"
+                            quickIncrements={[5, 10, 15]}
+                            onChange={(v) => updateVendor(vendor.id, { commission: number(v) })}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 text-xs font-mono text-slate-400">
+                          <span>Expected Commission: <strong className="text-cyan-300">{money(commRev)}</strong></span>
+                          <span>Total Stall Yield: <strong className="text-emerald-400">{money(stallTotal)}</strong></span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+
+                {/* Vendor Totals Strip */}
+                <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3.5 font-mono text-xs">
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
+                    <span className="text-slate-400 uppercase text-[10px] select-none">Total Booking Fees</span>
+                    <p className="text-xl font-bold text-white">{money(vendorFees)}</p>
+                    {data.vendors.length === 0 && data.stallCapacity > 0 && (
+                      <span className="text-[10px] text-cyan-400 block">From {data.stallCapacity} stalls @ {money(data.stallDefaultPrice)}</span>
+                    )}
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
+                    <span className="text-slate-400 uppercase text-[10px] select-none">Total Commissions</span>
+                    <p className="text-xl font-bold text-cyan-400">{money(vendorCommission)}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-1">
+                    <span className="text-slate-400 uppercase text-[10px] select-none">Net Commercial Inflow</span>
+                    <p className="text-xl font-bold text-emerald-400">{money(totalVendorRevenue)}</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </SectionCard>
         )}
