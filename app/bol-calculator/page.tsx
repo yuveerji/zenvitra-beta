@@ -108,7 +108,7 @@ const initialData: EventData = {
   complimentary: 0,
   refunds: 0,
   processingRate: 0,
-  cashfreeFeeBorneByOrganizer: true,
+  cashfreeFeeBorneByOrganizer: false, // Default: NO [In my pocket & not to cashfree]
   contingencyRate: 0,
   foodMode: "buffet",
   foodCost: 0,
@@ -494,9 +494,17 @@ export default function BOLCalculator() {
   const cateringCost =
     foodPerPerson * totalAttendance + number(data.foodFixedCost);
 
+  // Gross processing fee amount calculated from ticket volume
+  const rawProcessingFee = (ticketRevenue * number(data.processingRate)) / 100;
+
   // Cashfree Processing Fee: only deducted from event budget if fee is given to Cashfree by organizer
   const ticketProcessing = data.cashfreeFeeBorneByOrganizer
-    ? (ticketRevenue * number(data.processingRate)) / 100
+    ? rawProcessingFee
+    : 0;
+
+  // Amount retained directly in the organizer's pocket (when fee is NOT given to Cashfree)
+  const pocketRetainedFee = !data.cashfreeFeeBorneByOrganizer
+    ? rawProcessingFee
     : 0;
 
   const subtotalExpenses = baseExpenses + cateringCost + ticketProcessing;
@@ -675,7 +683,8 @@ export default function BOLCalculator() {
       ...data.expenses.map((item) => [item.name, item.amount]),
       ["Catering & Food", cateringCost],
       ["Payment Gateway Processing", ticketProcessing],
-      ["Cashfree Fee Borne by Organizer", data.cashfreeFeeBorneByOrganizer ? "YES (Deducted)" : "NO (Free / By Customer)"],
+      ["Cashfree Fee Given to Cashfree", data.cashfreeFeeBorneByOrganizer ? "YES (Paid to Cashfree)" : "NO [In my pocket & not to cashfree]"],
+      ["Gateway Fee Retained in Pocket", pocketRetainedFee],
       ["Contingency Reserve", contingency],
       ["TOTAL PROJECTED EXPENDITURE", totalExpenses],
       ["", ""],
@@ -712,7 +721,7 @@ export default function BOLCalculator() {
       `Date: ${data.eventDate || "TBD"}\n` +
       `Planned Attendance: ${totalAttendance}\n` +
       `Set Stall Price: ${money(data.stallDefaultPrice)} (${data.stallCapacity} stalls)\n` +
-      `Cashfree PG Fee: ${data.cashfreeFeeBorneByOrganizer ? `${data.processingRate}% (${money(ticketProcessing)})` : "Not given to Cashfree (Zero deduction)"}\n` +
+      `Cashfree Fee: ${data.cashfreeFeeBorneByOrganizer ? `${data.processingRate}% (${money(ticketProcessing)} to Cashfree)` : `NO [In my pocket & not to cashfree] (${money(pocketRetainedFee)} in pocket)`}\n` +
       `---------------------------\n` +
       `Total Revenue: ${money(totalRevenue)}\n` +
       `Total Expenses: ${money(totalExpenses)}\n` +
@@ -1089,43 +1098,49 @@ export default function BOLCalculator() {
                     cashfreeFeeBorneByOrganizer: !data.cashfreeFeeBorneByOrganizer,
                   })
                 }
-                className={`w-full py-2 px-3 rounded-xl font-mono text-[11px] font-bold transition-all duration-200 flex items-center justify-between cursor-pointer border focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+                className={`w-full py-2.5 px-3.5 rounded-xl font-mono text-[11px] font-bold transition-all duration-200 flex items-center justify-between cursor-pointer border focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
                   data.cashfreeFeeBorneByOrganizer
-                    ? "bg-cyan-500/15 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/25 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
-                    : "bg-white/[0.03] border-white/10 text-slate-400 hover:bg-white/[0.08] hover:text-white"
+                    ? "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.12)]"
+                    : "bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
                 }`}
-                title="Toggle whether Cashfree fee is given to Cashfree (deducted from budget) or not"
+                title="Toggle whether Cashfree fee is given to Cashfree or kept in your pocket"
               >
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full ${
                       data.cashfreeFeeBorneByOrganizer
-                        ? "bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]"
-                        : "bg-slate-600"
+                        ? "bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.8)]"
+                        : "bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"
                     }`}
                   />
-                  <span className="text-left leading-tight">
+                  <span className="text-left leading-tight text-white">
                     Fee Given to Cashfree:
                   </span>
                 </div>
 
                 <span
-                  className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-black uppercase tracking-wider ${
+                  className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-black uppercase tracking-wider ${
                     data.cashfreeFeeBorneByOrganizer
-                      ? "bg-cyan-400/20 text-cyan-200 border border-cyan-400/40"
-                      : "bg-white/10 text-slate-300 border border-white/10"
+                      ? "bg-amber-400/20 text-amber-200 border border-amber-400/40"
+                      : "bg-emerald-400/20 text-emerald-200 border border-emerald-400/40"
                   }`}
                 >
                   {data.cashfreeFeeBorneByOrganizer
-                    ? "YES (Deducted)"
-                    : "NO (Free / By Customer)"}
+                    ? "YES (Paid to Cashfree)"
+                    : "NO [In my pocket & not to cashfree]"}
                 </span>
               </button>
 
-              <p className="text-[10px] font-mono text-slate-500 px-0.5">
-                {data.cashfreeFeeBorneByOrganizer
-                  ? `• ${data.processingRate}% fee deducted from gross revenue (${money(ticketProcessing)})`
-                  : "• Fee NOT given to Cashfree (Zero deduction from budget)"}
+              <p className="text-[10px] font-mono px-0.5">
+                {data.cashfreeFeeBorneByOrganizer ? (
+                  <span className="text-amber-400/90">
+                    • {data.processingRate}% fee deducted from payout ({money(ticketProcessing)}) given to Cashfree
+                  </span>
+                ) : (
+                  <span className="text-emerald-400 font-semibold">
+                    • In your pocket: {money(rawProcessingFee)} stays with you &amp; ₹0 given to Cashfree
+                  </span>
+                )}
               </p>
             </div>
 
@@ -1265,7 +1280,7 @@ export default function BOLCalculator() {
                     amount: ticketProcessing,
                     note: data.cashfreeFeeBorneByOrganizer
                       ? `${data.processingRate}% fee given to Cashfree (${money(ticketProcessing)})`
-                      : "Fee not given to Cashfree (Paid by customer / Waived)",
+                      : `NO [In my pocket & not to cashfree] • ₹0 to Cashfree (${money(pocketRetainedFee)} in pocket)`,
                   },
                   { label: "Contingency Safety Reserve", amount: contingency, note: `${data.contingencyRate}% buffer applied` },
                 ].map((item) => (
@@ -1322,6 +1337,13 @@ export default function BOLCalculator() {
                 <div className="mt-4 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between text-xs font-mono">
                   <span className="text-purple-300">Non-Cash In-Kind Sponsorships Recognized:</span>
                   <strong className="text-white">{money(sponsorInKind)}</strong>
+                </div>
+              )}
+
+              {pocketRetainedFee > 0 && (
+                <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs font-mono">
+                  <span className="text-emerald-300">Processing Fee Kept In Your Pocket:</span>
+                  <strong className="text-emerald-400 font-bold">{money(pocketRetainedFee)}</strong>
                 </div>
               )}
             </SectionCard>
